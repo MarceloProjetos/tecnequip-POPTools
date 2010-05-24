@@ -58,25 +58,25 @@
 /*=========================================================================*/
 /*  DEFINE: All code exported                                              */
 /*=========================================================================*/
-volatile unsigned int U_E1 __attribute__((weak)) = 0;
-volatile unsigned int U_E2 __attribute__((weak)) = 0;
-volatile unsigned int U_E3 __attribute__((weak)) = 0;
-volatile unsigned int U_E4 __attribute__((weak)) = 0;
-volatile unsigned int U_E5 __attribute__((weak)) = 0;
-volatile unsigned int U_E6 __attribute__((weak)) = 0;
-volatile unsigned int U_E7 __attribute__((weak)) = 0;
-volatile unsigned int U_E8 __attribute__((weak)) = 0;
-volatile unsigned int U_E9 __attribute__((weak)) = 0;
-volatile unsigned int U_E10 __attribute__((weak)) = 0;
-volatile unsigned int U_E11 __attribute__((weak)) = 0;
-volatile unsigned int U_E12 __attribute__((weak)) = 0;
-volatile unsigned int U_E13 __attribute__((weak)) = 0;
-volatile unsigned int U_E14 __attribute__((weak)) = 0;
-volatile unsigned int U_E15 __attribute__((weak)) = 0;
-volatile unsigned int U_E16 __attribute__((weak)) = 0;
-volatile unsigned int U_E17 __attribute__((weak)) = 0;
-volatile unsigned int U_E18 __attribute__((weak)) = 0;
-volatile unsigned int U_E19 __attribute__((weak)) = 0;
+volatile unsigned int I_E1 __attribute__((weak)) = 0;
+volatile unsigned int I_E2 __attribute__((weak)) = 0;
+volatile unsigned int I_E3 __attribute__((weak)) = 0;
+volatile unsigned int I_E4 __attribute__((weak)) = 0;
+volatile unsigned int I_E5 __attribute__((weak)) = 0;
+volatile unsigned int I_E6 __attribute__((weak)) = 0;
+volatile unsigned int I_E7 __attribute__((weak)) = 0;
+volatile unsigned int I_E8 __attribute__((weak)) = 0;
+volatile unsigned int I_E9 __attribute__((weak)) = 0;
+volatile unsigned int I_E10 __attribute__((weak)) = 0;
+volatile unsigned int I_E11 __attribute__((weak)) = 0;
+volatile unsigned int I_E12 __attribute__((weak)) = 0;
+volatile unsigned int I_E13 __attribute__((weak)) = 0;
+volatile unsigned int I_E14 __attribute__((weak)) = 0;
+volatile unsigned int I_E15 __attribute__((weak)) = 0;
+volatile unsigned int I_E16 __attribute__((weak)) = 0;
+volatile unsigned int I_E17 __attribute__((weak)) = 0;
+volatile unsigned int I_E18 __attribute__((weak)) = 0;
+volatile unsigned int I_E19 __attribute__((weak)) = 0;
 
 volatile unsigned int U_S1 __attribute__((weak)) = 0;
 volatile unsigned int U_S2 __attribute__((weak)) = 0;
@@ -227,25 +227,25 @@ void AtualizaEntradas(void)
   i |= (0x80000 & GPIO0->FIOPIN) >> 4;   // P0.19 ~ P0.19  [16..16]
   i |= (0x600000 & GPIO0->FIOPIN) >> 5;  // P0.21 ~ P0.22  [17..18]
 
-  U_E1 = i & 0x1;
-  U_E2 = (i & (1 << 1)) >> 1;
-  U_E3 = (i & (1 << 2)) >> 2;
-  U_E4 = (i & (1 << 3)) >> 3;
-  U_E5 = (i & (1 << 4)) >> 4;
-  U_E6 = (i & (1 << 5)) >> 5;
-  U_E7 = (i & (1 << 6)) >> 6;
-  U_E8 = (i & (1 << 7)) >> 7;
-  U_E9 = (i & (1 << 8)) >> 8;
-  U_E10 = (i & (1 << 9)) >> 9;
-  U_E11 = (i & (1 << 10)) >> 10;
-  U_E12 = (i & (1 << 11)) >> 11;
-  U_E13 = (i & (1 << 12)) >> 12;
-  U_E14 = (i & (1 << 13)) >> 13;
-  U_E15 = (i & (1 << 14)) >> 14;
-  U_E16 = (i & (1 << 15)) >> 15;
-  U_E17 = (i & (1 << 16)) >> 16;
-  U_E18 = (i & (1 << 17)) >> 17;
-  U_E19 = (i & (1 << 18)) >> 18;
+  I_E1 = i & 0x1;
+  I_E2 = (i & (1 << 1)) >> 1;
+  I_E3 = (i & (1 << 2)) >> 2;
+  I_E4 = (i & (1 << 3)) >> 3;
+  I_E5 = (i & (1 << 4)) >> 4;
+  I_E6 = (i & (1 << 5)) >> 5;
+  I_E7 = (i & (1 << 6)) >> 6;
+  I_E8 = (i & (1 << 7)) >> 7;
+  I_E9 = (i & (1 << 8)) >> 8;
+  I_E10 = (i & (1 << 9)) >> 9;
+  I_E11 = (i & (1 << 10)) >> 10;
+  I_E12 = (i & (1 << 11)) >> 11;
+  I_E13 = (i & (1 << 12)) >> 12;
+  I_E14 = (i & (1 << 13)) >> 13;
+  I_E15 = (i & (1 << 14)) >> 14;
+  I_E16 = (i & (1 << 15)) >> 15;
+  I_E17 = (i & (1 << 16)) >> 16;
+  I_E18 = (i & (1 << 17)) >> 17;
+  I_E19 = (i & (1 << 18)) >> 18;
 
 }
 

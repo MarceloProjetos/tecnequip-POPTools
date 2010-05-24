@@ -465,11 +465,6 @@ typedef struct McuAdcPinInfoTag {
     BYTE    muxRegValue;
 } McuAdcPinInfo;
 
-typedef struct McuMapIoInfoTag {
-	char	name[MAX_NAME_LEN];
-	McuIoPinInfo * io;
-} McuMapIoPinInfo;
-
 #define ISA_AVR             0x00
 #define ISA_PIC16           0x01
 #define ISA_ANSIC           0x02
@@ -495,8 +490,6 @@ typedef struct McuIoInfoTag {
     McuAdcPinInfo   *adcInfo;
     int              adcCount;
     int              adcMax;
-    McuMapIoPinInfo  *mapIoInfo;
-    int              mapIoCount;
     struct {
         int             rxPin;
         int             txPin;
@@ -659,10 +652,13 @@ BOOL SaveProjectToFile(char *filename);
 
 // iolist.cpp
 int GenerateIoList(int prevSel);
+int GenerateIoMapList(int prevSel);
 void SaveIoListToFile(FILE *f);
 BOOL LoadIoListFromFile(FILE *f);
 void ShowIoDialog(int item);
+void ShowIoMapDialog(int item);
 void IoListProc(NMHDR *h);
+void IoMapListProc(NMHDR *h);
 void ShowAnalogSliderPopup(char *name);
 
 // commentdialog.cpp

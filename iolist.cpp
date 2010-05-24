@@ -35,12 +35,12 @@
 // I/O that we have seen recently, so that we don't forget pin assignments
 // when we re-extract the list
 #define MAX_IO_SEEN_PREVIOUSLY 512
-static struct {
+struct {
     char    name[MAX_NAME_LEN];
     int     type;
     int     pin;
 } IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
-static int IoSeenPreviouslyCount;
+int IoSeenPreviouslyCount;
 
 // stuff for the dialog box that lets you choose pin assignments
 static BOOL DialogDone;
@@ -300,9 +300,9 @@ int GenerateIoList(int prevSel)
     }
     
     // remember the pin assignments
-    for(i = 0; i < Prog.io.count; i++) 
-	{
-        AppendIoSeenPreviously(Prog.io.assignment[i].name, Prog.io.assignment[i].type, Prog.io.assignment[i].pin);
+    for(i = 0; i < Prog.io.count; i++) {
+        AppendIoSeenPreviously(Prog.io.assignment[i].name,
+            Prog.io.assignment[i].type, Prog.io.assignment[i].pin);
     }
     // wipe the list
     Prog.io.count = 0;
@@ -689,7 +689,7 @@ void ShowIoDialog(int item)
         }
 
         char buf[40];
-        /*if(Prog.mcu->pinCount <= 21) {
+        if(Prog.mcu->pinCount <= 21) {
             sprintf(buf, "%3d   %c%c%d", Prog.mcu->pinInfo[i].pin,
                 Prog.mcu->portPrefix, Prog.mcu->pinInfo[i].port,
                 Prog.mcu->pinInfo[i].bit);
@@ -697,13 +697,8 @@ void ShowIoDialog(int item)
             sprintf(buf, "%3d  %c%c%d", Prog.mcu->pinInfo[i].pin,
                 Prog.mcu->portPrefix, Prog.mcu->pinInfo[i].port,
                 Prog.mcu->pinInfo[i].bit);
-        }*/
-		if((Prog.io.assignment[item].name[0] == 'X' && Prog.mcu->pinInfo[i].pin < 20) ||
-		   (Prog.io.assignment[item].name[0] == 'Y' && Prog.mcu->pinInfo[i].pin > 19))
-		{
-			sprintf(buf, "%c%d", Prog.mcu->pinInfo[i].port, Prog.mcu->pinInfo[i].bit);
-			SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
-		}
+        }
+        SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
 cant_use_this_io:;
     }
 
@@ -736,26 +731,25 @@ cant_use_this_io:;
         int sel = SendMessage(PinList, LB_GETCURSEL, 0, 0);
         char pin[16];
         SendMessage(PinList, LB_GETTEXT, (WPARAM)sel, (LPARAM)pin);
-		if(strcmp(pin, _("(no pin)"))==0) {
+        if(strcmp(pin, _("(no pin)"))==0) {
             int i;
             for(i = 0; i < IoSeenPreviouslyCount; i++) {
-                /*if(strcmp(IoSeenPreviously[i].name,
-                    Prog.io.assignment[item].name)==0)*/
-				if (IoSeenPreviously[i].pin == Prog.io.assignment[item].pin)
+                if(strcmp(IoSeenPreviously[i].name,
+                    Prog.io.assignment[item].name)==0)
                 {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
                 }
             }
             Prog.io.assignment[item].pin = NO_PIN_ASSIGNED;
         } else {
-            Prog.io.assignment[item].pin = atoi(&pin[1]);
+            Prog.io.assignment[item].pin = atoi(pin);
             // Only one name can be bound to each pin; make sure that there's
             // not another entry for this pin in the IoSeenPreviously list,
             // that might get used if the user creates a new pin with that
             // name.
             int i;
             for(i = 0; i < IoSeenPreviouslyCount; i++) {
-                if(IoSeenPreviously[i].pin == atoi(&pin[1])) {
+                if(IoSeenPreviously[i].pin == atoi(pin)) {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
                 }
             }
@@ -844,7 +838,8 @@ void IoListProc(NMHDR *h)
                     int j;
                     for(j = 0; j < Prog.mcu->pinCount; j++) {
                         if(Prog.mcu->pinInfo[j].pin == pin) {
-                            sprintf(i->item.pszText, "%c%d",
+                            sprintf(i->item.pszText, "%c%c%d",
+                                Prog.mcu->portPrefix,
                                 Prog.mcu->pinInfo[j].port,
                                 Prog.mcu->pinInfo[j].bit);
                             break;

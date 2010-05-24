@@ -31,8 +31,315 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
-extern char SeenVariables[MAX_IO][MAX_NAME_LEN];
-extern int SeenVariablesCount;
+static char SeenVariables[MAX_IO][MAX_NAME_LEN];
+static int SeenVariablesCount;
+
+//-----------------------------------------------------------------------------
+// Have we seen a variable before? If not then no need to generate code for
+// it, otherwise we will have to make a declaration, and mark it as seen.
+//-----------------------------------------------------------------------------
+static BOOL SeenVariable(char *name)
+{
+    int i;
+    for(i = 0; i < SeenVariablesCount; i++) {
+        if(strcmp(SeenVariables[i], name)==0) {
+            return TRUE;
+        }
+    }
+    if(i >= MAX_IO) oops();
+    strcpy(SeenVariables[i], name);
+    SeenVariablesCount++;
+    return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+// Turn an internal symbol into a C name; only trick is that internal symbols
+// use $ for symbols that the int code generator needed for itself, so map
+// that into something okay for C.
+//-----------------------------------------------------------------------------
+static char *MapSym(char *str)
+{
+    static char AllRets[4][MAX_NAME_LEN+30];
+    static int RetCnt;
+
+    RetCnt = (RetCnt + 1) & 3;
+
+    char *ret = AllRets[RetCnt];
+    
+	int i;
+    for(i = 0; i < Prog.io.count; i++) 
+	{
+		if (strcmp(Prog.io.assignment[i].name, str) == 0)
+		{
+			int pin = Prog.io.assignment[i].pin;
+
+			if (Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) 
+			{
+				sprintf(ret, "U_S%d", pin);
+				return ret;
+			} 
+			else if (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
+			{
+				sprintf(ret, "I_E%d", pin);
+				return ret;
+			}
+		}
+	}
+
+    if(*str == '$') {
+        sprintf(ret, "I_%s", str+1);
+    } else {
+        sprintf(ret, "U_%s", str);
+    }
+    return ret;
+}
+
+//-----------------------------------------------------------------------------
+// Generate a declaration for an integer var; easy, a static 32-bit qty.
+//-----------------------------------------------------------------------------
+static void DeclareInt(FILE *f, char *str)
+{
+    //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
+	fprintf(f, "volatile int %s;\n", MapSym(str));
+}
+
+//-----------------------------------------------------------------------------
+// Generate a declaration for a bit var; three cases, input, output, and
+// internal relay. An internal relay is just a BOOL variable, but for an
+// input or an output someone else must provide read/write functions.
+//-----------------------------------------------------------------------------
+static void DeclareBit(FILE *f, char *rawStr)
+{
+    char *str = MapSym(rawStr);
+    if(*rawStr == 'X') {
+        //fprintf(f, "\n");
+        //fprintf(f, "/* You provide this function. */\n");
+        //fprintf(f, "PROTO(extern BOOL Read_%s(void);)\n", str);
+        //fprintf(f, "\n");
+    } else if(*rawStr == 'Y') {
+        //fprintf(f, "\n");
+        //fprintf(f, "/* You provide these functions. */\n");
+        //fprintf(f, "PROTO(BOOL Read_%s(void);)\n", str);
+        //fprintf(f, "PROTO(void Write_%s(BOOL v);)\n", str);
+        //fprintf(f, "\n");
+    }
+    fprintf(f, "\n");
+    fprintf(f, "volatile unsigned int %s = 0;\n", str);
+    fprintf(f, "#define Read_%s() %s\n", str, str);
+    fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
+}
+
+//-----------------------------------------------------------------------------
+// Generate declarations for all the 16-bit/single bit variables in the ladder
+// program.
+//-----------------------------------------------------------------------------
+static void GenerateDeclarations(FILE *f)
+{
+    int i;
+    for(i = 0; i < IntCodeLen; i++) {
+        char *bitVar1 = NULL, *bitVar2 = NULL;
+        char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
+
+        switch(IntCode[i].op) {
+            case INT_SET_BIT:
+            case INT_CLEAR_BIT:
+                bitVar1 = IntCode[i].name1;
+                break;
+
+            case INT_COPY_BIT_TO_BIT:
+                bitVar1 = IntCode[i].name1;
+                bitVar2 = IntCode[i].name2;
+                break;
+
+            case INT_SET_VARIABLE_TO_LITERAL:
+                intVar1 = IntCode[i].name1;
+                break;
+
+            case INT_SET_VARIABLE_TO_VARIABLE:
+                intVar1 = IntCode[i].name1;
+                intVar2 = IntCode[i].name2;
+                break;
+
+            case INT_SET_VARIABLE_DIVIDE:
+            case INT_SET_VARIABLE_MULTIPLY:
+            case INT_SET_VARIABLE_SUBTRACT:
+            case INT_SET_VARIABLE_ADD:
+                intVar1 = IntCode[i].name1;
+                intVar2 = IntCode[i].name2;
+                intVar3 = IntCode[i].name3;
+                break;
+
+            case INT_INCREMENT_VARIABLE:
+            case INT_READ_ADC:
+            case INT_SET_PWM:
+                intVar1 = IntCode[i].name1;
+                break;
+
+            case INT_UART_RECV:
+            case INT_UART_SEND:
+                intVar1 = IntCode[i].name1;
+                bitVar1 = IntCode[i].name2;
+                break;
+
+            case INT_IF_BIT_SET:
+            case INT_IF_BIT_CLEAR:
+                bitVar1 = IntCode[i].name1;
+                break;
+
+            case INT_IF_VARIABLE_LES_LITERAL:
+                intVar1 = IntCode[i].name1;
+                break;
+
+            case INT_IF_VARIABLE_EQUALS_VARIABLE:
+            case INT_IF_VARIABLE_GRT_VARIABLE:
+                intVar1 = IntCode[i].name1;
+                intVar2 = IntCode[i].name2;
+                break;
+
+            case INT_END_IF:
+            case INT_ELSE:
+            case INT_COMMENT:
+            case INT_SIMULATE_NODE_STATE:
+            case INT_EEPROM_BUSY_CHECK:
+            case INT_EEPROM_READ:
+            case INT_EEPROM_WRITE:
+                break;
+
+            default:
+                oops();
+        }
+        if(bitVar1 && !SeenVariable(bitVar1)) DeclareBit(f, bitVar1);
+        if(bitVar2 && !SeenVariable(bitVar2)) DeclareBit(f, bitVar2);
+
+        if(intVar1 && !SeenVariable(intVar1)) DeclareInt(f, intVar1);
+        if(intVar2 && !SeenVariable(intVar2)) DeclareInt(f, intVar2);
+        if(intVar3 && !SeenVariable(intVar3)) DeclareInt(f, intVar3);
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Actually generate the C source for the program.
+//-----------------------------------------------------------------------------
+static void GenerateAnsiC(FILE *f)
+{
+    int i;
+    int indent = 1;
+    for(i = 0; i < IntCodeLen; i++) {
+
+        if(IntCode[i].op == INT_END_IF) indent--;
+        if(IntCode[i].op == INT_ELSE) indent--;
+
+        int j;
+        for(j = 0; j < indent; j++) fprintf(f, "    ");
+
+        switch(IntCode[i].op) {
+            case INT_SET_BIT:
+                fprintf(f, "Write_%s(1);\n", MapSym(IntCode[i].name1));
+                break;
+
+            case INT_CLEAR_BIT:
+                fprintf(f, "Write_%s(0);\n", MapSym(IntCode[i].name1));
+                break;
+
+            case INT_COPY_BIT_TO_BIT:
+                fprintf(f, "Write_%s(Read_%s());\n", MapSym(IntCode[i].name1),
+                    MapSym(IntCode[i].name2));
+                break;
+
+            case INT_SET_VARIABLE_TO_LITERAL:
+                fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1),
+                    IntCode[i].literal);
+                break;
+
+            case INT_SET_VARIABLE_TO_VARIABLE:
+                fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1),
+                    MapSym(IntCode[i].name2));
+                break;
+
+            {
+                char op;
+                case INT_SET_VARIABLE_ADD: op = '+'; goto arith;
+                case INT_SET_VARIABLE_SUBTRACT: op = '-'; goto arith;
+                case INT_SET_VARIABLE_MULTIPLY: op = '*'; goto arith;
+                case INT_SET_VARIABLE_DIVIDE: op = '/'; goto arith;
+                arith:
+                    fprintf(f, "%s = %s %c %s;\n",
+                        MapSym(IntCode[i].name1),
+                        MapSym(IntCode[i].name2),
+                        op,
+                        MapSym(IntCode[i].name3) );
+                    break;
+            }
+
+            case INT_INCREMENT_VARIABLE:
+                fprintf(f, "%s++;\n", MapSym(IntCode[i].name1));
+                break;
+
+            case INT_IF_BIT_SET:
+                fprintf(f, "if(Read_%s()) {\n", MapSym(IntCode[i].name1));
+                indent++;
+                break;
+
+            case INT_IF_BIT_CLEAR:
+                fprintf(f, "if(!Read_%s()) {\n", MapSym(IntCode[i].name1));
+                indent++;
+                break;
+
+            case INT_IF_VARIABLE_LES_LITERAL:
+                fprintf(f, "if(%s < %d) {\n", MapSym(IntCode[i].name1),
+                    IntCode[i].literal);
+                indent++;
+                break;
+
+            case INT_IF_VARIABLE_EQUALS_VARIABLE:
+                fprintf(f, "if(%s == %s) {\n", MapSym(IntCode[i].name1),
+                    MapSym(IntCode[i].name2));
+                indent++;
+                break;
+
+            case INT_IF_VARIABLE_GRT_VARIABLE:
+                fprintf(f, "if(%s > %s) {\n", MapSym(IntCode[i].name1),
+                    MapSym(IntCode[i].name2));
+                indent++;
+                break;
+
+            case INT_END_IF:
+                fprintf(f, "}\n");
+                break;
+
+            case INT_ELSE:
+                fprintf(f, "} else {\n"); indent++;
+                break;
+
+            case INT_SIMULATE_NODE_STATE:
+                // simulation-only
+                fprintf(f, "\n");
+                break;
+
+            case INT_COMMENT:
+                if(IntCode[i].name1[0]) {
+                    fprintf(f, "/* %s */\n", IntCode[i].name1);
+                } else {
+                    fprintf(f, "\n");
+                }
+                break;
+
+            case INT_EEPROM_BUSY_CHECK:
+            case INT_EEPROM_READ:
+            case INT_EEPROM_WRITE:
+            case INT_READ_ADC:
+            case INT_SET_PWM:
+            case INT_UART_RECV:
+            case INT_UART_SEND:
+                Error(_("ANSI C target does not support peripherals "
+                    "(UART, PWM, ADC, EEPROM). Skipping that instruction."));
+                break;
+
+            default:
+                oops();
+        }
+    }
+}
 
 //-----------------------------------------------------------------------------
 // Split file name with a full path into 3 string and return offset of start file name string
@@ -230,6 +537,15 @@ void CompileAnsiCToGCC(char *dest)
         Error(_("Couldn't open file '%s'"), szAppDirectory);
         return;
     }
+
+    if(setjmp(CompileErrorBuf) != 0) {
+        fclose(f);
+        return;
+    }
+
+    // Set up the TRISx registers (direction). 1 means tri-stated (input).
+    BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
+    BuildDirectionRegisters(isInput, isOutput);
 
     fprintf(f,
 "/*****************************************************************************\n"

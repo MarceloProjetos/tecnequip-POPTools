@@ -30,7 +30,7 @@
 #include "ldmicro.h"
 #include "intcode.h"
 
-char SeenVariables[MAX_IO][MAX_NAME_LEN];
+static char SeenVariables[MAX_IO][MAX_NAME_LEN];
 int SeenVariablesCount;
 
 //-----------------------------------------------------------------------------
@@ -78,8 +78,7 @@ static char *MapSym(char *str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, char *str)
 {
-    //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
-	fprintf(f, "volatile int %s;\n", MapSym(str));
+    fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
 }
 
 //-----------------------------------------------------------------------------
@@ -91,28 +90,28 @@ static void DeclareBit(FILE *f, char *rawStr)
 {
     char *str = MapSym(rawStr);
     if(*rawStr == 'X') {
-        //fprintf(f, "\n");
-        //fprintf(f, "/* You provide this function. */\n");
-        //fprintf(f, "PROTO(extern BOOL Read_%s(void);)\n", str);
-        //fprintf(f, "\n");
+        fprintf(f, "\n");
+        fprintf(f, "/* You provide this function. */\n");
+        fprintf(f, "PROTO(extern BOOL Read_%s(void);)\n", str);
+        fprintf(f, "\n");
     } else if(*rawStr == 'Y') {
-        //fprintf(f, "\n");
-        //fprintf(f, "/* You provide these functions. */\n");
-        //fprintf(f, "PROTO(BOOL Read_%s(void);)\n", str);
-        //fprintf(f, "PROTO(void Write_%s(BOOL v);)\n", str);
-        //fprintf(f, "\n");
+        fprintf(f, "\n");
+        fprintf(f, "/* You provide these functions. */\n");
+        fprintf(f, "PROTO(BOOL Read_%s(void);)\n", str);
+        fprintf(f, "PROTO(void Write_%s(BOOL v);)\n", str);
+        fprintf(f, "\n");
+    } else {
+        fprintf(f, "STATIC BOOL %s;\n", str);
+        fprintf(f, "#define Read_%s() %s\n", str, str);
+        fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
     }
-    fprintf(f, "\n");
-    fprintf(f, "volatile unsigned int %s = 0;\n", str);
-    fprintf(f, "#define Read_%s() %s\n", str, str);
-    fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
 }
 
 //-----------------------------------------------------------------------------
 // Generate declarations for all the 16-bit/single bit variables in the ladder
 // program.
 //-----------------------------------------------------------------------------
-void GenerateDeclarations(FILE *f)
+static void GenerateDeclarations(FILE *f)
 {
     int i;
     for(i = 0; i < IntCodeLen; i++) {
@@ -199,7 +198,7 @@ void GenerateDeclarations(FILE *f)
 //-----------------------------------------------------------------------------
 // Actually generate the C source for the program.
 //-----------------------------------------------------------------------------
-void GenerateAnsiC(FILE *f)
+static void GenerateAnsiC(FILE *f)
 {
     int i;
     int indent = 1;

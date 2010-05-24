@@ -976,7 +976,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_NOTIFY: {
             NMHDR *h = (NMHDR *)lParam;
             if(h->hwndFrom == IoList) {
-                IoListProc(h);
+                IoMapListProc(h);
             }
             return 0;
         }
@@ -1094,7 +1094,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             exit(-1);
         }
         strcpy(CurrentCompileFile, dest);
-        GenerateIoList(-1);
+        GenerateIoMapList(-1);
         CompileProgram(FALSE);
         exit(0);
     }

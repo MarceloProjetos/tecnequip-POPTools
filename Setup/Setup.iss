@@ -29,6 +29,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Release\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Release\src\*"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\examples\*"; DestDir: "{app}\examples"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-tools-20091223-setup.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

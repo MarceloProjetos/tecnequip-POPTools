@@ -614,7 +614,7 @@ void GenerateIoListDontLoseSelection(void)
             break;
         }
     }
-    IoListSelectionPoint = GenerateIoList(IoListSelectionPoint);
+    IoListSelectionPoint = GenerateIoMapList(IoListSelectionPoint);
     // can't just update the listview index; if I/O has been added then the
     // new selection point might be out of range till we refill it
     IoListOutOfSync = TRUE;

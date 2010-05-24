@@ -98,6 +98,7 @@
     <ClCompile Include="intcode.cpp" />
     <ClCompile Include="interpreted.cpp" />
     <ClCompile Include="iolist.cpp" />
+    <ClCompile Include="iomap.cpp" />
     <ClCompile Include="lang.cpp" />
     <ClCompile Include="ldmicro.cpp" />
     <ClCompile Include="loadsave.cpp" />

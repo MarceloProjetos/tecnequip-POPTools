@@ -62,12 +62,12 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         }
         l->d.comment.str[i++] = '\0';
         *which = ELEM_COMMENT;
-    } else if(sscanf(line, "CONTACTS %s %d %d", l->d.contacts.name, 
-		&l->d.contacts.negated)==2)
+    } else if(sscanf(line, "CONTACTS %s %d", l->d.contacts.name, 
+        &l->d.contacts.negated)==2)
     {
         *which = ELEM_CONTACTS;
-    } else if(sscanf(line, "COIL %s %d %d %d %d", l->d.coil.name,
-		&l->d.coil.negated, &l->d.coil.setOnly, &l->d.coil.resetOnly)==4)
+    } else if(sscanf(line, "COIL %s %d %d %d", l->d.coil.name,
+        &l->d.coil.negated, &l->d.coil.setOnly, &l->d.coil.resetOnly)==4)
     {
         *which = ELEM_COIL;
     } else if(memcmp(line, "PLACEHOLDER", 11)==0) {
@@ -451,12 +451,12 @@ static void SaveElemToFile(FILE *f, int which, void *any, int depth)
 
         case ELEM_CONTACTS:
             fprintf(f, "CONTACTS %s %d\n", l->d.contacts.name,
-				l->d.contacts.negated);
+                l->d.contacts.negated);
             break;
 
         case ELEM_COIL:
             fprintf(f, "COIL %s %d %d %d\n", l->d.coil.name, l->d.coil.negated,
-				l->d.coil.setOnly, l->d.coil.resetOnly);
+                l->d.coil.setOnly, l->d.coil.resetOnly);
             break;
 
         case ELEM_TON:
