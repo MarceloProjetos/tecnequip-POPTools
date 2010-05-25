@@ -552,7 +552,7 @@ void CompileAnsiCToGCC(char *dest)
 " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n"
 " *****************************************************************************/\n"
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n\n"
-		, Prog.cycleTime);
+		, Prog.cycleTime / 1000);
 
     // now generate declarations for all variables
     GenerateDeclarations(f);
