@@ -496,6 +496,8 @@ McuIoPinInfo LPC1768IoPinInfo[] = {
     { 'S',14, 14 },
     { 'S',15, 15 },
     { 'S',16, 16 },
+    { 'S',17, 17 },
+    { 'S',18, 18 },
 };
 
 McuAdcPinInfo LPC1768AdcPinInfo[] = {

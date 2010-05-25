@@ -427,17 +427,17 @@ static void MakeControls(void)
 
     PinList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
-        LBS_NOTIFY, 6, 18, 95, 320, IoDialog, NULL, Instance, NULL);
+        LBS_NOTIFY, 6, 18, 115, 320, IoDialog, NULL, Instance, NULL);
     FixedFont(PinList);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        6, 325, 95, 23, IoDialog, NULL, Instance, NULL); 
+        10, 325, 105, 23, IoDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        6, 356, 95, 23, IoDialog, NULL, Instance, NULL); 
+        10, 356, 105, 23, IoDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 }
 
@@ -493,7 +493,7 @@ void ShowIoMapDialog(int item)
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
         "LDmicroIo", _("I/O Pin"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 107, 387, NULL, NULL, Instance, NULL);
+        100, 100, 127, 387, NULL, NULL, Instance, NULL);
 
     MakeControls();
 
@@ -539,9 +539,19 @@ void ShowIoMapDialog(int item)
 		if ((Prog.io.assignment[item].name[0] == 'X' && i < 19) ||
 			(Prog.io.assignment[item].name[0] == 'Y' && i > 18))
 		{
-            sprintf(buf, "%3d %c%d", Prog.mcu->pinInfo[i].bit,
-                Prog.mcu->pinInfo[i].port,
-                Prog.mcu->pinInfo[i].pin);
+			if (i == 35)
+				sprintf(buf, "%3d LED USER", Prog.mcu->pinInfo[i].bit,
+					Prog.mcu->pinInfo[i].port,
+					Prog.mcu->pinInfo[i].pin);
+			else if (i == 36)
+				sprintf(buf, "%3d LED ERRO", Prog.mcu->pinInfo[i].bit,
+					Prog.mcu->pinInfo[i].port,
+					Prog.mcu->pinInfo[i].pin);
+			else
+				sprintf(buf, "%3d %c%d", Prog.mcu->pinInfo[i].bit,
+					Prog.mcu->pinInfo[i].port,
+					Prog.mcu->pinInfo[i].pin);
+
 			SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
 		}
 cant_use_this_io:;
@@ -685,7 +695,11 @@ void IoMapListProc(NMHDR *h)
 					{
                         if(Prog.mcu->pinInfo[j].pin == pin) 
 						{
-							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT)
+							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 17)
+								sprintf(i->item.pszText, "LED USER");
+							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 18)
+								sprintf(i->item.pszText, "LED ERRO");
+							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT)
 								sprintf(i->item.pszText, "S%d", Prog.mcu->pinInfo[j].pin);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT)
 								sprintf(i->item.pszText, "E%d", Prog.mcu->pinInfo[j].pin);
