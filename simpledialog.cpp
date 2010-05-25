@@ -72,8 +72,8 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     LPARAM lParam)
 {
     if(msg == WM_CHAR) {
-        if(!(isdigit(wParam) /*|| wParam == '.' */|| wParam == '\b' 
-            /*|| wParam == '-'*/))
+        if(!(isdigit(wParam) || wParam == '.' || wParam == '\b' 
+            || wParam == '-'))
         {
             return 0;
         }
@@ -245,21 +245,20 @@ void ShowTimerDialog(int which, int *delay, char *name)
 
     char delBuf[16];
     char nameBuf[16];
-    sprintf(delBuf, "%d", *delay);
+    sprintf(delBuf, "%.3f", (*delay / 1000.0));
     strcpy(nameBuf, name+1);
     char *dests[] = { nameBuf, delBuf };
 
     if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
         name[0] = 'T';
         strcpy(name+1, nameBuf);
-        int del = atoi(delBuf);
-        if(del > 0x7FFFFFFF) { // 2**31/1000, don't overflow signed int
-            Error(_("Delay too long; maximum is 2**31."));
+        double del = atof(delBuf);
+        if(del > 2140000) { // 2**31/1000, don't overflow signed int
+            Error(_("Delay too long; maximum is 2**31 us."));
         } else if(del <= 0) {
             Error(_("Delay cannot be zero or negative."));
         } else {
-            //*delay = (int)(1000*del + 0.5);
-			*delay = (int)del;
+            *delay = (int)(1000*del + 0.5);
         }
     }
 }

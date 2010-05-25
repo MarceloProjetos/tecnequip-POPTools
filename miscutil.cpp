@@ -227,38 +227,35 @@ HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
 // Window proc for the dialog boxes. This Ok/Cancel stuff is common to a lot
 // of places, and there are no other callbacks from the children.
 //-----------------------------------------------------------------------------
-static LRESULT CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam,
+    LPARAM lParam)
 {
-    switch (msg) 
-	{
-	case WM_CHAR:
-		break;
-    case WM_NOTIFY:
-        break;
-    case WM_COMMAND: 
-	{
-        HWND h = (HWND)lParam;
-        if(h == OkButton && wParam == BN_CLICKED) 
-		{
-            DialogDone = TRUE;
-        } 
-		else if (h == CancelButton && wParam == BN_CLICKED) 
-		{
+    switch (msg) {
+        case WM_NOTIFY:
+            break;
+
+        case WM_COMMAND: {
+            HWND h = (HWND)lParam;
+            if(h == OkButton && wParam == BN_CLICKED) {
+                DialogDone = TRUE;
+            } else if(h == CancelButton && wParam == BN_CLICKED) {
+                DialogDone = TRUE;
+                DialogCancel = TRUE;
+            }
+            break;
+        }
+
+        case WM_CLOSE:
+        case WM_DESTROY:
             DialogDone = TRUE;
             DialogCancel = TRUE;
-        } 
-		break;
-    }
-    case WM_CLOSE:
-    case WM_DESTROY:
-        DialogDone = TRUE;
-        DialogCancel = TRUE;
-        break;
-	default:
-		return DefWindowProc(hwnd, msg, wParam, lParam);
+            break;
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
     }
 
-	return 1;    
+    return 1;
 }
 
 //-----------------------------------------------------------------------------

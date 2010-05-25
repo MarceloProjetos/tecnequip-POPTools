@@ -779,12 +779,12 @@ cmp:
 
             char buf[256];
             ElemTimer *t = &leaf->d.timer;
-            if(t->delay >= 1000*60) {
-                sprintf(buf, "[%s %.2f min]", s, t->delay/(1000.0*60));
-			} else if(t->delay >= 1000) {
-                sprintf(buf, "[%s %.2f s]", s, t->delay/1000.0);
+            if(t->delay >= 1000*1000) {
+                sprintf(buf, "[%s %.3f s]", s, t->delay/1000000.0);
+            } else if(t->delay >= 100*1000) {
+                sprintf(buf, "[%s %.1f ms]", s, t->delay/1000.0);
             } else {
-                sprintf(buf, "[%s %d ms]", s, t->delay);
+                sprintf(buf, "[%s %.2f ms]", s, t->delay/1000.0);
             }
 
             CenterWithSpaces(*cx, *cy, t->name, poweredAfter, TRUE);

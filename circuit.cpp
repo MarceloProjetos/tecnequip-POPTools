@@ -645,7 +645,7 @@ void FreeEntireProgram(void)
         FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
     Prog.numRungs = 0;
-    Prog.cycleTime = 10;
+    Prog.cycleTime = 10000;
     Prog.mcuClock = 4000000;
     Prog.baudRate = 9600;
     Prog.io.count = 0;

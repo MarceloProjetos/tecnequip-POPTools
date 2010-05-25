@@ -142,9 +142,8 @@ static BOOL SaveProgram(void)
 //-----------------------------------------------------------------------------
 static void CompileProgram(BOOL compileAs)
 {
-    OPENFILENAME ofn;
-
     if(compileAs || strlen(CurrentCompileFile)==0) {
+        OPENFILENAME ofn;
 
         memset(&ofn, 0, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
