@@ -142,7 +142,18 @@ static BOOL SaveProgram(void)
 //-----------------------------------------------------------------------------
 static void CompileProgram(BOOL compileAs)
 {
-    if(compileAs || strlen(CurrentCompileFile)==0) {
+	// check if a valid path and write permission
+	if (compileAs || strlen(CurrentCompileFile) > 0)
+	{
+	    FILE *f = fopen(CurrentCompileFile, "w");
+		if(!f)
+			CurrentCompileFile[0] = '\0';
+		else
+			fclose(f);
+	}
+
+    if(compileAs || strlen(CurrentCompileFile)==0) 
+	{
         OPENFILENAME ofn;
 
         memset(&ofn, 0, sizeof(ofn));

@@ -173,6 +173,29 @@ static void DrawCharsToScreen(int cx, int cy, char *str)
                 TextOut(Hdc, x, y, str, 1);
                 inNumber = FALSE;
             }
+		} else if(*str == '-') {
+			HPEN hOldPen = (HPEN)SelectObject(Hdc, CreatePen(PS_SOLID, 1, GetTextColor(Hdc)));
+			MoveToEx(Hdc, x, y + FONT_HEIGHT / 2, NULL);
+			LineTo(Hdc, x + FONT_WIDTH, y + FONT_HEIGHT / 2);
+			DeleteObject(SelectObject(Hdc, hOldPen));
+		} else if(*str == '+') {
+			if (x > X_PADDING - FONT_WIDTH + 3)
+			{
+				HPEN hOldPen = (HPEN)SelectObject(Hdc, CreatePen(PS_SOLID, 1, GetTextColor(Hdc)));
+				MoveToEx(Hdc, x, y + FONT_HEIGHT / 2, NULL);
+				LineTo(Hdc, x + FONT_WIDTH, y + FONT_HEIGHT / 2);
+				MoveToEx(Hdc, x + FONT_WIDTH / 2, y + FONT_HEIGHT / 4, NULL);
+				LineTo(Hdc, x + FONT_WIDTH / 2, y + ((FONT_HEIGHT / 4) * 3) + 1);
+				DeleteObject(SelectObject(Hdc, hOldPen));
+			}
+		} else if(*str == '|') {
+			if (x > X_PADDING - FONT_WIDTH + 3)
+			{
+				HPEN hOldPen = (HPEN)SelectObject(Hdc, CreatePen(PS_SOLID, 1, GetTextColor(Hdc)));
+				MoveToEx(Hdc, x + FONT_WIDTH / 2, y, NULL);
+				LineTo(Hdc, x + FONT_WIDTH / 2, y + FONT_HEIGHT);
+				DeleteObject(SelectObject(Hdc, hOldPen));
+			}
         } else {
             TextOut(Hdc, x, y, str, 1);
         }
@@ -322,14 +345,14 @@ void PaintWindow(void)
     }
 
     // draw the `buses' at either side of the screen
-    r.left = X_PADDING - FONT_WIDTH;
+    r.left = X_PADDING - FONT_WIDTH + 3;
     r.top = 0;
     r.right = r.left + 4;
     r.bottom = IoListTop;
     FillRect(Hdc, &r, InSimulationMode ? BusLeftBrush : BusBrush);
 
-    r.left += POS_WIDTH*FONT_WIDTH*ColsAvailable + 2;
-    r.right += POS_WIDTH*FONT_WIDTH*ColsAvailable + 2;
+    r.left += POS_WIDTH*FONT_WIDTH*ColsAvailable + 3;
+    r.right += POS_WIDTH*FONT_WIDTH*ColsAvailable + 3;
     FillRect(Hdc, &r, InSimulationMode ? BusRightBus : BusBrush);
  
     CursorDrawn = FALSE;
