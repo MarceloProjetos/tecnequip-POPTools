@@ -83,6 +83,16 @@ static char *MapSym(char *str)
 				sprintf(ret, "I_E%d", pin);
 				return ret;
 			}
+			else if (Prog.io.assignment[i].name[0] == 'P' && Prog.io.assignment[i].type == IO_TYPE_GENERAL)
+			{
+				sprintf(ret, "U_P%d", atoi(&Prog.io.assignment[i].name[1]));
+				return ret;
+			}
+			else if (Prog.io.assignment[i].name[0] == 'M' && Prog.io.assignment[i].type == IO_TYPE_GENERAL)
+			{
+				sprintf(ret, "U_M%d", atoi(&Prog.io.assignment[i].name[1]));
+				return ret;
+			}
 		}
 	}
 
@@ -122,11 +132,17 @@ static void DeclareBit(FILE *f, char *rawStr)
         //fprintf(f, "PROTO(BOOL Read_%s(void);)\n", str);
         //fprintf(f, "PROTO(void Write_%s(BOOL v);)\n", str);
         //fprintf(f, "\n");
+    } else if(*rawStr == 'P' || *rawStr == 'M') {
+		fprintf(f, "\n");
+		fprintf(f, "volatile unsigned int %s = 0;\n", str);
+		fprintf(f, "#define Read_%s(x) %s = ReadParameter(atoi(%s[1]))\n", str, str);
+		fprintf(f, "#define Write_%s(x) WriteParameter(atoi(%s[1]), %s)\n", str, str);
+		return;
     }
-    fprintf(f, "\n");
-    fprintf(f, "volatile unsigned int %s = 0;\n", str);
-    fprintf(f, "#define Read_%s() %s\n", str, str);
-    fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
+	fprintf(f, "\n");
+	fprintf(f, "volatile unsigned int %s = 0;\n", str);
+	fprintf(f, "#define Read_%s() %s\n", str, str);
+	fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
 }
 
 //-----------------------------------------------------------------------------
@@ -480,7 +496,8 @@ DWORD InvokeGCC(char* dest)
 	strcat(szArgs, " TOOLS_PATH=\"");
 	strcat(szArgs, ConvertToUNIXPath(szToolsProgramFiles));
 	strcat(szArgs, "/yagarto/bin/\" clean all "); 
-	//the parameters passed to the application being run from the command window.
+
+	//output the application being run from the command window to the log file.
 	strcat(szArgs, ">> \"");
 	strcat(szArgs, szAppOutputDir);
 	strcat(szArgs, "\\src\\output.log\" 2>&1\"");
@@ -574,7 +591,7 @@ void CompileAnsiCToGCC(char *dest)
 	DWORD err = 0;
 	if ((err = InvokeGCC(dest)))
 	{
-		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"<Program Files>\\<POP7Tools>\\src\\output.log\"\n"), err);
+		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"<Program Files>\\<POPTools>\\src\\output.log\"\n"), err);
 	}
 	else
 	{
