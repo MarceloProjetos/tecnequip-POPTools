@@ -347,8 +347,9 @@ static void GenerateAnsiC(FILE *f)
             case INT_SET_PWM:
             case INT_UART_RECV:
             case INT_UART_SEND:
-                Error(_("ANSI C target does not support peripherals "
-                    "(UART, PWM, ADC, EEPROM). Skipping that instruction."));
+                /*Error(_("ANSI C target does not support peripherals "
+                    "(UART, PWM, ADC, EEPROM). Skipping that instruction."));*/
+				fprintf(f, "RS232Write(&%s++, 1);\n", MapSym(IntCode[i].name1));
                 break;
 
             default:
@@ -570,6 +571,8 @@ void CompileAnsiCToGCC(char *dest)
 " *****************************************************************************/\n"
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n\n"
 		, Prog.cycleTime / 1000);
+
+	fprintf(f, "extern RS232Write(char * buffer, unsigned int size);\n\n");
 
     // now generate declarations for all variables
     GenerateDeclarations(f);
