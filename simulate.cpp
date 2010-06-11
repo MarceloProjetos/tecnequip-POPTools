@@ -772,8 +772,7 @@ void DescribeForIoList(char *name, char *out)
             break;
 
         case 'T': {
-            double dtms = GetSimulationVariable(name) *
-                (Prog.cycleTime / 1000.0);
+            double dtms = GetSimulationVariable(name) * (Prog.cycleTime / 1000.0);
             if(dtms < 1000) {
                 sprintf(out, "%.2f ms", dtms);
             } else {
