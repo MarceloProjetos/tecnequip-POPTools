@@ -572,7 +572,7 @@ void CompileAnsiCToGCC(char *dest)
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n\n"
 		, Prog.cycleTime / 1000);
 
-	fprintf(f, "extern RS232Write(char * buffer, unsigned int size);\n\n");
+	fprintf(f, "extern unsigned int RS232Write(char * buffer, unsigned int size);\n\n");
 
     // now generate declarations for all variables
     GenerateDeclarations(f);

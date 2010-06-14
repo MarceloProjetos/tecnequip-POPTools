@@ -80,6 +80,7 @@ SRC  = ./src/main.c \
        ./src/core_cm3.c \
        ./src/ld.c \
        ./src/timer.c \
+       ./src/modbus.c \
        ./src/startup.c
 
 # List ASM source files here

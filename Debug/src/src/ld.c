@@ -3,7 +3,7 @@
  *****************************************************************************/
 volatile unsigned int TIME_INTERVAL = ((25000000/1000) * 10) - 1;
 
-extern RS232Write(char * buffer, unsigned int size);
+extern unsigned int RS232Write(char * buffer, unsigned int size);
 
 
 volatile unsigned int I_mcr = 0;

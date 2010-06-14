@@ -1,51 +1,12 @@
-/****************************************************************************
-*  Copyright (c) 2010 by Michael Fischer. All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without 
-*  modification, are permitted provided that the following conditions 
-*  are met:
-*  
-*  1. Redistributions of source code must retain the above copyright 
-*     notice, this list of conditions and the following disclaimer.
-*  2. Redistributions in binary form must reproduce the above copyright
-*     notice, this list of conditions and the following disclaimer in the 
-*     documentation and/or other materials provided with the distribution.
-*  3. Neither the name of the author nor the names of its contributors may 
-*     be used to endorse or promote products derived from this software 
-*     without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
-*  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-*  THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-*  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS 
-*  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
-*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-*  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF 
-*  THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
-*  SUCH DAMAGE.
-*
-****************************************************************************
-*  History:
-*
-*  18.02.10  mifi   First Version
-****************************************************************************/
-#define __MAIN_C__
-
-/*
- * I use the include only, to show
- * how to setup a include dir in the makefile
- */
-#include "typedefs.h"
 #include "lpc17xx.h"
+#include "type.h"
 #include "timer.h"
+#include "modbus.h"
+#include "ld.h"
 
-/*=========================================================================*/
-/*  DEFINE: All Structures and Common Constants                            */
-/*=========================================================================*/
-
+/******************************************************************************
+* Definições
+******************************************************************************/
 //SSP Status register
 #define SSPSR_TNF     1 << 1
 #define SSPSR_RNE     1 << 2
@@ -55,63 +16,49 @@
 
 #define RS485_ENABLE    (1 << 20)
 
-/*=========================================================================*/
-/*  DEFINE: All code exported                                              */
-/*=========================================================================*/
-volatile unsigned int I_E1 __attribute__((weak)) = 0;
-volatile unsigned int I_E2 __attribute__((weak)) = 0;
-volatile unsigned int I_E3 __attribute__((weak)) = 0;
-volatile unsigned int I_E4 __attribute__((weak)) = 0;
-volatile unsigned int I_E5 __attribute__((weak)) = 0;
-volatile unsigned int I_E6 __attribute__((weak)) = 0;
-volatile unsigned int I_E7 __attribute__((weak)) = 0;
-volatile unsigned int I_E8 __attribute__((weak)) = 0;
-volatile unsigned int I_E9 __attribute__((weak)) = 0;
-volatile unsigned int I_E10 __attribute__((weak)) = 0;
-volatile unsigned int I_E11 __attribute__((weak)) = 0;
-volatile unsigned int I_E12 __attribute__((weak)) = 0;
-volatile unsigned int I_E13 __attribute__((weak)) = 0;
-volatile unsigned int I_E14 __attribute__((weak)) = 0;
-volatile unsigned int I_E15 __attribute__((weak)) = 0;
-volatile unsigned int I_E16 __attribute__((weak)) = 0;
-volatile unsigned int I_E17 __attribute__((weak)) = 0;
-volatile unsigned int I_E18 __attribute__((weak)) = 0;
-volatile unsigned int I_E19 __attribute__((weak)) = 0;
+#define HTONS(n) (uint16_t)((((uint16_t) (n)) << 8) | (((uint16_t) (n)) >> 8))
 
-volatile unsigned int U_S1 __attribute__((weak)) = 0;
-volatile unsigned int U_S2 __attribute__((weak)) = 0;
-volatile unsigned int U_S3 __attribute__((weak)) = 0;
-volatile unsigned int U_S4 __attribute__((weak)) = 0;
-volatile unsigned int U_S5 __attribute__((weak)) = 0;
-volatile unsigned int U_S6 __attribute__((weak)) = 0;
-volatile unsigned int U_S7 __attribute__((weak)) = 0;
-volatile unsigned int U_S8 __attribute__((weak)) = 0;
-volatile unsigned int U_S9 __attribute__((weak)) = 0;
-volatile unsigned int U_S10 __attribute__((weak)) = 0;
-volatile unsigned int U_S11 __attribute__((weak)) = 0;
-volatile unsigned int U_S12 __attribute__((weak)) = 0;
-volatile unsigned int U_S13 __attribute__((weak)) = 0;
-volatile unsigned int U_S14 __attribute__((weak)) = 0;
-volatile unsigned int U_S15 __attribute__((weak)) = 0;
-volatile unsigned int U_S16 __attribute__((weak)) = 0;
+/******************************************************************************
+* Prototipos de Funções
+******************************************************************************/
+unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusTx(unsigned char *data, unsigned int size);
 
-extern void PlcCycle(void);
-extern volatile unsigned int TIME_INTERVAL;
+/******************************************************************************
+* Variaveis Globais
+******************************************************************************/
+volatile unsigned int saidas = 0;
+volatile unsigned int entradas = 0;
 
-/*=========================================================================*/
-/*  DEFINE: Prototypes                                                     */
-/*=========================================================================*/
+volatile unsigned int timer0_count = 0;
 
-/*=========================================================================*/
-/*  DEFINE: Definition of all local Data                                   */
-/*=========================================================================*/
+struct MB_Device modbus_device;
 
-/*=========================================================================*/
-/*  DEFINE: Definition of all local Procedures                             */
-/*=========================================================================*/
+struct MB_Handler ModbusHandlers[] =
+{
+    { MB_FC_READ_COILS              , ModbusReadCoils                 },
+    /*
+    { MB_FC_READ_DISCRETE_INPUTS    , LPC_MB_Read_Discrete_Inputs     },
+    { MB_FC_READ_HOLDING_REGISTERS  , LPC_MB_Read_Holding_Registers   },
+    { MB_FC_READ_INPUT_REGISTERS    , LPC_MB_Read_Input_Registers     },
+    { MB_FC_WRITE_SINGLE_COIL       , LPC_MB_Write_Single_Coil        },
+    { MB_FC_WRITE_SINGLE_REGISTER   , LPC_MB_Write_Single_Register    },
+    { MB_FC_WRITE_MULTIPLE_COILS    , LPC_MB_Write_Multiple_Coils     },
+    { MB_FC_WRITE_MULTIPLE_REGISTERS, LPC_MB_Write_Multiple_Registers },
+    { MB_FC_MASK_WRITE_REGISTER     , LPC_MB_Mask_Write_Register      },
+    { MB_FC_RW_MULTIPLE_REGISTERS   , LPC_MB_RW_Multiple_Registers    },
+    { MB_FC_READ_EXCEPTION_STATUS   , LPC_MB_Read_Exception_Status    },
+    */
+};
+
+/******************************************************************************
+* Temporizador
+******************************************************************************/
 void TIMER0_IRQHandler (void)
 {
   TIM0->IR = 1;                       /* clear interrupt flag */
+
+  timer0_count++;
 
   PlcCycle();
 
@@ -119,49 +66,160 @@ void TIMER0_IRQHandler (void)
 }
 
 /******************************************************************************
-* Inicializacao do Hardware
+* Comunicação Serial RS232
 ******************************************************************************/
-void HardwareInit(void)
+unsigned int RS232Write(char * buffer, unsigned int size)
 {
-  // Led CPU
-  GPIO0->FIODIR = (1 << 4);       /* CPU LED */
-  GPIO0->FIOCLR = (1 << 4);       /* turn on the LED */
-  GPIO0->FIOMASK = ~(1 << 4);
+  unsigned int sz = 0;
 
-  // Inicializacao 485
-  PINCON->PINSEL0 &= ~(0xF << 4);
-  PINCON->PINSEL0 |= 5 << 4;
+  while (sz < size)
+  {
+    while (!(UART0->LSR & 0x20) );      /* THRE status, contain valid data */
+    UART0->THR = *buffer;
+    buffer++;
+    sz++;
+  }
 
-  // WEG SoftStarter 9600 (8, N, 1)
-  UART1->LCR = 0x83;          /* 8 bits, no Parity, 1 Stop bit */
-  UART1->DLM = 1;
-  UART1->DLL = 119;
-  UART1->FDR = (4 << 4) | 1;
-  UART1->LCR = 0x03;          /* DLAB = 0 */
-  UART1->FCR = 0x07;          /* Enable and reset TX and RX FIFO. */
+  return 0;
+}
 
-  PINCON->PINSEL1 &= ~(0x3 << 8);       // P0.20
-  GPIO0->FIODIR |= RS485_ENABLE;        // P0.20 output
+unsigned int RS232Read(char * buffer, unsigned int size)
+{
+  return 0;
+}
 
-  // Entradas
-  PINCON->PINSEL0 &= ~0xF00;
-  PINCON->PINSEL1 &= ~0x3CC0;
-  PINCON->PINSEL4 &= ~0xFCFFFFF;
-  GPIO2->FIODIR &= ~0x3BFF;
-  GPIO0->FIODIR &= ~0x680030;
+/******************************************************************************
+* Comunicação RS485
+******************************************************************************/
+unsigned int RS485Write(unsigned char * buffer, unsigned int size)
+{
+  GPIO0->FIOSET = RS485_ENABLE;
 
-  // Saidas (SSP)
-  PINCON->PINSEL0 &= ~0xC0000000;
-  PINCON->PINSEL0 |= ~0x20000000;
-  PINCON->PINSEL1 &= ~0x3F;
-  PINCON->PINSEL1 |= 0x2A;
-  SSP0->CR1 &= ~0x6;    // disable, set to master
-  SSP0->CR0 = 0x1F87;   // 8 bits, cpol=0, cpha=1, scr=32
-  SSP0->CPSR = 5;       // prescaler=2
-  SSP0->CR1 |= 0x2;     // enable
+  while (size)
+  {
+    while (!(UART0->LSR & 0x20) );      /* THRE status, contain valid data */
+    UART3->THR = *buffer;
+    buffer++;
+    size--;
+  }
+
+  GPIO0->FIOCLR = RS485_ENABLE;
+
+  return 0;
+}
+
+unsigned int RS485Read(unsigned char * buffer, unsigned int size)
+{
+  return 0;
+}
+
+/******************************************************************************
+* Modbus
+******************************************************************************/
+unsigned int ModbusRequest(unsigned char * rxb, unsigned int rxs, unsigned char * txb, unsigned int txs)
+{
+  if(rxs > 2)
+  {
+#ifdef MB_DEBUG
+    unsigned int i;
+    printf("Modbus: Recebidos %d bytes pela Ethernet:\n", rxs);
+    for(i = 0; i < rxs; i++)
+      printf("%02x ", rxb[i]);
+    printf("\n");
+#endif
+    reply_data.data = txb;
+    MB_Receive(&mbdev, MB_Validate(rxb, rxs));
+  }
+
+  /*if(reply_data.size)
+    packet_out++;*/
+
+  return 0; //reply_data.size; // Retorna o tamanho dos dados
+}
+
+unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  //unsigned int i, out; // = output_read();
+  //unsigned char *buf; // = reply->reply.read_coils.data; // Retorna no maximo 8 bytes ou 256 bits (saidas).
+
+#ifdef MB_DEBUG
+  printf("ModBus: recebida funcao READ_COILS. start=%d, quant=%d\n", data->read_coils.start, data->read_coils.quant);
+#endif
+
+  /*for(i=0; i<data->read_coils.quant; i++)
+    buf[i/8] |= ((out>>(data->read_coils.start+i))&1) << (i%8);*/
+
+  //reply->reply.read_coils.size = data->read_coils.quant/8 + (data->read_coils.quant%8 != 0);
+
+  return MB_EXCEPTION_NONE;
 
 }
 
+unsigned int ModbusDiscreteInput(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  return 0;
+}
+
+unsigned int ModbusTx(unsigned char *data, unsigned int size)
+{
+  unsigned int sz = 0;
+
+#ifdef DEBUG
+  unsigned int i;
+#endif
+
+  if ((sz = RS485Write((unsigned char*)data, size)))
+  {
+#ifdef DEBUG
+    printf("%d bytes enviados para o soft-starter, size: %d\n", sz, size);
+
+    for (i = 0; i < size; i++)
+    {
+      printf("0x%x ", data[i]);
+    }
+    printf("\n");
+#endif
+
+    timer0_count = 0;
+    sz = 0;
+
+    while (timer0_count < 100)
+    {
+      sz += RS485Read((unsigned char*)data + sz, MB_BUFFER_SIZE);
+    }
+
+#ifdef DEBUG
+    if (sz)
+    {
+      printf("%d bytes recebidos do soft-starter em %d ms.\n", sz, tmr);
+
+      for (i = 0; i < sz; i++)
+      {
+        printf("0x%x ", data[i]);
+      }
+      printf("\n");
+
+    }
+    else
+    {
+      printf("Timeout na resposta do soft-starter\n");
+    }
+#endif
+
+  }
+  else
+  {
+#ifdef DEBUG
+    printf("Erro ao enviar pacote para soft-starter\n");
+#endif
+  }
+
+  return sz;
+}
+
+/******************************************************************************
+* Comunicação SSP
+******************************************************************************/
 unsigned char SSPWrite(unsigned char * buffer, unsigned int size)
 {
   unsigned int i;
@@ -189,9 +247,13 @@ unsigned char SSPRead(uint8_t * buffer, uint32_t size)
   return i;
 }
 
-void AtualizaSaidas(void)
+/******************************************************************************
+* Rotinas de atualização das Entradas/Saidas
+******************************************************************************/
+unsigned int AtualizaSaidas(void)
 {
   unsigned int i = 0;
+  unsigned int status = 0;
   unsigned char cmd = OUTPUT_CMD_CONTROL;
 
   i |= U_S1;
@@ -211,13 +273,21 @@ void AtualizaSaidas(void)
   i |= U_S15 << 14;
   i |= U_S16 << 15;
 
+  i = HTONS(i);
+
+  i &= 0xFFFF;
+
+  GPIO0->FIOCLR = 0x10000;
   SSPWrite((unsigned char*)&cmd, 1);
   SSPWrite((unsigned char*)&i, 2);
+  GPIO0->FIOSET = 0x10000;
 
-  SSPRead((unsigned char*)&i, 3);
+  SSPRead((unsigned char*)&status, 3);
+
+  return i;
 }
 
-void AtualizaEntradas(void)
+unsigned int AtualizaEntradas(void)
 {
   unsigned int i = 0;
 
@@ -226,6 +296,8 @@ void AtualizaEntradas(void)
   i |= (0x30 & GPIO0->FIOPIN) << 9;      // P0.4 ~ P0.5    [14..15]
   i |= (0x80000 & GPIO0->FIOPIN) >> 4;   // P0.19 ~ P0.19  [16..16]
   i |= (0x600000 & GPIO0->FIOPIN) >> 5;  // P0.21 ~ P0.22  [17..18]
+
+  i = ~i;
 
   I_E1 = i & 0x1;
   I_E2 = (i & (1 << 1)) >> 1;
@@ -247,6 +319,65 @@ void AtualizaEntradas(void)
   I_E18 = (i & (1 << 17)) >> 17;
   I_E19 = (i & (1 << 18)) >> 18;
 
+  return i;
+}
+
+/******************************************************************************
+* Inicializacao do Hardware
+******************************************************************************/
+void HardwareInit(void)
+{
+  // Serial Console RS232
+  PINCON->PINSEL0 &= ~(0xF << 4);
+  PINCON->PINSEL0 |= 0x5 << 4;
+
+  // Serial Console 115200 (8, N, 1)
+  UART0->LCR = 0x83;          /* 8 bits, no Parity, 1 Stop bit */
+  UART0->DLM = 0;
+  UART0->DLL = 10;
+  UART0->FDR = (14 << 4) | 5;
+  UART0->LCR = 0x03;          /* DLAB = 0 */
+  UART0->FCR = 0x07;          /* Enable and reset TX and RX FIFO. */
+
+  // Inicializacao RS485
+  SC->PCONP |= 1 << 25;
+  PINCON->PINSEL0 &= ~0xF;
+  PINCON->PINSEL0 |= 0xA;
+
+  // WEG SoftStarter 9600 (8, N, 1)
+  UART3->LCR = 0x83;          /* 8 bits, no Parity, 1 Stop bit */
+  UART3->DLM = 0;
+  UART3->DLL = 92;
+  UART3->FDR = (13 << 4) | 10;
+  UART3->LCR = 0x03;          /* DLAB = 0 */
+  UART3->FCR = 0x07;          /* Enable and reset TX and RX FIFO. */
+
+  // Pino de direcao da RS485
+  PINCON->PINSEL1 &= ~(0x3 << 8);       // P0.20
+  GPIO0->FIODIR |= RS485_ENABLE;        // P0.20 output
+
+  // Entradas
+  PINCON->PINSEL0 &= ~0xF00;
+  PINCON->PINSEL1 &= ~0x3CC0;
+  PINCON->PINSEL4 &= ~0xFCFFFFF;
+  GPIO2->FIODIR &= ~0x3BFF;
+  GPIO0->FIODIR &= ~0x680030;
+
+  // Saidas (SSP)
+  SC->PCONP |= 1 << 21;     // ssp on
+  PINCON->PINSEL0 &= ~0xC0000000;
+  PINCON->PINSEL0 |= 0x80000000;
+  PINCON->PINSEL1 &= ~0x3F;
+  PINCON->PINSEL1 |= 0x28; //0x2A; ChipSelect as GPIO
+  GPIO0->FIODIR |= 0x10000; // P0.16 as output
+  SSP0->CR1 = 0;        // disable, set to master
+  SSP0->CR0 = 0x1F87;   // 8 bits, cpol=0, cpha=1, scr=32
+  SSP0->CPSR = 6;       // prescaler=6
+  SSP0->CR1 |= 0x2;     // enable
+
+  unsigned char cmd = OUTPUT_CMD_CONTROL;
+  SSPWrite((unsigned char*)&cmd, 1);
+
 }
 
 /***************************************************************************/
@@ -263,13 +394,23 @@ int main (void)
   /**************************************************************************
    * Inicializa timer
    *************************************************************************/
-  /*TIM0 -> MR0 = TIME_INTERVAL;
-  TIM0 -> MCR = 3;*/				/* Interrupt and Reset on MR0 */
-
-  /*NVIC_EnableIRQ(TIMER0_IRQn);
-  TIM0 -> TCR = 1;*/
   init_timer( 0, TIME_INTERVAL ); // 5ms
   enable_timer( 0 );
+
+  /**************************************************************************
+   * Inicialização do ModBus
+   *************************************************************************/
+  MB_Init(&modbus_device);
+
+  modbus_device.identification.Id                 = 0x01;
+  modbus_device.identification.VendorName         = "Tecnequip";
+  modbus_device.identification.ProductCode        = "POP7";
+  modbus_device.identification.MajorMinorRevision = "V1 Rev2";
+
+  modbus_device.hl      = ModbusHandlers;
+  modbus_device.hl_size = ARRAY_SIZE(ModbusHandlers);
+  modbus_device.mode    = MB_MODE_SLAVE;
+  modbus_device.TX      = ModbusTx;
 
   while(1)
   {
