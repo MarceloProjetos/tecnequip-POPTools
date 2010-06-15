@@ -80,18 +80,21 @@ static char *MapSym(char *str)
 			} 
 			else if (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
 			{
-				sprintf(ret, "I_E%d", pin);
-				return ret;
-			}
-			else if (Prog.io.assignment[i].name[0] == 'P' && Prog.io.assignment[i].type == IO_TYPE_GENERAL)
-			{
-				sprintf(ret, "U_P%d", atoi(&Prog.io.assignment[i].name[1]));
-				return ret;
-			}
-			else if (Prog.io.assignment[i].name[0] == 'M' && Prog.io.assignment[i].type == IO_TYPE_GENERAL)
-			{
-				sprintf(ret, "U_M%d", atoi(&Prog.io.assignment[i].name[1]));
-				return ret;
+				if (pin > 51)
+				{
+					sprintf(ret, "U_P%d", pin);
+					return ret;
+				}
+				else if (pin > 19)
+				{
+					sprintf(ret, "U_M%d", pin - 19);
+					return ret;
+				}
+				else
+				{
+					sprintf(ret, "I_E%d", pin);
+					return ret;
+				}
 			}
 		}
 	}
@@ -110,7 +113,7 @@ static char *MapSym(char *str)
 static void DeclareInt(FILE *f, char *str)
 {
     //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
-	fprintf(f, "volatile int %s;\n", MapSym(str));
+	fprintf(f, "volatile unsigned short int %s;\n", MapSym(str));
 }
 
 //-----------------------------------------------------------------------------
@@ -134,13 +137,13 @@ static void DeclareBit(FILE *f, char *rawStr)
         //fprintf(f, "\n");
     } else if(*rawStr == 'P' || *rawStr == 'M') {
 		fprintf(f, "\n");
-		fprintf(f, "volatile unsigned int %s = 0;\n", str);
+		fprintf(f, "volatile unsigned short int %s = 0;\n", str);
 		fprintf(f, "#define Read_%s(x) %s = ReadParameter(atoi(%s[1]))\n", str, str);
 		fprintf(f, "#define Write_%s(x) WriteParameter(atoi(%s[1]), %s)\n", str, str);
 		return;
     }
 	fprintf(f, "\n");
-	fprintf(f, "volatile unsigned int %s = 0;\n", str);
+	fprintf(f, "volatile unsigned short int %s = 0;\n", str);
 	fprintf(f, "#define Read_%s() %s\n", str, str);
 	fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
 }

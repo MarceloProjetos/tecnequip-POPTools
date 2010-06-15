@@ -127,8 +127,8 @@ unsigned int ModbusRequest(unsigned char * rxb, unsigned int rxs, unsigned char 
       printf("%02x ", rxb[i]);
     printf("\n");
 #endif
-    reply_data.data = txb;
-    MB_Receive(&mbdev, MB_Validate(rxb, rxs));
+    //reply_data.data = txb;
+    //MB_Receive(&mbdev, MB_Validate(rxb, rxs));
   }
 
   /*if(reply_data.size)
@@ -416,6 +416,7 @@ int main (void)
   {
     AtualizaEntradas();
     AtualizaSaidas();
+	U_M1 = 1;	// Automatico
   }
 
   return(0);

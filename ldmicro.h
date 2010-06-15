@@ -455,8 +455,8 @@ extern SyntaxHighlightingColours HighlightColours;
 
 typedef struct McuIoPinInfoTag {
     char    port;
-    int     bit;
     int     pin;
+    int     bit;
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
@@ -470,7 +470,7 @@ typedef struct McuAdcPinInfoTag {
 #define ISA_INTERPRETED     0x03
 #define ISA_LPC17	        0x04
 
-#define MAX_IO_PORTS        10
+#define MAX_IO_PORTS        256
 #define MAX_RAM_SECTIONS    5
 
 typedef struct McuIoInfoTag {

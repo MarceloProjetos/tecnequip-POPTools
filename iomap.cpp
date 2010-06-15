@@ -536,21 +536,21 @@ void ShowIoMapDialog(int item)
         }
 
         char buf[40];
-		if ((Prog.io.assignment[item].name[0] == 'X' && i < 19) ||
-			(Prog.io.assignment[item].name[0] == 'Y' && i > 18))
+		if ((Prog.io.assignment[item].name[0] == 'X' && i < 51) ||
+			(Prog.io.assignment[item].name[0] == 'Y' && i > 51))
 		{
-			if (i == 35)
+			if (i == 52)
 				sprintf(buf, "%3d LED USER", Prog.mcu->pinInfo[i].bit,
 					Prog.mcu->pinInfo[i].port,
 					Prog.mcu->pinInfo[i].pin);
-			else if (i == 36)
+			else if (i == 53)
 				sprintf(buf, "%3d LED ERRO", Prog.mcu->pinInfo[i].bit,
 					Prog.mcu->pinInfo[i].port,
 					Prog.mcu->pinInfo[i].pin);
 			else
-				sprintf(buf, "%3d %c%d", Prog.mcu->pinInfo[i].bit,
+				sprintf(buf, "%3d %c%d", Prog.mcu->pinInfo[i].pin,
 					Prog.mcu->pinInfo[i].port,
-					Prog.mcu->pinInfo[i].pin);
+					Prog.mcu->pinInfo[i].bit);
 
 			SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
 		}
@@ -695,14 +695,16 @@ void IoMapListProc(NMHDR *h)
 					{
                         if(Prog.mcu->pinInfo[j].pin == pin) 
 						{
-							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 17)
+							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 52)
 								sprintf(i->item.pszText, "LED USER");
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 18)
+							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 53)
 								sprintf(i->item.pszText, "LED ERRO");
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT)
-								sprintf(i->item.pszText, "S%d", Prog.mcu->pinInfo[j].pin);
+								sprintf(i->item.pszText, "S%d", Prog.mcu->pinInfo[j].bit);
+							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT && pin > 19)
+								sprintf(i->item.pszText, "M%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT)
-								sprintf(i->item.pszText, "E%d", Prog.mcu->pinInfo[j].pin);
+								sprintf(i->item.pszText, "E%d", Prog.mcu->pinInfo[j].bit);
                             break;
                         }
                     }
