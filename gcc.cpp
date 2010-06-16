@@ -113,7 +113,7 @@ static char *MapSym(char *str)
 static void DeclareInt(FILE *f, char *str)
 {
     //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
-	fprintf(f, "volatile unsigned short int %s;\n", MapSym(str));
+	fprintf(f, "volatile unsigned int %s;\n", MapSym(str));
 }
 
 //-----------------------------------------------------------------------------
@@ -137,13 +137,13 @@ static void DeclareBit(FILE *f, char *rawStr)
         //fprintf(f, "\n");
     } else if(*rawStr == 'P' || *rawStr == 'M') {
 		fprintf(f, "\n");
-		fprintf(f, "volatile unsigned short int %s = 0;\n", str);
+		fprintf(f, "volatile unsigned int %s = 0;\n", str);
 		fprintf(f, "#define Read_%s(x) %s = ReadParameter(atoi(%s[1]))\n", str, str);
 		fprintf(f, "#define Write_%s(x) WriteParameter(atoi(%s[1]), %s)\n", str, str);
 		return;
     }
 	fprintf(f, "\n");
-	fprintf(f, "volatile unsigned short int %s = 0;\n", str);
+	fprintf(f, "volatile unsigned int %s = 0;\n", str);
 	fprintf(f, "#define Read_%s() %s\n", str, str);
 	fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
 }
