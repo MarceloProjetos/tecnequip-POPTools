@@ -14,6 +14,15 @@
 
 #define OUTPUT_CMD_CONTROL  (0 << 2)
 
+#define LSR_RDR         0x01
+#define LSR_OE          0x02
+#define LSR_PE          0x04
+#define LSR_FE          0x08
+#define LSR_BI          0x10
+#define LSR_THRE        0x20
+#define LSR_TEMT        0x40
+#define LSR_RXFE        0x80
+
 #define RS485_ENABLE    (1 << 20)
 
 #define HTONS(n) (uint16_t)((((uint16_t) (n)) << 8) | (((uint16_t) (n)) >> 8))
@@ -97,7 +106,7 @@ unsigned int RS485Write(unsigned char * buffer, unsigned int size)
 
   while (size)
   {
-    while (!(UART0->LSR & 0x20) );      /* THRE status, contain valid data */
+    while (!(UART3->LSR & 0x20) );      /* THRE status, contain valid data */
     UART3->THR = *buffer;
     buffer++;
     size--;
@@ -110,7 +119,25 @@ unsigned int RS485Write(unsigned char * buffer, unsigned int size)
 
 unsigned int RS485Read(unsigned char * buffer, unsigned int size)
 {
-  return 0;
+  unsigned int i = 0;
+  unsigned int c = 0;
+  unsigned char dummy;
+
+  while(i < size)
+  {
+    for(c = 0; c < 10000 && !(UART3->LSR & LSR_RDR); c++);
+
+    if (UART3->LSR & (LSR_OE|LSR_PE|LSR_FE|LSR_BI|LSR_RXFE))
+      dummy = UART3->RBR;
+    else if ((UART3->LSR & LSR_RDR)) /** barramento tem dados ? */
+    {
+      *(buffer + i) = UART3->RBR;
+      return 1;
+    }
+    break;
+  }
+
+  return i;
 }
 
 /******************************************************************************
