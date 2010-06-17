@@ -26,17 +26,9 @@ volatile unsigned int I_E15 = 0;
 #define Read_I_E15() I_E15
 #define Write_I_E15(x) I_E15 = x
 
-volatile unsigned int I_E4 = 0;
-#define Read_I_E4() I_E4
-#define Write_I_E4(x) I_E4 = x
-
-volatile unsigned int I_E5 = 0;
-#define Read_I_E5() I_E5
-#define Write_I_E5(x) I_E5 = x
-
-volatile unsigned int I_E6 = 0;
-#define Read_I_E6() I_E6
-#define Write_I_E6(x) I_E6 = x
+volatile unsigned int U_REMERGENCIA = 0;
+#define Read_U_REMERGENCIA() U_REMERGENCIA
+#define Write_U_REMERGENCIA(x) U_REMERGENCIA = x
 
 volatile unsigned int I_parOut_0000 = 0;
 #define Read_I_parOut_0000() I_parOut_0000
@@ -111,14 +103,6 @@ volatile unsigned int I_parOut_0004 = 0;
 volatile unsigned int I_parThis_0004 = 0;
 #define Read_I_parThis_0004() I_parThis_0004
 #define Write_I_parThis_0004(x) I_parThis_0004 = x
-
-volatile unsigned int I_E11 = 0;
-#define Read_I_E11() I_E11
-#define Write_I_E11(x) I_E11 = x
-
-volatile unsigned int I_E12 = 0;
-#define Read_I_E12() I_E12
-#define Write_I_E12(x) I_E12 = x
 volatile unsigned int U_TSTART1;
 
 volatile unsigned int U_M4 = 0;
@@ -136,7 +120,10 @@ volatile unsigned int I_parOut_0005 = 0;
 volatile unsigned int I_parThis_0005 = 0;
 #define Read_I_parThis_0005() I_parThis_0005
 #define Write_I_parThis_0005(x) I_parThis_0005 = x
-volatile unsigned int U_TSTART2;
+
+volatile unsigned int I_E4 = 0;
+#define Read_I_E4() I_E4
+#define Write_I_E4(x) I_E4 = x
 
 volatile unsigned int U_M5 = 0;
 #define Read_U_M5() U_M5
@@ -153,7 +140,10 @@ volatile unsigned int I_parOut_0006 = 0;
 volatile unsigned int I_parThis_0006 = 0;
 #define Read_I_parThis_0006() I_parThis_0006
 #define Write_I_parThis_0006(x) I_parThis_0006 = x
-volatile unsigned int U_TSTART3;
+
+volatile unsigned int I_E5 = 0;
+#define Read_I_E5() I_E5
+#define Write_I_E5(x) I_E5 = x
 
 volatile unsigned int U_M6 = 0;
 #define Read_U_M6() U_M6
@@ -187,6 +177,18 @@ volatile unsigned int U_S9 = 0;
 #define Read_U_S9() U_S9
 #define Write_U_S9(x) U_S9 = x
 
+volatile unsigned int I_parOut_0007 = 0;
+#define Read_I_parOut_0007() I_parOut_0007
+#define Write_I_parOut_0007(x) I_parOut_0007 = x
+
+volatile unsigned int I_parThis_0007 = 0;
+#define Read_I_parThis_0007() I_parThis_0007
+#define Write_I_parThis_0007(x) I_parThis_0007 = x
+
+volatile unsigned int I_E6 = 0;
+#define Read_I_E6() I_E6
+#define Write_I_E6(x) I_E6 = x
+
 volatile unsigned int U_S15 = 0;
 #define Read_U_S15() U_S15
 #define Write_U_S15(x) U_S15 = x
@@ -213,23 +215,7 @@ void PlcCycle(void)
         Write_I_rung_top(0);
     }
     
-    if(!Read_I_E4()) {
-        Write_I_rung_top(0);
-    }
-    
-    if(!Read_I_E5()) {
-        Write_I_rung_top(0);
-    }
-    
-    if(!Read_I_E6()) {
-        Write_I_rung_top(0);
-    }
-    
-    if(!Read_I_mcr()) {
-        Write_I_mcr(1);
-    } else {
-        Write_I_mcr(Read_I_rung_top());
-    }
+    Write_U_REMERGENCIA(Read_I_rung_top());
     
     /* ] finish series */
     
@@ -257,6 +243,10 @@ void PlcCycle(void)
     }
     Write_I_rung_top(Read_I_parOut_0000());
     /* ] finish parallel */
+    if(!Read_U_REMERGENCIA()) {
+        Write_I_rung_top(0);
+    }
+    
     Write_U_S1(Read_I_rung_top());
     
     /* ] finish series */
@@ -285,6 +275,10 @@ void PlcCycle(void)
     }
     Write_I_rung_top(Read_I_parOut_0001());
     /* ] finish parallel */
+    if(!Read_U_REMERGENCIA()) {
+        Write_I_rung_top(0);
+    }
+    
     if(!Read_I_E10()) {
         Write_I_rung_top(0);
     }
@@ -351,16 +345,8 @@ void PlcCycle(void)
         Write_I_parThis_0004(0);
     }
     
-    if(!Read_I_E11()) {
-        Write_I_parThis_0004(0);
-    }
-    
-    if(!Read_I_E12()) {
-        Write_I_parThis_0004(0);
-    }
-    
     if(Read_I_parThis_0004()) {
-        if(U_TSTART1 < 499) {
+        if(U_TSTART1 < 1499) {
             U_TSTART1++;
             Write_I_parThis_0004(0);
         }
@@ -382,6 +368,10 @@ void PlcCycle(void)
     }
     Write_I_parThis_0003(Read_I_parOut_0004());
     /* ] finish parallel */
+    if(!Read_U_REMERGENCIA()) {
+        Write_I_parThis_0003(0);
+    }
+    
     Write_U_S4(Read_I_parThis_0003());
     
     /* ] finish series */
@@ -398,17 +388,8 @@ void PlcCycle(void)
         Write_I_parThis_0005(0);
     }
     
-    if(!Read_U_S4()) {
+    if(!Read_I_E4()) {
         Write_I_parThis_0005(0);
-    }
-    
-    if(Read_I_parThis_0005()) {
-        if(U_TSTART2 < 499) {
-            U_TSTART2++;
-            Write_I_parThis_0005(0);
-        }
-    } else {
-        U_TSTART2 = 0;
     }
     
     /* ] finish series */
@@ -425,6 +406,10 @@ void PlcCycle(void)
     }
     Write_I_parThis_0003(Read_I_parOut_0005());
     /* ] finish parallel */
+    if(!Read_U_REMERGENCIA()) {
+        Write_I_parThis_0003(0);
+    }
+    
     Write_U_S6(Read_I_parThis_0003());
     
     /* ] finish series */
@@ -447,17 +432,8 @@ void PlcCycle(void)
         Write_I_parThis_0006(0);
     }
     
-    if(!Read_U_S6()) {
+    if(!Read_I_E5()) {
         Write_I_parThis_0006(0);
-    }
-    
-    if(Read_I_parThis_0006()) {
-        if(U_TSTART3 < 499) {
-            U_TSTART3++;
-            Write_I_parThis_0006(0);
-        }
-    } else {
-        U_TSTART3 = 0;
     }
     
     /* ] finish series */
@@ -474,6 +450,10 @@ void PlcCycle(void)
     }
     Write_I_rung_top(Read_I_parOut_0006());
     /* ] finish parallel */
+    if(!Read_U_REMERGENCIA()) {
+        Write_I_rung_top(0);
+    }
+    
     Write_U_S8(Read_I_rung_top());
     
     /* ] finish series */
@@ -518,6 +498,46 @@ void PlcCycle(void)
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
+    if(!Read_U_M1()) {
+        Write_I_rung_top(0);
+    }
+    
+    /* start parallel [ */
+    Write_I_parOut_0007(0);
+    Write_I_parThis_0007(Read_I_rung_top());
+    if(Read_U_REMERGENCIA()) {
+        Write_I_parThis_0007(0);
+    }
+    
+    if(Read_I_parThis_0007()) {
+        Write_I_parOut_0007(1);
+    }
+    Write_I_parThis_0007(Read_I_rung_top());
+    if(Read_I_E4()) {
+        Write_I_parThis_0007(0);
+    }
+    
+    if(Read_I_parThis_0007()) {
+        Write_I_parOut_0007(1);
+    }
+    Write_I_parThis_0007(Read_I_rung_top());
+    if(Read_I_E5()) {
+        Write_I_parThis_0007(0);
+    }
+    
+    if(Read_I_parThis_0007()) {
+        Write_I_parOut_0007(1);
+    }
+    Write_I_parThis_0007(Read_I_rung_top());
+    if(Read_I_E6()) {
+        Write_I_parThis_0007(0);
+    }
+    
+    if(Read_I_parThis_0007()) {
+        Write_I_parOut_0007(1);
+    }
+    Write_I_rung_top(Read_I_parOut_0007());
+    /* ] finish parallel */
     Write_U_S15(Read_I_rung_top());
     
     /* ] finish series */
