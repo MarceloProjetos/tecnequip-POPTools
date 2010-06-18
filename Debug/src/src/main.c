@@ -70,8 +70,6 @@ void TIMER0_IRQHandler (void)
   timer0_count++;
 
   PlcCycle();
-
-  GPIO0->FIOPIN = ~GPIO0->FIOPIN;
 }
 
 /******************************************************************************
@@ -443,7 +441,8 @@ int main (void)
   {
     AtualizaEntradas();
     AtualizaSaidas();
-	U_M1 = 1;	// Automatico
+	U_M1 = 1;	// Aquecimento Modo Automatico
+	U_M2 = 1;   // Banho Modo Automatico
   }
 
   return(0);
