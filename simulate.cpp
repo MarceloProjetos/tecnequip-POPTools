@@ -631,10 +631,10 @@ math:
                 break;
 
             case INT_UART_SEND:
-                if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) {
+                if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) 
+				{
                     SimulateUartTxCountdown = 2;
-                    AppendToUartSimulationTextControl(
-                        (BYTE)GetSimulationVariable(a->name1));
+                    AppendToUartSimulationTextControl((BYTE)GetSimulationVariable(a->name1));
                 }
                 if(SimulateUartTxCountdown == 0) {
                     SetSingleBit(a->name2, FALSE);

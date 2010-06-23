@@ -533,17 +533,11 @@ McuIoPinInfo LPC1768IoPinInfo[] = {
 };
 
 McuAdcPinInfo LPC1768AdcPinInfo[] = {
-    {  2, 0x00 },
-    {  3, 0x01 },
-    {  4, 0x02 },
-    {  5, 0x03 },
-    {  7, 0x04 },
-    { 21, 0x0c },
-    { 22, 0x0a },
-    { 23, 0x08 },
-    { 24, 0x09 },
-    { 25, 0x0b },
-    { 26, 0x0d },
+    {  1, 0x01 },
+    {  2, 0x02 },
+    {  3, 0x03 },
+    {  4, 0x04 },
+    {  5, 0x05 },
 };
 
 #define arraylen(x) (sizeof(x)/sizeof((x)[0]))

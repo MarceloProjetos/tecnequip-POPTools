@@ -73,24 +73,43 @@ void TIMER0_IRQHandler (void)
 }
 
 /******************************************************************************
-* Comunicação Serial RS232
+* ADC Read
 ******************************************************************************/
-unsigned int RS232Write(char * buffer, unsigned int size)
+unsigned int ADCRead(unsigned int i)
 {
-  unsigned int sz = 0;
-
-  while (sz < size)
-  {
-    while (!(UART0->LSR & 0x20) );      /* THRE status, contain valid data */
-    UART0->THR = *buffer;
-    buffer++;
-    sz++;
-  }
-
-  return 0;
+    switch (i)
+    {
+    case 1:
+      return 0xFFF & (ADC->ADDR5 >> 4);
+      break;
+    case 2:
+      return 0xFFF & (ADC->ADDR2 >> 4);
+      break;
+    case 3:
+      return 0xFFF & (ADC->ADDR1 >> 4);
+      break;
+    case 4:
+      return 0xFFF & (ADC->ADDR0 >> 4);
+      break;
+    case 5:
+      return 0xFFF & (ADC->ADDR3 >> 4);
+      break;
+    }
+    return 0;
 }
 
-unsigned int RS232Read(char * buffer, unsigned int size)
+/******************************************************************************
+* Comunicação Serial RS232
+******************************************************************************/
+unsigned int RS232Write(char c)
+{
+  while (!(UART0->LSR & 0x20) );      /* THRE status, contain valid data */
+  UART0->THR = c;
+
+  return 1;
+}
+
+unsigned int RS232Read(void)
 {
   return 0;
 }
@@ -403,6 +422,13 @@ void HardwareInit(void)
   unsigned char cmd = OUTPUT_CMD_CONTROL;
   SSPWrite((unsigned char*)&cmd, 1);
 
+  // AD's
+  SC->PCONP |= 1 << 12;         // ADC
+  PINCON->PINSEL1 &= ~((0x3 << 14) | (0x3 << 16) | (0x3 << 18) | (0x3 << 20)); // AD0.0, AD0.1, AD0.2, AD0.3(REF)
+  PINCON->PINSEL1 |= (0x1 << 14) | (0x1 << 16) | (0x1 << 18) | (0x1 << 20);
+  PINCON->PINSEL3 |= 0x3 << 30; // AD0.5
+  ADC->ADCR = 0x2F | (0x18 << 8) | (1 << 16) | (1 << 21); // Enable AD0:1:2:3:5, 1Mhz, BURST ON, PDN Enable
+
 }
 
 /***************************************************************************/
@@ -441,8 +467,8 @@ int main (void)
   {
     AtualizaEntradas();
     AtualizaSaidas();
-	U_M1 = 1;	// Aquecimento Modo Automatico
-	U_M2 = 1;   // Banho Modo Automatico
+    U_M1 = 1;	// Aquecimento Modo Automatico
+    U_M2 = 1;   // Banho Modo Automatico
   }
 
   return(0);

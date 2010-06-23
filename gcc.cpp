@@ -78,6 +78,11 @@ static char *MapSym(char *str)
 				sprintf(ret, "U_S%d", pin);
 				return ret;
 			} 
+			if (Prog.io.assignment[i].type == IO_TYPE_READ_ADC) 
+			{
+				sprintf(ret, "U_A%d", pin);
+				return ret;
+			} 
 			else if (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
 			{
 				if (pin > 51)
@@ -113,7 +118,7 @@ static char *MapSym(char *str)
 static void DeclareInt(FILE *f, char *str)
 {
     //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
-	fprintf(f, "volatile unsigned int %s;\n", MapSym(str));
+	fprintf(f, "volatile unsigned int %s = 0;\n", MapSym(str));
 }
 
 //-----------------------------------------------------------------------------
@@ -300,7 +305,7 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_IF_BIT_CLEAR:
-                fprintf(f, "if(!Read_%s()) {\n", MapSym(IntCode[i].name1));
+                fprintf(f, "if(Read_%s() == 0) {\n", MapSym(IntCode[i].name1));
                 indent++;
                 break;
 
@@ -331,7 +336,6 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_SIMULATE_NODE_STATE:
-                // simulation-only
                 fprintf(f, "\n");
                 break;
 
@@ -344,15 +348,20 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
+				break;
             case INT_EEPROM_READ:
+				break;
             case INT_EEPROM_WRITE:
+				break;
             case INT_READ_ADC:
+				fprintf(f, "%s = ADCRead(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1) + 3));
+				break;
             case INT_SET_PWM:
+				break;
             case INT_UART_RECV:
+				break;
             case INT_UART_SEND:
-                /*Error(_("ANSI C target does not support peripherals "
-                    "(UART, PWM, ADC, EEPROM). Skipping that instruction."));*/
-				fprintf(f, "RS232Write(&%s++, 1);\n", MapSym(IntCode[i].name1));
+				fprintf(f, "RS232Write((char)I_scratch2);\n");
                 break;
 
             default:
@@ -575,7 +584,8 @@ void CompileAnsiCToGCC(char *dest)
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n\n"
 		, Prog.cycleTime / 1000);
 
-	fprintf(f, "extern unsigned int RS232Write(char * buffer, unsigned int size);\n\n");
+	fprintf(f, "extern unsigned int RS232Write(char c);\n");
+	fprintf(f, "extern unsigned int ADCRead(unsigned int i);\n\n");
 
     // now generate declarations for all variables
     GenerateDeclarations(f);

@@ -497,6 +497,8 @@ void ShowIoMapDialog(int item)
 
     MakeControls();
 
+    char buf[40];
+
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
     int i;
     for(i = 0; i < Prog.mcu->pinCount; i++) {
@@ -524,18 +526,20 @@ void ShowIoMapDialog(int item)
         }
 
         if(Prog.io.assignment[item].name[0] == 'A') {
-            for(j = 0; j < Prog.mcu->adcCount; j++) {
-                if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) {
-                    // okay; we know how to connect it up to the ADC
-                    break;
-                }
+            for(j = 0; j < Prog.mcu->adcCount; j++) 
+			{
+                //if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) 
+				//{
+					sprintf(buf, "%3d ADC%d", Prog.mcu->adcInfo[j].pin, Prog.mcu->adcInfo[j].muxRegValue);
+					SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+                //}
             }
             if(j == Prog.mcu->adcCount) {
-                goto cant_use_this_io;
+				break;
+                //goto cant_use_this_io;
             }
         }
 
-        char buf[40];
 		if ((Prog.io.assignment[item].name[0] == 'X' && i < 51) ||
 			(Prog.io.assignment[item].name[0] == 'Y' && i > 51))
 		{
@@ -705,6 +709,8 @@ void IoMapListProc(NMHDR *h)
 								sprintf(i->item.pszText, "M%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT)
 								sprintf(i->item.pszText, "E%d", Prog.mcu->pinInfo[j].bit);
+							else if (Prog.io.assignment[item].type == IO_TYPE_READ_ADC)
+								sprintf(i->item.pszText, "AD%d", Prog.mcu->pinInfo[j].bit);
                             break;
                         }
                     }
