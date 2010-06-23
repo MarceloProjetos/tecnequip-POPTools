@@ -6,19 +6,32 @@ BAUD=9600
 COMPILED=C:\Users\Tecnequip\Documents\adc_led.hex
 
 IO LIST
-    YS1 at 4
-    YS10 at 13
-    YS11 at 14
-    YS12 at 15
-    YS2 at 5
-    YS3 at 6
-    YS4 at 7
-    YS5 at 8
-    YS6 at 9
-    YS7 at 10
-    YS8 at 11
-    YS9 at 12
-    ADC at 1
+    XAD1 at 1
+    XAD2 at 2
+    XAD3 at 3
+    XAD4 at 4
+    XAD5 at 5
+    YS1 at 1
+    YS10 at 10
+    YS11 at 11
+    YS12 at 12
+    YS13 at 13
+    YS14 at 14
+    YS15 at 15
+    YS16 at 16
+    YS2 at 2
+    YS3 at 3
+    YS4 at 4
+    YS5 at 5
+    YS6 at 6
+    YS7 at 7
+    YS8 at 8
+    YS9 at 9
+    AAD5 at 5
+    ADC1 at 1
+    ADC2 at 2
+    ADC3 at 3
+    ADC4 at 4
 END
 
 PROGRAM
@@ -30,53 +43,98 @@ RUNG
 END
 RUNG
     CONTACTS ROSC 0
-    READ_ADC ADC
+    PARALLEL
+        READ_ADC ADC1
+        READ_ADC ADC2
+        READ_ADC ADC3
+        READ_ADC ADC4
+        READ_ADC AAD5
+    END
+END
+RUNG
+    MOVE ADC 0
+END
+RUNG
+    CONTACTS XAD1 0
+    MOVE ADC ADC1
+END
+RUNG
+    CONTACTS XAD2 0
+    MOVE ADC ADC2
+END
+RUNG
+    CONTACTS XAD3 0
+    MOVE ADC ADC3
+END
+RUNG
+    CONTACTS XAD4 0
+    MOVE ADC ADC4
+END
+RUNG
+    CONTACTS XAD5 0
+    MOVE ADC ADC5
 END
 RUNG
     GRT ADC 0
     COIL YS1 0 0 0
 END
 RUNG
-    GRT ADC 1
+    GRT ADC 256
     COIL YS2 0 0 0
 END
 RUNG
-    GRT ADC 3
+    GRT ADC 512
     COIL YS3 0 0 0
 END
 RUNG
-    GRT ADC 7
+    GRT ADC 768
     COIL YS4 0 0 0
 END
 RUNG
-    GRT ADC 15
+    GRT ADC 1024
     COIL YS5 0 0 0
 END
 RUNG
-    GRT ADC 31
+    GRT ADC 1280
     COIL YS6 0 0 0
 END
 RUNG
-    GRT ADC 63
+    GRT ADC 1536
     COIL YS7 0 0 0
 END
 RUNG
-    GRT ADC 127
+    GRT ADC 1792
     COIL YS8 0 0 0
 END
 RUNG
-    GRT ADC 255
+    GRT ADC 2048
     COIL YS9 0 0 0
 END
 RUNG
-    GRT ADC 511
+    GRT ADC 2304
     COIL YS10 0 0 0
 END
 RUNG
-    GRT ADC 1023
+    GRT ADC 2560
     COIL YS11 0 0 0
 END
 RUNG
-    GRT ADC 2047
+    GRT ADC 2816
     COIL YS12 0 0 0
+END
+RUNG
+    GRT ADC 3072
+    COIL YS13 0 0 0
+END
+RUNG
+    GRT ADC 3328
+    COIL YS14 0 0 0
+END
+RUNG
+    GRT ADC 3584
+    COIL YS15 0 0 0
+END
+RUNG
+    GRT ADC 3840
+    COIL YS16 0 0 0
 END

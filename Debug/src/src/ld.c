@@ -24,8 +24,54 @@ volatile unsigned int I_TTOFF_antiglitch = 0;
 #define Read_I_TTOFF_antiglitch() I_TTOFF_antiglitch
 #define Write_I_TTOFF_antiglitch(x) I_TTOFF_antiglitch = x
 volatile unsigned int U_TTOFF = 0;
+
+volatile unsigned int I_parOut_0000 = 0;
+#define Read_I_parOut_0000() I_parOut_0000
+#define Write_I_parOut_0000(x) I_parOut_0000 = x
+
+volatile unsigned int I_parThis_0000 = 0;
+#define Read_I_parThis_0000() I_parThis_0000
+#define Write_I_parThis_0000(x) I_parThis_0000 = x
 volatile unsigned int U_A1 = 0;
+volatile unsigned int U_A2 = 0;
+volatile unsigned int U_A3 = 0;
+volatile unsigned int U_A4 = 0;
+volatile unsigned int U_A5 = 0;
+volatile unsigned int U_ADC = 0;
+
+volatile unsigned int I_E1 = 0;
+#define Read_I_E1() I_E1
+#define Write_I_E1(x) I_E1 = x
+
+volatile unsigned int I_E2 = 0;
+#define Read_I_E2() I_E2
+#define Write_I_E2(x) I_E2 = x
+
+volatile unsigned int I_E3 = 0;
+#define Read_I_E3() I_E3
+#define Write_I_E3(x) I_E3 = x
+
+volatile unsigned int I_E4 = 0;
+#define Read_I_E4() I_E4
+#define Write_I_E4(x) I_E4 = x
+
+volatile unsigned int I_E5 = 0;
+#define Read_I_E5() I_E5
+#define Write_I_E5(x) I_E5 = x
+volatile unsigned int U_ADC5 = 0;
 volatile unsigned int I_scratch2 = 0;
+
+volatile unsigned int U_S1 = 0;
+#define Read_U_S1() U_S1
+#define Write_U_S1(x) U_S1 = x
+
+volatile unsigned int U_S2 = 0;
+#define Read_U_S2() U_S2
+#define Write_U_S2(x) U_S2 = x
+
+volatile unsigned int U_S3 = 0;
+#define Read_U_S3() U_S3
+#define Write_U_S3(x) U_S3 = x
 
 volatile unsigned int U_S4 = 0;
 #define Read_U_S4() U_S4
@@ -75,6 +121,10 @@ volatile unsigned int U_S15 = 0;
 #define Read_U_S15() U_S15
 #define Write_U_S15(x) U_S15 = x
 
+volatile unsigned int U_S16 = 0;
+#define Read_U_S16() U_S16
+#define Write_U_S16(x) U_S16 = x
+
 
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
 void PlcCycle(void)
@@ -123,18 +173,180 @@ void PlcCycle(void)
         Write_I_rung_top(0);
     }
     
-    if(Read_I_rung_top()) {
+    /* start parallel [ */
+    Write_I_parOut_0000(0);
+    Write_I_parThis_0000(Read_I_rung_top());
+    if(Read_I_parThis_0000()) {
         U_A1 = ADCRead(1);
     }
     
+    if(Read_I_parThis_0000()) {
+        Write_I_parOut_0000(1);
+    }
+    Write_I_parThis_0000(Read_I_rung_top());
+    if(Read_I_parThis_0000()) {
+        U_A2 = ADCRead(2);
+    }
+    
+    if(Read_I_parThis_0000()) {
+        Write_I_parOut_0000(1);
+    }
+    Write_I_parThis_0000(Read_I_rung_top());
+    if(Read_I_parThis_0000()) {
+        U_A3 = ADCRead(3);
+    }
+    
+    if(Read_I_parThis_0000()) {
+        Write_I_parOut_0000(1);
+    }
+    Write_I_parThis_0000(Read_I_rung_top());
+    if(Read_I_parThis_0000()) {
+        U_A4 = ADCRead(4);
+    }
+    
+    if(Read_I_parThis_0000()) {
+        Write_I_parOut_0000(1);
+    }
+    Write_I_parThis_0000(Read_I_rung_top());
+    if(Read_I_parThis_0000()) {
+        U_A5 = ADCRead(5);
+    }
+    
+    if(Read_I_parThis_0000()) {
+        Write_I_parOut_0000(1);
+    }
+    Write_I_rung_top(Read_I_parOut_0000());
+    /* ] finish parallel */
     /* ] finish series */
     
     /* start rung 3 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
+    if(Read_I_rung_top()) {
+        U_ADC = 0;
+    }
+    
+    /* ] finish series */
+    
+    /* start rung 4 */
+    Write_I_rung_top(Read_I_mcr());
+    
+    /* start series [ */
+    if(Read_I_E1() == 0) {
+        Write_I_rung_top(0);
+    }
+    
+    if(Read_I_rung_top()) {
+        U_ADC = U_A1;
+    }
+    
+    /* ] finish series */
+    
+    /* start rung 5 */
+    Write_I_rung_top(Read_I_mcr());
+    
+    /* start series [ */
+    if(Read_I_E2() == 0) {
+        Write_I_rung_top(0);
+    }
+    
+    if(Read_I_rung_top()) {
+        U_ADC = U_A2;
+    }
+    
+    /* ] finish series */
+    
+    /* start rung 6 */
+    Write_I_rung_top(Read_I_mcr());
+    
+    /* start series [ */
+    if(Read_I_E3() == 0) {
+        Write_I_rung_top(0);
+    }
+    
+    if(Read_I_rung_top()) {
+        U_ADC = U_A3;
+    }
+    
+    /* ] finish series */
+    
+    /* start rung 7 */
+    Write_I_rung_top(Read_I_mcr());
+    
+    /* start series [ */
+    if(Read_I_E4() == 0) {
+        Write_I_rung_top(0);
+    }
+    
+    if(Read_I_rung_top()) {
+        U_ADC = U_A4;
+    }
+    
+    /* ] finish series */
+    
+    /* start rung 8 */
+    Write_I_rung_top(Read_I_mcr());
+    
+    /* start series [ */
+    if(Read_I_E5() == 0) {
+        Write_I_rung_top(0);
+    }
+    
+    if(Read_I_rung_top()) {
+        U_ADC = U_ADC5;
+    }
+    
+    /* ] finish series */
+    
+    /* start rung 9 */
+    Write_I_rung_top(Read_I_mcr());
+    
+    /* start series [ */
     I_scratch2 = 0;
-    if(U_A1 > I_scratch2) {
+    if(U_ADC > I_scratch2) {
+    } else {
+        Write_I_rung_top(0);
+    }
+    
+    Write_U_S1(Read_I_rung_top());
+    
+    /* ] finish series */
+    
+    /* start rung 10 */
+    Write_I_rung_top(Read_I_mcr());
+    
+    /* start series [ */
+    I_scratch2 = 256;
+    if(U_ADC > I_scratch2) {
+    } else {
+        Write_I_rung_top(0);
+    }
+    
+    Write_U_S2(Read_I_rung_top());
+    
+    /* ] finish series */
+    
+    /* start rung 11 */
+    Write_I_rung_top(Read_I_mcr());
+    
+    /* start series [ */
+    I_scratch2 = 512;
+    if(U_ADC > I_scratch2) {
+    } else {
+        Write_I_rung_top(0);
+    }
+    
+    Write_U_S3(Read_I_rung_top());
+    
+    /* ] finish series */
+    
+    /* start rung 12 */
+    Write_I_rung_top(Read_I_mcr());
+    
+    /* start series [ */
+    I_scratch2 = 768;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -143,12 +355,12 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 4 */
+    /* start rung 13 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 1;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 1024;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -157,12 +369,12 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 5 */
+    /* start rung 14 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 3;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 1280;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -171,12 +383,12 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 6 */
+    /* start rung 15 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 7;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 1536;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -185,12 +397,12 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 7 */
+    /* start rung 16 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 15;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 1792;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -199,12 +411,12 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 8 */
+    /* start rung 17 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 31;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 2048;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -213,12 +425,12 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 9 */
+    /* start rung 18 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 63;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 2304;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -227,12 +439,12 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 10 */
+    /* start rung 19 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 127;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 2560;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -241,12 +453,12 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 11 */
+    /* start rung 20 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 255;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 2816;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -255,12 +467,12 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 12 */
+    /* start rung 21 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 511;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 3072;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -269,12 +481,12 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 13 */
+    /* start rung 22 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 1023;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 3328;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
@@ -283,17 +495,31 @@ void PlcCycle(void)
     
     /* ] finish series */
     
-    /* start rung 14 */
+    /* start rung 23 */
     Write_I_rung_top(Read_I_mcr());
     
     /* start series [ */
-    I_scratch2 = 2047;
-    if(U_A1 > I_scratch2) {
+    I_scratch2 = 3584;
+    if(U_ADC > I_scratch2) {
     } else {
         Write_I_rung_top(0);
     }
     
     Write_U_S15(Read_I_rung_top());
+    
+    /* ] finish series */
+    
+    /* start rung 24 */
+    Write_I_rung_top(Read_I_mcr());
+    
+    /* start series [ */
+    I_scratch2 = 3840;
+    if(U_ADC > I_scratch2) {
+    } else {
+        Write_I_rung_top(0);
+    }
+    
+    Write_U_S16(Read_I_rung_top());
     
     /* ] finish series */
 }

@@ -27,6 +27,17 @@
 
 #define HTONS(n) (uint16_t)((((uint16_t) (n)) << 8) | (((uint16_t) (n)) >> 8))
 
+typedef struct ad_type
+{
+  unsigned int m1;
+  unsigned int m2;
+  unsigned int m3;
+  unsigned int m4;
+  unsigned int m5;
+};
+
+struct ad_type ad[5];
+
 /******************************************************************************
 * Prototipos de Funções
 ******************************************************************************/
@@ -75,27 +86,94 @@ void TIMER0_IRQHandler (void)
 /******************************************************************************
 * ADC Read
 ******************************************************************************/
-unsigned int ADCRead(unsigned int i)
+unsigned int ADCRead(unsigned int a)
 {
-    switch (i)
-    {
-    case 1:
-      return 0xFFF & (ADC->ADDR5 >> 4);
-      break;
-    case 2:
-      return 0xFFF & (ADC->ADDR2 >> 4);
-      break;
-    case 3:
-      return 0xFFF & (ADC->ADDR1 >> 4);
-      break;
-    case 4:
-      return 0xFFF & (ADC->ADDR0 >> 4);
-      break;
-    case 5:
-      return 0xFFF & (ADC->ADDR3 >> 4);
-      break;
-    }
-    return 0;
+  unsigned int max, min;
+  unsigned int i = 0;
+
+  unsigned int soma = 0;
+
+  max = 0;
+  min = 0;
+
+  if (a < 1 || a > 5) return 0;
+
+  a -= 1;
+
+  ad[a].m1 = ad[a].m2;
+  ad[a].m2 = ad[a].m3;
+  ad[a].m3 = ad[a].m4;
+  ad[a].m4 = ad[a].m5;
+
+  switch (a)
+  {
+  case 0:
+    ad[a].m5 = 0xFFF & (ADC->ADDR5 >> 4);
+    break;
+  case 1:
+    ad[a].m5 = 0xFFF & (ADC->ADDR2 >> 4);
+    break;
+  case 2:
+    ad[a].m5 = 0xFFF & (ADC->ADDR1 >> 4);
+    break;
+  case 3:
+    ad[a].m5 = 0xFFF & (ADC->ADDR0 >> 4);
+    break;
+  case 4:
+    ad[a].m5 = 0xFFF & (ADC->ADDR3 >> 4);
+    break;
+  }
+
+  if (max < ad[a].m1)
+    max = ad[a].m1;
+  if (max < ad[a].m2)
+    max = ad[a].m2;
+  if (max < ad[a].m3)
+    max = ad[a].m3;
+  if (max < ad[a].m4)
+    max = ad[a].m4;
+  if (max < ad[a].m5)
+    max = ad[a].m5;
+
+  min = max;
+
+  if (min > ad[a].m1)
+    min = ad[a].m1;
+  if (min > ad[a].m2)
+    min = ad[a].m2;
+  if (min > ad[a].m3)
+    min = ad[a].m3;
+  if (min > ad[a].m4)
+    min = ad[a].m4;
+  if (min > ad[a].m5)
+    min = ad[a].m5;
+
+  if (ad[a].m1 > min && ad[a].m1 < max)
+  {
+    soma += ad[a].m1; i++;
+  }
+
+  if (ad[a].m2 > min && ad[a].m2 < max)
+  {
+    soma += ad[a].m2; i++;
+  }
+
+  if (ad[a].m3 > min && ad[a].m3 < max)
+  {
+    soma += ad[a].m3; i++;
+  }
+
+  if (ad[a].m4 > min && ad[a].m4 < max)
+  {
+    soma += ad[a].m4; i++;
+  }
+
+  if (ad[a].m5 > min && ad[a].m5 < max)
+  {
+    soma += ad[a].m5; i++;
+  }
+
+  return i > 0 ? (unsigned int)(soma / i) : 0;
 }
 
 /******************************************************************************
