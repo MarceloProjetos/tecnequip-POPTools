@@ -540,14 +540,14 @@ void ShowIoMapDialog(int item)
             }
         }
 
-		if ((Prog.io.assignment[item].name[0] == 'X' && i < 51) ||
-			(Prog.io.assignment[item].name[0] == 'Y' && i > 50))
+		if ((Prog.io.assignment[item].name[0] == 'X' && i < 83) ||
+			(Prog.io.assignment[item].name[0] == 'Y' && i > 82))
 		{
-			if (i == 78)
+			if (i == 99)
 				sprintf(buf, "%3d LED USER", Prog.mcu->pinInfo[i].bit,
 					Prog.mcu->pinInfo[i].port,
 					Prog.mcu->pinInfo[i].pin);
-			else if (i == 79)
+			else if (i == 100)
 				sprintf(buf, "%3d LED ERRO", Prog.mcu->pinInfo[i].bit,
 					Prog.mcu->pinInfo[i].port,
 					Prog.mcu->pinInfo[i].pin);
@@ -699,12 +699,18 @@ void IoMapListProc(NMHDR *h)
 					{
                         if(Prog.mcu->pinInfo[j].pin == pin) 
 						{
-							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 78)
+							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 99)
 								sprintf(i->item.pszText, "LED USER");
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 79)
+							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 110)
 								sprintf(i->item.pszText, "LED ERRO");
+							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin > 51)
+								sprintf(i->item.pszText, "C%d", Prog.mcu->pinInfo[j].bit);
+							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin > 19)
+								sprintf(i->item.pszText, "M%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT)
 								sprintf(i->item.pszText, "S%d", Prog.mcu->pinInfo[j].bit);
+							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT && pin > 51)
+								sprintf(i->item.pszText, "C%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT && pin > 19)
 								sprintf(i->item.pszText, "M%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT)

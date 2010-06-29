@@ -75,8 +75,21 @@ static char *MapSym(char *str)
 
 			if (Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) 
 			{
-				sprintf(ret, "U_S%d", pin);
-				return ret;
+				if (pin > 51)
+				{
+					sprintf(ret, "U_C%d", pin - 51);
+					return ret;
+				}
+				else if (pin > 19)
+				{
+					sprintf(ret, "U_M%d", pin - 19);
+					return ret;
+				}
+				else
+				{
+					sprintf(ret, "U_S%d", pin);
+					return ret;
+				}
 			} 
 			if (Prog.io.assignment[i].type == IO_TYPE_READ_ADC) 
 			{
@@ -87,12 +100,12 @@ static char *MapSym(char *str)
 			{
 				if (pin > 51)
 				{
-					sprintf(ret, "U_P%d", pin);
+					sprintf(ret, "I_C%d", pin - 51);
 					return ret;
 				}
 				else if (pin > 19)
 				{
-					sprintf(ret, "U_M%d", pin - 19);
+					sprintf(ret, "I_M%d", pin - 19);
 					return ret;
 				}
 				else
@@ -361,7 +374,7 @@ static void GenerateAnsiC(FILE *f)
             case INT_UART_RECV:
 				break;
             case INT_UART_SEND:
-				fprintf(f, "RS232Write((char)I_scratch2);\n");
+				fprintf(f, "%s = RS232Write(%s);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
                 break;
 
             default:
