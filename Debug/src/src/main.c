@@ -54,22 +54,41 @@ volatile unsigned int timer0_count = 0;
 
 struct MB_Device modbus_device;
 
+unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusReadDiscreteInputs(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusReadHoldingRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusReadInputRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusWriteSingleCoil(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusWriteSingleRegister(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusWriteMultipleCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusWriteMultipleRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusMaskWriteRegister(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusRWMultipleRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusReadExceptionStatus(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+
 struct MB_Handler ModbusHandlers[] =
 {
-    { MB_FC_READ_COILS              , ModbusReadCoils                 },
-    /*
-    { MB_FC_READ_DISCRETE_INPUTS    , LPC_MB_Read_Discrete_Inputs     },
-    { MB_FC_READ_HOLDING_REGISTERS  , LPC_MB_Read_Holding_Registers   },
-    { MB_FC_READ_INPUT_REGISTERS    , LPC_MB_Read_Input_Registers     },
-    { MB_FC_WRITE_SINGLE_COIL       , LPC_MB_Write_Single_Coil        },
-    { MB_FC_WRITE_SINGLE_REGISTER   , LPC_MB_Write_Single_Register    },
-    { MB_FC_WRITE_MULTIPLE_COILS    , LPC_MB_Write_Multiple_Coils     },
-    { MB_FC_WRITE_MULTIPLE_REGISTERS, LPC_MB_Write_Multiple_Registers },
-    { MB_FC_MASK_WRITE_REGISTER     , LPC_MB_Mask_Write_Register      },
-    { MB_FC_RW_MULTIPLE_REGISTERS   , LPC_MB_RW_Multiple_Registers    },
-    { MB_FC_READ_EXCEPTION_STATUS   , LPC_MB_Read_Exception_Status    },
-    */
+    { MB_FC_READ_COILS              , ModbusReadCoils              },
+    { MB_FC_READ_DISCRETE_INPUTS    , ModbusReadDiscreteInputs     },
+    { MB_FC_READ_HOLDING_REGISTERS  , ModbusReadHoldingRegisters   },
+    { MB_FC_READ_INPUT_REGISTERS    , ModbusReadInputRegisters     },
+    { MB_FC_WRITE_SINGLE_COIL       , ModbusWriteSingleCoil        },
+    { MB_FC_WRITE_SINGLE_REGISTER   , ModbusWriteSingleRegister    },
+    { MB_FC_WRITE_MULTIPLE_COILS    , ModbusWriteMultipleCoils     },
+    { MB_FC_WRITE_MULTIPLE_REGISTERS, ModbusWriteMultipleRegisters },
+    { MB_FC_MASK_WRITE_REGISTER     , ModbusMaskWriteRegister      },
+    { MB_FC_RW_MULTIPLE_REGISTERS   , ModbusRWMultipleRegisters    },
+    { MB_FC_READ_EXCEPTION_STATUS   , ModbusReadExceptionStatus    },
 };
+
+struct
+{
+  uint8_t * data;
+  uint32_t  size;
+} reply_data;
+
+unsigned char modbus_rx_buffer[MB_BUFFER_SIZE];
+unsigned char modbus_tx_buffer[MB_BUFFER_SIZE];
 
 /******************************************************************************
 * Temporizador
@@ -179,12 +198,13 @@ unsigned int ADCRead(unsigned int a)
 /******************************************************************************
 * Comunicação Serial RS232
 ******************************************************************************/
-unsigned int RS232Write(char c)
+unsigned int RS232Write(unsigned int c)
 {
-  while (!(UART0->LSR & 0x20) );      /* THRE status, contain valid data */
-  UART0->THR = c;
+  while (!(UART0->LSR & LSR_TEMT) );      /* THRE status, contain valid data */
+  UART0->THR = (char)c;
+  while (!(UART0->LSR & LSR_TEMT) );
 
-  return 1;
+  return 0;  // not busy
 }
 
 unsigned int RS232Read(void)
@@ -197,19 +217,21 @@ unsigned int RS232Read(void)
 ******************************************************************************/
 unsigned int RS485Write(unsigned char * buffer, unsigned int size)
 {
+  unsigned int i = 0;
+
   GPIO0->FIOSET = RS485_ENABLE;
 
-  while (size)
+  while (!(UART3->LSR & LSR_TEMT) );      /* THRE status, contain valid data */
+
+  while (i < size)
   {
-    while (!(UART3->LSR & 0x20) );      /* THRE status, contain valid data */
-    UART3->THR = *buffer;
-    buffer++;
-    size--;
+    UART3->THR = *(buffer + i++);
+    while(!(UART3->LSR & LSR_TEMT));      /* THRE status, contain valid data */
   }
 
   GPIO0->FIOCLR = RS485_ENABLE;
 
-  return 0;
+  return i;
 }
 
 unsigned int RS485Read(unsigned char * buffer, unsigned int size)
@@ -225,11 +247,9 @@ unsigned int RS485Read(unsigned char * buffer, unsigned int size)
     if (UART3->LSR & (LSR_OE|LSR_PE|LSR_FE|LSR_BI|LSR_RXFE))
       dummy = UART3->RBR;
     else if ((UART3->LSR & LSR_RDR)) /** barramento tem dados ? */
-    {
-      *(buffer + i) = UART3->RBR;
-      return 1;
-    }
-    break;
+      *(buffer + i++) = UART3->RBR;
+    else
+      break;
   }
 
   return i;
@@ -238,50 +258,6 @@ unsigned int RS485Read(unsigned char * buffer, unsigned int size)
 /******************************************************************************
 * Modbus
 ******************************************************************************/
-unsigned int ModbusRequest(unsigned char * rxb, unsigned int rxs, unsigned char * txb, unsigned int txs)
-{
-  if(rxs > 2)
-  {
-#ifdef MB_DEBUG
-    unsigned int i;
-    printf("Modbus: Recebidos %d bytes pela Ethernet:\n", rxs);
-    for(i = 0; i < rxs; i++)
-      printf("%02x ", rxb[i]);
-    printf("\n");
-#endif
-    //reply_data.data = txb;
-    //MB_Receive(&mbdev, MB_Validate(rxb, rxs));
-  }
-
-  /*if(reply_data.size)
-    packet_out++;*/
-
-  return 0; //reply_data.size; // Retorna o tamanho dos dados
-}
-
-unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
-{
-  //unsigned int i, out; // = output_read();
-  //unsigned char *buf; // = reply->reply.read_coils.data; // Retorna no maximo 8 bytes ou 256 bits (saidas).
-
-#ifdef MB_DEBUG
-  printf("ModBus: recebida funcao READ_COILS. start=%d, quant=%d\n", data->read_coils.start, data->read_coils.quant);
-#endif
-
-  /*for(i=0; i<data->read_coils.quant; i++)
-    buf[i/8] |= ((out>>(data->read_coils.start+i))&1) << (i%8);*/
-
-  //reply->reply.read_coils.size = data->read_coils.quant/8 + (data->read_coils.quant%8 != 0);
-
-  return MB_EXCEPTION_NONE;
-
-}
-
-unsigned int ModbusDiscreteInput(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
-{
-  return 0;
-}
-
 unsigned int ModbusTx(unsigned char *data, unsigned int size)
 {
   unsigned int sz = 0;
@@ -290,7 +266,7 @@ unsigned int ModbusTx(unsigned char *data, unsigned int size)
   unsigned int i;
 #endif
 
-  if ((sz = RS485Write((unsigned char*)data, size)))
+  if ((sz = RS485Write(data, size)))
   {
 #ifdef DEBUG
     printf("%d bytes enviados para o soft-starter, size: %d\n", sz, size);
@@ -301,33 +277,6 @@ unsigned int ModbusTx(unsigned char *data, unsigned int size)
     }
     printf("\n");
 #endif
-
-    timer0_count = 0;
-    sz = 0;
-
-    while (timer0_count < 100)
-    {
-      sz += RS485Read((unsigned char*)data + sz, MB_BUFFER_SIZE);
-    }
-
-#ifdef DEBUG
-    if (sz)
-    {
-      printf("%d bytes recebidos do soft-starter em %d ms.\n", sz, tmr);
-
-      for (i = 0; i < sz; i++)
-      {
-        printf("0x%x ", data[i]);
-      }
-      printf("\n");
-
-    }
-    else
-    {
-      printf("Timeout na resposta do soft-starter\n");
-    }
-#endif
-
   }
   else
   {
@@ -337,6 +286,350 @@ unsigned int ModbusTx(unsigned char *data, unsigned int size)
   }
 
   return sz;
+}
+
+unsigned int ModbusRequest(void)
+{
+  unsigned int sz = 0;
+
+  memset(modbus_rx_buffer, 0, sizeof(modbus_rx_buffer));
+  memset(modbus_tx_buffer, 0, sizeof(modbus_tx_buffer));
+
+  if((sz = RS485Read(modbus_rx_buffer, sizeof(modbus_rx_buffer))) > 0)
+  {
+    reply_data.data = modbus_tx_buffer;
+    if (sz > 2)
+      MB_Receive(&modbus_device, MB_Validate(modbus_rx_buffer, sz));
+  }
+
+  return reply_data.size; // Retorna o tamanho dos dados
+}
+
+unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  uint32_t i;
+  uint32_t temp = ((saidas >> 8) & 0xFF) | ((saidas << 8) & 0xFF00);
+  uint8_t *buf = reply->reply.read_coils.data; // Retorna no maximo 8 bytes ou 256 bits (saidas).
+
+  reply->reply.read_coils.size = data->read_coils.quant / 8 + (data->read_coils.quant % 8 != 0);
+
+  memset(buf, 0, reply->reply.read_coils.size);
+
+  for(i = 0; i < data->read_coils.quant; i++)
+    buf[i / 8] |= ((temp >> (data->read_coils.start + i)) & 1) << (i % 8);
+
+#ifdef MB_DEBUG
+  printf("ModBus: recebida funcao READ_COILS. start=%d, quant=%d\n", data->read_coils.start, data->read_coils.quant);
+#endif
+
+  return MB_EXCEPTION_NONE;
+
+}
+
+unsigned int ModbusReadDiscreteInputs(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  uint32_t i;
+  uint8_t *buf = reply->reply.read_discrete_inputs.data; // Retorna no maximo 8 bytes ou 256 bits (entradas).
+
+#ifdef MB_DEBUG
+  printf("ModBus: recebida funcao READ_DISCRETE_INPUTS. start=%d, quant=%d\n",
+  data->read_discrete_inputs.start, data->read_discrete_inputs.quant);
+#endif
+
+  for(i = 0; i < data->read_discrete_inputs.quant; i++)
+    buf[i / 8] |= ((entradas >> (data->read_discrete_inputs.start + i)) & 1) << (i % 8);
+
+  reply->reply.read_discrete_inputs.size = data->read_discrete_inputs.quant / 8 + (data->read_discrete_inputs.quant % 8 != 0);
+
+  return MB_EXCEPTION_NONE;
+}
+
+unsigned int ModbusReadHoldingRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  uint32_t sz = 0;
+
+  uint32_t i = 0;
+  uint8_t *buf = reply->reply.read_holding_registers.data;
+
+  for(i = 0; i < data->read_holding_registers.quant; i++)
+  {
+    switch(data->read_holding_registers.start + i)
+    {
+    case 1:
+      buf[(i + sz)] = (uint8_t)(U_M1 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M1);
+      sz += 2;
+      break;
+    case 2:
+      buf[(i + sz)] = (uint8_t)(U_M2 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M2);
+      sz += 2;
+      break;
+    case 3:
+      buf[(i + sz)] = (uint8_t)(U_M3 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M3);
+      sz += 2;
+      break;
+    case 4:
+      buf[(i + sz)] = (uint8_t)(U_M4 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M4);
+      sz += 2;
+      break;
+    case 5:
+      buf[(i + sz)] = (uint8_t)(U_M5 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M5);
+      sz += 2;
+      break;
+    case 6:
+      buf[(i + sz)] = (uint8_t)(U_M6 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M6);
+      sz += 2;
+      break;
+    case 7:
+      buf[(i + sz)] = (uint8_t)(U_M7 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M7);
+      sz += 2;
+      break;
+    case 8:
+      buf[(i + sz)] = (uint8_t)(U_M8 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M8);
+      sz += 2;
+      break;
+    case 9:
+      buf[(i + sz)] = (uint8_t)(U_M9 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M9);
+      sz += 2;
+      break;
+    case 10:
+      buf[(i + sz)] = (uint8_t)(U_M10 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M10);
+      sz += 2;
+      break;
+    case 11:
+      buf[(i + sz)] = (uint8_t)(U_M11 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M11);
+      sz += 2;
+      break;
+    case 12:
+      buf[(i + sz)] = (uint8_t)(U_M12 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M12);
+      sz += 2;
+      break;
+    case 13:
+      buf[(i + sz)] = (uint8_t)(U_M13 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M13);
+      sz += 2;
+      break;
+    case 14:
+      buf[(i + sz)] = (uint8_t)(U_M14 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M14);
+      sz += 2;
+      break;
+    case 15:
+      buf[(i + sz)] = (uint8_t)(U_M15 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M15);
+      sz += 2;
+      break;
+    case 16:
+      buf[(i + sz)] = (uint8_t)(U_M16 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M16);
+      sz += 2;
+      break;
+    case 17:
+      buf[(i + sz)] = (uint8_t)(U_M17 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M17);
+      sz += 2;
+      break;
+    case 18:
+      buf[(i + sz)] = (uint8_t)(U_M18 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M18);
+      sz += 2;
+      break;
+    case 19:
+      buf[(i + sz)] = (uint8_t)(U_M19 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M19);
+      sz += 2;
+      break;
+    case 20:
+      buf[(i + sz)] = (uint8_t)(U_M20 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M20);
+      sz += 2;
+      break;
+    case 21:
+      buf[(i + sz)] = (uint8_t)(U_M21 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M21);
+      sz = 2;
+      break;
+    case 22:
+      buf[(i + sz)] = (uint8_t)(U_M22 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M22);
+      sz += 2;
+      break;
+    case 23:
+      buf[(i + sz)] = (uint8_t)(U_M23 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M23);
+      sz += 2;
+      break;
+    case 24:
+      buf[(i + sz)] = (uint8_t)(U_M24 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M24);
+      sz += 2;
+      break;
+    case 25:
+      buf[(i + sz)] = (uint8_t)(U_M25 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M25);
+      sz += 2;
+      break;
+    case 26:
+      buf[(i + sz)] = (uint8_t)(U_M26 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M26);
+      sz += 2;
+      break;
+    case 27:
+      buf[(i + sz)] = (uint8_t)(U_M27 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M27);
+      sz += 2;
+      break;
+    case 28:
+      buf[(i + sz)] = (uint8_t)(U_M28 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M28);
+      sz += 2;
+      break;
+    case 29:
+      buf[(i + sz)] = (uint8_t)(U_M29 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M29);
+      sz += 2;
+      break;
+    case 30:
+      buf[(i + sz)] = (uint8_t)(U_M30 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M30);
+      sz += 2;
+      break;
+    case 31:
+      buf[(i + sz)] = (uint8_t)(U_M31 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M31);
+      sz += 2;
+      break;
+    case 32:
+      buf[(i + sz)] = (uint8_t)(U_M32 >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M32);
+      sz += 2;
+      break;
+    default:
+      return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
+    }
+  }
+
+  reply->reply.read_holding_registers.size = sz;
+
+  return MB_EXCEPTION_NONE;
+}
+
+unsigned int ModbusReadInputRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  return MB_EXCEPTION_NONE;
+}
+
+unsigned int ModbusWriteSingleCoil(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  if(data->write_single_coil.val)
+    saidas |= 1 << data->write_single_coil.output;
+  else
+    saidas &= ~(1 << data->write_single_coil.output);
+
+  /*switch(data->write_single_coil.output)
+  {
+  case 1:
+    if(data->write_single_coil.val)
+      I_C1 |= 1 << data->write_single_coil.output;
+    else
+      I_C1 &= ~(1 << data->write_single_coil.output);
+  case 2:
+    if(data->write_single_coil.val)
+      I_C1 |= 1 << data->write_single_coil.output;
+    else
+      I_C1 &= ~(1 << data->write_single_coil.output);
+  default:
+    return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
+  }*/
+
+  reply->reply.write_single_coil = data->write_single_coil;
+
+  return MB_EXCEPTION_NONE;
+}
+
+unsigned int ModbusWriteSingleRegister(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  switch(data->write_single_register.address)
+  {
+  case 1:
+    I_M1 = data->write_single_register.val;
+    break;
+  case 2:
+    I_M2 = data->write_single_register.val;
+    break;
+  case 3:
+    I_M3 = data->write_single_register.val;
+    break;
+  case 4:
+    I_M4 = data->write_single_register.val;
+    break;
+  case 5:
+    I_M5 = data->write_single_register.val;
+    break;
+  case 6:
+    I_M6 = data->write_single_register.val;
+    break;
+  case 7:
+    I_M7 = data->write_single_register.val;
+    break;
+  case 8:
+    I_M8 = data->write_single_register.val;
+    break;
+  case 9:
+    I_M9 = data->write_single_register.val;
+    break;
+  case 10:
+    I_M10 = data->write_single_register.val;
+    break;
+  case 11:
+    I_M11 = data->write_single_register.val;
+    break;
+  case 12:
+    I_M12 = data->write_single_register.val;
+    break;
+  default:
+    return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
+  }
+
+  reply->reply.write_single_register = data->write_single_register;
+
+  return MB_EXCEPTION_NONE;
+}
+
+unsigned int ModbusWriteMultipleCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  return MB_EXCEPTION_NONE;
+}
+
+unsigned int ModbusWriteMultipleRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  return MB_EXCEPTION_NONE;
+}
+
+unsigned int ModbusMaskWriteRegister(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  return MB_EXCEPTION_NONE;
+}
+
+unsigned int ModbusRWMultipleRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  return MB_EXCEPTION_NONE;
+}
+
+unsigned int ModbusReadExceptionStatus(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
+{
+  return MB_EXCEPTION_NONE;
 }
 
 /******************************************************************************
@@ -543,10 +836,9 @@ int main (void)
 
   while(1)
   {
-    AtualizaEntradas();
-    AtualizaSaidas();
-    U_M1 = 1;	// Aquecimento Modo Automatico
-    U_M2 = 1;   // Banho Modo Automatico
+    entradas = AtualizaEntradas();
+    saidas = AtualizaSaidas();
+    ModbusRequest();
   }
 
   return(0);
