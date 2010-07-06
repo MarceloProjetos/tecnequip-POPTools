@@ -1,4 +1,5 @@
 LDmicro0.1
+MICRO=NXP LPC1768 LQFP100
 CYCLE=50000
 CRYSTAL=20000000
 BAUD=2400
@@ -25,13 +26,13 @@ END
 RUNG
     PARALLEL
         SERIES
-            CONTACTS Xfaster 0
+            CONTACTS Xfaster 0 0
             OSR
             LES speed 20
             ADD speed speed 1
         END
         SERIES
-            CONTACTS Xslower 0
+            CONTACTS Xslower 0 0
             OSR
             GRT speed 0
             SUB speed speed 1
@@ -48,7 +49,7 @@ RUNG
             GRT accum 20
             PARALLEL
                 SUB accum accum 20
-                COIL Rmaybe_step 0 0 0
+                COIL Rmaybe_step 0 0 0 0
             END
         END
     END
@@ -56,13 +57,13 @@ END
 RUNG
     PARALLEL
         SERIES
-            CONTACTS Xforward 0
-            CONTACTS Rmaybe_step 0
+            CONTACTS Xforward 0 0
+            CONTACTS Rmaybe_step 0 0
             ADD seq seq 1
         END
         SERIES
-            CONTACTS Xreverse 0
-            CONTACTS Rmaybe_step 0
+            CONTACTS Xreverse 0 0
+            CONTACTS Rmaybe_step 0 0
             SUB seq seq 1
         END
     END
@@ -92,22 +93,22 @@ RUNG
                 EQU seq 0
                 EQU seq 1
             END
-            COIL YcoilA_0 0 0 0
+            COIL YcoilA_0 0 0 0 0
         END
         SERIES
-            CONTACTS YcoilA_0 1
-            COIL YcoilA_1 0 0 0
+            CONTACTS YcoilA_0 1 0
+            COIL YcoilA_1 0 0 0 0
         END
         SERIES
             PARALLEL
                 EQU seq 0
                 EQU seq 3
             END
-            COIL YcoilB_0 0 0 0
+            COIL YcoilB_0 0 0 0 0
         END
         SERIES
-            CONTACTS YcoilB_0 1
-            COIL YcoilB_1 0 0 0
+            CONTACTS YcoilB_0 1 0
+            COIL YcoilB_1 0 0 0 0
         END
     END
 END

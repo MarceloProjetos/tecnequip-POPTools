@@ -78,7 +78,7 @@ void (* const g_pfnVectors[])(void) = {
    MemManageException,
    BusFaultException,
    UsageFaultException,
-(void (*)(void))((unsigned long)0x8ffe720a),
+(void (*)(void))((unsigned long)0xeffea432),
    0,                   /* Reserved */
    0,                   /* Reserved */
    0,                   /* Reserved */

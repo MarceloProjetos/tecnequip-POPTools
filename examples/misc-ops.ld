@@ -15,17 +15,17 @@ RUNG
     COMMENT Exemplos de deslocamento de bits, tabela de busca, relay de controle mestre.\r\n
 END
 RUNG
-    CONTACTS Xon 0
+    CONTACTS Xon 0 0
     MASTER_RELAY
 END
 RUNG
-    CONTACTS Rosc 0
+    CONTACTS Rosc 0 0
     TON Ton 500000
     TOF Tof 500000
-    COIL Rosc 1 0 0
+    COIL Rosc 1 0 0 0
 END
 RUNG
-    CONTACTS Rosc 0
+    CONTACTS Rosc 0 0
     SHIFT_REGISTER reg 7
 END
 RUNG
@@ -37,7 +37,7 @@ END
 RUNG
     PARALLEL
         SERIES
-            CONTACTS Rosc 0
+            CONTACTS Rosc 0 0
             CTC Ci 4
         END
         LOOK_UP_TABLE duty Ci 5 0 10 70 80 70 10
@@ -48,5 +48,5 @@ RUNG
     MASTER_RELAY
 END
 RUNG
-    COIL Yalways 0 0 0
+    COIL Yalways 0 0 0 0
 END

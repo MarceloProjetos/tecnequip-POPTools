@@ -23,6 +23,7 @@
 //-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <commctrl.h>
 
 #include "ldmicro.h"
@@ -34,8 +35,14 @@ static HWND SourceInternalRelayRadio;
 static HWND SourceInputPinRadio;
 static HWND SourceOutputPinRadio;
 static HWND NameTextbox;
+static HWND BitCombobox;
 
 static LONG_PTR PrevNameProc;
+
+const LPCTSTR ComboboxBitItens[] = { _("0"), _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
+									_("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
+									_("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"), 
+									_("31")/*, _("32")*/};
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
@@ -91,6 +98,16 @@ static void MakeControls(void)
         146, 44, 160, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(NegatedCheckbox);
 
+    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        146, 65, 20, 21, ContactsDialog, NULL, Instance, NULL);
+    NiceFont(textLabel2);
+
+	BitCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        176, 65, 65, 40, ContactsDialog, NULL, Instance, NULL);
+    NiceFont(BitCombobox);
+
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         321, 10, 70, 23, ContactsDialog, NULL, Instance, NULL); 
@@ -105,7 +122,7 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
-void ShowContactsDialog(BOOL *negated, char *name)
+void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 {
     ContactsDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Contacts"), WS_OVERLAPPED | WS_SYSMENU,
@@ -113,6 +130,13 @@ void ShowContactsDialog(BOOL *negated, char *name)
 
     MakeControls();
    
+	int i;
+
+	for (i = 0; i < sizeof(ComboboxBitItens) / sizeof(ComboboxBitItens[0]); i++)
+		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
+
+	SendMessage(BitCombobox, CB_SETCURSEL, *bit, 0);
+
     if(name[0] == 'R') {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else if(name[0] == 'Y') {
@@ -157,6 +181,12 @@ void ShowContactsDialog(BOOL *negated, char *name)
         } else {
             *negated = FALSE;
         }
+
+		char buf[16];
+        SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
+            (LPARAM)(buf));
+        *bit = atoi(buf);
+
         if(SendMessage(SourceInternalRelayRadio, BM_GETSTATE, 0, 0)
             & BST_CHECKED)
         {

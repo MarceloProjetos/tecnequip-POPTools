@@ -234,34 +234,44 @@ static void GenSymFormattedString(char *dest)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void Op(int op, char *name1, char *name2, char *name3, SWORD lit)
+static void Op(int op, char *name1, char *name2, char *name3, SWORD lit, unsigned char bit)
 {
     IntCode[IntCodeLen].op = op;
     if(name1) strcpy(IntCode[IntCodeLen].name1, name1);
     if(name2) strcpy(IntCode[IntCodeLen].name2, name2);
     if(name3) strcpy(IntCode[IntCodeLen].name3, name3);
     IntCode[IntCodeLen].literal = lit;
+	IntCode[IntCodeLen].bit = bit;
     IntCodeLen++;
 }
+
 static void Op(int op, char *name1, char *name2, SWORD lit)
 {
-    Op(op, name1, name2, NULL, lit);
+    Op(op, name1, name2, NULL, lit, 0);
 }
 static void Op(int op, char *name1, SWORD lit)
 {
-    Op(op, name1, NULL, NULL, lit);
+    Op(op, name1, NULL, NULL, lit, 0);
 }
 static void Op(int op, char *name1, char *name2)
 {
-    Op(op, name1, name2, NULL, 0);
+    Op(op, name1, name2, NULL, 0, 0);
 }
 static void Op(int op, char *name1)
 {
-    Op(op, name1, NULL, NULL, 0);
+    Op(op, name1, NULL, NULL, 0, 0);
+}
+static void OpBit(int op, char *name1, unsigned char bit)
+{
+    Op(op, name1, NULL, NULL, 0, bit);
+}
+static void OpBit(int op, char *name1, char *name2, unsigned char bit)
+{
+    Op(op, name1, name2, NULL, 0, bit);
 }
 static void Op(int op)
 {
-    Op(op, NULL, NULL, NULL, 0);
+    Op(op, NULL, NULL, NULL, 0, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -421,31 +431,31 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
         }
         case ELEM_CONTACTS: {
             if(l->d.contacts.negated) {
-                Op(INT_IF_BIT_SET, l->d.contacts.name);
+                OpBit(INT_IF_BIT_SET, l->d.contacts.name, l->d.contacts.bit);
             } else {
-                Op(INT_IF_BIT_CLEAR, l->d.contacts.name);
+                OpBit(INT_IF_BIT_CLEAR, l->d.contacts.name, l->d.contacts.bit);
             }
-            Op(INT_CLEAR_BIT, stateInOut);
+			OpBit(INT_CLEAR_BIT, stateInOut, l->d.contacts.bit);
             Op(INT_END_IF);
             break;
         }
         case ELEM_COIL: {
             if(l->d.coil.negated) {
                 Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_CLEAR_BIT, l->d.contacts.name);
+				OpBit(INT_CLEAR_BIT, l->d.contacts.name, l->d.coil.bit);
                 Op(INT_ELSE);
-                Op(INT_SET_BIT, l->d.contacts.name);
+                OpBit(INT_SET_BIT, l->d.contacts.name, l->d.coil.bit);
                 Op(INT_END_IF);
             } else if(l->d.coil.setOnly) {
-                Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_SET_BIT, l->d.contacts.name);
+                OpBit(INT_IF_BIT_SET, stateInOut, l->d.coil.bit);
+                OpBit(INT_SET_BIT, l->d.contacts.name, l->d.coil.bit);
                 Op(INT_END_IF);
             } else if(l->d.coil.resetOnly) {
-                Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_CLEAR_BIT, l->d.contacts.name);
+                OpBit(INT_IF_BIT_SET, stateInOut, l->d.coil.bit);
+                Op(INT_CLEAR_BIT, l->d.contacts.name, l->d.coil.bit);
                 Op(INT_END_IF);
             } else {
-                Op(INT_COPY_BIT_TO_BIT, l->d.contacts.name, stateInOut);
+                OpBit(INT_COPY_BIT_TO_BIT, l->d.contacts.name, stateInOut, l->d.coil.bit);
             }
             break;
         }
@@ -548,7 +558,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_IF_BIT_CLEAR, storeName);
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 1);
                     Op(INT_SET_VARIABLE_SUBTRACT, l->d.counter.name,
-                        l->d.counter.name, "$scratch", 0);
+                        l->d.counter.name, "$scratch", 0, 0);
                 Op(INT_END_IF);
             Op(INT_END_IF);
             Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
@@ -743,7 +753,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 intOp = INT_SET_VARIABLE_DIVIDE;
             } else oops();
 
-            Op(intOp, l->d.math.dest, op1, op2, 0);
+            Op(intOp, l->d.math.dest, op1, op2, 0, 0);
 
             Op(INT_END_IF);
             break;
@@ -833,16 +843,16 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", t->vals[(i-1)*2]);
                 Op(INT_SET_VARIABLE_SUBTRACT, "$scratch", t->index,
-                    "$scratch", 0);
+                    "$scratch", 0, 0);
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", thisDx);
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch3", thisDy);
                 Op(INT_SET_VARIABLE_MULTIPLY, t->dest, "$scratch", "$scratch3",
-                    0);
-                Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, "$scratch2", 0);
+                    0, 0);
+                Op(INT_SET_VARIABLE_DIVIDE, t->dest, t->dest, "$scratch2", 0, 0);
 
                 Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch",
                     t->vals[(i-1)*2 + 1]);
-                Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, "$scratch", 0);
+                Op(INT_SET_VARIABLE_ADD, t->dest, t->dest, "$scratch", 0, 0);
                 Op(INT_END_IF);
             }
             Op(INT_END_IF);
@@ -1022,14 +1032,14 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch",
                         TenToThe((digits-digit)-1));
                     Op(INT_SET_VARIABLE_DIVIDE, "$scratch2", convertState,
-                        "$scratch", 0);
+                        "$scratch", 0, 0);
                     Op(INT_SET_VARIABLE_MULTIPLY, "$scratch", "$scratch",
-                        "$scratch2", 0);
+                        "$scratch2", 0, 0);
                     Op(INT_SET_VARIABLE_SUBTRACT, convertState,
-                        convertState, "$scratch", 0);
+                        convertState, "$scratch", 0, 0);
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", '0');
                     Op(INT_SET_VARIABLE_ADD, "$scratch2", "$scratch2",
-                        "$scratch", 0);
+                        "$scratch", 0, 0);
 
                     // Suppress all but the last leading zero.
                     if(digit != (digits - 1)) {
@@ -1066,7 +1076,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                             Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch",
                                 (SWORD)0);
                             Op(INT_SET_VARIABLE_SUBTRACT, convertState,
-                                "$scratch", var, 0);
+                                "$scratch", var, 0, 0);
                         Op(INT_END_IF);
 
                     Op(INT_END_IF);

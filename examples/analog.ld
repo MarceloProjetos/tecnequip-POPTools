@@ -1,4 +1,5 @@
 LDmicro0.1
+MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
 BAUD=2400
@@ -11,10 +12,10 @@ END
 
 PROGRAM
 RUNG
-    CONTACTS RUpdate_L 1
+    CONTACTS RUpdate_L 1 0
     TON TUpdate_H 500000
     TOF TUpdate_L 500000
-    COIL RUpdate_L 0 0 0
+    COIL RUpdate_L 0 0 0 0
 END
 RUNG
     READ_ADC Avar
@@ -23,24 +24,24 @@ RUNG
     COMMENT TEMPERATURE ALARM HYSTERISIS
 END
 RUNG
-    CONTACTS RUpdate_L 0
+    CONTACTS RUpdate_L 0 0
     FORMATTED_STRING Avar 14 84 101 109 112 61 92 45 53 39 67 92 114 92 110
     PARALLEL
         SERIES
             GEQ Avar 800
-            COIL YTEMP_HI_HI 0 1 0
+            COIL YTEMP_HI_HI 0 1 0 0
         END
         SERIES
             GEQ Avar 700
-            COIL YTEMP_HI 0 1 0
+            COIL YTEMP_HI 0 1 0 0
         END
         SERIES
             LEQ Avar 750
-            COIL YTEMP_HI_HI 0 0 1
+            COIL YTEMP_HI_HI 0 0 1 0
         END
         SERIES
             LEQ Avar 650
-            COIL YTEMP_HI 0 0 1
+            COIL YTEMP_HI 0 0 1 0
         END
     END
 END

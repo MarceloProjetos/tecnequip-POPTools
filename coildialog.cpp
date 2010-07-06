@@ -23,6 +23,7 @@
 //-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <commctrl.h>
 
 #include "ldmicro.h"
@@ -36,8 +37,14 @@ static HWND NormalRadio;
 static HWND SetOnlyRadio;
 static HWND ResetOnlyRadio;
 static HWND NameTextbox;
+static HWND BitCombobox;
 
 static LONG_PTR PrevNameProc;
+
+const LPCTSTR ComboboxBitItens[] = { _("0"), _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
+									_("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
+									_("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"), 
+									_("31")/*, _("32")*/};
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
@@ -105,8 +112,18 @@ static void MakeControls(void)
 
     NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 80, 155, 21, CoilDialog, NULL, Instance, NULL);
+        190, 80, 100, 21, CoilDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
+
+    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        135, 105, 50, 21, CoilDialog, NULL, Instance, NULL);
+    NiceFont(textLabel2);
+
+	BitCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        190, 105, 65, 40, CoilDialog, NULL, Instance, NULL);
+    NiceFont(BitCombobox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
@@ -122,16 +139,23 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
-void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
+void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, unsigned char * bit)
 {
     CoilDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Coil"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 359, 115, NULL, NULL, Instance, NULL);
+        100, 100, 359, 135, NULL, NULL, Instance, NULL);
     RECT r;
     GetClientRect(CoilDialog, &r);
 
     MakeControls();
-   
+
+	int i;
+
+	for (i = 0; i < sizeof(ComboboxBitItens) / sizeof(ComboboxBitItens[0]); i++)
+		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
+
+	SendMessage(BitCombobox, CB_SETCURSEL, *bit, 0);
+
     if(name[0] == 'R') {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else {
@@ -183,6 +207,11 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name)
             name[0] = 'Y';
         }
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
+
+		char buf[16];
+        SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
+            (LPARAM)(buf));
+        *bit = atoi(buf);
 
         if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             *negated = FALSE;

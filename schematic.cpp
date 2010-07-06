@@ -406,13 +406,13 @@ void EditSelectedElement(void)
 
         case ELEM_CONTACTS:
             ShowContactsDialog(&(Selected->d.contacts.negated),
-                Selected->d.contacts.name);
+                Selected->d.contacts.name, &(Selected->d.contacts.bit));
             break;
 
         case ELEM_COIL:
             ShowCoilDialog(&(Selected->d.coil.negated),
                 &(Selected->d.coil.setOnly), &(Selected->d.coil.resetOnly),
-                Selected->d.coil.name);
+                Selected->d.coil.name, &(Selected->d.coil.bit));
             break;
 
         case ELEM_TON:

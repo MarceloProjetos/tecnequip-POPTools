@@ -11,13 +11,13 @@ END
 
 PROGRAM
 RUNG
-    CONTACTS Rosc 0
+    CONTACTS Rosc 0 0
     TON Tosc_on 250000
     TOF Tosc_off 250000
-    COIL Rosc 1 0 0
+    COIL Rosc 1 0 0 0
 END
 RUNG
-    CONTACTS Xbutton 0
+    CONTACTS Xbutton 0 0
     CTC Cstate 2
 END
 RUNG
@@ -25,8 +25,8 @@ RUNG
         EQU Cstate 1
         SERIES
             EQU Cstate 2
-            CONTACTS Rosc 0
+            CONTACTS Rosc 0 0
         END
     END
-    COIL Yled 0 0 0
+    COIL Yled 0 0 0 0
 END

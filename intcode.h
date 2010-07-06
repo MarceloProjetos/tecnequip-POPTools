@@ -72,6 +72,7 @@
         char        name3[MAX_NAME_LEN];
         SWORD       literal;
         BOOL       *poweredAfter;
+		unsigned char bit;
     } IntOp;
 
     #define MAX_INT_OPS     (1024*16)

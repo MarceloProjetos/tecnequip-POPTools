@@ -1,4 +1,5 @@
 LDmicro0.1
+MICRO=NXP LPC1768 LQFP100
 CYCLE=5000
 CRYSTAL=4000000
 BAUD=2400
@@ -24,11 +25,11 @@ RUNG
     COMMENT With a 5 ms cycle time, this will oscillate at 100 Hz, which should be\r\nokay (33 Hz refresh rate, 1/3 duty cycle).
 END
 RUNG
-    CONTACTS Rdosc 1
-    COIL Rdosc 0 0 0
+    CONTACTS Rdosc 1 0
+    COIL Rdosc 0 0 0 0
 END
 RUNG
-    CONTACTS Rdosc 0
+    CONTACTS Rdosc 0 0
     CTC Cdigit 2
 END
 RUNG
@@ -39,21 +40,21 @@ RUNG
         SERIES
             EQU Cdigit 0
             PARALLEL
-                COIL Ycom_digit0 0 0 0
+                COIL Ycom_digit0 0 0 0 0
                 MOVE digit digit0
             END
         END
         SERIES
             EQU Cdigit 1
             PARALLEL
-                COIL Ycom_digit1 0 0 0
+                COIL Ycom_digit1 0 0 0 0
                 MOVE digit digit1
             END
         END
         SERIES
             EQU Cdigit 2
             PARALLEL
-                COIL Ycom_digit2 0 0 0
+                COIL Ycom_digit2 0 0 0 0
                 MOVE digit digit2
             END
         END
@@ -67,22 +68,22 @@ RUNG
         SERIES
             NEQ digit 1
             NEQ digit 4
-            COIL Yseg_a 0 0 0
+            COIL Yseg_a 0 0 0 0
         END
         SERIES
             NEQ digit 5
             NEQ digit 6
-            COIL Yseg_b 0 0 0
+            COIL Yseg_b 0 0 0 0
         END
         SERIES
             NEQ digit 2
-            COIL Yseg_c 0 0 0
+            COIL Yseg_c 0 0 0 0
         END
         SERIES
             NEQ digit 1
             NEQ digit 4
             NEQ digit 7
-            COIL Yseg_d 0 0 0
+            COIL Yseg_d 0 0 0 0
         END
         SERIES
             PARALLEL
@@ -91,20 +92,20 @@ RUNG
                 EQU digit 6
                 EQU digit 8
             END
-            COIL Yseg_e 0 0 0
+            COIL Yseg_e 0 0 0 0
         END
         SERIES
             NEQ digit 1
             NEQ digit 2
             NEQ digit 3
             NEQ digit 7
-            COIL Yseg_f 0 0 0
+            COIL Yseg_f 0 0 0 0
         END
         SERIES
             NEQ digit 0
             NEQ digit 1
             NEQ digit 7
-            COIL Yseg_g 0 0 0
+            COIL Yseg_g 0 0 0 0
         END
     END
 END

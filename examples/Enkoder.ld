@@ -14,28 +14,28 @@ PROGRAM
 RUNG
     PARALLEL
         SERIES
-            CONTACTS X_A 0
+            CONTACTS X_A 0 0
             PARALLEL
                 SERIES
                     OSR
-                    CONTACTS X_B 0
+                    CONTACTS X_B 0 0
                 END
                 SERIES
                     OSF
-                    CONTACTS X_B 1
+                    CONTACTS X_B 1 0
                 END
             END
         END
         SERIES
-            CONTACTS X_B 0
+            CONTACTS X_B 0 0
             PARALLEL
                 SERIES
                     OSR
-                    CONTACTS X_A 1
+                    CONTACTS X_A 1 0
                 END
                 SERIES
                     OSF
-                    CONTACTS X_A 0
+                    CONTACTS X_A 0 0
                 END
             END
         END
@@ -45,28 +45,28 @@ END
 RUNG
     PARALLEL
         SERIES
-            CONTACTS X_A 0
+            CONTACTS X_A 0 0
             PARALLEL
                 SERIES
                     OSR
-                    CONTACTS X_B 1
+                    CONTACTS X_B 1 0
                 END
                 SERIES
                     OSF
-                    CONTACTS X_B 0
+                    CONTACTS X_B 0 0
                 END
             END
         END
         SERIES
-            CONTACTS X_B 0
+            CONTACTS X_B 0 0
             PARALLEL
                 SERIES
                     OSR
-                    CONTACTS X_A 0
+                    CONTACTS X_A 0 0
                 END
                 SERIES
                     OSF
-                    CONTACTS X_A 1
+                    CONTACTS X_A 1 0
                 END
             END
         END
@@ -77,13 +77,13 @@ RUNG
     COMMENT Pokazivanje stanja na displeju
 END
 RUNG
-    CONTACTS R_osc 0
+    CONTACTS R_osc 0 0
     TON T_osc 100000
     TOF T_oosc 100000
-    COIL R_osc 1 0 0
+    COIL R_osc 1 0 0 0
 END
 RUNG
-    CONTACTS R_osc 0
+    CONTACTS R_osc 0 0
     OSF
     FORMATTED_STRING Enkoder 22 80 111 115 105 116 105 111 110 32 32 32 92 45 52 92 120 70 69 92 120 48 50
     OSF

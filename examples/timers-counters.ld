@@ -19,26 +19,26 @@ RUNG
     COMMENT Exemplo de timers (TON, TOF, RTO), contadores (CTC, CTU, CTD) e o reset (RES). 
 END
 RUNG
-    CONTACTS Rosc 0
+    CONTACTS Rosc 0 0
     TOF Tof 100000
     TON Ton 100000
-    COIL Rosc 1 0 0
+    COIL Rosc 1 0 0 0
 END
 RUNG
-    CONTACTS Rosc 0
-    CONTACTS Xup 0
+    CONTACTS Rosc 0 0
+    CONTACTS Xup 0 0
     CTU Ccnt 20
     RTO Trto 10000000
-    COIL Yup 0 0 0
+    COIL Yup 0 0 0 0
 END
 RUNG
-    CONTACTS Rosc 0
-    CONTACTS Xdown 0
+    CONTACTS Rosc 0 0
+    CONTACTS Xdown 0 0
     CTD Ccnt 10
-    COIL Ydown 0 0 0
+    COIL Ydown 0 0 0 0
 END
 RUNG
-    CONTACTS Xres 0
+    CONTACTS Xres 0 0
     PARALLEL
         OSR
         OSF
@@ -46,12 +46,12 @@ RUNG
     RES Trto
 END
 RUNG
-    CONTACTS Rosc 0
+    CONTACTS Rosc 0 0
     CTC Ccirc 7
 END
 RUNG
     EQU Ccirc 3
     OSF
     TOF Tpulse 200000
-    COIL Ypulse 0 0 0
+    COIL Ypulse 0 0 0 0
 END

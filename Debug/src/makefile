@@ -66,7 +66,7 @@ DLIBS =
 #
 
 # Define linker script file here
-LDSCRIPT = ./prj/lpc1768_ram.ld
+LDSCRIPT = ./prj/lpc1768_flash.ld
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS = 

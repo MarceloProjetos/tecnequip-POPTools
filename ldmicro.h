@@ -228,6 +228,7 @@ typedef struct ElemCommentTag {
 typedef struct ElemContactsTag {
     char    name[MAX_NAME_LEN];
     BOOL    negated;
+	unsigned char bit;
 } ElemContacts;
 
 typedef struct ElemCoilTag {
@@ -235,6 +236,7 @@ typedef struct ElemCoilTag {
     BOOL    negated;
     BOOL    setOnly;
     BOOL    resetOnly;
+	unsigned char bit;
 } ElemCoil;
 
 typedef struct ElemTimeTag {
@@ -383,6 +385,7 @@ typedef struct PlcProgramSingleIoTag {
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
+	unsigned char bit;
 } PlcProgramSingleIo;
 
 #define MAX_IO  512
@@ -457,6 +460,7 @@ typedef struct McuIoPinInfoTag {
     char    port;
     int     pin;
     int     bit;
+	int     coil;
 } McuIoPinInfo;
 
 typedef struct McuAdcPinInfoTag {
@@ -663,9 +667,9 @@ void ShowAnalogSliderPopup(char *name);
 // commentdialog.cpp
 void ShowCommentDialog(char *comment);
 // contactsdialog.cpp
-void ShowContactsDialog(BOOL *negated, char *name);
+void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit);
 // coildialog.cpp
-void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name);
+void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, unsigned char *bit);
 // simpledialog.cpp
 void ShowTimerDialog(int which, int *delay, char *name);
 void ShowCounterDialog(int which, int *count, char *name);

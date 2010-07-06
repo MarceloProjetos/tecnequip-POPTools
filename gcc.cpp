@@ -75,14 +75,9 @@ static char *MapSym(char *str)
 
 			if (Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) 
 			{
-				if (pin > 51)
+				if (pin > 19)
 				{
-					sprintf(ret, "U_C%d", pin - 51);
-					return ret;
-				}
-				else if (pin > 19)
-				{
-					sprintf(ret, "U_M%d", pin - 19);
+					sprintf(ret, "U_M[%d]", pin - 19);
 					return ret;
 				}
 				else
@@ -98,14 +93,9 @@ static char *MapSym(char *str)
 			} 
 			else if (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
 			{
-				if (pin > 51)
+				if (pin > 19)
 				{
-					sprintf(ret, "I_C%d", pin - 51);
-					return ret;
-				}
-				else if (pin > 19)
-				{
-					sprintf(ret, "I_M%d", pin - 19);
+					sprintf(ret, "U_M[%d]", pin - 19);
 					return ret;
 				}
 				else
@@ -142,7 +132,10 @@ static void DeclareInt(FILE *f, char *str)
 static void DeclareBit(FILE *f, char *rawStr)
 {
     char *str = MapSym(rawStr);
-    if(*rawStr == 'X') {
+	if (strncmp(str, "U_M[", 4) == 0)
+	{
+		return;
+	} else if(*rawStr == 'X') {
         //fprintf(f, "\n");
         //fprintf(f, "/* You provide this function. */\n");
         //fprintf(f, "PROTO(extern BOOL Read_%s(void);)\n", str);
@@ -154,16 +147,16 @@ static void DeclareBit(FILE *f, char *rawStr)
         //fprintf(f, "PROTO(void Write_%s(BOOL v);)\n", str);
         //fprintf(f, "\n");
     } else if(*rawStr == 'P' || *rawStr == 'M') {
-		fprintf(f, "\n");
-		fprintf(f, "volatile unsigned int %s = 0;\n", str);
-		fprintf(f, "#define Read_%s(x) %s = ReadParameter(atoi(%s[1]))\n", str, str);
-		fprintf(f, "#define Write_%s(x) WriteParameter(atoi(%s[1]), %s)\n", str, str);
+		//fprintf(f, "\n");
+		//fprintf(f, "volatile unsigned int %s = 0;\n", str);
+		//fprintf(f, "#define Read_%s(x) %s = ReadParameter(atoi(%s[1]))\n", str, str);
+		//fprintf(f, "#define Write_%s(x) WriteParameter(atoi(%s[1]), %s)\n", str, str);
 		return;
     }
 	fprintf(f, "\n");
 	fprintf(f, "volatile unsigned int %s = 0;\n", str);
-	fprintf(f, "#define Read_%s() %s\n", str, str);
-	fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
+	//fprintf(f, "#define Read_%s() %s\n", str, str);
+	//fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
 }
 
 //-----------------------------------------------------------------------------
@@ -269,18 +262,28 @@ static void GenerateAnsiC(FILE *f)
         int j;
         for(j = 0; j < indent; j++) fprintf(f, "    ");
 
+		char *str = MapSym(IntCode[i].name1);
+
         switch(IntCode[i].op) {
             case INT_SET_BIT:
-                fprintf(f, "Write_%s(1);\n", MapSym(IntCode[i].name1));
+				if (strncmp(str, "U_M[", 4) == 0)
+					fprintf(f, "%s |= (1 << %d);\n", MapSym(IntCode[i].name1), IntCode[i].bit);
+				else
+	                fprintf(f, "%s = 1;\n", MapSym(IntCode[i].name1));
                 break;
 
             case INT_CLEAR_BIT:
-                fprintf(f, "Write_%s(0);\n", MapSym(IntCode[i].name1));
+				if (strncmp(str, "U_M[", 4) == 0)
+					fprintf(f, "%s &= ~(1 << %d);\n", MapSym(IntCode[i].name1), IntCode[i].bit);
+				else
+	                fprintf(f, "%s = 0;\n", MapSym(IntCode[i].name1));
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                fprintf(f, "Write_%s(Read_%s());\n", MapSym(IntCode[i].name1),
-                    MapSym(IntCode[i].name2));
+				if (strncmp(str, "U_M[", 4) == 0)
+	                fprintf(f, "%s &= ~(1 << %d); %s |= %s << %d;\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), MapSym(IntCode[i].name2), IntCode[i].bit);
+				else
+					fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1), MapSym(IntCode[i].name2));
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
@@ -313,29 +316,35 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_IF_BIT_SET:
-                fprintf(f, "if(Read_%s()) {\n", MapSym(IntCode[i].name1));
+				if (strncmp(str, "U_M[", 4) == 0)
+	                fprintf(f, "if (%s & (1 << %d)) {\n", MapSym(IntCode[i].name1), IntCode[i].bit);
+				else
+					fprintf(f, "if (%s) {\n", MapSym(IntCode[i].name1));
                 indent++;
                 break;
 
             case INT_IF_BIT_CLEAR:
-                fprintf(f, "if(Read_%s() == 0) {\n", MapSym(IntCode[i].name1));
+				if (strncmp(str, "U_M[", 4) == 0)
+	                fprintf(f, "if (!(%s & (1 << %d))) {\n", MapSym(IntCode[i].name1), IntCode[i].bit);
+				else
+					fprintf(f, "if (!%s) {\n", MapSym(IntCode[i].name1));
                 indent++;
                 break;
 
             case INT_IF_VARIABLE_LES_LITERAL:
-                fprintf(f, "if(%s < %d) {\n", MapSym(IntCode[i].name1),
+                fprintf(f, "if (%s < %d) {\n", MapSym(IntCode[i].name1),
                     IntCode[i].literal);
                 indent++;
                 break;
 
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
-                fprintf(f, "if(%s == %s) {\n", MapSym(IntCode[i].name1),
+                fprintf(f, "if (%s == %s) {\n", MapSym(IntCode[i].name1),
                     MapSym(IntCode[i].name2));
                 indent++;
                 break;
 
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                fprintf(f, "if(%s > %s) {\n", MapSym(IntCode[i].name1),
+                fprintf(f, "if (%s > %s) {\n", MapSym(IntCode[i].name1),
                     MapSym(IntCode[i].name2));
                 indent++;
                 break;
@@ -594,7 +603,8 @@ void CompileAnsiCToGCC(char *dest)
 "/*****************************************************************************\n"
 " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n"
 " *****************************************************************************/\n"
-"volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n\n"
+"volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n"
+"volatile unsigned int U_M[32];\n\n"
 		, Prog.cycleTime / 1000);
 
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");

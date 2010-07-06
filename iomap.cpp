@@ -61,7 +61,7 @@ static BOOL AnalogSliderCancel;
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
 //-----------------------------------------------------------------------------
-static void AppendIo(char *name, int type)
+static void AppendIo(char *name, int type, unsigned char bit)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
@@ -78,6 +78,7 @@ static void AppendIo(char *name, int type)
     if(i < MAX_IO) {
         Prog.io.assignment[i].type = type;
         Prog.io.assignment[i].pin = NO_PIN_ASSIGNED;
+		Prog.io.assignment[i].bit = bit;
         strcpy(Prog.io.assignment[i].name, name);
         (Prog.io.count)++;
     }
@@ -147,15 +148,15 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_CONTACTS:
             switch(l->d.contacts.name[0]) {
                 case 'R':
-                    AppendIo(l->d.contacts.name, IO_TYPE_INTERNAL_RELAY);
+                    AppendIo(l->d.contacts.name, IO_TYPE_INTERNAL_RELAY, l->d.contacts.bit);
                     break;
 
                 case 'Y':
-                    AppendIo(l->d.contacts.name, IO_TYPE_DIG_OUTPUT);
+                    AppendIo(l->d.contacts.name, IO_TYPE_DIG_OUTPUT, l->d.contacts.bit);
                     break;
 
                 case 'X':
-                    AppendIo(l->d.contacts.name, IO_TYPE_DIG_INPUT);
+                    AppendIo(l->d.contacts.name, IO_TYPE_DIG_INPUT, l->d.contacts.bit);
                     break;
 
                 default:
@@ -165,57 +166,56 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_COIL:
-            AppendIo(l->d.coil.name, l->d.coil.name[0] == 'R' ?
-                IO_TYPE_INTERNAL_RELAY : IO_TYPE_DIG_OUTPUT);
+            AppendIo(l->d.coil.name, l->d.coil.name[0] == 'R' ? IO_TYPE_INTERNAL_RELAY : IO_TYPE_DIG_OUTPUT, l->d.coil.bit);
             break;
 
         case ELEM_TON:
         case ELEM_TOF:
             AppendIo(l->d.timer.name, which == ELEM_TON ?  IO_TYPE_TON :
-                IO_TYPE_TOF);
+                IO_TYPE_TOF, 0);
             break;
 
         case ELEM_RTO:
-            AppendIo(l->d.timer.name, IO_TYPE_RTO);
+            AppendIo(l->d.timer.name, IO_TYPE_RTO, 0);
             break;
 
         case ELEM_MOVE:
-            AppendIo(l->d.move.dest, IO_TYPE_GENERAL);
+            AppendIo(l->d.move.dest, IO_TYPE_GENERAL, 0);
             break;
 
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
-            AppendIo(l->d.math.dest, IO_TYPE_GENERAL);
+            AppendIo(l->d.math.dest, IO_TYPE_GENERAL, 0);
             break;
 
         case ELEM_FORMATTED_STRING:
             if(strlen(l->d.fmtdStr.var) > 0) {
-                AppendIo(l->d.fmtdStr.var, IO_TYPE_UART_TX);
+                AppendIo(l->d.fmtdStr.var, IO_TYPE_UART_TX, 0);
             }
             break;
 
         case ELEM_UART_SEND:
-            AppendIo(l->d.uart.name, IO_TYPE_UART_TX);
+            AppendIo(l->d.uart.name, IO_TYPE_UART_TX, 0);
             break;
 
         case ELEM_UART_RECV:
-            AppendIo(l->d.uart.name, IO_TYPE_UART_RX);
+            AppendIo(l->d.uart.name, IO_TYPE_UART_RX, 0);
             break;
 
         case ELEM_SET_PWM:
-            AppendIo(l->d.setPwm.name, IO_TYPE_PWM_OUTPUT);
+            AppendIo(l->d.setPwm.name, IO_TYPE_PWM_OUTPUT, 0);
             break;
 
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC:
-            AppendIo(l->d.counter.name, IO_TYPE_COUNTER);
+            AppendIo(l->d.counter.name, IO_TYPE_COUNTER, 0);
             break;
 
         case ELEM_READ_ADC:
-            AppendIo(l->d.readAdc.name, IO_TYPE_READ_ADC);
+            AppendIo(l->d.readAdc.name, IO_TYPE_READ_ADC, 0);
             break;
 
         case ELEM_SHIFT_REGISTER: {
@@ -223,17 +223,17 @@ static void ExtractNamesFromCircuit(int which, void *any)
             for(i = 0; i < l->d.shiftRegister.stages; i++) {
                 char str[MAX_NAME_LEN+10];
                 sprintf(str, "%s%d", l->d.shiftRegister.name, i);
-                AppendIo(str, IO_TYPE_GENERAL);
+                AppendIo(str, IO_TYPE_GENERAL, 0);
             }
             break;
         }
 
         case ELEM_LOOK_UP_TABLE:
-            AppendIo(l->d.lookUpTable.dest, IO_TYPE_GENERAL);
+            AppendIo(l->d.lookUpTable.dest, IO_TYPE_GENERAL, 0);
             break;
 
         case ELEM_PIECEWISE_LINEAR:
-            AppendIo(l->d.piecewiseLinear.dest, IO_TYPE_GENERAL);
+            AppendIo(l->d.piecewiseLinear.dest, IO_TYPE_GENERAL, 0);
             break;
 
         case ELEM_PLACEHOLDER:
@@ -315,9 +315,9 @@ int GenerateIoMapList(int prevSel)
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
         {
-            for(j = 0; j < IoSeenPreviouslyCount; j++) {
-                if(strcmp(Prog.io.assignment[i].name, 
-					IoSeenPreviously[j].name)==0 && Prog.io.assignment[i].type == IoSeenPreviously[j].type)
+            for(j = 0; j < IoSeenPreviouslyCount; j++) 
+			{
+                if(strcmp(Prog.io.assignment[i].name, IoSeenPreviously[j].name) == 0 && Prog.io.assignment[i].type == IoSeenPreviously[j].type)
                 {
                     Prog.io.assignment[i].pin = IoSeenPreviously[j].pin;
                     break;
@@ -506,8 +506,9 @@ void ShowIoMapDialog(int item)
         for(j = 0; j < Prog.io.count; j++) 
 		{
             if(j == item) continue;
-            if(Prog.io.assignment[j].pin == Prog.mcu->pinInfo[i].pin && 
-				Prog.io.assignment[j].type == Prog.io.assignment[item].type) {
+            if(Prog.io.assignment[j].pin == Prog.mcu->pinInfo[i].pin && Prog.io.assignment[j].type == Prog.io.assignment[item].type && 
+				!((Prog.io.assignment[j].name[0] == 'X' && i > 18) || (Prog.io.assignment[j].name[0] == 'Y' && i > 68)) )
+			{
                 goto cant_use_this_io;
             }
 		}
@@ -540,14 +541,14 @@ void ShowIoMapDialog(int item)
             }
         }
 
-		if ((Prog.io.assignment[item].name[0] == 'X' && i < 83) ||
-			(Prog.io.assignment[item].name[0] == 'Y' && i > 82))
+		if ((Prog.io.assignment[item].name[0] == 'X' && i < 51) ||
+			(Prog.io.assignment[item].name[0] == 'Y' && i > 50))
 		{
-			if (i == 99)
+			if (i == 67)
 				sprintf(buf, "%3d LED USER", Prog.mcu->pinInfo[i].bit,
 					Prog.mcu->pinInfo[i].port,
 					Prog.mcu->pinInfo[i].pin);
-			else if (i == 100)
+			else if (i == 68)
 				sprintf(buf, "%3d LED ERRO", Prog.mcu->pinInfo[i].bit,
 					Prog.mcu->pinInfo[i].port,
 					Prog.mcu->pinInfo[i].pin);
@@ -699,20 +700,16 @@ void IoMapListProc(NMHDR *h)
 					{
                         if(Prog.mcu->pinInfo[j].pin == pin) 
 						{
-							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 99)
+							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 52)
 								sprintf(i->item.pszText, "LED USER");
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 110)
+							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 53)
 								sprintf(i->item.pszText, "LED ERRO");
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin > 51)
-								sprintf(i->item.pszText, "C%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin > 19)
-								sprintf(i->item.pszText, "M%d", Prog.mcu->pinInfo[j].bit);
+								sprintf(i->item.pszText, "M%d.%d", Prog.mcu->pinInfo[j].bit, Prog.io.assignment[item].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT)
 								sprintf(i->item.pszText, "S%d", Prog.mcu->pinInfo[j].bit);
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT && pin > 51)
-								sprintf(i->item.pszText, "C%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT && pin > 19)
-								sprintf(i->item.pszText, "M%d", Prog.mcu->pinInfo[j].bit);
+								sprintf(i->item.pszText, "M%d.%d", Prog.mcu->pinInfo[j].bit, Prog.io.assignment[item].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT)
 								sprintf(i->item.pszText, "E%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_READ_ADC)

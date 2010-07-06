@@ -353,171 +353,14 @@ unsigned int ModbusReadHoldingRegisters(struct MB_Device *dev, union MB_FCD_Data
 
   for(i = 0; i < data->read_holding_registers.quant; i++)
   {
-    switch(data->read_holding_registers.start + i)
+    if (data->read_holding_registers.start + i < 32)
     {
-    case 1:
-      buf[(i + sz)] = (uint8_t)(U_M1 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M1);
+      buf[(i + sz)] = (uint8_t)(U_M[data->read_holding_registers.start + i] >> 8);
+      buf[(i + sz) + 1] = (uint8_t)(U_M[data->read_holding_registers.start + i]);
       sz += 2;
-      break;
-    case 2:
-      buf[(i + sz)] = (uint8_t)(U_M2 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M2);
-      sz += 2;
-      break;
-    case 3:
-      buf[(i + sz)] = (uint8_t)(U_M3 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M3);
-      sz += 2;
-      break;
-    case 4:
-      buf[(i + sz)] = (uint8_t)(U_M4 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M4);
-      sz += 2;
-      break;
-    case 5:
-      buf[(i + sz)] = (uint8_t)(U_M5 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M5);
-      sz += 2;
-      break;
-    case 6:
-      buf[(i + sz)] = (uint8_t)(U_M6 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M6);
-      sz += 2;
-      break;
-    case 7:
-      buf[(i + sz)] = (uint8_t)(U_M7 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M7);
-      sz += 2;
-      break;
-    case 8:
-      buf[(i + sz)] = (uint8_t)(U_M8 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M8);
-      sz += 2;
-      break;
-    case 9:
-      buf[(i + sz)] = (uint8_t)(U_M9 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M9);
-      sz += 2;
-      break;
-    case 10:
-      buf[(i + sz)] = (uint8_t)(U_M10 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M10);
-      sz += 2;
-      break;
-    case 11:
-      buf[(i + sz)] = (uint8_t)(U_M11 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M11);
-      sz += 2;
-      break;
-    case 12:
-      buf[(i + sz)] = (uint8_t)(U_M12 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M12);
-      sz += 2;
-      break;
-    case 13:
-      buf[(i + sz)] = (uint8_t)(U_M13 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M13);
-      sz += 2;
-      break;
-    case 14:
-      buf[(i + sz)] = (uint8_t)(U_M14 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M14);
-      sz += 2;
-      break;
-    case 15:
-      buf[(i + sz)] = (uint8_t)(U_M15 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M15);
-      sz += 2;
-      break;
-    case 16:
-      buf[(i + sz)] = (uint8_t)(U_M16 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M16);
-      sz += 2;
-      break;
-    case 17:
-      buf[(i + sz)] = (uint8_t)(U_M17 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M17);
-      sz += 2;
-      break;
-    case 18:
-      buf[(i + sz)] = (uint8_t)(U_M18 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M18);
-      sz += 2;
-      break;
-    case 19:
-      buf[(i + sz)] = (uint8_t)(U_M19 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M19);
-      sz += 2;
-      break;
-    case 20:
-      buf[(i + sz)] = (uint8_t)(U_M20 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M20);
-      sz += 2;
-      break;
-    case 21:
-      buf[(i + sz)] = (uint8_t)(U_M21 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M21);
-      sz = 2;
-      break;
-    case 22:
-      buf[(i + sz)] = (uint8_t)(U_M22 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M22);
-      sz += 2;
-      break;
-    case 23:
-      buf[(i + sz)] = (uint8_t)(U_M23 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M23);
-      sz += 2;
-      break;
-    case 24:
-      buf[(i + sz)] = (uint8_t)(U_M24 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M24);
-      sz += 2;
-      break;
-    case 25:
-      buf[(i + sz)] = (uint8_t)(U_M25 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M25);
-      sz += 2;
-      break;
-    case 26:
-      buf[(i + sz)] = (uint8_t)(U_M26 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M26);
-      sz += 2;
-      break;
-    case 27:
-      buf[(i + sz)] = (uint8_t)(U_M27 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M27);
-      sz += 2;
-      break;
-    case 28:
-      buf[(i + sz)] = (uint8_t)(U_M28 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M28);
-      sz += 2;
-      break;
-    case 29:
-      buf[(i + sz)] = (uint8_t)(U_M29 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M29);
-      sz += 2;
-      break;
-    case 30:
-      buf[(i + sz)] = (uint8_t)(U_M30 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M30);
-      sz += 2;
-      break;
-    case 31:
-      buf[(i + sz)] = (uint8_t)(U_M31 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M31);
-      sz += 2;
-      break;
-    case 32:
-      buf[(i + sz)] = (uint8_t)(U_M32 >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M32);
-      sz += 2;
-      break;
-    default:
-      return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
     }
+    else
+      return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
   }
 
   reply->reply.read_holding_registers.size = sz;
@@ -560,47 +403,10 @@ unsigned int ModbusWriteSingleCoil(struct MB_Device *dev, union MB_FCD_Data *dat
 
 unsigned int ModbusWriteSingleRegister(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
 {
-  switch(data->write_single_register.address)
-  {
-  case 1:
-    I_M1 = data->write_single_register.val;
-    break;
-  case 2:
-    I_M2 = data->write_single_register.val;
-    break;
-  case 3:
-    I_M3 = data->write_single_register.val;
-    break;
-  case 4:
-    I_M4 = data->write_single_register.val;
-    break;
-  case 5:
-    I_M5 = data->write_single_register.val;
-    break;
-  case 6:
-    I_M6 = data->write_single_register.val;
-    break;
-  case 7:
-    I_M7 = data->write_single_register.val;
-    break;
-  case 8:
-    I_M8 = data->write_single_register.val;
-    break;
-  case 9:
-    I_M9 = data->write_single_register.val;
-    break;
-  case 10:
-    I_M10 = data->write_single_register.val;
-    break;
-  case 11:
-    I_M11 = data->write_single_register.val;
-    break;
-  case 12:
-    I_M12 = data->write_single_register.val;
-    break;
-  default:
+  if (data->write_single_register.address < 32)
+    U_M[data->write_single_register.address] = data->write_single_register.val;
+  else
     return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-  }
 
   reply->reply.write_single_register = data->write_single_register;
 
@@ -834,10 +640,14 @@ int main (void)
   modbus_device.mode    = MB_MODE_SLAVE;
   modbus_device.TX      = ModbusTx;
 
+  memset((void*)U_M, 0, sizeof(U_M));
+
   while(1)
   {
     entradas = AtualizaEntradas();
     saidas = AtualizaSaidas();
+    //U_M1 = 1;	// Aquecimento Modo Automatico
+    //U_M2 = 1;   // Banho Modo Automatico
     ModbusRequest();
   }
 

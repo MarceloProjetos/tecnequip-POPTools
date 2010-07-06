@@ -18,11 +18,11 @@ END
 RUNG
     PARALLEL
         SERIES
-            CONTACTS Xa 0
+            CONTACTS Xa 0 0
             MOVE a 1323
         END
         SERIES
-            CONTACTS Xa 1
+            CONTACTS Xa 1 0
             MOVE a -12
         END
     END
@@ -51,11 +51,11 @@ RUNG
         GEQ e 3969
         OPEN
     END
-    COIL Yok 0 0 0
+    COIL Yok 0 0 0 0
 END
 RUNG
     NEQ e -36
     GRT a 0
     TON Ton 1000000
-    COIL Yno 0 0 0
+    COIL Yno 0 0 0 0
 END
