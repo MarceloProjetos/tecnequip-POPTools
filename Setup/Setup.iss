@@ -31,7 +31,7 @@ Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Relea
 Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Release\src\*"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\examples\*"; DestDir: "{app}\examples"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-tools-20091223-setup.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-tools-20100703-setup.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -42,7 +42,7 @@ Name: "{commondesktop}\POPTools"; Filename: "{app}\POPTools.exe"; Tasks: desktop
 ; Root: HKLM; Subkey: "System\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "Path"; ValueData: "{reg:HKLM\System\CurrentControlSet\Control\Session Manager\Environment,Path};c:\yagarto;c:\yagarto_tools";
 
 [Run]
-Filename: "{app}\yagarto-tools-20091223-setup.exe"; Parameters: "/S /D={pf}\yagarto"; Description: "Ferramentas de Compilação"; Flags: runascurrentuser
+Filename: "{app}\yagarto-tools-20100703-setup.exe"; Parameters: "/S /D={pf}\yagarto"; Description: "Ferramentas de Compilação"; Flags: runascurrentuser
 Filename: "{app}\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; Parameters: "/S /D={pf}\yagarto"; Description: "Compilador e Linker"; Flags: runascurrentuser
 Filename: "{app}\POPTools.exe"; Description: "{cm:LaunchProgram,POPTools}"; Flags: nowait postinstall skipifsilent
 
