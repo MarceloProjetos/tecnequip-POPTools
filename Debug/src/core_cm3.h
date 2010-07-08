@@ -787,20 +787,20 @@ extern uint32_t __STREXW(uint32_t value, uint32_t *addr);
 #elif (defined (__GNUC__)) /*------------------ GNU Compiler ---------------------*/
 /* GNU gcc specific functions */
 
-static __INLINE void __enable_irq(void)               { __ASM volatile ("cpsie i"); }
-static __INLINE void __disable_irq(void)              { __ASM volatile ("cpsid i"); }
+static __INLINE void __enable_irq()               { __ASM volatile ("cpsie i"); }
+static __INLINE void __disable_irq()              { __ASM volatile ("cpsid i"); }
 
-static __INLINE void __enable_fault_irq(void)         { __ASM volatile ("cpsie f"); }
-static __INLINE void __disable_fault_irq(void)        { __ASM volatile ("cpsid f"); }
+static __INLINE void __enable_fault_irq()         { __ASM volatile ("cpsie f"); }
+static __INLINE void __disable_fault_irq()        { __ASM volatile ("cpsid f"); }
 
-static __INLINE void __NOP(void)                      { __ASM volatile ("nop"); }
-static __INLINE void __WFI(void)                      { __ASM volatile ("wfi"); }
-static __INLINE void __WFE(void)                      { __ASM volatile ("wfe"); }
-static __INLINE void __SEV(void)                      { __ASM volatile ("sev"); }
-static __INLINE void __ISB(void)                      { __ASM volatile ("isb"); }
-static __INLINE void __DSB(void)                      { __ASM volatile ("dsb"); }
-static __INLINE void __DMB(void)                      { __ASM volatile ("dmb"); }
-static __INLINE void __CLREX(void)                    { __ASM volatile ("clrex"); }
+static __INLINE void __NOP()                      { __ASM volatile ("nop"); }
+static __INLINE void __WFI()                      { __ASM volatile ("wfi"); }
+static __INLINE void __WFE()                      { __ASM volatile ("wfe"); }
+static __INLINE void __SEV()                      { __ASM volatile ("sev"); }
+static __INLINE void __ISB()                      { __ASM volatile ("isb"); }
+static __INLINE void __DSB()                      { __ASM volatile ("dsb"); }
+static __INLINE void __DMB()                      { __ASM volatile ("dmb"); }
+static __INLINE void __CLREX()                    { __ASM volatile ("clrex"); }
 
 
 /**
@@ -1093,7 +1093,7 @@ static __INLINE uint32_t NVIC_GetPriorityGrouping(void)
  * Enable a device specific interupt in the NVIC interrupt controller.
  * The interrupt number cannot be a negative value.
  */
-static __INLINE void NVIC_EnableIRQ(/*IRQn_Type*/ uint32_t IRQn)
+static __INLINE void NVIC_EnableIRQ(IRQn_Type IRQn)
 {
   NVIC->ISER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* enable interrupt */
 }
@@ -1107,7 +1107,7 @@ static __INLINE void NVIC_EnableIRQ(/*IRQn_Type*/ uint32_t IRQn)
  * Disable a device specific interupt in the NVIC interrupt controller.
  * The interrupt number cannot be a negative value.
  */
-static __INLINE void NVIC_DisableIRQ(/*IRQn_Type*/ uint32_t IRQn)
+static __INLINE void NVIC_DisableIRQ(IRQn_Type IRQn)
 {
   NVIC->ICER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* disable interrupt */
 }
@@ -1121,7 +1121,7 @@ static __INLINE void NVIC_DisableIRQ(/*IRQn_Type*/ uint32_t IRQn)
  * Read the pending register in NVIC and return 1 if its status is pending, 
  * otherwise it returns 0
  */
-static __INLINE uint32_t NVIC_GetPendingIRQ(/*IRQn_Type*/ uint32_t IRQn)
+static __INLINE uint32_t NVIC_GetPendingIRQ(IRQn_Type IRQn)
 {
   return((uint32_t) ((NVIC->ISPR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0)); /* Return 1 if pending else 0 */
 }
@@ -1135,7 +1135,7 @@ static __INLINE uint32_t NVIC_GetPendingIRQ(/*IRQn_Type*/ uint32_t IRQn)
  * Set the pending bit for the specified interrupt.
  * The interrupt number cannot be a negative value.
  */
-static __INLINE void NVIC_SetPendingIRQ(/*IRQn_Type*/ uint32_t IRQn)
+static __INLINE void NVIC_SetPendingIRQ(IRQn_Type IRQn)
 {
   NVIC->ISPR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* set interrupt pending */
 }
@@ -1149,7 +1149,7 @@ static __INLINE void NVIC_SetPendingIRQ(/*IRQn_Type*/ uint32_t IRQn)
  * Clear the pending bit for the specified interrupt. 
  * The interrupt number cannot be a negative value.
  */
-static __INLINE void NVIC_ClearPendingIRQ(/*IRQn_Type*/ uint32_t IRQn)
+static __INLINE void NVIC_ClearPendingIRQ(IRQn_Type IRQn)
 {
   NVIC->ICPR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* Clear pending interrupt */
 }
@@ -1163,7 +1163,7 @@ static __INLINE void NVIC_ClearPendingIRQ(/*IRQn_Type*/ uint32_t IRQn)
  * Read the active register in NVIC and returns 1 if its status is active, 
  * otherwise it returns 0.
  */
-static __INLINE uint32_t NVIC_GetActive(/*IRQn_Type*/ uint32_t IRQn)
+static __INLINE uint32_t NVIC_GetActive(IRQn_Type IRQn)
 {
   return((uint32_t)((NVIC->IABR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0)); /* Return 1 if active else 0 */
 }
@@ -1181,7 +1181,7 @@ static __INLINE uint32_t NVIC_GetActive(/*IRQn_Type*/ uint32_t IRQn)
  *
  * Note: The priority cannot be set for every core interrupt.
  */
-static __INLINE void NVIC_SetPriority(/*IRQn_Type*/ uint32_t IRQn, uint32_t priority)
+static __INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
   if(IRQn < 0) {
     SCB->SHP[((uint32_t)(IRQn) & 0xF)-4] = ((priority << (8 - __NVIC_PRIO_BITS)) & 0xff); } /* set Priority for Cortex-M3 System Interrupts */
@@ -1204,7 +1204,7 @@ static __INLINE void NVIC_SetPriority(/*IRQn_Type*/ uint32_t IRQn, uint32_t prio
  *
  * Note: The priority cannot be set for every core interrupt.
  */
-static __INLINE uint32_t NVIC_GetPriority(/*IRQn_Type*/ uint32_t IRQn)
+static __INLINE uint32_t NVIC_GetPriority(IRQn_Type IRQn)
 {
 
   if(IRQn < 0) {
@@ -1234,7 +1234,6 @@ static __INLINE uint32_t NVIC_EncodePriority (uint32_t PriorityGroup, uint32_t P
   uint32_t PriorityGroupTmp = (PriorityGroup & 0x07);                         /* only values 0..7 are used          */
   uint32_t PreemptPriorityBits;
   uint32_t SubPriorityBits;
-
 
   PreemptPriorityBits = ((7 - PriorityGroupTmp) > __NVIC_PRIO_BITS) ? __NVIC_PRIO_BITS : 7 - PriorityGroupTmp;
   SubPriorityBits     = ((PriorityGroupTmp + __NVIC_PRIO_BITS) < 7) ? 0 : PriorityGroupTmp - 7 + __NVIC_PRIO_BITS;

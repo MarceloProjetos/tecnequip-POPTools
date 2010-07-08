@@ -11,6 +11,9 @@
 #include "lpc17xx.h"
 #include "timer.h"
 
+volatile unsigned int timer0_counter = 0;
+volatile unsigned int timer1_counter = 0;
+
 /*****************************************************************************
 ** Function name:		delayMs
 **
@@ -35,7 +38,7 @@ void delayMs(unsigned char timer_num, unsigned int delayInMs)
 	TIM0 -> IR  = 0xff;		/* reset all interrrupts */
 	TIM0 -> MCR = 0x04;		/* stop timer on match */
 	TIM0 -> TCR = 0x01;		/* start timer */
-  
+
 	/* wait until delay time has elapsed */
 	while (TIM0 -> TCR & 0x01);
   }
@@ -50,13 +53,47 @@ void delayMs(unsigned char timer_num, unsigned int delayInMs)
 	TIM1 -> IR  = 0xff;		/* reset all interrrupts */
 	TIM1 -> MCR = 0x04;		/* stop timer on match */
 	TIM1 -> TCR = 0x01;		/* start timer */
-  
+
 	/* wait until delay time has elapsed */
 	while (TIM1 -> TCR & 0x01);
   }
   return;
 }
 
+
+/******************************************************************************
+** Function name:		Timer0Handler
+**
+** Descriptions:		Timer/Counter 0 interrupt handler
+**
+** parameters:			None
+** Returned value:		None
+** 
+******************************************************************************/
+/*void TIMER0_IRQHandler (void)
+{  
+  TIM0 -> IR = 1;
+
+  timer0_counter++;
+
+}*/
+
+/******************************************************************************
+** Function name:		Timer1Handler
+**
+** Descriptions:		Timer/Counter 1 interrupt handler
+**
+** parameters:			None
+** Returned value:		None
+** 
+******************************************************************************/
+/*void TIMER1_IRQHandler (void)
+{  
+  TIM1 -> IR = 1;
+
+  timer1_counter++;
+
+}*/
 
 /******************************************************************************
 ** Function name:		enable_timer
@@ -146,6 +183,7 @@ unsigned int init_timer ( unsigned char timer_num, unsigned int TimerInterval )
 
   if ( timer_num == 0 )
   {
+	timer0_counter = 0;
 	TIM0 -> MR0 = TimerInterval;
 	TIM0 -> MCR = 3;				/* Interrupt and Reset on MR0 */
 
@@ -155,6 +193,7 @@ unsigned int init_timer ( unsigned char timer_num, unsigned int TimerInterval )
   }
   else if ( timer_num == 1 )
   {
+	timer1_counter = 0;
 	TIM1 -> MR0 = TimerInterval;
 	TIM1 -> MCR = 3;				/* Interrupt and Reset on MR1 */
 
@@ -168,4 +207,3 @@ unsigned int init_timer ( unsigned char timer_num, unsigned int TimerInterval )
 /******************************************************************************
 **                            End Of File
 ******************************************************************************/
-

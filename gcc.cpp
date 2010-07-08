@@ -453,7 +453,7 @@ void DumpInvokeCmd(char * szCmd, char * szArgs)
 	strncpy(szAppDirectory, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
 	szAppDirectory[strlen(szAppDirectory)] = '\0';
 
-	strcat(szAppDirectory, "\\src\\cmd.txt");
+	strcat(szAppDirectory, "\\src\\cmd.bat");
 
     FILE *f = fopen(szAppDirectory, "w");
     if(!f)
@@ -530,7 +530,7 @@ DWORD InvokeGCC(char* dest)
 	strcat(szArgs, "/\" ");
 	strcat(szArgs, " TOOLS_PATH=\"");
 	strcat(szArgs, ConvertToUNIXPath(szToolsProgramFiles));
-	strcat(szArgs, "/yagarto/bin/\" clean all "); 
+	strcat(szArgs, "/yagarto\" clean debug "); 
 
 	//output the application being run from the command window to the log file.
 	strcat(szArgs, ">> \"");
@@ -582,7 +582,7 @@ void CompileAnsiCToGCC(char *dest)
 	strncpy(szAppDirectory, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
 	szAppDirectory[strlen(szAppDirectory)] = '\0';
 
-	strcat(szAppDirectory, "\\src\\src\\ld.c");
+	strcat(szAppDirectory, "\\src\\ld.c");
 
     FILE *f = fopen(szAppDirectory, "w");
     if(!f) {

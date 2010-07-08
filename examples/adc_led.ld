@@ -12,7 +12,7 @@ IO LIST
     XAD4 at 4
     XAD5 at 5
     XMAD1 at 20
-    XMAD2 at 20
+    XMAD2 at 21
     XMAD3 at 22
     XMAD4 at 23
     XMAD5 at 24

@@ -29,18 +29,18 @@
  * ---------- Interrupt Number Definition -----------------------------------
  * ==========================================================================
  */
-/******  Cortex-M3 Processor Exceptions Numbers ***************************************************/
-  /*NonMaskableInt_IRQn           = -14,*/      /*!< 2 Non Maskable Interrupt                         */
-  /*MemoryManagement_IRQn         = -12,*/      /*!< 4 Cortex-M3 Memory Management Interrupt          */
-  /*BusFault_IRQn                 = -11,*/      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
-  /*UsageFault_IRQn               = -10,*/      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
-  /*SVCall_IRQn                   = -5, */      /*!< 11 Cortex-M3 SV Call Interrupt                   */
-  /*DebugMonitor_IRQn             = -4, */      /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
-  /*PendSV_IRQn                   = -2, */      /*!< 14 Cortex-M3 Pend SV Interrupt                   */
-#define  SysTick_IRQn             -1      /*!< 15 Cortex-M3 System Tick Interrupt               */
 
 typedef enum IRQn
 {
+/******  Cortex-M3 Processor Exceptions Numbers ***************************************************/
+  NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
+  MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
+  BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
+  UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
+  SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
+  DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
+  PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
+  SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
 
 /******  LPC17xx Specific Interrupt Numbers *******************************************************/
   WDT_IRQn                      = 0,        /*!< Watchdog Timer Interrupt                         */
@@ -810,6 +810,7 @@ typedef struct
        uint32_t RESERVED8;
   __IO uint32_t Module_ID;
 } EMAC_TypeDef;
+
 
 /******************************************************************************/
 /*                         Peripheral memory map                              */

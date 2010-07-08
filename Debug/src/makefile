@@ -1,20 +1,6 @@
-#
-#       !!!! Do NOT edit this makefile with an editor which replace tabs by spaces !!!!    
-#
-##############################################################################################
-# 
-# On command line:
-#
-# make all = Create project
-#
-# make clean = Clean project files.
-#
-# To rebuild project do "make clean" and "make all".
-#
-# make HEX_FILE="FG" HEX_PATH="C:/Users/Tecnequip/Documents/" TOOLS_PATH="C:/Program Files/yagarto/bin/"
-##############################################################################################
-# Start of default section
-#
+#------------------------------------------------------------------------------
+# Definições
+#------------------------------------------------------------------------------
 
 # Define project name here
 ifdef HEX_FILE
@@ -26,142 +12,162 @@ endif
 ifdef HEX_PATH
 TARGET_PATH = $(HEX_PATH)
 else
-TARGET_PATH = C:/Users/Tecnequip/Documents/
+TARGET_PATH = ./
 endif
 
 ifdef TOOLS_PATH
 TOOLS_PATH = $(TOOLS_PATH)
 else
-TOOLS_PATH = C:/Program Files/yagarto/bin/
+TOOLS_PATH = C:/Program Files/yagarto
 endif
 
-TRGT = $(TOOLS_PATH)arm-none-eabi-
-CC   = $(TRGT)gcc
-CP   = $(TRGT)objcopy
-AS   = $(TRGT)gcc -x assembler-with-cpp
+GNU_CC=arm-none-eabi
+GCC_VERSION = 4.4.1
 
-MCU  = cortex-m3
+#------------------------------------------------------------------------------
+# Diretorios de trabalho
+#------------------------------------------------------------------------------
 
-# List all default C defines here, like -D_DEBUG=1
-DDEFS = 
+GCC_DIR = $(TOOLS_PATH)
+GCC_INC = $(GCC_DIR)/include
 
-# List all default ASM defines here, like -D_DEBUG=1
-DADEFS = 
+HOME_DIR=.
 
-# List all default directories to look for include files here
-DINCDIR = 
+SRC_DIR=$(HOME_DIR)
+APP_DIR=$(HOME_DIR)
+LIB_DIR=$(HOME_DIR)
 
-# List the default directory to look for the libraries here
-DLIBDIR =
+#------------------------------------------------------------------------------
+# Ferramentas ARM ELF
+#------------------------------------------------------------------------------
 
-# List all default libraries here
-DLIBS = 
+CC=$(GCC_DIR)/bin/$(GNU_CC)-gcc
+AS=$(GCC_DIR)/bin/$(GNU_CC)-as
+LD=$(GCC_DIR)/bin/$(GNU_CC)-ld
+AR=$(GCC_DIR)/bin/$(GNU_CC)-ar
+OBJSIZE=$(GCC_DIR)/bin/$(GNU_CC)-size
+OBJCOPY=$(GCC_DIR)/bin/$(GNU_CC)-objcopy
 
-#
-# End of default section
-##############################################################################################
+#---------------------------------------------------------------------------
+# Bibliotecas e includes
+#------------------------------------------------------------------------------
 
-##############################################################################################
-# Start of user section
-#
+#LIB_GCC = $(GCC_DIR)/lib/gcc/$(GNU_CC)/$(GCC_VERSION)/libgcc.a
+#LIB_C   = $(GCC_DIR)/$(GNU_CC)/lib/libc.a
+#LIB_M   = $(GCC_DIR)/$(GNU_CC)/lib/libm.a
 
-# Define linker script file here
-LDSCRIPT = ./prj/lpc1768_flash.ld
+LIB_GCC = ./lib32bitc.a
+LIB_C   = ./lib32bitc.a
+LIB_M   = ./lib32bitc.a
 
-# List all user C define here, like -D_DEBUG=1
-UDEFS = 
+#------------------------------------------------------------------------------
+# Flags de compilação
+#------------------------------------------------------------------------------
+#  -Wall
+#  -fpack-struct=1  Alinha as estruturas em 1 byte. 
+#  -nodefaultlibs -nostdlib -nostartfiles 
+#  -fomit-frame-pointer 
+#  -Wstrict-prototypes 
+# -Wno-trigraphs 
+# -fno-strict-aliasing 
+# -fno-common 
+# -fstack-protector "no memory region specified for loadable section `__libc_freeres_fn'"
+# -fomit-frame-pointer -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Wdeclaration-after-statement -Wno-pointer-sign
+# -static
+GCC_FLAGS_OPT=-mcpu=cortex-m3 -mlittle-endian -mthumb -Wall 
+#  $(GCC_MODE_FLAG) -I $(GCC_INC) -I $(LIB_INC)
+CFLAGS0=$(GCC_FLAGS_OPT)
+CFLAGS1=$(CFLAGS0)
 
-# Define ASM defines here
-UADEFS = 
+# -D
+# --gstabs
+# -mfpu=softfpa
+# -alh
+AAFLAGS=-D -mcpu=cortex-m3 -mthumb --gstabs 
 
-# List C source files here
-SRC  = ./src/main.c \
-       ./src/system_LPC17xx.c \
-       ./src/core_cm3.c \
-       ./src/ld.c \
-       ./src/timer.c \
-       ./src/modbus.c \
-       ./src/startup.c
+# -N
+# -v
+# -T
+LDFLAGS=-N -v -T
 
-# List ASM source files here
-ASRC =
+#------------------------------------------------------------------------------
+# Diretorio de destino
+#------------------------------------------------------------------------------
 
-# List all user directories here
-UINCDIR = ./inc
+DIR_OBJ		= $(APP_DIR)
+DIR_LST		= $(APP_DIR)
+PROG_NAME	= POP7
 
-# List the user directory to look for the libraries here
-ULIBDIR =
+#------------------------------------------------------------------------------
+# Linker script files
+#------------------------------------------------------------------------------
 
-# List all user libraries here
-ULIBS = 
+LDSCRIPT_RAM   = $(SRC_DIR)/lpc1768.ld
+LDSCRIPT_FLASH = $(SRC_DIR)/lpc1768.ld
 
-# Define optimisation level here
-OPT = -O0
+#------------------------------------------------------------------------------
+# Objects to link
+#------------------------------------------------------------------------------
 
-#
-# End of user defines
-##############################################################################################
+OBJ_START	= $(LIB_DIR)/startup_LPC17xx.o
+OBJ_FILES   = $(patsubst %.c,%.o,$(wildcard *.c))
+OBJ_APP     = $(addprefix $(DIR_OBJ)/, $(OBJ_FILES))
 
+#------------------------------------------------------------------------------
+# Libraries to link to. LIB_GCC must be the last
+#------------------------------------------------------------------------------
 
-INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
-LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
-DEFS    = $(DDEFS) $(UDEFS)
-ADEFS   = $(DADEFS) $(UADEFS)
-OBJS    = $(ASRC:.s=.o) $(SRC:.c=.o)
-LIBS    = $(DLIBS) $(ULIBS)
-MCFLAGS = -mcpu=$(MCU)
+#LIB_LIST		= $(LIB_C) $(LIB_M) $(LIB_GCC)
+LIB_LIST		= $(LIB_C)
 
-ASFLAGS = $(MCFLAGS) -g -gdwarf-2 -mthumb -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
-CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -mthumb -fomit-frame-pointer -Wall -Wstrict-prototypes -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS) -O0 -save-temps -ggdb
-LDFLAGS = $(MCFLAGS) -mthumb -nostartfiles -T$(LDSCRIPT) -Wl,-Map=$(PROJECT).map,--cref,--no-warn-mismatch $(LIBDIR)
+#------------------------------------------------------------------------------
+# Implicit rule to compile all C files in the directory
+#------------------------------------------------------------------------------
 
-# Generate dependency information
-CPFLAGS += -MD -MP -MF .dep/$(@F).d
+$(DIR_OBJ)/%.o : %.c 
+	$(CC) $(CFLAGS1) -c $< -o $@
+	
+#------------------------------------------------------------------------------
+# Implicit rule to assemble all ASM files in the directory
+#------------------------------------------------------------------------------
 
-#
-# makefile rules
-#
+$(DIR_OBJ)/%.o : %.s
+	$(AS) $(AAFLAGS) $< -o $@
 
-all: RAM
+./%.o : ./%.s
+	$(AS) $(AAFLAGS1) -ahlms=$<.lst $< -o $@
 
-RAM: $(OBJS) $(PROJECT).elf $(PROJECT).hex $(PROJECT).bin
+#------------------------------------------------------------------------------
+# default target: Generates application WITHOUT optimization
+#------------------------------------------------------------------------------
+#$(CC) $(CFLAGS1) -Wa,-a,-ad -g -c main.c > main.lst
+$(DIR_OBJ)/$(PROG_NAME).elf:  makefile $(OBJ_APP)
+	$(AS) $(AAFLAGS1) ./startup_LPC17xx.s -o startup_LPC17xx.o
+	$(LD) -Map $(DIR_LST)/$(PROG_NAME).map $(LDFLAGS) $(LDSCRIPT_FLASH)\
+                                         $(OBJ_APP) $(OBJ_START) $(LIB_LIST)\
+                                         -o $(DIR_OBJ)/$(PROG_NAME).elf 
+	$(OBJSIZE) $(DIR_LST)/$(PROG_NAME).elf
+	$(OBJCOPY) -O binary $(DIR_LST)/$(PROG_NAME).elf $(TARGET_PATH)/$(PROJECT).bin
+	$(OBJCOPY) -O ihex $(DIR_LST)/$(PROG_NAME).elf $(TARGET_PATH)/$(PROJECT).hex
 
-%o : %c
-	"$(CC)" -c $(CPFLAGS) -I . $(INCDIR) $< -o $@
+#------------------------------------------------------------------------------
+# release target: Generates application with optimization
+#------------------------------------------------------------------------------
 
-%o : %s
-	"$(AS)" -c $(ASFLAGS) $< -o $@
+release: CFLAGS1 = -O2 $(CFLAGS0)
+release: $(DIR_OBJ)/$(PROG_NAME).elf
 
-$(PROJECT).elf: $(OBJS)
-	"$(CC)" $(OBJS) $(LDFLAGS) $(LIBS) -o $@
+#------------------------------------------------------------------------------
+# debug target: Generates application WITHOUT optimization
+#------------------------------------------------------------------------------
 
-%hex: %elf
-	"$(CP)" -O ihex "$<" "$(TARGET_PATH)$@"
-
-%bin: %elf
-	"$(CP)" -O binary "$<" "$(TARGET_PATH)$@"
+debug: CFLAGS1 = -O0 -save-temps -ggdb $(CFLAGS0)
+debug: $(DIR_OBJ)/$(PROG_NAME).elf
+		
+#------------------------------------------------------------------------------
+# clean target: Removes all generated files
+#------------------------------------------------------------------------------
 
 clean:
-	-rm -f *.dep
-	-rm -f *.elf
-	-rm -f *.hex
-	-rm -f *.bin
-	-rm -f *.s
-	-rm -f *.i
-	-rm -f *.map
-	-rm -f *.log
-	-rm -f $(OBJS)
-	-rm -f $(PROJECT).elf
-	-rm -f $(PROJECT).map
-	-rm -f $(PROJECT).hex
-	-rm -f $(SRC:.c=.c.bak)
-	-rm -f $(SRC:.c=.lst)
-	-rm -f $(ASRC:.s=.s.bak)
-	-rm -f $(ASRC:.s=.lst)
-
-# 
-# Include the dependency files, should be the last of the makefile
-#
--include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)
-
-# *** EOF ***
+	rm -rf $(DIR_OBJ)/*.o $(DIR_OBJ)/*.elf \
+         $(DIR_OBJ)/*.bin $(DIR_OBJ)/*.map $(DIR_OBJ)/*.hex $(DIR_OBJ)/*.i
