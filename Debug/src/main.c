@@ -4,6 +4,26 @@
 #include "modbus.h"
 #include "ld.h"
 
+#include "lwip/debug.h"
+#include "lwip/opt.h"
+#include "lwip/def.h"
+#include "lwip/mem.h"
+#include "lwip/memp.h"
+#include "lwip/pbuf.h"
+#include "lwip/sys.h"
+#include "lwip/api.h"
+#include "lwip/stats.h"
+#include "lwip/tcpip.h"
+#include "lwip/tcp.h"
+#include "lwip/init.h"
+
+#include "netif/emac.h"
+#include "netif/etharp.h"
+#include "netif/loopif.h"
+#include "netif/ethernetif.h"
+
+#include "timer.h"
+
 /******************************************************************************
 * Definições
 ******************************************************************************/
@@ -34,15 +54,9 @@ typedef struct ad_type
   unsigned int m3;
   unsigned int m4;
   unsigned int m5;
-};
+} ads;
 
 struct ad_type ad[5];
-
-/******************************************************************************
-* Prototipos de Funções
-******************************************************************************/
-unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
-unsigned int ModbusTx(unsigned char *data, unsigned int size);
 
 /******************************************************************************
 * Variaveis Globais
@@ -52,7 +66,8 @@ volatile unsigned int entradas = 0;
 
 volatile unsigned int timer0_count = 0;
 
-struct MB_Device modbus_device;
+struct MB_Device modbus_serial;
+struct MB_Device modbus_tcp;
 
 unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
 unsigned int ModbusReadDiscreteInputs(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
@@ -89,6 +104,444 @@ struct
 
 unsigned char modbus_rx_buffer[MB_BUFFER_SIZE];
 unsigned char modbus_tx_buffer[MB_BUFFER_SIZE];
+
+/******************************************************************************
+* Prototipos de Funções
+******************************************************************************/
+unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
+unsigned int ModbusTx(unsigned char *data, unsigned int size);
+
+/******************************************************************************
+* lwip TCP/IP
+******************************************************************************/
+#define TCP_RECONNECT_TIMEOUT 2000
+#define TCP_MSG_TIMEOUT 30000
+
+int Init_EMAC(void);
+int Init_EMAC_phase2(void);
+
+volatile uint16_t gArpTimer = 0;
+volatile uint16_t gTcpTimer = 0;
+volatile uint16_t gTcpLastMessageTimer = 0;
+volatile uint16_t gTcpReconnectTimer = 0;
+volatile uint16_t gDhcpCoarseTimer = 0;
+volatile uint16_t gDhcpFineTimer = 0;
+
+int gUsingDhcp = 0;
+int gReadersInitialized = 0;
+int gMessagesInitialized = 0;
+int gShowingDefaultScreen = 0;
+int gRemotePort;
+
+extern struct tcp_pcb * tcp_bound_pcbs;
+struct tcp_pcb *tpcb_modbus_request;
+
+char tcp_data_x[20];
+static volatile enum { TCP_UNCONFIG=0, TCP_WAIT_LINK, TCP_WAIT_IP, TCP_DISCONNECTED, TCP_CONNECTING, TCP_JUST_CONNECTED, TCP_CONNECTED } gTcpState;
+
+static struct netif *netif_eth0;
+static struct netif *loop_netif;
+
+static struct ip_addr gMyIpAddress;
+static struct ip_addr gMyNetmask;
+static struct ip_addr gMyGateway;
+static struct ip_addr gRemoteIpAddress;
+
+static struct tcp_pcb *gTcp = NULL;
+
+void TIMER1_IRQHandler (void)
+{
+  TIM1 -> IR = 1;                       /* clear interrupt flag */
+
+  gTcpTimer++;
+  gTcpLastMessageTimer++;
+  gDhcpCoarseTimer++;
+  gDhcpFineTimer++;
+  gArpTimer++;
+
+  if (gTcpState == TCP_DISCONNECTED)
+    gTcpReconnectTimer++;
+
+}
+
+err_t modbus_tcp_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
+{
+  if (p != NULL)
+  {
+    tpcb_modbus_request = tpcb;
+
+    if (p->len > 2)
+      MB_Receive(&modbus_tcp, MB_Validate(p->payload, p->len));
+
+    tcp_recved(tpcb, p->len);
+    pbuf_free(p);
+  }
+
+  return ERR_OK;
+}
+
+err_t modbus_tcp_poll_callback(void *arg, struct tcp_pcb *tpcb)
+{
+        if (arg != NULL)
+        {
+                u32_t bytestosend = *((u32_t*) arg);
+
+                if (bytestosend == 0)
+                {
+                        mem_free(arg);
+                        tcp_arg(tpcb, NULL);
+                        tcp_close(tpcb);
+                }
+        }
+
+        return ERR_OK;
+}
+
+err_t modbus_tcp_send_callback(void *arg, struct tcp_pcb *tpcb, u16_t len)
+{
+        u32_t bytestosend;
+
+        if (arg != NULL)
+        {
+                bytestosend = *((u32_t*) arg);
+
+                if ((bytestosend - len) >= 0)
+                        bytestosend -= len;
+                else
+                        bytestosend = 0;
+
+                *((u32_t*) arg) = bytestosend;
+        }
+
+        return ERR_OK;
+}
+
+err_t modbus_tcp_accept_callback(void *arg, struct tcp_pcb *newpcb, err_t err)
+{
+  tcp_arg(newpcb, NULL);
+  tcp_recv(newpcb, modbus_tcp_recv_callback);
+  tcp_sent(newpcb, modbus_tcp_send_callback);
+  tcp_poll(newpcb, modbus_tcp_poll_callback, 1);
+
+  return ERR_OK;
+}
+
+static void modbus_tcp_init(void)
+{
+  struct tcp_pcb* tcpweb;
+  struct tcp_pcb* tcpweb_listen;
+
+  tcpweb = tcp_new();
+  if (tcpweb == NULL)
+    return;
+
+  // Bind to port 502 modbus default
+  if (tcp_bind(tcpweb, IP_ADDR_ANY, 502) != ERR_OK)
+    return;
+
+  tcpweb_listen = tcp_listen(tcpweb);
+  if (tcpweb_listen == NULL)
+  {
+    tcp_abort(tcpweb);
+    tcpweb = NULL;
+    return;
+  }
+
+  tcpweb = tcpweb_listen;
+
+  tcp_accept(tcpweb, modbus_tcp_accept_callback);
+}
+
+void init_network()
+{
+  /* Clear globals. */
+  tcp_listen_pcbs.listen_pcbs = NULL;
+  tcp_active_pcbs = NULL;
+  tcp_bound_pcbs = NULL;
+  tcp_tw_pcbs = NULL;
+  tcp_tmp_pcb = NULL;
+
+  Init_EMAC();
+
+  lwip_init();
+
+  netif_eth0 = mem_malloc(sizeof(struct netif));
+
+  modbus_tcp_init();
+
+  gTcpState = TCP_UNCONFIG;
+
+}
+
+void send(unsigned char message_type, unsigned char data[], int data_size)
+{
+  if (!(gTcpState == TCP_CONNECTED || (gTcpState == TCP_JUST_CONNECTED))) {
+  return;
+  }
+
+  u16_t len = 0;// = data_size + 1;
+
+  if (len > tcp_sndbuf(gTcp))
+  {
+    DEBUG("Not enough buffer left to send data. Discarding\n");
+    return;
+  }
+
+  if (data)
+    memcpy(&tcp_data_x[1], data, data_size);
+
+  tcp_data_x[0] = message_type;
+
+  err_t err = tcp_write(gTcp, tcp_data_x, len, 1);
+  if (err != ERR_OK)
+  {
+    DEBUG("TCP: Error sending data... (%d)\n", err);
+    return;
+  }
+  else
+  {
+    u32_t* newarg;
+    newarg = (u32_t*) mem_malloc(sizeof(u32_t));
+    *newarg = len;
+    tcp_arg(gTcp, newarg);
+  }
+  err = tcp_output(gTcp);
+
+  if (err != ERR_OK)
+    DEBUG("TCP: Error forcing data send... (%d)\n", err);
+}
+
+err_t recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
+{
+  unsigned char* rq;
+  int consumed, expected_size;
+
+  gTcpLastMessageTimer = 0;
+
+  if (p != NULL)
+  {
+    rq = p->payload;
+    consumed = 0;
+    while (consumed < p->len)
+    {
+      //unsigned char msg_type = rq[consumed];
+      /*if (msg_type == MSG_SHOW_TEXT || msg_type == MSG_CONFIG_TXT_SCREEN)
+        expected_size = 42;
+      else
+        expected_size = 9;*/
+
+      if (expected_size > (p->len - consumed))
+        expected_size = p->len - consumed;
+
+      //process_received_message(msg_type, rq+1+consumed, expected_size-1, 1);
+      consumed += expected_size;
+    }
+    tcp_recved(tpcb, p->len);
+    pbuf_free(p);
+  }
+  else
+  {
+    DEBUG("TCP connection closed by remote host?\n");
+    gTcpState = TCP_DISCONNECTED;
+  }
+
+  return ERR_OK;
+}
+
+err_t poll_callback(void *arg, struct tcp_pcb *tpcb)
+{
+  if (arg != NULL)
+  {
+    u32_t bytestosend = *((u32_t*) arg);
+    DEBUG("poll_callback bytestosend=%u\n", bytestosend);
+
+    if (bytestosend == 0)
+    {
+      mem_free(arg);
+      tcp_arg(tpcb, NULL);
+    }
+  }
+
+  return ERR_OK;
+}
+
+err_t sent_callback(void *arg, struct tcp_pcb *tpcb, u16_t len)
+{
+  u32_t bytestosend;
+
+  if (arg != NULL)
+  {
+    bytestosend = *((u32_t*) arg);
+    //DEBUG("sent_callback bytestosend=%u len=%d\n", bytestosend, len);
+
+    if (bytestosend <= len)
+    {
+      bytestosend = 0;
+    }
+    else
+    {
+      bytestosend -= len;
+    }
+
+    *((u32_t*) arg) = bytestosend;
+  }
+
+  return ERR_OK;
+}
+
+
+err_t connect_callback(void *arg, struct tcp_pcb *newpcb, err_t err)
+{
+  tcp_arg(newpcb, NULL);
+
+  if (err == ERR_OK)
+  {
+    DEBUG("TCP Connected to remote host\n");
+    tcp_recv(newpcb, recv_callback);
+    tcp_sent(newpcb, sent_callback);
+    tcp_poll(newpcb, poll_callback, 1);
+    gTcp = newpcb;
+    DEBUG("Setting TCP state to TCP_JUST_CONNECTED\n");
+    gTcpState = TCP_JUST_CONNECTED;
+  }
+  else
+  {
+    DEBUG("Error connecting to remote host: %d\n", err);
+  }
+  return ERR_OK;
+}
+
+void error(void *arg, err_t err)
+{
+  DEBUG("TCP Error: %d\n", err);
+  if (gTcpState !=  TCP_DISCONNECTED)
+  {
+    DEBUG("Setting TCP state to TCP_DISCONNECTED\n");
+
+    if (gTcpState != TCP_CONNECTING)
+      gTcpReconnectTimer = TCP_RECONNECT_TIMEOUT;
+
+    gTcpState = TCP_DISCONNECTED;
+  }
+}
+
+
+void connect()
+{
+  struct tcp_pcb* tcp_client;
+  err_t err;
+  tcp_client = tcp_new();
+
+  if (tcp_client == NULL)
+  {
+    DEBUG("Failed to allocate tcp_client\n");
+    return;
+  }
+
+  tcp_err(tcp_client, error);
+
+  DEBUG("gRemotePort=%d\n", gRemotePort);
+  err = tcp_connect(tcp_client, &gRemoteIpAddress, gRemotePort, connect_callback);
+  gTcpState = TCP_CONNECTING;
+}
+
+void check_network(void)
+{
+  if (gTcpState == TCP_UNCONFIG)
+  {
+    if (gTcpTimer > 200)
+    {
+      if (Init_EMAC_phase2())
+      {
+        gTcpState = TCP_WAIT_IP;
+        netif_add(netif_eth0, &gMyIpAddress, &gMyNetmask, &gMyGateway, NULL, ethernetif_init, ethernet_input);
+        netif_set_default(netif_eth0);
+        netif_set_up(netif_eth0);
+        DEBUG("Eth0 Link UP!\n");
+      }
+    gTcpTimer = 0;
+    }
+  }
+
+  if (gTcpState == TCP_WAIT_IP && gUsingDhcp && netif_eth0->ip_addr.addr == 0)
+  {
+    /*if (gDhcpFineTimer >= DHCP_FINE_TIMER_MSECS)
+    {
+      dhcp_fine_tmr();
+      gDhcpFineTimer = 0;
+      if (gDhcpCoarseTimer >= DHCP_COARSE_TIMER_SECS*1000)
+      {
+        dhcp_coarse_tmr();
+        gDhcpCoarseTimer = 0;
+      }
+    }*/
+  }
+
+  if (gTcpState == TCP_WAIT_IP && netif_eth0->ip_addr.addr)
+  {
+    DEBUG("Local IP is %u.%u.%u.%u\n", netif_eth0->ip_addr.addr & 0xFF, netif_eth0->ip_addr.addr >> 8 & 0xFF, netif_eth0->ip_addr.addr >> 16 & 0xFF, netif_eth0->ip_addr.addr >> 24 & 0xFF);
+    //              DEBUG("netmask was set to 0x%x\n", netif_eth0.netmask.addr);
+    //              DEBUG("gw was set to 0x%x\n", netif_eth0.gw.addr);
+    //              DEBUG("Setting TCP state to TCP_DISCONNECTED\n");
+    gTcpState = TCP_DISCONNECTED;
+    gTcpReconnectTimer = TCP_RECONNECT_TIMEOUT;
+    gTcpTimer = 0;
+  }
+
+  if (gArpTimer >= ETHARP_TMR_INTERVAL)
+  {
+    etharp_tmr();
+    gArpTimer = 0;
+  }
+
+  if (netif_eth0->ip_addr.addr)
+  {
+    if (gTcpTimer >= TCP_TMR_INTERVAL)
+    {
+    tcp_tmr();
+    gTcpTimer = 0;
+    }
+  }
+
+  switch (gTcpState)
+  {
+  case TCP_DISCONNECTED:
+    if (gTcpReconnectTimer >= TCP_RECONNECT_TIMEOUT)
+    {
+      //DEBUG("TCP state is TCP_DISCONNECTED. Trying to connect\n");
+      //connect();
+      gTcpReconnectTimer = 0;
+    }
+    #ifdef ENABLE_TCP_FILES
+    if (!once)
+    {
+      tcp_db_create_and_listen();
+      tcp_config_create_and_listen();
+      once = 1;
+    }
+    #endif
+    break;
+  case TCP_JUST_CONNECTED:
+    DEBUG("Setting TCP state to TCP_CONNECTED\n");
+    gTcpState = TCP_CONNECTED;
+    gTcpLastMessageTimer = 0;
+    break;
+  case TCP_CONNECTED:
+    if (gTcpLastMessageTimer >= TCP_MSG_TIMEOUT)
+    {
+      DEBUG("TCP receive timeout.\n");
+      tcp_err(gTcp, NULL);
+      tcp_recv(gTcp, NULL);
+      tcp_abort(gTcp);
+      gTcp = NULL;
+      gTcpState = TCP_DISCONNECTED;
+      gTcpLastMessageTimer = 0;
+    }
+    break;
+  default:
+    break;
+  }
+}
 
 /******************************************************************************
 * Temporizador
@@ -258,36 +711,6 @@ unsigned int RS485Read(unsigned char * buffer, unsigned int size)
 /******************************************************************************
 * Modbus
 ******************************************************************************/
-unsigned int ModbusTx(unsigned char *data, unsigned int size)
-{
-  unsigned int sz = 0;
-
-#ifdef DEBUG
-  unsigned int i;
-#endif
-
-  if ((sz = RS485Write(data, size)))
-  {
-#ifdef DEBUG
-    printf("%d bytes enviados para o soft-starter, size: %d\n", sz, size);
-
-    for (i = 0; i < size; i++)
-    {
-      printf("0x%x ", data[i]);
-    }
-    printf("\n");
-#endif
-  }
-  else
-  {
-#ifdef DEBUG
-    printf("Erro ao enviar pacote para soft-starter\n");
-#endif
-  }
-
-  return sz;
-}
-
 unsigned int ModbusRequest(void)
 {
   unsigned int sz = 0;
@@ -299,10 +722,45 @@ unsigned int ModbusRequest(void)
   {
     reply_data.data = modbus_tx_buffer;
     if (sz > 2)
-      MB_Receive(&modbus_device, MB_Validate(modbus_rx_buffer, sz));
+      MB_Receive(&modbus_serial, MB_Validate(modbus_rx_buffer, sz));
   }
 
   return reply_data.size; // Retorna o tamanho dos dados
+}
+
+unsigned int ModbusRS485Tx(unsigned char *data, unsigned int size)
+{
+  unsigned int sz = 0;
+
+  sz = RS485Write(data, size);
+
+  return sz;
+}
+
+unsigned int ModbusEthTx(unsigned char *data, unsigned int size)
+{
+  unsigned int sz = 0;
+
+  u32_t  bytestosend;
+  u32_t* newarg;
+
+  bytestosend = size;
+
+  newarg = (u32_t*) mem_malloc(sizeof(u32_t));
+  *newarg = bytestosend;
+
+  if (tcp_write(tpcb_modbus_request, data, size, 0) != ERR_OK)
+  {
+    mem_free(newarg);
+    tcp_close(tpcb_modbus_request);
+  }
+  else
+  {
+    tcp_arg(tpcb_modbus_request, newarg);
+    sz = bytestosend;
+  }
+
+  return sz;
 }
 
 unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
@@ -622,35 +1080,62 @@ int main (void)
   /**************************************************************************
    * Inicializa timer
    *************************************************************************/
-  init_timer( 0, TIME_INTERVAL ); // 5ms
+  init_timer( 0, TIME_INTERVAL ); // PlcCycle
   enable_timer( 0 );
 
   /**************************************************************************
    * Inicialização do ModBus
    *************************************************************************/
-  MB_Init(&modbus_device);
+  MB_Init(&modbus_serial);
 
-  modbus_device.identification.Id                 = 0x01;
-  modbus_device.identification.VendorName         = "Tecnequip";
-  modbus_device.identification.ProductCode        = "POP7";
-  modbus_device.identification.MajorMinorRevision = "V1 Rev2";
+  modbus_serial.identification.Id                 = 0x01;
+  modbus_serial.identification.VendorName         = "Tecnequip";
+  modbus_serial.identification.ProductCode        = "POP7";
+  modbus_serial.identification.MajorMinorRevision = "V1 Rev2";
 
-  modbus_device.hl      = ModbusHandlers;
-  modbus_device.hl_size = ARRAY_SIZE(ModbusHandlers);
-  modbus_device.mode    = MB_MODE_SLAVE;
-  modbus_device.TX      = ModbusTx;
+  modbus_serial.hl      = ModbusHandlers;
+  modbus_serial.hl_size = ARRAY_SIZE(ModbusHandlers);
+  modbus_serial.mode    = MB_MODE_SLAVE;
+  modbus_serial.TX      = ModbusRS485Tx;
+
+  MB_Init(&modbus_tcp);
+
+  modbus_tcp.identification.Id                 = 0x01;
+  modbus_tcp.identification.VendorName         = "Tecnequip";
+  modbus_tcp.identification.ProductCode        = "POP7";
+  modbus_tcp.identification.MajorMinorRevision = "V1 Rev2";
+
+  modbus_tcp.hl      = ModbusHandlers;
+  modbus_tcp.hl_size = ARRAY_SIZE(ModbusHandlers);
+  modbus_tcp.mode    = MB_MODE_SLAVE;
+  modbus_tcp.TX      = ModbusEthTx;
 
   memset((void*)U_M, 0, sizeof(U_M));
+
+  gTcpState = TCP_WAIT_LINK;
+
+  // Default config
+  IP4_ADDR(&gMyIpAddress,          192, 168,   0, 237);
+  IP4_ADDR(&gMyNetmask,            255, 255, 255,   0);
+  IP4_ADDR(&gMyGateway,            192, 168,   0,  10);
+  IP4_ADDR(&gRemoteIpAddress,      192, 168,   0,  10);
+  gRemotePort = 5505;
+
+  init_timer( 1, (25000000 / 1000) - 1 ); // 1seg
+  init_network();
+
+  enable_timer( 1 );
 
   while(1)
   {
     entradas = AtualizaEntradas();
     saidas = AtualizaSaidas();
-    //U_M1 = 1;	// Aquecimento Modo Automatico
-    //U_M2 = 1;   // Banho Modo Automatico
-    ModbusRequest();
-  }
 
+    ModbusRequest();
+
+    check_network();
+    ethernetif_handlepackets(netif_eth0);
+  }
   return(0);
 }
 

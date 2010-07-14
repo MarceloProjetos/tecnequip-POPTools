@@ -84,6 +84,7 @@ volatile unsigned int I_parThis_0007 = 0;
 volatile unsigned int I_E6 = 0;
 
 volatile unsigned int U_S15 = 0;
+volatile unsigned int U_TTMR_BOMBA_LIGA = 0;
 
 
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
@@ -118,7 +119,7 @@ void PlcCycle(void)
     /* start parallel [ */
     I_parOut_0000 = 0;
     I_parThis_0000 = I_rung_top;
-    if (!(U_M[1] & (1 << 0))) {
+    if (!(U_M[3] & (1 << 0))) {
         I_parThis_0000 = 0;
     }
     
@@ -126,7 +127,7 @@ void PlcCycle(void)
         I_parOut_0000 = 1;
     }
     I_parThis_0000 = I_rung_top;
-    if (!(U_M[4] & (1 << 0))) {
+    if (!(U_M[2] & (1 << 0))) {
         I_parThis_0000 = 0;
     }
     
@@ -151,7 +152,7 @@ void PlcCycle(void)
     I_parOut_0001 = 0;
     I_parThis_0001 = I_rung_top;
     /* start series [ */
-    if (!(U_M[1] & (1 << 0))) {
+    if (!(U_M[3] & (1 << 0))) {
         I_parThis_0001 = 0;
     }
     
@@ -169,7 +170,7 @@ void PlcCycle(void)
         I_parOut_0001 = 1;
     }
     I_parThis_0001 = I_rung_top;
-    if (!(U_M[5] & (1 << 0))) {
+    if (!(U_M[2] & (1 << 1))) {
         I_parThis_0001 = 0;
     }
     
@@ -244,7 +245,7 @@ void PlcCycle(void)
         U_TSTART1 = 0;
     }
     
-    if (!(U_M[2] & (1 << 0))) {
+    if (!(U_M[3] & (1 << 0))) {
         I_parThis_0004 = 0;
     }
     
@@ -253,7 +254,7 @@ void PlcCycle(void)
         I_parOut_0004 = 1;
     }
     I_parThis_0004 = I_parThis_0003;
-    if (!(U_M[6] & (1 << 0))) {
+    if (!(U_M[2] & (1 << 2))) {
         I_parThis_0004 = 0;
     }
     
@@ -278,7 +279,7 @@ void PlcCycle(void)
     I_parOut_0005 = 0;
     I_parThis_0005 = I_parThis_0003;
     /* start series [ */
-    if (!(U_M[2] & (1 << 0))) {
+    if (!(U_M[3] & (1 << 1))) {
         I_parThis_0005 = 0;
     }
     
@@ -291,7 +292,7 @@ void PlcCycle(void)
         I_parOut_0005 = 1;
     }
     I_parThis_0005 = I_parThis_0003;
-    if (!(U_M[7] & (1 << 0))) {
+    if (!(U_M[2] & (1 << 3))) {
         I_parThis_0005 = 0;
     }
     
@@ -322,7 +323,7 @@ void PlcCycle(void)
     I_parOut_0006 = 0;
     I_parThis_0006 = I_rung_top;
     /* start series [ */
-    if (!(U_M[2] & (1 << 0))) {
+    if (!(U_M[3] & (1 << 1))) {
         I_parThis_0006 = 0;
     }
     
@@ -335,7 +336,7 @@ void PlcCycle(void)
         I_parOut_0006 = 1;
     }
     I_parThis_0006 = I_rung_top;
-    if (!(U_M[8] & (1 << 0))) {
+    if (!(U_M[2] & (1 << 4))) {
         I_parThis_0006 = 0;
     }
     
@@ -356,7 +357,7 @@ void PlcCycle(void)
     I_rung_top = I_mcr;
     
     /* start series [ */
-    if (!(U_M[9] & (1 << 0))) {
+    if (!(U_M[2] & (1 << 5))) {
         I_rung_top = 0;
     }
     
@@ -368,7 +369,7 @@ void PlcCycle(void)
     I_rung_top = I_mcr;
     
     /* start series [ */
-    if (!(U_M[10] & (1 << 0))) {
+    if (!(U_M[2] & (1 << 6))) {
         I_rung_top = 0;
     }
     
@@ -380,7 +381,7 @@ void PlcCycle(void)
     I_rung_top = I_mcr;
     
     /* start series [ */
-    if (!(U_M[11] & (1 << 0))) {
+    if (!(U_M[2] & (1 << 7))) {
         I_rung_top = 0;
     }
     
@@ -392,7 +393,7 @@ void PlcCycle(void)
     I_rung_top = I_mcr;
     
     /* start series [ */
-    if (!(U_M[2] & (1 << 0))) {
+    if (!(U_M[3] & (1 << 1))) {
         I_rung_top = 0;
     }
     
@@ -433,6 +434,55 @@ void PlcCycle(void)
     I_rung_top = I_parOut_0007;
     /* ] finish parallel */
     U_S15 = I_rung_top;
+    
+    /* ] finish series */
+    
+    /* start rung 10 */
+    I_rung_top = I_mcr;
+    
+    /* start series [ */
+    if (!I_E1) {
+        I_rung_top = 0;
+    }
+    
+    U_M[1] &= ~(1 << 0); U_M[1] |= I_rung_top << 0;
+    
+    /* ] finish series */
+    
+    /* start rung 11 */
+    I_rung_top = I_mcr;
+    
+    /* start series [ */
+    if (!I_E15) {
+        I_rung_top = 0;
+    }
+    
+    U_M[1] &= ~(1 << 1); U_M[1] |= I_rung_top << 1;
+    
+    /* ] finish series */
+    
+    /* start rung 12 */
+    I_rung_top = I_mcr;
+    
+    /* start series [ */
+    if (!U_S1) {
+        I_rung_top = 0;
+    }
+    
+    if (I_rung_top) {
+        if (U_TTMR_BOMBA_LIGA < 499) {
+            U_TTMR_BOMBA_LIGA++;
+            I_rung_top = 0;
+        }
+    } else {
+        U_TTMR_BOMBA_LIGA = 0;
+    }
+    
+    if (I_E10) {
+        I_rung_top = 0;
+    }
+    
+    U_M[1] &= ~(1 << 2); U_M[1] |= I_rung_top << 2;
     
     /* ] finish series */
 }

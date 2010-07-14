@@ -112,6 +112,8 @@ extern void SystemInit (void);
 /*                Device Specific Peripheral registers structures             */
 /******************************************************************************/
 
+#pragma anon_unions
+
 /*------------- System Control (SC) ------------------------------------------*/
 typedef struct
 {
@@ -810,6 +812,8 @@ typedef struct
        uint32_t RESERVED8;
   __IO uint32_t Module_ID;
 } EMAC_TypeDef;
+
+#pragma no_anon_unions
 
 
 /******************************************************************************/

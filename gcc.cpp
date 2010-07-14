@@ -77,7 +77,7 @@ static char *MapSym(char *str)
 			{
 				if (pin > 19)
 				{
-					sprintf(ret, "U_M[%d]", pin - 19);
+					sprintf(ret, "U_M[%d]", pin - 20);
 					return ret;
 				}
 				else
@@ -95,7 +95,7 @@ static char *MapSym(char *str)
 			{
 				if (pin > 19)
 				{
-					sprintf(ret, "U_M[%d]", pin - 19);
+					sprintf(ret, "U_M[%d]", pin - 20);
 					return ret;
 				}
 				else
