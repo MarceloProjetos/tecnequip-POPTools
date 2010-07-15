@@ -27,8 +27,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; Name: "restart"; Description: "Reiniciar o computador. A reinicialização do computador é necessária para o correto funcionamento do compilador que acompanha o programa POP7Tools. (mais informações em http://www.yagarto.de)"; Flags: restart
 
 [Files]
-Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Release\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Release\src\*"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\bin\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\bin\src\*"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\examples\*"; DestDir: "{app}\examples"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-tools-20100703-setup.exe"; DestDir: "{app}"; Flags: ignoreversion

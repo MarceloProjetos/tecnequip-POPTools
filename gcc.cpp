@@ -267,21 +267,21 @@ static void GenerateAnsiC(FILE *f)
         switch(IntCode[i].op) {
             case INT_SET_BIT:
 				if (strncmp(str, "U_M[", 4) == 0)
-					fprintf(f, "%s |= (1 << %d);\n", MapSym(IntCode[i].name1), IntCode[i].bit);
+					fprintf(f, "%s |= (1 << %d);  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 	                fprintf(f, "%s = 1;\n", MapSym(IntCode[i].name1));
                 break;
 
             case INT_CLEAR_BIT:
 				if (strncmp(str, "U_M[", 4) == 0)
-					fprintf(f, "%s &= ~(1 << %d);\n", MapSym(IntCode[i].name1), IntCode[i].bit);
+					fprintf(f, "%s &= ~(1 << %d);  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 	                fprintf(f, "%s = 0;\n", MapSym(IntCode[i].name1));
                 break;
 
             case INT_COPY_BIT_TO_BIT:
 				if (strncmp(str, "U_M[", 4) == 0)
-	                fprintf(f, "%s &= ~(1 << %d); %s |= %s << %d;\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), MapSym(IntCode[i].name2), IntCode[i].bit);
+	                fprintf(f, "%s &= ~(1 << %d); %s |= %s << %d;  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), MapSym(IntCode[i].name2), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1), MapSym(IntCode[i].name2));
                 break;
@@ -317,7 +317,7 @@ static void GenerateAnsiC(FILE *f)
 
             case INT_IF_BIT_SET:
 				if (strncmp(str, "U_M[", 4) == 0)
-	                fprintf(f, "if (%s & (1 << %d)) {\n", MapSym(IntCode[i].name1), IntCode[i].bit);
+	                fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "if (%s) {\n", MapSym(IntCode[i].name1));
                 indent++;
@@ -325,7 +325,7 @@ static void GenerateAnsiC(FILE *f)
 
             case INT_IF_BIT_CLEAR:
 				if (strncmp(str, "U_M[", 4) == 0)
-	                fprintf(f, "if (!(%s & (1 << %d))) {\n", MapSym(IntCode[i].name1), IntCode[i].bit);
+	                fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "if (!%s) {\n", MapSym(IntCode[i].name1));
                 indent++;

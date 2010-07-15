@@ -452,7 +452,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_END_IF);
             } else if(l->d.coil.resetOnly) {
                 OpBit(INT_IF_BIT_SET, stateInOut, l->d.coil.bit);
-                Op(INT_CLEAR_BIT, l->d.contacts.name, l->d.coil.bit);
+                OpBit(INT_CLEAR_BIT, l->d.contacts.name, l->d.coil.bit);
                 Op(INT_END_IF);
             } else {
                 OpBit(INT_COPY_BIT_TO_BIT, l->d.contacts.name, stateInOut, l->d.coil.bit);
