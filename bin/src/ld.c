@@ -105,11 +105,21 @@ volatile unsigned int I_E5 = 0;
 volatile unsigned int I_E6 = 0;
 
 volatile unsigned int U_S15 = 0;
-volatile unsigned int U_TTMR_BOMBA_LIGA = 0;
 
 volatile unsigned int I_parOut_000c = 0;
 
 volatile unsigned int I_parThis_000c = 0;
+volatile unsigned int U_TTMR_BOMBA_LIGA = 0;
+
+volatile unsigned int I_parOut_000d = 0;
+
+volatile unsigned int I_parThis_000d = 0;
+volatile unsigned int U_TTIMEOUT_RES1 = 0;
+
+volatile unsigned int I_E11 = 0;
+volatile unsigned int U_TTIMEOUT_RES2 = 0;
+
+volatile unsigned int I_E12 = 0;
 volatile unsigned int U_TBOMBA_LIGADA = 0;
 
 volatile unsigned int U_S14 = 0;
@@ -316,17 +326,17 @@ void PlcCycle(void)
         I_parThis_0004 = 0;
     }
     
-    if (!(U_M[2] & (1 << 1))) {  // XMODO_BANHO
-        I_parThis_0004 = 0;
-    }
-    
     if (I_parThis_0004) {
-        if (U_TSTART1 < 1499) {
+        if (U_TSTART1 < 499) {
             U_TSTART1++;
             I_parThis_0004 = 0;
         }
     } else {
         U_TSTART1 = 0;
+    }
+    
+    if (!(U_M[2] & (1 << 1))) {  // XMODO_BANHO
+        I_parThis_0004 = 0;
     }
     
     /* ] finish series */
@@ -647,6 +657,14 @@ void PlcCycle(void)
         I_parOut_000b = 1;
     }
     I_parThis_000b = I_rung_top;
+    if (I_E10) {
+        I_parThis_000b = 0;
+    }
+    
+    if (I_parThis_000b) {
+        I_parOut_000b = 1;
+    }
+    I_parThis_000b = I_rung_top;
     if (I_E4) {
         I_parThis_000b = 0;
     }
@@ -704,10 +722,32 @@ void PlcCycle(void)
     I_rung_top = I_mcr;
     
     /* start series [ */
-    if (!U_S1) {
-        I_rung_top = 0;
+    /* start parallel [ */
+    I_parOut_000c = 0;
+    I_parThis_000c = I_rung_top;
+    if (!(U_M[2] & (1 << 0))) {  // XMODO_AQUECIMENT
+        I_parThis_000c = 0;
     }
     
+    if (I_parThis_000c) {
+        I_parOut_000c = 1;
+    }
+    I_parThis_000c = I_rung_top;
+    /* start series [ */
+    if (U_M[2] & (1 << 0)) {  // XMODO_AQUECIMENT
+        I_parThis_000c = 0;
+    }
+    
+    if (!U_S1) {
+        I_parThis_000c = 0;
+    }
+    
+    /* ] finish series */
+    if (I_parThis_000c) {
+        I_parOut_000c = 1;
+    }
+    I_rung_top = I_parOut_000c;
+    /* ] finish parallel */
     if (I_rung_top) {
         if (U_TTMR_BOMBA_LIGA < 499) {
             U_TTMR_BOMBA_LIGA++;
@@ -778,39 +818,151 @@ void PlcCycle(void)
     
     /* start series [ */
     /* start parallel [ */
-    I_parOut_000c = 0;
-    I_parThis_000c = I_rung_top;
+    I_parOut_000d = 0;
+    I_parThis_000d = I_rung_top;
     if (U_REMERGENCIA) {
-        I_parThis_000c = 0;
+        I_parThis_000d = 0;
     }
     
-    if (I_parThis_000c) {
-        I_parOut_000c = 1;
+    if (I_parThis_000d) {
+        I_parOut_000d = 1;
     }
-    I_parThis_000c = I_rung_top;
+    I_parThis_000d = I_rung_top;
     /* start series [ */
-    if (!U_S1) {
-        I_parThis_000c = 0;
+    if (!(U_M[2] & (1 << 0))) {  // XMODO_AQUECIMENT
+        I_parThis_000d = 0;
     }
     
-    if (I_parThis_000c) {
+    if (!U_S2) {
+        I_parThis_000d = 0;
+    }
+    
+    if (I_parThis_000d) {
+        if (U_TTIMEOUT_RES1 < 499) {
+            U_TTIMEOUT_RES1++;
+            I_parThis_000d = 0;
+        }
+    } else {
+        U_TTIMEOUT_RES1 = 0;
+    }
+    
+    if (I_E11) {
+        I_parThis_000d = 0;
+    }
+    
+    /* ] finish series */
+    if (I_parThis_000d) {
+        I_parOut_000d = 1;
+    }
+    I_parThis_000d = I_rung_top;
+    /* start series [ */
+    if (!(U_M[2] & (1 << 0))) {  // XMODO_AQUECIMENT
+        I_parThis_000d = 0;
+    }
+    
+    if (!U_S3) {
+        I_parThis_000d = 0;
+    }
+    
+    if (I_parThis_000d) {
+        if (U_TTIMEOUT_RES2 < 499) {
+            U_TTIMEOUT_RES2++;
+            I_parThis_000d = 0;
+        }
+    } else {
+        U_TTIMEOUT_RES2 = 0;
+    }
+    
+    if (I_E12) {
+        I_parThis_000d = 0;
+    }
+    
+    /* ] finish series */
+    if (I_parThis_000d) {
+        I_parOut_000d = 1;
+    }
+    I_parThis_000d = I_rung_top;
+    /* start series [ */
+    if (!(U_M[2] & (1 << 1))) {  // XMODO_BANHO
+        I_parThis_000d = 0;
+    }
+    
+    if (!U_S4) {
+        I_parThis_000d = 0;
+    }
+    
+    if (I_E4) {
+        I_parThis_000d = 0;
+    }
+    
+    /* ] finish series */
+    if (I_parThis_000d) {
+        I_parOut_000d = 1;
+    }
+    I_parThis_000d = I_rung_top;
+    /* start series [ */
+    if (!(U_M[2] & (1 << 1))) {  // XMODO_BANHO
+        I_parThis_000d = 0;
+    }
+    
+    if (!U_S6) {
+        I_parThis_000d = 0;
+    }
+    
+    if (I_E5) {
+        I_parThis_000d = 0;
+    }
+    
+    /* ] finish series */
+    if (I_parThis_000d) {
+        I_parOut_000d = 1;
+    }
+    I_parThis_000d = I_rung_top;
+    /* start series [ */
+    if (!(U_M[2] & (1 << 1))) {  // XMODO_BANHO
+        I_parThis_000d = 0;
+    }
+    
+    if (!U_S8) {
+        I_parThis_000d = 0;
+    }
+    
+    if (I_E6) {
+        I_parThis_000d = 0;
+    }
+    
+    /* ] finish series */
+    if (I_parThis_000d) {
+        I_parOut_000d = 1;
+    }
+    I_parThis_000d = I_rung_top;
+    /* start series [ */
+    if (!(U_M[2] & (1 << 0))) {  // XMODO_AQUECIMENT
+        I_parThis_000d = 0;
+    }
+    
+    if (!U_S1) {
+        I_parThis_000d = 0;
+    }
+    
+    if (I_parThis_000d) {
         if (U_TBOMBA_LIGADA < 499) {
             U_TBOMBA_LIGADA++;
-            I_parThis_000c = 0;
+            I_parThis_000d = 0;
         }
     } else {
         U_TBOMBA_LIGADA = 0;
     }
     
     if (I_E10) {
-        I_parThis_000c = 0;
+        I_parThis_000d = 0;
     }
     
     /* ] finish series */
-    if (I_parThis_000c) {
-        I_parOut_000c = 1;
+    if (I_parThis_000d) {
+        I_parOut_000d = 1;
     }
-    I_rung_top = I_parOut_000c;
+    I_rung_top = I_parOut_000d;
     /* ] finish parallel */
     if (U_S14) {
         I_rung_top = 0;
