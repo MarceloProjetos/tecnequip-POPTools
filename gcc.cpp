@@ -91,6 +91,11 @@ static char *MapSym(char *str)
 				sprintf(ret, "U_A%d", pin);
 				return ret;
 			} 
+			if (Prog.io.assignment[i].type == IO_TYPE_READ_ENC || Prog.io.assignment[i].type == IO_TYPE_RESET_ENC) 
+			{
+				sprintf(ret, "U_ENC%d", pin);
+				return ret;
+			}
 			else if (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
 			{
 				if (pin > 19)
@@ -120,6 +125,10 @@ static char *MapSym(char *str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, char *str)
 {
+	if (strncmp(MapSym(str), "U_E", 3) == 0)
+	{
+		return;
+	}
     //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
 	fprintf(f, "volatile unsigned int %s = 0;\n", MapSym(str));
 }
@@ -201,6 +210,8 @@ static void GenerateDeclarations(FILE *f)
 
             case INT_INCREMENT_VARIABLE:
             case INT_READ_ADC:
+            case INT_READ_ENC:
+            case INT_RESET_ENC:
             case INT_SET_PWM:
                 intVar1 = IntCode[i].name1;
                 break;
@@ -332,7 +343,7 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_IF_VARIABLE_LES_LITERAL:
-                fprintf(f, "if (%s < %d) {\n", MapSym(IntCode[i].name1),
+                fprintf(f, "if (%s < %d) {\n", MapSym(IntCode[i].name1), 
                     IntCode[i].literal);
                 indent++;
                 break;
@@ -377,6 +388,12 @@ static void GenerateAnsiC(FILE *f)
 				break;
             case INT_READ_ADC:
 				fprintf(f, "%s = ADCRead(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1) + 3));
+				break;
+            case INT_READ_ENC:
+				fprintf(f, "%s = ENCRead(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1)));
+				break;
+            case INT_RESET_ENC:
+				fprintf(f, "ENCReset(%d);\n", atoi(MapSym(IntCode[i].name1)));
 				break;
             case INT_SET_PWM:
 				break;
@@ -604,11 +621,14 @@ void CompileAnsiCToGCC(char *dest)
 " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n"
 " *****************************************************************************/\n"
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n"
-"volatile unsigned int U_M[32];\n\n"
+"volatile unsigned int U_M[32];\n"
+"volatile int U_ENC1;\n\n"
 		, Prog.cycleTime / 1000);
 
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");
-	fprintf(f, "extern unsigned int ADCRead(unsigned int i);\n\n");
+	fprintf(f, "extern unsigned int ADCRead(unsigned int i);\n");
+	fprintf(f, "extern unsigned int ENCRead(unsigned int i);\n");
+	fprintf(f, "extern unsigned int ENCReset(unsigned int i);\n");
 
     // now generate declarations for all variables
     GenerateDeclarations(f);

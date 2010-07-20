@@ -113,6 +113,10 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "read adc '%s'", IntCode[i].name1);
                 break;
 
+            case INT_READ_ENC:
+                fprintf(f, "read enc '%s'", IntCode[i].name1);
+                break;
+
             case INT_SET_PWM:
                 fprintf(f, "set pwm '%s' %s Hz", IntCode[i].name1,
                     IntCode[i].name2);
@@ -671,6 +675,18 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             case ELEM_READ_ADC:
                 Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_READ_ADC, l->d.readAdc.name);
+                Op(INT_END_IF);
+                break;
+
+            case ELEM_READ_ENC:
+				Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_READ_ENC, l->d.readEnc.name);
+                Op(INT_END_IF);
+                break;
+
+            case ELEM_RESET_ENC:
+				Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_RESET_ENC, l->d.resetEnc.name);
                 Op(INT_END_IF);
                 break;
 

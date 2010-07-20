@@ -58,6 +58,11 @@ static HWND AnalogSliderTrackbar;
 static BOOL AnalogSliderDone;
 static BOOL AnalogSliderCancel;
 
+// stuff for the popup that lets you set the simulated value of an analog in
+static HWND EncoderSliderMain;
+static HWND EncoderSliderTrackbar;
+static BOOL EncoderSliderDone;
+static BOOL EncoderSliderCancel;
 
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
@@ -219,6 +224,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.readAdc.name, IO_TYPE_READ_ADC);
             break;
 
+        case ELEM_READ_ENC:
+            AppendIo(l->d.readEnc.name, IO_TYPE_READ_ENC);
+            break;
+
+        case ELEM_RESET_ENC:
+            AppendIo(l->d.resetEnc.name, IO_TYPE_RESET_ENC);
+            break;
+
         case ELEM_SHIFT_REGISTER: {
             int i;
             for(i = 0; i < l->d.shiftRegister.stages; i++) {
@@ -314,7 +327,9 @@ int GenerateIoList(int prevSel)
     for(i = 0; i < Prog.io.count; i++) {
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT ||
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
+           Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
+           Prog.io.assignment[i].type == IO_TYPE_READ_ENC ||
+           Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
         {
             for(j = 0; j < IoSeenPreviouslyCount; j++) {
                 if(strcmp(Prog.io.assignment[i].name, 
@@ -363,6 +378,8 @@ BOOL LoadIoListFromFile(FILE *f)
                 case 'X': type = IO_TYPE_DIG_INPUT; break;
                 case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
                 case 'A': type = IO_TYPE_READ_ADC; break;
+                case 'E': type = IO_TYPE_READ_ENC; break;
+                case 'Z': type = IO_TYPE_RESET_ENC; break;
                 default: oops();
             }
             AppendIoSeenPreviously(name, type, pin);
@@ -381,7 +398,9 @@ void SaveIoListToFile(FILE *f)
     for(i = 0; i < Prog.io.count; i++) {
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT  ||
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
+           Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
+           Prog.io.assignment[i].type == IO_TYPE_READ_ENC ||
+           Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
         {
             // Don't internationalize this! It's the file format, not UI.
             fprintf(f, "    %s at %d\n", Prog.io.assignment[i].name,
@@ -516,6 +535,131 @@ void ShowAnalogSliderPopup(char *name)
 }
 
 //-----------------------------------------------------------------------------
+// Dialog proc for the popup that lets you set the value of an analog input for
+// simulation.
+//-----------------------------------------------------------------------------
+static LRESULT CALLBACK EncoderSliderDialogProc(HWND hwnd, UINT msg,
+    WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) {
+        case WM_CLOSE:
+        case WM_DESTROY:
+            EncoderSliderDone = TRUE;
+            EncoderSliderCancel = TRUE;
+            return 1;
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+}
+
+//-----------------------------------------------------------------------------
+// A little toolbar-style window that pops up to allow the user to set the
+// simulated value of an ADC pin.
+//-----------------------------------------------------------------------------
+void ShowEncoderSliderPopup(char *name)
+{
+    WNDCLASSEX wc;
+    memset(&wc, 0, sizeof(wc));
+    wc.cbSize = sizeof(wc);
+
+    wc.style            = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC |
+                            CS_DBLCLKS;
+    wc.lpfnWndProc      = (WNDPROC)EncoderSliderDialogProc;
+    wc.hInstance        = Instance;
+    wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
+    wc.lpszClassName    = "LDmicroEncoderSlider";
+    wc.lpszMenuName     = NULL;
+    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+
+    RegisterClassEx(&wc);
+
+    POINT pt;
+    GetCursorPos(&pt);
+
+    SWORD currentVal = GetEncShadow(name);
+
+    SWORD maxVal;
+    if(Prog.mcu) {
+        maxVal = Prog.mcu->encMax;
+    } else {
+        maxVal = 0x7FFF;
+    }
+    if(maxVal == 0) {
+        Error(_("No Encoder or Encoder not supported for selected micro."));
+        return;
+    }
+
+    int left = pt.x - 10;
+    // try to put the slider directly under the cursor (though later we might
+    // realize that that would put the popup off the screen)
+    int top = pt.y - (15 + (73*currentVal)/maxVal);
+
+    RECT r;
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
+
+    if(top + 110 >= r.bottom) {
+        top = r.bottom - 110;
+    }
+    if(top < 0) top = 0;
+    
+    EncoderSliderMain = CreateWindowClient(0, "LDmicroEncoderSlider", "I/O Pin",
+        WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
+        left, top, 30, 100, NULL, NULL, Instance, NULL);
+
+    EncoderSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
+        TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE, 
+        0, 0, 30, 100, EncoderSliderMain, NULL, Instance, NULL);
+    SendMessage(EncoderSliderTrackbar, TBM_SETRANGE, FALSE,
+        MAKELONG(0, maxVal));
+    SendMessage(EncoderSliderTrackbar, TBM_SETTICFREQ, (maxVal + 1)/8, 0);
+    SendMessage(EncoderSliderTrackbar, TBM_SETPOS, TRUE, currentVal);
+
+    EnableWindow(MainWindow, FALSE);
+    ShowWindow(EncoderSliderMain, TRUE);
+    SetFocus(EncoderSliderTrackbar);
+
+    DWORD ret;
+    MSG msg;
+    EncoderSliderDone = FALSE;
+    EncoderSliderCancel = FALSE;
+
+    SWORD orig = GetEncShadow(name);
+
+    while(!EncoderSliderDone && (ret = GetMessage(&msg, NULL, 0, 0))) {
+        SWORD v = (SWORD)SendMessage(EncoderSliderTrackbar, TBM_GETPOS, 0, 0);
+
+        if(msg.message == WM_KEYDOWN) {
+            if(msg.wParam == VK_RETURN) {
+                EncoderSliderDone = TRUE;
+                break;
+            } else if(msg.wParam == VK_ESCAPE) {
+                EncoderSliderDone = TRUE;
+                EncoderSliderCancel = TRUE;
+                break;
+            }
+        } else if(msg.message == WM_LBUTTONUP) {
+            if(v != orig) {
+                EncoderSliderDone = TRUE;
+            }
+        }
+        SetEncShadow(name, v);
+
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    if(!EncoderSliderCancel) {
+        SWORD v = (SWORD)SendMessage(EncoderSliderTrackbar, TBM_GETPOS, 0, 0);
+        SetEncShadow(name, v);
+    }
+
+    EnableWindow(MainWindow, TRUE);
+    DestroyWindow(EncoderSliderMain);
+    ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+}
+
+//-----------------------------------------------------------------------------
 // Window proc for the contacts dialog box
 //-----------------------------------------------------------------------------
 static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam,
@@ -621,7 +765,9 @@ void ShowIoDialog(int item)
 
     if(Prog.io.assignment[item].name[0] != 'X' && 
        Prog.io.assignment[item].name[0] != 'Y' &&
-       Prog.io.assignment[item].name[0] != 'A')
+       Prog.io.assignment[item].name[0] != 'A' &&
+       Prog.io.assignment[item].name[0] != 'E' &&
+       Prog.io.assignment[item].name[0] != 'Z')
     {
         Error(_("Can only assign pin number to input/output pins (Xname or "
             "Yname or Aname)."));
@@ -630,6 +776,11 @@ void ShowIoDialog(int item)
 
     if(Prog.io.assignment[item].name[0] == 'A' && Prog.mcu->adcCount == 0) {
         Error(_("No ADC or ADC not supported for this micro."));
+        return;
+    }
+
+    if(Prog.io.assignment[item].name[0] == 'E' && Prog.mcu->encCount == 0) {
+        Error(_("No Encoder or Encoder not supported for this micro."));
         return;
     }
 
@@ -684,6 +835,18 @@ void ShowIoDialog(int item)
                 }
             }
             if(j == Prog.mcu->adcCount) {
+                goto cant_use_this_io;
+            }
+        }
+
+        if(Prog.io.assignment[item].name[0] == 'E' || Prog.io.assignment[item].name[0] == 'Z') {
+            for(j = 0; j < Prog.mcu->encCount; j++) {
+                if(Prog.mcu->encInfo[j].pin == Prog.mcu->pinInfo[i].pin) {
+                    // okay; we know how to connect it up to the ADC
+                    break;
+                }
+            }
+            if(j == Prog.mcu->encCount) {
                 goto cant_use_this_io;
             }
         }
@@ -807,7 +970,7 @@ void IoListProc(NMHDR *h)
 
                     int type = Prog.io.assignment[item].type;
                     if(type != IO_TYPE_DIG_INPUT && type != IO_TYPE_DIG_OUTPUT
-                        && type != IO_TYPE_READ_ADC)
+                        && type != IO_TYPE_READ_ADC && type != IO_TYPE_READ_ENC && type != IO_TYPE_RESET_ENC)
                     {
                         strcpy(i->item.pszText, "");
                         break;
@@ -872,6 +1035,8 @@ void IoListProc(NMHDR *h)
                     SimulationToggleContact(name);
                 } else if(name[0] == 'A') {
                     ShowAnalogSliderPopup(name);
+                } else if(name[0] == 'E') {
+                    ShowEncoderSliderPopup(name);
                 }
             } else {
                 UndoRemember();

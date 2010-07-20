@@ -334,6 +334,10 @@ HMENU MakeMainWindowMenus(void)
         _("Insert Set PWM Output"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC,
         _("Insert A/D Converter Read\tP"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ENC,
+        _("Leitura do Encoder Quadratura"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RESET_ENC,
+        _("Reset do Encoder Quadratura"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST,
         _("Insert Make Persistent"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);

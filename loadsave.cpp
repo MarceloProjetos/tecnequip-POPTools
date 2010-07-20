@@ -110,6 +110,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         &l->d.counter.max)==2))
     {
         *which = ELEM_CTC;
+    } else if(sscanf(line, "RESET_ENC %s", l->d.resetEnc.name)==1) {
+        *which = ELEM_RESET_ENC;
     } else if(sscanf(line, "RES %s", l->d.reset.name)==1) {
         *which = ELEM_RES;
     } else if(sscanf(line, "MOVE %s %s", l->d.move.dest, l->d.move.src)==2) {
@@ -144,6 +146,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_LES;
     } else if(sscanf(line, "READ_ADC %s", l->d.readAdc.name)==1) {
         *which = ELEM_READ_ADC;
+    } else if(sscanf(line, "READ_ENC %s", l->d.readEnc.name)==1) {
+        *which = ELEM_READ_ENC;
     } else if(sscanf(line, "SET_PWM %s %d", l->d.setPwm.name, 
         &(l->d.setPwm.targetFreq))==2)
     {
@@ -518,6 +522,14 @@ cmp:
 
         case ELEM_READ_ADC:
             fprintf(f, "READ_ADC %s\n", l->d.readAdc.name);
+            break;
+
+        case ELEM_READ_ENC:
+            fprintf(f, "READ_ENC %s\n", l->d.readEnc.name);
+            break;
+
+        case ELEM_RESET_ENC:
+            fprintf(f, "RESET_ENC %s\n", l->d.resetEnc.name);
             break;
 
         case ELEM_SET_PWM:

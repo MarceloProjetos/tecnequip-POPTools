@@ -341,6 +341,20 @@ void ShowReadAdcDialog(char *name)
     ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, dests);
 }
 
+void ShowReadEncDialog(char *name)
+{
+    char *labels[] = { _("Destination:") };
+    char *dests[] = { name };
+    ShowSimpleDialog(_("Read Encoder"), 1, labels, 0, 0x1, 0x1, dests);
+}
+
+void ShowResetEncDialog(char *name)
+{
+    char *labels[] = { _("Destination:") };
+    char *dests[] = { name };
+    ShowSimpleDialog(_("Reset Encoder"), 1, labels, 0, 0x1, 0x1, dests);
+}
+
 void ShowSetPwmDialog(char *name, int *targetFreq)
 {
     char freq[100];

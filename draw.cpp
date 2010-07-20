@@ -131,6 +131,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_PIECEWISE_LINEAR:
         case ELEM_MASTER_RELAY:
         case ELEM_READ_ADC:
+        case ELEM_READ_ENC:
+        case ELEM_RESET_ENC:
         case ELEM_SET_PWM:
         case ELEM_PERSIST:
             if(ColsAvailable - soFar > 1) {
@@ -434,6 +436,20 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             ElemReadAdc *r = &leaf->d.readAdc;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{READ ADC}", poweredBefore,
+                poweredAfter);
+            break;
+        }
+        case ELEM_READ_ENC: {
+            ElemReadEnc *r = &leaf->d.readEnc;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{READ ENC}", poweredBefore,
+                poweredAfter);
+            break;
+        }
+        case ELEM_RESET_ENC: {
+            ElemResetEnc *r = &leaf->d.resetEnc;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{RESET ENC}", poweredBefore,
                 poweredAfter);
             break;
         }

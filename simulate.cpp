@@ -53,6 +53,12 @@ static struct {
 } AdcShadows[MAX_IO];
 static int AdcShadowsCount;
 
+static struct {
+    char    name[MAX_NAME_LEN];
+    SWORD   val;
+} EncShadows[MAX_IO];
+static int EncShadowsCount;
+
 #define VAR_FLAG_TON  0x00000001
 #define VAR_FLAG_TOF  0x00000002
 #define VAR_FLAG_RTO  0x00000004
@@ -219,6 +225,40 @@ SWORD GetAdcShadow(char *name)
 }
 
 //-----------------------------------------------------------------------------
+// Set the shadow copy of a variable associated with a READ ADC operation. This
+// will get committed to the real copy when the rung-in condition to the
+// READ ADC is true.
+//-----------------------------------------------------------------------------
+void SetEncShadow(char *name, SWORD val)
+{
+    int i;
+    for(i = 0; i < EncShadowsCount; i++) {
+        if(strcmp(EncShadows[i].name, name)==0) {
+            EncShadows[i].val = val;
+            return;
+        }
+    }
+    strcpy(EncShadows[i].name, name);
+    EncShadows[i].val = val;
+    EncShadowsCount++;
+}
+
+//-----------------------------------------------------------------------------
+// Return the shadow value of a variable associated with a READ ADC. This is
+// what gets copied into the real variable when an ADC read is simulated.
+//-----------------------------------------------------------------------------
+SWORD GetEncShadow(char *name)
+{
+    int i;
+    for(i = 0; i < EncShadowsCount; i++) {
+        if(strcmp(EncShadows[i].name, name)==0) {
+            return EncShadows[i].val;
+        }
+    }
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
 // Mark how a variable is used; a series of flags that we can OR together,
 // then we can check to make sure that only valid combinations have been used
 // (e.g. just a TON, an RTO with its reset, etc.). Returns NULL for success,
@@ -369,6 +409,14 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 
         case ELEM_READ_ADC:
             MarkWithCheck(l->d.readAdc.name, VAR_FLAG_ANY);
+            break;
+
+        case ELEM_READ_ENC:
+            MarkWithCheck(l->d.readEnc.name, VAR_FLAG_ANY);
+            break;
+
+        case ELEM_RESET_ENC:
+            MarkWithCheck(l->d.resetEnc.name, VAR_FLAG_ANY);
             break;
 
         case ELEM_ADD:
@@ -628,6 +676,14 @@ math:
                 // read is performed, which occurs only for a true rung-in
                 // condition there.
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
+                break;
+
+            case INT_READ_ENC:
+                // Keep the shadow copies of the ADC variables because in
+                // the real device they will not be updated until an actual
+                // read is performed, which occurs only for a true rung-in
+                // condition there.
+                SetSimulationVariable(a->name1, GetEncShadow(a->name1));
                 break;
 
             case INT_UART_SEND:

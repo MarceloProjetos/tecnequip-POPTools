@@ -475,6 +475,14 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddReadAdc());
             break;
 
+        case MNU_INSERT_READ_ENC:
+            CHANGING_PROGRAM(AddReadEnc());
+            break;
+
+        case MNU_INSERT_RESET_ENC:
+            CHANGING_PROGRAM(AddResetEnc());
+            break;
+
         case MNU_INSERT_UART_SEND:
             CHANGING_PROGRAM(AddUart(ELEM_UART_SEND));
             break;

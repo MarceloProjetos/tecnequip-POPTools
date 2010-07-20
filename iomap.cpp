@@ -58,6 +58,12 @@ static HWND AnalogSliderTrackbar;
 static BOOL AnalogSliderDone;
 static BOOL AnalogSliderCancel;
 
+// stuff for the popup that lets you set the simulated value of an encode in
+static HWND EncoderSliderMain;
+static HWND EncoderSliderTrackbar;
+static BOOL EncoderSliderDone;
+static BOOL EncoderSliderCancel;
+
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
 //-----------------------------------------------------------------------------
@@ -218,6 +224,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.readAdc.name, IO_TYPE_READ_ADC, 0);
             break;
 
+        case ELEM_READ_ENC:
+            AppendIo(l->d.readEnc.name, IO_TYPE_READ_ENC, 0);
+            break;
+
+        case ELEM_RESET_ENC:
+            AppendIo(l->d.resetEnc.name, IO_TYPE_RESET_ENC, 0);
+            break;
+
         case ELEM_SHIFT_REGISTER: {
             int i;
             for(i = 0; i < l->d.shiftRegister.stages; i++) {
@@ -313,7 +327,9 @@ int GenerateIoMapList(int prevSel)
     for(i = 0; i < Prog.io.count; i++) {
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT ||
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_READ_ADC)
+           Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
+           Prog.io.assignment[i].type == IO_TYPE_READ_ENC ||
+           Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
         {
             for(j = 0; j < IoSeenPreviouslyCount; j++) 
 			{
@@ -466,7 +482,9 @@ void ShowIoMapDialog(int item)
 
     if(Prog.io.assignment[item].name[0] != 'X' && 
        Prog.io.assignment[item].name[0] != 'Y' &&
-       Prog.io.assignment[item].name[0] != 'A')
+       Prog.io.assignment[item].name[0] != 'A' &&
+       Prog.io.assignment[item].name[0] != 'E' &&
+       Prog.io.assignment[item].name[0] != 'Z')
     {
         Error(_("Can only assign pin number to input/output pins (Xname or "
             "Yname or Aname)."));
@@ -475,6 +493,11 @@ void ShowIoMapDialog(int item)
 
     if(Prog.io.assignment[item].name[0] == 'A' && Prog.mcu->adcCount == 0) {
         Error(_("No ADC or ADC not supported for this micro."));
+        return;
+    }
+
+    if(Prog.io.assignment[item].name[0] == 'E' && Prog.mcu->encCount == 0) {
+        Error(_("ENCODER not supported for this micro."));
         return;
     }
 
@@ -536,6 +559,21 @@ void ShowIoMapDialog(int item)
                 //}
             }
             if(j == Prog.mcu->adcCount) {
+				break;
+                //goto cant_use_this_io;
+            }
+        }
+
+        if(Prog.io.assignment[item].name[0] == 'E' || Prog.io.assignment[item].name[0] == 'Z') {
+            for(j = 0; j < Prog.mcu->encCount; j++) 
+			{
+                //if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) 
+				//{
+					sprintf(buf, "%3d ENC%d", Prog.mcu->encInfo[j].pin, Prog.mcu->encInfo[j].muxRegValue);
+					SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+                //}
+            }
+            if(j == Prog.mcu->encCount) {
 				break;
                 //goto cant_use_this_io;
             }
@@ -667,7 +705,7 @@ void IoMapListProc(NMHDR *h)
 
                     int type = Prog.io.assignment[item].type;
                     if(type != IO_TYPE_DIG_INPUT && type != IO_TYPE_DIG_OUTPUT
-                        && type != IO_TYPE_READ_ADC)
+                        && type != IO_TYPE_READ_ADC && type != IO_TYPE_READ_ENC && type != IO_TYPE_RESET_ENC)
                     {
                         strcpy(i->item.pszText, "");
                         break;
@@ -714,6 +752,8 @@ void IoMapListProc(NMHDR *h)
 								sprintf(i->item.pszText, "E%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_READ_ADC)
 								sprintf(i->item.pszText, "AD%d", Prog.mcu->pinInfo[j].bit);
+							else if (Prog.io.assignment[item].type == IO_TYPE_READ_ENC || Prog.io.assignment[item].type == IO_TYPE_RESET_ENC)
+								sprintf(i->item.pszText, "ENC%d", Prog.mcu->pinInfo[j].bit);
                             break;
                         }
                     }
@@ -744,6 +784,8 @@ void IoMapListProc(NMHDR *h)
                     SimulationToggleContact(name);
                 } else if(name[0] == 'A') {
                     ShowAnalogSliderPopup(name);
+                } else if(name[0] == 'E') {
+                    ShowEncoderSliderPopup(name);
                 }
             } else {
                 UndoRemember();

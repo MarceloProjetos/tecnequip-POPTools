@@ -331,6 +331,8 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_COUNTER:           return _("counter"); 
         case IO_TYPE_GENERAL:           return _("general var"); 
         case IO_TYPE_READ_ADC:          return _("adc input"); 
+        case IO_TYPE_READ_ENC:          return _("entrada encoder"); 
+        case IO_TYPE_RESET_ENC:         return _("reset encoder"); 
         default:                        return _("<corrupt!>");
     }
 }
@@ -352,7 +354,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
         
     int type = io->type;
     if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT
-        || type == IO_TYPE_READ_ADC)
+        || type == IO_TYPE_READ_ADC || type == IO_TYPE_READ_ENC || type == IO_TYPE_RESET_ENC)
     {
         int pin = io->pin;
         if(pin == NO_PIN_ASSIGNED) {

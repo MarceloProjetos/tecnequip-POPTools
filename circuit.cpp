@@ -378,6 +378,22 @@ void AddReadAdc(void)
     strcpy(t->d.readAdc.name, "Anew");
     AddLeaf(ELEM_READ_ADC, t);
 }
+void AddReadEnc(void)
+{
+    if(!CanInsertEnd) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.readEnc.name, "Enew");
+    AddLeaf(ELEM_READ_ENC, t);
+}
+void AddResetEnc(void)
+{
+    if(!CanInsertEnd) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.resetEnc.name, "Znew");
+    AddLeaf(ELEM_RESET_ENC, t);
+}
 void AddSetPwm(void)
 {
     if(!CanInsertEnd) return;

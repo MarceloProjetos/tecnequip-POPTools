@@ -46,6 +46,8 @@
 #define INT_EEPROM_BUSY_CHECK                   15
 #define INT_EEPROM_READ                         16
 #define INT_EEPROM_WRITE                        17
+#define INT_READ_ENC                            18
+#define INT_RESET_ENC                           19
 
 #define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50

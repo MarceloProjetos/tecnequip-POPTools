@@ -464,6 +464,14 @@ void EditSelectedElement(void)
             ShowReadAdcDialog(Selected->d.readAdc.name+1);
             break;
 
+        case ELEM_READ_ENC:
+            ShowReadEncDialog(Selected->d.readEnc.name+1);
+            break;
+
+        case ELEM_RESET_ENC:
+            ShowResetEncDialog(Selected->d.resetEnc.name+1);
+            break;
+
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
             ShowUartDialog(SelectedWhich, Selected->d.uart.name);

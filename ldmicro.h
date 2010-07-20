@@ -102,6 +102,8 @@ typedef signed long SDWORD;
 #define MNU_MAKE_SET_ONLY       0x44
 #define MNU_MAKE_RESET_ONLY     0x45
 #define MNU_INSERT_PWL          0x46
+#define MNU_INSERT_READ_ENC     0x47
+#define MNU_INSERT_RESET_ENC    0x48
 
 #define MNU_MCU_SETTINGS        0x50
 #define MNU_PROCESSOR_0         0xa0
@@ -176,6 +178,8 @@ typedef signed long SDWORD;
 #define ELEM_FORMATTED_STRING   0x2f
 #define ELEM_PERSIST            0x30
 #define ELEM_PIECEWISE_LINEAR   0x31
+#define ELEM_READ_ENC			0x32
+#define ELEM_RESET_ENC			0x33
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -205,6 +209,8 @@ typedef signed long SDWORD;
         case ELEM_SHORT: \
         case ELEM_OPEN: \
         case ELEM_READ_ADC: \
+        case ELEM_READ_ENC: \
+        case ELEM_RESET_ENC: \
         case ELEM_SET_PWM: \
         case ELEM_UART_SEND: \
         case ELEM_UART_RECV: \
@@ -273,6 +279,14 @@ typedef struct ElemReadAdcTag {
     char    name[MAX_NAME_LEN];
 } ElemReadAdc;
 
+typedef struct ElemReadEncTag {
+    char    name[MAX_NAME_LEN];
+} ElemReadEnc;
+
+typedef struct ElemResetEncTag {
+    char    name[MAX_NAME_LEN];
+} ElemResetEnc;
+
 typedef struct ElemSetPwmTag {
     char    name[MAX_NAME_LEN];
     int     targetFreq;
@@ -330,6 +344,8 @@ typedef struct ElemLeafTag {
         ElemCmp             cmp;
         ElemCounter         counter;
         ElemReadAdc         readAdc;
+        ElemReadEnc         readEnc;
+        ElemResetEnc        resetEnc;
         ElemSetPwmTag       setPwm;
         ElemUart            uart;
         ElemShiftRegister   shiftRegister;
@@ -382,6 +398,8 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_RTO             10
 #define IO_TYPE_COUNTER         11
 #define IO_TYPE_GENERAL         12
+#define IO_TYPE_READ_ENC        13
+#define IO_TYPE_RESET_ENC       14
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -468,6 +486,11 @@ typedef struct McuAdcPinInfoTag {
     BYTE    muxRegValue;
 } McuAdcPinInfo;
 
+typedef struct McuEncPinInfoTag {
+    int     pin;
+    BYTE    muxRegValue;
+} McuEncPinInfo;
+
 #define ISA_AVR             0x00
 #define ISA_PIC16           0x01
 #define ISA_ANSIC           0x02
@@ -493,6 +516,9 @@ typedef struct McuIoInfoTag {
     McuAdcPinInfo   *adcInfo;
     int              adcCount;
     int              adcMax;
+    McuEncPinInfo   *encInfo;
+    int              encCount;
+    int              encMax;
     struct {
         int             rxPin;
         int             txPin;
@@ -619,6 +645,8 @@ void AddCmp(int which);
 void AddReset(void);
 void AddCounter(int which);
 void AddReadAdc(void);
+void AddReadEnc(void);
+void AddResetEnc(void);
 void AddSetPwm(void);
 void AddUart(int which);
 void AddPersist(void);
@@ -663,6 +691,7 @@ void ShowIoMapDialog(int item);
 void IoListProc(NMHDR *h);
 void IoMapListProc(NMHDR *h);
 void ShowAnalogSliderPopup(char *name);
+void ShowEncoderSliderPopup(char *name);
 
 // commentdialog.cpp
 void ShowCommentDialog(char *comment);
@@ -675,6 +704,8 @@ void ShowTimerDialog(int which, int *delay, char *name);
 void ShowCounterDialog(int which, int *count, char *name);
 void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);
+void ShowReadEncDialog(char *name);
+void ShowResetEncDialog(char *name);
 void ShowSetPwmDialog(char *name, int *targetFreq);
 void ShowPersistDialog(char *var);
 void ShowUartDialog(int which, char *name);
@@ -733,6 +764,8 @@ void DescribeForIoList(char *name, char *out);
 void SimulationToggleContact(char *name);
 void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
+void SetEncShadow(char *name, SWORD val);
+SWORD GetEncShadow(char *name);
 void DestroyUartSimulationWindow(void);
 void ShowUartSimulationWindow(void);
 extern BOOL InSimulationMode; 
