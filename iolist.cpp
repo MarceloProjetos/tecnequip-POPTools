@@ -583,7 +583,7 @@ void ShowEncoderSliderPopup(char *name)
     if(Prog.mcu) {
         maxVal = Prog.mcu->encMax;
     } else {
-        maxVal = 0x7FFF;
+        maxVal = 0x7FFFFFFF;
     }
     if(maxVal == 0) {
         Error(_("No Encoder or Encoder not supported for selected micro."));
@@ -593,7 +593,7 @@ void ShowEncoderSliderPopup(char *name)
     int left = pt.x - 10;
     // try to put the slider directly under the cursor (though later we might
     // realize that that would put the popup off the screen)
-    int top = pt.y - (15 + (73*currentVal)/maxVal);
+    int top = pt.y - 55; //- (15 + (73*currentVal)/0x7fff);
 
     RECT r;
     SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
@@ -610,9 +610,12 @@ void ShowEncoderSliderPopup(char *name)
     EncoderSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
         TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE, 
         0, 0, 30, 100, EncoderSliderMain, NULL, Instance, NULL);
-    SendMessage(EncoderSliderTrackbar, TBM_SETRANGE, FALSE,
-        MAKELONG(0, maxVal));
-    SendMessage(EncoderSliderTrackbar, TBM_SETTICFREQ, (maxVal + 1)/8, 0);
+
+    SendMessage(EncoderSliderTrackbar, TBM_SETRANGEMIN, FALSE,
+        /*(maxVal + 1) * -1*/ 0);
+    SendMessage(EncoderSliderTrackbar, TBM_SETRANGEMAX, FALSE,
+        maxVal - 1);
+    SendMessage(EncoderSliderTrackbar, TBM_SETTICFREQ, (maxVal)/8, 0);
     SendMessage(EncoderSliderTrackbar, TBM_SETPOS, TRUE, currentVal);
 
     EnableWindow(MainWindow, FALSE);

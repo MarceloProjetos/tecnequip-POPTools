@@ -908,7 +908,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
         arraylen(LPC1768AdcPinInfo),
         1023,
 		LPC1768EncPinInfo, arraylen(LPC1768EncPinInfo),
-		0xFFFFFFFF - 1,
+		0x7FFFFFFF,
         { 1, 1 },
         12,
         ISA_LPC17,

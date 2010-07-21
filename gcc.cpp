@@ -77,35 +77,35 @@ static char *MapSym(char *str)
 			{
 				if (pin > 19)
 				{
-					sprintf(ret, "U_M[%d]", pin - 20);
+					sprintf(ret, "M[%d]", pin - 20);
 					return ret;
 				}
 				else
 				{
-					sprintf(ret, "U_S%d", pin);
+					sprintf(ret, "U%d", pin);
 					return ret;
 				}
 			} 
 			if (Prog.io.assignment[i].type == IO_TYPE_READ_ADC) 
 			{
-				sprintf(ret, "U_A%d", pin);
+				sprintf(ret, "A%d", pin);
 				return ret;
 			} 
 			if (Prog.io.assignment[i].type == IO_TYPE_READ_ENC || Prog.io.assignment[i].type == IO_TYPE_RESET_ENC) 
 			{
-				sprintf(ret, "U_ENC%d", pin);
+				sprintf(ret, "ENC%d", pin);
 				return ret;
 			}
 			else if (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
 			{
 				if (pin > 19)
 				{
-					sprintf(ret, "U_M[%d]", pin - 20);
+					sprintf(ret, "M[%d]", pin - 20);
 					return ret;
 				}
 				else
 				{
-					sprintf(ret, "I_E%d", pin);
+					sprintf(ret, "I%d", pin);
 					return ret;
 				}
 			}
@@ -125,7 +125,7 @@ static char *MapSym(char *str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, char *str)
 {
-	if (strncmp(MapSym(str), "U_E", 3) == 0)
+	if (strncmp(MapSym(str), "E", 1) == 0 || strncmp(MapSym(str), "Z", 1) == 0)
 	{
 		return;
 	}
@@ -141,7 +141,7 @@ static void DeclareInt(FILE *f, char *str)
 static void DeclareBit(FILE *f, char *rawStr)
 {
     char *str = MapSym(rawStr);
-	if (strncmp(str, "U_M[", 4) == 0)
+	if (strncmp(str, "M", 1) == 0)
 	{
 		return;
 	} else if(*rawStr == 'X') {
@@ -621,8 +621,8 @@ void CompileAnsiCToGCC(char *dest)
 " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n"
 " *****************************************************************************/\n"
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n"
-"volatile unsigned int U_M[32];\n"
-"volatile int U_ENC1;\n\n"
+"volatile unsigned int M[32];\n"
+"volatile int ENC1;\n\n"
 		, Prog.cycleTime / 1000);
 
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");

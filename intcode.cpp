@@ -315,7 +315,7 @@ static int TimerPeriod(ElemLeaf *l)
         Error(_("Timer period too short (needs faster cycle time)."));
         CompileError();
     }
-    if(period >= (1 << 15)) {
+    if(period >= (1 << 31)) {
         Error(_("Timer period too long (max 32767 times cycle time); use a "
             "slower cycle time."));
         CompileError();
@@ -353,8 +353,8 @@ SWORD CheckMakeNumber(char *str)
         val = atoi(str);
     }
 
-    if(val < -32768 || val > 32767) {   
-        Error(_("Constant %d out of range: -32768 to 32767 inclusive."), val);
+    if(val < (int)-2147483647 || val > (int)2147483647) {   
+        Error(_("Constant %d out of range: -2147483648 to 2147483647 inclusive."), val);
         CompileError();
     }
 

@@ -59,10 +59,10 @@ static BOOL AnalogSliderDone;
 static BOOL AnalogSliderCancel;
 
 // stuff for the popup that lets you set the simulated value of an encode in
-static HWND EncoderSliderMain;
+/*static HWND EncoderSliderMain;
 static HWND EncoderSliderTrackbar;
 static BOOL EncoderSliderDone;
-static BOOL EncoderSliderCancel;
+static BOOL EncoderSliderCancel;*/
 
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.

@@ -25,9 +25,9 @@
 #define __LDMICRO_H
 
 #include <setjmp.h>
-typedef signed short SWORD;
 typedef signed long SDWORD;
-
+//typedef signed short SWORD;
+typedef SDWORD SWORD;
 //-----------------------------------------------
 // `Configuration options.'
 

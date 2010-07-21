@@ -59,6 +59,12 @@ static struct {
 } EncShadows[MAX_IO];
 static int EncShadowsCount;
 
+static struct {
+    char    name[MAX_NAME_LEN];
+    SWORD   val;
+} ResetEncShadows[MAX_IO];
+static int ResetEncShadowsCount;
+
 #define VAR_FLAG_TON  0x00000001
 #define VAR_FLAG_TOF  0x00000002
 #define VAR_FLAG_RTO  0x00000004
@@ -253,6 +259,40 @@ SWORD GetEncShadow(char *name)
     for(i = 0; i < EncShadowsCount; i++) {
         if(strcmp(EncShadows[i].name, name)==0) {
             return EncShadows[i].val;
+        }
+    }
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
+// Set the shadow copy of a variable associated with a READ ADC operation. This
+// will get committed to the real copy when the rung-in condition to the
+// READ ADC is true.
+//-----------------------------------------------------------------------------
+void SetResetEncShadow(char *name, SWORD val)
+{
+    int i;
+    for(i = 0; i < ResetEncShadowsCount; i++) {
+        if(strcmp(ResetEncShadows[i].name, name)==0) {
+            ResetEncShadows[i].val = val;
+            return;
+        }
+    }
+    strcpy(ResetEncShadows[i].name, name);
+    ResetEncShadows[i].val = val;
+    ResetEncShadowsCount++;
+}
+
+//-----------------------------------------------------------------------------
+// Return the shadow value of a variable associated with a READ ADC. This is
+// what gets copied into the real variable when an ADC read is simulated.
+//-----------------------------------------------------------------------------
+SWORD GetResetEncShadow(char *name)
+{
+    int i;
+    for(i = 0; i < ResetEncShadowsCount; i++) {
+        if(strcmp(ResetEncShadows[i].name, name)==0) {
+            return ResetEncShadows[i].val;
         }
     }
     return 0;
@@ -679,11 +719,11 @@ math:
                 break;
 
             case INT_READ_ENC:
-                // Keep the shadow copies of the ADC variables because in
-                // the real device they will not be updated until an actual
-                // read is performed, which occurs only for a true rung-in
-                // condition there.
                 SetSimulationVariable(a->name1, GetEncShadow(a->name1));
+                break;
+
+            case INT_RESET_ENC:
+                SetSimulationVariable(a->name1, GetResetEncShadow(a->name1));
                 break;
 
             case INT_UART_SEND:
@@ -838,7 +878,7 @@ void DescribeForIoList(char *name, char *out)
         }
         default: {
             SWORD v = GetSimulationVariable(name);
-            sprintf(out, "%hd (0x%04hx)", v, v);
+            sprintf(out, "%i (0x%08x)", v, v);
             break;
         }
     }
