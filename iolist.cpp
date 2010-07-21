@@ -612,7 +612,7 @@ void ShowEncoderSliderPopup(char *name)
         0, 0, 30, 100, EncoderSliderMain, NULL, Instance, NULL);
 
     SendMessage(EncoderSliderTrackbar, TBM_SETRANGEMIN, FALSE,
-        /*(maxVal + 1) * -1*/ 0);
+        /*(maxVal + 1) * -1*/ 0);  // bug com valor negativo
     SendMessage(EncoderSliderTrackbar, TBM_SETRANGEMAX, FALSE,
         maxVal - 1);
     SendMessage(EncoderSliderTrackbar, TBM_SETTICFREQ, (maxVal)/8, 0);
