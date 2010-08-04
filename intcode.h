@@ -48,6 +48,8 @@
 #define INT_EEPROM_WRITE                        17
 #define INT_READ_ENC                            18
 #define INT_RESET_ENC                           19
+#define INT_READ_USS							20
+#define INT_WRITE_USS							21
 
 #define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50
@@ -69,9 +71,11 @@
 #if !defined(INTCODE_H_CONSTANTS_ONLY)
     typedef struct IntOpTag {
         int         op;
+		char		desc[MAX_NAME_LEN];
         char        name1[MAX_NAME_LEN];
         char        name2[MAX_NAME_LEN];
         char        name3[MAX_NAME_LEN];
+        char        name4[MAX_NAME_LEN];
         SWORD       literal;
         BOOL       *poweredAfter;
 		unsigned char bit;

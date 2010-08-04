@@ -117,6 +117,14 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "read enc '%s'", IntCode[i].name1);
                 break;
 
+            case INT_READ_USS:
+                fprintf(f, "read uss '%s'", IntCode[i].name1);
+                break;
+
+            case INT_WRITE_USS:
+                fprintf(f, "write uss '%s'", IntCode[i].name1);
+                break;
+
             case INT_SET_PWM:
                 fprintf(f, "set pwm '%s' %s Hz", IntCode[i].name1,
                     IntCode[i].name2);
@@ -238,17 +246,123 @@ static void GenSymFormattedString(char *dest)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void Op(int op, char *name1, char *name2, char *name3, SWORD lit, unsigned char bit)
+static void Op(int op, char *name1, char *name2, char *name3, char *name4, SWORD lit, unsigned char bit)
 {
     IntCode[IntCodeLen].op = op;
     if(name1) strcpy(IntCode[IntCodeLen].name1, name1);
     if(name2) strcpy(IntCode[IntCodeLen].name2, name2);
     if(name3) strcpy(IntCode[IntCodeLen].name3, name3);
+    if(name4) strcpy(IntCode[IntCodeLen].name4, name4);
     IntCode[IntCodeLen].literal = lit;
 	IntCode[IntCodeLen].bit = bit;
+
+	switch (op)
+	{
+	case INT_SET_BIT:
+		strcpy(IntCode[IntCodeLen].desc, "SET_BIT");
+		break;
+	case INT_CLEAR_BIT:
+		strcpy(IntCode[IntCodeLen].desc, "CLEAR_BIT");
+		break;
+	case INT_COPY_BIT_TO_BIT:
+		strcpy(IntCode[IntCodeLen].desc, "COPY_BIT_TO_BIT");
+		break;
+	case INT_SET_VARIABLE_TO_LITERAL:
+		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_TO_LITERAL");
+		break;
+	case INT_SET_VARIABLE_TO_VARIABLE:
+		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_TO_VARIABLE");
+		break;
+	case INT_INCREMENT_VARIABLE:
+		strcpy(IntCode[IntCodeLen].desc, "INCREMENT_VARIABLE");
+		break;
+	case INT_SET_VARIABLE_ADD:
+		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_ADD");
+		break;
+	case INT_SET_VARIABLE_SUBTRACT:
+		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_SUBTRACT");
+		break;
+	case INT_SET_VARIABLE_MULTIPLY:
+		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_MULTIPLY");
+		break;
+	case INT_SET_VARIABLE_DIVIDE:
+		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_DIVIDE");
+		break;
+	case INT_READ_ADC:
+		strcpy(IntCode[IntCodeLen].desc, "READ_ADC");
+		break;
+	case INT_SET_PWM:
+		strcpy(IntCode[IntCodeLen].desc, "SET_PWM");
+		break;
+	case INT_UART_SEND:
+		strcpy(IntCode[IntCodeLen].desc, "UART_SEND");
+		break;
+	case INT_UART_RECV:
+		strcpy(IntCode[IntCodeLen].desc, "UART_RECV");
+		break;
+	case INT_EEPROM_BUSY_CHECK:
+		strcpy(IntCode[IntCodeLen].desc, "EEPROM_BUSY_CHECK");
+		break;
+	case INT_EEPROM_READ:
+		strcpy(IntCode[IntCodeLen].desc, "EEPROM_READ");
+		break;
+	case INT_EEPROM_WRITE:
+		strcpy(IntCode[IntCodeLen].desc, "EEPROM_WRITE");
+		break;
+	case INT_READ_ENC:
+		strcpy(IntCode[IntCodeLen].desc, "READ_ENC");
+		break;
+	case INT_RESET_ENC:
+		strcpy(IntCode[IntCodeLen].desc, "RESET_ENC");
+		break;
+	case INT_READ_USS:
+		strcpy(IntCode[IntCodeLen].desc, "READ_USS");
+		break;
+	case INT_WRITE_USS:
+		strcpy(IntCode[IntCodeLen].desc, "WRITE_USS");
+		break;
+	/*case INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
+		strcpy(IntCode[IntCodeLen].desc, "???");
+		break;*/
+	case INT_IF_BIT_SET:
+		strcpy(IntCode[IntCodeLen].desc, "IF_BIT_SET");
+		break;
+	case INT_IF_BIT_CLEAR:
+		strcpy(IntCode[IntCodeLen].desc, "IF_BIT_CLEAR");
+		break;
+	case INT_IF_VARIABLE_LES_LITERAL:
+		strcpy(IntCode[IntCodeLen].desc, "IF_VARIABLE_LES_LITERAL");
+		break;
+	case INT_IF_VARIABLE_EQUALS_VARIABLE:
+		strcpy(IntCode[IntCodeLen].desc, "IF_VARIABLE_EQUALS_VARIABLE");
+		break;
+	case INT_IF_VARIABLE_GRT_VARIABLE:
+		strcpy(IntCode[IntCodeLen].desc, "IF_VARIABLE_GRT_VARIABLE");
+		break;
+	case INT_ELSE:
+		strcpy(IntCode[IntCodeLen].desc, "ELSE");
+		break;
+	case INT_END_IF:
+		strcpy(IntCode[IntCodeLen].desc, "END_IF");
+		break;
+	case INT_SIMULATE_NODE_STATE:
+		strcpy(IntCode[IntCodeLen].desc, "SIMULATE_NODE_STATE");
+		break;
+	case INT_COMMENT:
+		strcpy(IntCode[IntCodeLen].desc, "COMMENT");
+		break;
+	// Only used for the interpretable code.
+	//#define INT_END_OF_PROGRAM                     255
+	default:
+		strcpy(IntCode[IntCodeLen].desc, "???");
+	}
+
     IntCodeLen++;
 }
-
+static void Op(int op, char *name1, char *name2, char *name3, SWORD lit, unsigned char bit)
+{
+	Op(op, name1, name2, name3, NULL, lit, bit);
+}
 static void Op(int op, char *name1, char *name2, SWORD lit)
 {
     Op(op, name1, name2, NULL, lit, 0);
@@ -315,8 +429,8 @@ static int TimerPeriod(ElemLeaf *l)
         Error(_("Timer period too short (needs faster cycle time)."));
         CompileError();
     }
-    if(period >= (1 << 31)) {
-        Error(_("Timer period too long (max 32767 times cycle time); use a "
+    if(period >= (1 << 31) - 1) {
+        Error(_("Timer period too long (max 2147483647 times cycle time); use a "
             "slower cycle time."));
         CompileError();
     }
@@ -690,6 +804,50 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_END_IF);
                 break;
 
+            case ELEM_READ_USS:
+            case ELEM_WRITE_USS:
+				{
+				char addr[10];
+				char param[10];
+				char index[10];
+
+				sprintf(addr, "%d", l->d.writeUSS.id);
+				sprintf(param, "%d", l->d.writeUSS.parameter);
+				sprintf(index, "%d", l->d.writeUSS.index);
+
+				// We want to respond to rising edges, so yes we need a one shot.
+				char oneShot[MAX_NAME_LEN];
+				GenSymOneShot(oneShot);
+				char byPass[MAX_NAME_LEN];
+				GenSymOneShot(byPass);
+
+				// OneShot 
+				Op(INT_IF_BIT_SET, stateInOut);
+					Op(INT_IF_BIT_CLEAR, oneShot);
+						Op(INT_IF_BIT_SET, "$USSReady");
+							if (which == ELEM_READ_USS)
+								Op(INT_READ_USS, l->d.readUSS.name, addr, param, index, 0, 0);
+							else
+								Op(INT_WRITE_USS, l->d.writeUSS.name, addr, param, index, 0, 0);
+							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+						Op(INT_END_IF);
+						Op(INT_CLEAR_BIT, stateInOut);
+						Op(INT_COPY_BIT_TO_BIT, byPass, stateInOut);
+					Op(INT_END_IF);
+					Op(INT_IF_BIT_CLEAR, byPass);
+						Op(INT_IF_BIT_SET, "$USSReady");
+							Op(INT_SET_BIT, byPass);
+						Op(INT_ELSE);
+							Op(INT_CLEAR_BIT, stateInOut);
+						Op(INT_END_IF);
+					Op(INT_END_IF);
+				Op(INT_ELSE);
+					Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+				Op(INT_END_IF);
+
+				}
+                break;
+				
             case ELEM_SET_PWM: {
                 Op(INT_IF_BIT_SET, stateInOut);
                 char line[80];
@@ -849,7 +1007,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 // by moving the PWL points closer together.
                
                 // Check for numerical problems, and fail if we have them.
-                if((thisDx*thisDy) >= 32767 || (thisDx*thisDy) <= -32768) {
+                if((thisDx*thisDy) >= 2147483647 || (thisDx*thisDy) <= -2147483648) {
                     Error(_("Numerical problem with piecewise linear lookup "
                         "table. Either make the table entries smaller, "
                         "or space the points together more closely.\r\n\r\n"
@@ -1089,10 +1247,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                         Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", ' ');
                         Op(INT_IF_VARIABLE_LES_LITERAL, var, (SWORD)0);
                             Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", '-');
-                            Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch",
-                                (SWORD)0);
-                            Op(INT_SET_VARIABLE_SUBTRACT, convertState,
-                                "$scratch", var, 0, 0);
+                            Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", (SWORD)0);
+                            Op(INT_SET_VARIABLE_SUBTRACT, convertState, "$scratch", var, 0, 0);
                         Op(INT_END_IF);
 
                     Op(INT_END_IF);
@@ -1100,8 +1256,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                     // just another character
                     Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
                     Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch", seqScratch);
-                        Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", 
-                            outputChars[i]);
+                        Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", outputChars[i]);
                     Op(INT_END_IF);
                 }
             }

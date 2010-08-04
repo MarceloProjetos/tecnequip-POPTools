@@ -43,6 +43,10 @@ static HWND         StatusBar;
 static HMENU        FileMenu;
 static HMENU        EditMenu;
 static HMENU        InstructionMenu;
+static HMENU		ConditionalMenu;
+static HMENU		MathematicMenu;
+static HMENU		ComunicationMenu;
+static HMENU		MotorControlMenu;
 static HMENU        ProcessorMenu;
 static HMENU        SimulateMenu;
 static HMENU        TopMenu;
@@ -169,11 +173,11 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     t = canInsertEnd ? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(InstructionMenu, MNU_INSERT_COIL, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_RES, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_MOV, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_ADD, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_SUB, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_MUL, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_DIV, t);
+    EnableMenuItem(MathematicMenu, MNU_INSERT_MOV, t);
+    EnableMenuItem(MathematicMenu, MNU_INSERT_ADD, t);
+    EnableMenuItem(MathematicMenu, MNU_INSERT_SUB, t);
+    EnableMenuItem(MathematicMenu, MNU_INSERT_MUL, t);
+    EnableMenuItem(MathematicMenu, MNU_INSERT_DIV, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CTC, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_PERSIST, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_READ_ADC, t);
@@ -192,12 +196,12 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_CONTACTS, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CTU, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_CTD, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_EQU, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_NEQ, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_GRT, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_GEQ, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_LES, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_LEQ, t);
+    EnableMenuItem(ConditionalMenu, MNU_INSERT_EQU, t);
+    EnableMenuItem(ConditionalMenu, MNU_INSERT_NEQ, t);
+    EnableMenuItem(ConditionalMenu, MNU_INSERT_GRT, t);
+    EnableMenuItem(ConditionalMenu, MNU_INSERT_GEQ, t);
+    EnableMenuItem(ConditionalMenu, MNU_INSERT_LES, t);
+    EnableMenuItem(ConditionalMenu, MNU_INSERT_LEQ, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_SHORT, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_OPEN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
@@ -281,18 +285,23 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTC,
         _("Insert CT&C (Count Circular)\tJ"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_EQU,
+
+	ConditionalMenu = CreatePopupMenu();
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_EQU,
         _("Insert EQU (Compare for Equals)\t="));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_NEQ,
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_NEQ,
         _("Insert NEQ (Compare for Not Equals)"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GRT,
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_GRT,
         _("Insert GRT (Compare for Greater Than)\t>"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_GEQ,
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_GEQ,
         _("Insert GEQ (Compare for Greater Than or Equal)\t."));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LES,
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_LES,
         _("Insert LES (Compare for Less Than)\t<"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_LEQ,
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_LEQ,
         _("Insert LEQ (Compare for Less Than or Equal)\t,"));
+	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConditionalMenu,
+        _("Instruções Condicionais"));
+
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OPEN,
         _("Insert Open-Circuit"));
@@ -308,14 +317,20 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MOV,
         _("Insert MOV (Move)\tM"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_ADD,
-        _("Insert ADD (16-bit Integer Add)\t+"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SUB,
-        _("Insert SUB (16-bit Integer Subtract)\t-"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MUL,
-        _("Insert MUL (16-bit Integer Multiply)\t*"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_DIV,
-        _("Insert DIV (16-bit Integer Divide)\tD"));
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+
+	MathematicMenu = CreatePopupMenu();
+	AppendMenu(MathematicMenu, MF_STRING, MNU_INSERT_ADD,
+        _("Insert ADD (32-bit Integer Add)\t+"));
+    AppendMenu(MathematicMenu, MF_STRING, MNU_INSERT_SUB,
+        _("Insert SUB (32-bit Integer Subtract)\t-"));
+    AppendMenu(MathematicMenu, MF_STRING, MNU_INSERT_MUL,
+        _("Insert MUL (32-bit Integer Multiply)\t*"));
+    AppendMenu(MathematicMenu, MF_STRING, MNU_INSERT_DIV,
+        _("Insert DIV (32-bit Integer Divide)\tD"));
+	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)MathematicMenu,
+        _("Instruções Matemáticas"));
+
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHIFT_REG,
         _("Insert Shift Register"));
@@ -323,22 +338,40 @@ HMENU MakeMainWindowMenus(void)
         _("Insert Look-Up Table"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWL,
         _("Insert Piecewise Linear"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_FMTD_STR,
-        _("Insert Formatted String Over UART"));
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_SEND,
-        _("Insert &UART Send"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_UART_RECV,
-        _("Insert &UART Receive"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_PWM,
-        _("Insert Set PWM Output"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC,
         _("Insert A/D Converter Read\tP"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ENC,
+
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+
+	MotorControlMenu = CreatePopupMenu();
+	AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_SET_PWM,
+        _("Insert Set PWM Output"));
+    AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_READ_ENC,
         _("Leitura do Encoder Quadratura"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RESET_ENC,
+    AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_RESET_ENC,
         _("Reset do Encoder Quadratura"));
-    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST,
+    AppendMenu(MotorControlMenu, MF_SEPARATOR, 0, NULL);
+	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)MotorControlMenu,
+        _("Controle de Motor"));
+
+	AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+
+	ComunicationMenu = CreatePopupMenu();
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_FMTD_STR,
+        _("Insert Formatted String Over UART"));
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_SEND,
+        _("Insert &UART Send"));
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_RECV,
+        _("Insert &UART Receive"));
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_READ_USS,
+        _("Leitura de Parametro do Inversor da Nord"));
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_WRITE_USS,
+        _("Escrita de Parametro no Inversor da Nord"));
+	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ComunicationMenu,
+        _("Comunicação"));
+
+    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+	AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PERSIST,
         _("Insert Make Persistent"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_MAKE_NORMAL,
@@ -684,13 +717,15 @@ void ToggleSimulationMode(void)
     
         CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_CHECKED);
 
-        ClearSimulationData();
         // Recheck InSimulationMode, because there could have been a compile
         // error, which would have kicked us out of simulation mode.
         if(UartFunctionUsed() && InSimulationMode) {
             ShowUartSimulationWindow();
         }
-    } else {
+
+        ClearSimulationData();
+
+	} else {
         RealTimeSimulationRunning = FALSE;
         KillTimer(MainWindow, TIMER_SIMULATE);
 

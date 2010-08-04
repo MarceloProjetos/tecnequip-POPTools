@@ -104,8 +104,11 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_PWL          0x46
 #define MNU_INSERT_READ_ENC     0x47
 #define MNU_INSERT_RESET_ENC    0x48
+#define MNU_INSERT_READ_USS     0x49
+#define MNU_INSERT_WRITE_USS    0x50
+#define MNU_CONDITIONAL_MENU	0x51
 
-#define MNU_MCU_SETTINGS        0x50
+#define MNU_MCU_SETTINGS        0x55
 #define MNU_PROCESSOR_0         0xa0
 
 #define MNU_SIMULATION_MODE     0x60
@@ -180,6 +183,8 @@ typedef SDWORD SWORD;
 #define ELEM_PIECEWISE_LINEAR   0x31
 #define ELEM_READ_ENC			0x32
 #define ELEM_RESET_ENC			0x33
+#define ELEM_READ_USS			0x34
+#define ELEM_WRITE_USS			0x35
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -211,6 +216,8 @@ typedef SDWORD SWORD;
         case ELEM_READ_ADC: \
         case ELEM_READ_ENC: \
         case ELEM_RESET_ENC: \
+        case ELEM_READ_USS: \
+        case ELEM_WRITE_USS: \
         case ELEM_SET_PWM: \
         case ELEM_UART_SEND: \
         case ELEM_UART_RECV: \
@@ -287,6 +294,20 @@ typedef struct ElemResetEncTag {
     char    name[MAX_NAME_LEN];
 } ElemResetEnc;
 
+typedef struct ElemReadUSSTag {
+    char    name[MAX_NAME_LEN];
+	int		id;
+	int		parameter;
+	int		index;
+} ElemReadUSS;
+
+typedef struct ElemWriteUSSTag {
+    char    name[MAX_NAME_LEN];
+	int		id;
+	int		parameter;
+	int		index;
+} ElemWriteUSS;
+
 typedef struct ElemSetPwmTag {
     char    name[MAX_NAME_LEN];
     int     targetFreq;
@@ -346,6 +367,8 @@ typedef struct ElemLeafTag {
         ElemReadAdc         readAdc;
         ElemReadEnc         readEnc;
         ElemResetEnc        resetEnc;
+        ElemReadUSS         readUSS;
+        ElemWriteUSS        writeUSS;
         ElemSetPwmTag       setPwm;
         ElemUart            uart;
         ElemShiftRegister   shiftRegister;
@@ -400,6 +423,8 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_GENERAL         12
 #define IO_TYPE_READ_ENC        13
 #define IO_TYPE_RESET_ENC       14
+#define IO_TYPE_READ_USS        15
+#define IO_TYPE_WRITE_USS       16
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -417,7 +442,7 @@ typedef struct PlcProgramTag {
     int         mcuClock;
     int         baudRate;
 
-#define MAX_RUNGS 99
+#define MAX_RUNGS 999
     ElemSubcktSeries *rungs[MAX_RUNGS];
     BOOL              rungPowered[MAX_RUNGS];
     int               numRungs;
@@ -647,6 +672,8 @@ void AddCounter(int which);
 void AddReadAdc(void);
 void AddReadEnc(void);
 void AddResetEnc(void);
+void AddReadUSS(void);
+void AddWriteUSS(void);
 void AddSetPwm(void);
 void AddUart(int which);
 void AddPersist(void);
@@ -706,6 +733,8 @@ void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);
 void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);
+void ShowReadUSSDialog(char *name, int *id, int *parameter, int *index);
+void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *index);
 void ShowSetPwmDialog(char *name, int *targetFreq);
 void ShowPersistDialog(char *var);
 void ShowUartDialog(int which, char *name);

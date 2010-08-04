@@ -65,6 +65,18 @@ static struct {
 } ResetEncShadows[MAX_IO];
 static int ResetEncShadowsCount;
 
+static struct {
+    char    name[MAX_NAME_LEN];
+    SWORD   val;
+} readUSSShadows[MAX_IO];
+static int readUSSShadowsCount;
+
+static struct {
+    char    name[MAX_NAME_LEN];
+    SWORD   val;
+} writeUSSShadows[MAX_IO];
+static int writeUSSShadowsCount;
+
 #define VAR_FLAG_TON  0x00000001
 #define VAR_FLAG_TOF  0x00000002
 #define VAR_FLAG_RTO  0x00000004
@@ -106,9 +118,15 @@ static HWND UartSimulationTextControl;
 static LONG_PTR PrevTextProc;
 
 static int QueuedUartCharacter = -1;
+static int QueuedUSSCharacter = -1;
+
 static int SimulateUartTxCountdown = 0;
 
+static int SimulateUSSTxCountdown = 0;
+static int SimulateUSSRxCountdown = 0;
+
 static void AppendToUartSimulationTextControl(BYTE b);
+static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int param, unsigned int index, char *name, unsigned int val);
 
 static void SimulateIntCode(void);
 static char *MarkUsedVariable(char *name, DWORD flag);
@@ -345,11 +363,12 @@ static char *MarkUsedVariable(char *name, DWORD flag)
             break;
 
         case VAR_FLAG_OTHERWISE_FORGOTTEN:
-            if(name[0] != '$') {
-                Error(_("Variable '%s' not assigned to, e.g. with a "
+            if(name[0] != '$') 
+			{
+                /*Error(_("Variable '%s' not assigned to, e.g. with a "
                     "MOV statement, an ADD statement, etc.\r\n\r\n"
                     "This is probably a programming error; now it "
-                    "will always be zero."), name);
+                    "will always be zero."), name);*/
             }
             break;
 
@@ -457,6 +476,15 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 
         case ELEM_RESET_ENC:
             MarkWithCheck(l->d.resetEnc.name, VAR_FLAG_ANY);
+            break;
+
+        case ELEM_READ_USS:
+            MarkWithCheck(l->d.readUSS.name, VAR_FLAG_ANY);
+            break;
+
+        case ELEM_WRITE_USS:
+            MarkWithCheck(l->d.writeUSS.name, VAR_FLAG_ANY);
+			MarkWithCheck("$USSReady", VAR_FLAG_ANY);
             break;
 
         case ELEM_ADD:
@@ -726,6 +754,18 @@ math:
                 SetSimulationVariable(a->name1, GetResetEncShadow(a->name1));
                 break;
 
+            case INT_READ_USS:
+				SetSingleBit("$USSReady", FALSE);
+				SimulateUSSTxCountdown = 0;
+				AppendToUSSSimulationTextControl(atoi(a->name2), atoi(a->name3), atoi(a->name4), a->name1, GetSimulationVariable(a->name1));
+                break;
+
+            case INT_WRITE_USS:
+				SetSingleBit("$USSReady", FALSE);
+				SimulateUSSTxCountdown = 0;
+				AppendToUSSSimulationTextControl(atoi(a->name2), atoi(a->name3), atoi(a->name4), a->name1, GetSimulationVariable(a->name1));
+                break;
+
             case INT_UART_SEND:
                 if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) 
 				{
@@ -799,6 +839,14 @@ void SimulateOneCycle(BOOL forceRefresh)
         SimulateUartTxCountdown = 0;
     }
 
+	if (SimulateUSSTxCountdown >= 0 && !SingleBitOn("$USSReady"))
+		SimulateUSSTxCountdown++;
+
+	if (SimulateUSSTxCountdown > 2)
+	{
+		SetSingleBit("$USSReady", TRUE);
+	}
+
     IntPc = 0;
     SimulateIntCode();
 
@@ -839,9 +887,14 @@ void ClearSimulationData(void)
     VariablesCount = 0;
     SingleBitItemsCount = 0;
     AdcShadowsCount = 0;
+	readUSSShadowsCount = 0;
+	writeUSSShadowsCount = 0;
     QueuedUartCharacter = -1;
+    QueuedUSSCharacter = -1;
     SimulateUartTxCountdown = 0;
+    SimulateUSSTxCountdown = -1;
 
+	SetSingleBit("$USSReady", TRUE);
     CheckVariableNames();
 
     SimulateRedrawAfterNextCycle = TRUE;
@@ -1049,6 +1102,28 @@ static void AppendToUartSimulationTextControl(BYTE b)
     } else {
         sprintf(append, "\\x%02x", b);
     }
+
+#define MAX_SCROLLBACK 256
+    char buf[MAX_SCROLLBACK];
+
+    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
+        (LPARAM)buf);
+
+    int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
+    if(overBy > 0) {
+        memmove(buf, buf + overBy, strlen(buf));
+    }
+    strcat(buf, append);
+
+    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+}
+
+static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int param, unsigned int index, char *name, unsigned int val)
+{
+    char append[125];
+
+    sprintf(append, "USS: id=%d, param=%d, index=%d, name=%s, value=%d\r\n", id, param, index, name, val);
 
 #define MAX_SCROLLBACK 256
     char buf[MAX_SCROLLBACK];

@@ -333,6 +333,8 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_READ_ADC:          return _("adc input"); 
         case IO_TYPE_READ_ENC:          return _("entrada encoder"); 
         case IO_TYPE_RESET_ENC:         return _("reset encoder"); 
+        case IO_TYPE_READ_USS:         return _("read USS"); 
+        case IO_TYPE_WRITE_USS:         return _("write USS"); 
         default:                        return _("<corrupt!>");
     }
 }

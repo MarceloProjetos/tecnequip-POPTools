@@ -234,7 +234,8 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
 void ShowTimerDialog(int which, int *delay, char *name)
 {
     char *s;
-    switch(which) { 
+    switch(which) 
+	{ 
         case ELEM_TON: s = _("Turn-On Delay"); break;
         case ELEM_TOF: s = _("Turn-Off Delay"); break;
         case ELEM_RTO: s = _("Retentive Turn-On Delay"); break;
@@ -353,6 +354,46 @@ void ShowResetEncDialog(char *name)
     char *labels[] = { _("Destination:") };
     char *dests[] = { name };
     ShowSimpleDialog(_("Reset Encoder"), 1, labels, 0, 0x1, 0x1, dests);
+}
+
+void ShowReadUSSDialog(char *name, int *id, int *parameter, int *index)
+{
+    char i[100];
+    sprintf(i, "%d", *id);
+
+    char param[100];
+    sprintf(param, "%d", *parameter);
+
+    char idx[100];
+    sprintf(idx, "%d", *index);
+
+	char *labels[] = { _("Destination:"), _("ID:"), _("Parametro:"), _("Indice:") };
+    char *dests[] = { name, i, param, idx };
+    ShowSimpleDialog(_("Le Parametro do Inversor da Nord"), 4, labels, 0x0E, 0x1, 0x0E, dests);
+
+	*id = atoi(i);
+	*parameter = atoi(param);
+	*index = atoi(idx);
+}
+
+void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *index)
+{
+    char i[100];
+    sprintf(i, "%d", *id);
+
+    char param[100];
+    sprintf(param, "%d", *parameter);
+
+    char idx[100];
+    sprintf(idx, "%d", *index);
+
+	char *labels[] = { _("Origem:"), _("ID:"), _("Parametro:"), _("Indice:") };
+    char *dests[] = { name, i, param, idx };
+    ShowSimpleDialog(_("Escreve Parametro no Inversor da Nord"), 4, labels, 0x0E, 0x1, 0x0E, dests);
+
+	*id = atoi(i);
+	*parameter = atoi(param);
+	*index = atoi(idx);
 }
 
 void ShowSetPwmDialog(char *name, int *targetFreq)

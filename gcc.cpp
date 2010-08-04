@@ -161,6 +161,8 @@ static void DeclareBit(FILE *f, char *rawStr)
 		//fprintf(f, "#define Read_%s(x) %s = ReadParameter(atoi(%s[1]))\n", str, str);
 		//fprintf(f, "#define Write_%s(x) WriteParameter(atoi(%s[1]), %s)\n", str, str);
 		return;
+    } else if(*rawStr == 'W' || *rawStr == 'G') {
+		return;
     }
 	fprintf(f, "\n");
 	fprintf(f, "volatile unsigned int %s = 0;\n", str);
@@ -212,6 +214,8 @@ static void GenerateDeclarations(FILE *f)
             case INT_READ_ADC:
             case INT_READ_ENC:
             case INT_RESET_ENC:
+            case INT_READ_USS:
+            case INT_WRITE_USS:
             case INT_SET_PWM:
                 intVar1 = IntCode[i].name1;
                 break;
@@ -394,6 +398,12 @@ static void GenerateAnsiC(FILE *f)
 				break;
             case INT_RESET_ENC:
 				fprintf(f, "ENCReset(%d);\n", atoi(MapSym(IntCode[i].name1)));
+				break;
+            case INT_READ_USS:
+				fprintf(f, "uss_get_param(%d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), MapSym(IntCode[i].name1));
+				break;
+            case INT_WRITE_USS:
+				fprintf(f, "uss_set_param(%d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), MapSym(IntCode[i].name1));
 				break;
             case INT_SET_PWM:
 				break;
@@ -620,15 +630,17 @@ void CompileAnsiCToGCC(char *dest)
 "/*****************************************************************************\n"
 " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n"
 " *****************************************************************************/\n"
+"#include \"uss.h\"\n"
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n"
 "volatile unsigned int M[32];\n"
 "volatile int ENC1;\n\n"
-		, Prog.cycleTime / 1000);
+	, Prog.cycleTime / 1000);
 
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");
 	fprintf(f, "extern unsigned int ADCRead(unsigned int i);\n");
 	fprintf(f, "extern unsigned int ENCRead(unsigned int i);\n");
 	fprintf(f, "extern unsigned int ENCReset(unsigned int i);\n");
+	fprintf(f, "extern volatile unsigned int I_USSReady;\n");
 
     // now generate declarations for all variables
     GenerateDeclarations(f);

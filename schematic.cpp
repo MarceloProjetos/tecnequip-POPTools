@@ -167,7 +167,9 @@ void WhatCanWeDoFromCursorAndTopology(void)
          SelectedWhich == ELEM_PERSIST ||
          SelectedWhich == ELEM_MOVE))
     {
-        if(SelectedWhich == ELEM_COIL) {
+        if(SelectedWhich == ELEM_COIL ||
+           SelectedWhich == ELEM_READ_USS ||
+           SelectedWhich == ELEM_WRITE_USS) {
             canNegate = TRUE;
             canNormal = TRUE;
             canResetOnly = TRUE;
@@ -470,6 +472,14 @@ void EditSelectedElement(void)
 
         case ELEM_RESET_ENC:
             ShowResetEncDialog(Selected->d.resetEnc.name+1);
+            break;
+
+        case ELEM_READ_USS:
+			ShowReadUSSDialog(Selected->d.readUSS.name+1, &Selected->d.readUSS.id, &Selected->d.readUSS.parameter, &Selected->d.readUSS.index);
+            break;
+
+        case ELEM_WRITE_USS:
+            ShowWriteUSSDialog(Selected->d.readUSS.name+1, &Selected->d.readUSS.id, &Selected->d.readUSS.parameter, &Selected->d.readUSS.index);
             break;
 
         case ELEM_UART_RECV:

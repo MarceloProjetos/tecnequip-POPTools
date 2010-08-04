@@ -232,6 +232,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.resetEnc.name, IO_TYPE_RESET_ENC, 0);
             break;
 
+        case ELEM_READ_USS:
+            AppendIo(l->d.readUSS.name, IO_TYPE_READ_USS, 0);
+            break;
+
+        case ELEM_WRITE_USS:
+            AppendIo(l->d.writeUSS.name, IO_TYPE_WRITE_USS, 0);
+            break;
+
         case ELEM_SHIFT_REGISTER: {
             int i;
             for(i = 0; i < l->d.shiftRegister.stages; i++) {
@@ -329,7 +337,9 @@ int GenerateIoMapList(int prevSel)
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ENC ||
-           Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
+           Prog.io.assignment[i].type == IO_TYPE_RESET_ENC ||
+		   Prog.io.assignment[i].type == IO_TYPE_READ_USS || 
+		   Prog.io.assignment[i].type == IO_TYPE_WRITE_USS)
         {
             for(j = 0; j < IoSeenPreviouslyCount; j++) 
 			{
@@ -705,7 +715,8 @@ void IoMapListProc(NMHDR *h)
 
                     int type = Prog.io.assignment[item].type;
                     if(type != IO_TYPE_DIG_INPUT && type != IO_TYPE_DIG_OUTPUT
-                        && type != IO_TYPE_READ_ADC && type != IO_TYPE_READ_ENC && type != IO_TYPE_RESET_ENC)
+                        && type != IO_TYPE_READ_ADC && type != IO_TYPE_READ_ENC && type != IO_TYPE_RESET_ENC
+						&& type != IO_TYPE_READ_USS && type != IO_TYPE_WRITE_USS)
                     {
                         strcpy(i->item.pszText, "");
                         break;

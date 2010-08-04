@@ -133,6 +133,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_READ_ADC:
         case ELEM_READ_ENC:
         case ELEM_RESET_ENC:
+        case ELEM_READ_USS:
+        case ELEM_WRITE_USS:
         case ELEM_SET_PWM:
         case ELEM_PERSIST:
             if(ColsAvailable - soFar > 1) {
@@ -450,6 +452,20 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             ElemResetEnc *r = &leaf->d.resetEnc;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{RESET ENC}", poweredBefore,
+                poweredAfter);
+            break;
+        }
+        case ELEM_READ_USS: {
+            ElemReadUSS *r = &leaf->d.readUSS;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{READ USS}", poweredBefore,
+                poweredAfter);
+            break;
+        }
+        case ELEM_WRITE_USS: {
+            ElemWriteUSS *r = &leaf->d.writeUSS;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{WRITE USS}", poweredBefore,
                 poweredAfter);
             break;
         }
@@ -825,7 +841,16 @@ cmp:
             *cx += 2*POS_WIDTH;
             break;
         }
-        case ELEM_UART_RECV:
+        case ELEM_READ_USS:
+        case ELEM_WRITE_USS:
+            CenterWithWires(*cx, *cy,
+                (which == ELEM_READ_USS) ? "{READ USS}" : "{WRITE USS}",
+                poweredBefore, poweredAfter);
+            CenterWithSpaces(*cx, *cy, (which == ELEM_READ_USS) ? leaf->d.readUSS.name : leaf->d.writeUSS.name, poweredAfter, TRUE);
+            *cx += POS_WIDTH;
+            break;
+
+		case ELEM_UART_RECV:
         case ELEM_UART_SEND:
             CenterWithWires(*cx, *cy,
                 (which == ELEM_UART_RECV) ? "{UART RECV}" : "{UART SEND}",
