@@ -3,6 +3,14 @@
 #include "timer.h"
 #include "modbus.h"
 #include "ld.h"
+#include "uss.h"
+
+#define NORD_USS_ENABLE
+
+//#define QEI_CHECK
+#ifdef QEI_CHECK
+#include "qei.h"
+#endif
 
 #include "lwip/debug.h"
 #include "lwip/opt.h"
@@ -25,7 +33,7 @@
 #include "timer.h"
 
 /******************************************************************************
-* Definições
+* DefiniÃ§Ãµes
 ******************************************************************************/
 //SSP Status register
 #define SSPSR_TNF     1 << 1
@@ -45,8 +53,6 @@
 
 #define RS485_ENABLE    (1 << 20)
 
-#define HTONS(n) (uint16_t)((((uint16_t) (n)) << 8) | (((uint16_t) (n)) >> 8))
-
 typedef struct ad_type
 {
   unsigned int m1;
@@ -58,13 +64,43 @@ typedef struct ad_type
 
 struct ad_type ad[5];
 
+#ifdef QEI_CHECK
+/************************** PRIVATE MACROS *************************/
+/** Signal Mode setting:
+ * - When = 0, PhA and PhB function as quadrature encoder inputs.
+ * - When = 1, PhA functions as the direction signal and PhB functions
+ * as the clock signal
+ */
+#define SIGNAL_MODE             0
+
+/** Capture Mode setting:
+ * - When = 0, only PhA edges are counted (2X).
+ * - When = 1, BOTH PhA and PhB edges are counted (4X), increasing
+ * resolution but decreasing range
+ */
+#define CAP_MODE                        1
+
+/** Velocity capture period definition (in microsecond) */
+#define CAP_PERIOD                      250000UL
+
+/** Delay time to Read Velocity Accumulator and display (in microsecond)*/
+#define DISP_TIME                       3000000UL
+/** Max velocity capture times calculated */
+#define MAX_CAP_TIMES           (DISP_TIME/CAP_PERIOD)
+
+#define ENC_RES                         2048UL  /**< Encoder resolution (PPR) */
+
+volatile int ENC_VAL = 0;
+
+#endif
+
 /******************************************************************************
 * Variaveis Globais
 ******************************************************************************/
 volatile unsigned int saidas = 0;
 volatile unsigned int entradas = 0;
 
-volatile unsigned int timer0_count = 0;
+volatile unsigned int uss_timeout = 0;
 
 struct MB_Device modbus_serial;
 struct MB_Device modbus_tcp;
@@ -105,8 +141,20 @@ struct
 unsigned char modbus_rx_buffer[MB_BUFFER_SIZE];
 unsigned char modbus_tx_buffer[MB_BUFFER_SIZE];
 
+#ifdef QEI_CHECK
+/************************** ENCODER *************************/
+/** Position Counter */
+__IO uint32_t PosCnt;
+/** Velocity Accumulator */
+__IO uint32_t VeloAcc;
+/** Times of Velocity capture */
+__IO uint32_t VeloCapCnt;
+/** Flag indicates Times of Velocity capture is enough to read out */
+__IO FlagStatus VeloAccFlag;
+#endif
+
 /******************************************************************************
-* Prototipos de Funções
+* Prototipos de FunÃ§Ãµes
 ******************************************************************************/
 unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
 unsigned int ModbusTx(unsigned char *data, unsigned int size);
@@ -119,6 +167,8 @@ unsigned int ModbusTx(unsigned char *data, unsigned int size);
 
 int Init_EMAC(void);
 int Init_EMAC_phase2(void);
+
+volatile unsigned int I_USSReady;
 
 volatile uint16_t gArpTimer = 0;
 volatile uint16_t gTcpTimer = 0;
@@ -148,6 +198,61 @@ static struct ip_addr gMyGateway;
 static struct ip_addr gRemoteIpAddress;
 
 static struct tcp_pcb *gTcp = NULL;
+
+#ifdef QEI_CHECK
+/**
+ * @brief QEI interrupt handler. This sub-routine will update current
+ *                      value of captured velocity in to velocity accumulate.
+ * @param[in]   None
+ * @return[in]  None
+ */
+void QEI_IRQHandler(void)
+{
+  //uint32_t tmp;
+
+  // Check whether if velocity timer overflow
+  if (QEI_GetIntStatus(QEI, QEI_INTFLAG_TIM_Int) == SET)
+  {
+    if (VeloAccFlag == RESET) {
+      // Get current velocity captured and update to accumulate
+      VeloAcc += QEI_GetVelocityCap(QEI);
+      //tmp = QEI_GetVelocityCap(QEI);
+      //VeloAcc += tmp;
+      //_DBH32(tmp); _DBG_("");
+
+      // Update Velocity capture times
+      VeloAccFlag = ((VeloCapCnt++) >= MAX_CAP_TIMES) ? SET : RESET;
+    }
+    // Reset Interrupt flag pending
+    QEI_IntClear(QEI, QEI_INTFLAG_TIM_Int);
+  }
+
+  // Check whether if direction change occurred
+  if (QEI_GetIntStatus(QEI, QEI_INTFLAG_DIR_Int) == SET) {
+    // Reset Interrupt flag pending
+    QEI_IntClear(QEI, QEI_INTFLAG_DIR_Int);
+  }
+}
+
+int ENCRead(unsigned char i)
+{
+  return ENC_VAL;
+}
+
+void ENCReset(unsigned char i)
+{
+  VeloAccFlag = RESET;
+
+  QEI->QEICON = 0xF;
+
+  ENC_VAL = 0;
+
+  PosCnt = 0;
+  // Reset value of Acc and Acc count to default
+  VeloAcc = 0;
+  VeloCapCnt = 0;
+}
+#endif
 
 void TIMER1_IRQHandler (void)
 {
@@ -190,7 +295,7 @@ err_t modbus_tcp_poll_callback(void *arg, struct tcp_pcb *tpcb)
                 {
                         mem_free(arg);
                         tcp_arg(tpcb, NULL);
-                        tcp_close(tpcb);
+                        //tcp_close(tpcb);
                 }
         }
 
@@ -550,7 +655,7 @@ void TIMER0_IRQHandler (void)
 {
   TIM0->IR = 1;                       /* clear interrupt flag */
 
-  timer0_count++;
+  uss_timeout++;
 
   PlcCycle();
 }
@@ -649,7 +754,7 @@ unsigned int ADCRead(unsigned int a)
 }
 
 /******************************************************************************
-* Comunicação Serial RS232
+* ComunicaÃ§Ã£o Serial RS232
 ******************************************************************************/
 unsigned int RS232Write(unsigned int c)
 {
@@ -666,7 +771,7 @@ unsigned int RS232Read(void)
 }
 
 /******************************************************************************
-* Comunicação RS485
+* ComunicaÃ§Ã£o RS485
 ******************************************************************************/
 unsigned int RS485Write(unsigned char * buffer, unsigned int size)
 {
@@ -752,7 +857,7 @@ unsigned int ModbusEthTx(unsigned char *data, unsigned int size)
   if (tcp_write(tpcb_modbus_request, data, size, 0) != ERR_OK)
   {
     mem_free(newarg);
-    tcp_close(tpcb_modbus_request);
+    //tcp_close(tpcb_modbus_request);
   }
   else
   {
@@ -813,8 +918,8 @@ unsigned int ModbusReadHoldingRegisters(struct MB_Device *dev, union MB_FCD_Data
   {
     if (data->read_holding_registers.start + i < 32)
     {
-      buf[(i + sz)] = (uint8_t)(U_M[data->read_holding_registers.start + i] >> 8);
-      buf[(i + sz) + 1] = (uint8_t)(U_M[data->read_holding_registers.start + i]);
+      buf[(2 * i)] = (uint8_t)(M[data->read_holding_registers.start + i] >> 8);
+      buf[(2 * i) + 1] = (uint8_t)(M[data->read_holding_registers.start + i]);
       sz += 2;
     }
     else
@@ -862,7 +967,7 @@ unsigned int ModbusWriteSingleCoil(struct MB_Device *dev, union MB_FCD_Data *dat
 unsigned int ModbusWriteSingleRegister(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
 {
   if (data->write_single_register.address < 32)
-    U_M[data->write_single_register.address] = data->write_single_register.val;
+    M[data->write_single_register.address] = data->write_single_register.val;
   else
     return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 
@@ -897,7 +1002,7 @@ unsigned int ModbusReadExceptionStatus(struct MB_Device *dev, union MB_FCD_Data 
 }
 
 /******************************************************************************
-* Comunicação SSP
+* ComunicaÃ§Ã£o SSP
 ******************************************************************************/
 unsigned char SSPWrite(unsigned char * buffer, unsigned int size)
 {
@@ -927,7 +1032,61 @@ unsigned char SSPRead(uint8_t * buffer, uint32_t size)
 }
 
 /******************************************************************************
-* Rotinas de atualização das Entradas/Saidas
+* ComunicaÃ§Ã£o Protocolo USS (Inversores Nord)
+******************************************************************************/
+void cmd_uss_send(char * args[], void * vars, unsigned int args_size)
+{
+  unsigned short int parametro = 0;
+  unsigned char indice = 0;
+  unsigned short int valor = 0;
+
+  if (args_size < 3)
+  {
+#ifdef CONSOLE
+    printf("Parametros invalidos !\n");
+#endif
+    return;
+  }
+
+  parametro = atoi(args[0]); //console_decode_num(in, &console_offset, size);
+  indice = atoi(args[1]); //console_decode_num(in, &console_offset, size);
+  valor = atoi(args[2]); //console_decode_num(in, &console_offset, size);
+
+#ifdef CONSOLE
+  if (uss_set_param(parametro, indice, valor))
+    printf("P%d[%d], parametro alterado OK.\n", parametro, indice);
+  else
+    printf("P%d[%d], Sem resposta do Inversor.\n", parametro, indice);
+#endif
+}
+
+void cmd_uss_recv(char * args[], void * vars, unsigned int args_size)
+{
+  unsigned short int parametro = 0;
+  unsigned char indice = 0;
+  //unsigned short int valor = 0;
+
+  if (args_size < 2)
+  {
+#ifdef CONSOLE
+    printf("Parametros invalidos !\n");
+#endif
+    return;
+  }
+
+  parametro = atoi(args[0]); //console_decode_num(in, &console_offset, size);
+  indice = atoi(args[1]); //console_decode_num(in, &console_offset, size);
+
+#ifdef CONSOLE
+  if (uss_get_param(parametro, indice, &valor))
+    printf("P%d[%d] = %d, valor recebido ok.\n", parametro, indice, valor);
+  else
+    printf("P%d[%d], Sem resposta do Inversor.\n", parametro, indice);
+#endif
+}
+
+/******************************************************************************
+* Rotinas de atualizaÃ§Ã£o das Entradas/Saidas
 ******************************************************************************/
 unsigned int AtualizaSaidas(void)
 {
@@ -935,22 +1094,22 @@ unsigned int AtualizaSaidas(void)
   unsigned int status = 0;
   unsigned char cmd = OUTPUT_CMD_CONTROL;
 
-  i |= U_S1;
-  i |= U_S2 << 1;
-  i |= U_S3 << 2;
-  i |= U_S4 << 3;
-  i |= U_S5 << 4;
-  i |= U_S6 << 5;
-  i |= U_S7 << 6;
-  i |= U_S8 << 7;
-  i |= U_S9 << 8;
-  i |= U_S10 << 9;
-  i |= U_S11 << 10;
-  i |= U_S12 << 11;
-  i |= U_S13 << 12;
-  i |= U_S14 << 13;
-  i |= U_S15 << 14;
-  i |= U_S16 << 15;
+  i |= U1;
+  i |= U2 << 1;
+  i |= U3 << 2;
+  i |= U4 << 3;
+  i |= U5 << 4;
+  i |= U6 << 5;
+  i |= U7 << 6;
+  i |= U8 << 7;
+  i |= U9 << 8;
+  i |= U10 << 9;
+  i |= U11 << 10;
+  i |= U12 << 11;
+  i |= U13 << 12;
+  i |= U14 << 13;
+  i |= U15 << 14;
+  i |= U16 << 15;
 
   i = HTONS(i);
 
@@ -978,25 +1137,25 @@ unsigned int AtualizaEntradas(void)
 
   i = ~i;
 
-  I_E1 = i & 0x1;
-  I_E2 = (i & (1 << 1)) >> 1;
-  I_E3 = (i & (1 << 2)) >> 2;
-  I_E4 = (i & (1 << 3)) >> 3;
-  I_E5 = (i & (1 << 4)) >> 4;
-  I_E6 = (i & (1 << 5)) >> 5;
-  I_E7 = (i & (1 << 6)) >> 6;
-  I_E8 = (i & (1 << 7)) >> 7;
-  I_E9 = (i & (1 << 8)) >> 8;
-  I_E10 = (i & (1 << 9)) >> 9;
-  I_E11 = (i & (1 << 10)) >> 10;
-  I_E12 = (i & (1 << 11)) >> 11;
-  I_E13 = (i & (1 << 12)) >> 12;
-  I_E14 = (i & (1 << 13)) >> 13;
-  I_E15 = (i & (1 << 14)) >> 14;
-  I_E16 = (i & (1 << 15)) >> 15;
-  I_E17 = (i & (1 << 16)) >> 16;
-  I_E18 = (i & (1 << 17)) >> 17;
-  I_E19 = (i & (1 << 18)) >> 18;
+  I1 = i & 0x1;
+  I2 = (i & (1 << 1)) >> 1;
+  I3 = (i & (1 << 2)) >> 2;
+  I4 = (i & (1 << 3)) >> 3;
+  I5 = (i & (1 << 4)) >> 4;
+  I6 = (i & (1 << 5)) >> 5;
+  I7 = (i & (1 << 6)) >> 6;
+  I8 = (i & (1 << 7)) >> 7;
+  I9 = (i & (1 << 8)) >> 8;
+  I10 = (i & (1 << 9)) >> 9;
+  I11 = (i & (1 << 10)) >> 10;
+  I12 = (i & (1 << 11)) >> 11;
+  I13 = (i & (1 << 12)) >> 12;
+  I14 = (i & (1 << 13)) >> 13;
+  I15 = (i & (1 << 14)) >> 14;
+  I16 = (i & (1 << 15)) >> 15;
+  I17 = (i & (1 << 16)) >> 16;
+  I18 = (i & (1 << 17)) >> 17;
+  I19 = (i & (1 << 18)) >> 18;
 
   return i;
 }
@@ -1024,12 +1183,22 @@ void HardwareInit(void)
   PINCON->PINSEL0 |= 0xA;
 
   // WEG SoftStarter 9600 (8, N, 1)
-  UART3->LCR = 0x83;          /* 8 bits, no Parity, 1 Stop bit */
+#ifndef NORD_USS_ENABLE
+  UART3->LCR = 0x83;          /* 8 bits, no parity, 1 stop bit */
+#else
+  UART3->LCR = 0x9B;          /* 8 bits, even-parity, 1 stop bit */
+#endif
   UART3->DLM = 0;
   UART3->DLL = 92;
   UART3->FDR = (13 << 4) | 10;
-  UART3->LCR = 0x03;          /* DLAB = 0 */
+#ifndef NORD_USS_ENABLE
+  UART3->LCR = 0x03;          /* DLAB = 0, 8 bits, no parity, 1 stop bit */
+#else
+  UART3->LCR = 0x1B;          /* DLAB = 0, 8 bits, even-parity, 1 stop bit */
+#endif
   UART3->FCR = 0x07;          /* Enable and reset TX and RX FIFO. */
+
+  //rs485_open(3, 19200, 8, 1, 1);
 
   // Pino de direcao da RS485
   PINCON->PINSEL1 &= ~(0x3 << 8);       // P0.20
@@ -1071,11 +1240,68 @@ void HardwareInit(void)
 /***************************************************************************/
 int main (void)
 {
+#ifdef QEI_CHECK
+  QEI_CFG_Type QEIConfig;
+  QEI_RELOADCFG_Type ReloadConfig;
+  uint32_t rpm, averageVelo;
+#endif
+
   /**************************************************************************
    * Inicializa System
    *************************************************************************/
   SystemInit();
   HardwareInit();
+
+#ifdef QEI_CHECK
+  /* Configure the NVIC Preemption Priority Bits:
+   * two (2) bits of preemption priority, six (6) bits of sub-priority.
+   * Since the Number of Bits used for Priority Levels is five (5), so the
+   * actual bit number of sub-priority is three (3)
+   */
+  NVIC_SetPriorityGrouping(0x05);
+
+  /* Initialize QEI configuration structure to default value */
+  #if CAP_MODE
+    QEIConfig.CaptureMode = QEI_CAPMODE_4X;
+  #else
+    QEIConfig.CaptureMode = QEI_CAPMODE_2X;
+  #endif
+  QEIConfig.DirectionInvert = QEI_DIRINV_NONE;
+  QEIConfig.InvertIndex = QEI_INVINX_NONE;
+  #if SIGNAL_MODE
+    QEIConfig.SignalMode = QEI_SIGNALMODE_CLKDIR;
+  #else
+    QEIConfig.SignalMode = QEI_SIGNALMODE_QUAD;
+  #endif
+
+  /* Initialize QEI peripheral with given configuration structure */
+  QEI_Init(QEI, &QEIConfig);
+
+  // Set timer reload value for  QEI that used to set velocity capture period
+  ReloadConfig.ReloadOption = QEI_TIMERRELOAD_USVAL;
+  ReloadConfig.ReloadValue = CAP_PERIOD;
+  QEI_SetTimerReload(QEI, &ReloadConfig);
+
+  // Set Max Position
+  QEI_SetMaxPosition(QEI, 0xffffffff);
+
+  /* preemption = 1, sub-priority = 1 */
+  NVIC_SetPriority(QEI_IRQn, ((0x01<<3)|0x01));
+
+  // Reset VeloAccFlag
+  VeloAccFlag = RESET;
+  // Reset value of Acc and Acc count to default
+  VeloAcc = 0;
+  VeloCapCnt = 0;
+
+  // Enable interrupt for velocity Timer overflow for capture velocity into Acc */
+  QEI_IntCmd(QEI, QEI_INTFLAG_TIM_Int, ENABLE);
+  // Enable interrupt for direction change */
+  QEI_IntCmd(QEI, QEI_INTFLAG_DIR_Int, ENABLE);
+
+  /* Enable interrupt for QEI  */
+  NVIC_EnableIRQ(QEI_IRQn);
+#endif
 
   /**************************************************************************
    * Inicializa timer
@@ -1084,7 +1310,7 @@ int main (void)
   enable_timer( 0 );
 
   /**************************************************************************
-   * Inicialização do ModBus
+   * InicializaÃ§Ã£o do ModBus
    *************************************************************************/
   MB_Init(&modbus_serial);
 
@@ -1110,7 +1336,7 @@ int main (void)
   modbus_tcp.mode    = MB_MODE_SLAVE;
   modbus_tcp.TX      = ModbusEthTx;
 
-  memset((void*)U_M, 0, sizeof(U_M));
+  memset((void*)M, 0, sizeof(M));
 
   gTcpState = TCP_WAIT_LINK;
 
@@ -1126,16 +1352,43 @@ int main (void)
 
   enable_timer( 1 );
 
+  I_USSReady = 1;
+
   while(1)
   {
     entradas = AtualizaEntradas();
     saidas = AtualizaSaidas();
 
-    ModbusRequest();
+#ifdef NORD_USS_ENABLE
+    if (!I_USSReady && uss_timeout > 10)
+      uss_ready();
+    if (uss_timeout > 50)
+      I_USSReady = 1;
+#else
+      ModbusRequest();
+#endif
 
     check_network();
     ethernetif_handlepackets(netif_eth0);
+
+#ifdef QEI_CHECK
+    // Check VeloAccFlag continuously
+    if (VeloAccFlag == SET) {
+      //Get Position
+      //PosCnt = QEI_GetPosition(QEI);
+      ENC_VAL = QEI_GetPosition(QEI);
+      // Get Acc
+      averageVelo = VeloAcc / VeloCapCnt;
+      rpm = QEI_CalculateRPM(QEI, averageVelo, ENC_RES);
+      // Reset VeloAccFlag
+      VeloAccFlag = RESET;
+      // Reset value of Acc and Acc count to default
+      VeloAcc = 0;
+      VeloCapCnt = 0;
+    }
+#endif
   }
+
   return(0);
 }
 

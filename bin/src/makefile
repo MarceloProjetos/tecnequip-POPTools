@@ -6,7 +6,7 @@
 ifdef HEX_FILE
 PROJECT = $(HEX_FILE)
 else
-PROJECT = POP7
+PROJECT = pop
 endif
 
 ifdef HEX_PATH
@@ -59,6 +59,15 @@ OBJCOPY=$(GCC_DIR)/bin/$(GNU_CC)-objcopy
 LIB_GCC = ./lib32bitc.a
 LIB_C   = ./lib32bitc.a
 LIB_M   = ./lib32bitc.a
+#LWIP    = ./liblwip.a
+
+LWIP_INC = ./lwip/include
+LWIP_ARC = ./lwip
+
+LWIP_INC +=-I./lwip/
+LWIP_INC +=-I./lwip/include
+LWIP_INC +=-I./lwip/include/ipv4
+LWIP_INC +=-I./lwip/arch
 
 #------------------------------------------------------------------------------
 # Flags de compilação
@@ -74,7 +83,7 @@ LIB_M   = ./lib32bitc.a
 # -fstack-protector "no memory region specified for loadable section `__libc_freeres_fn'"
 # -fomit-frame-pointer -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Wdeclaration-after-statement -Wno-pointer-sign
 # -static
-GCC_FLAGS_OPT=-mcpu=cortex-m3 -mlittle-endian -mthumb -Wall 
+GCC_FLAGS_OPT=-mcpu=cortex-m3 -static -O0 -mlittle-endian -mthumb -Wall -I $(LWIP_INC)
 #  $(GCC_MODE_FLAG) -I $(GCC_INC) -I $(LIB_INC)
 CFLAGS0=$(GCC_FLAGS_OPT)
 CFLAGS1=$(CFLAGS0)
@@ -96,7 +105,9 @@ LDFLAGS=-N -v -T
 
 DIR_OBJ		= $(APP_DIR)
 DIR_LST		= $(APP_DIR)
-PROG_NAME	= POP7
+PROG_NAME	= pop
+BIN=./bin
+SRC=./lwip
 
 #------------------------------------------------------------------------------
 # Linker script files
@@ -109,7 +120,7 @@ LDSCRIPT_FLASH = $(SRC_DIR)/lpc1768.ld
 # Objects to link
 #------------------------------------------------------------------------------
 
-OBJ_START	= $(LIB_DIR)/startup_LPC17xx.o
+OBJ_START   = $(LIB_DIR)/startup_LPC17xx.o
 OBJ_FILES   = $(patsubst %.c,%.o,$(wildcard *.c))
 OBJ_APP     = $(addprefix $(DIR_OBJ)/, $(OBJ_FILES))
 
@@ -118,7 +129,7 @@ OBJ_APP     = $(addprefix $(DIR_OBJ)/, $(OBJ_FILES))
 #------------------------------------------------------------------------------
 
 #LIB_LIST		= $(LIB_C) $(LIB_M) $(LIB_GCC)
-LIB_LIST		= $(LIB_C)
+LIB_LIST		= $(LIB_C) $(LWIP)
 
 #------------------------------------------------------------------------------
 # Implicit rule to compile all C files in the directory
@@ -127,6 +138,47 @@ LIB_LIST		= $(LIB_C)
 $(DIR_OBJ)/%.o : %.c 
 	$(CC) $(CFLAGS1) -c $< -o $@
 	
+$(BIN)/%.o : $(SRC)/%.c
+	$(CC) $(CFLAGS1) -c $< -o $@
+
+$(BIN)/%.o : $(SRC)/api/%.c
+	$(CC) $(CFLAGS1) -c $< -o $@
+
+$(BIN)/%.o : $(SRC)/arch/%.c
+	$(CC) $(CFLAGS1) -c $< -o $@
+
+$(BIN)/%.o : $(SRC)/core/%.c
+	$(CC) $(CFLAGS1) -c $< -o $@
+
+$(BIN)/%.o : $(SRC)/core/ipv4/%.c
+	$(CC) $(CFLAGS1) -c $< -o $@
+
+$(BIN)/%.o : $(SRC)/netif/%.c
+	$(CC) $(CFLAGS1) -c $< -o $@
+
+OBJS =  $(BIN)/err.o \
+	$(BIN)/init.o \
+	$(BIN)/mem.o \
+	$(BIN)/memp.o \
+	$(BIN)/netif.o \
+	$(BIN)/pbuf.o \
+	$(BIN)/stats.o \
+	$(BIN)/udp.o \
+	$(BIN)/icmp.o \
+	$(BIN)/inet.o \
+	$(BIN)/tcp.o \
+	$(BIN)/tcp_in.o \
+	$(BIN)/tcp_out.o \
+	$(BIN)/tcpip.o \
+	$(BIN)/ip.o \
+	$(BIN)/ip_addr.o \
+	$(BIN)/ip_frag.o \
+	$(BIN)/etharp.o \
+	$(BIN)/dhcp.o \
+	$(BIN)/ethernetif.o \
+	$(BIN)/inet_chksum.o \
+	$(BIN)/emac.o \
+
 #------------------------------------------------------------------------------
 # Implicit rule to assemble all ASM files in the directory
 #------------------------------------------------------------------------------
@@ -141,10 +193,10 @@ $(DIR_OBJ)/%.o : %.s
 # default target: Generates application WITHOUT optimization
 #------------------------------------------------------------------------------
 #$(CC) $(CFLAGS1) -Wa,-a,-ad -g -c main.c > main.lst
-$(DIR_OBJ)/$(PROG_NAME).elf:  makefile $(OBJ_APP)
+$(DIR_OBJ)/$(PROG_NAME).elf:  makefile $(OBJS) $(OBJ_APP)
 	$(AS) $(AAFLAGS1) ./startup_LPC17xx.s -o startup_LPC17xx.o
-	$(LD) -Map $(DIR_LST)/$(PROG_NAME).map $(LDFLAGS) $(LDSCRIPT_FLASH)\
-                                         $(OBJ_APP) $(OBJ_START) $(LIB_LIST)\
+	$(LD) -Map $(DIR_LST)/$(PROG_NAME).map $(LDFLAGS) $(LDSCRIPT_RAM)\
+                                         $(OBJ_APP) $(OBJS) $(OBJ_START) $(LIB_LIST)\
                                          -o $(DIR_OBJ)/$(PROG_NAME).elf 
 	$(OBJSIZE) $(DIR_LST)/$(PROG_NAME).elf
 	$(OBJCOPY) -O binary $(DIR_LST)/$(PROG_NAME).elf $(TARGET_PATH)/$(PROJECT).bin
@@ -170,4 +222,4 @@ debug: $(DIR_OBJ)/$(PROG_NAME).elf
 
 clean:
 	rm -rf $(DIR_OBJ)/*.o $(DIR_OBJ)/*.elf \
-         $(DIR_OBJ)/*.bin $(DIR_OBJ)/*.map $(DIR_OBJ)/*.hex $(DIR_OBJ)/*.i
+         $(DIR_OBJ)/*.bin $(DIR_OBJ)/*.map $(DIR_OBJ)/*.hex $(DIR_OBJ)/*.i ./bin/*
