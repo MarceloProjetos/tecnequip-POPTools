@@ -589,8 +589,8 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_MUL:
         case ELEM_SUB:
         case ELEM_ADD: {
-            char top[POS_WIDTH*2-3+2];
-            char bot[POS_WIDTH*2-3];
+            char top[POS_WIDTH*2-3+2+10];
+            char bot[POS_WIDTH*2-3+10];
 
             memset(top, ' ', sizeof(top)-1);
             top[0] = '{';

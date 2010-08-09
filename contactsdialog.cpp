@@ -103,9 +103,9 @@ static void MakeControls(void)
         146, 65, 20, 21, ContactsDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
-	BitCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+	BitCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        176, 65, 65, 40, ContactsDialog, NULL, Instance, NULL);
+        176, 65, 65, 140, ContactsDialog, NULL, Instance, NULL);
     NiceFont(BitCombobox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
@@ -136,6 +136,7 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
 
 	SendMessage(BitCombobox, CB_SETCURSEL, *bit, 0);
+	SendMessage(BitCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
     if(name[0] == 'R') {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);

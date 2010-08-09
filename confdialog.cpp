@@ -211,11 +211,13 @@ void ShowConfDialog(void)
 		SendMessage(PLCCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxPLCItens[i]));
 
 	SendMessage(PLCCombobox, CB_SETCURSEL, 0, 0);
+	SendMessage(PLCCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
 	for (i = 0; i < sizeof(ComboboxBaudRateItens) / sizeof(ComboboxBaudRateItens[0]); i++)
 		SendMessage(BaudRateCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBaudRateItens[i]));
 
 	SendMessage(BaudRateCombobox, CB_SETCURSEL, 3, 0);
+	SendMessage(BaudRateCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
 	//sprintf(buf, "%.6f", Prog.mcuClock / 1e6);
     //SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);

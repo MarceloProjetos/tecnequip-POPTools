@@ -308,10 +308,14 @@ void PaintWindow(void)
 
             if(rung < 10) {
                 char r[1] = { rung + '0' };
-                TextOut(Hdc, 8 + FONT_WIDTH, yp, r, 1);
-            } else {
+                TextOut(Hdc, 5 + FONT_WIDTH, yp, r, 1);
+			} else if(rung < 100) {
                 char r[2] = { (rung / 10) + '0', (rung % 10) + '0' };
-                TextOut(Hdc, 8, yp, r, 2);
+                TextOut(Hdc, 5, yp, r, 2);
+            } else {
+                char r[4]; // = { (rung / 100) + '0', (rung % 100) + '0', (rung % 10) + '0' };
+				itoa(rung, r, 10);
+                TextOut(Hdc, 5, yp, r, 3);
             }
 
             int cx = 0;

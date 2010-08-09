@@ -475,11 +475,11 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_READ_USS:
-			ShowReadUSSDialog(Selected->d.readUSS.name+1, &Selected->d.readUSS.id, &Selected->d.readUSS.parameter, &Selected->d.readUSS.index);
+			ShowReadUSSDialog(Selected->d.readUSS.name+1, &Selected->d.readUSS.id, &Selected->d.readUSS.parameter, &Selected->d.readUSS.parameter_set, &Selected->d.readUSS.index);
             break;
 
         case ELEM_WRITE_USS:
-            ShowWriteUSSDialog(Selected->d.readUSS.name+1, &Selected->d.readUSS.id, &Selected->d.readUSS.parameter, &Selected->d.readUSS.index);
+            ShowWriteUSSDialog(Selected->d.writeUSS.name+1, &Selected->d.writeUSS.id, &Selected->d.writeUSS.parameter, &Selected->d.writeUSS.parameter_set, &Selected->d.writeUSS.index);
             break;
 
         case ELEM_UART_RECV:

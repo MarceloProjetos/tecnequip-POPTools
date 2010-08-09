@@ -148,9 +148,9 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_READ_ADC;
     } else if(sscanf(line, "READ_ENC %s", l->d.readEnc.name)==1) {
         *which = ELEM_READ_ENC;
-	} else if(sscanf(line, "READ_USS %s %d %d", l->d.readUSS.name, &l->d.readUSS.parameter, &l->d.readUSS.index)==3) {
+	} else if(sscanf(line, "READ_USS %s %d %d %d %d", l->d.readUSS.name, &l->d.readUSS.id, &l->d.readUSS.parameter, &l->d.readUSS.parameter_set, &l->d.readUSS.index)==5) {
         *which = ELEM_READ_USS;
-    } else if(sscanf(line, "WRITE_USS %s %d %d", l->d.writeUSS.name, &l->d.readUSS.parameter, &l->d.readUSS.index)==3) {
+    } else if(sscanf(line, "WRITE_USS %s %d %d %d %d", l->d.writeUSS.name, &l->d.writeUSS.id, &l->d.writeUSS.parameter, &l->d.writeUSS.parameter_set, &l->d.writeUSS.index)==5) {
         *which = ELEM_WRITE_USS;
     } else if(sscanf(line, "SET_PWM %s %d", l->d.setPwm.name, 
         &(l->d.setPwm.targetFreq))==2)
@@ -537,11 +537,11 @@ cmp:
             break;
 
         case ELEM_READ_USS:
-            fprintf(f, "READ_USS %s %d %d\n", l->d.readUSS.name, l->d.readUSS.parameter, l->d.readUSS.index);
+            fprintf(f, "READ_USS %s %d %d %d %d\n", l->d.readUSS.name, l->d.readUSS.id, l->d.readUSS.parameter, l->d.readUSS.parameter_set, l->d.readUSS.index);
             break;
 
         case ELEM_WRITE_USS:
-            fprintf(f, "WRITE_USS %s %d %d\n", l->d.writeUSS.name, l->d.readUSS.parameter, l->d.readUSS.index);
+            fprintf(f, "WRITE_USS %s %d %d %d %d\n", l->d.writeUSS.name, l->d.writeUSS.id, l->d.writeUSS.parameter, l->d.writeUSS.parameter_set, l->d.writeUSS.index);
             break;
 
         case ELEM_SET_PWM:

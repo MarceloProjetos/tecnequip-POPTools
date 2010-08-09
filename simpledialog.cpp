@@ -356,7 +356,7 @@ void ShowResetEncDialog(char *name)
     ShowSimpleDialog(_("Reset Encoder"), 1, labels, 0, 0x1, 0x1, dests);
 }
 
-void ShowReadUSSDialog(char *name, int *id, int *parameter, int *index)
+void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index)
 {
     char i[100];
     sprintf(i, "%d", *id);
@@ -364,19 +364,23 @@ void ShowReadUSSDialog(char *name, int *id, int *parameter, int *index)
     char param[100];
     sprintf(param, "%d", *parameter);
 
+    char param_set[100];
+    sprintf(param_set, "%d", *parameter_set);
+
     char idx[100];
     sprintf(idx, "%d", *index);
 
-	char *labels[] = { _("Destination:"), _("ID:"), _("Parametro:"), _("Indice:") };
-    char *dests[] = { name, i, param, idx };
-    ShowSimpleDialog(_("Le Parametro do Inversor da Nord"), 4, labels, 0x0E, 0x1, 0x0E, dests);
+	char *labels[] = { _("Destination:"), _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
+    char *dests[] = { name, i, param, param_set, idx };
+    ShowSimpleDialog(_("Le Parametro do Inversor da Nord"), 5, labels, 0x1E, 0x1, 0x1E, dests);
 
 	*id = atoi(i);
 	*parameter = atoi(param);
+	*parameter_set = atoi(param_set);
 	*index = atoi(idx);
 }
 
-void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *index)
+void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index)
 {
     char i[100];
     sprintf(i, "%d", *id);
@@ -384,15 +388,19 @@ void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *index)
     char param[100];
     sprintf(param, "%d", *parameter);
 
+    char param_set[100];
+    sprintf(param_set, "%d", *parameter_set);
+
     char idx[100];
     sprintf(idx, "%d", *index);
 
-	char *labels[] = { _("Origem:"), _("ID:"), _("Parametro:"), _("Indice:") };
-    char *dests[] = { name, i, param, idx };
-    ShowSimpleDialog(_("Escreve Parametro no Inversor da Nord"), 4, labels, 0x0E, 0x1, 0x0E, dests);
+	char *labels[] = { _("Origem:"), _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
+    char *dests[] = { name, i, param, param_set, idx };
+    ShowSimpleDialog(_("Escreve Parametro no Inversor da Nord"), 5, labels, 0x1E, 0x1, 0x1E, dests);
 
 	*id = atoi(i);
 	*parameter = atoi(param);
+	*parameter_set = atoi(param_set);
 	*index = atoi(idx);
 }
 

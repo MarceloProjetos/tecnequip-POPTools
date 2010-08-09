@@ -298,6 +298,7 @@ typedef struct ElemReadUSSTag {
     char    name[MAX_NAME_LEN];
 	int		id;
 	int		parameter;
+	int		parameter_set;
 	int		index;
 } ElemReadUSS;
 
@@ -305,6 +306,7 @@ typedef struct ElemWriteUSSTag {
     char    name[MAX_NAME_LEN];
 	int		id;
 	int		parameter;
+	int		parameter_set;
 	int		index;
 } ElemWriteUSS;
 
@@ -644,8 +646,8 @@ void WhatCanWeDoFromCursorAndTopology(void);
 BOOL FindSelected(int *gx, int *gy);
 void MoveCursorNear(int gx, int gy);
 
-#define DISPLAY_MATRIX_X_SIZE 16
-#define DISPLAY_MATRIX_Y_SIZE 512
+#define DISPLAY_MATRIX_X_SIZE 32
+#define DISPLAY_MATRIX_Y_SIZE 1024
 extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
 extern ElemLeaf DisplayMatrixFiller;
@@ -733,8 +735,8 @@ void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);
 void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);
-void ShowReadUSSDialog(char *name, int *id, int *parameter, int *index);
-void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *index);
+void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
+void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
 void ShowSetPwmDialog(char *name, int *targetFreq);
 void ShowPersistDialog(char *var);
 void ShowUartDialog(int which, char *name);

@@ -122,7 +122,7 @@ static void MakeControls(void)
 
 	BitCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        190, 105, 65, 40, CoilDialog, NULL, Instance, NULL);
+        190, 105, 65, 140, CoilDialog, NULL, Instance, NULL);
     NiceFont(BitCombobox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),

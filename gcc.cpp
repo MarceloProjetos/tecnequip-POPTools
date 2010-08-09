@@ -75,7 +75,7 @@ static char *MapSym(char *str)
 
 			if (Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) 
 			{
-				if (pin > 19)
+				if (pin > 18)
 				{
 					sprintf(ret, "M[%d]", pin - 20);
 					return ret;
@@ -125,7 +125,7 @@ static char *MapSym(char *str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, char *str)
 {
-	if (strncmp(MapSym(str), "E", 1) == 0 || strncmp(MapSym(str), "Z", 1) == 0)
+	if (strncmp(MapSym(str), "E", 1) == 0 || strncmp(MapSym(str), "Z", 1) == 0 || strncmp(MapSym(str), "M", 1) == 0)
 	{
 		return;
 	}
@@ -281,21 +281,21 @@ static void GenerateAnsiC(FILE *f)
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
-				if (strncmp(str, "U_M[", 4) == 0)
+				if (strncmp(str, "M[", 2) == 0)
 					fprintf(f, "%s |= (1 << %d);  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 	                fprintf(f, "%s = 1;\n", MapSym(IntCode[i].name1));
                 break;
 
             case INT_CLEAR_BIT:
-				if (strncmp(str, "U_M[", 4) == 0)
+				if (strncmp(str, "M[", 2) == 0)
 					fprintf(f, "%s &= ~(1 << %d);  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 	                fprintf(f, "%s = 0;\n", MapSym(IntCode[i].name1));
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-				if (strncmp(str, "U_M[", 4) == 0)
+				if (strncmp(str, "M[", 2) == 0)
 	                fprintf(f, "%s &= ~(1 << %d); %s |= %s << %d;  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), MapSym(IntCode[i].name2), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1), MapSym(IntCode[i].name2));
@@ -331,7 +331,7 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_IF_BIT_SET:
-				if (strncmp(str, "U_M[", 4) == 0)
+				if (strncmp(str, "M[", 2) == 0)
 	                fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "if (%s) {\n", MapSym(IntCode[i].name1));
@@ -339,7 +339,7 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_IF_BIT_CLEAR:
-				if (strncmp(str, "U_M[", 4) == 0)
+				if (strncmp(str, "M[", 2) == 0)
 	                fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "if (!%s) {\n", MapSym(IntCode[i].name1));
