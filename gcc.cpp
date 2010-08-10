@@ -545,8 +545,8 @@ DWORD InvokeGCC(char* dest)
 
 	//the application you would like to run from the command window
 	strcat(szArgs, "\"");
-	strcat(szArgs, szAppProgramFiles);
-	strcat(szArgs, "\\yagarto\\bin\\make.exe\" -C \"");
+	strcat(szArgs, szAppDirectory);
+	strcat(szArgs, "\\src\\gcc\\bin\\make.exe\" -C \"");
 	strcat(szArgs, ConvertToUNIXPath(szAppDirectory));
 	strcat(szArgs, "/src/\"");
 	strcat(szArgs, " HEX_FILE=\""); 
@@ -556,8 +556,8 @@ DWORD InvokeGCC(char* dest)
 	strcat(szArgs, szAppDestPath);
 	strcat(szArgs, "/\" ");
 	strcat(szArgs, " TOOLS_PATH=\"");
-	strcat(szArgs, ConvertToUNIXPath(szToolsProgramFiles));
-	strcat(szArgs, "/yagarto\" clean debug "); 
+	strcat(szArgs, ConvertToUNIXPath(szAppDirectory));
+	strcat(szArgs, "/src/gcc\" clean debug "); 
 
 	//output the application being run from the command window to the log file.
 	strcat(szArgs, ">> \"");

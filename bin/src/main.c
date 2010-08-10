@@ -1129,11 +1129,12 @@ unsigned int AtualizaEntradas(void)
 {
   unsigned int i = 0;
 
-  i |= 0x3FF & GPIO2->FIOPIN;            // P2.0 ~ P2.9    [00..10]
-  i |= (0x3800 & GPIO2->FIOPIN) >> 1;    // P2.11 ~ P2.13  [11..13]
-  i |= (0x30 & GPIO0->FIOPIN) << 9;      // P0.4 ~ P0.5    [14..15]
-  i |= (0x80000 & GPIO0->FIOPIN) >> 4;   // P0.19 ~ P0.19  [16..16]
-  i |= (0x600000 & GPIO0->FIOPIN) >> 5;  // P0.21 ~ P0.22  [17..18]
+  i |= 0x3FF & GPIO2->FIOPIN;              // P2.0 ~ P2.9    [00..10]
+  i |= (0x3800 & GPIO2->FIOPIN) >> 1;      // P2.11 ~ P2.13  [11..13]
+  i |= (0x30 & GPIO0->FIOPIN) << 9;        // P0.4 ~ P0.5    [14..15]
+  i |= (0x80000 & GPIO0->FIOPIN) >> 4;     // P0.19 ~ P0.19  [16..16]
+  i |= (0x600000 & GPIO0->FIOPIN) >> 5;    // P0.21 ~ P0.22  [17..18]
+  i |= (0x20000000 & GPIO0->FIOPIN) >> 11; // P0.29          [19]
 
   i = ~i;
 
