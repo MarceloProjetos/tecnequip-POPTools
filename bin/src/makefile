@@ -194,13 +194,13 @@ $(DIR_OBJ)/%.o : %.s
 #------------------------------------------------------------------------------
 #$(CC) $(CFLAGS1) -Wa,-a,-ad -g -c main.c > main.lst
 $(DIR_OBJ)/$(PROG_NAME).elf:  makefile $(OBJS) $(OBJ_APP)
-	$(AS) $(AAFLAGS1) ./startup_LPC17xx.s -o startup_LPC17xx.o
-	$(LD) -Map $(DIR_LST)/$(PROG_NAME).map $(LDFLAGS) $(LDSCRIPT_RAM)\
+	"$(AS)" $(AAFLAGS1) ./startup_LPC17xx.s -o startup_LPC17xx.o
+	"$(LD)" -Map $(DIR_LST)/$(PROG_NAME).map $(LDFLAGS) $(LDSCRIPT_RAM)\
                                          $(OBJ_APP) $(OBJS) $(OBJ_START) $(LIB_LIST)\
                                          -o $(DIR_OBJ)/$(PROG_NAME).elf 
-	$(OBJSIZE) $(DIR_LST)/$(PROG_NAME).elf
-	$(OBJCOPY) -O binary $(DIR_LST)/$(PROG_NAME).elf $(TARGET_PATH)/$(PROJECT).bin
-	$(OBJCOPY) -O ihex $(DIR_LST)/$(PROG_NAME).elf $(TARGET_PATH)/$(PROJECT).hex
+	"$(OBJSIZE)" $(DIR_LST)/$(PROG_NAME).elf
+	"$(OBJCOPY)" -O binary $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).bin"
+	"$(OBJCOPY)" -O ihex $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).hex"
 
 #------------------------------------------------------------------------------
 # release target: Generates application with optimization

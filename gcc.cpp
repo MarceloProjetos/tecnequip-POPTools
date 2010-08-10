@@ -553,8 +553,8 @@ DWORD InvokeGCC(char* dest)
 	strcat(szArgs, fileName);
 	strcat(szArgs, "\" ");
 	strcat(szArgs, " HEX_PATH=\""); 
-	strcat(szArgs, szAppDestPath);
-	strcat(szArgs, "/\" ");
+	strcat(szArgs, ConvertToUNIXPath(szAppDestPath));
+	strcat(szArgs, "\" ");
 	strcat(szArgs, " TOOLS_PATH=\"");
 	strcat(szArgs, ConvertToUNIXPath(szAppDirectory));
 	strcat(szArgs, "/src/gcc\" clean debug "); 
