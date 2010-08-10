@@ -136,7 +136,6 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
 
 	SendMessage(BitCombobox, CB_SETCURSEL, *bit, 0);
-	SendMessage(BitCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
     if(name[0] == 'R') {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
