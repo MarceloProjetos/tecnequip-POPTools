@@ -792,6 +792,12 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_END_IF);
                 break;
 
+            case ELEM_SET_DA:
+                Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_SET_DA, l->d.setDA.name);
+                Op(INT_END_IF);
+                break;
+
             case ELEM_READ_ENC:
 				Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_READ_ENC, l->d.readEnc.name);
@@ -809,10 +815,12 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 				{
 				char addr[10];
 				char param[10];
+				char param_set[10];
 				char index[10];
 
 				sprintf(addr, "%d", l->d.writeUSS.id);
 				sprintf(param, "%d", l->d.writeUSS.parameter);
+				sprintf(param_set, "%d", l->d.writeUSS.parameter_set);
 				sprintf(index, "%d", l->d.writeUSS.index);
 
 				// We want to respond to rising edges, so yes we need a one shot.
@@ -826,9 +834,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 					Op(INT_IF_BIT_CLEAR, oneShot);
 						Op(INT_IF_BIT_SET, "$USSReady");
 							if (which == ELEM_READ_USS)
-								Op(INT_READ_USS, l->d.readUSS.name, addr, param, index, 0, 0);
+								Op(INT_READ_USS, l->d.readUSS.name, addr, param, param_set, (SWORD)atoi(index), 0);
 							else
-								Op(INT_WRITE_USS, l->d.writeUSS.name, addr, param, index, 0, 0);
+								Op(INT_WRITE_USS, l->d.writeUSS.name, addr, param, param_set, (SWORD)atoi(index), 0);
 							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
 						Op(INT_END_IF);
 						Op(INT_CLEAR_BIT, stateInOut);

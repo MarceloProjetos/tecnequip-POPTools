@@ -658,6 +658,14 @@ void TIMER0_IRQHandler (void)
   uss_timeout++;
 
   PlcCycle();
+
+#ifdef NORD_USS_ENABLE
+  if (!I_USSReady && uss_timeout > 50)
+    uss_ready();
+  if (uss_timeout > 2000)
+    I_USSReady = 1;
+#endif
+
 }
 
 /******************************************************************************
@@ -777,6 +785,8 @@ unsigned int RS485Write(unsigned char * buffer, unsigned int size)
 {
   unsigned int i = 0;
 
+  UART3->FCR = 0x06;                      /* Reset TX */
+
   GPIO0->FIOSET = RS485_ENABLE;
 
   while (!(UART3->LSR & LSR_TEMT) );      /* THRE status, contain valid data */
@@ -802,7 +812,7 @@ unsigned int RS485Read(unsigned char * buffer, unsigned int size)
   {
     for(c = 0; c < 10000 && !(UART3->LSR & LSR_RDR); c++);
 
-    if (UART3->LSR & (LSR_OE|LSR_PE|LSR_FE|LSR_BI|LSR_RXFE))
+    if (UART3->LSR & (LSR_OE|LSR_PE|LSR_FE|LSR_BI/*|LSR_RXFE*/))
       dummy = UART3->RBR;
     else if ((UART3->LSR & LSR_RDR)) /** barramento tem dados ? */
       *(buffer + i++) = UART3->RBR;
@@ -1189,9 +1199,22 @@ void HardwareInit(void)
 #else
   UART3->LCR = 0x9B;          /* 8 bits, even-parity, 1 stop bit */
 #endif
+
+  // 9600
+  //UART3->DLM = 0;
+  //UART3->DLL = 92;
+  //UART3->FDR = (13 << 4) | 10;
+
+  // 9091
+  //UART3->DLM = 0;
+  //UART3->DLL = 125;
+  //UART3->FDR = (8 << 4) | 3;
+
+  // 9259
   UART3->DLM = 0;
-  UART3->DLL = 92;
-  UART3->FDR = (13 << 4) | 10;
+  UART3->DLL = 135;
+  UART3->FDR = (4 << 4) | 1;
+
 #ifndef NORD_USS_ENABLE
   UART3->LCR = 0x03;          /* DLAB = 0, 8 bits, no parity, 1 stop bit */
 #else
@@ -1361,10 +1384,10 @@ int main (void)
     saidas = AtualizaSaidas();
 
 #ifdef NORD_USS_ENABLE
-    if (!I_USSReady && uss_timeout > 10)
+    /*if (!I_USSReady && uss_timeout > 500)
       uss_ready();
-    if (uss_timeout > 50)
-      I_USSReady = 1;
+    if (uss_timeout > 2000)
+      I_USSReady = 1;*/
 #else
       ModbusRequest();
 #endif

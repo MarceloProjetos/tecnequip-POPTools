@@ -471,7 +471,11 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddSetPwm());
             break;
 
-        case MNU_INSERT_READ_ADC:
+        case MNU_INSERT_SET_DA:
+            CHANGING_PROGRAM(AddSetDA());
+            break;
+
+		case MNU_INSERT_READ_ADC:
             CHANGING_PROGRAM(AddReadAdc());
             break;
 

@@ -95,6 +95,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
+		case ELEM_SET_DA:
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
             return 1;
@@ -441,6 +442,13 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
                 poweredAfter);
             break;
         }
+        case ELEM_SET_DA: {
+            ElemSetDA *r = &leaf->d.setDA;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{SET DA}", poweredBefore,
+                poweredAfter);
+            break;
+        }
         case ELEM_READ_ENC: {
             ElemReadEnc *r = &leaf->d.readEnc;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
@@ -491,7 +499,8 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             CenterWithWires(*cx, *cy, "{PERSIST}", poweredBefore, poweredAfter);
             break;
 
-        case ELEM_MOVE: {
+        case ELEM_MOVE: 
+		{
             char top[256];
             char bot[256];
             ElemMove *m = &leaf->d.move;

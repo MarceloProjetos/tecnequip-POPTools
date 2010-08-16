@@ -224,6 +224,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.readAdc.name, IO_TYPE_READ_ADC, 0);
             break;
 
+        case ELEM_SET_DA:
+            AppendIo(l->d.setDA.name, IO_TYPE_SET_DA, 0);
+            break;
+
         case ELEM_READ_ENC:
             AppendIo(l->d.readEnc.name, IO_TYPE_READ_ENC, 0);
             break;

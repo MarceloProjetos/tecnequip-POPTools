@@ -346,6 +346,8 @@ HMENU MakeMainWindowMenus(void)
 	MotorControlMenu = CreatePopupMenu();
 	AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_SET_PWM,
         _("Insert Set PWM Output"));
+    AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_SET_DA,
+        _("Conversor Digital/Analogico (D/A)"));
     AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_READ_ENC,
         _("Leitura do Encoder Quadratura"));
     AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_RESET_ENC,

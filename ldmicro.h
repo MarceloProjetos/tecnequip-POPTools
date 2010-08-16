@@ -107,6 +107,7 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_READ_USS     0x49
 #define MNU_INSERT_WRITE_USS    0x50
 #define MNU_CONDITIONAL_MENU	0x51
+#define MNU_INSERT_SET_DA       0x52
 
 #define MNU_MCU_SETTINGS        0x55
 #define MNU_PROCESSOR_0         0xa0
@@ -185,6 +186,7 @@ typedef SDWORD SWORD;
 #define ELEM_RESET_ENC			0x33
 #define ELEM_READ_USS			0x34
 #define ELEM_WRITE_USS			0x35
+#define ELEM_SET_DA				0x36
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -214,6 +216,7 @@ typedef SDWORD SWORD;
         case ELEM_SHORT: \
         case ELEM_OPEN: \
         case ELEM_READ_ADC: \
+		case ELEM_SET_DA: \
         case ELEM_READ_ENC: \
         case ELEM_RESET_ENC: \
         case ELEM_READ_USS: \
@@ -285,6 +288,11 @@ typedef struct ElemCounterTag {
 typedef struct ElemReadAdcTag {
     char    name[MAX_NAME_LEN];
 } ElemReadAdc;
+
+typedef struct ElemSetDATag {
+    char    name[MAX_NAME_LEN];
+	int		value;
+} ElemSetDA;
 
 typedef struct ElemReadEncTag {
     char    name[MAX_NAME_LEN];
@@ -367,6 +375,7 @@ typedef struct ElemLeafTag {
         ElemCmp             cmp;
         ElemCounter         counter;
         ElemReadAdc         readAdc;
+		ElemSetDA			setDA;
         ElemReadEnc         readEnc;
         ElemResetEnc        resetEnc;
         ElemReadUSS         readUSS;
@@ -427,6 +436,7 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_RESET_ENC       14
 #define IO_TYPE_READ_USS        15
 #define IO_TYPE_WRITE_USS       16
+#define IO_TYPE_SET_DA			17
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -672,6 +682,7 @@ void AddCmp(int which);
 void AddReset(void);
 void AddCounter(int which);
 void AddReadAdc(void);
+void AddSetDA(void);
 void AddReadEnc(void);
 void AddResetEnc(void);
 void AddReadUSS(void);
@@ -733,6 +744,7 @@ void ShowTimerDialog(int which, int *delay, char *name);
 void ShowCounterDialog(int which, int *count, char *name);
 void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);
+void ShowSetDADialog(char *name, int *val);
 void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);

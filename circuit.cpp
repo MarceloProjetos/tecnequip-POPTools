@@ -370,6 +370,14 @@ void AddCounter(int which)
     t->d.counter.max = 0;
     AddLeaf(which, t);
 }
+void AddSetDA(void)
+{
+    if(!CanInsertEnd) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.setDA.name, "Dnew");
+    AddLeaf(ELEM_SET_DA, t);
+}
 void AddReadAdc(void)
 {
     if(!CanInsertEnd) return;
@@ -716,7 +724,7 @@ static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
             int i;
             for(i = 0; i < p->count; i++) {
                 if(ContainsElem(p->contents[i].which, p->contents[i].d.any, 
-                    seek))
+                    seek))    
                 {
                     return TRUE;
                 }

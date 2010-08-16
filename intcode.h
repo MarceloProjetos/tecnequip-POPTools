@@ -50,6 +50,7 @@
 #define INT_RESET_ENC                           19
 #define INT_READ_USS							20
 #define INT_WRITE_USS							21
+#define INT_SET_DA								22
 
 #define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50

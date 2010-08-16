@@ -1,4 +1,5 @@
 #include "uss.h"
+#include "lpc17xx.h"
 
 extern unsigned int uss_timeout;
 extern volatile unsigned int I_USSReady;
@@ -127,7 +128,7 @@ unsigned short int uss_get_status_bits(void)
   return 0;
 }
 
-unsigned char uss_get_param(unsigned char addr, unsigned short int param, unsigned char idx, volatile unsigned int * val)
+unsigned char uss_get_param(unsigned char addr, unsigned short int param, unsigned char param_set, unsigned char array, volatile unsigned int * val)
 {
   volatile PPO1 p;
   //unsigned char * x;
@@ -139,7 +140,10 @@ unsigned char uss_get_param(unsigned char addr, unsigned short int param, unsign
   //rs485_rx_fifo_reset(3);
   //rs485_tx_fifo_reset(3);
 
-  p = uss_PPO1(addr, (0x10 << 8) | (param & 0x7FF), idx, 0x0000, 0x0000, 0x0000, 0x0000);
+  if (array > 64)
+    p = uss_PPO1(addr, (0x60 << 8) | (param & 0x7FF), array & 0xFF, 0x0000, 0x0000, 0x0000, 0x0000);
+  else
+    p = uss_PPO1(addr, ((array ? 0x60 : 0x10) << 8) | (param & 0x7FF), (((array ? array - 1 : 0) & 0x3F) << 2) | (param_set & 0x3), 0x0000, 0x0000, 0x0000, 0x0000);
 
   uss_timeout = 0;
   //while(uss_timeout < 5);      // delay 1ms
@@ -163,6 +167,10 @@ unsigned char uss_ready(void)
   unsigned int sz = 0;
 
   memset((unsigned char*)&r, 0, sizeof(r));
+
+  uss_timeout = 0;
+
+  GPIO0->FIOSET = 1 << 20;
 
   if ((sz = RS485Read((unsigned char*)&r, sizeof(r))))
   {
@@ -188,7 +196,7 @@ unsigned char uss_ready(void)
   return 0;
 }
 
-unsigned char uss_set_param(unsigned char addr, unsigned short int param, unsigned char idx, volatile unsigned int * val)
+unsigned char uss_set_param(unsigned char addr, unsigned short int param, unsigned char param_set, unsigned char array, volatile unsigned int * val)
 {
   volatile PPO1 p;
   //unsigned int rval = 0;
@@ -199,7 +207,10 @@ unsigned char uss_set_param(unsigned char addr, unsigned short int param, unsign
   //rs485_rx_fifo_reset(3);
   //rs485_tx_fifo_reset(3);
 
-  p = uss_PPO1(addr, (0x20 << 8) | (param & 0x7FF), idx, *val >> 16, *val & 0xFFFF, 0x0000, 0x0000);
+  if (array > 64)
+    p = uss_PPO1(addr, (0x80 << 8) | (param & 0x7FF), array & 0xFF, *val >> 16, *val & 0xFFFF, 0x0000, 0x0000);
+  else
+    p = uss_PPO1(addr, ((array ? 0x80 : 0x20) << 8) | (param & 0x7FF), (((array ? array - 1 : 0) & 0x3F) << 2) | (param_set & 0x3), *val >> 16, *val & 0xFFFF, 0x0000, 0x0000);
 
   uss_timeout = 0;
   //while(uss_timeout < 5);      // delay 1ms

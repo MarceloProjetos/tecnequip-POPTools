@@ -562,7 +562,7 @@ unsigned short int uss_get_status_bits(void);
 /// \brief
 /// Esta função retorna o valor de um parametro do inversor
 //---------------------------------------------------------------------------*/
-unsigned char uss_get_param(unsigned char addr, unsigned short int param, unsigned char idx, volatile unsigned int * val);
+unsigned char uss_get_param(unsigned char addr, unsigned short int param, unsigned char param_set, unsigned char array, volatile unsigned int * val);
 
 /**----------------------------------------------------------------------------
 /// Função: uss_get_param
@@ -572,7 +572,7 @@ unsigned char uss_get_param(unsigned char addr, unsigned short int param, unsign
 /// \brief
 /// Esta função altera o valor de um parametro no inversor
 //---------------------------------------------------------------------------*/
-unsigned char uss_set_param(unsigned char addr, unsigned short int param, unsigned char idx, volatile unsigned int * val);
+unsigned char uss_set_param(unsigned char addr, unsigned short int param, unsigned char param_set, unsigned char array, volatile unsigned int * val);
 
 /**----------------------------------------------------------------------------
 /// Função: uss_set_BCC

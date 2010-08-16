@@ -160,6 +160,7 @@ void WhatCanWeDoFromCursorAndTopology(void)
          SelectedWhich == ELEM_CTC ||
          SelectedWhich == ELEM_READ_ADC ||
          SelectedWhich == ELEM_SET_PWM ||
+		 SelectedWhich == ELEM_SET_DA ||
          SelectedWhich == ELEM_MASTER_RELAY ||
          SelectedWhich == ELEM_SHIFT_REGISTER ||
          SelectedWhich == ELEM_LOOK_UP_TABLE ||
@@ -464,6 +465,10 @@ void EditSelectedElement(void)
 
         case ELEM_READ_ADC:
             ShowReadAdcDialog(Selected->d.readAdc.name+1);
+            break;
+
+        case ELEM_SET_DA:
+            ShowSetDADialog(Selected->d.setDA.name+1, &Selected->d.setDA.value);
             break;
 
         case ELEM_READ_ENC:

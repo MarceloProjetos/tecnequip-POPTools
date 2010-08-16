@@ -400,10 +400,10 @@ static void GenerateAnsiC(FILE *f)
 				fprintf(f, "ENCReset(%d);\n", atoi(MapSym(IntCode[i].name1)));
 				break;
             case INT_READ_USS:
-				fprintf(f, "uss_get_param(%d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), MapSym(IntCode[i].name1));
+				fprintf(f, "uss_get_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
 				break;
             case INT_WRITE_USS:
-				fprintf(f, "uss_set_param(%d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), MapSym(IntCode[i].name1));
+				fprintf(f, "uss_set_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
 				break;
             case INT_SET_PWM:
 				break;
