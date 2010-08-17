@@ -466,7 +466,7 @@ typedef struct PlcProgramTag {
 // places for figuring out if a mouse click is in a box etc.
 
 // dimensions, in characters, of the area reserved for 1 leaf element
-#define POS_WIDTH   17
+#define POS_WIDTH   22
 #define POS_HEIGHT  3
 
 // offset from the top left of the window at which we start drawing, in pixels

@@ -505,21 +505,24 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             char bot[256];
             ElemMove *m = &leaf->d.move;
 
-            if((strlen(m->dest) > (POS_WIDTH - 9)) ||
+            /*if((strlen(m->dest) > (POS_WIDTH - 9)) ||
                (strlen(m->src) > (POS_WIDTH - 9)))
             {
                 CenterWithWires(*cx, *cy, TOO_LONG, poweredBefore,
                     poweredAfter);
                 break;
-            }
+            }*/
 
-            strcpy(top, "{            }");
-            memcpy(top+1, m->dest, strlen(m->dest));
-            top[strlen(m->dest) + 3] = ':';
-            top[strlen(m->dest) + 4] = '=';
+            //strcpy(top, "{               }");
+            //memcpy(top+1, m->dest, strlen(m->dest));
+            //top[strlen(m->dest) + 3] = ':';
+            //top[strlen(m->dest) + 4] = '=';
 
-            strcpy(bot, "{         \x01MOV\x02}");
-            memcpy(bot+2, m->src, strlen(m->src));
+            //strcpy(bot, "{            \x01MOV\x02}");
+            //memcpy(bot+2, m->src, strlen(m->src));
+
+			sprintf(top, "{%s :=}", m->dest);
+			sprintf(bot, "{%s MOV}", m->src);
 
             CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
@@ -740,7 +743,7 @@ cmp:
                 l2 = 2 + 1 + strlen(leaf->d.cmp.op2);
                 lmax = max(l1, l2);
 
-                if(lmax < POS_WIDTH) {
+                //if(lmax < POS_WIDTH) {
                     memset(s1, ' ', sizeof(s1));
                     s1[0] = '[';
                     s1[lmax-1] = ']';
@@ -749,10 +752,10 @@ cmp:
                     memcpy(s1+1, leaf->d.cmp.op1, strlen(leaf->d.cmp.op1));
                     memcpy(s1+strlen(leaf->d.cmp.op1)+2, s, strlen(s));
                     memcpy(s2+2, leaf->d.cmp.op2, strlen(leaf->d.cmp.op2));
-                } else {
+                /*} else {
                     strcpy(s1, "");
                     strcpy(s2, TOO_LONG);
-                }
+                }*/
 
                 CenterWithSpaces(*cx, *cy, s1, poweredAfter, FALSE);
                 CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
