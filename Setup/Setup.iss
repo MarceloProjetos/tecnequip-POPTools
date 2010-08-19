@@ -18,7 +18,7 @@ OutputDir=C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setu
 OutputBaseFilename=POPTools_Setup
 Compression=lzma
 SolidCompression=yes
-LicenseFile=PathToYourLicenseFile
+LicenseFile=C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\EULA.TXT
 
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"

@@ -200,8 +200,6 @@ static void CompileProgram(BOOL compileAs)
   
 	SetCursor(LoadCursor(NULL, IDC_WAIT));
     switch(Prog.mcu->whichIsa) {
-        case ISA_AVR:           CompileAvr(CurrentCompileFile); break;
-        case ISA_PIC16:         CompilePic16(CurrentCompileFile); break;
         case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
         case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
         case ISA_LPC17:         CompileAnsiCToGCC(CurrentCompileFile); break;
@@ -493,6 +491,14 @@ static void ProcessMenu(int code)
 
         case MNU_INSERT_WRITE_USS:
             CHANGING_PROGRAM(AddWriteUSS());
+            break;
+
+        case MNU_INSERT_READ_MODBUS:
+            CHANGING_PROGRAM(AddReadModbus());
+            break;
+
+        case MNU_INSERT_WRITE_MODBUS:
+            CHANGING_PROGRAM(AddWriteModbus());
             break;
 
         case MNU_INSERT_UART_SEND:

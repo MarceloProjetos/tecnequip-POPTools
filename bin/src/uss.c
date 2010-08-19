@@ -1,9 +1,8 @@
 #include "uss.h"
-#include "lpc17xx.h"
 
 extern unsigned int uss_timeout;
 extern volatile unsigned int I_USSReady;
-volatile unsigned int * USSValue;
+volatile unsigned int * USSValue = NULL;
 
 //PPO0 uss_PPO0(ADR adr, PKE pke, IND ind, PWEH pwe, STW stw, SW1 sw1)
 PPO0 uss_PPO0(unsigned char adr, unsigned short int pke, unsigned short int ind, unsigned short int pwe, unsigned short int stw, unsigned short int sw1)
@@ -161,33 +160,34 @@ unsigned char uss_get_param(unsigned char addr, unsigned short int param, unsign
 
 unsigned char uss_ready(void)
 {
-  volatile PPO1 p, r;
+  volatile PPO1 r;
+  //volatile PPO1 p;
   //unsigned int rval = 0;
-  unsigned char * x;
+  //unsigned char * x;
   unsigned int sz = 0;
 
   memset((unsigned char*)&r, 0, sizeof(r));
 
   uss_timeout = 0;
 
-  GPIO0->FIOSET = 1 << 20;
-
   if ((sz = RS485Read((unsigned char*)&r, sizeof(r))))
   {
-    if (sz != sizeof(r))
-      return 0;
+    //if (sz != sizeof(r))
+    //  return 0;
 
-    if (!uss_check_crc((unsigned char*)&r))
-      return 0;
+    //if (!uss_check_crc((unsigned char*)&r))
+    //  return 0;
 
-    x = (unsigned char*)&r;
-    r.pke.word = HTONS(r.pke.word);
-    r.ind.word = HTONS(r.ind.word);
-    r.pweh = HTONS(r.pweh);
-    r.pwel = HTONS(r.pwel);
-    if (r.lge == 14 && r.adr.ADDRESS == p.adr.ADDRESS /*&& r.pke.PNU == (param & 0x7FF)*/)
+    //x = (unsigned char*)&r;
+    //r.pke.word = HTONS(r.pke.word);
+    //r.ind.word = HTONS(r.ind.word);
+    //r.pweh = HTONS(r.pweh);
+    //r.pwel = HTONS(r.pwel);
+    //if (r.lge == 14 && r.adr.ADDRESS == p.adr.ADDRESS /*&& r.pke.PNU == (param & 0x7FF)*/)
+    if (sz >= 1 && *((unsigned char*)&r) == 0x02)
     {
-      *USSValue = (r.pweh << 16) | r.pwel;
+      if (USSValue)
+        *USSValue = (r.pweh << 16) | r.pwel;
       I_USSReady = 1;
       return 1;
     }

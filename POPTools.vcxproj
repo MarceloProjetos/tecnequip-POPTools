@@ -86,7 +86,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ansic.cpp" />
-    <ClCompile Include="avr.cpp" />
     <ClCompile Include="circuit.cpp" />
     <ClCompile Include="coildialog.cpp" />
     <ClCompile Include="commentdialog.cpp" />
@@ -109,7 +108,6 @@
     <ClCompile Include="lutdialog.cpp" />
     <ClCompile Include="maincontrols.cpp" />
     <ClCompile Include="miscutil.cpp" />
-    <ClCompile Include="pic16.cpp" />
     <ClCompile Include="resetdialog.cpp" />
     <ClCompile Include="schematic.cpp" />
     <ClCompile Include="simpledialog.cpp" />

@@ -216,6 +216,8 @@ static void GenerateDeclarations(FILE *f)
             case INT_RESET_ENC:
             case INT_READ_USS:
             case INT_WRITE_USS:
+            case INT_READ_MODBUS:
+            case INT_WRITE_MODBUS:
             case INT_SET_PWM:
                 intVar1 = IntCode[i].name1;
                 break;
@@ -405,6 +407,12 @@ static void GenerateAnsiC(FILE *f)
             case INT_WRITE_USS:
 				fprintf(f, "uss_set_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
 				break;
+            case INT_READ_MODBUS:
+				fprintf(f, "ModbusReadSingleRegister(%d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
+				break;
+            case INT_WRITE_MODBUS:
+				fprintf(f, "ModbusWriteSingleRegister(%d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
+				break;
             case INT_SET_PWM:
 				break;
             case INT_UART_RECV:
@@ -506,7 +514,7 @@ DWORD InvokeGCC(char* dest)
 	char szAppPath[MAX_PATH]      = "";
 	char szAppDirectory[MAX_PATH] = "";
 	char szAppDestPath[MAX_PATH]  = "";
-	char szAppOutputDir[MAX_PATH]    = "";
+	char szAppOutputDir[MAX_PATH] = "";
 	char * fileName;
 
 	if(!SUCCEEDED(SHGetSpecialFolderPath(0, szAppProgramFiles, CSIDL_PROGRAM_FILES, FALSE))) 

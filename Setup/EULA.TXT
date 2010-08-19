@@ -1,0 +1,77 @@
+Termos de utilização do POPTools
+
+Esses Termos de utilização aplicam-se à versão do código executável do
+POPTools..
+1.  Exceto se acordado de outra forma por escrito pela Tecnequip, o
+contrato do usuário com a Tecnequip incluirá sempre, no mínimo, os
+termos e condições apresentados neste documento.
+2. Aceitação dos termos para usar do programa POPTools, o usuário
+deverá primeiro concordar com os termos. Não é permitido o uso do
+programa POPTools por parte do usuário se ele não aceitar os termos.
+O usuário pode aceitar os termos clicando para aceitar ou concordar,
+no caso de essa opção ser disponibilizada pela Tecnequip na interface
+do usuário abaixo
+
+3. Prestação dos serviços ao usuário. A Tecnequip está constantemente
+inovando para poder oferecer a melhor experiência possível aos seus
+usuários. O usuário tem conhecimento e aceita que a forma e a natureza
+dos serviços fornecidos pela Tecnequip podem mudar ocasionalmente sem
+aviso prévio ao usuário.
+Como parte dessa constante inovação, o usuário tem conhecimento e
+concorda que a Tecnequip pode, a seu próprio critério, deixar
+(permanente ou temporariamente) de fornecer os Serviços (ou qualquer
+recurso dos Serviços) aos usuários em geral, sem aviso prévio. O
+usuário pode deixar de utilizar os Serviços a qualquer momento. O
+usuário não necessita informar especificamente a Tecnequip quando
+deixar de usar os Serviços.
+4. Exceto se tiver sido especificamente autorizado por meio de um
+contrato em separado firmado com pela Tecnequip, o usuário concorda em
+não reproduzir, duplicar, copiar, vender, comercializar ou revender do
+programa POPTools para qualquer efeito.
+5. O usuário concorda que será o único responsável pelo projetos
+gerados no programa POPTools (e que pela Tecnequip não tem qualquer
+responsabilidade perante o usuário ou terceiros) por qualquer conteúdo
+que venha a ser criado, transmita ou exiba ao utilizar o produto e
+pelas conseqüências das suas resultantes disso.
+6. O programa POPTools em momento algum envia ou revela informações
+sobre a utilização ou projetos realizados pelo usuário no seu
+ambiente.
+7. O usuário reconhece e concorda que a Tecnequip detém todos os
+direitos legais, títulos e participações relativas ao programa
+POPTools, incluindo quaisquer direitos de propriedade intelectual que
+subsistam ao programa POPTools (quer esses direitos estejam
+registrados ou não, e em qualquer parte do mundo onde esses direitos
+possam existir).
+8. O usuário concorda que não removerá, ocultará, tampouco alterará
+quaisquer avisos de direitos de propriedade (incluindo avisos de
+direitos autorais e de marcas comerciais) que possam estar afixados ou
+contidos no programa POPTools.
+9. A Tecnequip concede ao usuário uma licença pessoal, internacional,
+isenta de royalties, para utilizar o software POPTools como parte dos
+Serviços fornecidos pela Tecnequip na compra do seu produto POP7.
+10 O programa POPTools usado pelo usuário pode, ocasionalmente, fazer
+download e instalar atualizações do programa POPTools. Essas
+atualizações são concebidas para melhorar, aperfeiçoar e desenvolver o
+programa e podem ser apresentados sob a forma de correções de erros,
+funções aprimoradas, novos módulos de software e versões completamente
+novas. O usuário concorda em fazer download e instalar atualizações (e
+permitir que a Tecnequip as forneça) como parte da utilização dos
+Serviços.
+11 A Tecnequip poderá, a qualquer momento, rescindir o contrato com o
+usuário se o usuário tiver violado qualquer um dos termos (ou tiver
+agido de forma que demonstre claramente que não pretende ou não pode
+obedecer os termos). Ou isso for exigido a Tecnequip por lei. Ou se o
+fornecimento dos serviços ao usuário pela Tecnequip já não for, na
+opinião da Tecnequip, comercialmente viável.
+O USUÁRIO ENTENDE E CONCORDA EXPRESSAMENTE QUE USA OS SERVIÇOS POR
+CONTA E RISCO PRÓPRIOS E QUE OS SERVIÇOS SÃO FORNECIDOS “NA FORMA EM
+QUE SE ENCONTRAM” E “DE ACORDO COM A DISPONIBILIDADE”.
+13.3 ESPECIFICAMENTE, A TECNEQUIP, NÃO GARANTEM QUE:
+(A) O USO DOS SERVIÇOS ATENDERÁ AOS SEUS REQUISITOS;
+(B) O USO DOS SERVIÇOS SERÁ ININTERRUPTO, PONTUAL, SEGURO E ISENTO DE ERROS;
+(C) TODAS AS INFORMAÇÕES OBTIDAS POR VOCÊ EM DECORRÊNCIA DO USO DOS
+SERVIÇOS SERÃO PRECISAS OU CONFIÁVEIS; E
+(D) OS DEFEITOS DE FUNCIONAMENTO OU NOS RECURSOS DE QUALQUER SOFTWARE
+FORNECIDO AO USUÁRIO COMO PARTE DOS SERVIÇOS SERÃO CORRIGIDOS.
+1 de setembro de 2010
+

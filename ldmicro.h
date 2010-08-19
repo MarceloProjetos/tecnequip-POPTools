@@ -108,6 +108,8 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_WRITE_USS    0x50
 #define MNU_CONDITIONAL_MENU	0x51
 #define MNU_INSERT_SET_DA       0x52
+#define MNU_INSERT_READ_MODBUS  0x53
+#define MNU_INSERT_WRITE_MODBUS 0x54
 
 #define MNU_MCU_SETTINGS        0x55
 #define MNU_PROCESSOR_0         0xa0
@@ -187,6 +189,8 @@ typedef SDWORD SWORD;
 #define ELEM_READ_USS			0x34
 #define ELEM_WRITE_USS			0x35
 #define ELEM_SET_DA				0x36
+#define ELEM_READ_MODBUS		0x37
+#define ELEM_WRITE_MODBUS   	0x38
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -221,6 +225,8 @@ typedef SDWORD SWORD;
         case ELEM_RESET_ENC: \
         case ELEM_READ_USS: \
         case ELEM_WRITE_USS: \
+        case ELEM_READ_MODBUS: \
+        case ELEM_WRITE_MODBUS: \
         case ELEM_SET_PWM: \
         case ELEM_UART_SEND: \
         case ELEM_UART_RECV: \
@@ -318,6 +324,20 @@ typedef struct ElemWriteUSSTag {
 	int		index;
 } ElemWriteUSS;
 
+typedef struct ElemReadModbusTag {
+    char    name[MAX_NAME_LEN];
+	int		id;
+	int		address;
+	int		value;
+} ElemReadModbus;
+
+typedef struct ElemWriteModbusTag {
+    char    name[MAX_NAME_LEN];
+	int		id;
+	int		address;
+	int		value;
+} ElemWriteModbus;
+
 typedef struct ElemSetPwmTag {
     char    name[MAX_NAME_LEN];
     int     targetFreq;
@@ -380,6 +400,8 @@ typedef struct ElemLeafTag {
         ElemResetEnc        resetEnc;
         ElemReadUSS         readUSS;
         ElemWriteUSS        writeUSS;
+        ElemReadModbus      readModbus;
+        ElemWriteModbus     writeModbus;
         ElemSetPwmTag       setPwm;
         ElemUart            uart;
         ElemShiftRegister   shiftRegister;
@@ -437,6 +459,8 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_READ_USS        15
 #define IO_TYPE_WRITE_USS       16
 #define IO_TYPE_SET_DA			17
+#define IO_TYPE_READ_MODBUS     18
+#define IO_TYPE_WRITE_MODBUS    19
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -687,6 +711,8 @@ void AddReadEnc(void);
 void AddResetEnc(void);
 void AddReadUSS(void);
 void AddWriteUSS(void);
+void AddReadModbus(void);
+void AddWriteModbus(void);
 void AddSetPwm(void);
 void AddUart(int which);
 void AddPersist(void);
@@ -749,6 +775,8 @@ void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
 void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
+void ShowReadModbusDialog(char *name, int *id, int *address);
+void ShowWriteModbusDialog(char *name, int *id, int *address);
 void ShowSetPwmDialog(char *name, int *targetFreq);
 void ShowPersistDialog(char *var);
 void ShowUartDialog(int which, char *name);
@@ -831,10 +859,6 @@ extern jmp_buf CompileErrorBuf;
 // intcode.cpp
 void IntDumpListing(char *outFile);
 BOOL GenerateIntermediateCode(void);
-// pic16.cpp
-void CompilePic16(char *outFile);
-// avr.cpp
-void CompileAvr(char *outFile);
 // ansic.cpp
 void GenerateDeclarations(FILE *f);
 void GenerateAnsiC(FILE *f);

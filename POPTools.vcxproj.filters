@@ -18,9 +18,6 @@
     <ClCompile Include="ansic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="avr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="circuit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -79,9 +76,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="miscutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pic16.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="resetdialog.cpp">

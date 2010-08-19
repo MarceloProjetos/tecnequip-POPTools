@@ -369,6 +369,10 @@ HMENU MakeMainWindowMenus(void)
         _("Leitura de Parametro do Inversor da Nord"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_WRITE_USS,
         _("Escrita de Parametro no Inversor da Nord"));
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_READ_MODBUS,
+        _("Leitura de registrador do MODBUS"));
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_WRITE_MODBUS,
+        _("Escrita em registrador do MODBUS"));
 	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ComunicationMenu,
         _("Comunicação"));
 

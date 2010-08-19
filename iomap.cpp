@@ -244,6 +244,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.writeUSS.name, IO_TYPE_WRITE_USS, 0);
             break;
 
+        case ELEM_READ_MODBUS:
+            AppendIo(l->d.readModbus.name, IO_TYPE_READ_MODBUS, 0);
+            break;
+
+        case ELEM_WRITE_MODBUS:
+            AppendIo(l->d.writeModbus.name, IO_TYPE_WRITE_MODBUS, 0);
+            break;
+
         case ELEM_SHIFT_REGISTER: {
             int i;
             for(i = 0; i < l->d.shiftRegister.stages; i++) {

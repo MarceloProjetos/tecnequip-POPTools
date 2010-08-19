@@ -136,6 +136,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_RESET_ENC:
         case ELEM_READ_USS:
         case ELEM_WRITE_USS:
+        case ELEM_READ_MODBUS:
+        case ELEM_WRITE_MODBUS:
         case ELEM_SET_PWM:
         case ELEM_PERSIST:
             if(ColsAvailable - soFar > 1) {
@@ -474,6 +476,20 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             ElemWriteUSS *r = &leaf->d.writeUSS;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{WRITE USS}", poweredBefore,
+                poweredAfter);
+            break;
+        }
+        case ELEM_READ_MODBUS: {
+            ElemReadModbus *r = &leaf->d.readModbus;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{READ MODBUS}", poweredBefore,
+                poweredAfter);
+            break;
+        }
+        case ELEM_WRITE_MODBUS: {
+            ElemWriteModbus *r = &leaf->d.writeModbus;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{WRITE MODBUS}", poweredBefore,
                 poweredAfter);
             break;
         }
@@ -859,6 +875,15 @@ cmp:
                 (which == ELEM_READ_USS) ? "{READ USS}" : "{WRITE USS}",
                 poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, (which == ELEM_READ_USS) ? leaf->d.readUSS.name : leaf->d.writeUSS.name, poweredAfter, TRUE);
+            *cx += POS_WIDTH;
+            break;
+
+        case ELEM_READ_MODBUS:
+        case ELEM_WRITE_MODBUS:
+            CenterWithWires(*cx, *cy,
+                (which == ELEM_READ_MODBUS) ? "{READ MODBUS}" : "{WRITE MODBUS}",
+                poweredBefore, poweredAfter);
+            CenterWithSpaces(*cx, *cy, (which == ELEM_READ_MODBUS) ? leaf->d.readModbus.name : leaf->d.writeModbus.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
             break;
 

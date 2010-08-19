@@ -152,6 +152,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_READ_USS;
     } else if(sscanf(line, "WRITE_USS %s %d %d %d %d", l->d.writeUSS.name, &l->d.writeUSS.id, &l->d.writeUSS.parameter, &l->d.writeUSS.parameter_set, &l->d.writeUSS.index)==5) {
         *which = ELEM_WRITE_USS;
+	} else if(sscanf(line, "READ_MODBUS %s %d %d", l->d.readModbus.name, &l->d.readModbus.id, &l->d.readModbus.address)==3) {
+        *which = ELEM_READ_MODBUS;
+	} else if(sscanf(line, "WRITE_MODBUS %s %d %d", l->d.writeModbus.name, &l->d.writeModbus.id, &l->d.writeModbus.address)==3) {
+        *which = ELEM_WRITE_MODBUS;
     } else if(sscanf(line, "SET_PWM %s %d", l->d.setPwm.name, 
         &(l->d.setPwm.targetFreq))==2)
     {
@@ -542,6 +546,14 @@ cmp:
 
         case ELEM_WRITE_USS:
             fprintf(f, "WRITE_USS %s %d %d %d %d\n", l->d.writeUSS.name, l->d.writeUSS.id, l->d.writeUSS.parameter, l->d.writeUSS.parameter_set, l->d.writeUSS.index);
+            break;
+
+        case ELEM_READ_MODBUS:
+            fprintf(f, "READ_MODBUS %s %d %d\n", l->d.readModbus.name, l->d.readUSS.id, l->d.writeModbus.address);
+            break;
+
+        case ELEM_WRITE_MODBUS:
+			fprintf(f, "WRITE_MODBUS %s %d %d\n", l->d.writeModbus.name, l->d.writeModbus.id, l->d.writeModbus.address);
             break;
 
         case ELEM_SET_PWM:

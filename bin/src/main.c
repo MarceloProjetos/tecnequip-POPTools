@@ -658,14 +658,12 @@ void TIMER0_IRQHandler (void)
   uss_timeout++;
 
   PlcCycle();
-
 #ifdef NORD_USS_ENABLE
   if (!I_USSReady && uss_timeout > 50)
     uss_ready();
   if (uss_timeout > 2000)
     I_USSReady = 1;
 #endif
-
 }
 
 /******************************************************************************
@@ -812,7 +810,7 @@ unsigned int RS485Read(unsigned char * buffer, unsigned int size)
   {
     for(c = 0; c < 10000 && !(UART3->LSR & LSR_RDR); c++);
 
-    if (UART3->LSR & (LSR_OE|LSR_PE|LSR_FE|LSR_BI/*|LSR_RXFE*/))
+    if (UART3->LSR & (LSR_OE|LSR_PE|LSR_FE|LSR_BI|LSR_RXFE))
       dummy = UART3->RBR;
     else if ((UART3->LSR & LSR_RDR)) /** barramento tem dados ? */
       *(buffer + i++) = UART3->RBR;
@@ -1384,7 +1382,7 @@ int main (void)
     saidas = AtualizaSaidas();
 
 #ifdef NORD_USS_ENABLE
-    /*if (!I_USSReady && uss_timeout > 500)
+    /*if (!I_USSReady && uss_timeout > 50)
       uss_ready();
     if (uss_timeout > 2000)
       I_USSReady = 1;*/

@@ -487,6 +487,14 @@ void EditSelectedElement(void)
             ShowWriteUSSDialog(Selected->d.writeUSS.name+1, &Selected->d.writeUSS.id, &Selected->d.writeUSS.parameter, &Selected->d.writeUSS.parameter_set, &Selected->d.writeUSS.index);
             break;
 
+        case ELEM_READ_MODBUS:
+			ShowReadModbusDialog(Selected->d.readModbus.name+1, &Selected->d.readModbus.id, &Selected->d.readModbus.address);
+            break;
+
+        case ELEM_WRITE_MODBUS:
+			ShowWriteModbusDialog(Selected->d.writeModbus.name+1, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address);
+            break;
+
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
             ShowUartDialog(SelectedWhich, Selected->d.uart.name);

@@ -231,6 +231,99 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     return !didCancel;
 }
 
+BOOL ShowSimpleDialogWithCheckbox(char *title, int boxes, char **labels, DWORD numOnlyMask,
+    DWORD alnumOnlyMask, DWORD checkOnlyMask, DWORD fixedFontMask, char **dests)
+{
+    BOOL didCancel;
+
+    if(boxes > MAX_BOXES) oops();
+
+    SimpleDialog = CreateWindowClient(0, "LDmicroDialog", title, 
+        WS_OVERLAPPED | WS_SYSMENU,
+        100, 100, 304, 15 + 30*(boxes < 2 ? 2 : boxes), NULL, NULL,
+        Instance, NULL);
+
+    MakeControls(boxes, labels, fixedFontMask);
+  
+    int i;
+    for(i = 0; i < boxes; i++) {
+
+        if(numOnlyMask & (1 << i)) {
+	        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);
+            PrevNumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, 
+                (LONG_PTR)MyNumOnlyProc);
+        }
+        if(alnumOnlyMask & (1 << i)) {
+	        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);
+            PrevAlnumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, 
+                (LONG_PTR)MyAlnumOnlyProc);
+        }
+        if(alnumOnlyMask & (1 << i)) {
+	        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);
+            PrevAlnumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, 
+                (LONG_PTR)MyAlnumOnlyProc);
+        }
+    }
+
+    EnableWindow(MainWindow, FALSE);
+    ShowWindow(SimpleDialog, TRUE);
+    SetFocus(Textboxes[0]);
+    SendMessage(Textboxes[0], EM_SETSEL, 0, -1);
+
+    MSG msg;
+    DWORD ret;
+    DialogDone = FALSE;
+    DialogCancel = FALSE;
+    while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
+        if(msg.message == WM_KEYDOWN) {
+            if(msg.wParam == VK_RETURN) {
+                DialogDone = TRUE;
+                break;
+            } else if(msg.wParam == VK_ESCAPE) {
+                DialogDone = TRUE;
+                DialogCancel = TRUE;
+                break;
+            }
+        }
+
+        if(IsDialogMessage(SimpleDialog, &msg)) continue;
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    didCancel = DialogCancel;
+
+    if(!didCancel) {
+        for(i = 0; i < boxes; i++) {
+            if(NoCheckingOnBox[i]) {
+                char get[64];
+                SendMessage(Textboxes[i], WM_GETTEXT, 60, (LPARAM)get);
+                strcpy(dests[i], get);
+            } else {
+                char get[20];
+                SendMessage(Textboxes[i], WM_GETTEXT, 15, (LPARAM)get);
+
+                if( (!strchr(get, '\'')) ||
+                        (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )
+                {
+                    if(strlen(get) == 0) {
+                        Error(_("Empty textbox; not permitted."));
+                    } else {
+                        strcpy(dests[i], get);
+                    }
+                } else {
+                    Error(_("Bad use of quotes: <%s>"), get);
+                }
+            }
+        }
+    }
+
+    EnableWindow(MainWindow, TRUE);
+    DestroyWindow(SimpleDialog);
+
+    return !didCancel;
+}
+
 void ShowTimerDialog(int which, int *delay, char *name)
 {
     char *s;
@@ -413,6 +506,38 @@ void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set,
 	*parameter = atoi(param);
 	*parameter_set = atoi(param_set);
 	*index = atoi(idx);
+}
+
+void ShowReadModbusDialog(char *name, int *id, int *address)
+{
+    char i[100];
+    sprintf(i, "%d", *id);
+
+    char addr[100];
+    sprintf(addr, "%d", *address);
+
+	char *labels[] = { _("Destino:"), _("ID:"), _("Endereço:") };
+    char *dests[] = { name, i, addr };
+    ShowSimpleDialog(_("Lê Registrador do Modbus"), 3, labels, 0x6, 0x1, 0x6, dests);
+
+	*id = atoi(i);
+	*address = atoi(addr);
+}
+
+void ShowWriteModbusDialog(char *name, int *id, int *address)
+{
+    char i[100];
+    sprintf(i, "%d", *id);
+
+    char addr[100];
+    sprintf(addr, "%d", *address);
+
+	char *labels[] = { _("Origem:"), _("ID:"), _("Endereço:") };
+    char *dests[] = { name, i, addr };
+    ShowSimpleDialog(_("Escreve Registrador do Modbus"), 3, labels, 0x6, 0x1, 0x6, dests);
+
+	*id = atoi(i);
+	*address = atoi(addr);
 }
 
 void ShowSetPwmDialog(char *name, int *targetFreq)
