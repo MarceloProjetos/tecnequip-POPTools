@@ -286,23 +286,7 @@ HMENU MakeMainWindowMenus(void)
         _("Insert CT&C (Count Circular)\tJ"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
 
-	ConditionalMenu = CreatePopupMenu();
-    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_EQU,
-        _("Insert EQU (Compare for Equals)\t="));
-    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_NEQ,
-        _("Insert NEQ (Compare for Not Equals)"));
-    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_GRT,
-        _("Insert GRT (Compare for Greater Than)\t>"));
-    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_GEQ,
-        _("Insert GEQ (Compare for Greater Than or Equal)\t."));
-    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_LES,
-        _("Insert LES (Compare for Less Than)\t<"));
-    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_LEQ,
-        _("Insert LEQ (Compare for Less Than or Equal)\t,"));
-	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConditionalMenu,
-        _("Instruções Condicionais"));
-
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+    //AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OPEN,
         _("Insert Open-Circuit"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SHORT,
@@ -318,6 +302,22 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MOV,
         _("Insert MOV (Move)\tM"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+
+	ConditionalMenu = CreatePopupMenu();
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_EQU,
+        _("Insert EQU (Compare for Equals)\t="));
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_NEQ,
+        _("Insert NEQ (Compare for Not Equals)"));
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_GRT,
+        _("Insert GRT (Compare for Greater Than)\t>"));
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_GEQ,
+        _("Insert GEQ (Compare for Greater Than or Equal)\t."));
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_LES,
+        _("Insert LES (Compare for Less Than)\t<"));
+    AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_LEQ,
+        _("Insert LEQ (Compare for Less Than or Equal)\t,"));
+	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConditionalMenu,
+        _("Instruções Condicionais"));
 
 	MathematicMenu = CreatePopupMenu();
 	AppendMenu(MathematicMenu, MF_STRING, MNU_INSERT_ADD,
@@ -419,7 +419,9 @@ HMENU MakeMainWindowMenus(void)
 
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
+//#ifdef ZERO
     AppendMenu(help, MF_STRING, MNU_ABOUT, _("&About..."));
+//#endif
 
     TopMenu = CreateMenu();
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)FileMenu, _("&File"));
@@ -433,6 +435,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)compile, 
         _("&Compile"));
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)help, _("&Help"));
+
 
     return TopMenu;
 }

@@ -19,24 +19,14 @@ volatile unsigned int I_rung_top = 0;
 volatile unsigned int I_oneShot_0000 = 0;
 
 volatile unsigned int I_ModbusReady = 0;
-volatile unsigned int U_Kasdasda = 0;
+volatile unsigned int U_Knew = 0;
 
 volatile unsigned int I_oneShot_0001 = 0;
 
 volatile unsigned int I_oneShot_0002 = 0;
-volatile unsigned int U_Vasdasd = 0;
-
-volatile unsigned int I_oneShot_0003 = 0;
-
-volatile unsigned int I_oneShot_0004 = 0;
-volatile unsigned int U_Knew = 0;
-
-volatile unsigned int I_oneShot_0005 = 0;
-
-volatile unsigned int I_oneShot_0006 = 0;
 volatile unsigned int U_Vnew = 0;
 
-volatile unsigned int I_oneShot_0007 = 0;
+volatile unsigned int I_oneShot_0003 = 0;
 
 
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
@@ -51,7 +41,7 @@ void PlcCycle(void)
     if (I_rung_top) {
         if (!I_oneShot_0000) {
             if (I_ModbusReady) {
-                ModbusReadSingleRegister(2, 0, &U_Kasdasda);
+                ModbusReadSingleRegister(0, 0, &U_Knew);
                 I_oneShot_0000 = I_rung_top;
             }
             I_rung_top = 0;
@@ -71,7 +61,7 @@ void PlcCycle(void)
     if (I_rung_top) {
         if (!I_oneShot_0002) {
             if (I_ModbusReady) {
-                ModbusWriteSingleRegister(1, 0, &U_Vasdasd);
+                ModbusWriteSingleRegister(0, 0, &U_Vnew);
                 I_oneShot_0002 = I_rung_top;
             }
             I_rung_top = 0;
@@ -86,46 +76,6 @@ void PlcCycle(void)
         }
     } else {
         I_oneShot_0002 = I_rung_top;
-    }
-    
-    if (I_rung_top) {
-        if (!I_oneShot_0004) {
-            if (I_ModbusReady) {
-                ModbusReadSingleRegister(0, 0, &U_Knew);
-                I_oneShot_0004 = I_rung_top;
-            }
-            I_rung_top = 0;
-            I_oneShot_0005 = I_rung_top;
-        }
-        if (!I_oneShot_0005) {
-            if (I_ModbusReady) {
-                I_oneShot_0005 = 1;
-            } else {
-                I_rung_top = 0;
-            }
-        }
-    } else {
-        I_oneShot_0004 = I_rung_top;
-    }
-    
-    if (I_rung_top) {
-        if (!I_oneShot_0006) {
-            if (I_ModbusReady) {
-                ModbusWriteSingleRegister(0, 0, &U_Vnew);
-                I_oneShot_0006 = I_rung_top;
-            }
-            I_rung_top = 0;
-            I_oneShot_0007 = I_rung_top;
-        }
-        if (!I_oneShot_0007) {
-            if (I_ModbusReady) {
-                I_oneShot_0007 = 1;
-            } else {
-                I_rung_top = 0;
-            }
-        }
-    } else {
-        I_oneShot_0006 = I_rung_top;
     }
     
     /* ] finish series */
