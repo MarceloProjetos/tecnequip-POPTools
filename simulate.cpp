@@ -543,6 +543,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_SHORT:
         case ELEM_COIL:
         case ELEM_CONTACTS:
+		case ELEM_SET_BIT:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_EQU:
@@ -649,6 +650,14 @@ static void SimulateIntCode(void)
                 break;
 
             case INT_CLEAR_BIT:
+                SetSingleBit(a->name1, FALSE);
+                break;
+
+            case INT_SET_SINGLE_BIT:
+                SetSingleBit(a->name1, TRUE);
+                break;
+
+            case INT_CLEAR_SINGLE_BIT:
                 SetSingleBit(a->name1, FALSE);
                 break;
 
@@ -875,20 +884,20 @@ void SimulateOneCycle(BOOL forceRefresh)
         SimulateUartTxCountdown = 0;
     }
 
-	if (SimulateUSSTxCountdown >= 0 && !SingleBitOn("$USSReady"))
+	if (SimulateUSSTxCountdown >= 0 && !SingleBitOn("$SerialReady"))
 		SimulateUSSTxCountdown++;
 
 	if (SimulateUSSTxCountdown > 2)
 	{
-		SetSingleBit("$USSReady", TRUE);
+		SetSingleBit("$SerialReady", TRUE);
 	}
 
-	if (SimulateModbusTxCountdown >= 0 && !SingleBitOn("$ModbusReady"))
+	if (SimulateModbusTxCountdown >= 0 && !SingleBitOn("$SerialReady"))
 		SimulateModbusTxCountdown++;
 
 	if (SimulateModbusTxCountdown > 2)
 	{
-		SetSingleBit("$ModbusReady", TRUE);
+		SetSingleBit("$SerialReady", TRUE);
 	}
 
     IntPc = 0;

@@ -189,6 +189,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.move.dest, IO_TYPE_GENERAL, 0);
             break;
 
+        case ELEM_SET_BIT:
+			AppendIo(l->d.setBit.name, IO_TYPE_GENERAL, 0);
+            break;
+
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:

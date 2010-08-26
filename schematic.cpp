@@ -463,7 +463,11 @@ void EditSelectedElement(void)
                 &(Selected->d.setPwm.targetFreq));
             break;
 
-        case ELEM_READ_ADC:
+        case ELEM_SET_BIT:
+            ShowSetBitDialog(Selected->d.setBit.name+1);
+            break;
+
+		case ELEM_READ_ADC:
             ShowReadAdcDialog(Selected->d.readAdc.name+1);
             break;
 

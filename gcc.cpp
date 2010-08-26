@@ -184,6 +184,8 @@ static void GenerateDeclarations(FILE *f)
         switch(IntCode[i].op) {
             case INT_SET_BIT:
             case INT_CLEAR_BIT:
+			case INT_SET_SINGLE_BIT:
+			case INT_CLEAR_SINGLE_BIT:
                 bitVar1 = IntCode[i].name1;
                 break;
 
@@ -294,6 +296,14 @@ static void GenerateAnsiC(FILE *f)
 					fprintf(f, "%s &= ~(1 << %d);  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 	                fprintf(f, "%s = 0;\n", MapSym(IntCode[i].name1));
+                break;
+
+            case INT_SET_SINGLE_BIT:
+                fprintf(f, "%s &= ~(1 << %d); %s |= 1 << %d;\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), IntCode[i].bit);
+                break;
+
+            case INT_CLEAR_SINGLE_BIT:
+                fprintf(f, "%s &= ~(1 << %d);\n", MapSym(IntCode[i].name1), IntCode[i].bit);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
@@ -408,10 +418,10 @@ static void GenerateAnsiC(FILE *f)
 				fprintf(f, "uss_set_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_MODBUS:
-				fprintf(f, "ModbusReadSingleRegister(%d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
+				fprintf(f, "modbus_send(%d, MB_FC_READ_HOLDING_REGISTERS, %d, 2, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
 				break;
             case INT_WRITE_MODBUS:
-				fprintf(f, "ModbusWriteSingleRegister(%d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
+				fprintf(f, "modbus_send(%d, MB_FC_WRITE_MULTIPLE_REGISTERS, %d, 2, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
 				break;
             case INT_SET_PWM:
 				break;
@@ -639,16 +649,24 @@ void CompileAnsiCToGCC(char *dest)
 " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n"
 " *****************************************************************************/\n"
 "#include \"uss.h\"\n"
+"#include \"modbus.h\"\n\n"
+
+"extern void modbus_send(unsigned char id,\n"
+"                        int fc,\n"
+"                        unsigned short int address,\n"
+"                        unsigned short int size,\n"
+"                        volatile unsigned int * value);\n\n"
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n"
 "volatile unsigned int M[32];\n"
 "volatile int ENC1;\n\n"
 	, Prog.cycleTime / 1000);
 
+	fprintf(f, "extern struct MB_Device modbus_master;\n");
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");
 	fprintf(f, "extern unsigned int ADCRead(unsigned int i);\n");
 	fprintf(f, "extern unsigned int ENCRead(unsigned int i);\n");
 	fprintf(f, "extern unsigned int ENCReset(unsigned int i);\n");
-	fprintf(f, "extern volatile unsigned int I_USSReady;\n");
+	fprintf(f, "extern volatile unsigned int I_SerialReady;\n");
 
     // now generate declarations for all variables
     GenerateDeclarations(f);

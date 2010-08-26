@@ -1132,7 +1132,7 @@ static LangTable LangPtTable[] = {
     { "Insert LES (Compare for Less Than)\t<", "Inserir LES (Comparar se Menor Que)\t<" },
     { "Insert LEQ (Compare for Less Than or Equal)\t,", "Inserir LEQ (Comparar se Menor ou Igual Que)\t," },
     { "Insert Open-Circuit", "Inserir Circuito Aberto" },
-    { "Insert Short-Circuit", "Inserir Curto Circuito" },
+    { "Insert Short-Circuit", "Inserir Circuito Fechado" },
     { "Insert Master Control Relay", "Inserir Rele de Controle Mestre" },
     { "Insert Coi&l\tL", "Inserir &Bobina\tL" },
     { "Insert R&ES (Counter/RTO Reset)\tE", "Inserir R&ES (Contador/RTO Reinicia)\tE" },

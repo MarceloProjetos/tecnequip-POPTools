@@ -832,7 +832,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 				// OneShot 
 				Op(INT_IF_BIT_SET, stateInOut);
 					Op(INT_IF_BIT_CLEAR, oneShot);
-						Op(INT_IF_BIT_SET, "$USSReady");
+						Op(INT_IF_BIT_SET, "$SerialReady");
 							if (which == ELEM_READ_USS)
 								Op(INT_READ_USS, l->d.readUSS.name, addr, param, param_set, (SWORD)atoi(index), 0);
 							else
@@ -843,7 +843,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 						Op(INT_COPY_BIT_TO_BIT, byPass, stateInOut);
 					Op(INT_END_IF);
 					Op(INT_IF_BIT_CLEAR, byPass);
-						Op(INT_IF_BIT_SET, "$USSReady");
+						Op(INT_IF_BIT_SET, "$SerialReady");
 							Op(INT_SET_BIT, byPass);
 						Op(INT_ELSE);
 							Op(INT_CLEAR_BIT, stateInOut);
@@ -874,7 +874,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 				// OneShot 
 				Op(INT_IF_BIT_SET, stateInOut);
 					Op(INT_IF_BIT_CLEAR, oneShot);
-						Op(INT_IF_BIT_SET, "$ModbusReady");
+						Op(INT_IF_BIT_SET, "$SerialReady");
 							if (which == ELEM_READ_MODBUS)
 								Op(INT_READ_MODBUS, l->d.readModbus.name, id, l->d.writeModbus.address);
 							else
@@ -885,7 +885,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 						Op(INT_COPY_BIT_TO_BIT, byPass, stateInOut);
 					Op(INT_END_IF);
 					Op(INT_IF_BIT_CLEAR, byPass);
-						Op(INT_IF_BIT_SET, "$ModbusReady");
+						Op(INT_IF_BIT_SET, "$SerialReady");
 							Op(INT_SET_BIT, byPass);
 						Op(INT_ELSE);
 							Op(INT_CLEAR_BIT, stateInOut);
@@ -994,6 +994,16 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             Op(INT_END_IF);
             break;
 
+        case ELEM_SET_BIT: {
+            Op(INT_IF_BIT_SET, stateInOut);
+            if(l->d.setBit.set) {
+				OpBit(INT_CLEAR_SINGLE_BIT, l->d.setBit.name, l->d.setBit.bit);
+            } else {
+                OpBit(INT_SET_SINGLE_BIT, l->d.setBit.name, l->d.setBit.bit);
+            }
+            Op(INT_END_IF);
+            break;
+        }
         case ELEM_SHIFT_REGISTER: {
             char storeName[MAX_NAME_LEN];
             GenSymOneShot(storeName);

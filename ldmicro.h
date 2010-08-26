@@ -110,8 +110,9 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_SET_DA       0x52
 #define MNU_INSERT_READ_MODBUS  0x53
 #define MNU_INSERT_WRITE_MODBUS 0x54
+#define MNU_INSERT_SET_BIT		0x55
 
-#define MNU_MCU_SETTINGS        0x55
+#define MNU_MCU_SETTINGS        0x56
 #define MNU_PROCESSOR_0         0xa0
 
 #define MNU_SIMULATION_MODE     0x60
@@ -191,6 +192,7 @@ typedef SDWORD SWORD;
 #define ELEM_SET_DA				0x36
 #define ELEM_READ_MODBUS		0x37
 #define ELEM_WRITE_MODBUS   	0x38
+#define ELEM_SET_BIT			0x39
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -219,6 +221,7 @@ typedef SDWORD SWORD;
         case ELEM_MOVE: \
         case ELEM_SHORT: \
         case ELEM_OPEN: \
+		case ELEM_SET_BIT: \
         case ELEM_READ_ADC: \
 		case ELEM_SET_DA: \
         case ELEM_READ_ENC: \
@@ -347,6 +350,12 @@ typedef struct ElemUartTag {
     char    name[MAX_NAME_LEN];
 } ElemUart;
 
+typedef struct ElemSetBitTag {
+    char    name[MAX_NAME_LEN];
+    unsigned char bit;
+	unsigned char set;
+} ElemSetBit;
+
 typedef struct ElemShiftRegisterTag {
     char    name[MAX_NAME_LEN];
     int     stages;
@@ -404,6 +413,7 @@ typedef struct ElemLeafTag {
         ElemWriteModbus     writeModbus;
         ElemSetPwmTag       setPwm;
         ElemUart            uart;
+		ElemSetBit			setBit;
         ElemShiftRegister   shiftRegister;
         ElemFormattedString fmtdStr;
         ElemLookUpTable     lookUpTable;
@@ -717,6 +727,7 @@ void AddSetPwm(void);
 void AddUart(int which);
 void AddPersist(void);
 void AddComment(char *text);
+void AddSetBit(void);
 void AddShiftRegister(void);
 void AddMasterRelay(void);
 void AddLookUpTable(void);
@@ -770,6 +781,7 @@ void ShowTimerDialog(int which, int *delay, char *name);
 void ShowCounterDialog(int which, int *count, char *name);
 void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);
+void ShowSetBitDialog(char *name);
 void ShowSetDADialog(char *name, int *val);
 void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);

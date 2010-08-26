@@ -290,6 +290,14 @@ void AddMasterRelay(void)
     ElemLeaf *t = AllocLeaf();
     AddLeaf(ELEM_MASTER_RELAY, t);
 }
+void AddSetBit(void)
+{
+    if(!CanInsertEnd) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.setBit.name, "Bnew");
+    AddLeaf(ELEM_SET_BIT, t);
+}
 void AddShiftRegister(void)
 {
     if(!CanInsertEnd) return;
@@ -703,7 +711,7 @@ void FreeEntireProgram(void)
     }
     Prog.numRungs = 0;
     Prog.cycleTime = 10000;
-    Prog.mcuClock = 4000000;
+    Prog.mcuClock = 100000000;
     Prog.baudRate = 9600;
     Prog.io.count = 0;
     Prog.mcu = NULL;

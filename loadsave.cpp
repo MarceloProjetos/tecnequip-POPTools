@@ -78,10 +78,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_OPEN;
     } else if(memcmp(line, "MASTER_RELAY", 12)==0) {
         *which = ELEM_MASTER_RELAY;
-    } else if(sscanf(line, "SHIFT_REGISTER %s %d", l->d.shiftRegister.name,
-        &(l->d.shiftRegister.stages))==2)
-    {
+    } else if(sscanf(line, "SHIFT_REGISTER %s %d", l->d.shiftRegister.name, &(l->d.shiftRegister.stages))==2) {
         *which = ELEM_SHIFT_REGISTER;
+	} else if(sscanf(line, "SET_BIT %s %d %d", l->d.setBit.name, &l->d.setBit.set, &l->d.setBit.bit)==3) {
+        *which = ELEM_SET_BIT;
     } else if(memcmp(line, "OSR", 3)==0) {
         *which = ELEM_ONE_SHOT_RISING;
     } else if(memcmp(line, "OSF", 3)==0) {
@@ -456,6 +456,10 @@ static void SaveElemToFile(FILE *f, int which, void *any, int depth)
             fprintf(f, "MASTER_RELAY\n");
             break;
         
+        case ELEM_SET_BIT:
+            fprintf(f, "SET_BIT %s %d %d\n", l->d.setBit.name, l->d.setBit.set, l->d.setBit.bit);
+            break;
+
         case ELEM_SHIFT_REGISTER:
             fprintf(f, "SHIFT_REGISTER %s %d\n", l->d.shiftRegister.name,
                 l->d.shiftRegister.stages);

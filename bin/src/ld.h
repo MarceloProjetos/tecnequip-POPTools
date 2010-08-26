@@ -45,3 +45,4 @@ volatile int ENC1 __attribute__((weak)) = 0;
 extern void PlcCycle(void);
 extern volatile unsigned int TIME_INTERVAL;
 
+

@@ -107,7 +107,7 @@ void MakeMainWindowControls(void)
     ScrollWidth = scroll.right - scroll.left;
 
     StatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
-        "LDmicro started", MainWindow, 0);
+        "POPTools iniciado", MainWindow, 0);
     int edges[] = { 250, 370, -1 };
     SendMessage(StatusBar, SB_SETPARTS, 3, (LPARAM)edges);
 
@@ -293,6 +293,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert Short-Circuit"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
         _("Insert Master Control Relay"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_BIT, 
+        _("Set/Reset BIT\tD"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
         _("Insert Coi&l\tL"));
@@ -435,7 +437,6 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)compile, 
         _("&Compile"));
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)help, _("&Help"));
-
 
     return TopMenu;
 }
@@ -612,11 +613,11 @@ void RefreshControlsToSettings(void)
     }
     IoListOutOfSync = FALSE;
 
-    if(Prog.mcu) {
+    /*if(Prog.mcu) {
         SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)Prog.mcu->mcuName);
     } else {
         SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_("no MCU selected"));
-    }
+    }*/
     char buf[256];
     sprintf(buf, _("cycle time %.2f ms"), (double)Prog.cycleTime/1000.0);
     SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)buf);

@@ -7,7 +7,7 @@
 
 #define NORD_USS_ENABLE
 
-//#define QEI_CHECK
+#define QEI_CHECK
 #ifdef QEI_CHECK
 #include "qei.h"
 #endif
@@ -100,8 +100,11 @@ volatile int ENC_VAL = 0;
 volatile unsigned int saidas = 0;
 volatile unsigned int entradas = 0;
 
+volatile unsigned int serial_timeout = 0;
 volatile unsigned int uss_timeout = 0;
+volatile unsigned int modbus_timeout = 0;
 
+struct MB_Device modbus_master;
 struct MB_Device modbus_serial;
 struct MB_Device modbus_tcp;
 
@@ -159,6 +162,8 @@ __IO FlagStatus VeloAccFlag;
 unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
 unsigned int ModbusTx(unsigned char *data, unsigned int size);
 
+unsigned int ModbusRequest(struct MB_Device * mbdev, unsigned char * buffer, unsigned int sz);
+
 /******************************************************************************
 * lwip TCP/IP
 ******************************************************************************/
@@ -168,7 +173,9 @@ unsigned int ModbusTx(unsigned char *data, unsigned int size);
 int Init_EMAC(void);
 int Init_EMAC_phase2(void);
 
+volatile unsigned int I_SerialReady;
 volatile unsigned int I_USSReady;
+volatile unsigned int I_ModbusReady;
 
 volatile uint16_t gArpTimer = 0;
 volatile uint16_t gTcpTimer = 0;
@@ -266,6 +273,235 @@ void TIMER1_IRQHandler (void)
 
   if (gTcpState == TCP_DISCONNECTED)
     gTcpReconnectTimer++;
+
+}
+
+void modbus_send(unsigned char id,
+                  int fc,
+                  unsigned short int address,
+                  unsigned short int size,
+                  volatile unsigned int * value)
+{
+  uint8_t out[] = { 0, 0 };
+  //uint32_t i, offset=0;
+  //char wdgName[100], reply_string[2000] = "";
+
+  struct MB_Device * mbdev = &modbus_master;
+
+  union MB_FCD_Data data;
+  struct MB_Reply rp;
+
+  modbus_master.identification.Id = id;
+
+  /* Enviando mensagem pelo Modbus */
+  switch(fc)
+  {
+  case MB_FC_READ_COILS:
+    data.read_coils.start = address;
+    data.read_coils.quant = size;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode)
+    {
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.read_coils.size);
+      for(i=0; i<rp.reply.read_coils.size; i++)
+        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.read_coils.data[i]);
+    }*/
+
+    break;
+
+  case MB_FC_READ_DISCRETE_INPUTS:
+    data.read_discrete_inputs.start = address;
+    data.read_discrete_inputs.quant = size;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.read_discrete_inputs.size);
+      for(i=0; i<rp.reply.read_discrete_inputs.size; i++)
+        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.read_discrete_inputs.data[i]);
+    }*/
+
+    break;
+
+  case MB_FC_READ_HOLDING_REGISTERS:
+    data.read_holding_registers.start = address;
+    data.read_holding_registers.quant = size;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.read_holding_registers.size);
+      for(i=0; i<rp.reply.read_holding_registers.size; i++)
+        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.read_holding_registers.data[i]);
+    }*/
+
+    break;
+
+  case MB_FC_READ_INPUT_REGISTERS:
+    data.read_input_registers.start = address;
+    data.read_input_registers.quant = size;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.read_input_registers.size);
+      for(i=0; i<rp.reply.read_input_registers.size; i++)
+        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.read_input_registers.data[i]);
+    }*/
+
+    break;
+
+  case MB_FC_WRITE_SINGLE_COIL:
+    data.write_single_coil.output = address;
+    data.write_single_coil.val    = *value;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "output: %d\n", rp.reply.write_single_coil.output);
+      offset += sprintf(reply_string+offset, "val   : %s\n", rp.reply.write_single_coil.val ? "ON" : "OFF");
+    }*/
+
+    break;
+
+  case MB_FC_WRITE_SINGLE_REGISTER:
+    data.write_single_register.address = address;
+    data.write_single_register.val     = *value;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "address: %04x\n", rp.reply.write_single_register.address);
+      offset += sprintf(reply_string+offset, "val    : %04x\n", rp.reply.write_single_register.val);
+    }*/
+
+    break;
+
+  case MB_FC_WRITE_MULTIPLE_COILS:
+    /*for(i=0; i<16; i++) {
+      sprintf(wdgName, "tgbWriteMultipleCoils%02d", i+1);
+      tgb = GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, wdgName));
+      out[i/8] |= ((uint32_t)gtk_toggle_button_get_active(tgb)) << (i%8);
+    }*/
+
+    data.write_multiple_coils.start = address;
+    data.write_multiple_coils.quant = size;
+    data.write_multiple_coils.size  = 2 * size;
+    data.write_multiple_coils.val   = (unsigned char *)value;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.write_multiple_coils.size);
+      for(i=0; i<rp.reply.write_multiple_coils.size; i++)
+        offset += sprintf(reply_string+offset, "%d: %04x\n", i, rp.reply.write_multiple_coils.val[i]);
+    }*/
+
+    break;
+
+  case MB_FC_WRITE_MULTIPLE_REGISTERS:
+    data.write_multiple_registers.start = address;
+    data.write_multiple_registers.quant = size;
+    data.write_multiple_registers.size  = 2 * size;
+    data.write_multiple_registers.val   = (unsigned char *)value;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "start: %d\n", rp.reply.write_multiple_registers.start);
+      offset += sprintf(reply_string+offset, "quant: %d\n", rp.reply.write_multiple_registers.quant);
+      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.write_multiple_registers.size);
+      for(i=0; i<rp.reply.write_multiple_registers.size; i++)
+        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.write_multiple_registers.val[i]);
+    }*/
+
+    break;
+
+  case MB_FC_MASK_WRITE_REGISTER:
+    data.mask_write_register.address = address;
+    data.mask_write_register.and     = 0; //and;
+    data.mask_write_register.or      = 0; //or;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "address: %04x\n", rp.reply.mask_write_register.address);
+      offset += sprintf(reply_string+offset, "and    : %04x\n", rp.reply.mask_write_register.and);
+      offset += sprintf(reply_string+offset, "or     : %04x\n", rp.reply.mask_write_register.or);
+    }*/
+
+    break;
+
+  case MB_FC_RW_MULTIPLE_REGISTERS:
+    data.rw_multiple_registers.start_read  = address;
+    data.rw_multiple_registers.quant_read  = size;
+    data.rw_multiple_registers.start_write = data.rw_multiple_registers.start_read;
+    data.rw_multiple_registers.quant_write = data.rw_multiple_registers.quant_read;
+    data.rw_multiple_registers.size  = size;
+    data.rw_multiple_registers.val   = out;
+    out[0] = 0xaa;
+    out[1] = 0x55;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.rw_multiple_registers.size);
+      for(i=0; i<rp.reply.rw_multiple_registers.size; i++)
+        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.rw_multiple_registers.data[i]);
+    }*/
+
+    break;
+
+  case MB_FC_READ_EXCEPTION_STATUS:
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      wdg = GTK_WIDGET(gtk_builder_get_object(builder, "lblReadExceptionStatusVal"));
+      sprintf(wdgName, "%02x", rp.reply.read_exception_status.status);
+      gtk_label_set_text(GTK_LABEL(wdg), wdgName);
+
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "status: %02x\n", rp.reply.read_exception_status.status);
+    }*/
+
+    break;
+
+  case MB_FC_READ_DEVICE_IDENTIFICATION:
+    data.read_device_identification.id_code   = 0x01;
+    data.read_device_identification.object_id = 0x00;
+
+    rp = MB_Send(mbdev, fc, &data);
+
+    /*if(!rp.ExceptionCode) {
+      wdg = GTK_WIDGET(gtk_builder_get_object(builder, "lblReadDeviceIdentificationVal"));
+      gtk_label_set_text(GTK_LABEL(wdg), (const gchar *)rp.reply.read_device_identification.data);
+
+      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
+      offset += sprintf(reply_string+offset, "string: %s\n", rp.reply.read_device_identification.data);
+    }*/
+
+    break;
+
+  default:
+    rp.FunctionCode = fc;
+    rp.ExceptionCode = MB_EXCEPTION_ILLEGAL_FUNCTION;
+  }
+
+  /*if(rp.ExceptionCode != MB_EXCEPTION_NONE)
+    sprintf(reply_string, "Erro enviando Function Code %02x.\nException Code: %02x",
+        fc, rp.ExceptionCode);*/
 
 }
 
@@ -653,17 +889,31 @@ void check_network(void)
 ******************************************************************************/
 void TIMER0_IRQHandler (void)
 {
+  unsigned int sz = 0;
+
   TIM0->IR = 1;                       /* clear interrupt flag */
 
-  uss_timeout++;
-
   PlcCycle();
-#ifdef NORD_USS_ENABLE
-  if (!I_USSReady && uss_timeout > 50)
-    uss_ready();
+
+  serial_timeout++;
+  uss_timeout++;
+  modbus_timeout++;
+
+  if (serial_timeout > 50)
+    sz = RS485Read(modbus_rx_buffer, sizeof(modbus_rx_buffer));
+
+  if (!I_SerialReady)
+    ModbusRequest(&modbus_master, modbus_rx_buffer, sz);
+
+  if (!I_SerialReady)
+    uss_ready((PPO1*)modbus_rx_buffer, sz);
+
   if (uss_timeout > 2000)
-    I_USSReady = 1;
-#endif
+    I_SerialReady = 1;
+
+  if (modbus_timeout > 2000)
+    I_SerialReady = 1;
+
 }
 
 /******************************************************************************
@@ -783,7 +1033,7 @@ unsigned int RS485Write(unsigned char * buffer, unsigned int size)
 {
   unsigned int i = 0;
 
-  UART3->FCR = 0x06;                      /* Reset TX */
+  //UART3->FCR = 0x06;                      /* Reset TX */
 
   GPIO0->FIOSET = RS485_ENABLE;
 
@@ -824,18 +1074,19 @@ unsigned int RS485Read(unsigned char * buffer, unsigned int size)
 /******************************************************************************
 * Modbus
 ******************************************************************************/
-unsigned int ModbusRequest(void)
+unsigned int ModbusRequest(struct MB_Device * mbdev, unsigned char * buffer, unsigned int sz)
 {
-  unsigned int sz = 0;
+  //memset(modbus_rx_buffer, 0, sizeof(modbus_rx_buffer));
+  //memset(modbus_tx_buffer, 0, sizeof(modbus_tx_buffer));
 
-  memset(modbus_rx_buffer, 0, sizeof(modbus_rx_buffer));
-  memset(modbus_tx_buffer, 0, sizeof(modbus_tx_buffer));
-
-  if((sz = RS485Read(modbus_rx_buffer, sizeof(modbus_rx_buffer))) > 0)
+  if(sz)
   {
-    reply_data.data = modbus_tx_buffer;
+    reply_data.data = buffer;
     if (sz > 2)
-      MB_Receive(&modbus_serial, MB_Validate(modbus_rx_buffer, sz));
+    {
+      if (MB_Receive(mbdev, MB_Validate(buffer, sz)) == MB_EXCEPTION_NONE)
+        I_SerialReady = 1;
+    }
   }
 
   return reply_data.size; // Retorna o tamanho dos dados
@@ -846,6 +1097,10 @@ unsigned int ModbusRS485Tx(unsigned char *data, unsigned int size)
   unsigned int sz = 0;
 
   sz = RS485Write(data, size);
+
+  modbus_timeout = 0;
+
+  I_SerialReady = 0;
 
   return sz;
 }
@@ -1199,9 +1454,9 @@ void HardwareInit(void)
 #endif
 
   // 9600
-  //UART3->DLM = 0;
-  //UART3->DLL = 92;
-  //UART3->FDR = (13 << 4) | 10;
+  UART3->DLM = 0;
+  UART3->DLL = 92;
+  UART3->FDR = (13 << 4) | 10;
 
   // 9091
   //UART3->DLM = 0;
@@ -1209,9 +1464,9 @@ void HardwareInit(void)
   //UART3->FDR = (8 << 4) | 3;
 
   // 9259
-  UART3->DLM = 0;
-  UART3->DLL = 135;
-  UART3->FDR = (4 << 4) | 1;
+  //UART3->DLM = 0;
+  //UART3->DLL = 135;
+  //UART3->FDR = (4 << 4) | 1;
 
 #ifndef NORD_USS_ENABLE
   UART3->LCR = 0x03;          /* DLAB = 0, 8 bits, no parity, 1 stop bit */
@@ -1329,11 +1584,26 @@ int main (void)
    * Inicializa timer
    *************************************************************************/
   init_timer( 0, TIME_INTERVAL ); // PlcCycle
+
+  I_SerialReady = 1;
+
   enable_timer( 0 );
 
   /**************************************************************************
    * Inicialização do ModBus
    *************************************************************************/
+  MB_Init(&modbus_master);
+
+  modbus_master.identification.Id                 = 0x01;
+  modbus_master.identification.VendorName         = "Tecnequip";
+  modbus_master.identification.ProductCode        = "POP7";
+  modbus_master.identification.MajorMinorRevision = "V1 Rev2";
+
+  modbus_master.hl      = ModbusHandlers;
+  modbus_master.hl_size = ARRAY_SIZE(ModbusHandlers);
+  modbus_master.mode    = MB_MODE_MASTER;
+  modbus_master.TX      = ModbusRS485Tx;
+
   MB_Init(&modbus_serial);
 
   modbus_serial.identification.Id                 = 0x01;
@@ -1374,8 +1644,6 @@ int main (void)
 
   enable_timer( 1 );
 
-  I_USSReady = 1;
-
   while(1)
   {
     entradas = AtualizaEntradas();
@@ -1387,7 +1655,7 @@ int main (void)
     if (uss_timeout > 2000)
       I_USSReady = 1;*/
 #else
-      ModbusRequest();
+      //ModbusRequest();
 #endif
 
     check_network();

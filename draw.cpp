@@ -127,6 +127,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_RES:
         case ELEM_COIL:
         case ELEM_MOVE:
+		case ELEM_SET_BIT:
         case ELEM_SHIFT_REGISTER:
         case ELEM_LOOK_UP_TABLE:
         case ELEM_PIECEWISE_LINEAR:
@@ -545,21 +546,25 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
         }
         case ELEM_MASTER_RELAY:
-            CenterWithWires(*cx, *cy, "{MASTER RLY}", poweredBefore,
-                poweredAfter);
+            CenterWithWires(*cx, *cy, "{MASTER RLY}", poweredBefore, poweredAfter);
             break;
 
-        case ELEM_SHIFT_REGISTER: {
+        case ELEM_SET_BIT: {
+            ElemSetBit *r = &leaf->d.setBit;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{SET BIT}", poweredBefore, poweredAfter);
+            break;
+        }
+
+		case ELEM_SHIFT_REGISTER: {
             char bot[MAX_NAME_LEN+20];
             memset(bot, ' ', sizeof(bot));
             bot[0] = '{';
-            sprintf(bot+2, "%s0..%d", leaf->d.shiftRegister.name,
-                leaf->d.shiftRegister.stages-1);
+            sprintf(bot+2, "%s0..%d", leaf->d.shiftRegister.name, leaf->d.shiftRegister.stages-1);
             bot[strlen(bot)] = ' ';
             bot[13] = '}';
             bot[14] = '\0';
-            CenterWithSpaces(*cx, *cy, "{\x01SHIFT REG\x02   }",
-                poweredAfter, FALSE);
+            CenterWithSpaces(*cx, *cy, "{\x01SHIFT REG\x02   }", poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
@@ -869,6 +874,12 @@ cmp:
             *cx += 2*POS_WIDTH;
             break;
         }
+        case ELEM_SET_BIT:
+            CenterWithWires(*cx, *cy, "{SET BIT}", poweredBefore, poweredAfter);
+            CenterWithSpaces(*cx, *cy, leaf->d.setBit.name, poweredAfter, TRUE);
+            *cx += POS_WIDTH;
+            break;
+
         case ELEM_READ_USS:
         case ELEM_WRITE_USS:
             CenterWithWires(*cx, *cy,

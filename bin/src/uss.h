@@ -585,7 +585,7 @@ unsigned char uss_set_param(unsigned char addr, unsigned short int param, unsign
 //---------------------------------------------------------------------------*/
 void uss_set_BCC(unsigned char * ppo);
 unsigned char uss_check_crc(unsigned char * ppo);
-unsigned char uss_ready(void);
+unsigned char uss_ready(PPO1 * r, unsigned int sz);
 
 /**----------------------------------------------------------------------------
 /// Função: uss_clean_ppo
