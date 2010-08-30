@@ -299,7 +299,7 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_SET_SINGLE_BIT:
-                fprintf(f, "%s &= ~(1 << %d); %s |= 1 << %d;\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), IntCode[i].bit);
+                fprintf(f, "%s |= 1 << %d;\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), IntCode[i].bit);
                 break;
 
             case INT_CLEAR_SINGLE_BIT:

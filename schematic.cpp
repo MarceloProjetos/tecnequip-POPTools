@@ -464,7 +464,7 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_SET_BIT:
-            ShowSetBitDialog(Selected->d.setBit.name+1);
+			ShowSetBitDialog(Selected->d.setBit.name, &Selected->d.setBit.set, &Selected->d.setBit.bit);
             break;
 
 		case ELEM_READ_ADC:

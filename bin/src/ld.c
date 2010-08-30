@@ -25,7 +25,7 @@ volatile unsigned int I_mcr = 0;
 
 volatile unsigned int I_rung_top = 0;
 
-volatile unsigned int U_BVAR = 0;
+volatile unsigned int U_BitVal = 0;
 
 
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
@@ -38,7 +38,21 @@ void PlcCycle(void)
     
     /* start series [ */
     if (I_rung_top) {
-        U_BVAR &= ~(1 << 0); U_BVAR |= 1 << 0;
+        U_BitVal |= 1 << 15;
+    }
+    
+    if (I_rung_top) {
+        U_BitVal &= ~(1 << 27);
+    }
+    
+    /* ] finish series */
+    
+    /* start rung 2 */
+    I_rung_top = I_mcr;
+    
+    /* start series [ */
+    if (I_rung_top) {
+        U_BitVal = 10;
     }
     
     /* ] finish series */

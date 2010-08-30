@@ -292,10 +292,10 @@ void AddMasterRelay(void)
 }
 void AddSetBit(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsertOther) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.setBit.name, "Bnew");
+    strcpy(t->d.setBit.name, "new");
     AddLeaf(ELEM_SET_BIT, t);
 }
 void AddShiftRegister(void)

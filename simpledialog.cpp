@@ -435,12 +435,12 @@ void ShowReadAdcDialog(char *name)
     ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, dests);
 }
 
-void ShowSetBitDialog(char *name)
+/*void ShowSetBitDialog(char *name)
 {
     char *labels[] = { _("Destination:") };
     char *dests[] = { name };
     ShowSimpleDialog(_("Set/Reset Bit"), 1, labels, 0, 0x1, 0x1, dests);
-}
+}*/
 
 void ShowSetDADialog(char *name, int *value)
 {

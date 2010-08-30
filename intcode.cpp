@@ -997,9 +997,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
         case ELEM_SET_BIT: {
             Op(INT_IF_BIT_SET, stateInOut);
             if(l->d.setBit.set) {
-				OpBit(INT_CLEAR_SINGLE_BIT, l->d.setBit.name, l->d.setBit.bit);
-            } else {
                 OpBit(INT_SET_SINGLE_BIT, l->d.setBit.name, l->d.setBit.bit);
+            } else {
+				OpBit(INT_CLEAR_SINGLE_BIT, l->d.setBit.name, l->d.setBit.bit);
             }
             Op(INT_END_IF);
             break;

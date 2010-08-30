@@ -549,12 +549,12 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             CenterWithWires(*cx, *cy, "{MASTER RLY}", poweredBefore, poweredAfter);
             break;
 
-        case ELEM_SET_BIT: {
+        /*case ELEM_SET_BIT: {
             ElemSetBit *r = &leaf->d.setBit;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{SET BIT}", poweredBefore, poweredAfter);
             break;
-        }
+        }*/
 
 		case ELEM_SHIFT_REGISTER: {
             char bot[MAX_NAME_LEN+20];

@@ -110,6 +110,7 @@
     <ClCompile Include="miscutil.cpp" />
     <ClCompile Include="resetdialog.cpp" />
     <ClCompile Include="schematic.cpp" />
+    <ClCompile Include="setbitdialog.cpp" />
     <ClCompile Include="simpledialog.cpp" />
     <ClCompile Include="simulate.cpp" />
     <ClCompile Include="undoredo.cpp" />

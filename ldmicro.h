@@ -352,8 +352,8 @@ typedef struct ElemUartTag {
 
 typedef struct ElemSetBitTag {
     char    name[MAX_NAME_LEN];
-    unsigned char bit;
-	unsigned char set;
+    int		bit;
+	int		set;
 } ElemSetBit;
 
 typedef struct ElemShiftRegisterTag {
@@ -781,7 +781,7 @@ void ShowTimerDialog(int which, int *delay, char *name);
 void ShowCounterDialog(int which, int *count, char *name);
 void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);
-void ShowSetBitDialog(char *name);
+void ShowSetBitDialog(char *name, int * set, int * bit);
 void ShowSetDADialog(char *name, int *val);
 void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);
