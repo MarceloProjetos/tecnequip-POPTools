@@ -146,6 +146,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_LES;
     } else if(sscanf(line, "READ_ADC %s", l->d.readAdc.name)==1) {
         *which = ELEM_READ_ADC;
+    } else if(sscanf(line, "SET_DA %s", l->d.setDA.name)==1) {
+        *which = ELEM_SET_DA;
     } else if(sscanf(line, "READ_ENC %s", l->d.readEnc.name)==1) {
         *which = ELEM_READ_ENC;
 	} else if(sscanf(line, "READ_USS %s %d %d %d %d", l->d.readUSS.name, &l->d.readUSS.id, &l->d.readUSS.parameter, &l->d.readUSS.parameter_set, &l->d.readUSS.index)==5) {
@@ -534,6 +536,10 @@ cmp:
 
         case ELEM_READ_ADC:
             fprintf(f, "READ_ADC %s\n", l->d.readAdc.name);
+            break;
+
+        case ELEM_SET_DA:
+			fprintf(f, "SET_DA %s\n", l->d.setDA.name);
             break;
 
         case ELEM_READ_ENC:
