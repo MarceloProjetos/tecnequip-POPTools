@@ -383,7 +383,7 @@ void AddSetDA(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.setDA.name, "Dnew");
+    strcpy(t->d.setDA.name, "new");
     AddLeaf(ELEM_SET_DA, t);
 }
 void AddReadAdc(void)

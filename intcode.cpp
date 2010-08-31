@@ -963,7 +963,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             }
             Op(INT_IF_BIT_SET, stateInOut);
 
-            char *op1 = VarFromExpr(l->d.math.op1, "$scratch");
+            char *op1 = VarFromExpr(l->d.math.op1, "$scratch");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
             char *op2 = VarFromExpr(l->d.math.op2, "$scratch2");
 
             int intOp;

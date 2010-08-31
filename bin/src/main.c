@@ -4,6 +4,8 @@
 #include "modbus.h"
 #include "ld.h"
 #include "uss.h"
+#include "i2c.h"
+#include "dac.h"
 
 #define NORD_USS_ENABLE
 
@@ -1528,6 +1530,8 @@ int main (void)
    *************************************************************************/
   SystemInit();
   HardwareInit();
+
+  DAC_Init();
 
 #ifdef QEI_CHECK
   /* Configure the NVIC Preemption Priority Bits:

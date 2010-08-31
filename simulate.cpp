@@ -56,6 +56,12 @@ static int AdcShadowsCount;
 static struct {
     char    name[MAX_NAME_LEN];
     SWORD   val;
+} DAShadows[MAX_IO];
+static int DAShadowsCount;
+
+static struct {
+    char    name[MAX_NAME_LEN];
+    SWORD   val;
 } EncShadows[MAX_IO];
 static int EncShadowsCount;
 
@@ -258,6 +264,40 @@ SWORD GetAdcShadow(char *name)
     for(i = 0; i < AdcShadowsCount; i++) {
         if(strcmp(AdcShadows[i].name, name)==0) {
             return AdcShadows[i].val;
+        }
+    }
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
+// Set the shadow copy of a variable associated with a READ ADC operation. This
+// will get committed to the real copy when the rung-in condition to the
+// READ ADC is true.
+//-----------------------------------------------------------------------------
+void SetDAShadow(char *name, SWORD val)
+{
+    int i;
+    for(i = 0; i < DAShadowsCount; i++) {
+        if(strcmp(DAShadows[i].name, name)==0) {
+            DAShadows[i].val = val;
+            return;
+        }
+    }
+    strcpy(DAShadows[i].name, name);
+    DAShadows[i].val = val;
+    DAShadowsCount++;
+}
+
+//-----------------------------------------------------------------------------
+// Return the shadow value of a variable associated with a READ ADC. This is
+// what gets copied into the real variable when an ADC read is simulated.
+//-----------------------------------------------------------------------------
+SWORD GetDAShadow(char *name)
+{
+    int i;
+    for(i = 0; i < DAShadowsCount; i++) {
+        if(strcmp(DAShadows[i].name, name)==0) {
+            return DAShadows[i].val;
         }
     }
     return 0;
@@ -483,6 +523,10 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 
         case ELEM_READ_ADC:
             MarkWithCheck(l->d.readAdc.name, VAR_FLAG_ANY);
+            break;
+
+        case ELEM_SET_DA:
+            MarkWithCheck(l->d.setDA.name, VAR_FLAG_ANY);
             break;
 
         case ELEM_READ_ENC:
@@ -777,6 +821,10 @@ math:
                 // read is performed, which occurs only for a true rung-in
                 // condition there.
                 SetSimulationVariable(a->name1, GetAdcShadow(a->name1));
+                break;
+
+            case INT_SET_DA:
+                SetSimulationVariable(a->name1, GetDAShadow(a->name1));
                 break;
 
             case INT_READ_ENC:

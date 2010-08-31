@@ -125,7 +125,7 @@ static char *MapSym(char *str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, char *str)
 {
-	if (strncmp(MapSym(str), "E", 1) == 0 || strncmp(MapSym(str), "Z", 1) == 0 || strncmp(MapSym(str), "M", 1) == 0)
+	if (strncmp(MapSym(str), "E", 1) == 0 || strncmp(MapSym(str), "Z", 1) == 0 || strncmp(MapSym(str), "M", 1) == 0 || isdigit(*str) || *str == '-')
 	{
 		return;
 	}
@@ -214,6 +214,7 @@ static void GenerateDeclarations(FILE *f)
 
             case INT_INCREMENT_VARIABLE:
             case INT_READ_ADC:
+            case INT_SET_DA:
             case INT_READ_ENC:
             case INT_RESET_ENC:
             case INT_READ_USS:
@@ -404,6 +405,9 @@ static void GenerateAnsiC(FILE *f)
 				break;
             case INT_READ_ADC:
 				fprintf(f, "%s = ADCRead(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1) + 3));
+				break;
+            case INT_SET_DA:
+				fprintf(f, "DAC_Write(%s);\n", MapSym(IntCode[i].name1));
 				break;
             case INT_READ_ENC:
 				fprintf(f, "%s = ENCRead(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1)));
@@ -651,6 +655,7 @@ void CompileAnsiCToGCC(char *dest)
 "#include \"uss.h\"\n"
 "#include \"modbus.h\"\n\n"
 
+"extern void DAC_Write(unsigned int val);\n"
 "extern void modbus_send(unsigned char id,\n"
 "                        int fc,\n"
 "                        unsigned short int address,\n"

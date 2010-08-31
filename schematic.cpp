@@ -472,7 +472,7 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_SET_DA:
-            ShowSetDADialog(Selected->d.setDA.name+1, &Selected->d.setDA.value);
+            ShowSetDADialog(Selected->d.setDA.name);
             break;
 
         case ELEM_READ_ENC:

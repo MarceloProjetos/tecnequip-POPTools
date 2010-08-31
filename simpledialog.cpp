@@ -442,16 +442,16 @@ void ShowReadAdcDialog(char *name)
     ShowSimpleDialog(_("Set/Reset Bit"), 1, labels, 0, 0x1, 0x1, dests);
 }*/
 
-void ShowSetDADialog(char *name, int *value)
+void ShowSetDADialog(char *name)
 {
-    char val[10];
-    sprintf(val, "%.2f", (float)(*value) / 10000.0);
+    //char val[10];
+    //sprintf(name, "%.2f", (float)(*name) / 10000.0);
 
-	char *labels[] = { _("Name:"), _("Value:") };
-    char *dests[] = { name, val };
-    ShowSimpleDialog(_("Conversor Digital/Analogico (DA)"), 2, labels, 0x2, 0x1, 0x1, dests);
+	char *labels[] = { _("Value:") };
+    char *dests[] = { name };
+    ShowSimpleDialog(_("Conversor Digital/Analogico (DA)"), 1, labels, 0x0, 0x1, 0x1, dests);
 
-    *value = (int)(10000 * atof(val) + 0.5);
+	//*name = (int)(10000 * atof(name) + 0.5);
 }
 void ShowReadEncDialog(char *name)
 {

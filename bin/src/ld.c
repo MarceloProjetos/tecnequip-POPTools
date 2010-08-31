@@ -4,6 +4,7 @@
 #include "uss.h"
 #include "modbus.h"
 
+extern void DAC_Write(unsigned int val);
 extern void modbus_send(unsigned char id,
                         int fc,
                         unsigned short int address,
@@ -24,8 +25,7 @@ extern volatile unsigned int I_SerialReady;
 volatile unsigned int I_mcr = 0;
 
 volatile unsigned int I_rung_top = 0;
-
-volatile unsigned int U_BitVal = 0;
+volatile unsigned int U_DA = 0;
 
 
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
@@ -38,21 +38,7 @@ void PlcCycle(void)
     
     /* start series [ */
     if (I_rung_top) {
-        U_BitVal |= 1 << 15;
-    }
-    
-    if (I_rung_top) {
-        U_BitVal &= ~(1 << 27);
-    }
-    
-    /* ] finish series */
-    
-    /* start rung 2 */
-    I_rung_top = I_mcr;
-    
-    /* start series [ */
-    if (I_rung_top) {
-        U_BitVal = 10;
+        DAC_Write(U_DA);
     }
     
     /* ] finish series */

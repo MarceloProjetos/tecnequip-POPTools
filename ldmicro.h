@@ -782,7 +782,7 @@ void ShowCounterDialog(int which, int *count, char *name);
 void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);
 void ShowSetBitDialog(char *name, int * set, int * bit);
-void ShowSetDADialog(char *name, int *val);
+void ShowSetDADialog(char *name);
 void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
