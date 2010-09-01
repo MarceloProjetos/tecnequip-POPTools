@@ -43,15 +43,15 @@ unsigned int DAC_current_value = 0;
 void DAC_Write(unsigned int val)
 {
   // Checa estouro do D/A
-  DAC_current_value = val>=(1<<12) ? (1<<12)-1 : val;
+  DAC_current_value = val >= (1 << 12) ? (1 << 12) - 1 : val;
 
   memset((void *)I2CMasterBuffer, 0, BUFSIZE);
 
   I2CWriteLength = 3;
   I2CReadLength = 0;
   I2CMasterBuffer[0] = 0x98;
-  I2CMasterBuffer[1] = (DAC_current_value>>8) & 0x0f;
-  I2CMasterBuffer[2] = (DAC_current_value>>0) & 0xff;
+  I2CMasterBuffer[1] = (DAC_current_value>>8) & 0x0F;
+  I2CMasterBuffer[2] = (DAC_current_value>>0) & 0xFF;
   I2CEngine();
 }
 

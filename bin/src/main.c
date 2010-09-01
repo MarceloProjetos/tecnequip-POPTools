@@ -102,6 +102,7 @@ volatile int ENC_VAL = 0;
 volatile unsigned int saidas = 0;
 volatile unsigned int entradas = 0;
 
+volatile unsigned int plccycle_timer = 0;
 volatile unsigned int serial_timeout = 0;
 volatile unsigned int uss_timeout = 0;
 volatile unsigned int modbus_timeout = 0;
@@ -891,30 +892,14 @@ void check_network(void)
 ******************************************************************************/
 void TIMER0_IRQHandler (void)
 {
-  unsigned int sz = 0;
 
   TIM0->IR = 1;                       /* clear interrupt flag */
-
-  PlcCycle();
 
   serial_timeout++;
   uss_timeout++;
   modbus_timeout++;
-
-  if (serial_timeout > 50)
-    sz = RS485Read(modbus_rx_buffer, sizeof(modbus_rx_buffer));
-
-  if (!I_SerialReady)
-    ModbusRequest(&modbus_master, modbus_rx_buffer, sz);
-
-  if (!I_SerialReady)
-    uss_ready((PPO1*)modbus_rx_buffer, sz);
-
-  if (uss_timeout > 2000)
-    I_SerialReady = 1;
-
-  if (modbus_timeout > 2000)
-    I_SerialReady = 1;
+  
+  plccycle_timer++;
 
 }
 
@@ -1519,6 +1504,8 @@ void HardwareInit(void)
 /***************************************************************************/
 int main (void)
 {
+    unsigned int sz = 0;
+
 #ifdef QEI_CHECK
   QEI_CFG_Type QEIConfig;
   QEI_RELOADCFG_Type ReloadConfig;
@@ -1681,6 +1668,28 @@ int main (void)
       VeloCapCnt = 0;
     }
 #endif
+
+	if (plccycle_timer)
+	{
+	  PlcCycle();
+
+	  if (serial_timeout > 50)
+		sz = RS485Read(modbus_rx_buffer, sizeof(modbus_rx_buffer));
+
+	  if (!I_SerialReady)
+		ModbusRequest(&modbus_master, modbus_rx_buffer, sz);
+
+	  if (!I_SerialReady)
+		uss_ready((PPO1*)modbus_rx_buffer, sz);
+
+	  if (uss_timeout > 2000)
+		I_SerialReady = 1;
+
+	  if (modbus_timeout > 2000)
+		I_SerialReady = 1;
+
+	  plccycle_timer = 0;
+    }
   }
 
   return(0);

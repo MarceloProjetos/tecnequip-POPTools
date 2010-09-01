@@ -39,8 +39,8 @@
 
 #define I2DAT_I2C			0x00000000  /* I2C Data Reg */
 #define I2ADR_I2C			0x00000000  /* I2C Slave Address Reg */
-#define I2SCLH_SCLH			0x00000020  /* I2C SCL Duty Cycle High Reg */
-#define I2SCLL_SCLL			0x00000020  /* I2C SCL Duty Cycle Low Reg */
+#define I2SCLH_SCLH			0x00000032  /* I2C SCL Duty Cycle High Reg */
+#define I2SCLL_SCLL			0x00000032  /* I2C SCL Duty Cycle Low Reg */
 
 extern void I2C0_IRQHandler( void );
 extern unsigned int I2CInit( unsigned int I2cMode );

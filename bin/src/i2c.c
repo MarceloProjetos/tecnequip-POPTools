@@ -238,7 +238,7 @@ unsigned int I2CInit( unsigned int I2cMode )
 
   /* Install interrupt handler */
 
-	NVIC_EnableIRQ(I2C0_IRQn);
+  NVIC_EnableIRQ(I2C0_IRQn);
 
   I2C0 -> I2CONSET = I2CONSET_I2EN;
   return( TRUE );
