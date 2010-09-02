@@ -99,7 +99,7 @@ void PlcCycle(void)
     I_rung_top = I_mcr;
     
     /* start series [ */
-    I_scratch2 = 8095;
+    I_scratch2 = 4095;
     if (U_DA > I_scratch2) {
     } else {
         I_rung_top = 0;
