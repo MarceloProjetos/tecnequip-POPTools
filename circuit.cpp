@@ -423,7 +423,7 @@ void AddWriteUSS(void)
     if(!CanInsertOther) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.writeUSS.name, "Wnew");
+    strcpy(t->d.writeUSS.name, "new");
     AddLeaf(ELEM_WRITE_USS, t);
 }
 void AddReadModbus(void)

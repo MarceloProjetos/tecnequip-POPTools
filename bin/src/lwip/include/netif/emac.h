@@ -10,12 +10,14 @@
 #ifndef __EMAC_H
 #define __EMAC_H
 
-#define MYMAC_1         0x00            /* our ethernet (MAC) address        */
-#define MYMAC_2         0x30            /* (MUST be unique in LAN!)          */
-#define MYMAC_3         0x6a
-#define MYMAC_4         0x09
-#define MYMAC_5         0x00
-#define MYMAC_6         0x02
+extern unsigned char MAC_ADDRESS[6];
+
+#define MYMAC_1         MAC_ADDRESS[0]            /* our ethernet (MAC) address        */
+#define MYMAC_2         MAC_ADDRESS[1]            /* (MUST be unique in LAN!)          */
+#define MYMAC_3         MAC_ADDRESS[2]
+#define MYMAC_4         MAC_ADDRESS[3]
+#define MYMAC_5         MAC_ADDRESS[4]
+#define MYMAC_6         MAC_ADDRESS[5]
 
 #define DEBUG(x ...)
 

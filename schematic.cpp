@@ -484,19 +484,19 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_READ_USS:
-			ShowReadUSSDialog(Selected->d.readUSS.name+1, &Selected->d.readUSS.id, &Selected->d.readUSS.parameter, &Selected->d.readUSS.parameter_set, &Selected->d.readUSS.index);
+			ShowReadUSSDialog(Selected->d.readUSS.name, &Selected->d.readUSS.id, &Selected->d.readUSS.parameter, &Selected->d.readUSS.parameter_set, &Selected->d.readUSS.index);
             break;
 
         case ELEM_WRITE_USS:
-            ShowWriteUSSDialog(Selected->d.writeUSS.name+1, &Selected->d.writeUSS.id, &Selected->d.writeUSS.parameter, &Selected->d.writeUSS.parameter_set, &Selected->d.writeUSS.index);
+            ShowWriteUSSDialog(Selected->d.writeUSS.name, &Selected->d.writeUSS.id, &Selected->d.writeUSS.parameter, &Selected->d.writeUSS.parameter_set, &Selected->d.writeUSS.index);
             break;
 
         case ELEM_READ_MODBUS:
-			ShowReadModbusDialog(Selected->d.readModbus.name+1, &Selected->d.readModbus.id, &Selected->d.readModbus.address);
+			ShowReadModbusDialog(Selected->d.readModbus.name, &Selected->d.readModbus.id, &Selected->d.readModbus.address);
             break;
 
         case ELEM_WRITE_MODBUS:
-			ShowWriteModbusDialog(Selected->d.writeModbus.name+1, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address);
+			ShowWriteModbusDialog(Selected->d.writeModbus.name, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address);
             break;
 
         case ELEM_UART_RECV:

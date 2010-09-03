@@ -1,4 +1,4 @@
-#include "lpc17xx.h"
+﻿#include "lpc17xx.h"
 #include "type.h"
 #include "timer.h"
 #include "modbus.h"
@@ -66,6 +66,11 @@ typedef struct ad_type
 
 struct ad_type ad[5];
 
+extern volatile unsigned int I2CCount;
+extern volatile unsigned char I2CMasterBuffer[BUFSIZE];
+extern volatile unsigned int I2CCmd, I2CMasterState;
+extern volatile unsigned int I2CReadLength, I2CWriteLength;
+
 #ifdef QEI_CHECK
 /************************** PRIVATE MACROS *************************/
 /** Signal Mode setting:
@@ -99,6 +104,8 @@ volatile int ENC_VAL = 0;
 /******************************************************************************
 * Variaveis Globais
 ******************************************************************************/
+unsigned char MAC_ADDRESS[6];
+
 volatile unsigned int saidas = 0;
 volatile unsigned int entradas = 0;
 
@@ -892,6 +899,7 @@ void check_network(void)
 ******************************************************************************/
 void TIMER0_IRQHandler (void)
 {
+  unsigned int sz;
 
   TIM0->IR = 1;                       /* clear interrupt flag */
 
@@ -900,6 +908,24 @@ void TIMER0_IRQHandler (void)
   modbus_timeout++;
   
   plccycle_timer++;
+
+  sz = 0;
+
+  if (serial_timeout > 10)
+  sz = RS485Read(modbus_rx_buffer, sizeof(modbus_rx_buffer));
+
+  /*if (!I_SerialReady && sz)
+    ModbusRequest(&modbus_master, modbus_rx_buffer, sz);*/
+
+  if (!I_SerialReady && sz)
+    uss_ready((PPO1*)modbus_rx_buffer, sz);
+
+  /*if (uss_timeout > 1000)
+    I_SerialReady = 1;
+
+  if (modbus_timeout > 1000)
+    I_SerialReady = 1;*/
+
 
 }
 
@@ -1499,12 +1525,45 @@ void HardwareInit(void)
 
 }
 
+void GetMACAddress(unsigned char * addr)
+{
+  memset((void *)I2CMasterBuffer, 0, BUFSIZE);
+
+  I2CWriteLength = 2;
+  I2CReadLength = 0;
+  I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_WRITE;
+  I2CMasterBuffer[1] = 0xFA;
+  I2CEngine();
+
+  I2CWriteLength = 0;
+  I2CReadLength = 6;
+  I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_WRITE;
+  I2CMasterBuffer[1] = 0xFA;
+  I2CMasterBuffer[2] = E2PROM_ADDR | E2PROM_CMD_READ;
+  I2CEngine();
+
+  I2CWriteLength = 2;
+  I2CReadLength = 0;
+  I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_WRITE;
+  I2CMasterBuffer[1] = 0xFA;
+  I2CEngine();
+
+  I2CWriteLength = 0;
+  I2CReadLength = 6;
+  I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_WRITE;
+  I2CMasterBuffer[1] = 0xFA;
+  I2CMasterBuffer[2] = E2PROM_ADDR | E2PROM_CMD_READ;
+  I2CEngine();
+
+  memcpy(addr, I2CMasterBuffer[3], 6);
+}
+
 /***************************************************************************/
 /*  main                                                                   */
 /***************************************************************************/
 int main (void)
 {
-    unsigned int sz = 0;
+    //unsigned int sz = 0;
 
 #ifdef QEI_CHECK
   QEI_CFG_Type QEIConfig;
@@ -1623,8 +1682,17 @@ int main (void)
 
   gTcpState = TCP_WAIT_LINK;
 
+  MAC_ADDRESS[0] = 0x00;
+  MAC_ADDRESS[1] = 0x30;
+  MAC_ADDRESS[2] = 0x6a;
+  MAC_ADDRESS[3] = 0x09;
+  MAC_ADDRESS[4] = 0x01;
+  MAC_ADDRESS[5] = 0x02;
+
+  //GetMACAddress(MAC_ADDRESS);
+
   // Default config
-  IP4_ADDR(&gMyIpAddress,          192, 168,   0, 237);
+  IP4_ADDR(&gMyIpAddress,          192, 168,   0, 235);
   IP4_ADDR(&gMyNetmask,            255, 255, 255,   0);
   IP4_ADDR(&gMyGateway,            192, 168,   0,  10);
   IP4_ADDR(&gRemoteIpAddress,      192, 168,   0,  10);
@@ -1637,8 +1705,8 @@ int main (void)
 
   while(1)
   {
-    entradas = AtualizaEntradas();
-    saidas = AtualizaSaidas();
+      entradas = AtualizaEntradas();
+      saidas = AtualizaSaidas();
 
 #ifdef NORD_USS_ENABLE
     /*if (!I_USSReady && uss_timeout > 50)
@@ -1672,21 +1740,6 @@ int main (void)
 	if (plccycle_timer)
 	{
 	  PlcCycle();
-
-	  if (serial_timeout > 50)
-		sz = RS485Read(modbus_rx_buffer, sizeof(modbus_rx_buffer));
-
-	  if (!I_SerialReady)
-		ModbusRequest(&modbus_master, modbus_rx_buffer, sz);
-
-	  if (!I_SerialReady)
-		uss_ready((PPO1*)modbus_rx_buffer, sz);
-
-	  if (uss_timeout > 2000)
-		I_SerialReady = 1;
-
-	  if (modbus_timeout > 2000)
-		I_SerialReady = 1;
 
 	  plccycle_timer = 0;
     }

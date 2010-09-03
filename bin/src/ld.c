@@ -26,13 +26,51 @@ volatile unsigned int I_mcr = 0;
 
 volatile unsigned int I_rung_top = 0;
 
-volatile unsigned int U1 = 0;
-volatile unsigned int U_TLEDON = 0;
+volatile unsigned int I_parOut_0000 = 0;
 
-volatile unsigned int I_TLEDOF_antiglitch = 0;
-volatile unsigned int U_TLEDOF = 0;
-volatile unsigned int I_scratch2 = 0;
-volatile unsigned int U_DA = 0;
+volatile unsigned int I_parThis_0000 = 0;
+volatile unsigned int U_POSICAO = 0;
+volatile unsigned int U_POSICAO2 = 0;
+
+volatile unsigned int U_RS1 = 0;
+volatile unsigned int U_TON = 0;
+
+volatile unsigned int I_TOFF_antiglitch = 0;
+volatile unsigned int U_TOFF = 0;
+
+volatile unsigned int I_scratch = 0;
+
+volatile unsigned int I_oneShot_0000 = 0;
+
+volatile unsigned int U1 = 0;
+
+volatile unsigned int I_oneShot_0001 = 0;
+
+volatile unsigned int I_oneShot_0002 = 0;
+
+volatile unsigned int I_oneShot_0003 = 0;
+
+volatile unsigned int I_oneShot_0004 = 0;
+
+volatile unsigned int I_oneShot_0005 = 0;
+
+volatile unsigned int I_oneShot_0006 = 0;
+
+volatile unsigned int I_oneShot_0007 = 0;
+
+volatile unsigned int U2 = 0;
+
+volatile unsigned int I_oneShot_0008 = 0;
+
+volatile unsigned int I_oneShot_0009 = 0;
+
+volatile unsigned int I_oneShot_000a = 0;
+
+volatile unsigned int I_oneShot_000b = 0;
+
+volatile unsigned int I_oneShot_000c = 0;
+
+volatile unsigned int I_oneShot_000d = 0;
 
 
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
@@ -44,44 +82,59 @@ void PlcCycle(void)
     I_rung_top = I_mcr;
     
     /* start series [ */
-    if (U1) {
-        I_rung_top = 0;
+    /* start parallel [ */
+    I_parOut_0000 = 0;
+    I_parThis_0000 = I_rung_top;
+    if (I_parThis_0000) {
+        U_POSICAO = 12345;
     }
     
-    if (I_rung_top) {
-        if (U_TLEDON < 49) {
-            U_TLEDON++;
-            I_rung_top = 0;
-        }
-    } else {
-        U_TLEDON = 0;
+    if (I_parThis_0000) {
+        I_parOut_0000 = 1;
+    }
+    I_parThis_0000 = I_rung_top;
+    if (I_parThis_0000) {
+        U_POSICAO2 = 54321;
     }
     
-    if (!I_TLEDOF_antiglitch) {
-        U_TLEDOF = 49;
+    if (I_parThis_0000) {
+        I_parOut_0000 = 1;
     }
-    I_TLEDOF_antiglitch = 1;
-    if (!I_rung_top) {
-        if (U_TLEDOF < 49) {
-            U_TLEDOF++;
-            I_rung_top = 1;
-        }
-    } else {
-        U_TLEDOF = 0;
-    }
-    
-    U1 = I_rung_top;
-    
+    I_rung_top = I_parOut_0000;
+    /* ] finish parallel */
     /* ] finish series */
     
     /* start rung 2 */
     I_rung_top = I_mcr;
     
     /* start series [ */
-    if (I_rung_top) {
-        I_scratch2 = 100;
-        U_DA = U_DA + I_scratch2;
+    if (U_RS1) {
+        I_rung_top = 0;
     }
+    
+    if (I_rung_top) {
+        if (U_TON < 999) {
+            U_TON++;
+            I_rung_top = 0;
+        }
+    } else {
+        U_TON = 0;
+    }
+    
+    if (!I_TOFF_antiglitch) {
+        U_TOFF = 999;
+    }
+    I_TOFF_antiglitch = 1;
+    if (!I_rung_top) {
+        if (U_TOFF < 999) {
+            U_TOFF++;
+            I_rung_top = 1;
+        }
+    } else {
+        U_TOFF = 0;
+    }
+    
+    U_RS1 = I_rung_top;
     
     /* ] finish series */
     
@@ -89,8 +142,18 @@ void PlcCycle(void)
     I_rung_top = I_mcr;
     
     /* start series [ */
+    if (!U_RS1) {
+        I_rung_top = 0;
+    }
+    
+    I_scratch = I_rung_top;
+    if (I_oneShot_0000) {
+        I_rung_top = 0;
+    }
+    I_oneShot_0000 = I_scratch;
+    
     if (I_rung_top) {
-        DAC_Write(U_DA);
+        U1 = 1;
     }
     
     /* ] finish series */
@@ -99,14 +162,170 @@ void PlcCycle(void)
     I_rung_top = I_mcr;
     
     /* start series [ */
-    I_scratch2 = 4095;
-    if (U_DA > I_scratch2) {
-    } else {
+    if (!U1) {
         I_rung_top = 0;
     }
     
     if (I_rung_top) {
-        U_DA = 0;
+        if (!I_oneShot_0001) {
+            if (I_SerialReady) {
+                uss_set_param(0, 613, 0, 1, &U_POSICAO);
+                I_oneShot_0001 = I_rung_top;
+            }
+            I_rung_top = 0;
+            I_oneShot_0002 = I_rung_top;
+        }
+        if (!I_oneShot_0002) {
+            if (I_SerialReady) {
+                I_oneShot_0002 = 1;
+            } else {
+                I_rung_top = 0;
+            }
+        }
+    } else {
+        I_oneShot_0001 = I_rung_top;
+    }
+    
+    if (I_rung_top) {
+        if (!I_oneShot_0003) {
+            if (I_SerialReady) {
+                uss_set_param(0, 613, 0, 2, &U_POSICAO);
+                I_oneShot_0003 = I_rung_top;
+            }
+            I_rung_top = 0;
+            I_oneShot_0004 = I_rung_top;
+        }
+        if (!I_oneShot_0004) {
+            if (I_SerialReady) {
+                I_oneShot_0004 = 1;
+            } else {
+                I_rung_top = 0;
+            }
+        }
+    } else {
+        I_oneShot_0003 = I_rung_top;
+    }
+    
+    if (I_rung_top) {
+        if (!I_oneShot_0005) {
+            if (I_SerialReady) {
+                uss_set_param(0, 613, 0, 3, &U_POSICAO);
+                I_oneShot_0005 = I_rung_top;
+            }
+            I_rung_top = 0;
+            I_oneShot_0006 = I_rung_top;
+        }
+        if (!I_oneShot_0006) {
+            if (I_SerialReady) {
+                I_oneShot_0006 = 1;
+            } else {
+                I_rung_top = 0;
+            }
+        }
+    } else {
+        I_oneShot_0005 = I_rung_top;
+    }
+    
+    if (I_rung_top) {
+        U1 = 0;
+    }
+    
+    /* ] finish series */
+    
+    /* start rung 5 */
+    I_rung_top = I_mcr;
+    
+    /* start series [ */
+    if (!U_RS1) {
+        I_rung_top = 0;
+    }
+    
+    I_scratch = I_rung_top;
+    if (!I_rung_top) {
+        if (I_oneShot_0007) {
+            I_rung_top = 1;
+        }
+    } else {
+        I_rung_top = 0;
+    }
+    I_oneShot_0007 = I_scratch;
+    
+    if (I_rung_top) {
+        U2 = 1;
+    }
+    
+    /* ] finish series */
+    
+    /* start rung 6 */
+    I_rung_top = I_mcr;
+    
+    /* start series [ */
+    if (!U2) {
+        I_rung_top = 0;
+    }
+    
+    if (I_rung_top) {
+        if (!I_oneShot_0008) {
+            if (I_SerialReady) {
+                uss_set_param(0, 613, 0, 1, &U_POSICAO2);
+                I_oneShot_0008 = I_rung_top;
+            }
+            I_rung_top = 0;
+            I_oneShot_0009 = I_rung_top;
+        }
+        if (!I_oneShot_0009) {
+            if (I_SerialReady) {
+                I_oneShot_0009 = 1;
+            } else {
+                I_rung_top = 0;
+            }
+        }
+    } else {
+        I_oneShot_0008 = I_rung_top;
+    }
+    
+    if (I_rung_top) {
+        if (!I_oneShot_000a) {
+            if (I_SerialReady) {
+                uss_set_param(0, 613, 0, 2, &U_POSICAO2);
+                I_oneShot_000a = I_rung_top;
+            }
+            I_rung_top = 0;
+            I_oneShot_000b = I_rung_top;
+        }
+        if (!I_oneShot_000b) {
+            if (I_SerialReady) {
+                I_oneShot_000b = 1;
+            } else {
+                I_rung_top = 0;
+            }
+        }
+    } else {
+        I_oneShot_000a = I_rung_top;
+    }
+    
+    if (I_rung_top) {
+        if (!I_oneShot_000c) {
+            if (I_SerialReady) {
+                uss_set_param(0, 613, 0, 3, &U_POSICAO2);
+                I_oneShot_000c = I_rung_top;
+            }
+            I_rung_top = 0;
+            I_oneShot_000d = I_rung_top;
+        }
+        if (!I_oneShot_000d) {
+            if (I_SerialReady) {
+                I_oneShot_000d = 1;
+            } else {
+                I_rung_top = 0;
+            }
+        }
+    } else {
+        I_oneShot_000c = I_rung_top;
+    }
+    
+    if (I_rung_top) {
+        U2 = 0;
     }
     
     /* ] finish series */

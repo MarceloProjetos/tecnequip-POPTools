@@ -42,6 +42,10 @@
 #define I2SCLH_SCLH			0x00000032  /* I2C SCL Duty Cycle High Reg */
 #define I2SCLL_SCLL			0x00000032  /* I2C SCL Duty Cycle Low Reg */
 
+#define E2PROM_ADDR			0xA0
+#define E2PROM_CMD_READ		0x1
+#define E2PROM_CMD_WRITE	0x0
+
 extern void I2C0_IRQHandler( void );
 extern unsigned int I2CInit( unsigned int I2cMode );
 extern unsigned int I2CStart( void );

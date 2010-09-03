@@ -129,6 +129,9 @@ static void DeclareInt(FILE *f, char *str)
 	{
 		return;
 	}
+
+	if (strcmp(str, "I_SerialReady") == 0) return;
+
     //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
 	fprintf(f, "volatile unsigned int %s = 0;\n", MapSym(str));
 }
@@ -163,7 +166,9 @@ static void DeclareBit(FILE *f, char *rawStr)
 		return;
     } else if(*rawStr == 'W' || *rawStr == 'G') {
 		return;
-    }
+    } else if (strcmp(str, "I_SerialReady") == 0) 
+		return;
+
 	fprintf(f, "\n");
 	fprintf(f, "volatile unsigned int %s = 0;\n", str);
 	//fprintf(f, "#define Read_%s() %s\n", str, str);
