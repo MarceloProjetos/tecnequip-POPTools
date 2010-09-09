@@ -666,10 +666,11 @@ void CompileAnsiCToGCC(char *dest)
 "                        unsigned short int address,\n"
 "                        unsigned short int size,\n"
 "                        volatile unsigned int * value);\n\n"
+"volatile unsigned int CYCLE_TIME = %d;\n"
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n"
 "volatile unsigned int M[32];\n"
 "volatile int ENC1;\n\n"
-	, Prog.cycleTime / 1000);
+	, Prog.cycleTime / 1000, Prog.cycleTime / 1000);
 
 	fprintf(f, "extern struct MB_Device modbus_master;\n");
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");

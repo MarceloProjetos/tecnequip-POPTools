@@ -9,7 +9,7 @@
 
 #define NORD_USS_ENABLE
 
-#define QEI_CHECK
+//#define QEI_CHECK
 #ifdef QEI_CHECK
 #include "qei.h"
 #endif
@@ -33,6 +33,8 @@
 #include "netif/ethernetif.h"
 
 #include "timer.h"
+
+extern volatile unsigned int CYCLE_TIME;
 
 /******************************************************************************
 * Definições
@@ -113,6 +115,8 @@ volatile unsigned int plccycle_timer = 0;
 volatile unsigned int serial_timeout = 0;
 volatile unsigned int uss_timeout = 0;
 volatile unsigned int modbus_timeout = 0;
+
+volatile unsigned int tmr_debug = 0;
 
 struct MB_Device modbus_master;
 struct MB_Device modbus_serial;
@@ -207,7 +211,7 @@ char tcp_data_x[20];
 static volatile enum { TCP_UNCONFIG=0, TCP_WAIT_LINK, TCP_WAIT_IP, TCP_DISCONNECTED, TCP_CONNECTING, TCP_JUST_CONNECTED, TCP_CONNECTED } gTcpState;
 
 static struct netif *netif_eth0;
-static struct netif *loop_netif;
+//static struct netif *loop_netif;
 
 static struct ip_addr gMyIpAddress;
 static struct ip_addr gMyNetmask;
@@ -522,7 +526,12 @@ err_t modbus_tcp_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, 
     tpcb_modbus_request = tpcb;
 
     if (p->len > 2)
+	{
+	  tmr_debug = 0;
       MB_Receive(&modbus_tcp, MB_Validate(p->payload, p->len));
+	  if (M[3] < tmr_debug) 
+		  M[3] = tmr_debug;
+	}
 
     tcp_recved(tpcb, p->len);
     pbuf_free(p);
@@ -634,7 +643,7 @@ void send(unsigned char message_type, unsigned char data[], int data_size)
 
   if (len > tcp_sndbuf(gTcp))
   {
-    DEBUG("Not enough buffer left to send data. Discarding\n");
+    //DEBUG("Not enough buffer left to send data. Discarding\n");
     return;
   }
 
@@ -646,7 +655,7 @@ void send(unsigned char message_type, unsigned char data[], int data_size)
   err_t err = tcp_write(gTcp, tcp_data_x, len, 1);
   if (err != ERR_OK)
   {
-    DEBUG("TCP: Error sending data... (%d)\n", err);
+    //DEBUG("TCP: Error sending data... (%d)\n", err);
     return;
   }
   else
@@ -658,8 +667,8 @@ void send(unsigned char message_type, unsigned char data[], int data_size)
   }
   err = tcp_output(gTcp);
 
-  if (err != ERR_OK)
-    DEBUG("TCP: Error forcing data send... (%d)\n", err);
+  //if (err != ERR_OK)
+    //DEBUG("TCP: Error forcing data send... (%d)\n", err);
 }
 
 err_t recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
@@ -692,7 +701,7 @@ err_t recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
   }
   else
   {
-    DEBUG("TCP connection closed by remote host?\n");
+    //DEBUG("TCP connection closed by remote host?\n");
     gTcpState = TCP_DISCONNECTED;
   }
 
@@ -704,7 +713,7 @@ err_t poll_callback(void *arg, struct tcp_pcb *tpcb)
   if (arg != NULL)
   {
     u32_t bytestosend = *((u32_t*) arg);
-    DEBUG("poll_callback bytestosend=%u\n", bytestosend);
+    //DEBUG("poll_callback bytestosend=%u\n", bytestosend);
 
     if (bytestosend == 0)
     {
@@ -747,27 +756,27 @@ err_t connect_callback(void *arg, struct tcp_pcb *newpcb, err_t err)
 
   if (err == ERR_OK)
   {
-    DEBUG("TCP Connected to remote host\n");
+    //DEBUG("TCP Connected to remote host\n");
     tcp_recv(newpcb, recv_callback);
     tcp_sent(newpcb, sent_callback);
     tcp_poll(newpcb, poll_callback, 1);
     gTcp = newpcb;
-    DEBUG("Setting TCP state to TCP_JUST_CONNECTED\n");
+    //DEBUG("Setting TCP state to TCP_JUST_CONNECTED\n");
     gTcpState = TCP_JUST_CONNECTED;
   }
   else
   {
-    DEBUG("Error connecting to remote host: %d\n", err);
+    //DEBUG("Error connecting to remote host: %d\n", err);
   }
   return ERR_OK;
 }
 
 void error(void *arg, err_t err)
 {
-  DEBUG("TCP Error: %d\n", err);
+  //DEBUG("TCP Error: %d\n", err);
   if (gTcpState !=  TCP_DISCONNECTED)
   {
-    DEBUG("Setting TCP state to TCP_DISCONNECTED\n");
+    //DEBUG("Setting TCP state to TCP_DISCONNECTED\n");
 
     if (gTcpState != TCP_CONNECTING)
       gTcpReconnectTimer = TCP_RECONNECT_TIMEOUT;
@@ -785,13 +794,13 @@ void connect()
 
   if (tcp_client == NULL)
   {
-    DEBUG("Failed to allocate tcp_client\n");
+    //DEBUG("Failed to allocate tcp_client\n");
     return;
   }
 
   tcp_err(tcp_client, error);
 
-  DEBUG("gRemotePort=%d\n", gRemotePort);
+  //DEBUG("gRemotePort=%d\n", gRemotePort);
   err = tcp_connect(tcp_client, &gRemoteIpAddress, gRemotePort, connect_callback);
   gTcpState = TCP_CONNECTING;
 }
@@ -808,7 +817,7 @@ void check_network(void)
         netif_add(netif_eth0, &gMyIpAddress, &gMyNetmask, &gMyGateway, NULL, ethernetif_init, ethernet_input);
         netif_set_default(netif_eth0);
         netif_set_up(netif_eth0);
-        DEBUG("Eth0 Link UP!\n");
+        //DEBUG("Eth0 Link UP!\n");
       }
     gTcpTimer = 0;
     }
@@ -830,7 +839,7 @@ void check_network(void)
 
   if (gTcpState == TCP_WAIT_IP && netif_eth0->ip_addr.addr)
   {
-    DEBUG("Local IP is %u.%u.%u.%u\n", netif_eth0->ip_addr.addr & 0xFF, netif_eth0->ip_addr.addr >> 8 & 0xFF, netif_eth0->ip_addr.addr >> 16 & 0xFF, netif_eth0->ip_addr.addr >> 24 & 0xFF);
+    //DEBUG("Local IP is %u.%u.%u.%u\n", netif_eth0->ip_addr.addr & 0xFF, netif_eth0->ip_addr.addr >> 8 & 0xFF, netif_eth0->ip_addr.addr >> 16 & 0xFF, netif_eth0->ip_addr.addr >> 24 & 0xFF);
     //              DEBUG("netmask was set to 0x%x\n", netif_eth0.netmask.addr);
     //              DEBUG("gw was set to 0x%x\n", netif_eth0.gw.addr);
     //              DEBUG("Setting TCP state to TCP_DISCONNECTED\n");
@@ -873,14 +882,12 @@ void check_network(void)
     #endif
     break;
   case TCP_JUST_CONNECTED:
-    DEBUG("Setting TCP state to TCP_CONNECTED\n");
     gTcpState = TCP_CONNECTED;
     gTcpLastMessageTimer = 0;
     break;
   case TCP_CONNECTED:
     if (gTcpLastMessageTimer >= TCP_MSG_TIMEOUT)
     {
-      DEBUG("TCP receive timeout.\n");
       tcp_err(gTcp, NULL);
       tcp_recv(gTcp, NULL);
       tcp_abort(gTcp);
@@ -906,13 +913,13 @@ void TIMER0_IRQHandler (void)
   serial_timeout++;
   uss_timeout++;
   modbus_timeout++;
-  
-  plccycle_timer++;
 
+  plccycle_timer++;
+  
   sz = 0;
 
   if (serial_timeout > 10)
-  sz = RS485Read(modbus_rx_buffer, sizeof(modbus_rx_buffer));
+    sz = RS485Read(modbus_rx_buffer, sizeof(modbus_rx_buffer));
 
   /*if (!I_SerialReady && sz)
     ModbusRequest(&modbus_master, modbus_rx_buffer, sz);*/
@@ -920,11 +927,11 @@ void TIMER0_IRQHandler (void)
   if (!I_SerialReady && sz)
     uss_ready((PPO1*)modbus_rx_buffer, sz);
 
-  /*if (uss_timeout > 1000)
+  if (uss_timeout > 1000)
     I_SerialReady = 1;
 
-  if (modbus_timeout > 1000)
-    I_SerialReady = 1;*/
+//  if (modbus_timeout > 1000)
+//    I_SerialReady = 1;
 
 
 }
@@ -1157,10 +1164,6 @@ unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, str
   for(i = 0; i < data->read_coils.quant; i++)
     buf[i / 8] |= ((temp >> (data->read_coils.start + i)) & 1) << (i % 8);
 
-#ifdef MB_DEBUG
-  printf("ModBus: recebida funcao READ_COILS. start=%d, quant=%d\n", data->read_coils.start, data->read_coils.quant);
-#endif
-
   return MB_EXCEPTION_NONE;
 
 }
@@ -1169,11 +1172,6 @@ unsigned int ModbusReadDiscreteInputs(struct MB_Device *dev, union MB_FCD_Data *
 {
   uint32_t i;
   uint8_t *buf = reply->reply.read_discrete_inputs.data; // Retorna no maximo 8 bytes ou 256 bits (entradas).
-
-#ifdef MB_DEBUG
-  printf("ModBus: recebida funcao READ_DISCRETE_INPUTS. start=%d, quant=%d\n",
-  data->read_discrete_inputs.start, data->read_discrete_inputs.quant);
-#endif
 
   for(i = 0; i < data->read_discrete_inputs.quant; i++)
     buf[i / 8] |= ((entradas >> (data->read_discrete_inputs.start + i)) & 1) << (i % 8);
@@ -1317,23 +1315,11 @@ void cmd_uss_send(char * args[], void * vars, unsigned int args_size)
   unsigned short int valor = 0;
 
   if (args_size < 3)
-  {
-#ifdef CONSOLE
-    printf("Parametros invalidos !\n");
-#endif
     return;
-  }
 
   parametro = atoi(args[0]); //console_decode_num(in, &console_offset, size);
   indice = atoi(args[1]); //console_decode_num(in, &console_offset, size);
   valor = atoi(args[2]); //console_decode_num(in, &console_offset, size);
-
-#ifdef CONSOLE
-  if (uss_set_param(parametro, indice, valor))
-    printf("P%d[%d], parametro alterado OK.\n", parametro, indice);
-  else
-    printf("P%d[%d], Sem resposta do Inversor.\n", parametro, indice);
-#endif
 }
 
 void cmd_uss_recv(char * args[], void * vars, unsigned int args_size)
@@ -1343,22 +1329,11 @@ void cmd_uss_recv(char * args[], void * vars, unsigned int args_size)
   //unsigned short int valor = 0;
 
   if (args_size < 2)
-  {
-#ifdef CONSOLE
-    printf("Parametros invalidos !\n");
-#endif
     return;
-  }
 
   parametro = atoi(args[0]); //console_decode_num(in, &console_offset, size);
   indice = atoi(args[1]); //console_decode_num(in, &console_offset, size);
 
-#ifdef CONSOLE
-  if (uss_get_param(parametro, indice, &valor))
-    printf("P%d[%d] = %d, valor recebido ok.\n", parametro, indice, valor);
-  else
-    printf("P%d[%d], Sem resposta do Inversor.\n", parametro, indice);
-#endif
 }
 
 /******************************************************************************
@@ -1528,19 +1503,6 @@ void HardwareInit(void)
 void GetMACAddress(unsigned char * addr)
 {
   memset((void *)I2CMasterBuffer, 0, BUFSIZE);
-
-  I2CWriteLength = 2;
-  I2CReadLength = 0;
-  I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_WRITE;
-  I2CMasterBuffer[1] = 0xFA;
-  I2CEngine();
-
-  I2CWriteLength = 0;
-  I2CReadLength = 6;
-  I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_WRITE;
-  I2CMasterBuffer[1] = 0xFA;
-  I2CMasterBuffer[2] = E2PROM_ADDR | E2PROM_CMD_READ;
-  I2CEngine();
 
   I2CWriteLength = 2;
   I2CReadLength = 0;
@@ -1737,12 +1699,11 @@ int main (void)
     }
 #endif
 
-	if (plccycle_timer)
+	if (plccycle_timer >= 1)
 	{
-	  PlcCycle();
-
 	  plccycle_timer = 0;
-    }
+	  PlcCycle();
+    	}
   }
 
   return(0);
