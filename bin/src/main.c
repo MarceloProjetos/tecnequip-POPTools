@@ -1491,7 +1491,7 @@ void GetMACAddress(unsigned char * addr)
   I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_READ;
   I2CEngine();
 
-  memcpy(addr, I2CMasterBuffer[0], 6);
+  memcpy(addr, &I2CMasterBuffer[3], 6);
 }
 
 /***************************************************************************/
@@ -1618,16 +1618,10 @@ int main (void)
 
   gTcpState = TCP_WAIT_LINK;
 
+  // Microchip 0x00:0x04:0xa3:0x??:0x??:0x?? (ipv4)
   MAC_ADDRESS[0] = 0x00;
-  MAC_ADDRESS[1] = 0x30;
-  MAC_ADDRESS[2] = 0x6a;
-  MAC_ADDRESS[3] = 0x09;
-  MAC_ADDRESS[4] = 0x01;
-  MAC_ADDRESS[5] = 0x02;
-
-  MAC_ADDRESS[0] = 0x00;
-  MAC_ADDRESS[1] = 0x00;
-  MAC_ADDRESS[2] = 0x00;
+  MAC_ADDRESS[1] = 0x04;
+  MAC_ADDRESS[2] = 0xa3;
   MAC_ADDRESS[3] = 0x00;
   MAC_ADDRESS[4] = 0x00;
   MAC_ADDRESS[5] = 0x00;
