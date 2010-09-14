@@ -116,8 +116,6 @@ volatile unsigned int serial_timeout = 0;
 volatile unsigned int uss_timeout = 0;
 volatile unsigned int modbus_timeout = 0;
 
-volatile unsigned int tmr_debug = 0;
-
 struct MB_Device modbus_master;
 struct MB_Device modbus_serial;
 struct MB_Device modbus_tcp;
@@ -211,7 +209,6 @@ char tcp_data_x[20];
 static volatile enum { TCP_UNCONFIG=0, TCP_WAIT_LINK, TCP_WAIT_IP, TCP_DISCONNECTED, TCP_CONNECTING, TCP_JUST_CONNECTED, TCP_CONNECTED } gTcpState;
 
 static struct netif *netif_eth0;
-//static struct netif *loop_netif;
 
 static struct ip_addr gMyIpAddress;
 static struct ip_addr gMyNetmask;
@@ -526,12 +523,7 @@ err_t modbus_tcp_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, 
     tpcb_modbus_request = tpcb;
 
     if (p->len > 2)
-	{
-	  tmr_debug = 0;
       MB_Receive(&modbus_tcp, MB_Validate(p->payload, p->len));
-	  if (M[3] < tmr_debug) 
-		  M[3] = tmr_debug;
-	}
 
     tcp_recved(tpcb, p->len);
     pbuf_free(p);
@@ -565,7 +557,7 @@ err_t modbus_tcp_send_callback(void *arg, struct tcp_pcb *tpcb, u16_t len)
         {
                 bytestosend = *((u32_t*) arg);
 
-                if ((bytestosend - len) >= 0)
+                if (bytestosend > len)
                         bytestosend -= len;
                 else
                         bytestosend = 0;
@@ -748,7 +740,6 @@ err_t sent_callback(void *arg, struct tcp_pcb *tpcb, u16_t len)
 
   return ERR_OK;
 }
-
 
 err_t connect_callback(void *arg, struct tcp_pcb *newpcb, err_t err)
 {
@@ -1127,28 +1118,13 @@ unsigned int ModbusRS485Tx(unsigned char *data, unsigned int size)
 
 unsigned int ModbusEthTx(unsigned char *data, unsigned int size)
 {
-  unsigned int sz = 0;
-
-  u32_t  bytestosend;
-  u32_t* newarg;
-
-  bytestosend = size;
-
-  newarg = (u32_t*) mem_malloc(sizeof(u32_t));
-  *newarg = bytestosend;
-
-  if (tcp_write(tpcb_modbus_request, data, size, 0) != ERR_OK)
+  if (tcp_write(tpcb_modbus_request, data, size, 1) != ERR_OK)
   {
-    mem_free(newarg);
-    //tcp_close(tpcb_modbus_request);
-  }
-  else
-  {
-    tcp_arg(tpcb_modbus_request, newarg);
-    sz = bytestosend;
+//    tcp_close(tpcb_modbus_request);
+    return 0;
   }
 
-  return sz;
+  return size;
 }
 
 unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
@@ -1510,14 +1486,12 @@ void GetMACAddress(unsigned char * addr)
   I2CMasterBuffer[1] = 0xFA;
   I2CEngine();
 
-  I2CWriteLength = 0;
+  I2CWriteLength = 1;
   I2CReadLength = 6;
-  I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_WRITE;
-  I2CMasterBuffer[1] = 0xFA;
-  I2CMasterBuffer[2] = E2PROM_ADDR | E2PROM_CMD_READ;
+  I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_READ;
   I2CEngine();
 
-  memcpy(addr, I2CMasterBuffer[3], 6);
+  memcpy(addr, I2CMasterBuffer[0], 6);
 }
 
 /***************************************************************************/
@@ -1651,7 +1625,14 @@ int main (void)
   MAC_ADDRESS[4] = 0x01;
   MAC_ADDRESS[5] = 0x02;
 
-  //GetMACAddress(MAC_ADDRESS);
+  MAC_ADDRESS[0] = 0x00;
+  MAC_ADDRESS[1] = 0x00;
+  MAC_ADDRESS[2] = 0x00;
+  MAC_ADDRESS[3] = 0x00;
+  MAC_ADDRESS[4] = 0x00;
+  MAC_ADDRESS[5] = 0x00;
+
+  GetMACAddress(MAC_ADDRESS);
 
   // Default config
   IP4_ADDR(&gMyIpAddress,          192, 168,   0, 235);
@@ -1703,7 +1684,7 @@ int main (void)
 	{
 	  plccycle_timer = 0;
 	  PlcCycle();
-    	}
+    }
   }
 
   return(0);
