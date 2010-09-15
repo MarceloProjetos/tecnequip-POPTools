@@ -628,19 +628,93 @@ void CompileAnsiCToGCC(char *dest)
     SeenVariablesCount = 0;
 
 	char szAppPath[MAX_PATH]      = "";
-	char szAppDirectory[MAX_PATH] = "";
+	char szAppHeader[MAX_PATH] = "";
+	char szAppSourceFile[MAX_PATH] = "";
 
 	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
 
 	// Extract directory
-	strncpy(szAppDirectory, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
-	szAppDirectory[strlen(szAppDirectory)] = '\0';
+	strncpy(szAppHeader, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
+	szAppHeader[strlen(szAppHeader)] = '\0';
+	strcat(szAppHeader, "\\src\\ld.h");
 
-	strcat(szAppDirectory, "\\src\\ld.c");
+	FILE *h = fopen(szAppHeader, "w");
+    if(!h) {
+        Error(_("Couldn't open file '%s'"), szAppHeader);
+        return;
+    }
 
-    FILE *f = fopen(szAppDirectory, "w");
+	fprintf(h, "/*=========================================================================*/\n");
+	fprintf(h, "/*  DEFINE: All code exported                                              */\n");
+	fprintf(h, "/*=========================================================================*/\n\n");
+
+	fprintf(h, "#define IP_ADDR1 %d\n", Prog.ip[0]);
+	fprintf(h, "#define IP_ADDR2 %d\n", Prog.ip[1]);
+	fprintf(h, "#define IP_ADDR3 %d\n", Prog.ip[2]);
+	fprintf(h, "#define IP_ADDR4 %d\n\n", Prog.ip[3]);
+
+	fprintf(h, "#define IP_MASK1 %d\n", Prog.mask[0]);
+	fprintf(h, "#define IP_MASK2 %d\n", Prog.mask[1]);
+	fprintf(h, "#define IP_MASK3 %d\n", Prog.mask[2]);
+	fprintf(h, "#define IP_MASK4 %d\n\n", Prog.mask[3]);
+
+	fprintf(h, "#define IP_GW1 %d\n", Prog.gw[0]);
+	fprintf(h, "#define IP_GW2 %d\n", Prog.gw[1]);
+	fprintf(h, "#define IP_GW3 %d\n", Prog.gw[2]);
+	fprintf(h, "#define IP_GW4 %d\n\n", Prog.gw[3]);
+
+	fprintf(h, "volatile unsigned int I1 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I2 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I3 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I4 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I5 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I6 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I7 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I8 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I9 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I10 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I11 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I12 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I13 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I14 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I15 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I16 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I17 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I18 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int I19 __attribute__((weak)) = 0;\n\n");
+
+	fprintf(h, "volatile unsigned int U1 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U2 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U3 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U4 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U5 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U6 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U7 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U8 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U9 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U10 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U11 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U12 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U13 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U14 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U15 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U16 __attribute__((weak)) = 0;\n\n");
+
+	fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
+	fprintf(h, "volatile int ENC1 __attribute__((weak)) = 0;\n\n");
+
+	fprintf(h, "extern void PlcCycle(void);\n");
+	fprintf(h, "extern volatile unsigned int TIME_INTERVAL;\n");
+
+	fclose(h);
+
+	strncpy(szAppSourceFile, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
+	szAppSourceFile[strlen(szAppSourceFile)] = '\0';
+	strcat(szAppSourceFile, "\\src\\ld.c");
+
+    FILE *f = fopen(szAppSourceFile, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), szAppDirectory);
+        Error(_("Couldn't open file '%s'"), szAppSourceFile);
         return;
     }
 

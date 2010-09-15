@@ -339,7 +339,7 @@ BOOL LoadProjectFromFile(char *filename)
     if(!f) return FALSE;
 
     char line[512];
-    int crystal, cycle, baud;
+    int crystal, cycle, baud, ip[4], mask[4], gw[4];
 
     while(fgets(line, sizeof(line), f)) {
         if(strcmp(line, "IO LIST\n")==0) {
@@ -353,6 +353,21 @@ BOOL LoadProjectFromFile(char *filename)
             Prog.cycleTime = cycle;
         } else if(sscanf(line, "BAUD=%d", &baud)) {
             Prog.baudRate = baud;
+        } else if(sscanf(line, "IP=%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3])) {
+            Prog.ip[0] = ip[0];
+            Prog.ip[1] = ip[1];
+            Prog.ip[2] = ip[2];
+            Prog.ip[3] = ip[3];
+        } else if(sscanf(line, "MASK=%d.%d.%d.%d", &mask[0], &mask[1], &mask[2], &mask[3])) {
+            Prog.mask[0] = mask[0];
+            Prog.mask[1] = mask[1];
+            Prog.mask[2] = mask[2];
+            Prog.mask[3] = mask[3];
+        } else if(sscanf(line, "GW=%d.%d.%d.%d", &gw[0], &gw[1], &gw[2], &gw[3])) {
+            Prog.gw[0] = gw[0];
+            Prog.gw[1] = gw[1];
+            Prog.gw[2] = gw[2];
+            Prog.gw[3] = gw[3];
         } else if(memcmp(line, "COMPILED=", 9)==0) {
             line[strlen(line)-1] = '\0';
             strcpy(CurrentCompileFile, line+9);
@@ -672,6 +687,9 @@ BOOL SaveProjectToFile(char *filename)
     fprintf(f, "CYCLE=%d\n", Prog.cycleTime);
     fprintf(f, "CRYSTAL=%d\n", Prog.mcuClock);
     fprintf(f, "BAUD=%d\n", Prog.baudRate);
+    fprintf(f, "IP=%d.%d.%d.%d\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
+    fprintf(f, "MASK=%d.%d.%d.%d\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
+    fprintf(f, "GW=%d.%d.%d.%d\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }

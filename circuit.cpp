@@ -709,12 +709,18 @@ void FreeEntireProgram(void)
     for(i = 0; i < Prog.numRungs; i++) {
         FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     }
+
     Prog.numRungs = 0;
     Prog.cycleTime = 10000;
     Prog.mcuClock = 100000000;
     Prog.baudRate = 9600;
     Prog.io.count = 0;
     Prog.mcu = NULL;
+
+	memset(&Prog.ip, 0, sizeof(Prog.ip));
+	memset(&Prog.mask, 0, sizeof(Prog.mask));
+	memset(&Prog.gw, 0, sizeof(Prog.gw));
+
 	for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
 	{
 		if(strcmp(SupportedMcus[i].mcuName, DEFAULT_CPU)==0) 

@@ -1491,7 +1491,7 @@ void GetMACAddress(unsigned char * addr)
   I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_READ;
   I2CEngine();
 
-  memcpy(addr, &I2CMasterBuffer[3], 6);
+  memcpy(addr, (void*)&I2CMasterBuffer[3], 6);
 }
 
 /***************************************************************************/
@@ -1629,10 +1629,10 @@ int main (void)
   GetMACAddress(MAC_ADDRESS);
 
   // Default config
-  IP4_ADDR(&gMyIpAddress,          192, 168,   0, 235);
-  IP4_ADDR(&gMyNetmask,            255, 255, 255,   0);
-  IP4_ADDR(&gMyGateway,            192, 168,   0,  10);
-  IP4_ADDR(&gRemoteIpAddress,      192, 168,   0,  10);
+  IP4_ADDR(&gMyIpAddress,          IP_ADDR1, IP_ADDR2, IP_ADDR3, IP_ADDR4);
+  IP4_ADDR(&gMyNetmask,            IP_MASK1, IP_MASK2, IP_MASK3, IP_MASK4);
+  IP4_ADDR(&gMyGateway,            IP_GW1, IP_GW2, IP_GW3, IP_GW4);
+  IP4_ADDR(&gRemoteIpAddress,      192, 168, 0, 10);
   gRemotePort = 5505;
 
   init_timer( 1, (25000000 / 1000) - 1 ); // 1seg

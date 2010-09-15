@@ -487,6 +487,9 @@ typedef struct PlcProgramTag {
     int         cycleTime;
     int         mcuClock;
     int         baudRate;
+	unsigned char ip[4];
+	unsigned char mask[4];
+	unsigned char gw[4];
 
 #define MAX_RUNGS 999
     ElemSubcktSeries *rungs[MAX_RUNGS];

@@ -2,6 +2,21 @@
 /*  DEFINE: All code exported                                              */
 /*=========================================================================*/
 
+#define IP_ADDR1 192
+#define IP_ADDR2 168
+#define IP_ADDR3 0
+#define IP_ADDR4 240
+
+#define IP_MASK1 255
+#define IP_MASK2 255
+#define IP_MASK3 255
+#define IP_MASK4 0
+
+#define IP_GW1 192
+#define IP_GW2 168
+#define IP_GW3 0
+#define IP_GW4 10
+
 volatile unsigned int I1 __attribute__((weak)) = 0;
 volatile unsigned int I2 __attribute__((weak)) = 0;
 volatile unsigned int I3 __attribute__((weak)) = 0;
@@ -44,5 +59,3 @@ volatile int ENC1 __attribute__((weak)) = 0;
 
 extern void PlcCycle(void);
 extern volatile unsigned int TIME_INTERVAL;
-
-
