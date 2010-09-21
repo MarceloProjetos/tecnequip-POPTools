@@ -623,7 +623,7 @@ DWORD InvokeGCC(char* dest)
 	return exitCode;
 }
 
-void CompileAnsiCToGCC(char *dest)
+DWORD CompileAnsiCToGCC(char *dest)
 {
     SeenVariablesCount = 0;
 
@@ -641,7 +641,7 @@ void CompileAnsiCToGCC(char *dest)
 	FILE *h = fopen(szAppHeader, "w");
     if(!h) {
         Error(_("Couldn't open file '%s'"), szAppHeader);
-        return;
+        return 1;
     }
 
 	fprintf(h, "/*=========================================================================*/\n");
@@ -715,12 +715,12 @@ void CompileAnsiCToGCC(char *dest)
     FILE *f = fopen(szAppSourceFile, "w");
     if(!f) {
         Error(_("Couldn't open file '%s'"), szAppSourceFile);
-        return;
+        return 1;
     }
 
     if(setjmp(CompileErrorBuf) != 0) {
         fclose(f);
-        return;
+        return 1;
     }
 
     // Set up the TRISx registers (direction). 1 means tri-stated (input).
@@ -771,6 +771,7 @@ void CompileAnsiCToGCC(char *dest)
 
     char str[MAX_PATH+500];
 	DWORD err = 0;
+
 	if ((err = InvokeGCC(dest)))
 	{
 		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"<Program Files>\\<POPTools>\\src\\output.log\"\n"), err);
@@ -779,5 +780,8 @@ void CompileAnsiCToGCC(char *dest)
 	{
 		sprintf(str, _("Compilado com sucesso. O arquivo binário foi criado em '%s'.\r\n\r\n"), dest);
 	}
-    CompileSuccessfulMessage(str);
+
+	CompileSuccessfulMessage(str);
+
+	return err;
 }

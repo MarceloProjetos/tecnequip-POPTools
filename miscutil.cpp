@@ -129,6 +129,26 @@ void CompileSuccessfulMessage(char *str)
 }
 
 //-----------------------------------------------------------------------------
+// A standard format for showing a message that indicates that a compile
+// was successful.
+//-----------------------------------------------------------------------------
+void ProgramSuccessfulMessage(char *str)
+{
+    if(RunningInBatchMode) {
+        char str[MAX_PATH+100];
+        sprintf(str, "compiled okay, wrote '%s'\n", CurrentCompileFile);
+
+        AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
+        HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD written;
+        WriteFile(h, str, strlen(str), &written, NULL);
+    } else {
+        MessageBox(MainWindow, str, _("Compile Successful"),
+            MB_OK | MB_ICONINFORMATION);
+    }
+}
+
+//-----------------------------------------------------------------------------
 // Check the consistency of the heap on which all the PLC program stuff is
 // stored.
 //-----------------------------------------------------------------------------

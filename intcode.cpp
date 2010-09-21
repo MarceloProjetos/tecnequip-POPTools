@@ -1067,7 +1067,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 // by moving the PWL points closer together.
                
                 // Check for numerical problems, and fail if we have them.
-                if((thisDx*thisDy) >= 2147483647 || (thisDx*thisDy) <= -2147483648) {
+                if((thisDx*thisDy) >= 2147483647 || (thisDx*thisDy) <= (int)-2147483648) {
                     Error(_("Numerical problem with piecewise linear lookup "
                         "table. Either make the table entries smaller, "
                         "or space the points together more closely.\r\n\r\n"

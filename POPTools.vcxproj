@@ -61,6 +61,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>flashmagicarmcortex_microsoft.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <OutputManifestFile>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</OutputManifestFile>
@@ -82,6 +83,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>flashmagicarmcortex_microsoft.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -94,6 +96,7 @@
     <ClCompile Include="contactsdialog.cpp" />
     <ClCompile Include="draw.cpp" />
     <ClCompile Include="draw_outputdev.cpp" />
+    <ClCompile Include="flashmagic.cpp" />
     <ClCompile Include="freeze.cpp" />
     <ClCompile Include="gcc.cpp" />
     <ClCompile Include="helpdialog.cpp" />
@@ -116,6 +119,8 @@
     <ClCompile Include="undoredo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="flashmagicarmcortex.h" />
+    <ClInclude Include="flashmagiccommon.h" />
     <ClInclude Include="freeze.h" />
     <ClInclude Include="intcode.h" />
     <ClInclude Include="lang-tables.h" />

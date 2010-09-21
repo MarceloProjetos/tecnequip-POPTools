@@ -102,6 +102,9 @@
     <ClCompile Include="setbitdialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="flashmagic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -117,6 +120,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mcutable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flashmagicarmcortex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flashmagiccommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

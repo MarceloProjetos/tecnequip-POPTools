@@ -314,7 +314,7 @@ void PaintWindow(void)
                 TextOut(Hdc, 5, yp, r, 2);
             } else {
                 char r[4]; // = { (rung / 100) + '0', (rung % 100) + '0', (rung % 10) + '0' };
-				itoa(rung, r, 10);
+				_itoa(rung, r, 10);
                 TextOut(Hdc, 5, yp, r, 3);
             }
 

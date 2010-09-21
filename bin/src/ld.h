@@ -2,20 +2,20 @@
 /*  DEFINE: All code exported                                              */
 /*=========================================================================*/
 
-#define IP_ADDR1 192
-#define IP_ADDR2 168
+#define IP_ADDR1 0
+#define IP_ADDR2 0
 #define IP_ADDR3 0
-#define IP_ADDR4 240
+#define IP_ADDR4 0
 
-#define IP_MASK1 255
-#define IP_MASK2 255
-#define IP_MASK3 255
+#define IP_MASK1 0
+#define IP_MASK2 0
+#define IP_MASK3 0
 #define IP_MASK4 0
 
-#define IP_GW1 192
-#define IP_GW2 168
+#define IP_GW1 0
+#define IP_GW2 0
 #define IP_GW3 0
-#define IP_GW4 10
+#define IP_GW4 0
 
 volatile unsigned int I1 __attribute__((weak)) = 0;
 volatile unsigned int I2 __attribute__((weak)) = 0;

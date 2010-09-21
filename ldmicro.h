@@ -122,6 +122,8 @@ typedef SDWORD SWORD;
 
 #define MNU_COMPILE             0x70
 #define MNU_COMPILE_AS          0x71
+#define MNU_PROGRAM				0x72
+#define MNU_PROGRAM_AS			0x73
 
 #define MNU_MANUAL              0x80
 #define MNU_ABOUT               0x81
@@ -486,7 +488,8 @@ typedef struct PlcProgramTag {
     McuIoInfo  *mcu;
     int         cycleTime;
     int         mcuClock;
-    int         baudRate;
+    int         baudRate;	// RS485 baudrate
+	int			comPort;  // programming com port
 	unsigned char ip[4];
 	unsigned char mask[4];
 	unsigned char gw[4];
@@ -641,6 +644,7 @@ void ToggleSimulationMode(void);
 void StopSimulation(void);
 void StartSimulation(void);
 void UpdateMainWindowTitleBar(void);
+void StatusBarSetText(int bar, char * text);
 extern int ScrollWidth;
 extern int ScrollHeight;
 extern BOOL NeedHoriz;
@@ -830,6 +834,7 @@ void MakeDialogBoxClass(void);
 void NiceFont(HWND h);
 void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str);
+void ProgramSuccessfulMessage(char *str);
 extern BOOL RunningInBatchMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
@@ -878,8 +883,10 @@ BOOL GenerateIntermediateCode(void);
 void GenerateDeclarations(FILE *f);
 void GenerateAnsiC(FILE *f);
 void CompileAnsiC(char *outFile);
-void CompileAnsiCToGCC(char *outFile);
+DWORD CompileAnsiCToGCC(char *outFile);
 // interpreted.c
 void CompileInterpreted(char *outFile);
+
+BOOL FlashProgram(char * hexFile, int ComPort, long BaudRate);
 
 #endif

@@ -14,11 +14,11 @@ AppSupportURL=http://www.tecnequip.com.br/
 AppUpdatesURL=http://www.tecnequip.com.br/
 DefaultDirName={pf}\POPTools
 DefaultGroupName=POPTools
-OutputDir=C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup
+OutputDir=..\Setup
 OutputBaseFilename=POPTools_Setup
 Compression=lzma
 SolidCompression=yes
-LicenseFile=C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\EULA.TXT
+LicenseFile=..\Setup\EULA.TXT
 
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
@@ -28,9 +28,10 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; Name: "restart"; Description: "Reiniciar o computador. A reinicialização do computador é necessária para o correto funcionamento do compilador que acompanha o programa POP7Tools. (mais informações em http://www.yagarto.de)"; Flags: restart
 
 [Files]
-Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\bin\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\bin\src\*"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\examples\*"; DestDir: "{app}\examples"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\flashmagicarmcortex.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\src\*"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\examples\*"; DestDir: "{app}\examples"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-tools-20100703-setup.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

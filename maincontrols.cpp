@@ -62,6 +62,11 @@ int                 IoListTop;
 // whether the simulation is running in real time
 static BOOL         RealTimeSimulationRunning;
 
+void StatusBarSetText(int bar, char * text)
+{
+	SendMessage(StatusBar, SB_SETTEXT, bar, (LPARAM)text);
+}
+
 //-----------------------------------------------------------------------------
 // Create the standard Windows controls used in the main window: a Listview
 // for the I/O list, and a status bar for settings.
@@ -418,6 +423,8 @@ HMENU MakeMainWindowMenus(void)
     compile = CreatePopupMenu();
     AppendMenu(compile, MF_STRING, MNU_COMPILE, _("&Compile\tF5"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_AS, _("Compile &As..."));
+    AppendMenu(compile, MF_STRING, MNU_PROGRAM, _("&Gravar\tF6"));
+    //AppendMenu(compile, MF_STRING, MNU_PROGRAM_AS, _("Gravar &como..."));
 
     help = CreatePopupMenu();
     AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
