@@ -721,6 +721,21 @@ void FreeEntireProgram(void)
 	memset(&Prog.mask, 0, sizeof(Prog.mask));
 	memset(&Prog.gw, 0, sizeof(Prog.gw));
 
+	Prog.ip[0] = 192;
+	Prog.ip[1] = 168;
+	Prog.ip[2] = 0;
+	Prog.ip[3] = 0;
+
+	Prog.mask[0] = 255;
+	Prog.mask[1] = 255;
+	Prog.mask[2] = 255;
+	Prog.mask[3] = 0;
+
+	Prog.gw[0] = 192;
+	Prog.gw[1] = 168;
+	Prog.gw[2] = 0;
+	Prog.gw[3] = 0;
+
 	for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
 	{
 		if(strcmp(SupportedMcus[i].mcuName, DEFAULT_CPU)==0) 

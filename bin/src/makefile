@@ -21,6 +21,12 @@ else
 TOOLS_PATH = C:/Program Files/yagarto
 endif
 
+ifdef TEMP_PATH
+TEMP_PATH = $(TEMP_PATH)
+else
+TEMP_PATH = C:/Windows/Temp
+endif
+
 GNU_CC=arm-none-eabi
 GCC_VERSION = 4.4.1
 
@@ -83,7 +89,7 @@ LWIP_INC +=-I./lwip/arch
 # -fstack-protector "no memory region specified for loadable section `__libc_freeres_fn'"
 # -fomit-frame-pointer -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Wdeclaration-after-statement -Wno-pointer-sign
 # -static
-GCC_FLAGS_OPT=-mcpu=cortex-m3 -static -O0 -mlittle-endian -mthumb -Wall -I $(LWIP_INC)
+GCC_FLAGS_OPT=-mcpu=cortex-m3 -static -mlittle-endian -mthumb -Wall -I $(LWIP_INC) -I $(TEMP_PATH) -I.
 #  $(GCC_MODE_FLAG) -I $(GCC_INC) -I $(LIB_INC)
 CFLAGS0=$(GCC_FLAGS_OPT)
 CFLAGS1=$(CFLAGS0)
@@ -92,7 +98,7 @@ CFLAGS1=$(CFLAGS0)
 # --gstabs
 # -mfpu=softfpa
 # -alh
-AAFLAGS=-D -mcpu=cortex-m3 -mthumb --gstabs 
+AAFLAGS=-mcpu=cortex-m3 -mthumb
 
 # -N
 # -v
@@ -103,10 +109,10 @@ LDFLAGS=-N -v -T
 # Diretorio de destino
 #------------------------------------------------------------------------------
 
-DIR_OBJ		= $(APP_DIR)
-DIR_LST		= $(APP_DIR)
+DIR_OBJ		= $(TEMP_PATH)
+DIR_LST		= $(TEMP_PATH)
 PROG_NAME	= pop
-BIN=./bin
+BIN=$(TEMP_PATH)
 SRC=./lwip
 
 #------------------------------------------------------------------------------
@@ -120,9 +126,10 @@ LDSCRIPT_FLASH = $(SRC_DIR)/lpc1768.ld
 # Objects to link
 #------------------------------------------------------------------------------
 
-OBJ_START   = $(LIB_DIR)/startup_LPC17xx.o
+#OBJ_START   = $(LIB_DIR)/startup_LPC17xx.o
+OBJ_START   = $(BIN)/startup_LPC17xx.o
 OBJ_FILES   = $(patsubst %.c,%.o,$(wildcard *.c))
-OBJ_APP     = $(addprefix $(DIR_OBJ)/, $(OBJ_FILES))
+OBJ_APP     = $(addprefix $(DIR_OBJ)/, $(OBJ_FILES) ld.o)
 
 #------------------------------------------------------------------------------
 # Libraries to link to. LIB_GCC must be the last
@@ -156,6 +163,9 @@ $(BIN)/%.o : $(SRC)/core/ipv4/%.c
 $(BIN)/%.o : $(SRC)/netif/%.c
 	$(CC) $(CFLAGS1) -c $< -o $@
 
+$(BIN)/ld.o : $(BIN)ld.c
+	$(CC) $(CFLAGS1) -c $< -o $@
+
 OBJS =  $(BIN)/err.o \
 	$(BIN)/init.o \
 	$(BIN)/mem.o \
@@ -183,20 +193,19 @@ OBJS =  $(BIN)/err.o \
 # Implicit rule to assemble all ASM files in the directory
 #------------------------------------------------------------------------------
 
-$(DIR_OBJ)/%.o : %.s
-	$(AS) $(AAFLAGS) $< -o $@
+#$(DIR_OBJ)/%.o : %.s
+#	$(AS) $(AAFLAGS) $< -o $@
 
-./%.o : ./%.s
-	$(AS) $(AAFLAGS1) -ahlms=$<.lst $< -o $@
+#./%.o : ./%.s
+#	$(AS) $(AAFLAGS1) -ahlms=$<.lst $< -o $@
 
 #------------------------------------------------------------------------------
 # default target: Generates application WITHOUT optimization
 #------------------------------------------------------------------------------
 #$(CC) $(CFLAGS1) -Wa,-a,-ad -g -c main.c > main.lst
 $(DIR_OBJ)/$(PROG_NAME).elf:  makefile $(OBJS) $(OBJ_APP)
-	"$(AS)" $(AAFLAGS1) ./startup_LPC17xx.s -o startup_LPC17xx.o
-	"$(LD)" -Map $(DIR_LST)/$(PROG_NAME).map $(LDFLAGS) $(LDSCRIPT_RAM)\
-                                         $(OBJ_APP) $(OBJS) $(OBJ_START) $(LIB_LIST)\
+	"$(AS)" $(AAFLAGS1) ./startup_LPC17xx.s -o $(BIN)/startup_LPC17xx.o
+	"$(LD)" $(LDFLAGS) $(LDSCRIPT_RAM) $(OBJ_APP) $(OBJS) $(OBJ_START) $(LIB_LIST)\
                                          -o $(DIR_OBJ)/$(PROG_NAME).elf 
 	"$(OBJSIZE)" $(DIR_LST)/$(PROG_NAME).elf
 	"$(OBJCOPY)" -O binary $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).bin"

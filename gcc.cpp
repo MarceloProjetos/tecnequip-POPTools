@@ -531,6 +531,7 @@ DWORD InvokeGCC(char* dest)
 	char szAppProgramFiles[MAX_PATH]   = "";
 	char szToolsProgramFiles[MAX_PATH]   = "";
 	char szAppPath[MAX_PATH]      = "";
+	char szTempPath[MAX_PATH]		= "";
 	char szAppDirectory[MAX_PATH] = "";
 	char szAppDestPath[MAX_PATH]  = "";
 	char szAppOutputDir[MAX_PATH] = "";
@@ -543,10 +544,14 @@ DWORD InvokeGCC(char* dest)
 
 	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
 
+	GetTempPath(sizeof(szTempPath), szTempPath);
+
 	// Extract directory
 	strncpy(szAppDirectory, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
 	szAppDirectory[strlen(szAppDirectory)] = '\0';
-	strcpy(szAppOutputDir, szAppDirectory);
+
+	strncpy(szAppOutputDir, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
+	szAppOutputDir[strlen(szAppOutputDir)] = '\0';
 
 	memset(&StartupInfo, 0, sizeof(StartupInfo));
 	StartupInfo.cb = sizeof(STARTUPINFO);
@@ -582,14 +587,20 @@ DWORD InvokeGCC(char* dest)
 	strcat(szArgs, " HEX_PATH=\""); 
 	strcat(szArgs, ConvertToUNIXPath(szAppDestPath));
 	strcat(szArgs, "\" ");
+	strcat(szArgs, " TEMP_PATH=\""); 
+	strcat(szArgs, ConvertToUNIXPath(szTempPath));
+	strcat(szArgs, "\" ");
 	strcat(szArgs, " TOOLS_PATH=\"");
 	strcat(szArgs, ConvertToUNIXPath(szAppDirectory));
-	strcat(szArgs, "/src/gcc\" clean debug "); 
+	strcat(szArgs, "/src/gcc\" clean release "); 
 
 	//output the application being run from the command window to the log file.
+
 	strcat(szArgs, ">> \"");
 	strcat(szArgs, szAppOutputDir);
-	strcat(szArgs, "\\src\\output.log\" 2>&1\"");
+	strcat(szArgs, "\\output.log\" 2>&1");
+
+	strcat(szArgs, "\"");
 
 	if (!CreateProcess(szCmd, szArgs, NULL, NULL, FALSE,
 		CREATE_NEW_CONSOLE, 
@@ -611,7 +622,9 @@ DWORD InvokeGCC(char* dest)
 		return err;
 	}
 
+#ifdef DEBUG
 	DumpInvokeCmd(szCmd, szArgs);
+#endif
 
 	WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
 	if(!GetExitCodeProcess(ProcessInfo.hProcess, &exitCode))
@@ -627,16 +640,21 @@ DWORD CompileAnsiCToGCC(char *dest)
 {
     SeenVariablesCount = 0;
 
-	char szAppPath[MAX_PATH]      = "";
-	char szAppHeader[MAX_PATH] = "";
-	char szAppSourceFile[MAX_PATH] = "";
+	char szAppPath[MAX_PATH]		= "";
+	char szTempPath[MAX_PATH]		= "";
+	char szAppHeader[MAX_PATH]		= "";
+	char szAppSourceFile[MAX_PATH]	= "";
 
 	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
 
+	GetTempPath(sizeof(szTempPath), szTempPath);
+
 	// Extract directory
-	strncpy(szAppHeader, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
+	//strncpy(szAppHeader, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
+	strncpy(szAppHeader, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
 	szAppHeader[strlen(szAppHeader)] = '\0';
-	strcat(szAppHeader, "\\src\\ld.h");
+	//strcat(szAppHeader, "\\src\\ld.h");
+	strcat(szAppHeader, "\\ld.h");
 
 	FILE *h = fopen(szAppHeader, "w");
     if(!h) {
@@ -708,9 +726,11 @@ DWORD CompileAnsiCToGCC(char *dest)
 
 	fclose(h);
 
-	strncpy(szAppSourceFile, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
+	//strncpy(szAppSourceFile, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
+	strncpy(szAppSourceFile, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
 	szAppSourceFile[strlen(szAppSourceFile)] = '\0';
-	strcat(szAppSourceFile, "\\src\\ld.c");
+	//strcat(szAppSourceFile, "\\src\\ld.c");
+	strcat(szAppSourceFile, "\\ld.c");
 
     FILE *f = fopen(szAppSourceFile, "w");
     if(!f) {
@@ -772,6 +792,8 @@ DWORD CompileAnsiCToGCC(char *dest)
     char str[MAX_PATH+500];
 	DWORD err = 0;
 
+	StatusBarSetText(0, "Compilando... aguarde !");
+
 	if ((err = InvokeGCC(dest)))
 	{
 		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"<Program Files>\\<POPTools>\\src\\output.log\"\n"), err);
@@ -782,6 +804,8 @@ DWORD CompileAnsiCToGCC(char *dest)
 	}
 
 	CompileSuccessfulMessage(str);
+
+	StatusBarSetText(0, "");
 
 	return err;
 }

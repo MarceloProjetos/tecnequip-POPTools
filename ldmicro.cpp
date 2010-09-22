@@ -197,8 +197,10 @@ static void CompileProgram(BOOL compileAs)
         Error(_("PWM function used but not supported for this micro."));
         return;
     }
-  
-	SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+	StatusBarSetText(0, "Compilando... aguarde");
+
+    SetCursor(LoadCursor(NULL, IDC_WAIT));
     switch(Prog.mcu->whichIsa) {
         case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
         case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
@@ -207,6 +209,8 @@ static void CompileProgram(BOOL compileAs)
         default: oops();
     }
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
+
+	StatusBarSetText(0, "");
 
 //    IntDumpListing("t.pl");
 }
@@ -282,6 +286,8 @@ static void WriteProgram(BOOL compileAs)
 	RunningInBatchMode = PreviousRunningInBatchMode;
 
 	FlashProgram(CurrentCompileFile, Prog.comPort, 230400);
+
+	StatusBarSetText(0, "");
 
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
 }

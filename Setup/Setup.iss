@@ -19,6 +19,7 @@ OutputBaseFilename=POPTools_Setup
 Compression=lzma
 SolidCompression=yes
 LicenseFile=..\Setup\EULA.TXT
+ChangesAssociations=yes
 
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
@@ -42,6 +43,10 @@ Name: "{commondesktop}\POPTools"; Filename: "{app}\POPTools.exe"; Tasks: desktop
 
 [Registry]
 ; Root: HKLM; Subkey: "System\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "Path"; ValueData: "{reg:HKLM\System\CurrentControlSet\Control\Session Manager\Environment,Path};c:\yagarto;c:\yagarto_tools";
+Root: HKCR; Subkey: ".ld"; ValueType: string; ValueName: ""; ValueData: "POPToolsFiles"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "POPToolsFiles"; ValueType: string; ValueName: ""; ValueData: "POPTools Files"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "POPToolsFiles\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\POPTools.exe,0"
+Root: HKCR; Subkey: "POPToolsFiles\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\POPTools.exe"" ""%1"""
 
 [Run]
 ; Filename: "{app}\yagarto-tools-20100703-setup.exe"; Parameters: "/S /D={pf}\yagarto"; Description: "Ferramentas de Compilação"; Flags: runascurrentuser
