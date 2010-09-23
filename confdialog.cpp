@@ -213,19 +213,34 @@ static void MakeControls(void)
         155, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(ip[0]);
 
-    ip[1] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+	HWND textPoint1 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        189, 152, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint1);
+
+	ip[1] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
+        195, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(ip[1]);
+
+	HWND textPoint2 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        229, 152, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint1);
 
     ip[2] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        225, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
+        235, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(ip[2]);
+
+	HWND textPoint3 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        269, 152, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint1);
 
     ip[3] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        260, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
+        275, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(ip[3]);
 
     HWND textLabel6 = CreateWindowEx(0, WC_STATIC, _("Mascara:"),
@@ -238,19 +253,34 @@ static void MakeControls(void)
         155, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(mask[0]);
 
+	HWND textPoint4 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        189, 179, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint1);
+
     mask[1] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
+        195, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(mask[1]);
+
+	HWND textPoint5 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        229, 179, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint1);
 
     mask[2] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        225, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
+        235, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(mask[2]);
+
+	HWND textPoint6 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        269, 179, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint1);
 
     mask[3] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        260, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
+        275, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(mask[3]);
 	
     HWND textLabel7 = CreateWindowEx(0, WC_STATIC, _("Gateway:"),
@@ -263,19 +293,34 @@ static void MakeControls(void)
         155, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[0]);
 
+	HWND textPoint7 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        189, 206, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint1);
+
     gw[1] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
+        195, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[1]);
+
+	HWND textPoint8 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        229, 206, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint1);
 
     gw[2] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        225, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
+        235, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[2]);
+
+	HWND textPoint9 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        269, 206, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint1);
 
     gw[3] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        260, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
+        275, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[3]);
 	
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Configuração de Rede"),
