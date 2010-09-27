@@ -199,6 +199,21 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
             name[0] = 'Y';
         }
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
+
+        for(int i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) 
+		{
+			for(int j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) 
+			{
+				ElemLeaf *l = DisplayMatrix[i][j];
+				if (l && DisplayMatrixWhich[i][j] == ELEM_COIL) 
+					if (strcmp(name, l->d.coil.name) == 0)
+						l->d.coil.bit = *bit;
+				if (l && DisplayMatrixWhich[i][j] == ELEM_CONTACTS) 
+					if (strcmp(name, l->d.contacts.name) == 0)
+						l->d.contacts.bit = *bit;
+			}
+		}
+
     }
 
     EnableWindow(MainWindow, TRUE);
