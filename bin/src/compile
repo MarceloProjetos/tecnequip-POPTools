@@ -167,7 +167,7 @@ $(DIR_OBJ)/$(PROG_NAME).elf: compile $(OBJ_APP)
 	"$(OBJSIZE)" $(DIR_LST)/$(PROG_NAME).elf
 	"$(OBJCOPY)" -O binary $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).bin"
 	"$(OBJCOPY)" -O ihex $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).hex"
-#	rm -rf $(TEMP_PATH)/*
+	rm -rf $(TEMP_PATH)/*
 
 #------------------------------------------------------------------------------
 # release target: Generates application with optimization
