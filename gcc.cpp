@@ -531,6 +531,7 @@ DWORD InvokeGCC(char* dest)
 	char szAppProgramFiles[MAX_PATH]   = "";
 	char szToolsProgramFiles[MAX_PATH]   = "";
 	char szAppPath[MAX_PATH]      = "";
+	char szTmpPath[MAX_PATH]		= "";
 	char szTempPath[MAX_PATH]		= "";
 	char szAppDirectory[MAX_PATH] = "";
 	char szAppDestPath[MAX_PATH]  = "";
@@ -544,7 +545,29 @@ DWORD InvokeGCC(char* dest)
 
 	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
 
-	GetTempPath(sizeof(szTempPath), szTempPath);
+	GetTempPath(sizeof(szTmpPath), szTmpPath);
+
+	strcat(szTmpPath, "POPTools\\");
+	if (!CreateDirectory(szTmpPath, NULL))
+	{
+		DWORD err = GetLastError();	
+		if (err != ERROR_ALREADY_EXISTS)
+		{
+			LPTSTR s;
+			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+				FORMAT_MESSAGE_FROM_SYSTEM,
+				NULL,
+				err,
+				0,
+				(LPTSTR)&s,
+				0,
+				NULL);
+			return err;
+		}
+	}
+
+	strncpy(szTempPath, szTmpPath, strrchr(szTmpPath, '\\') - szTmpPath);
+	szTempPath[strlen(szTempPath)] = '\0';
 
 	// Extract directory
 	strncpy(szAppDirectory, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
@@ -578,7 +601,11 @@ DWORD InvokeGCC(char* dest)
 	//the application you would like to run from the command window
 	strcat(szArgs, "\"");
 	strcat(szArgs, szAppDirectory);
-	strcat(szArgs, "\\src\\gcc\\bin\\make.exe\" -C \"");
+#ifdef _DEBUG
+	strcat(szArgs, "\\src\\gcc\\bin\\make.exe\" -f makefile -C \"");
+#else
+	strcat(szArgs, "\\src\\gcc\\bin\\make.exe\" -f compile -C \"");
+#endif
 	strcat(szArgs, ConvertToUNIXPath(szAppDirectory));
 	strcat(szArgs, "/src/\"");
 	strcat(szArgs, " HEX_FILE=\""); 
@@ -598,7 +625,7 @@ DWORD InvokeGCC(char* dest)
 
 	strcat(szArgs, ">> \"");
 	strcat(szArgs, szAppOutputDir);
-	strcat(szArgs, "\\output.log\" 2>&1");
+	strcat(szArgs, "\\POPTools\\output.log\" 2>&1");
 
 	strcat(szArgs, "\"");
 
@@ -622,8 +649,8 @@ DWORD InvokeGCC(char* dest)
 		return err;
 	}
 
-#ifdef DEBUG
-	DumpInvokeCmd(szCmd, szArgs);
+#ifdef _DEBUG
+	//DumpInvokeCmd(szCmd, szArgs);
 #endif
 
 	WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
@@ -648,6 +675,25 @@ DWORD CompileAnsiCToGCC(char *dest)
 	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
 
 	GetTempPath(sizeof(szTempPath), szTempPath);
+
+	strcat(szTempPath, "POPTools\\");
+	if (!CreateDirectory(szTempPath, NULL))
+	{
+		DWORD err = GetLastError();	
+		if (err != ERROR_ALREADY_EXISTS)
+		{
+			LPTSTR s;
+			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+				FORMAT_MESSAGE_FROM_SYSTEM,
+				NULL,
+				err,
+				0,
+				(LPTSTR)&s,
+				0,
+				NULL);
+			return err;
+		}
+	}
 
 	// Extract directory
 	//strncpy(szAppHeader, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
@@ -796,8 +842,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 
 	if ((err = InvokeGCC(dest)))
 	{
-		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"<Program Files>\\<POPTools>\\src\\output.log\"\n"), err);
-	}
+		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"C:\\Users\\<User>\\AppData\\Temp\\POPTools\\output.log\"\n"), err);	}
 	else
 	{
 		sprintf(str, _("Compilado com sucesso. O arquivo binário foi criado em '%s'.\r\n\r\n"), dest);

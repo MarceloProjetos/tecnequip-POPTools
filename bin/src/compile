@@ -66,6 +66,7 @@ LIB_GCC = ./lib32bitc.a
 LIB_C   = ./lib32bitc.a
 LIB_M   = ./lib32bitc.a
 #LWIP    = ./liblwip.a
+LIB_POP  = ./libpop.a
 
 LWIP_INC = ./lwip/include
 LWIP_ARC = ./lwip
@@ -127,67 +128,23 @@ LDSCRIPT_FLASH = $(SRC_DIR)/lpc1768.ld
 #------------------------------------------------------------------------------
 
 #OBJ_START   = $(LIB_DIR)/startup_LPC17xx.o
-OBJ_START   = $(BIN)/startup_LPC17xx.o
+OBJ_START   = ./startup_LPC17xx.o
 OBJ_FILES   = $(patsubst %.c,%.o,$(wildcard *.c))
-OBJ_APP     = $(addprefix $(DIR_OBJ)/, $(OBJ_FILES) ld.o)
+OBJ_APP     = $(addprefix $(DIR_OBJ)/, ld.o)
 
 #------------------------------------------------------------------------------
 # Libraries to link to. LIB_GCC must be the last
 #------------------------------------------------------------------------------
 
 #LIB_LIST		= $(LIB_C) $(LIB_M) $(LIB_GCC)
-LIB_LIST		= $(LIB_C) $(LWIP)
+LIB_LIST		= ./libpop.a $(LIB_C) $(LWIP) 
 
 #------------------------------------------------------------------------------
 # Implicit rule to compile all C files in the directory
 #------------------------------------------------------------------------------
 
-$(DIR_OBJ)/%.o : %.c 
-	$(CC) $(CFLAGS1) -c $< -o $@
-	
-$(BIN)/%.o : $(SRC)/%.c
-	$(CC) $(CFLAGS1) -c $< -o $@
-
-$(BIN)/%.o : $(SRC)/api/%.c
-	$(CC) $(CFLAGS1) -c $< -o $@
-
-$(BIN)/%.o : $(SRC)/arch/%.c
-	$(CC) $(CFLAGS1) -c $< -o $@
-
-$(BIN)/%.o : $(SRC)/core/%.c
-	$(CC) $(CFLAGS1) -c $< -o $@
-
-$(BIN)/%.o : $(SRC)/core/ipv4/%.c
-	$(CC) $(CFLAGS1) -c $< -o $@
-
-$(BIN)/%.o : $(SRC)/netif/%.c
-	$(CC) $(CFLAGS1) -c $< -o $@
-
 $(BIN)/ld.o : $(BIN)/ld.c
 	$(CC) $(CFLAGS1) -c $< -o $@
-
-OBJS =  $(BIN)/err.o \
-	$(BIN)/init.o \
-	$(BIN)/mem.o \
-	$(BIN)/memp.o \
-	$(BIN)/netif.o \
-	$(BIN)/pbuf.o \
-	$(BIN)/stats.o \
-	$(BIN)/udp.o \
-	$(BIN)/icmp.o \
-	$(BIN)/inet.o \
-	$(BIN)/tcp.o \
-	$(BIN)/tcp_in.o \
-	$(BIN)/tcp_out.o \
-	$(BIN)/tcpip.o \
-	$(BIN)/ip.o \
-	$(BIN)/ip_addr.o \
-	$(BIN)/ip_frag.o \
-	$(BIN)/etharp.o \
-	$(BIN)/dhcp.o \
-	$(BIN)/ethernetif.o \
-	$(BIN)/inet_chksum.o \
-	$(BIN)/emac.o \
 
 #------------------------------------------------------------------------------
 # Implicit rule to assemble all ASM files in the directory
@@ -203,13 +160,14 @@ OBJS =  $(BIN)/err.o \
 # default target: Generates application WITHOUT optimization
 #------------------------------------------------------------------------------
 #$(CC) $(CFLAGS1) -Wa,-a,-ad -g -c main.c > main.lst
-$(DIR_OBJ)/$(PROG_NAME).elf:  makefile $(OBJS) $(OBJ_APP)
-	"$(AS)" $(AAFLAGS1) ./startup_LPC17xx.s -o $(BIN)/startup_LPC17xx.o
-	"$(LD)" $(LDFLAGS) $(LDSCRIPT_RAM) $(OBJ_APP) $(OBJS) $(OBJ_START) $(LIB_LIST)\
+$(DIR_OBJ)/$(PROG_NAME).elf: compile $(OBJ_APP)
+#	"$(AS)" $(AAFLAGS1) ./startup_LPC17xx.s -o $(BIN)/startup_LPC17xx.o
+	"$(LD)" $(LDFLAGS) $(LDSCRIPT_RAM) $(OBJ_APP) $(OBJ_START) $(LIB_LIST)\
                                          -o $(DIR_OBJ)/$(PROG_NAME).elf 
 	"$(OBJSIZE)" $(DIR_LST)/$(PROG_NAME).elf
 	"$(OBJCOPY)" -O binary $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).bin"
 	"$(OBJCOPY)" -O ihex $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).hex"
+#	rm -rf $(TEMP_PATH)/*
 
 #------------------------------------------------------------------------------
 # release target: Generates application with optimization
