@@ -714,6 +714,7 @@ void FreeEntireProgram(void)
     Prog.cycleTime = 10000;
     Prog.mcuClock = 100000000;
     Prog.baudRate = 9600;
+	Prog.comPort = 1;
     Prog.io.count = 0;
     Prog.mcu = NULL;
 
@@ -724,7 +725,7 @@ void FreeEntireProgram(void)
 	Prog.ip[0] = 192;
 	Prog.ip[1] = 168;
 	Prog.ip[2] = 0;
-	Prog.ip[3] = 0;
+	Prog.ip[3] = 254;
 
 	Prog.mask[0] = 255;
 	Prog.mask[1] = 255;
@@ -734,7 +735,7 @@ void FreeEntireProgram(void)
 	Prog.gw[0] = 192;
 	Prog.gw[1] = 168;
 	Prog.gw[2] = 0;
-	Prog.gw[3] = 0;
+	Prog.gw[3] = 1;
 
 	for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
 	{

@@ -409,7 +409,7 @@ static void GenerateAnsiC(FILE *f)
             case INT_EEPROM_WRITE:
 				break;
             case INT_READ_ADC:
-				fprintf(f, "%s = ADCRead(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1) + 3));
+				fprintf(f, "%s = ADCRead(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1) + 1));
 				break;
             case INT_SET_DA:
 				fprintf(f, "DAC_Write(%s);\n", MapSym(IntCode[i].name1));

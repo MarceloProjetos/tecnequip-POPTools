@@ -69,7 +69,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
   fm_connectoptions_com options;
 
   // use standard timeouts
-	fm_set_default_timeouts();
+  fm_set_default_timeouts();
 
   // generate a debug file containing all ISP commands
   //fm_select_debug_mode(FM_DEBUG_MODE_ON, "fmtest.fmd");
