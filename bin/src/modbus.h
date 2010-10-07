@@ -198,6 +198,7 @@ struct MB_PDU   MB_Validate (unsigned char *buf, unsigned int size);
 struct MB_Reply MB_Send     (struct MB_Device *dev, unsigned short int FunctionCode, union MB_FCD_Data *data);
 unsigned int    MB_SendReply(struct MB_Device *dev, struct MB_Reply *msg);
 unsigned int    MB_Receive  (struct MB_Device *dev, struct MB_PDU    msg);
+struct MB_Reply MB_ReceiveReply(struct MB_Device *dev, struct MB_PDU msg);
 
 unsigned short int CRC16(unsigned char *puchMsg, unsigned short int usDataLen);
 

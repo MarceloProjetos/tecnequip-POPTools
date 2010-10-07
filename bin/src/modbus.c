@@ -85,6 +85,88 @@ struct MB_PDU MB_Validate(unsigned char *buf, unsigned int size)
   return msg;
 }
 
+struct MB_Reply MB_ReceiveReply(struct MB_Device *dev, struct MB_PDU msg)
+{
+  struct MB_Reply r;
+
+  if(msg.Data != NULL) {
+    r.FunctionCode = msg.FunctionCode & 0xFF ? msg.FunctionCode & 0x7FFF : msg.FunctionCode & 0x7F;
+    r.ExceptionCode = MB_EXCEPTION_NONE;
+    switch(msg.FunctionCode) {
+    case MB_FC_READ_COILS:
+      r.reply.read_coils.size =  msg.Data[0];
+      memcpy(r.reply.read_coils.data, &msg.Data[1], msg.Data[0]);
+      break;
+
+    case MB_FC_READ_DISCRETE_INPUTS:
+      r.reply.read_discrete_inputs.size =  msg.Data[0];
+      memcpy(r.reply.read_discrete_inputs.data, &msg.Data[1], msg.Data[0]);
+      break;
+
+    case MB_FC_READ_HOLDING_REGISTERS:
+      r.reply.read_holding_registers.size =  msg.Data[0];
+      memcpy(r.reply.read_holding_registers.data, &msg.Data[1], msg.Data[0]);
+      break;
+
+    case MB_FC_READ_INPUT_REGISTERS:
+      r.reply.read_input_registers.size =  msg.Data[0];
+      memcpy(r.reply.read_input_registers.data, &msg.Data[1], msg.Data[0]);
+      break;
+
+    case MB_FC_WRITE_SINGLE_COIL:
+      r.reply.write_single_coil.output = (msg.Data[0]<<8) | (msg.Data[1]);
+      r.reply.write_single_coil.val    = msg.Data[2] ? 1 : 0;
+      break;
+
+    case MB_FC_WRITE_SINGLE_REGISTER:
+      r.reply.write_single_register.address = (msg.Data[0]<<8) | (msg.Data[1]);
+      r.reply.write_single_register.val     = (msg.Data[2]<<8) | (msg.Data[3]);
+      break;
+
+    case MB_FC_WRITE_MULTIPLE_COILS:
+      r.reply.write_multiple_coils.start = (msg.Data[0]<<8) | (msg.Data[1]);
+      r.reply.write_multiple_coils.quant = (msg.Data[2]<<8) | (msg.Data[3]);
+      r.reply.write_multiple_coils.size  =  msg.Data[4];
+      r.reply.write_multiple_coils.val   =  msg.Data+5;
+      break;
+
+    case MB_FC_WRITE_MULTIPLE_REGISTERS:
+      r.reply.write_multiple_registers.start = (msg.Data[0]<<8) | (msg.Data[1]);
+      r.reply.write_multiple_registers.quant = (msg.Data[2]<<8) | (msg.Data[3]);
+      r.reply.write_multiple_registers.size  =  msg.Data[4];
+      r.reply.write_multiple_registers.val   =  msg.Data+5;
+      break;
+
+    case MB_FC_MASK_WRITE_REGISTER:
+      r.reply.mask_write_register.address = (msg.Data[0]<<8) | (msg.Data[1]);
+      r.reply.mask_write_register.and     = (msg.Data[2]<<8) | (msg.Data[3]);
+      r.reply.mask_write_register.or      = (msg.Data[4]<<8) | (msg.Data[5]);
+      break;
+
+    case MB_FC_RW_MULTIPLE_REGISTERS:
+      r.reply.rw_multiple_registers.size =  msg.Data[0];
+      memcpy(r.reply.rw_multiple_registers.data, &msg.Data[1], msg.Data[0]);
+      break;
+
+    case MB_FC_READ_EXCEPTION_STATUS:
+      r.reply.read_exception_status.status = msg.Data[0];
+      break;
+
+    case MB_FC_READ_DEVICE_IDENTIFICATION:
+      memcpy(r.reply.reply_buffer, &msg.Data[4], msg.ds - 4);
+      break;
+
+    default:
+      r.ExceptionCode = msg.Data[0];
+    }
+  } else {
+    r.FunctionCode  = msg.FunctionCode;
+    r.ExceptionCode = MB_EXCEPTION_SLAVE_DEVICE_FAILURE;
+  }
+
+  return r;
+}
+
 struct MB_Reply MB_Send(struct MB_Device *dev, unsigned short int FunctionCode, union MB_FCD_Data *data)
 {
   unsigned short int crc16;
@@ -208,73 +290,7 @@ struct MB_Reply MB_Send(struct MB_Device *dev, unsigned short int FunctionCode, 
   size = (*dev->TX)(buf, size);
 
   if(size) {
-    msg = MB_Validate(buf, size);
-    r.FunctionCode = msg.FunctionCode & 0xFF ? msg.FunctionCode & 0x7FFF : msg.FunctionCode & 0x7F;
-    r.ExceptionCode = MB_EXCEPTION_NONE;
-    switch(msg.FunctionCode) {
-    case MB_FC_READ_COILS:
-      r.reply.read_coils.size =  msg.Data[0];
-      memcpy(r.reply.read_coils.data, &msg.Data[1], msg.Data[0]);
-      break;
-
-    case MB_FC_READ_DISCRETE_INPUTS:
-      r.reply.read_discrete_inputs.size =  msg.Data[0];
-      memcpy(r.reply.read_discrete_inputs.data, &msg.Data[1], msg.Data[0]);
-      break;
-
-    case MB_FC_READ_HOLDING_REGISTERS:
-      r.reply.read_holding_registers.size =  msg.Data[0];
-      memcpy(r.reply.read_holding_registers.data, &msg.Data[1], msg.Data[0]);
-      break;
-
-    case MB_FC_READ_INPUT_REGISTERS:
-      r.reply.read_input_registers.size =  msg.Data[0];
-      memcpy(r.reply.read_input_registers.data, &msg.Data[1], msg.Data[0]);
-      break;
-
-    case MB_FC_WRITE_SINGLE_COIL:
-      r.reply.write_single_coil = data->write_single_coil;
-      break;
-
-    case MB_FC_WRITE_SINGLE_REGISTER:
-      r.reply.write_single_register = data->write_single_register;
-      break;
-
-    case MB_FC_WRITE_MULTIPLE_COILS:
-      r.reply.write_multiple_coils = data->write_multiple_coils;
-      break;
-
-    case MB_FC_WRITE_MULTIPLE_REGISTERS:
-      r.reply.write_multiple_registers = data->write_multiple_registers;
-      break;
-
-    case MB_FC_MASK_WRITE_REGISTER:
-      r.reply.mask_write_register = data->mask_write_register;
-      break;
-
-    case MB_FC_RW_MULTIPLE_REGISTERS:
-      r.reply.rw_multiple_registers.size =  msg.Data[0];
-      memcpy(r.reply.rw_multiple_registers.data, &msg.Data[1], msg.Data[0]);
-      break;
-
-    case MB_FC_READ_EXCEPTION_STATUS:
-      r.reply.read_exception_status.status = msg.Data[0];
-      break;
-
-    case MB_FC_READ_DEVICE_IDENTIFICATION:
-      //r.reply.read_device_identification.id_code   = msg.Data[0];
-      //r.reply.read_device_identification.object_id = msg.Data[1];
-      //strncpy(r.reply.read_device_identification.data, (int8_t *)&msg.Data[7], msg.Data[6]);
-      //r.reply.read_device_identification.data[msg.Data[6]] = 0;
-      memcpy(r.reply.reply_buffer, &msg.Data[4], msg.ds - 4);
-      break;
-
-    default:
-      if(!msg.Data) // Erro de CRC
-        r.ExceptionCode = MB_EXCEPTION_ILLEGAL_DATA_VALUE;
-      else
-        r.ExceptionCode = msg.Data[0];
-    }
+    r = MB_ReceiveReply(dev, MB_Validate(buf, size));
   } else {
     r.FunctionCode  = FunctionCode;
     r.ExceptionCode = MB_EXCEPTION_SLAVE_DEVICE_FAILURE;

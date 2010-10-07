@@ -9,7 +9,7 @@
 
 #define NORD_USS_ENABLE
 
-//#define QEI_CHECK
+#define QEI_CHECK
 #ifdef QEI_CHECK
 #include "qei.h"
 #endif
@@ -36,6 +36,8 @@
 
 extern volatile unsigned int CYCLE_TIME;
 
+extern volatile unsigned char MODBUS_MASTER;  // 0 = Slave, 1 = Master
+
 /******************************************************************************
 * Definições
 ******************************************************************************/
@@ -59,11 +61,7 @@ extern volatile unsigned int CYCLE_TIME;
 
 typedef struct ad_type
 {
-  unsigned int m1;
-  unsigned int m2;
-  unsigned int m3;
-  unsigned int m4;
-  unsigned int m5;
+  unsigned int m[50];
 } ads;
 
 struct ad_type ad[5];
@@ -117,7 +115,7 @@ volatile unsigned int uss_timeout = 0;
 volatile unsigned int modbus_timeout = 0;
 
 struct MB_Device modbus_master;
-struct MB_Device modbus_serial;
+struct MB_Device modbus_slave;
 struct MB_Device modbus_tcp;
 
 unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
@@ -155,6 +153,9 @@ struct
 
 unsigned char modbus_rx_buffer[MB_BUFFER_SIZE];
 unsigned char modbus_tx_buffer[MB_BUFFER_SIZE];
+
+unsigned int modbus_rx_index = 0;
+
 
 #ifdef QEI_CHECK
 /************************** ENCODER *************************/
@@ -297,12 +298,17 @@ void modbus_send(unsigned char id,
   //uint32_t i, offset=0;
   //char wdgName[100], reply_string[2000] = "";
 
-  struct MB_Device * mbdev = &modbus_master;
+  struct MB_Device * mbdev;
+
+  if (MODBUS_MASTER)
+    mbdev = &modbus_master;
+  else
+    mbdev = &modbus_slave;
 
   union MB_FCD_Data data;
   struct MB_Reply rp;
 
-  modbus_master.identification.Id = id;
+  mbdev->identification.Id = id;
 
   /* Enviando mensagem pelo Modbus */
   switch(fc)
@@ -776,7 +782,6 @@ void error(void *arg, err_t err)
   }
 }
 
-
 void connect()
 {
   struct tcp_pcb* tcp_client;
@@ -906,118 +911,119 @@ void TIMER0_IRQHandler (void)
   modbus_timeout++;
 
   plccycle_timer++;
-  
+
   sz = 0;
 
   if (serial_timeout > 10)
-    sz = RS485Read(modbus_rx_buffer, sizeof(modbus_rx_buffer));
+  {
+    modbus_rx_index += RS485Read(modbus_rx_buffer + modbus_rx_index, sizeof(modbus_rx_buffer) - modbus_rx_index);
+	serial_timeout = 0;
+  }
+
+  if (/*!I_SerialReady &&*/ modbus_rx_index > 12)
+  {
+    //ModbusRequest(&modbus_master, modbus_rx_buffer, modbus_rx_index);
+    ModbusRequest(&modbus_slave, modbus_rx_buffer, modbus_rx_index);
+	modbus_rx_index = 0;
+  }
 
   /*if (!I_SerialReady && sz)
-    ModbusRequest(&modbus_master, modbus_rx_buffer, sz);*/
-
-  if (!I_SerialReady && sz)
     uss_ready((PPO1*)modbus_rx_buffer, sz);
 
   if (uss_timeout > 1000)
+    I_SerialReady = 1;*/
+
+  if (modbus_timeout > 1000)
     I_SerialReady = 1;
-
-//  if (modbus_timeout > 1000)
-//    I_SerialReady = 1;
-
 
 }
 
 /******************************************************************************
 * ADC Read
 ******************************************************************************/
+#define ARRAY_SIZEOF(a) (sizeof(a)/sizeof(a[0]))
+
 unsigned int ADCRead(unsigned int a)
 {
-  unsigned int max, min;
-  unsigned int i = 0;
-
+  unsigned int max = 0;
+  unsigned int min = 0;
   unsigned int soma = 0;
+  unsigned int i = 0;
+  unsigned int z = 0;
 
-  max = 0;
-  min = 0;
+  unsigned int val = 0;
+  unsigned char set = 0;
 
   if (a < 1 || a > 5) return 0;
 
   a -= 1;
 
-  ad[a].m1 = ad[a].m2;
-  ad[a].m2 = ad[a].m3;
-  ad[a].m3 = ad[a].m4;
-  ad[a].m4 = ad[a].m5;
-
   switch (a)
   {
   case 0:
-    ad[a].m5 = 0xFFF & (ADC->ADDR5 >> 4);
+    if (ADC->ADDR5 & 0x7FFFFFFF)
+    {
+      val = 0x7FFF & (ADC->ADDR5 >> 4);
+      set = 1;
+    }
     break;
   case 1:
-    ad[a].m5 = 0xFFF & (ADC->ADDR2 >> 4);
+    if (ADC->ADDR2 & 0x7FFFFFFF)
+    {
+      val = 0xFFF & (ADC->ADDR2 >> 4);
+      set = 1;
+    }
     break;
   case 2:
-    ad[a].m5 = 0xFFF & (ADC->ADDR1 >> 4);
+    if (ADC->ADDR1 & 0x7FFFFFFF)
+    {
+      val = 0x7FFF & (ADC->ADDR1 >> 4);
+      set = 1;
+    }
     break;
   case 3:
-    ad[a].m5 = 0xFFF & (ADC->ADDR0 >> 4);
+    if (ADC->ADDR0 & 0x7FFFFFFF)
+    {
+      val = 0x7FFF & (ADC->ADDR0 >> 4);
+      set = 1;
+    }
     break;
   case 4:
-    ad[a].m5 = 0xFFF & (ADC->ADDR3 >> 4);
+    if (ADC->ADDR3 & 0x7FFFFFFF)
+    {
+      val = 0x7FFF & (ADC->ADDR3 >> 4);
+      set = 1;
+    }
     break;
   }
 
-  if (max < ad[a].m1)
-    max = ad[a].m1;
-  if (max < ad[a].m2)
-    max = ad[a].m2;
-  if (max < ad[a].m3)
-    max = ad[a].m3;
-  if (max < ad[a].m4)
-    max = ad[a].m4;
-  if (max < ad[a].m5)
-    max = ad[a].m5;
+  soma = 0;
+  z = 0;
 
-  min = max;
-
-  if (min > ad[a].m1)
-    min = ad[a].m1;
-  if (min > ad[a].m2)
-    min = ad[a].m2;
-  if (min > ad[a].m3)
-    min = ad[a].m3;
-  if (min > ad[a].m4)
-    min = ad[a].m4;
-  if (min > ad[a].m5)
-    min = ad[a].m5;
-
-  if (ad[a].m1 > min && ad[a].m1 < max)
+  if (set == 1)
   {
-    soma += ad[a].m1; i++;
+    for (i = 0; i < ARRAY_SIZEOF(ad[0].m) - 1; i++)
+      ad[a].m[i] = ad[a].m[i + 1];
+
+    ad[a].m[ARRAY_SIZEOF(ad[0].m) - 1] = val;
+
+    for (i = 0; i < ARRAY_SIZEOF(ad[0].m); i++)
+      if (ad[a].m[max] < ad[a].m[i])
+        max = i;
+
+    for (i = 0; i < ARRAY_SIZEOF(ad[0].m); i++)
+      if (ad[a].m[min] > ad[a].m[i])
+        min = i;
+
+    for (i = 0; i < ARRAY_SIZEOF(ad[0].m); i++)
+      if (i != min && i != max)
+      {
+        soma += ad[a].m[i];
+        z++;
+      }
   }
 
-  if (ad[a].m2 > min && ad[a].m2 < max)
-  {
-    soma += ad[a].m2; i++;
-  }
-
-  if (ad[a].m3 > min && ad[a].m3 < max)
-  {
-    soma += ad[a].m3; i++;
-  }
-
-  if (ad[a].m4 > min && ad[a].m4 < max)
-  {
-    soma += ad[a].m4; i++;
-  }
-
-  if (ad[a].m5 > min && ad[a].m5 < max)
-  {
-    soma += ad[a].m5; i++;
-  }
-
-  return i > 0 ? (unsigned int)(soma / i) : 0;
+  return z > 0 ? (unsigned int)(soma / z) : 0;
 }
 
 /******************************************************************************
@@ -1087,20 +1093,29 @@ unsigned int RS485Read(unsigned char * buffer, unsigned int size)
 ******************************************************************************/
 unsigned int ModbusRequest(struct MB_Device * mbdev, unsigned char * buffer, unsigned int sz)
 {
+  struct MB_Reply r;
+
   //memset(modbus_rx_buffer, 0, sizeof(modbus_rx_buffer));
   //memset(modbus_tx_buffer, 0, sizeof(modbus_tx_buffer));
 
-  if(sz)
+  if (MODBUS_MASTER)
   {
-    reply_data.data = buffer;
-    if (sz > 2)
+    r = MB_ReceiveReply(mbdev, MB_Validate(buffer, sz));
+    if (r.ExceptionCode == MB_EXCEPTION_NONE)
     {
-      if (MB_Receive(mbdev, MB_Validate(buffer, sz)) == MB_EXCEPTION_NONE)
-        I_SerialReady = 1;
+	  I_SerialReady = 1;
+      switch(r.FunctionCode)
+      {
+      };
     }
   }
+  else
+  {
+    if (MB_Receive(mbdev, MB_Validate(buffer, sz)) == MB_EXCEPTION_NONE)
+      I_SerialReady = 1;
+  }
 
-  return reply_data.size; // Retorna o tamanho dos dados
+  return 0; // Retorna o tamanho dos dados
 }
 
 unsigned int ModbusRS485Tx(unsigned char *data, unsigned int size)
@@ -1113,7 +1128,8 @@ unsigned int ModbusRS485Tx(unsigned char *data, unsigned int size)
 
   I_SerialReady = 0;
 
-  return sz;
+  //return sz;
+  return 0;
 }
 
 unsigned int ModbusEthTx(unsigned char *data, unsigned int size)
@@ -1228,26 +1244,49 @@ unsigned int ModbusWriteSingleRegister(struct MB_Device *dev, union MB_FCD_Data 
 
 unsigned int ModbusWriteMultipleCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
 {
+  reply->reply.write_multiple_coils  = data->write_multiple_coils;
+
   return MB_EXCEPTION_NONE;
 }
 
 unsigned int ModbusWriteMultipleRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
 {
+  unsigned int pos, i;
+
+  if (data->write_multiple_registers.start + data->write_multiple_registers.quant < 32)
+  {
+    for (i = 0; i < data->write_multiple_registers.size; i += 2)
+    {
+      pos = data->write_multiple_registers.start + (i / 2);
+      M[pos] = *(unsigned short *)(&data->write_multiple_registers.val[i]);
+    }
+//      data->write_single_register.val[i] = M[data->write_multiple_registers.address + (i] ;
+  } else
+    return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
+
+  reply->reply.write_multiple_registers = data->write_multiple_registers;
+
   return MB_EXCEPTION_NONE;
 }
 
 unsigned int ModbusMaskWriteRegister(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
 {
+  reply->reply.mask_write_register = data->mask_write_register;
+
   return MB_EXCEPTION_NONE;
 }
 
 unsigned int ModbusRWMultipleRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
 {
+  reply->reply.read_holding_registers.size = 0;
+
   return MB_EXCEPTION_NONE;
 }
 
 unsigned int ModbusReadExceptionStatus(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
 {
+  reply->reply.read_exception_status.status = 0x00;
+
   return MB_EXCEPTION_NONE;
 }
 
@@ -1473,6 +1512,7 @@ void HardwareInit(void)
   PINCON->PINSEL1 |= (0x1 << 14) | (0x1 << 16) | (0x1 << 18) | (0x1 << 20);
   PINCON->PINSEL3 |= 0x3 << 30; // AD0.5
   ADC->ADCR = 0x2F | (0x18 << 8) | (1 << 16) | (1 << 21); // Enable AD0:1:2:3:5, 1Mhz, BURST ON, PDN Enable
+  memset(ad, 0, sizeof(ad));
 
 }
 
@@ -1503,8 +1543,8 @@ int main (void)
 
 #ifdef QEI_CHECK
   QEI_CFG_Type QEIConfig;
-  QEI_RELOADCFG_Type ReloadConfig;
-  uint32_t rpm, averageVelo;
+  //QEI_RELOADCFG_Type ReloadConfig;
+  //uint32_t rpm, averageVelo;
 #endif
 
   /**************************************************************************
@@ -1521,7 +1561,7 @@ int main (void)
    * Since the Number of Bits used for Priority Levels is five (5), so the
    * actual bit number of sub-priority is three (3)
    */
-  NVIC_SetPriorityGrouping(0x05);
+  //NVIC_SetPriorityGrouping(0x05);
 
   /* Initialize QEI configuration structure to default value */
   #if CAP_MODE
@@ -1541,29 +1581,29 @@ int main (void)
   QEI_Init(QEI, &QEIConfig);
 
   // Set timer reload value for  QEI that used to set velocity capture period
-  ReloadConfig.ReloadOption = QEI_TIMERRELOAD_USVAL;
-  ReloadConfig.ReloadValue = CAP_PERIOD;
-  QEI_SetTimerReload(QEI, &ReloadConfig);
+  //ReloadConfig.ReloadOption = QEI_TIMERRELOAD_USVAL;
+  //ReloadConfig.ReloadValue = CAP_PERIOD;
+  //QEI_SetTimerReload(QEI, &ReloadConfig);
 
   // Set Max Position
   QEI_SetMaxPosition(QEI, 0xffffffff);
 
   /* preemption = 1, sub-priority = 1 */
-  NVIC_SetPriority(QEI_IRQn, ((0x01<<3)|0x01));
+  //NVIC_SetPriority(QEI_IRQn, ((0x01<<3)|0x01));
 
   // Reset VeloAccFlag
-  VeloAccFlag = RESET;
+  //VeloAccFlag = RESET;
   // Reset value of Acc and Acc count to default
-  VeloAcc = 0;
-  VeloCapCnt = 0;
+  //VeloAcc = 0;
+  //VeloCapCnt = 0;
 
   // Enable interrupt for velocity Timer overflow for capture velocity into Acc */
-  QEI_IntCmd(QEI, QEI_INTFLAG_TIM_Int, ENABLE);
+  //QEI_IntCmd(QEI, QEI_INTFLAG_TIM_Int, ENABLE);
   // Enable interrupt for direction change */
-  QEI_IntCmd(QEI, QEI_INTFLAG_DIR_Int, ENABLE);
+  //QEI_IntCmd(QEI, QEI_INTFLAG_DIR_Int, ENABLE);
 
   /* Enable interrupt for QEI  */
-  NVIC_EnableIRQ(QEI_IRQn);
+  //NVIC_EnableIRQ(QEI_IRQn);
 #endif
 
   /**************************************************************************
@@ -1590,17 +1630,17 @@ int main (void)
   modbus_master.mode    = MB_MODE_MASTER;
   modbus_master.TX      = ModbusRS485Tx;
 
-  MB_Init(&modbus_serial);
+  MB_Init(&modbus_slave);
 
-  modbus_serial.identification.Id                 = 0x01;
-  modbus_serial.identification.VendorName         = "Tecnequip";
-  modbus_serial.identification.ProductCode        = "POP7";
-  modbus_serial.identification.MajorMinorRevision = "V1 Rev2";
+  modbus_slave.identification.Id                 = 0x01;
+  modbus_slave.identification.VendorName         = "Tecnequip";
+  modbus_slave.identification.ProductCode        = "POP7";
+  modbus_slave.identification.MajorMinorRevision = "V1 Rev2";
 
-  modbus_serial.hl      = ModbusHandlers;
-  modbus_serial.hl_size = ARRAY_SIZE(ModbusHandlers);
-  modbus_serial.mode    = MB_MODE_SLAVE;
-  modbus_serial.TX      = ModbusRS485Tx;
+  modbus_slave.hl      = ModbusHandlers;
+  modbus_slave.hl_size = ARRAY_SIZE(ModbusHandlers);
+  modbus_slave.mode    = MB_MODE_SLAVE;
+  modbus_slave.TX      = ModbusRS485Tx;
 
   MB_Init(&modbus_tcp);
 
@@ -1642,8 +1682,6 @@ int main (void)
 
   while(1)
   {
-      entradas = AtualizaEntradas();
-      saidas = AtualizaSaidas();
 
 #ifdef NORD_USS_ENABLE
     /*if (!I_USSReady && uss_timeout > 50)
@@ -1659,24 +1697,29 @@ int main (void)
 
 #ifdef QEI_CHECK
     // Check VeloAccFlag continuously
-    if (VeloAccFlag == SET) {
+	ENC_VAL = QEI_GetPosition(QEI);
+
+    if (VeloAccFlag == SET) 
+	{
       //Get Position
       //PosCnt = QEI_GetPosition(QEI);
-      ENC_VAL = QEI_GetPosition(QEI);
+      //ENC_VAL = QEI_GetPosition(QEI);
       // Get Acc
-      averageVelo = VeloAcc / VeloCapCnt;
-      rpm = QEI_CalculateRPM(QEI, averageVelo, ENC_RES);
+      //averageVelo = VeloAcc / VeloCapCnt;
+      //rpm = QEI_CalculateRPM(QEI, averageVelo, ENC_RES);
       // Reset VeloAccFlag
-      VeloAccFlag = RESET;
+      //VeloAccFlag = RESET;
       // Reset value of Acc and Acc count to default
-      VeloAcc = 0;
-      VeloCapCnt = 0;
+      //VeloAcc = 0;
+      //VeloCapCnt = 0;
     }
 #endif
 
 	if (plccycle_timer >= 1)
 	{
 	  plccycle_timer = 0;
+      entradas = AtualizaEntradas();
+      saidas = AtualizaSaidas();
 	  PlcCycle();
     }
   }

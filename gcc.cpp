@@ -764,6 +764,8 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(h, "volatile unsigned int U15 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int U16 __attribute__((weak)) = 0;\n\n");
 
+	fprintf(h, "volatile unsigned char MODBUS_MASTER __attribute__((weak)) = 0;\n\n");
+
 	fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
 	fprintf(h, "volatile int ENC1 __attribute__((weak)) = 0;\n\n");
 
@@ -811,6 +813,22 @@ DWORD CompileAnsiCToGCC(char *dest)
 "volatile unsigned int M[32];\n"
 "volatile int ENC1;\n\n"
 	, Prog.cycleTime / 1000, Prog.cycleTime / 1000);
+
+	int j;
+
+	for(int i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) 
+	{
+		for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) 
+		{
+			ElemLeaf *l = DisplayMatrix[i][j];
+			if (l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS
+				|| l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS) 
+				fprintf(f, "unsigned char MODBUS_MASTER = 1; // 0=Slave, 1=Master\n\n");
+			break;
+		}
+		if (j < DISPLAY_MATRIX_Y_SIZE)
+			break;
+	}
 
 	fprintf(f, "extern struct MB_Device modbus_master;\n");
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");
