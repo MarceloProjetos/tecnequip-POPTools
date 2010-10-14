@@ -18,7 +18,7 @@ endif
 ifdef TOOLS_PATH
 TOOLS_PATH = $(TOOLS_PATH)
 else
-TOOLS_PATH = C:/Program Files/yagarto
+TOOLS_PATH = .
 endif
 
 ifdef TEMP_PATH
@@ -210,6 +210,7 @@ $(DIR_OBJ)/$(PROG_NAME).elf:  makefile $(OBJS) $(OBJ_APP)
 	"$(OBJSIZE)" $(DIR_LST)/$(PROG_NAME).elf
 	"$(OBJCOPY)" -O binary $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).bin"
 	"$(OBJCOPY)" -O ihex $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).hex"
+	"$(AR)" -r ./libpop.a $(DIR_LST)/*.o
 
 #------------------------------------------------------------------------------
 # release target: Generates application with optimization
