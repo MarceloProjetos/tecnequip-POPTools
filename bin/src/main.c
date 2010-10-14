@@ -296,8 +296,6 @@ void modbus_send(unsigned char id,
                   volatile unsigned int * value)
 {
   uint8_t out[] = { 0, 0 };
-  //uint32_t i, offset=0;
-  //char wdgName[100], reply_string[2000] = "";
 
   struct MB_Device * mbdev;
 
@@ -319,150 +317,44 @@ void modbus_send(unsigned char id,
   case MB_FC_READ_COILS:
     data.read_coils.start = address;
     data.read_coils.quant = size;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode)
-    {
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.read_coils.size);
-      for(i=0; i<rp.reply.read_coils.size; i++)
-        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.read_coils.data[i]);
-    }*/
-
     break;
-
   case MB_FC_READ_DISCRETE_INPUTS:
     data.read_discrete_inputs.start = address;
     data.read_discrete_inputs.quant = size;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.read_discrete_inputs.size);
-      for(i=0; i<rp.reply.read_discrete_inputs.size; i++)
-        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.read_discrete_inputs.data[i]);
-    }*/
-
     break;
-
   case MB_FC_READ_HOLDING_REGISTERS:
     data.read_holding_registers.start = address;
     data.read_holding_registers.quant = size;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.read_holding_registers.size);
-      for(i=0; i<rp.reply.read_holding_registers.size; i++)
-        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.read_holding_registers.data[i]);
-    }*/
-
     break;
-
   case MB_FC_READ_INPUT_REGISTERS:
     data.read_input_registers.start = address;
     data.read_input_registers.quant = size;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.read_input_registers.size);
-      for(i=0; i<rp.reply.read_input_registers.size; i++)
-        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.read_input_registers.data[i]);
-    }*/
-
     break;
-
   case MB_FC_WRITE_SINGLE_COIL:
     data.write_single_coil.output = address;
     data.write_single_coil.val    = *value;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "output: %d\n", rp.reply.write_single_coil.output);
-      offset += sprintf(reply_string+offset, "val   : %s\n", rp.reply.write_single_coil.val ? "ON" : "OFF");
-    }*/
-
     break;
-
   case MB_FC_WRITE_SINGLE_REGISTER:
     data.write_single_register.address = address;
     data.write_single_register.val     = *value;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "address: %04x\n", rp.reply.write_single_register.address);
-      offset += sprintf(reply_string+offset, "val    : %04x\n", rp.reply.write_single_register.val);
-    }*/
-
     break;
-
   case MB_FC_WRITE_MULTIPLE_COILS:
-    /*for(i=0; i<16; i++) {
-      sprintf(wdgName, "tgbWriteMultipleCoils%02d", i+1);
-      tgb = GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, wdgName));
-      out[i/8] |= ((uint32_t)gtk_toggle_button_get_active(tgb)) << (i%8);
-    }*/
-
     data.write_multiple_coils.start = address;
     data.write_multiple_coils.quant = size;
     data.write_multiple_coils.size  = 2 * size;
     data.write_multiple_coils.val   = (unsigned char *)value;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.write_multiple_coils.size);
-      for(i=0; i<rp.reply.write_multiple_coils.size; i++)
-        offset += sprintf(reply_string+offset, "%d: %04x\n", i, rp.reply.write_multiple_coils.val[i]);
-    }*/
-
     break;
-
   case MB_FC_WRITE_MULTIPLE_REGISTERS:
     data.write_multiple_registers.start = address;
     data.write_multiple_registers.quant = size;
     data.write_multiple_registers.size  = 2 * size;
     data.write_multiple_registers.val   = (unsigned char *)value;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "start: %d\n", rp.reply.write_multiple_registers.start);
-      offset += sprintf(reply_string+offset, "quant: %d\n", rp.reply.write_multiple_registers.quant);
-      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.write_multiple_registers.size);
-      for(i=0; i<rp.reply.write_multiple_registers.size; i++)
-        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.write_multiple_registers.val[i]);
-    }*/
-
     break;
-
   case MB_FC_MASK_WRITE_REGISTER:
     data.mask_write_register.address = address;
     data.mask_write_register.and     = 0; //and;
     data.mask_write_register.or      = 0; //or;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "address: %04x\n", rp.reply.mask_write_register.address);
-      offset += sprintf(reply_string+offset, "and    : %04x\n", rp.reply.mask_write_register.and);
-      offset += sprintf(reply_string+offset, "or     : %04x\n", rp.reply.mask_write_register.or);
-    }*/
-
     break;
-
   case MB_FC_RW_MULTIPLE_REGISTERS:
     data.rw_multiple_registers.start_read  = address;
     data.rw_multiple_registers.quant_read  = size;
@@ -472,56 +364,112 @@ void modbus_send(unsigned char id,
     data.rw_multiple_registers.val   = out;
     out[0] = 0xaa;
     out[1] = 0x55;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "size: %d\n", rp.reply.rw_multiple_registers.size);
-      for(i=0; i<rp.reply.rw_multiple_registers.size; i++)
-        offset += sprintf(reply_string+offset, "%d: %02x\n", i, rp.reply.rw_multiple_registers.data[i]);
-    }*/
-
     break;
-
   case MB_FC_READ_EXCEPTION_STATUS:
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      wdg = GTK_WIDGET(gtk_builder_get_object(builder, "lblReadExceptionStatusVal"));
-      sprintf(wdgName, "%02x", rp.reply.read_exception_status.status);
-      gtk_label_set_text(GTK_LABEL(wdg), wdgName);
-
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "status: %02x\n", rp.reply.read_exception_status.status);
-    }*/
-
     break;
-
   case MB_FC_READ_DEVICE_IDENTIFICATION:
     data.read_device_identification.id_code   = 0x01;
     data.read_device_identification.object_id = 0x00;
-
-    rp = MB_Send(mbdev, fc, &data);
-
-    /*if(!rp.ExceptionCode) {
-      wdg = GTK_WIDGET(gtk_builder_get_object(builder, "lblReadDeviceIdentificationVal"));
-      gtk_label_set_text(GTK_LABEL(wdg), (const gchar *)rp.reply.read_device_identification.data);
-
-      offset += sprintf(reply_string+offset, "Retorno:\nFunction Code: %d\n", rp.FunctionCode);
-      offset += sprintf(reply_string+offset, "string: %s\n", rp.reply.read_device_identification.data);
-    }*/
-
     break;
-
   default:
     rp.FunctionCode = fc;
     rp.ExceptionCode = MB_EXCEPTION_ILLEGAL_FUNCTION;
+	return;
   }
 
-  /*if(rp.ExceptionCode != MB_EXCEPTION_NONE)
-    sprintf(reply_string, "Erro enviando Function Code %02x.\nException Code: %02x",
-        fc, rp.ExceptionCode);*/
+  rp = MB_Send(mbdev, fc, &data);
+
+}
+
+void modbus_tcp_send(unsigned char id,
+                  int fc,
+                  unsigned short int address,
+                  unsigned short int size,
+                  volatile unsigned int * value)
+{
+  uint8_t out[] = { 0, 0 };
+
+  struct MB_Device * mbdev;
+
+  if (MODBUS_MASTER)
+    mbdev = &modbus_master;
+  else
+    mbdev = &modbus_slave;
+
+  MODBUS_RETURN_VAL = value;
+
+  union MB_FCD_Data data;
+  struct MB_Reply rp;
+
+  mbdev->identification.Id = id;
+
+  /* Enviando mensagem pelo Modbus */
+  switch(fc)
+  {
+  case MB_FC_READ_COILS:
+    data.read_coils.start = address;
+    data.read_coils.quant = size;
+    break;
+  case MB_FC_READ_DISCRETE_INPUTS:
+    data.read_discrete_inputs.start = address;
+    data.read_discrete_inputs.quant = size;
+    break;
+  case MB_FC_READ_HOLDING_REGISTERS:
+    data.read_holding_registers.start = address;
+    data.read_holding_registers.quant = size;
+    break;
+  case MB_FC_READ_INPUT_REGISTERS:
+    data.read_input_registers.start = address;
+    data.read_input_registers.quant = size;
+    break;
+  case MB_FC_WRITE_SINGLE_COIL:
+    data.write_single_coil.output = address;
+    data.write_single_coil.val    = *value;
+    break;
+  case MB_FC_WRITE_SINGLE_REGISTER:
+    data.write_single_register.address = address;
+    data.write_single_register.val     = *value;
+    break;
+  case MB_FC_WRITE_MULTIPLE_COILS:
+    data.write_multiple_coils.start = address;
+    data.write_multiple_coils.quant = size;
+    data.write_multiple_coils.size  = 2 * size;
+    data.write_multiple_coils.val   = (unsigned char *)value;
+    break;
+  case MB_FC_WRITE_MULTIPLE_REGISTERS:
+    data.write_multiple_registers.start = address;
+    data.write_multiple_registers.quant = size;
+    data.write_multiple_registers.size  = 2 * size;
+    data.write_multiple_registers.val   = (unsigned char *)value;
+    break;
+  case MB_FC_MASK_WRITE_REGISTER:
+    data.mask_write_register.address = address;
+    data.mask_write_register.and     = 0; //and;
+    data.mask_write_register.or      = 0; //or;
+    break;
+  case MB_FC_RW_MULTIPLE_REGISTERS:
+    data.rw_multiple_registers.start_read  = address;
+    data.rw_multiple_registers.quant_read  = size;
+    data.rw_multiple_registers.start_write = data.rw_multiple_registers.start_read;
+    data.rw_multiple_registers.quant_write = data.rw_multiple_registers.quant_read;
+    data.rw_multiple_registers.size  = size;
+    data.rw_multiple_registers.val   = out;
+    out[0] = 0xaa;
+    out[1] = 0x55;
+    break;
+  case MB_FC_READ_EXCEPTION_STATUS:
+    break;
+  case MB_FC_READ_DEVICE_IDENTIFICATION:
+    data.read_device_identification.id_code   = 0x01;
+    data.read_device_identification.object_id = 0x00;
+    break;
+  default:
+    rp.FunctionCode = fc;
+    rp.ExceptionCode = MB_EXCEPTION_ILLEGAL_FUNCTION;
+	return;
+  }
+
+  //rp = MB_Send(mbdev, fc, &data);
 
 }
 
