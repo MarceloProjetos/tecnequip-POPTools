@@ -95,6 +95,18 @@ static struct {
 } writeModbusShadows[MAX_IO];
 static int writeModbusShadowsCount;
 
+static struct {
+    char    name[MAX_NAME_LEN];
+    SWORD   val;
+} readModbusEthShadows[MAX_IO];
+static int readModbusEthShadowsCount;
+
+static struct {
+    char    name[MAX_NAME_LEN];
+    SWORD   val;
+} writeModbusEthShadows[MAX_IO];
+static int writeModbusEthShadowsCount;
+
 #define VAR_FLAG_TON  0x00000001
 #define VAR_FLAG_TOF  0x00000002
 #define VAR_FLAG_RTO  0x00000004
@@ -144,10 +156,13 @@ static int SimulateUSSTxCountdown = 0;
 static int SimulateUSSRxCountdown = 0;
 static int SimulateModbusTxCountdown = 0;
 static int SimulateModbusRxCountdown = 0;
+static int SimulateModbusEthTxCountdown = 0;
+static int SimulateModbusEthRxCountdown = 0;
 
 static void AppendToUartSimulationTextControl(BYTE b);
 static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int param, unsigned int index, char *name, unsigned int val);
 static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int address, char *name);
+static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned int address, char *name);
 
 static void SimulateIntCode(void);
 static char *MarkUsedVariable(char *name, DWORD flag);
@@ -555,6 +570,15 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 			MarkWithCheck("$ModbusReady", VAR_FLAG_ANY);
             break;
 
+        case ELEM_READ_MODBUS_ETH:
+            MarkWithCheck(l->d.readModbusEth.name, VAR_FLAG_ANY);
+            break;
+
+        case ELEM_WRITE_MODBUS_ETH:
+            MarkWithCheck(l->d.writeModbusEth.name, VAR_FLAG_ANY);
+			MarkWithCheck("$ModbusEthReady", VAR_FLAG_ANY);
+            break;
+
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
@@ -859,6 +883,18 @@ math:
 				AppendToModbusSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
                 break;
 
+            case INT_READ_MODBUS_ETH:
+				SetSingleBit("$ModbusEthReady", FALSE);
+				SimulateModbusEthTxCountdown = 0;
+				AppendToModbusEthSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
+                break;
+
+            case INT_WRITE_MODBUS_ETH:
+				SetSingleBit("$ModbusEthReady", FALSE);
+				SimulateModbusEthTxCountdown = 0;
+				AppendToModbusEthSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
+                break;
+
             case INT_UART_SEND:
                 if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) 
 				{
@@ -944,6 +980,14 @@ void SimulateOneCycle(BOOL forceRefresh)
 		SimulateModbusTxCountdown++;
 
 	if (SimulateModbusTxCountdown > 2)
+	{
+		SetSingleBit("$SerialReady", TRUE);
+	}
+
+	if (SimulateModbusEthTxCountdown >= 0 && !SingleBitOn("$SerialReady"))
+		SimulateModbusEthTxCountdown++;
+
+	if (SimulateModbusEthTxCountdown > 2)
 	{
 		SetSingleBit("$SerialReady", TRUE);
 	}
@@ -1247,6 +1291,28 @@ static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int a
     char append[125];
 
     sprintf(append, "MODBUS: id=%d, address=%d, name=%s\r\n", id, address, name);
+
+#define MAX_SCROLLBACK 256
+    char buf[MAX_SCROLLBACK];
+
+    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
+        (LPARAM)buf);
+
+    int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
+    if(overBy > 0) {
+        memmove(buf, buf + overBy, strlen(buf));
+    }
+    strcat(buf, append);
+
+    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+}
+
+static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned int address, char *name)
+{
+    char append[125];
+
+    sprintf(append, "MODBUS_ETH: id=%d, address=%d, name=%s\r\n", id, address, name);
 
 #define MAX_SCROLLBACK 256
     char buf[MAX_SCROLLBACK];

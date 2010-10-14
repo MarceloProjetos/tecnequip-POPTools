@@ -586,6 +586,14 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddWriteModbus());
             break;
 
+        case MNU_INSERT_READ_MODBUS_ETH:
+            CHANGING_PROGRAM(AddReadModbusEth());
+            break;
+
+        case MNU_INSERT_WRITE_MODBUS_ETH:
+            CHANGING_PROGRAM(AddWriteModbusEth());
+            break;
+
         case MNU_INSERT_UART_SEND:
             CHANGING_PROGRAM(AddUart(ELEM_UART_SEND));
             break;

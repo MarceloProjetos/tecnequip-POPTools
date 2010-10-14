@@ -226,6 +226,8 @@ static void GenerateDeclarations(FILE *f)
             case INT_WRITE_USS:
             case INT_READ_MODBUS:
             case INT_WRITE_MODBUS:
+            case INT_READ_MODBUS_ETH:
+            case INT_WRITE_MODBUS_ETH:
             case INT_SET_PWM:
                 intVar1 = IntCode[i].name1;
                 break;
@@ -431,6 +433,12 @@ static void GenerateAnsiC(FILE *f)
 				break;
             case INT_WRITE_MODBUS:
 				fprintf(f, "modbus_send(%d, MB_FC_WRITE_MULTIPLE_REGISTERS, %d, 2, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
+				break;
+            case INT_READ_MODBUS_ETH:
+				fprintf(f, "modbus_tcp_send(%d, MB_FC_READ_HOLDING_REGISTERS, %d, 2, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
+				break;
+            case INT_WRITE_MODBUS_ETH:
+				fprintf(f, "modbus_tcp_send(%d, MB_FC_WRITE_MULTIPLE_REGISTERS, %d, 2, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
 				break;
             case INT_SET_PWM:
 				break;
@@ -808,6 +816,11 @@ DWORD CompileAnsiCToGCC(char *dest)
 "                        unsigned short int address,\n"
 "                        unsigned short int size,\n"
 "                        volatile unsigned int * value);\n\n"
+"extern void modbus_tcp_send(unsigned char id,\n"
+"                        int fc,\n"
+"                        unsigned short int address,\n"
+"                        unsigned short int size,\n"
+"                        volatile unsigned int * value);\n\n"
 "volatile unsigned int CYCLE_TIME = %d;\n"
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n"
 "volatile unsigned int M[32];\n"
@@ -821,8 +834,10 @@ DWORD CompileAnsiCToGCC(char *dest)
 		for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) 
 		{
 			ElemLeaf *l = DisplayMatrix[i][j];
-			if (l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS
-				|| l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS) 
+			if ((l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS)
+				|| (l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS)
+				|| (l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS_ETH)
+				|| (l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS_ETH)) 
 				fprintf(f, "unsigned char MODBUS_MASTER = 1; // 0=Slave, 1=Master\n\n");
 			break;
 		}

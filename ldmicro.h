@@ -105,12 +105,14 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_READ_ENC     0x47
 #define MNU_INSERT_RESET_ENC    0x48
 #define MNU_INSERT_READ_USS     0x49
-#define MNU_INSERT_WRITE_USS    0x50
-#define MNU_CONDITIONAL_MENU	0x51
-#define MNU_INSERT_SET_DA       0x52
-#define MNU_INSERT_READ_MODBUS  0x53
-#define MNU_INSERT_WRITE_MODBUS 0x54
-#define MNU_INSERT_SET_BIT		0x55
+#define MNU_INSERT_WRITE_USS    0x4a
+#define MNU_CONDITIONAL_MENU	0x4b
+#define MNU_INSERT_SET_DA       0x4c
+#define MNU_INSERT_READ_MODBUS  0x4d
+#define MNU_INSERT_WRITE_MODBUS 0x4e
+#define MNU_INSERT_SET_BIT		0x4f
+#define MNU_INSERT_READ_MODBUS_ETH	0x50
+#define MNU_INSERT_WRITE_MODBUS_ETH	0x51
 
 #define MNU_MCU_SETTINGS        0x56
 #define MNU_PROCESSOR_0         0xa0
@@ -195,6 +197,8 @@ typedef SDWORD SWORD;
 #define ELEM_READ_MODBUS		0x37
 #define ELEM_WRITE_MODBUS   	0x38
 #define ELEM_SET_BIT			0x39
+#define ELEM_READ_MODBUS_ETH	0x3a
+#define ELEM_WRITE_MODBUS_ETH  	0x3b
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -232,6 +236,8 @@ typedef SDWORD SWORD;
         case ELEM_WRITE_USS: \
         case ELEM_READ_MODBUS: \
         case ELEM_WRITE_MODBUS: \
+        case ELEM_READ_MODBUS_ETH: \
+        case ELEM_WRITE_MODBUS_ETH: \
         case ELEM_SET_PWM: \
         case ELEM_UART_SEND: \
         case ELEM_UART_RECV: \
@@ -343,6 +349,20 @@ typedef struct ElemWriteModbusTag {
 	int		value;
 } ElemWriteModbus;
 
+typedef struct ElemReadModbusEthTag {
+    char    name[MAX_NAME_LEN];
+	int		id;
+	int		address;
+	int		value;
+} ElemReadModbusEth;
+
+typedef struct ElemWriteModbusEthTag {
+    char    name[MAX_NAME_LEN];
+	int		id;
+	int		address;
+	int		value;
+} ElemWriteModbusEth;
+
 typedef struct ElemSetPwmTag {
     char    name[MAX_NAME_LEN];
     int     targetFreq;
@@ -413,6 +433,8 @@ typedef struct ElemLeafTag {
         ElemWriteUSS        writeUSS;
         ElemReadModbus      readModbus;
         ElemWriteModbus     writeModbus;
+        ElemReadModbusEth   readModbusEth;
+        ElemWriteModbusEth  writeModbusEth;
         ElemSetPwmTag       setPwm;
         ElemUart            uart;
 		ElemSetBit			setBit;
@@ -473,6 +495,8 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_SET_DA			17
 #define IO_TYPE_READ_MODBUS     18
 #define IO_TYPE_WRITE_MODBUS    19
+#define IO_TYPE_READ_MODBUS_ETH 20
+#define IO_TYPE_WRITE_MODBUS_ETH 21
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -730,6 +754,8 @@ void AddReadUSS(void);
 void AddWriteUSS(void);
 void AddReadModbus(void);
 void AddWriteModbus(void);
+void AddReadModbusEth(void);
+void AddWriteModbusEth(void);
 void AddSetPwm(void);
 void AddUart(int which);
 void AddPersist(void);
@@ -796,6 +822,8 @@ void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, 
 void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
 void ShowReadModbusDialog(char *name, int *id, int *address);
 void ShowWriteModbusDialog(char *name, int *id, int *address);
+void ShowReadModbusEthDialog(char *name, int *id, int *address);
+void ShowWriteModbusEthDialog(char *name, int *id, int *address);
 void ShowSetPwmDialog(char *name, int *targetFreq);
 void ShowPersistDialog(char *var);
 void ShowUartDialog(int which, char *name);

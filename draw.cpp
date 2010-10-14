@@ -106,6 +106,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_RESET_ENC:
         case ELEM_READ_MODBUS:
         case ELEM_WRITE_MODBUS:
+        case ELEM_READ_MODBUS_ETH:
+        case ELEM_WRITE_MODBUS_ETH:
             return 1;
 
         case ELEM_FORMATTED_STRING:
@@ -490,6 +492,20 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             ElemWriteModbus *r = &leaf->d.writeModbus;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{WRITE MODBUS}", poweredBefore,
+                poweredAfter);
+            break;
+        }
+        case ELEM_READ_MODBUS_ETH: {
+            ElemReadModbusEth *r = &leaf->d.readModbusEth;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{READ MB ETH}", poweredBefore,
+                poweredAfter);
+            break;
+        }
+        case ELEM_WRITE_MODBUS_ETH: {
+            ElemWriteModbusEth *r = &leaf->d.writeModbusEth;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, "{WRITE MB ETH}", poweredBefore,
                 poweredAfter);
             break;
         }
@@ -895,6 +911,15 @@ cmp:
                 (which == ELEM_READ_MODBUS) ? "{READ MODBUS}" : "{WRITE MODBUS}",
                 poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, (which == ELEM_READ_MODBUS) ? leaf->d.readModbus.name : leaf->d.writeModbus.name, poweredAfter, TRUE);
+            *cx += POS_WIDTH;
+            break;
+
+        case ELEM_READ_MODBUS_ETH:
+        case ELEM_WRITE_MODBUS_ETH:
+            CenterWithWires(*cx, *cy,
+                (which == ELEM_READ_MODBUS_ETH) ? "{READ MB ETH}" : "{WRITE MB ETH}",
+                poweredBefore, poweredAfter);
+            CenterWithSpaces(*cx, *cy, (which == ELEM_READ_MODBUS_ETH) ? leaf->d.readModbusEth.name : leaf->d.writeModbusEth.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
             break;
 

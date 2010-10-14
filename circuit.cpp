@@ -441,6 +441,22 @@ void AddWriteModbus(void)
     strcpy(t->d.writeModbus.name, "Vnew");
     AddLeaf(ELEM_WRITE_MODBUS, t);
 }
+void AddReadModbusEth(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.readModbusEth.name, "Knew");
+    AddLeaf(ELEM_READ_MODBUS_ETH, t);
+}
+void AddWriteModbusEth(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.writeModbusEth.name, "Vnew");
+    AddLeaf(ELEM_WRITE_MODBUS_ETH, t);
+}
 void AddSetPwm(void)
 {
     if(!CanInsertEnd) return;

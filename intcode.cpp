@@ -898,6 +898,48 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 				}
                 break;
 				
+            case ELEM_READ_MODBUS_ETH:
+            case ELEM_WRITE_MODBUS_ETH:
+				{
+				char id[10];
+				char addr[10];
+
+				sprintf(id, "%d", l->d.writeModbusEth.id);
+				sprintf(addr, "%d", l->d.writeModbusEth.address);
+
+				// We want to respond to rising edges, so yes we need a one shot.
+				char oneShot[MAX_NAME_LEN];
+				GenSymOneShot(oneShot);
+				char byPass[MAX_NAME_LEN];
+				GenSymOneShot(byPass);
+
+				// OneShot 
+				Op(INT_IF_BIT_SET, stateInOut);
+					Op(INT_IF_BIT_CLEAR, oneShot);
+						Op(INT_IF_BIT_SET, "$SerialReady");
+							if (which == ELEM_READ_MODBUS_ETH)
+								Op(INT_READ_MODBUS_ETH, l->d.readModbusEth.name, id, l->d.writeModbusEth.address);
+							else
+								Op(INT_WRITE_MODBUS_ETH, l->d.writeModbusEth.name, id, l->d.writeModbusEth.address);
+							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+						Op(INT_END_IF);
+						Op(INT_CLEAR_BIT, stateInOut);
+						Op(INT_COPY_BIT_TO_BIT, byPass, stateInOut);
+					Op(INT_END_IF);
+					Op(INT_IF_BIT_CLEAR, byPass);
+						Op(INT_IF_BIT_SET, "$SerialReady");
+							Op(INT_SET_BIT, byPass);
+						Op(INT_ELSE);
+							Op(INT_CLEAR_BIT, stateInOut);
+						Op(INT_END_IF);
+					Op(INT_END_IF);
+				Op(INT_ELSE);
+					Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+				Op(INT_END_IF);
+
+				}
+                break;
+				
             case ELEM_SET_PWM: {
                 Op(INT_IF_BIT_SET, stateInOut);
                 char line[80];

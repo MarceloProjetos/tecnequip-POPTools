@@ -547,6 +547,38 @@ void ShowWriteModbusDialog(char *name, int *id, int *address)
 	*address = atoi(addr);
 }
 
+void ShowReadModbusEthDialog(char *name, int *id, int *address)
+{
+    char i[100];
+    sprintf(i, "%d", *id);
+
+    char addr[100];
+    sprintf(addr, "%d", *address);
+
+	char *labels[] = { _("Destino:"), _("ID:"), _("Endereço:") };
+    char *dests[] = { name, i, addr };
+    ShowSimpleDialog(_("Lê Registrador do Modbus Ethernet"), 3, labels, 0x6, 0x1, 0x6, dests);
+
+	*id = atoi(i);
+	*address = atoi(addr);
+}
+
+void ShowWriteModbusEthDialog(char *name, int *id, int *address)
+{
+    char i[100];
+    sprintf(i, "%d", *id);
+
+    char addr[100];
+    sprintf(addr, "%d", *address);
+
+	char *labels[] = { _("Origem:"), _("ID:"), _("Endereço:") };
+    char *dests[] = { name, i, addr };
+    ShowSimpleDialog(_("Escreve Registrador do Modbus Ethernet"), 3, labels, 0x6, 0x1, 0x6, dests);
+
+	*id = atoi(i);
+	*address = atoi(addr);
+}
+
 void ShowSetPwmDialog(char *name, int *targetFreq)
 {
     char freq[100];

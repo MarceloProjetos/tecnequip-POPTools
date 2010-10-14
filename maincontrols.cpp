@@ -367,19 +367,23 @@ HMENU MakeMainWindowMenus(void)
 
 	ComunicationMenu = CreatePopupMenu();
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_FMTD_STR,
-        _("Insert Formatted String Over UART"));
+        _("Insert Formatted String Over Serial"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_SEND,
-        _("Insert &UART Send"));
+        _("Insert Serial &Send"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_RECV,
-        _("Insert &UART Receive"));
+        _("Insert Serial &Receive"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_READ_USS,
         _("Leitura de Parametro do Inversor da Nord"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_WRITE_USS,
         _("Escrita de Parametro no Inversor da Nord"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_READ_MODBUS,
-        _("Leitura de registrador do MODBUS"));
+        _("Leitura de registrador do MODBUS RS485"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_WRITE_MODBUS,
-        _("Escrita em registrador do MODBUS"));
+        _("Escrita em registrador do MODBUS RS485"));
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_READ_MODBUS_ETH,
+        _("Leitura de registrador do MODBUS Ethernet"));
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_WRITE_MODBUS_ETH,
+        _("Escrita em registrador do MODBUS Ethernet"));
 	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ComunicationMenu,
         _("Comunicação"));
 
@@ -629,18 +633,18 @@ void RefreshControlsToSettings(void)
     sprintf(buf, _("cycle time %.2f ms"), (double)Prog.cycleTime/1000.0);
     SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)buf);
 
-    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
-        Prog.mcu->whichIsa == ISA_INTERPRETED))
+    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC || Prog.mcu->whichIsa == ISA_INTERPRETED))
     {
-        strcpy(buf, "");
+		strcpy(buf, "");
     } else {
-        sprintf(buf, _("processor clock %.4f MHz"),
-            (double)Prog.mcuClock/1000000.0);
+        sprintf(buf, _("processor clock %.4f MHz"), (double)Prog.mcuClock/1000000.0);
     }
     SendMessage(StatusBar, SB_SETTEXT, 2, (LPARAM)buf);
 
-    for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-        if(&SupportedMcus[i] == Prog.mcu) {
+    for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
+	{
+        if(&SupportedMcus[i] == Prog.mcu) 
+		{
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0+i, MF_CHECKED);
         } else {
             CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0+i, MF_UNCHECKED);
