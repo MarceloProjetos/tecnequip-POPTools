@@ -63,23 +63,31 @@ void MB_Init(struct MB_Device *dev)
 struct MB_PDU MB_Validate(unsigned char *buf, unsigned int size)
 {
   unsigned int offset = 0;
-  unsigned short int crc16_calc = CRC16(buf, size-2), crc16_real;
+  unsigned short int crc16_calc, crc16_real;
   struct MB_PDU msg;
 
-  crc16_real = (unsigned short int)(buf[size-2]) | (((unsigned short int)(buf[size-1]))<<8);
+  memset(&msg, 0, sizeof(msg));
 
-  if(crc16_calc == crc16_real) {
-    msg.Id           = buf[offset++];
-    msg.FunctionCode = buf[offset++];
-    if(msg.FunctionCode == 0x08 || msg.FunctionCode == 0x2B)
-      msg.FunctionCode = (msg.FunctionCode<<8) | buf[offset++];
-    msg.Data         = buf  + offset;
-    msg.ds           = size - offset - 2; // total - tamanho utilizado - CRC16
+  if(size >= 4) {
+    crc16_calc = CRC16(buf, size-2);
+    crc16_real = (unsigned short int)(buf[size-2]) | (((unsigned short int)(buf[size-1]))<<8);
+
+    if(crc16_calc == crc16_real) {
+      msg.Id           = buf[offset++];
+      msg.FunctionCode = buf[offset++];
+      if(msg.FunctionCode == 0x08 || msg.FunctionCode == 0x2B)
+        msg.FunctionCode = (msg.FunctionCode<<8) | buf[offset++];
+      msg.Data         = buf  + offset;
+      msg.ds           = size - offset - 2; // total - tamanho utilizado - CRC16
+    } else {
+  #ifdef MB_DEBUG
+      printf("MODBUS: Erro de CRC. Recebido 0x%x, Calculado: 0x%x\n", crc16_real, crc16_calc);
+  #endif
+    }
   } else {
 #ifdef MB_DEBUG
-    printf("MODBUS: Erro de CRC. Recebido 0x%x, Calculado: 0x%x\n", crc16_real, crc16_calc);
+    printf("MODBUS: Poucos dados. Size: %d\n", size);
 #endif
-    memset(&msg, 0, sizeof(msg));
   }
 
   return msg;
@@ -172,7 +180,7 @@ struct MB_Reply MB_Send(struct MB_Device *dev, unsigned short int FunctionCode, 
   unsigned short int crc16;
   unsigned int size=0, i;
   struct MB_Reply r;
-  struct MB_PDU msg;
+  //struct MB_PDU msg;
   unsigned char buf[MB_BUFFER_SIZE];
 
   memset(r.reply.reply_buffer, 0, ARRAY_SIZE(r.reply.reply_buffer));

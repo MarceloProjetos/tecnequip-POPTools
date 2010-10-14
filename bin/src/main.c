@@ -37,6 +37,7 @@
 extern volatile unsigned int CYCLE_TIME;
 
 extern volatile unsigned char MODBUS_MASTER;  // 0 = Slave, 1 = Master
+volatile unsigned int * MODBUS_RETURN_VAL = NULL;
 
 /******************************************************************************
 * Definições
@@ -304,6 +305,8 @@ void modbus_send(unsigned char id,
     mbdev = &modbus_master;
   else
     mbdev = &modbus_slave;
+
+  MODBUS_RETURN_VAL = value;
 
   union MB_FCD_Data data;
   struct MB_Reply rp;
@@ -920,9 +923,9 @@ void TIMER0_IRQHandler (void)
 	serial_timeout = 0;
   }
 
-  if (/*!I_SerialReady &&*/ modbus_rx_index > 12)
+  if (/*!I_SerialReady &&*/ modbus_rx_index > 4)
   {
-    //ModbusRequest(&modbus_master, modbus_rx_buffer, modbus_rx_index);
+    //ModbusRequest(&modbus_master, modbus_rx_buffer, sz);
     ModbusRequest(&modbus_slave, modbus_rx_buffer, modbus_rx_index);
 	modbus_rx_index = 0;
   }
@@ -1103,9 +1106,31 @@ unsigned int ModbusRequest(struct MB_Device * mbdev, unsigned char * buffer, uns
     r = MB_ReceiveReply(mbdev, MB_Validate(buffer, sz));
     if (r.ExceptionCode == MB_EXCEPTION_NONE)
     {
-	  I_SerialReady = 1;
-      switch(r.FunctionCode)
+      I_SerialReady = 1;
+      if (MODBUS_RETURN_VAL == NULL)
+        return 0;
+
+      switch (r.FunctionCode)
       {
+      case MB_FC_READ_COILS:
+        memcpy((void*)MODBUS_RETURN_VAL, r.reply.read_coils.data, r.reply.read_coils.size);
+        break;
+
+      case MB_FC_READ_DISCRETE_INPUTS:
+        memcpy((void*)MODBUS_RETURN_VAL, r.reply.read_discrete_inputs.data, r.reply.read_discrete_inputs.size);
+        break;
+
+      case MB_FC_READ_HOLDING_REGISTERS:
+        memcpy((void*)MODBUS_RETURN_VAL, r.reply.read_holding_registers.data, r.reply.read_holding_registers.size);
+        break;
+
+      case MB_FC_READ_INPUT_REGISTERS:
+        memcpy((void*)MODBUS_RETURN_VAL, r.reply.read_input_registers.data, r.reply.read_input_registers.size);
+        break;
+
+      case MB_FC_RW_MULTIPLE_REGISTERS:
+        memcpy((void*)MODBUS_RETURN_VAL, r.reply.rw_multiple_registers.data, r.reply.rw_multiple_registers.size);
+        break;
       };
     }
   }
@@ -1699,7 +1724,7 @@ int main (void)
     // Check VeloAccFlag continuously
 	ENC_VAL = QEI_GetPosition(QEI);
 
-    if (VeloAccFlag == SET) 
+    if (VeloAccFlag == SET)
 	{
       //Get Position
       //PosCnt = QEI_GetPosition(QEI);
