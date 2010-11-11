@@ -502,11 +502,13 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_READ_MODBUS_ETH:
-			ShowReadModbusEthDialog(Selected->d.readModbusEth.name, &Selected->d.readModbusEth.id, &Selected->d.readModbusEth.address);
+			//ShowReadModbusEthDialog(Selected->d.readModbusEth.name, &Selected->d.readModbusEth.id, &Selected->d.readModbusEth.address);
+			ShowModbusDialog(Selected->d.readModbusEth.name, &Selected->d.readModbusEth.id, &Selected->d.readModbusEth.address, &Selected->d.readModbusEth.int32);
             break;
 
         case ELEM_WRITE_MODBUS_ETH:
-			ShowWriteModbusEthDialog(Selected->d.writeModbusEth.name, &Selected->d.writeModbusEth.id, &Selected->d.writeModbusEth.address);
+			//ShowWriteModbusEthDialog(Selected->d.writeModbusEth.name, &Selected->d.writeModbusEth.id, &Selected->d.writeModbusEth.address);
+			ShowModbusDialog(Selected->d.writeModbusEth.name, &Selected->d.writeModbusEth.id, &Selected->d.writeModbusEth.address, &Selected->d.writeModbusEth.int32);
             break;
 
         case ELEM_UART_RECV:

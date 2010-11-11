@@ -88,12 +88,12 @@ static void MakeControls(void)
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        146, 41, 20, 21, SetBitDialog, NULL, Instance, NULL);
+        135, 41, 50, 21, SetBitDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
 	BitCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        176, 41, 65, 140, SetBitDialog, NULL, Instance, NULL);
+        190, 41, 65, 140, SetBitDialog, NULL, Instance, NULL);
     NiceFont(BitCombobox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),

@@ -435,10 +435,10 @@ static void GenerateAnsiC(FILE *f)
 				fprintf(f, "modbus_send(%d, MB_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_MODBUS_ETH:
-				fprintf(f, "modbus_tcp_send(%d, MB_FC_READ_HOLDING_REGISTERS, %d, 2, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
+				fprintf(f, "modbus_tcp_send(%d, MB_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
 				break;
             case INT_WRITE_MODBUS_ETH:
-				fprintf(f, "modbus_tcp_send(%d, MB_FC_WRITE_MULTIPLE_REGISTERS, %d, 2, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
+				fprintf(f, "modbus_tcp_send(%d, MB_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
 				break;
             case INT_SET_PWM:
 				break;

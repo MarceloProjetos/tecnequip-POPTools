@@ -355,6 +355,7 @@ typedef struct ElemReadModbusEthTag {
     char    name[MAX_NAME_LEN];
 	int		id;
 	int		address;
+	bool	int32;
 	int		value;
 } ElemReadModbusEth;
 
@@ -362,6 +363,7 @@ typedef struct ElemWriteModbusEthTag {
     char    name[MAX_NAME_LEN];
 	int		id;
 	int		address;
+	bool	int32;
 	int		value;
 } ElemWriteModbusEth;
 

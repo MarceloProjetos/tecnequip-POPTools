@@ -111,7 +111,7 @@ static void MakeControls(void)
         16, 41, 100, 20, SetBitDialog, NULL, Instance, NULL);
     NiceFont(ClearBitRadio);
 
-    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Orig./Dest.:"),
+    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Variavel:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         115, 16, 60, 21, SetBitDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
