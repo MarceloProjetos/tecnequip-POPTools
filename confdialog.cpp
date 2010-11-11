@@ -37,6 +37,7 @@ static HWND BaudTextbox;
 static HWND PLCCombobox;
 static HWND BaudRateCombobox;
 static HWND ComPortCombobox;
+static HWND ParityCombobox;
 
 static HWND ip[4];
 static HWND mask[4];
@@ -57,8 +58,10 @@ const LPCTSTR ComboboxComPortItens[] = { _("COM1"), _("COM2"), _("COM3"), _("COM
 						_("COM8"), _("COM9"), _("COM10"), _("COM11"), _("COM12"), _("COM13"), _("COM14"), _("COM15"), _("COM16"),
 						_("COM17"), _("COM18"), _("COM19"), _("COM20"), _("COM21"), _("COM22") };
 
-const LPCTSTR ComboboxBaudRateItens[] = { _("2400"), _("4800"), _("7200"), _("9600"), _("14400"), _("19200"), _("28800"), 
-						_("38400"), _("57600"), _("115200") };
+const LPCTSTR ComboboxBaudRateItens[] = { /*_("2400"), _("4800"), _("7200"),*/ _("9600"), _("14400"), _("19200")/*, _("28800"), 
+						_("38400"), _("57600"), _("115200")*/ };
+
+const LPCTSTR ComboboxParityItens[] = { _("8-None-1"), _("8-Even-1"), _("8-Odd-1") };
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
@@ -193,145 +196,155 @@ static void MakeControls(void)
         155, 72, 85, 100, ConfDialog, NULL, Instance, NULL);
     NiceFont(BaudRateCombobox);
 
-    HWND textLabel4 = CreateWindowEx(0, WC_STATIC, _("Porta Gravação:"),
+    HWND textLabel31 = CreateWindowEx(0, WC_STATIC, _("Data/Paridade/Stop:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 105, 145, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textLabel31);
+
+	ParityCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        155, 102, 85, 100, ConfDialog, NULL, Instance, NULL);
+    NiceFont(ParityCombobox);
+
+    HWND textLabel4 = CreateWindowEx(0, WC_STATIC, _("Porta Gravação:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 134, 145, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textLabel4);
 
 	ComPortCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        155, 105, 85, 100, ConfDialog, NULL, Instance, NULL);
+        155, 132, 85, 100, ConfDialog, NULL, Instance, NULL);
     NiceFont(ComPortCombobox);
 
 	HWND textLabel5 = CreateWindowEx(0, WC_STATIC, _("Endereço IP:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 146, 145, 21, ConfDialog, NULL, Instance, NULL);
+        5, 180, 145, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textLabel5);
 
     ip[0] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
+        155, 180, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(ip[0]);
 
 	HWND textPoint1 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        189, 152, 5, 21, ConfDialog, NULL, Instance, NULL);
+        189, 186, 5, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textPoint1);
 
 	ip[1] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        195, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
+        195, 180, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(ip[1]);
 
 	HWND textPoint2 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        229, 152, 5, 21, ConfDialog, NULL, Instance, NULL);
+        229, 186, 5, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textPoint1);
 
     ip[2] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        235, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
+        235, 180, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(ip[2]);
 
 	HWND textPoint3 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        269, 152, 5, 21, ConfDialog, NULL, Instance, NULL);
+        269, 186, 5, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textPoint1);
 
     ip[3] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        275, 146, 35, 21, ConfDialog, NULL, Instance, NULL);
+        275, 180, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(ip[3]);
 
     HWND textLabel6 = CreateWindowEx(0, WC_STATIC, _("Mascara:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 173, 145, 21, ConfDialog, NULL, Instance, NULL);
+        5, 208, 145, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textLabel6);
 
     mask[0] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
+        155, 208, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(mask[0]);
 
 	HWND textPoint4 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        189, 179, 5, 21, ConfDialog, NULL, Instance, NULL);
+        189, 214, 5, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textPoint1);
 
     mask[1] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        195, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
+        195, 208, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(mask[1]);
 
 	HWND textPoint5 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        229, 179, 5, 21, ConfDialog, NULL, Instance, NULL);
+        229, 214, 5, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textPoint1);
 
     mask[2] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        235, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
+        235, 208, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(mask[2]);
 
 	HWND textPoint6 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        269, 179, 5, 21, ConfDialog, NULL, Instance, NULL);
+        269, 214, 5, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textPoint1);
 
     mask[3] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        275, 173, 35, 21, ConfDialog, NULL, Instance, NULL);
+        275, 208, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(mask[3]);
 	
     HWND textLabel7 = CreateWindowEx(0, WC_STATIC, _("Gateway:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 200, 145, 21, ConfDialog, NULL, Instance, NULL);
+        5, 235, 145, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textLabel7);
 
     gw[0] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
+        155, 235, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[0]);
 
 	HWND textPoint7 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        189, 206, 5, 21, ConfDialog, NULL, Instance, NULL);
+        189, 241, 5, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textPoint1);
 
     gw[1] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        195, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
+        195, 235, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[1]);
 
 	HWND textPoint8 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        229, 206, 5, 21, ConfDialog, NULL, Instance, NULL);
+        229, 241, 5, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textPoint1);
 
     gw[2] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        235, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
+        235, 235, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[2]);
 
 	HWND textPoint9 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        269, 206, 5, 21, ConfDialog, NULL, Instance, NULL);
+        269, 241, 5, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(textPoint1);
 
     gw[3] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        275, 200, 35, 21, ConfDialog, NULL, Instance, NULL);
+        275, 235, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[3]);
 	
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Configuração de Rede"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        5, 125, 325, 105, ConfDialog, NULL, Instance, NULL);
+        5, 160, 325, 105, ConfDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
-	if(!UartFunctionUsed()) {   
-        EnableWindow(BaudRateCombobox, FALSE);
-        EnableWindow(textLabel3, FALSE);
-    }
+	//if(!UartFunctionUsed()) {   
+ //       EnableWindow(BaudRateCombobox, FALSE);
+ //       EnableWindow(textLabel3, FALSE);
+ //   }
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
         Prog.mcu->whichIsa == ISA_INTERPRETED)) 
@@ -402,7 +415,7 @@ void ShowConfDialog(void)
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "LDmicroDialog", _("PLC Configuration"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 335, 235, NULL, NULL, Instance, NULL);
+        100, 100, 335, 285, NULL, NULL, Instance, NULL);
 
     MakeControls();
    
@@ -436,16 +449,27 @@ void ShowConfDialog(void)
 	SendMessage(ComPortCombobox, CB_SETCURSEL, Prog.comPort ? Prog.comPort - 1 : 0, 0);
 	SendMessage(ComPortCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
-	for (i = 0; i < sizeof(ComboboxBaudRateItens) / sizeof(ComboboxBaudRateItens[0]); i++)
-		SendMessage(BaudRateCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBaudRateItens[i]));
+	for (i = 0; i < sizeof(ComboboxParityItens) / sizeof(ComboboxParityItens[0]); i++)
+		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxParityItens[i]));
 
-	SendMessage(BaudRateCombobox, CB_SETCURSEL, 3, 0);
+	SendMessage(ParityCombobox, CB_SETCURSEL, Prog.parity, 0);
+	SendMessage(ParityCombobox, CB_SETDROPPEDWIDTH, 100, 0);
+
+	sprintf(buf, "%d", Prog.baudRate);
+	for (i = 0; i < sizeof(ComboboxBaudRateItens) / sizeof(ComboboxBaudRateItens[0]); i++)
+	{
+		SendMessage(BaudRateCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBaudRateItens[i]));
+		if (strcmp(ComboboxBaudRateItens[i], buf) == 0)
+			SendMessage(BaudRateCombobox, CB_SETCURSEL, i, 0);
+	}
+
+	//SendMessage(BaudRateCombobox, CB_SETCURSEL, 0, 0);
 	SendMessage(BaudRateCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
 	//sprintf(buf, "%.6f", Prog.mcuClock / 1e6);
     //SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    sprintf(buf, "%d", Prog.baudRate);
+    //sprintf(buf, "%d", Prog.baudRate);
     //SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     EnableWindow(MainWindow, FALSE);
@@ -514,6 +538,7 @@ void ShowConfDialog(void)
         Prog.baudRate = atoi(buf);
 
 		Prog.comPort = SendMessage(ComPortCombobox, CB_GETCURSEL, 0, 0) + 1;
+		Prog.parity = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
     }
 
     EnableWindow(MainWindow, TRUE);

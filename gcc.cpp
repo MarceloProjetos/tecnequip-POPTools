@@ -429,10 +429,10 @@ static void GenerateAnsiC(FILE *f)
 				fprintf(f, "uss_set_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_MODBUS:
-				fprintf(f, "modbus_send(%d, MB_FC_READ_HOLDING_REGISTERS, %d, 2, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
+				fprintf(f, "modbus_send(%d, MB_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
 				break;
             case INT_WRITE_MODBUS:
-				fprintf(f, "modbus_send(%d, MB_FC_WRITE_MULTIPLE_REGISTERS, %d, 2, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
+				fprintf(f, "modbus_send(%d, MB_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_MODBUS_ETH:
 				fprintf(f, "modbus_tcp_send(%d, MB_FC_READ_HOLDING_REGISTERS, %d, 2, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), MapSym(IntCode[i].name1));
@@ -720,21 +720,6 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(h, "/*  DEFINE: All code exported                                              */\n");
 	fprintf(h, "/*=========================================================================*/\n\n");
 
-	fprintf(h, "#define IP_ADDR1 %d\n", Prog.ip[0]);
-	fprintf(h, "#define IP_ADDR2 %d\n", Prog.ip[1]);
-	fprintf(h, "#define IP_ADDR3 %d\n", Prog.ip[2]);
-	fprintf(h, "#define IP_ADDR4 %d\n\n", Prog.ip[3]);
-
-	fprintf(h, "#define IP_MASK1 %d\n", Prog.mask[0]);
-	fprintf(h, "#define IP_MASK2 %d\n", Prog.mask[1]);
-	fprintf(h, "#define IP_MASK3 %d\n", Prog.mask[2]);
-	fprintf(h, "#define IP_MASK4 %d\n\n", Prog.mask[3]);
-
-	fprintf(h, "#define IP_GW1 %d\n", Prog.gw[0]);
-	fprintf(h, "#define IP_GW2 %d\n", Prog.gw[1]);
-	fprintf(h, "#define IP_GW3 %d\n", Prog.gw[2]);
-	fprintf(h, "#define IP_GW4 %d\n\n", Prog.gw[3]);
-
 	fprintf(h, "volatile unsigned int I1 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int I2 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int I3 __attribute__((weak)) = 0;\n");
@@ -779,6 +764,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 
 	fprintf(h, "extern void PlcCycle(void);\n");
 	fprintf(h, "extern volatile unsigned int TIME_INTERVAL;\n");
+	fprintf(h, "void ld_Init(void);\n");
 
 	fclose(h);
 
@@ -809,7 +795,6 @@ DWORD CompileAnsiCToGCC(char *dest)
 " *****************************************************************************/\n"
 "#include \"uss.h\"\n"
 "#include \"modbus.h\"\n\n"
-
 "extern void DAC_Write(unsigned int val);\n"
 "extern void modbus_send(unsigned char id,\n"
 "                        int fc,\n"
@@ -827,6 +812,10 @@ DWORD CompileAnsiCToGCC(char *dest)
 "volatile int ENC1;\n\n"
 	, Prog.cycleTime / 1000, Prog.cycleTime / 1000);
 
+	fprintf(h, "volatile unsigned char IP_ADDR[4] = { %d, %d, %d, %d };\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
+	fprintf(h, "volatile unsigned char IP_MASK[4] = { %d, %d, %d, %d };\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
+	fprintf(h, "volatile unsigned char IP_GW[4] = { %d, %d, %d, %d };\n\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
+
 	int j;
 
 	for(int i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) 
@@ -838,8 +827,10 @@ DWORD CompileAnsiCToGCC(char *dest)
 				|| (l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS)
 				|| (l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS_ETH)
 				|| (l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS_ETH)) 
+			{
 				fprintf(f, "unsigned char MODBUS_MASTER = 1; // 0=Slave, 1=Master\n\n");
-			break;
+				break;
+			}
 		}
 		if (j < DISPLAY_MATRIX_Y_SIZE)
 			break;
@@ -847,10 +838,11 @@ DWORD CompileAnsiCToGCC(char *dest)
 
 	fprintf(f, "extern struct MB_Device modbus_master;\n");
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");
+	fprintf(f, "extern void RS485Config(int baudrate, int parity);\n");
 	fprintf(f, "extern unsigned int ADCRead(unsigned int i);\n");
 	fprintf(f, "extern unsigned int ENCRead(unsigned int i);\n");
 	fprintf(f, "extern unsigned int ENCReset(unsigned int i);\n");
-	fprintf(f, "extern volatile unsigned int I_SerialReady;\n");
+	fprintf(f, "extern volatile unsigned int I_SerialReady;\n\n");
 
     // now generate declarations for all variables
     GenerateDeclarations(f);
@@ -858,10 +850,13 @@ DWORD CompileAnsiCToGCC(char *dest)
     fprintf(f,
 "\n"
 "\n"
+"void ld_Init(void)\n"
+"{\n"
+"  RS485Config(%d, %d);\n"
+"}\n\n"
 "/* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */\n"
 "void PlcCycle(void)\n"
-"{\n"
-        );
+"{\n", Prog.baudRate, Prog.parity);
 
     GenerateAnsiC(f);
 

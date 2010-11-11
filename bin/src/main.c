@@ -37,6 +37,7 @@
 extern volatile unsigned int CYCLE_TIME;
 
 extern volatile unsigned char MODBUS_MASTER;  // 0 = Slave, 1 = Master
+volatile unsigned char WAITING_FOR_USS = 0;	// 0=MODBUS, 1=USS
 volatile unsigned int * MODBUS_RETURN_VAL = NULL;
 
 /******************************************************************************
@@ -71,6 +72,10 @@ extern volatile unsigned int I2CCount;
 extern volatile unsigned char I2CMasterBuffer[BUFSIZE];
 extern volatile unsigned int I2CCmd, I2CMasterState;
 extern volatile unsigned int I2CReadLength, I2CWriteLength;
+
+extern volatile unsigned char IP_ADDR[4];
+extern volatile unsigned char IP_MASK[4];
+extern volatile unsigned char IP_GW[4];
 
 #ifdef QEI_CHECK
 /************************** PRIVATE MACROS *************************/
@@ -858,34 +863,49 @@ void TIMER0_IRQHandler (void)
   TIM0->IR = 1;                       /* clear interrupt flag */
 
   serial_timeout++;
-  uss_timeout++;
+  //uss_timeout++;
   modbus_timeout++;
 
   plccycle_timer++;
 
-  sz = 0;
-
   if (serial_timeout > 10)
   {
-    modbus_rx_index += RS485Read(modbus_rx_buffer + modbus_rx_index, sizeof(modbus_rx_buffer) - modbus_rx_index);
+    sz = RS485Read(modbus_rx_buffer + modbus_rx_index, sizeof(modbus_rx_buffer) - modbus_rx_index);
+	modbus_rx_index += sz;
 	serial_timeout = 0;
+
+	if (modbus_rx_index && !sz)
+	{
+		modbus_timeout = 0;
+
+		if (WAITING_FOR_USS == 1) // uss
+		{
+			uss_ready((PPO1*)modbus_rx_buffer, modbus_rx_index);
+			modbus_rx_index = 0;
+			WAITING_FOR_USS = 0;
+		} 
+		else // modbus
+		{
+			ModbusRequest(&modbus_slave, modbus_rx_buffer, modbus_rx_index);
+			modbus_rx_index = 0;
+		}
+
+	}
   }
 
-  if (/*!I_SerialReady &&*/ modbus_rx_index > 4)
-  {
-    //ModbusRequest(&modbus_master, modbus_rx_buffer, sz);
-    ModbusRequest(&modbus_slave, modbus_rx_buffer, modbus_rx_index);
-	modbus_rx_index = 0;
-  }
 
-  /*if (!I_SerialReady && sz)
-    uss_ready((PPO1*)modbus_rx_buffer, sz);
-
-  if (uss_timeout > 1000)
-    I_SerialReady = 1;*/
+ // if (!I_SerialReady && modbus_rx_index)
+ // {
+ //   uss_ready((PPO1*)modbus_rx_buffer, modbus_rx_index);
+ //   modbus_rx_index = 0;
+ // }
 
   if (modbus_timeout > 1000)
+  {
     I_SerialReady = 1;
+	WAITING_FOR_USS = 0;
+	modbus_timeout = 0;
+  } 
 
 }
 
@@ -1400,6 +1420,36 @@ unsigned int AtualizaEntradas(void)
   return i;
 }
 
+void RS485Config(int baudrate, int parity)
+{
+	if (parity == 1)
+		UART3->LCR = 0x1B;          /* 8 bits, even-parity, 1 stop bit */
+	else if (parity == 2)
+		UART3->LCR = 0x0B;          /* 8 bits, odd-parity, 1 stop bit */
+	else
+		UART3->LCR = 0x03;          /* 8 bits, no parity, 1 stop bit */
+
+	if (baudrate == 19200)
+	{
+		UART3->DLM = 0;
+		UART3->DLL = 46;
+		UART3->FDR = (13 << 4) | 10;
+	}
+	else if (baudrate == 14400)
+	{
+		UART3->DLM = 0;
+		UART3->DLL = 92;
+		UART3->FDR = (6 << 4) | 1;
+	}
+	else  // 9600
+	{
+		UART3->DLM = 0;
+		UART3->DLL = 92;
+		UART3->FDR = (13 << 4) | 10;
+	}
+
+}
+
 /******************************************************************************
 * Inicializacao do Hardware
 ******************************************************************************/
@@ -1487,6 +1537,7 @@ void HardwareInit(void)
   ADC->ADCR = 0x2F | (0x18 << 8) | (1 << 16) | (1 << 21); // Enable AD0:1:2:3:5, 1Mhz, BURST ON, PDN Enable
   memset(ad, 0, sizeof(ad));
 
+  ld_Init();
 }
 
 void GetMACAddress(unsigned char * addr)
@@ -1642,9 +1693,9 @@ int main (void)
   GetMACAddress(MAC_ADDRESS);
 
   // Default config
-  IP4_ADDR(&gMyIpAddress,          IP_ADDR1, IP_ADDR2, IP_ADDR3, IP_ADDR4);
-  IP4_ADDR(&gMyNetmask,            IP_MASK1, IP_MASK2, IP_MASK3, IP_MASK4);
-  IP4_ADDR(&gMyGateway,            IP_GW1, IP_GW2, IP_GW3, IP_GW4);
+  IP4_ADDR(&gMyIpAddress,          IP_ADDR[0], IP_ADDR[1], IP_ADDR[2], IP_ADDR[3]);
+  IP4_ADDR(&gMyNetmask,            IP_MASK[0], IP_MASK[1], IP_MASK[2], IP_MASK[3]);
+  IP4_ADDR(&gMyGateway,            IP_GW[0], IP_GW[1], IP_GW[2], IP_GW[3]);
   IP4_ADDR(&gRemoteIpAddress,      192, 168, 0, 10);
   gRemotePort = 5505;
 

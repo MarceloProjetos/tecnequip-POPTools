@@ -876,9 +876,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 					Op(INT_IF_BIT_CLEAR, oneShot);
 						Op(INT_IF_BIT_SET, "$SerialReady");
 							if (which == ELEM_READ_MODBUS)
-								Op(INT_READ_MODBUS, l->d.readModbus.name, id, l->d.writeModbus.address);
+								Op(INT_READ_MODBUS, l->d.readModbus.name, id, addr, 0, (unsigned char)l->d.readModbus.int32);
 							else
-								Op(INT_WRITE_MODBUS, l->d.writeModbus.name, id, l->d.writeModbus.address);
+								Op(INT_WRITE_MODBUS, l->d.writeModbus.name, id, addr, 0, (unsigned char)l->d.writeModbus.int32);
 							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
 						Op(INT_END_IF);
 						Op(INT_CLEAR_BIT, stateInOut);

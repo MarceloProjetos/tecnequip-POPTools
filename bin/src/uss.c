@@ -4,6 +4,7 @@ extern unsigned int uss_timeout;
 extern unsigned int serial_timeout;
 extern volatile unsigned int I_USSReady;
 extern volatile unsigned int I_SerialReady;
+extern volatile unsigned char WAITING_FOR_USS;
 volatile unsigned int * USSValue = NULL;
 
 //PPO0 uss_PPO0(ADR adr, PKE pke, IND ind, PWEH pwe, STW stw, SW1 sw1)
@@ -154,6 +155,7 @@ unsigned char uss_get_param(unsigned char addr, unsigned short int param, unsign
   if ((sz = RS485Write((unsigned char*)&p, sizeof(p))))
   {
     I_SerialReady = 0;
+	WAITING_FOR_USS = 1; // uss
     //uss_timeout = 0;
     //while(uss_timeout < 50); // delay
     return sz;
@@ -223,6 +225,7 @@ unsigned char uss_set_param(unsigned char addr, unsigned short int param, unsign
   if ((sz = RS485Write((unsigned char*)&p, sizeof(p))))
   {
     I_SerialReady = 0;
+	WAITING_FOR_USS = 1; // uss
     //uss_timeout = 0;
     //while(uss_timeout < 50); // delay
     return sz;

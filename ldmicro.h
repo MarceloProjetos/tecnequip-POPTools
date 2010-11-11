@@ -339,6 +339,7 @@ typedef struct ElemReadModbusTag {
     char    name[MAX_NAME_LEN];
 	int		id;
 	int		address;
+	bool	int32;
 	int		value;
 } ElemReadModbus;
 
@@ -346,6 +347,7 @@ typedef struct ElemWriteModbusTag {
     char    name[MAX_NAME_LEN];
 	int		id;
 	int		address;
+	bool	int32;
 	int		value;
 } ElemWriteModbus;
 
@@ -514,6 +516,7 @@ typedef struct PlcProgramTag {
     int         mcuClock;
     int         baudRate;	// RS485 baudrate
 	int			comPort;  // programming com port
+	int			parity;
 	unsigned char ip[4];
 	unsigned char mask[4];
 	unsigned char gw[4];
@@ -822,6 +825,7 @@ void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, 
 void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
 void ShowReadModbusDialog(char *name, int *id, int *address);
 void ShowWriteModbusDialog(char *name, int *id, int *address);
+void ShowModbusDialog(char *name, int *id, int *address, bool *set);
 void ShowReadModbusEthDialog(char *name, int *id, int *address);
 void ShowWriteModbusEthDialog(char *name, int *id, int *address);
 void ShowSetPwmDialog(char *name, int *targetFreq);

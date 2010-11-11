@@ -111,6 +111,7 @@
     <ClCompile Include="lutdialog.cpp" />
     <ClCompile Include="maincontrols.cpp" />
     <ClCompile Include="miscutil.cpp" />
+    <ClCompile Include="modbusdialog.cpp" />
     <ClCompile Include="resetdialog.cpp" />
     <ClCompile Include="schematic.cpp" />
     <ClCompile Include="setbitdialog.cpp" />

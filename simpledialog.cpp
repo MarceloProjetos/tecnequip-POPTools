@@ -239,8 +239,7 @@ BOOL ShowSimpleDialogWithCheckbox(char *title, int boxes, char **labels, DWORD n
     if(boxes > MAX_BOXES) oops();
 
     SimpleDialog = CreateWindowClient(0, "LDmicroDialog", title, 
-        WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 304, 15 + 30*(boxes < 2 ? 2 : boxes), NULL, NULL,
+        WS_OVERLAPPED | WS_SYSMENU, 100, 100, 304, 15 + 30*(boxes < 2 ? 2 : boxes), NULL, NULL,
         Instance, NULL);
 
     MakeControls(boxes, labels, fixedFontMask);

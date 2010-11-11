@@ -343,7 +343,7 @@ BOOL LoadProjectFromFile(char *filename)
     if(!f) return FALSE;
 
     char line[512];
-    int crystal, cycle, baud, comPort, ip[4], mask[4], gw[4];
+    int crystal, cycle, baud, comPort, parity, ip[4], mask[4], gw[4];
 
     while(fgets(line, sizeof(line), f)) {
         if(strcmp(line, "IO LIST\n")==0) {
@@ -357,6 +357,8 @@ BOOL LoadProjectFromFile(char *filename)
             Prog.cycleTime = cycle;
         } else if(sscanf(line, "BAUD=%d", &baud)) {
             Prog.baudRate = baud;
+        } else if(sscanf(line, "PARITY=%d", &parity)) {
+			Prog.parity = parity;
         } else if(sscanf(line, "COM=%d", &comPort)) {
             Prog.comPort = comPort;
         } else if(sscanf(line, "IP=%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3])) {
@@ -701,6 +703,7 @@ BOOL SaveProjectToFile(char *filename)
     fprintf(f, "CYCLE=%d\n", Prog.cycleTime);
     fprintf(f, "CRYSTAL=%d\n", Prog.mcuClock);
     fprintf(f, "BAUD=%d\n", Prog.baudRate);
+	fprintf(f, "PARITY=%d\n", Prog.parity);
 	fprintf(f, "COM=%d\n", Prog.comPort);
     fprintf(f, "IP=%d.%d.%d.%d\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
     fprintf(f, "MASK=%d.%d.%d.%d\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);

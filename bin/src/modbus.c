@@ -250,8 +250,10 @@ struct MB_Reply MB_Send(struct MB_Device *dev, unsigned short int FunctionCode, 
       buf[size++]  = (data->write_multiple_registers.quant>>8)&0xFF;
       buf[size++]  = (data->write_multiple_registers.quant   )&0xFF;
       buf[size++]  =  data->write_multiple_registers.size;
-      for(i=0; i<data->write_multiple_registers.size; i++)
-        buf[size++] = data->write_multiple_registers.val[i];
+      for(i=0; i<data->write_multiple_registers.size; i+=2) {
+        buf[size++] = data->write_multiple_registers.val[i+1];
+        buf[size++] = data->write_multiple_registers.val[i  ];
+	  }
       break;
 
     case MB_FC_MASK_WRITE_REGISTER:
@@ -273,8 +275,10 @@ struct MB_Reply MB_Send(struct MB_Device *dev, unsigned short int FunctionCode, 
       buf[size++]  = (data->rw_multiple_registers.quant_write >> 8) & 0xFF;
       buf[size++]  = (data->rw_multiple_registers.quant_write     ) & 0xFF;
       buf[size++]  =  data->rw_multiple_registers.size;
-      for(i=0; i<data->rw_multiple_registers.size; i++)
-        buf[size++] = data->rw_multiple_registers.val[i];
+      for(i=0; i<data->rw_multiple_registers.size; i+=2) {
+        buf[size++] = data->rw_multiple_registers.val[i+1];
+        buf[size++] = data->rw_multiple_registers.val[i  ];
+	  }
       break;
 
     case MB_FC_READ_EXCEPTION_STATUS: // Nao existem dados para este Function Code
@@ -377,8 +381,10 @@ unsigned int MB_SendReply(struct MB_Device *dev, struct MB_Reply *msg)
       buf[size++]  = (msg->reply.write_multiple_registers.quant>>8)&0xFF;
       buf[size++]  = (msg->reply.write_multiple_registers.quant   )&0xFF;
       buf[size++]  =  msg->reply.write_multiple_registers.size;
-      for(i=0; i<msg->reply.write_multiple_registers.size; i++)
-        buf[size++] =   msg->reply.write_multiple_registers.val[i];
+      for(i=0; i<msg->reply.write_multiple_registers.size; i+=2) {
+        buf[size++] =   msg->reply.write_multiple_registers.val[i+1];
+        buf[size++] =   msg->reply.write_multiple_registers.val[i  ];
+	  }
       break;
 
     case MB_FC_MASK_WRITE_REGISTER:
@@ -392,8 +398,9 @@ unsigned int MB_SendReply(struct MB_Device *dev, struct MB_Reply *msg)
 
     case MB_FC_RW_MULTIPLE_REGISTERS:
       buf[size++] = msg->reply.rw_multiple_registers.size;
-      for(i=0; i<msg->reply.rw_multiple_registers.size; i++) {
-        buf[size++] = msg->reply.rw_multiple_registers.data[i];
+      for(i=0; i<msg->reply.rw_multiple_registers.size; i+=2) {
+        buf[size++] = msg->reply.rw_multiple_registers.data[i+1];
+        buf[size++] = msg->reply.rw_multiple_registers.data[i  ];
       }
       break;
 
@@ -431,6 +438,7 @@ unsigned int MB_SendReply(struct MB_Device *dev, struct MB_Reply *msg)
 unsigned int MB_Receive(struct MB_Device *dev, struct MB_PDU msg)
 {
   unsigned int i;
+  unsigned char tmp;
   struct MB_Reply reply;
   union MB_FCD_Data data;
 
@@ -498,6 +506,11 @@ unsigned int MB_Receive(struct MB_Device *dev, struct MB_PDU msg)
         data.write_multiple_registers.quant = (msg.Data[2]<<8) | (msg.Data[3]);
         data.write_multiple_registers.size  =  msg.Data[4];
         data.write_multiple_registers.val   =  msg.Data+5;
+		for(i=0; i<data.write_multiple_registers.size; i+=2) {
+			tmp = data.write_multiple_registers.val[i];
+			data.write_multiple_registers.val[i  ] = data.write_multiple_registers.val[i+1];
+			data.write_multiple_registers.val[i+1] = tmp;
+		}
         break;
 
       case MB_FC_MASK_WRITE_REGISTER:
@@ -514,6 +527,11 @@ unsigned int MB_Receive(struct MB_Device *dev, struct MB_PDU msg)
         data.rw_multiple_registers.quant_write = (msg.Data[6]<<8) | (msg.Data[7]);
         data.rw_multiple_registers.size        =  msg.Data[8];
         data.rw_multiple_registers.val         =  msg.Data+9;
+		for(i=0; i<data.rw_multiple_registers.size; i+=2) {
+			tmp = data.rw_multiple_registers.val[i];
+			data.rw_multiple_registers.val[i  ] = data.rw_multiple_registers.val[i+1];
+			data.rw_multiple_registers.val[i+1] = tmp;
+		}
         break;
 
       case MB_FC_READ_EXCEPTION_STATUS: // Nao existem dados para este Function Code

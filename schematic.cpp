@@ -492,11 +492,13 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_READ_MODBUS:
-			ShowReadModbusDialog(Selected->d.readModbus.name, &Selected->d.readModbus.id, &Selected->d.readModbus.address);
+			//ShowReadModbusDialog(Selected->d.readModbus.name, &Selected->d.readModbus.id, &Selected->d.readModbus.address);
+			ShowModbusDialog(Selected->d.readModbus.name, &Selected->d.readModbus.id, &Selected->d.readModbus.address, &Selected->d.readModbus.int32);
             break;
 
         case ELEM_WRITE_MODBUS:
-			ShowWriteModbusDialog(Selected->d.writeModbus.name, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address);
+			//ShowWriteModbusDialog(Selected->d.writeModbus.name, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address);
+			ShowModbusDialog(Selected->d.writeModbus.name, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address, &Selected->d.writeModbus.int32);
             break;
 
         case ELEM_READ_MODBUS_ETH:
