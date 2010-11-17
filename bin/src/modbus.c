@@ -96,6 +96,8 @@ struct MB_PDU MB_Validate(unsigned char *buf, unsigned int size)
 struct MB_Reply MB_ReceiveReply(struct MB_Device *dev, struct MB_PDU msg)
 {
   struct MB_Reply r;
+  unsigned char tmp;
+  unsigned int i;
 
   if(msg.Data != NULL) {
     r.FunctionCode = msg.FunctionCode & 0xFF ? msg.FunctionCode & 0x7FFF : msg.FunctionCode & 0x7F;
@@ -113,11 +115,21 @@ struct MB_Reply MB_ReceiveReply(struct MB_Device *dev, struct MB_PDU msg)
 
     case MB_FC_READ_HOLDING_REGISTERS:
       r.reply.read_holding_registers.size =  msg.Data[0];
-      memcpy(r.reply.read_holding_registers.data, &msg.Data[1], msg.Data[0]);
+	  for(i=1; i<=msg.Data[0]; i+=2) {
+		tmp = msg.Data[i];
+		msg.Data[i  ] = msg.Data[i+1];
+		msg.Data[i+1] = tmp;
+	  }
+	  memcpy(r.reply.read_holding_registers.data, &msg.Data[1], msg.Data[0]);
       break;
 
     case MB_FC_READ_INPUT_REGISTERS:
       r.reply.read_input_registers.size =  msg.Data[0];
+	  for(i=1; i<=msg.Data[0]; i+=2) {
+		tmp = msg.Data[i];
+		msg.Data[i  ] = msg.Data[i+1];
+		msg.Data[i+1] = tmp;
+	  }
       memcpy(r.reply.read_input_registers.data, &msg.Data[1], msg.Data[0]);
       break;
 
@@ -134,15 +146,11 @@ struct MB_Reply MB_ReceiveReply(struct MB_Device *dev, struct MB_PDU msg)
     case MB_FC_WRITE_MULTIPLE_COILS:
       r.reply.write_multiple_coils.start = (msg.Data[0]<<8) | (msg.Data[1]);
       r.reply.write_multiple_coils.quant = (msg.Data[2]<<8) | (msg.Data[3]);
-      r.reply.write_multiple_coils.size  =  msg.Data[4];
-      r.reply.write_multiple_coils.val   =  msg.Data+5;
       break;
 
     case MB_FC_WRITE_MULTIPLE_REGISTERS:
       r.reply.write_multiple_registers.start = (msg.Data[0]<<8) | (msg.Data[1]);
       r.reply.write_multiple_registers.quant = (msg.Data[2]<<8) | (msg.Data[3]);
-      r.reply.write_multiple_registers.size  =  msg.Data[4];
-      r.reply.write_multiple_registers.val   =  msg.Data+5;
       break;
 
     case MB_FC_MASK_WRITE_REGISTER:
@@ -153,6 +161,11 @@ struct MB_Reply MB_ReceiveReply(struct MB_Device *dev, struct MB_PDU msg)
 
     case MB_FC_RW_MULTIPLE_REGISTERS:
       r.reply.rw_multiple_registers.size =  msg.Data[0];
+	  for(i=1; i<=msg.Data[0]; i+=2) {
+		tmp = msg.Data[i];
+		msg.Data[i  ] = msg.Data[i+1];
+		msg.Data[i+1] = tmp;
+	  }
       memcpy(r.reply.rw_multiple_registers.data, &msg.Data[1], msg.Data[0]);
       break;
 
@@ -339,15 +352,17 @@ unsigned int MB_SendReply(struct MB_Device *dev, struct MB_Reply *msg)
 
     case MB_FC_READ_HOLDING_REGISTERS:
       buf[size++] = msg->reply.read_holding_registers.size;
-      for(i=0; i<msg->reply.read_holding_registers.size; i++) {
-        buf[size++] = msg->reply.read_holding_registers.data[i];
+      for(i=0; i<msg->reply.read_holding_registers.size; i+=2) {
+        buf[size++] = msg->reply.read_holding_registers.data[i+1];
+        buf[size++] = msg->reply.read_holding_registers.data[i  ];
       }
       break;
 
     case MB_FC_READ_INPUT_REGISTERS:
       buf[size++] = msg->reply.read_input_registers.size;
-      for(i=0; i<msg->reply.read_input_registers.size; i++) {
-        buf[size++] = msg->reply.read_input_registers.data[i];
+      for(i=0; i<msg->reply.read_input_registers.size; i+=2) {
+        buf[size++] = msg->reply.read_input_registers.data[i+1];
+        buf[size++] = msg->reply.read_input_registers.data[i  ];
       }
       break;
 
@@ -370,9 +385,6 @@ unsigned int MB_SendReply(struct MB_Device *dev, struct MB_Reply *msg)
       buf[size++] = (msg->reply.write_multiple_coils.start   ) & 0xFF;
       buf[size++] = (msg->reply.write_multiple_coils.quant>>8) & 0xFF;
       buf[size++] = (msg->reply.write_multiple_coils.quant   ) & 0xFF;
-      buf[size++] =  msg->reply.write_multiple_coils.size;
-      for(i=0; i<msg->reply.write_multiple_coils.size; i++)
-        buf[size++] = msg->reply.write_multiple_coils.val[i];
       break;
 
     case MB_FC_WRITE_MULTIPLE_REGISTERS:
@@ -380,11 +392,6 @@ unsigned int MB_SendReply(struct MB_Device *dev, struct MB_Reply *msg)
       buf[size++]  = (msg->reply.write_multiple_registers.start   )&0xFF;
       buf[size++]  = (msg->reply.write_multiple_registers.quant>>8)&0xFF;
       buf[size++]  = (msg->reply.write_multiple_registers.quant   )&0xFF;
-      buf[size++]  =  msg->reply.write_multiple_registers.size;
-      for(i=0; i<msg->reply.write_multiple_registers.size; i+=2) {
-        buf[size++] =   msg->reply.write_multiple_registers.val[i+1];
-        buf[size++] =   msg->reply.write_multiple_registers.val[i  ];
-	  }
       break;
 
     case MB_FC_MASK_WRITE_REGISTER:

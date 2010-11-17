@@ -82,6 +82,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_SHIFT_REGISTER;
 	} else if(sscanf(line, "SET_BIT %s %d %d", l->d.setBit.name, &l->d.setBit.set, &l->d.setBit.bit)==3) {
         *which = ELEM_SET_BIT;
+	} else if(sscanf(line, "CHECK_BIT %s %d %d", l->d.checkBit.name, &l->d.checkBit.set, &l->d.checkBit.bit)==3) {
+        *which = ELEM_CHECK_BIT;
     } else if(memcmp(line, "OSR", 3)==0) {
         *which = ELEM_ONE_SHOT_RISING;
     } else if(memcmp(line, "OSF", 3)==0) {
@@ -483,6 +485,10 @@ static void SaveElemToFile(FILE *f, int which, void *any, int depth)
         
         case ELEM_SET_BIT:
             fprintf(f, "SET_BIT %s %d %d\n", l->d.setBit.name, l->d.setBit.set, l->d.setBit.bit);
+            break;
+
+        case ELEM_CHECK_BIT:
+            fprintf(f, "CHECK_BIT %s %d %d\n", l->d.checkBit.name, l->d.checkBit.set, l->d.checkBit.bit);
             break;
 
         case ELEM_SHIFT_REGISTER:

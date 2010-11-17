@@ -300,6 +300,8 @@ HMENU MakeMainWindowMenus(void)
         _("Insert Master Control Relay"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_BIT, 
         _("Set/Reset BIT\tD"));
+    AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CHECK_BIT, 
+        _("Check BIT\tD"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
         _("Insert Coi&l\tL"));

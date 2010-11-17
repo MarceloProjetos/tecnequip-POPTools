@@ -101,6 +101,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_READ_USS:
         case ELEM_WRITE_USS:
 		case ELEM_SET_BIT:
+		case ELEM_CHECK_BIT:
         case ELEM_READ_ADC:
         case ELEM_READ_ENC:
         case ELEM_RESET_ENC:
@@ -893,6 +894,12 @@ cmp:
         case ELEM_SET_BIT:
             CenterWithWires(*cx, *cy, "{SET BIT}", poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, leaf->d.setBit.name, poweredAfter, TRUE);
+            *cx += POS_WIDTH;
+            break;
+
+        case ELEM_CHECK_BIT:
+            CenterWithWires(*cx, *cy, "{CHECK BIT}", poweredBefore, poweredAfter);
+            CenterWithSpaces(*cx, *cy, leaf->d.checkBit.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
             break;
 

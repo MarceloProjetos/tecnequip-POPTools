@@ -219,6 +219,30 @@ static void IncrementVariable(char *name)
     oops();
 }
 
+static void SetSimulationBit(char *name, int bit)
+{
+    int i;
+    for(i = 0; i < VariablesCount; i++) {
+        if(strcmp(Variables[i].name, name)==0) {
+            (Variables[i].val) |= 1 << bit;
+            return;
+        }
+    }
+    oops();
+}
+
+static void ClearSimulationBit(char *name, int bit)
+{
+    int i;
+    for(i = 0; i < VariablesCount; i++) {
+        if(strcmp(Variables[i].name, name)==0) {
+            (Variables[i].val) &= ~(1 << bit);
+            return;
+        }
+    }
+    oops();
+}
+
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
@@ -612,6 +636,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_COIL:
         case ELEM_CONTACTS:
 		case ELEM_SET_BIT:
+		case ELEM_CHECK_BIT:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_EQU:
@@ -722,11 +747,13 @@ static void SimulateIntCode(void)
                 break;
 
             case INT_SET_SINGLE_BIT:
-                SetSingleBit(a->name1, TRUE);
+                //SetSingleBit(a->name1, TRUE);
+				SetSimulationBit(a->name1, a->bit);
                 break;
 
             case INT_CLEAR_SINGLE_BIT:
-                SetSingleBit(a->name1, FALSE);
+                //SetSingleBit(a->name1, FALSE);
+				ClearSimulationBit(a->name1, a->bit);
                 break;
 
             case INT_COPY_BIT_TO_BIT:

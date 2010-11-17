@@ -113,6 +113,7 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_SET_BIT		0x4f
 #define MNU_INSERT_READ_MODBUS_ETH	0x50
 #define MNU_INSERT_WRITE_MODBUS_ETH	0x51
+#define MNU_INSERT_CHECK_BIT	0x52
 
 #define MNU_MCU_SETTINGS        0x56
 #define MNU_PROCESSOR_0         0xa0
@@ -199,6 +200,7 @@ typedef SDWORD SWORD;
 #define ELEM_SET_BIT			0x39
 #define ELEM_READ_MODBUS_ETH	0x3a
 #define ELEM_WRITE_MODBUS_ETH  	0x3b
+#define ELEM_CHECK_BIT			0x3c
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -228,6 +230,7 @@ typedef SDWORD SWORD;
         case ELEM_SHORT: \
         case ELEM_OPEN: \
 		case ELEM_SET_BIT: \
+		case ELEM_CHECK_BIT: \
         case ELEM_READ_ADC: \
 		case ELEM_SET_DA: \
         case ELEM_READ_ENC: \
@@ -382,6 +385,12 @@ typedef struct ElemSetBitTag {
 	int		set;
 } ElemSetBit;
 
+typedef struct ElemCheckBitTag {
+    char    name[MAX_NAME_LEN];
+    int		bit;
+	int		set;
+} ElemCheckBit;
+
 typedef struct ElemShiftRegisterTag {
     char    name[MAX_NAME_LEN];
     int     stages;
@@ -442,6 +451,7 @@ typedef struct ElemLeafTag {
         ElemSetPwmTag       setPwm;
         ElemUart            uart;
 		ElemSetBit			setBit;
+		ElemCheckBit		checkBit;
         ElemShiftRegister   shiftRegister;
         ElemFormattedString fmtdStr;
         ElemLookUpTable     lookUpTable;
@@ -766,6 +776,7 @@ void AddUart(int which);
 void AddPersist(void);
 void AddComment(char *text);
 void AddSetBit(void);
+void AddCheckBit(void);
 void AddShiftRegister(void);
 void AddMasterRelay(void);
 void AddLookUpTable(void);
@@ -820,6 +831,7 @@ void ShowCounterDialog(int which, int *count, char *name);
 void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);
 void ShowSetBitDialog(char *name, int * set, int * bit);
+void ShowCheckBitDialog(char *name, int * set, int * bit);
 void ShowSetDADialog(char *name);
 void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);

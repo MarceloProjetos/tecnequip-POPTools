@@ -297,6 +297,14 @@ void AddSetBit(void)
     strcpy(t->d.setBit.name, "new");
     AddLeaf(ELEM_SET_BIT, t);
 }
+void AddCheckBit(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.checkBit.name, "new");
+    AddLeaf(ELEM_CHECK_BIT, t);
+}
 void AddShiftRegister(void)
 {
     if(!CanInsertEnd) return;

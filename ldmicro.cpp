@@ -522,6 +522,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddSetBit());
             break;
 
+        case MNU_INSERT_CHECK_BIT:
+            CHANGING_PROGRAM(AddCheckBit());
+            break;
+
         case MNU_INSERT_SHIFT_REG:
             CHANGING_PROGRAM(AddShiftRegister());
             break;

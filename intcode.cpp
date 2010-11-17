@@ -70,6 +70,10 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "clear bit '%s'", IntCode[i].name1);
                 break;
 
+            case INT_CHECK_BIT:
+                fprintf(f, "check bit '%s'", IntCode[i].name1);
+                break;
+
             case INT_COPY_BIT_TO_BIT:
                 fprintf(f, "let bit '%s' := '%s'", IntCode[i].name1,
                     IntCode[i].name2);
@@ -260,6 +264,9 @@ static void Op(int op, char *name1, char *name2, char *name3, char *name4, SWORD
 	{
 	case INT_SET_BIT:
 		strcpy(IntCode[IntCodeLen].desc, "SET_BIT");
+		break;
+	case INT_CHECK_BIT:
+		strcpy(IntCode[IntCodeLen].desc, "CHECK_BIT");
 		break;
 	case INT_CLEAR_BIT:
 		strcpy(IntCode[IntCodeLen].desc, "CLEAR_BIT");
@@ -1044,6 +1051,18 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 				OpBit(INT_CLEAR_SINGLE_BIT, l->d.setBit.name, l->d.setBit.bit);
             }
             Op(INT_END_IF);
+            break;
+        }
+        case ELEM_CHECK_BIT: {
+			Op(INT_IF_BIT_SET, stateInOut);
+            if(l->d.checkBit.set) {
+                OpBit(INT_IF_BIT_SET, l->d.checkBit.name, l->d.checkBit.bit);
+            } else {
+                OpBit(INT_IF_BIT_CLEAR, l->d.checkBit.name, l->d.checkBit.bit);
+            }
+			OpBit(INT_CLEAR_BIT, stateInOut, l->d.checkBit.set);
+            Op(INT_END_IF);
+			Op(INT_END_IF);
             break;
         }
         case ELEM_SHIFT_REGISTER: {

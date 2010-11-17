@@ -306,7 +306,7 @@ static void GenerateAnsiC(FILE *f)
 	                fprintf(f, "%s = 0;\n", MapSym(IntCode[i].name1));
                 break;
 
-            case INT_SET_SINGLE_BIT:
+			case INT_SET_SINGLE_BIT:
                 fprintf(f, "%s |= 1 << %d;\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), IntCode[i].bit);
                 break;
 
@@ -354,7 +354,7 @@ static void GenerateAnsiC(FILE *f)
 				if (strncmp(str, "M[", 2) == 0)
 	                fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
-					fprintf(f, "if (%s) {\n", MapSym(IntCode[i].name1));
+					fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
                 indent++;
                 break;
 
@@ -362,7 +362,7 @@ static void GenerateAnsiC(FILE *f)
 				if (strncmp(str, "M[", 2) == 0)
 	                fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
-					fprintf(f, "if (!%s) {\n", MapSym(IntCode[i].name1));
+					fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
                 indent++;
                 break;
 

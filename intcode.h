@@ -57,6 +57,7 @@
 #define INT_CLEAR_SINGLE_BIT					26
 #define INT_READ_MODBUS_ETH						27
 #define INT_WRITE_MODBUS_ETH					28
+#define INT_CHECK_BIT							29
 
 #define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50
