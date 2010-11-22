@@ -8,7 +8,7 @@ COM=1
 IP=192.168.0.254
 MASK=255.255.255.0
 GW=192.168.0.1
-COMPILED=C:\Users\Tecnequip\Documents\coln_teste_mb.hex
+COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\set_bit.hex
 
 IO LIST
     YS at 1

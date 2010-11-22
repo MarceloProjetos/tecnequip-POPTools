@@ -1056,9 +1056,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
         case ELEM_CHECK_BIT: {
 			Op(INT_IF_BIT_SET, stateInOut);
             if(l->d.checkBit.set) {
-                OpBit(INT_IF_BIT_SET, l->d.checkBit.name, l->d.checkBit.bit);
+                OpBit(INT_IF_BIT_CHECK_CLEAR, l->d.checkBit.name, l->d.checkBit.bit);
             } else {
-                OpBit(INT_IF_BIT_CLEAR, l->d.checkBit.name, l->d.checkBit.bit);
+                OpBit(INT_IF_BIT_CHECK_SET, l->d.checkBit.name, l->d.checkBit.bit);
             }
 			OpBit(INT_CLEAR_BIT, stateInOut, l->d.checkBit.set);
             Op(INT_END_IF);

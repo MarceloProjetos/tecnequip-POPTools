@@ -243,6 +243,18 @@ static void ClearSimulationBit(char *name, int bit)
     oops();
 }
 
+static bool CheckSimulationBit(char *name, int bit)
+{
+    int i;
+    for(i = 0; i < VariablesCount; i++) {
+        if(strcmp(Variables[i].name, name)==0) {
+            return (((Variables[i].val) & (1 << bit)) > 0);
+        }
+    }
+    oops();
+}
+
+
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
@@ -828,6 +840,16 @@ math:
 
             case INT_IF_BIT_CLEAR:
                 if(!SingleBitOn(a->name1))
+                    IF_BODY
+                break;
+
+			case INT_IF_BIT_CHECK_SET:
+                if(CheckSimulationBit(a->name1, a->bit))
+                    IF_BODY
+                break;
+
+            case INT_IF_BIT_CHECK_CLEAR:
+                if(!CheckSimulationBit(a->name1, a->bit))
                     IF_BODY
                 break;
 

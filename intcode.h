@@ -65,6 +65,8 @@
 #define INT_IF_VARIABLE_LES_LITERAL             52
 #define INT_IF_VARIABLE_EQUALS_VARIABLE         53
 #define INT_IF_VARIABLE_GRT_VARIABLE            54
+#define INT_IF_BIT_CHECK_SET					55
+#define INT_IF_BIT_CHECK_CLEAR					56
 
 #define INT_ELSE                                60
 #define INT_END_IF                              61

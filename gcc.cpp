@@ -240,6 +240,8 @@ static void GenerateDeclarations(FILE *f)
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
+			case INT_IF_BIT_CHECK_SET:
+			case INT_IF_BIT_CHECK_CLEAR:
                 bitVar1 = IntCode[i].name1;
                 break;
 
@@ -354,11 +356,27 @@ static void GenerateAnsiC(FILE *f)
 				if (strncmp(str, "M[", 2) == 0)
 	                fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
-					fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
+					fprintf(f, "if (%s) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].name1);
                 indent++;
                 break;
 
             case INT_IF_BIT_CLEAR:
+				if (strncmp(str, "M[", 2) == 0)
+	                fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
+				else
+					fprintf(f, "if (!%s) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].name1);
+                indent++;
+                break;
+
+            case INT_IF_BIT_CHECK_SET:
+				if (strncmp(str, "M[", 2) == 0)
+	                fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
+				else
+					fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
+                indent++;
+                break;
+
+            case INT_IF_BIT_CHECK_CLEAR:
 				if (strncmp(str, "M[", 2) == 0)
 	                fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
