@@ -690,6 +690,8 @@ extern BOOL NeedHoriz;
 extern HWND IoList;
 extern int IoListTop;
 extern int IoListHeight;
+extern HWND UartSimulationWindow;
+extern HWND UartSimulationTextControl;
 
 // draw.cpp
 int ProgCountWidestRow(void);

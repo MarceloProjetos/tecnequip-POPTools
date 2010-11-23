@@ -143,8 +143,9 @@ static int IntPc;
 
 // A window to allow simulation with the UART stuff (insert keystrokes into
 // the program, view the output, like a terminal window).
-static HWND UartSimulationWindow;
-static HWND UartSimulationTextControl;
+HWND UartSimulationWindow = 0;
+HWND UartSimulationTextControl = 0;
+
 static LONG_PTR PrevTextProc;
 
 static int QueuedUartCharacter = -1;
@@ -1219,16 +1220,26 @@ void ShowUartSimulationWindow(void)
     if(TerminalW > 800) TerminalW = 100;
     if(TerminalH > 800) TerminalH = 100;
 
-    RECT r;
-    GetClientRect(GetDesktopWindow(), &r);
-    if(TerminalX >= (DWORD)(r.right - 10)) TerminalX = 100;
-    if(TerminalY >= (DWORD)(r.bottom - 10)) TerminalY = 100;
+    //RECT r;
 
-    UartSimulationWindow = CreateWindowClient(WS_EX_TOOLWINDOW |
+    //GetClientRect(GetDesktopWindow(), &r);
+    //if(TerminalX >= (DWORD)(r.right - 10)) TerminalX = 100;
+    //if(TerminalY >= (DWORD)(r.bottom - 10)) TerminalY = 100;
+
+    //UartSimulationWindow = CreateWindowClient(WS_EX_TOOLWINDOW |
+    //    WS_EX_APPWINDOW, "LDmicroUartSimulationWindow",
+    //    "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX,
+    //    TerminalX, TerminalY, TerminalW, TerminalH,
+    //    MainWindow, NULL, Instance, NULL);
+
+    UartSimulationWindow = CreateWindowClient(/*WS_EX_TOOLWINDOW |
         WS_EX_APPWINDOW, "LDmicroUartSimulationWindow",
-        "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX,
+        "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX*/
+		WS_EX_CLIENTEDGE, WC_LISTVIEW, "", WS_CHILD |
+        LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS | WS_TABSTOP |
+        LVS_SINGLESEL | WS_CLIPSIBLINGS,
         TerminalX, TerminalY, TerminalW, TerminalH,
-        NULL, NULL, Instance, NULL);
+        MainWindow, NULL, Instance, NULL);
 
     UartSimulationTextControl = CreateWindowEx(0, WC_EDIT, "", WS_CHILD |
         WS_CLIPSIBLINGS | WS_VISIBLE | ES_AUTOVSCROLL | ES_MULTILINE |
@@ -1246,6 +1257,8 @@ void ShowUartSimulationWindow(void)
 
     PrevTextProc = SetWindowLongPtr(UartSimulationTextControl,
         GWLP_WNDPROC, (LONG_PTR)UartSimulationTextProc);
+
+	MainWindowResized();
 
     ShowWindow(UartSimulationWindow, TRUE);
     SetFocus(MainWindow);
@@ -1279,6 +1292,7 @@ void DestroyUartSimulationWindow(void)
 
     DestroyWindow(UartSimulationWindow);
     UartSimulationWindow = NULL;
+	MainWindowResized();
 }
 
 //-----------------------------------------------------------------------------

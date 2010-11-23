@@ -708,7 +708,17 @@ void MainWindowResized(void)
         IoListHeight = main.bottom - statusHeight - 5;
         IoListTop = main.bottom - IoListHeight - statusHeight;
     }
-    MoveWindow(IoList, 0, IoListTop, main.right, IoListHeight, TRUE);
+	if (UartSimulationWindow != NULL)
+	{
+		MoveWindow(IoList, 0, IoListTop, main.right / 2, IoListHeight, TRUE);
+		MoveWindow(UartSimulationWindow, main.right / 2, IoListTop, main.right / 2, IoListHeight, TRUE);
+
+		RECT text;
+		GetClientRect(UartSimulationWindow, &text);
+		SetWindowPos(UartSimulationTextControl, 0, text.left + 1, text.top, text.right - 2, text.bottom, NULL);
+	}
+	else
+		MoveWindow(IoList, 0, IoListTop, main.right, IoListHeight, TRUE);
 
     RefreshScrollbars();
 
