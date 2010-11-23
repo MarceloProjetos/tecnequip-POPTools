@@ -430,13 +430,13 @@ void Comment(char *str, ...)
 //-----------------------------------------------------------------------------
 static int TimerPeriod(ElemLeaf *l)
 {
-    int period = (l->d.timer.delay / Prog.cycleTime) - 1;
+    unsigned int period = (l->d.timer.delay / Prog.cycleTime) - 1;
 
     if(period < 1)  {
         Error(_("Timer period too short (needs faster cycle time)."));
         CompileError();
     }
-    if(period >= (1 << 31) - 1) {
+    if(period >= (((unsigned int)(1 << 31)) - 1)) {
         Error(_("Timer period too long (max 2147483647 times cycle time); use a "
             "slower cycle time."));
         CompileError();
@@ -1128,7 +1128,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 // by moving the PWL points closer together.
                
                 // Check for numerical problems, and fail if we have them.
-                if((thisDx*thisDy) >= 2147483647 || (thisDx*thisDy) <= (int)-2147483648) {
+                if((thisDx*thisDy) >= (int)2147483647 || 
+					(thisDx*thisDy) <= (int)(-2147483647)) {
                     Error(_("Numerical problem with piecewise linear lookup "
                         "table. Either make the table entries smaller, "
                         "or space the points together more closely.\r\n\r\n"

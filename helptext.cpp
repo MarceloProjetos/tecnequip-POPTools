@@ -2271,7 +2271,7 @@ char *HelpText[] = {
     "    entrada for verdadeiro, a saída é falsa. Entenda como uma chave com conexões em",
     "    contato normalmente fechado, que quando é acionada irá abrir o circuito,",
     "    interrompendo a passagem de sinal.",
-    "    Esta instrução é similar a anterior, com a diferença da opção |\|Negated",
+    "    Esta instrução é similar a anterior, com a diferença da opção |\\|Negated",
     "    ativada.",
     "",
     "",
