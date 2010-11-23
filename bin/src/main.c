@@ -1537,6 +1537,8 @@ void HardwareInit(void)
   ADC->ADCR = 0x2F | (0x18 << 8) | (1 << 16) | (1 << 21); // Enable AD0:1:2:3:5, 1Mhz, BURST ON, PDN Enable
   memset(ad, 0, sizeof(ad));
 
+  I2CInit( (unsigned int)I2CMASTER );
+
   ld_Init();
 }
 
@@ -1577,8 +1579,9 @@ int main (void)
   SystemInit();
   HardwareInit();
 
-  DAC_Init();
-
+   /**************************************************************************
+   * Inicializa Encoder
+   *************************************************************************/
 #ifdef QEI_CHECK
   /* Configure the NVIC Preemption Priority Bits:
    * two (2) bits of preemption priority, six (6) bits of sub-priority.
@@ -1698,6 +1701,8 @@ int main (void)
   IP4_ADDR(&gMyGateway,            IP_GW[0], IP_GW[1], IP_GW[2], IP_GW[3]);
   IP4_ADDR(&gRemoteIpAddress,      192, 168, 0, 10);
   gRemotePort = 5505;
+
+  DAC_Init();
 
   init_timer( 1, (25000000 / 1000) - 1 ); // 1seg
   init_network();

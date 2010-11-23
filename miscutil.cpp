@@ -123,7 +123,7 @@ void CompileSuccessfulMessage(char *str)
         DWORD written;
         WriteFile(h, str, strlen(str), &written, NULL);
     } else {
-        MessageBox(MainWindow, str, _("Compile Successful"),
+        MessageBox(MainWindow, str, _("Compile"),
             MB_OK | MB_ICONINFORMATION);
     }
 }

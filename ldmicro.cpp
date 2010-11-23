@@ -282,10 +282,21 @@ static void WriteProgram(BOOL compileAs)
 	BOOL PreviousRunningInBatchMode = RunningInBatchMode;
 
 	RunningInBatchMode = TRUE;
-    CompileAnsiCToGCC(CurrentCompileFile);
-	RunningInBatchMode = PreviousRunningInBatchMode;
+    if (CompileAnsiCToGCC(CurrentCompileFile) == 0) 
+	{
+		RunningInBatchMode = PreviousRunningInBatchMode;
+		FlashProgram(CurrentCompileFile, Prog.comPort, 230400);
+	} 
+	else 
+	{
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		StatusBarSetText(0, "Erro na compilacao !!!");
+		RunningInBatchMode = PreviousRunningInBatchMode;
 
-	FlashProgram(CurrentCompileFile, Prog.comPort, 230400);
+		CompileSuccessfulMessage("Erro na compilacao !!! ");
+	}
+
+	RunningInBatchMode = PreviousRunningInBatchMode;
 
 	StatusBarSetText(0, "");
 

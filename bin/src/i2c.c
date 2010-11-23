@@ -244,6 +244,32 @@ unsigned int I2CInit( unsigned int I2cMode )
   return( TRUE );
 }
 
+unsigned int I2CInitFast( unsigned int I2cMode )
+{
+
+  SC -> PCONP |= (1 << 19);
+  PINCON -> PINSEL1 &= ~0x03C00000;
+  PINCON -> PINSEL1 |= 0x01400000;	/* set PIO0.27 and PIO0.28 to I2C0 SDA and SCK */
+							/* function to 01 on both SDA and SCK. */
+  /*--- Clear flags ---*/
+  I2C0 -> I2CONCLR = I2CONCLR_AAC | I2CONCLR_SIC | I2CONCLR_STAC | I2CONCLR_I2ENC;
+
+  /*--- Reset registers ---*/
+  I2C0 -> I2SCLL   = I2SCLL_SCLL;
+  I2C0 -> I2SCLH   = I2SCLH_SCLH;
+  if ( I2cMode == I2CSLAVE )
+  {
+	I2C0 -> I2ADR0 = 0; // TODO: assign correct ID
+  }
+
+  /* Install interrupt handler */
+
+  NVIC_EnableIRQ(I2C0_IRQn);
+
+  I2C0 -> I2CONSET = I2CONSET_I2EN;
+  return( TRUE );
+}
+
 /*****************************************************************************
 ** Function name:		I2CEngine
 **

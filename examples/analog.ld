@@ -3,11 +3,17 @@ MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
 BAUD=2400
+PARITY=0
+COM=1
+IP=192.168.0.254
+MASK=255.255.255.0
+GW=192.168.0.1
+COMPILED=C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\examples\x.hex
 
 IO LIST
-    YTEMP_HI at 0
-    YTEMP_HI_HI at 0
-    Avar at 0
+    YTEMP_HI at 1
+    YTEMP_HI_HI at 2
+    Avar at 1
 END
 
 PROGRAM

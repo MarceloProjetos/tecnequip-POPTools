@@ -135,7 +135,8 @@ static void DeclareInt(FILE *f, char *str)
 	if (strcmp(str, "I_SerialReady") == 0) return;
 
     //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
-	fprintf(f, "volatile unsigned int %s = 0;\n", MapSym(str));
+	//fprintf(f, "volatile unsigned int %s = 0;\n", MapSym(str));
+	fprintf(f, "volatile int %s = 0;\n", MapSym(str));
 }
 
 //-----------------------------------------------------------------------------
@@ -172,7 +173,9 @@ static void DeclareBit(FILE *f, char *rawStr)
 		return;
 
 	fprintf(f, "\n");
-	fprintf(f, "volatile unsigned int %s = 0;\n", str);
+	//fprintf(f, "volatile unsigned int %s = 0;\n", str);
+	fprintf(f, "volatile int %s = 0;\n", str);
+
 	//fprintf(f, "#define Read_%s() %s\n", str, str);
 	//fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
 }
@@ -781,7 +784,8 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(h, "volatile unsigned int U15 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int U16 __attribute__((weak)) = 0;\n\n");
 
-	fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
+	//fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
+	fprintf(h, "volatile int M[32] __attribute__((weak));\n");
 	fprintf(h, "volatile int ENC1 __attribute__((weak)) = 0;\n\n");
 
 	fprintf(h, "volatile unsigned char MODBUS_MASTER __attribute__((weak)) = 0;\n\n");
