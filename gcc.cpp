@@ -34,6 +34,8 @@
 static char SeenVariables[MAX_IO][MAX_NAME_LEN];
 static int SeenVariablesCount;
 
+static int MODBUS_MASTER = 0;
+
 //-----------------------------------------------------------------------------
 // Have we seen a variable before? If not then no need to generate code for
 // it, otherwise we will have to make a declaration, and mark it as seen.
@@ -224,11 +226,15 @@ static void GenerateDeclarations(FILE *f)
             case INT_RESET_ENC:
             case INT_READ_USS:
             case INT_WRITE_USS:
-            case INT_READ_MODBUS:
-            case INT_WRITE_MODBUS:
             case INT_READ_MODBUS_ETH:
             case INT_WRITE_MODBUS_ETH:
             case INT_SET_PWM:
+                intVar1 = IntCode[i].name1;
+                break;
+
+            case INT_READ_MODBUS:
+            case INT_WRITE_MODBUS:
+				MODBUS_MASTER = 1;
                 intVar1 = IntCode[i].name1;
                 break;
 
@@ -775,10 +781,10 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(h, "volatile unsigned int U15 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int U16 __attribute__((weak)) = 0;\n\n");
 
-	fprintf(h, "volatile unsigned char MODBUS_MASTER __attribute__((weak)) = 0;\n\n");
-
 	fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
 	fprintf(h, "volatile int ENC1 __attribute__((weak)) = 0;\n\n");
+
+	fprintf(h, "volatile unsigned char MODBUS_MASTER __attribute__((weak)) = 0;\n\n");
 
 	fprintf(h, "extern void PlcCycle(void);\n");
 	fprintf(h, "extern volatile unsigned int TIME_INTERVAL;\n");
@@ -830,29 +836,29 @@ DWORD CompileAnsiCToGCC(char *dest)
 "volatile int ENC1;\n\n"
 	, Prog.cycleTime / 1000, Prog.cycleTime / 1000);
 
-	fprintf(h, "volatile unsigned char IP_ADDR[4] = { %d, %d, %d, %d };\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
-	fprintf(h, "volatile unsigned char IP_MASK[4] = { %d, %d, %d, %d };\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
-	fprintf(h, "volatile unsigned char IP_GW[4] = { %d, %d, %d, %d };\n\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
+	fprintf(f, "volatile unsigned char IP_ADDR[4] = { %d, %d, %d, %d };\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
+	fprintf(f, "volatile unsigned char IP_MASK[4] = { %d, %d, %d, %d };\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
+	fprintf(f, "volatile unsigned char IP_GW[4] = { %d, %d, %d, %d };\n\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
 
-	int j;
+	//int j;
 
-	for(int i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) 
-	{
-		for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) 
-		{
-			ElemLeaf *l = DisplayMatrix[i][j];
-			if ((l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS)
-				|| (l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS)
-				|| (l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS_ETH)
-				|| (l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS_ETH)) 
-			{
-				fprintf(f, "unsigned char MODBUS_MASTER = 1; // 0=Slave, 1=Master\n\n");
-				break;
-			}
-		}
-		if (j < DISPLAY_MATRIX_Y_SIZE)
-			break;
-	}
+	//for(int i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) 
+	//{
+	//	for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) 
+	//	{
+	//		ElemLeaf *l = DisplayMatrix[i][j];
+	//		if ((l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS)
+	//			|| (l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS)
+	//			|| (l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS_ETH)
+	//			|| (l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS_ETH)) 
+	//		{
+	//			fprintf(f, "unsigned char MODBUS_MASTER = 1; // 0=Slave, 1=Master\n\n");
+	//			break;
+	//		}
+	//	}
+	//	if (j < DISPLAY_MATRIX_Y_SIZE)
+	//		break;
+	//}
 
 	fprintf(f, "extern struct MB_Device modbus_master;\n");
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");
@@ -864,6 +870,8 @@ DWORD CompileAnsiCToGCC(char *dest)
 
     // now generate declarations for all variables
     GenerateDeclarations(f);
+
+	fprintf(f, "volatile unsigned char MODBUS_MASTER = %d; // 0 = Slave, 1 = Master \n", MODBUS_MASTER);
 
     fprintf(f,
 "\n"
