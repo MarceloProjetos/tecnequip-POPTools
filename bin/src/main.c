@@ -298,7 +298,7 @@ void modbus_send(unsigned char id,
                   int fc,
                   unsigned short int address,
                   unsigned short int size,
-                  volatile unsigned int * value)
+                  volatile int * value)
 {
   uint8_t out[] = { 0, 0 };
 
@@ -390,7 +390,7 @@ void modbus_tcp_send(unsigned char id,
                   int fc,
                   unsigned short int address,
                   unsigned short int size,
-                  volatile unsigned int * value)
+                  volatile int * value)
 {
   uint8_t out[] = { 0, 0 };
 

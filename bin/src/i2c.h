@@ -42,8 +42,8 @@
 #define I2SCLH_SCLH			0x00000080  /* I2C SCL Duty Cycle High Reg */
 #define I2SCLL_SCLL			0x00000080  /* I2C SCL Duty Cycle Low Reg */
 
-#define I2SCLH_SCLH_FAST	0x0000000A  /* I2C SCL Duty Cycle High Reg */
-#define I2SCLL_SCLL_FAST	0x0000000A  /* I2C SCL Duty Cycle Low Reg */
+#define I2SCLH_SCLH_FAST	0x00000020  /* I2C SCL Duty Cycle High Reg */
+#define I2SCLL_SCLL_FAST	0x00000020  /* I2C SCL Duty Cycle Low Reg */
 
 #define E2PROM_ADDR			0xA0
 #define E2PROM_CMD_READ		0x1

@@ -36,6 +36,8 @@ static int SeenVariablesCount;
 
 static int MODBUS_MASTER = 0;
 
+#define INT_UNSIGNED	
+
 //-----------------------------------------------------------------------------
 // Have we seen a variable before? If not then no need to generate code for
 // it, otherwise we will have to make a declaration, and mark it as seen.
@@ -135,8 +137,11 @@ static void DeclareInt(FILE *f, char *str)
 	if (strcmp(str, "I_SerialReady") == 0) return;
 
     //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
-	//fprintf(f, "volatile unsigned int %s = 0;\n", MapSym(str));
+#ifdef INT_UNSIGNED
+	fprintf(f, "volatile unsigned int %s = 0;\n", MapSym(str));
+#else
 	fprintf(f, "volatile int %s = 0;\n", MapSym(str));
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -173,8 +178,11 @@ static void DeclareBit(FILE *f, char *rawStr)
 		return;
 
 	fprintf(f, "\n");
-	//fprintf(f, "volatile unsigned int %s = 0;\n", str);
+#ifdef INT_UNSIGNED
+	fprintf(f, "volatile unsigned int %s = 0;\n", str);
+#else
 	fprintf(f, "volatile int %s = 0;\n", str);
+#endif
 
 	//fprintf(f, "#define Read_%s() %s\n", str, str);
 	//fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
@@ -784,8 +792,11 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(h, "volatile unsigned int U15 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int U16 __attribute__((weak)) = 0;\n\n");
 
-	//fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
+#ifdef INT_UNSIGNED
+	fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
+#else
 	fprintf(h, "volatile int M[32] __attribute__((weak));\n");
+#endif
 	fprintf(h, "volatile int ENC1 __attribute__((weak)) = 0;\n\n");
 
 	fprintf(h, "volatile unsigned char MODBUS_MASTER __attribute__((weak)) = 0;\n\n");
@@ -828,12 +839,12 @@ DWORD CompileAnsiCToGCC(char *dest)
 "                        int fc,\n"
 "                        unsigned short int address,\n"
 "                        unsigned short int size,\n"
-"                        volatile unsigned int * value);\n\n"
+"                        volatile int * value);\n\n"
 "extern void modbus_tcp_send(unsigned char id,\n"
 "                        int fc,\n"
 "                        unsigned short int address,\n"
 "                        unsigned short int size,\n"
-"                        volatile unsigned int * value);\n\n"
+"                        volatile int * value);\n\n"
 "volatile unsigned int CYCLE_TIME = %d;\n"
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n"
 "volatile unsigned int M[32];\n"

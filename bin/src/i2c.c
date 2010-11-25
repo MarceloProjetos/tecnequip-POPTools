@@ -255,8 +255,8 @@ unsigned int I2CInitFast( unsigned int I2cMode )
   I2C0 -> I2CONCLR = I2CONCLR_AAC | I2CONCLR_SIC | I2CONCLR_STAC | I2CONCLR_I2ENC;
 
   /*--- Reset registers ---*/
-  I2C0 -> I2SCLL   = I2SCLL_SCLL;
-  I2C0 -> I2SCLH   = I2SCLH_SCLH;
+  I2C0 -> I2SCLL   = I2SCLL_SCLL_FAST;
+  I2C0 -> I2SCLH   = I2SCLH_SCLH_FAST;
   if ( I2cMode == I2CSLAVE )
   {
 	I2C0 -> I2ADR0 = 0; // TODO: assign correct ID
