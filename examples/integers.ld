@@ -3,7 +3,12 @@ MICRO=NXP LPC1768 LQFP100
 CYCLE=50000
 CRYSTAL=10000000
 BAUD=2400
-COMPILED=C:\Users\Tecnequip\Documents\integers.hex
+PARITY=0
+COM=1
+IP=192.168.0.254
+MASK=255.255.255.0
+GW=192.168.0.1
+COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\integer.hex
 
 IO LIST
     Xa at 1

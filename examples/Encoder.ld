@@ -1,9 +1,14 @@
 LDmicro0.1
-MICRO=Atmel AVR ATmega128 64-TQFP
+MICRO=NXP LPC1768 LQFP100
 CYCLE=2000
 CRYSTAL=8000000
 BAUD=9600
-COMPILED=C:\Documents and Settings\labozidar\My Documents\kkk.hex
+PARITY=0
+COM=1
+IP=192.168.0.254
+MASK=255.255.255.0
+GW=192.168.0.1
+COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\encoder.hex
 
 IO LIST
     X_A at 19

@@ -2,17 +2,22 @@ LDmicro0.1
 MICRO=NXP LPC1768 LQFP100
 CYCLE=50000
 CRYSTAL=20000000
-BAUD=2400
+BAUD=9600
+PARITY=0
+COM=1
+IP=192.168.0.254
+MASK=255.255.255.0
+GW=192.168.0.1
 
 IO LIST
-    Xfaster at 0
-    Xforward at 0
-    Xreverse at 0
-    Xslower at 0
-    YcoilA_0 at 0
-    YcoilA_1 at 0
-    YcoilB_0 at 0
-    YcoilB_1 at 0
+    Xfaster at 1
+    Xforward at 2
+    Xreverse at 3
+    Xslower at 4
+    YcoilA_0 at 1
+    YcoilA_1 at 2
+    YcoilB_0 at 3
+    YcoilB_1 at 4
 END
 
 PROGRAM

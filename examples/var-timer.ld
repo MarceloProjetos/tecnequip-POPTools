@@ -2,13 +2,18 @@ LDmicro0.1
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
-BAUD=2400
-COMPILED=C:\Users\Tecnequip\Documents\var-timer.hex
+BAUD=9600
+PARITY=0
+COM=1
+IP=192.168.0.254
+MASK=255.255.255.0
+GW=192.168.0.1
+COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\var-timer.hex
 
 IO LIST
-    Xin at 0
-    Yout at 0
-    Apot at 0
+    Xin at 1
+    Yout at 1
+    Apot at 1
 END
 
 PROGRAM

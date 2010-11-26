@@ -2,12 +2,18 @@ LDmicro0.1
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
-BAUD=2400
+BAUD=9600
+PARITY=0
+COM=1
+IP=192.168.0.254
+MASK=255.255.255.0
+GW=192.168.0.1
+COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\misc-ops.hex
 
 IO LIST
-    Xon at 0
-    Yalways at 0
-    Ain at 0
+    Xon at 1
+    Yalways at 1
+    Ain at 1
 END
 
 PROGRAM

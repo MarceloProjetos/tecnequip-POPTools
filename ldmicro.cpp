@@ -201,13 +201,16 @@ static void CompileProgram(BOOL compileAs)
 	StatusBarSetText(0, "Compilando... aguarde");
 
     SetCursor(LoadCursor(NULL, IDC_WAIT));
-    switch(Prog.mcu->whichIsa) {
-        case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
-        case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
-        case ISA_LPC17:         CompileAnsiCToGCC(CurrentCompileFile); break;
-
-        default: oops();
-    }
+  //  switch(Prog.mcu->whichIsa) {
+  //      case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
+  //      case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
+  //      case ISA_LPC17:         CompileAnsiCToGCC(CurrentCompileFile); break;
+		//case ISA_AVR:
+		//case ISA_PIC16:
+		//	break;
+  //      default: oops();
+  //  }
+	CompileAnsiCToGCC(CurrentCompileFile);
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
 
 	StatusBarSetText(0, "");

@@ -3,10 +3,16 @@ MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
 BAUD=9600
+PARITY=0
+COM=1
+IP=192.168.0.254
+MASK=255.255.255.0
+GW=192.168.0.1
+COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\blink.hex
 
 IO LIST
-    Xbutton at 0
-    Yled at 0
+    Xbutton at 1
+    Yled at 1
 END
 
 PROGRAM

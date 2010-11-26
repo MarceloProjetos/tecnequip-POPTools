@@ -2,16 +2,21 @@ LDmicro0.1
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
-BAUD=2400
-COMPILED=C:\Users\Tecnequip\Documents\timers-counters.hex
+BAUD=9600
+PARITY=0
+COM=1
+IP=192.168.0.254
+MASK=255.255.255.0
+GW=192.168.0.1
+COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\timers.hex
 
 IO LIST
-    Xdown at 0
-    Xres at 0
-    Xup at 0
-    Ydown at 0
-    Ypulse at 0
-    Yup at 0
+    Xdown at 1
+    Xres at 2
+    Xup at 3
+    Ydown at 2
+    Ypulse at 1
+    Yup at 3
 END
 
 PROGRAM

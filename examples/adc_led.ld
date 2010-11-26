@@ -3,7 +3,12 @@ MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
 BAUD=9600
-COMPILED=C:\Users\Tecnequip\Documents\adc_led.hex
+PARITY=0
+COM=1
+IP=192.168.0.254
+MASK=255.255.255.0
+GW=192.168.0.1
+COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\adc.hex
 
 IO LIST
     XAD1 at 1
