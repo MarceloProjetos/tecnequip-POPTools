@@ -36,7 +36,7 @@ static int SeenVariablesCount;
 
 static int MODBUS_MASTER = 0;
 
-#define INT_UNSIGNED	
+//#define INT_UNSIGNED	
 
 //-----------------------------------------------------------------------------
 // Have we seen a variable before? If not then no need to generate code for
@@ -95,11 +95,11 @@ static char *MapSym(char *str)
 				sprintf(ret, "A%d", pin);
 				return ret;
 			} 
-			if (Prog.io.assignment[i].type == IO_TYPE_READ_ENC || Prog.io.assignment[i].type == IO_TYPE_RESET_ENC) 
+			/*if (Prog.io.assignment[i].type == IO_TYPE_READ_ENC || Prog.io.assignment[i].type == IO_TYPE_RESET_ENC) 
 			{
 				sprintf(ret, "ENC%d", pin);
 				return ret;
-			}
+			}*/
 			else if (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
 			{
 				if (pin > 19)
@@ -452,10 +452,10 @@ static void GenerateAnsiC(FILE *f)
 				fprintf(f, "DAC_Write(%s);\n", MapSym(IntCode[i].name1));
 				break;
             case INT_READ_ENC:
-				fprintf(f, "%s = ENCRead(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1)));
+				fprintf(f, "%s = ENCRead();\n", MapSym(IntCode[i].name1));
 				break;
             case INT_RESET_ENC:
-				fprintf(f, "ENCReset(%d);\n", atoi(MapSym(IntCode[i].name1)));
+				fprintf(f, "ENCReset();\n");
 				break;
             case INT_READ_USS:
 				fprintf(f, "uss_get_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
@@ -847,7 +847,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 "                        volatile int * value);\n\n"
 "volatile unsigned int CYCLE_TIME = %d;\n"
 "volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n"
-"volatile unsigned int M[32];\n"
+"volatile int M[32];\n"
 "volatile int ENC1;\n\n"
 	, Prog.cycleTime / 1000, Prog.cycleTime / 1000);
 
@@ -879,8 +879,8 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");
 	fprintf(f, "extern void RS485Config(int baudrate, int parity);\n");
 	fprintf(f, "extern unsigned int ADCRead(unsigned int i);\n");
-	fprintf(f, "extern unsigned int ENCRead(unsigned int i);\n");
-	fprintf(f, "extern unsigned int ENCReset(unsigned int i);\n");
+	fprintf(f, "extern unsigned int ENCRead(void);\n");
+	fprintf(f, "extern unsigned int ENCReset(void);\n");
 	fprintf(f, "extern volatile unsigned int I_SerialReady;\n\n");
 
     // now generate declarations for all variables

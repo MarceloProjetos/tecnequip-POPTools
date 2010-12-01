@@ -8,7 +8,7 @@ COM=1
 IP=192.168.0.254
 MASK=255.255.255.0
 GW=192.168.0.1
-COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\adc.hex
+COMPILED=C:\Users\Tecnequip\Documents\adc_led.hex
 
 IO LIST
     XAD1 at 1
@@ -17,10 +17,11 @@ IO LIST
     XAD4 at 4
     XAD5 at 5
     XMAD1 at 20
-    XMAD2 at 21
-    XMAD3 at 22
-    XMAD4 at 23
-    XMAD5 at 24
+    XMAD2 at 20
+    XMAD3 at 20
+    XMAD4 at 20
+    XMAD5 at 20
+    YADVAL at 21
     YS1 at 1
     YS10 at 10
     YS11 at 11
@@ -37,11 +38,11 @@ IO LIST
     YS7 at 7
     YS8 at 8
     YS9 at 9
-    AAD5 at 5
     ADC1 at 1
     ADC2 at 2
     ADC3 at 3
     ADC4 at 4
+    ADC5 at 5
 END
 
 PROGRAM
@@ -51,7 +52,7 @@ RUNG
         READ_ADC ADC2
         READ_ADC ADC3
         READ_ADC ADC4
-        READ_ADC AAD5
+        READ_ADC ADC5
     END
 END
 RUNG
@@ -67,28 +68,28 @@ END
 RUNG
     PARALLEL
         CONTACTS XAD2 0 0
-        CONTACTS XMAD2 0 0
+        CONTACTS XMAD2 0 1
     END
     MOVE ADC ADC2
 END
 RUNG
     PARALLEL
         CONTACTS XAD3 0 0
-        CONTACTS XMAD3 0 0
+        CONTACTS XMAD3 0 2
     END
     MOVE ADC ADC3
 END
 RUNG
     PARALLEL
         CONTACTS XAD4 0 0
-        CONTACTS XMAD4 0 0
+        CONTACTS XMAD4 0 3
     END
     MOVE ADC ADC4
 END
 RUNG
     PARALLEL
-        CONTACTS XAD5 0 0
-        CONTACTS XMAD5 0 0
+        CONTACTS XAD5 0 4
+        CONTACTS XMAD5 0 4
     END
     MOVE ADC ADC5
 END
@@ -97,62 +98,68 @@ RUNG
     COIL YS1 0 0 0 0
 END
 RUNG
-    GRT ADC 256
+    GRT ADC 25
     COIL YS2 0 0 0 0
 END
 RUNG
-    GRT ADC 512
+    GRT ADC 50
     COIL YS3 0 0 0 0
 END
 RUNG
-    GRT ADC 768
+    GRT ADC 75
     COIL YS4 0 0 0 0
 END
 RUNG
-    GRT ADC 1024
+    GRT ADC 100
     COIL YS5 0 0 0 0
 END
 RUNG
-    GRT ADC 1280
+    GRT ADC 125
     COIL YS6 0 0 0 0
 END
 RUNG
-    GRT ADC 1536
+    GRT ADC 150
     COIL YS7 0 0 0 0
 END
 RUNG
-    GRT ADC 1792
+    GRT ADC 200
     COIL YS8 0 0 0 0
 END
 RUNG
-    GRT ADC 2048
+    GRT ADC 300
     COIL YS9 0 0 0 0
 END
 RUNG
-    GRT ADC 2304
+    GRT ADC 400
     COIL YS10 0 0 0 0
 END
 RUNG
-    GRT ADC 2560
+    GRT ADC 500
     COIL YS11 0 0 0 0
 END
 RUNG
-    GRT ADC 2816
+    GRT ADC 600
     COIL YS12 0 0 0 0
 END
 RUNG
-    GRT ADC 3072
+    GRT ADC 700
     COIL YS13 0 0 0 0
 END
 RUNG
-    GRT ADC 3328
+    GRT ADC 800
     COIL YS14 0 0 0 0
 END
 RUNG
-    GRT ADC 3584
+    GRT ADC 900
     COIL YS15 0 0 0 0
 END
 RUNG
-    GRT ADC 3840
+    GRT ADC 1000
     COIL YS16 0 0 0 0
+END
+RUNG
+    CONTACTS YADVAL 0 0
+END
+RUNG
+    MOVE YADVAL ADC
 END

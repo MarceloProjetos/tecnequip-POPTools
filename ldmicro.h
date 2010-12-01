@@ -517,7 +517,7 @@ typedef struct PlcProgramSingleIoTag {
 	unsigned char bit;
 } PlcProgramSingleIo;
 
-#define MAX_IO  512
+#define MAX_IO  4096
 typedef struct PlcProgramTag {
     struct {
         PlcProgramSingleIo  assignment[MAX_IO];

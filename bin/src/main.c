@@ -68,6 +68,18 @@ typedef struct ad_type
 
 struct ad_type ad[5];
 
+typedef struct ads_fator
+{
+  unsigned int tensao;
+  unsigned int fator;
+} ad_fator;
+
+//-------------------------------   0V  --- 250mV ---  500mV --- 750mV ------- 1V ------ 1,25V ------ 1,5V ----- 2V ------- 3V ------- 4V -------- 5V ------ 6V ------- 7V ------ 8V ------- 9V -------- 10v ---
+struct ads_fator ad1fator[15] = { {7, 1}, {37, 148}, {59, 118}, {81, 108}, {104, 104}, {126, 101}, {149, 99}, {196, 98}, {293, 98}, {383, 96}, {477, 95}, {571, 95}, {658, 94}, {758, 95}, {849, 94}, {926, 93} };
+struct ads_fator ad2fator[15] = { {7, 1}, {37, 148}, {59, 118}, {81, 108}, {104, 104}, {126, 101}, {149, 99}, {196, 98}, {293, 98}, {383, 96}, {477, 95}, {571, 95}, {658, 94}, {758, 95}, {849, 94}, {926, 93} };
+struct ads_fator ad3fator[15] = { {7, 1}, {37, 148}, {59, 118}, {81, 108}, {104, 104}, {126, 101}, {149, 99}, {196, 98}, {293, 98}, {383, 96}, {477, 95}, {571, 95}, {658, 94}, {758, 95}, {849, 94}, {926, 93} };
+struct ads_fator ad4fator[15] = { {7, 1}, {37, 148}, {59, 118}, {81, 108}, {104, 104}, {126, 101}, {149, 99}, {196, 98}, {293, 98}, {383, 96}, {477, 95}, {571, 95}, {658, 94}, {758, 95}, {849, 94}, {926, 93} };
+
 extern volatile unsigned int I2CCount;
 extern volatile unsigned char I2CMasterBuffer[BUFSIZE];
 extern volatile unsigned int I2CCmd, I2CMasterState;
@@ -240,7 +252,7 @@ void QEI_IRQHandler(void)
   {
     if (VeloAccFlag == RESET) {
       // Get current velocity captured and update to accumulate
-      VeloAcc += QEI_GetVelocityCap(QEI);
+      //VeloAcc += QEI_GetVelocityCap(QEI);
       //tmp = QEI_GetVelocityCap(QEI);
       //VeloAcc += tmp;
       //_DBH32(tmp); _DBG_("");
@@ -259,12 +271,12 @@ void QEI_IRQHandler(void)
   }
 }
 
-int ENCRead(unsigned char i)
+int ENCRead(void)
 {
   return ENC_VAL;
 }
 
-void ENCReset(unsigned char i)
+void ENCReset(void)
 {
   VeloAccFlag = RESET;
 
@@ -923,6 +935,7 @@ unsigned int ADCRead(unsigned int a)
   unsigned int z = 0;
 
   unsigned int val = 0;
+  unsigned int tensao = 0;
   unsigned char set = 0;
 
   if (a < 1 || a > 5) return 0;
@@ -931,39 +944,100 @@ unsigned int ADCRead(unsigned int a)
 
   switch (a)
   {
-  case 0:
+  case 1:
     if (ADC->ADDR5 & 0x7FFFFFFF)
     {
       val = 0x7FFF & (ADC->ADDR5 >> 4);
       set = 1;
+
+	  tensao = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
+
+	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
+	  {
+		  if (tensao < ad1fator[i].tensao)
+		  {
+			  tensao *= 100;
+			  tensao /= ad1fator[i - 1].fator;
+			  break;
+		  }
+	  }
+
+	  val = tensao;
     }
     break;
-  case 1:
+  case 2:
     if (ADC->ADDR2 & 0x7FFFFFFF)
     {
       val = 0xFFF & (ADC->ADDR2 >> 4);
       set = 1;
+
+	  tensao = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
+
+	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
+	  {
+		  if (tensao < ad2fator[i].tensao)
+		  {
+			  tensao *= 100;
+			  tensao /= ad2fator[i - 1].fator;
+			  break;
+		  }
+	  }
+
+	  val = tensao;
     }
     break;
-  case 2:
+  case 3:
     if (ADC->ADDR1 & 0x7FFFFFFF)
     {
       val = 0x7FFF & (ADC->ADDR1 >> 4);
       set = 1;
-    }
+
+	  tensao = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
+
+	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
+	  {
+		  if (tensao < ad3fator[i].tensao)
+		  {
+			  tensao *= 100;
+			  tensao /= ad3fator[i - 1].fator;
+			  break;
+		  }
+	  }
+
+	  val = tensao;
+	}
     break;
-  case 3:
+  case 4:
     if (ADC->ADDR0 & 0x7FFFFFFF)
     {
       val = 0x7FFF & (ADC->ADDR0 >> 4);
       set = 1;
-    }
+
+	  tensao = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
+
+	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
+	  {
+		  if (tensao < ad4fator[i].tensao)
+		  {
+			  tensao *= 100;
+			  tensao /= ad4fator[i - 1].fator;
+			  break;
+		  }
+	  }
+
+	  val = tensao;
+	}
     break;
-  case 4:
+  case 5:
     if (ADC->ADDR3 & 0x7FFFFFFF)
     {
       val = 0x7FFF & (ADC->ADDR3 >> 4);
       set = 1;
+	  /*
+	  tensao = (val * 1000) / 4096; // 2 casas decimais, ex: 2,05V
+
+	  tensao *= 100;
+	  val = tensao * 49;	// fator de correção*/
     }
     break;
   }
@@ -973,24 +1047,27 @@ unsigned int ADCRead(unsigned int a)
 
   if (set == 1)
   {
-    for (i = 0; i < ARRAY_SIZEOF(ad[0].m) - 1; i++)
+    for (i = 0; i < ARRAY_SIZEOF(ad[a].m) - 1; i++)
       ad[a].m[i] = ad[a].m[i + 1];
 
     ad[a].m[ARRAY_SIZEOF(ad[0].m) - 1] = val;
 
-    for (i = 0; i < ARRAY_SIZEOF(ad[0].m); i++)
+    for (i = 0; i < ARRAY_SIZEOF(ad[a].m); i++)
       if (ad[a].m[max] < ad[a].m[i])
         max = i;
 
-    for (i = 0; i < ARRAY_SIZEOF(ad[0].m); i++)
+    for (i = 0; i < ARRAY_SIZEOF(ad[a].m); i++)
       if (ad[a].m[min] > ad[a].m[i])
         min = i;
 
-    for (i = 0; i < ARRAY_SIZEOF(ad[0].m); i++)
+    for (i = 0; i < ARRAY_SIZEOF(ad[a].m); i++)
       if (i != min && i != max)
       {
-        soma += ad[a].m[i];
-        z++;
+		  if (ad[a].m[i])
+		  {
+			soma += ad[a].m[i];
+			z++;
+		  }
       }
   }
 
@@ -1535,6 +1612,8 @@ void HardwareInit(void)
   PINCON->PINSEL1 |= (0x1 << 14) | (0x1 << 16) | (0x1 << 18) | (0x1 << 20);
   PINCON->PINSEL3 |= 0x3 << 30; // AD0.5
   ADC->ADCR = 0x2F | (0x18 << 8) | (1 << 16) | (1 << 21); // Enable AD0:1:2:3:5, 1Mhz, BURST ON, PDN Enable
+
+  // Reset AD´s
   memset(ad, 0, sizeof(ad));
 
   I2CInit( (unsigned int)I2CMASTER );
