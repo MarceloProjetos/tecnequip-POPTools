@@ -24,6 +24,7 @@ extern volatile unsigned int I2CReadLength, I2CWriteLength;
 
 void DAC_Init(void)
 {
+  //if ( I2CInitFast( (unsigned int)I2CMASTER ) == FALSE )  /* initialize I2c */
   if ( I2CInitFast( (unsigned int)I2CMASTER ) == FALSE )  /* initialize I2c */
     return;
 

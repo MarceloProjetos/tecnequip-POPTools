@@ -75,10 +75,10 @@ typedef struct ads_fator
 } ad_fator;
 
 //-------------------------------   0V  --- 250mV ---  500mV --- 750mV ------- 1V ------ 1,25V ------ 1,5V ----- 2V ------- 3V ------- 4V -------- 5V ------ 6V ------- 7V ------ 8V ------- 9V -------- 10v ---
-struct ads_fator ad1fator[15] = { {7, 1}, {37, 148}, {59, 118}, {81, 108}, {104, 104}, {126, 101}, {149, 99}, {196, 98}, {293, 98}, {383, 96}, {477, 95}, {571, 95}, {658, 94}, {758, 95}, {849, 94}, {926, 93} };
-struct ads_fator ad2fator[15] = { {7, 1}, {37, 148}, {59, 118}, {81, 108}, {104, 104}, {126, 101}, {149, 99}, {196, 98}, {293, 98}, {383, 96}, {477, 95}, {571, 95}, {658, 94}, {758, 95}, {849, 94}, {926, 93} };
-struct ads_fator ad3fator[15] = { {7, 1}, {37, 148}, {59, 118}, {81, 108}, {104, 104}, {126, 101}, {149, 99}, {196, 98}, {293, 98}, {383, 96}, {477, 95}, {571, 95}, {658, 94}, {758, 95}, {849, 94}, {926, 93} };
-struct ads_fator ad4fator[15] = { {7, 1}, {37, 148}, {59, 118}, {81, 108}, {104, 104}, {126, 101}, {149, 99}, {196, 98}, {293, 98}, {383, 96}, {477, 95}, {571, 95}, {658, 94}, {758, 95}, {849, 94}, {926, 93} };
+struct ads_fator ad0fator[15] = { {7, 0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
+struct ads_fator ad1fator[15] = { {7, 0}, {37, 68}, {59, 88}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
+struct ads_fator ad2fator[15] = { {7, 0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
+struct ads_fator ad3fator[15] = { {7, 0}, {37, 68}, {59, 83}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
 
 extern volatile unsigned int I2CCount;
 extern volatile unsigned char I2CMasterBuffer[BUFSIZE];
@@ -938,13 +938,13 @@ unsigned int ADCRead(unsigned int a)
   unsigned int tensao = 0;
   unsigned char set = 0;
 
-  if (a < 1 || a > 5) return 0;
+  if (a < 1 || a > 6) return 0;
 
   a -= 1;
 
   switch (a)
   {
-  case 1:
+  case 0:
     if (ADC->ADDR5 & 0x7FFFFFFF)
     {
       val = 0x7FFF & (ADC->ADDR5 >> 4);
@@ -954,10 +954,10 @@ unsigned int ADCRead(unsigned int a)
 
 	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
 	  {
-		  if (tensao < ad1fator[i].tensao)
+		  if (tensao < ad0fator[i].tensao)
 		  {
-			  tensao *= 100;
-			  tensao /= ad1fator[i - 1].fator;
+			  tensao *= ad0fator[i - 1].fator;
+			  tensao /= 100;
 			  break;
 		  }
 	  }
@@ -965,7 +965,7 @@ unsigned int ADCRead(unsigned int a)
 	  val = tensao;
     }
     break;
-  case 2:
+  case 1:
     if (ADC->ADDR2 & 0x7FFFFFFF)
     {
       val = 0xFFF & (ADC->ADDR2 >> 4);
@@ -975,10 +975,10 @@ unsigned int ADCRead(unsigned int a)
 
 	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
 	  {
-		  if (tensao < ad2fator[i].tensao)
+		  if (tensao < ad1fator[i].tensao)
 		  {
-			  tensao *= 100;
-			  tensao /= ad2fator[i - 1].fator;
+			  tensao *= ad1fator[i - 1].fator;
+			  tensao /= 100;
 			  break;
 		  }
 	  }
@@ -986,7 +986,7 @@ unsigned int ADCRead(unsigned int a)
 	  val = tensao;
     }
     break;
-  case 3:
+  case 2:
     if (ADC->ADDR1 & 0x7FFFFFFF)
     {
       val = 0x7FFF & (ADC->ADDR1 >> 4);
@@ -996,10 +996,10 @@ unsigned int ADCRead(unsigned int a)
 
 	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
 	  {
-		  if (tensao < ad3fator[i].tensao)
+		  if (tensao < ad2fator[i].tensao)
 		  {
-			  tensao *= 100;
-			  tensao /= ad3fator[i - 1].fator;
+			  tensao *= ad2fator[i - 1].fator;
+			  tensao /= 100;
 			  break;
 		  }
 	  }
@@ -1007,7 +1007,7 @@ unsigned int ADCRead(unsigned int a)
 	  val = tensao;
 	}
     break;
-  case 4:
+  case 3:
     if (ADC->ADDR0 & 0x7FFFFFFF)
     {
       val = 0x7FFF & (ADC->ADDR0 >> 4);
@@ -1017,10 +1017,10 @@ unsigned int ADCRead(unsigned int a)
 
 	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
 	  {
-		  if (tensao < ad4fator[i].tensao)
+		  if (tensao < ad3fator[i].tensao)
 		  {
-			  tensao *= 100;
-			  tensao /= ad4fator[i - 1].fator;
+			  tensao *= ad3fator[i - 1].fator;
+			  tensao /= 100;
 			  break;
 		  }
 	  }
@@ -1028,16 +1028,32 @@ unsigned int ADCRead(unsigned int a)
 	  val = tensao;
 	}
     break;
-  case 5:
-    if (ADC->ADDR3 & 0x7FFFFFFF)
+  case 4:  // AD CPU
+    if (ADC->ADDR4 & 0x7FFFFFFF)
     {
-      val = 0x7FFF & (ADC->ADDR3 >> 4);
+      val = 0x7FFF & (ADC->ADDR4 >> 4);
       set = 1;
-	  /*
+	  
 	  tensao = (val * 1000) / 4096; // 2 casas decimais, ex: 2,05V
 
-	  tensao *= 100;
-	  val = tensao * 49;	// fator de correção*/
+	  tensao *= 48;	// fator de correção
+  	  tensao /= 100;
+
+	  val = tensao;
+    }
+    break;
+  case 5:  // SENSOR DE TEMPERATURA
+    if (ADC->ADDR5 & 0x7FFFFFFF)
+    {
+      val = 0x7FFF & (ADC->ADDR5 >> 4);
+      set = 1;
+	  
+	  tensao = (val * 1000) / 4096; // 2 casas decimais, ex: 2,05V
+
+	  tensao *= 48;	// fator de correção
+  	  tensao /= 100;
+
+	  val = tensao;
     }
     break;
   }
@@ -1060,15 +1076,25 @@ unsigned int ADCRead(unsigned int a)
       if (ad[a].m[min] > ad[a].m[i])
         min = i;
 
-    for (i = 0; i < ARRAY_SIZEOF(ad[a].m); i++)
-      if (i != min && i != max)
-      {
-		  if (ad[a].m[i])
+	if (min == max)
+	{
+		soma = min;
+		z = 1;
+	}
+	else
+	{
+		for (i = 0; i < ARRAY_SIZEOF(ad[a].m); i++)
+		{
+		  if (i != min && i != max)
 		  {
-			soma += ad[a].m[i];
-			z++;
+			  if (ad[a].m[i])
+			  {
+				soma += ad[a].m[i];
+				z++;
+			  }
 		  }
-      }
+		}
+	}
   }
 
   return z > 0 ? (unsigned int)(soma / z) : 0;
@@ -1458,10 +1484,10 @@ unsigned int AtualizaSaidas(void)
 
   SSPRead((unsigned char*)&status, 3);
 
-  // U17 - CPU
-  // U18 - ERRO
-  GPIO1->FIOPIN &= ~(0x3 << 21);
-  GPIO1->FIOPIN |= (U17 << 21) | (U18 << 22);
+  // U17 - ERRO
+  // U18 - CPU
+  GPIO1->FIOPIN |= 0x3 << 21;
+  GPIO1->FIOPIN &= ~(((U17 & 0x1) << 21) | ((U18 & 0x1) << 22));
 
   return i;
 }

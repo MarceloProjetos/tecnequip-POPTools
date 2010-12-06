@@ -592,8 +592,11 @@ void ShowIoMapDialog(int item)
 			{
                 //if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) 
 				//{
+				if (j == Prog.mcu->adcCount - 1)
+					sprintf(buf, "%3d TEMP", Prog.mcu->adcInfo[j].pin);
+				else
 					sprintf(buf, "%3d ADC%d", Prog.mcu->adcInfo[j].pin, Prog.mcu->adcInfo[j].muxRegValue);
-					SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+				SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
                 //}
             }
             if(j == Prog.mcu->adcCount) {
@@ -621,11 +624,11 @@ void ShowIoMapDialog(int item)
 			(Prog.io.assignment[item].name[0] == 'Y' && i > 50))
 		{
 			if (i == 67)
-				sprintf(buf, "%3d LED USER", Prog.mcu->pinInfo[i].bit,
+				sprintf(buf, "%3d LED ERRO", Prog.mcu->pinInfo[i].bit,
 					Prog.mcu->pinInfo[i].port,
 					Prog.mcu->pinInfo[i].pin);
 			else if (i == 68)
-				sprintf(buf, "%3d LED ERRO", Prog.mcu->pinInfo[i].bit,
+				sprintf(buf, "%3d LED CPU", Prog.mcu->pinInfo[i].bit,
 					Prog.mcu->pinInfo[i].port,
 					Prog.mcu->pinInfo[i].pin);
 			else
@@ -777,10 +780,10 @@ void IoMapListProc(NMHDR *h)
 					{
                         if(Prog.mcu->pinInfo[j].pin == pin) 
 						{
-							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 52)
-								sprintf(i->item.pszText, "LED USER");
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 53)
+							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 17)
 								sprintf(i->item.pszText, "LED ERRO");
+							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 18)
+								sprintf(i->item.pszText, "LED CPU");
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin > 19)
 								sprintf(i->item.pszText, "M%d.%d", Prog.mcu->pinInfo[j].bit, Prog.io.assignment[item].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT)
@@ -790,7 +793,10 @@ void IoMapListProc(NMHDR *h)
 							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT)
 								sprintf(i->item.pszText, "E%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_READ_ADC)
-								sprintf(i->item.pszText, "AD%d", Prog.mcu->pinInfo[j].bit);
+								if (pin == 6)
+									sprintf(i->item.pszText, "TEMP");
+								else
+									sprintf(i->item.pszText, "AD%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_READ_ENC || Prog.io.assignment[item].type == IO_TYPE_RESET_ENC)
 								sprintf(i->item.pszText, "ENC%d", Prog.mcu->pinInfo[j].bit);
                             break;

@@ -570,6 +570,7 @@ McuAdcPinInfo LPC1768AdcPinInfo[] = {
     {  3, 0x03 },
     {  4, 0x04 },
     {  5, 0x05 },
+    {  6, 0x06 }
 };
 
 McuEncPinInfo LPC1768EncPinInfo[] = {

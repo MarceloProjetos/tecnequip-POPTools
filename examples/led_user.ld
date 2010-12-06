@@ -11,8 +11,8 @@ GW=192.168.0.1
 COMPILED=C:\Users\Tecnequip\Documents\led_user.hex
 
 IO LIST
-    YLED_CPU at 17
-    YLED_ERRO at 18
+    YLED_CPU at 18
+    YLED_ERRO at 17
     YS at 1
 END
 
@@ -25,9 +25,9 @@ RUNG
 END
 RUNG
     CONTACTS YS 1 0
-    COIL YLED_ERRO 0 0 0 0
+    COIL YLED_CPU 0 0 0 0
 END
 RUNG
     CONTACTS YS 0 0
-    COIL YLED_CPU 0 0 0 0
+    COIL YLED_ERRO 0 0 0 0
 END
