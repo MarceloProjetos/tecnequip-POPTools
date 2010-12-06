@@ -1458,6 +1458,11 @@ unsigned int AtualizaSaidas(void)
 
   SSPRead((unsigned char*)&status, 3);
 
+  // U17 - CPU
+  // U18 - ERRO
+  GPIO1->FIOPIN &= ~(0x3 << 21);
+  GPIO1->FIOPIN |= (U17 << 21) | (U18 << 22);
+
   return i;
 }
 
@@ -1590,6 +1595,10 @@ void HardwareInit(void)
   PINCON->PINSEL4 &= ~0xFCFFFFF;
   GPIO2->FIODIR &= ~0x3BFF;
   GPIO0->FIODIR &= ~0x680030;
+
+  // Saidas Led Erro/CPU
+  PINCON->PINSEL3 &= ~0x3c00;
+  GPIO1->FIODIR |= 0x3 << 21;
 
   // Saidas (SSP)
   SC->PCONP |= 1 << 21;     // ssp on

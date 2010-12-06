@@ -790,7 +790,9 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(h, "volatile unsigned int U13 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int U14 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int U15 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U16 __attribute__((weak)) = 0;\n\n");
+	fprintf(h, "volatile unsigned int U16 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U17 __attribute__((weak)) = 0;\n");
+	fprintf(h, "volatile unsigned int U18 __attribute__((weak)) = 0;\n\n");
 
 #ifdef INT_UNSIGNED
 	fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
