@@ -1271,7 +1271,7 @@ unsigned int ModbusReadDiscreteInputs(struct MB_Device *dev, union MB_FCD_Data *
 
 unsigned int ModbusReadHoldingRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
 {
-  uint32_t sz = 0;
+  /*uint32_t sz = 0;
 
   uint32_t i = 0;
   uint8_t *buf = reply->reply.read_holding_registers.data;
@@ -1286,9 +1286,14 @@ unsigned int ModbusReadHoldingRegisters(struct MB_Device *dev, union MB_FCD_Data
     }
     else
       return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-  }
+  }*/
 
-  reply->reply.read_holding_registers.size = sz;
+  if (data->read_holding_registers.start + data->read_holding_registers.quant >= 32)
+	  return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
+  else
+	  memcpy(reply->reply.read_holding_registers.data, &M[data->read_holding_registers.start], data->read_holding_registers.quant * 2);
+
+  reply->reply.read_holding_registers.size = data->read_holding_registers.quant * 2;
 
   return MB_EXCEPTION_NONE;
 }

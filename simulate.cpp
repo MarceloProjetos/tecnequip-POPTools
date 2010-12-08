@@ -1311,7 +1311,7 @@ static void AppendToUartSimulationTextControl(BYTE b)
         sprintf(append, "\\x%02x", b);
     }
 
-#define MAX_SCROLLBACK 256
+#define MAX_SCROLLBACK 16384
     char buf[MAX_SCROLLBACK];
 
     SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
