@@ -38,7 +38,7 @@ extern volatile unsigned int CYCLE_TIME;
 
 extern volatile unsigned char MODBUS_MASTER;  // 0 = Slave, 1 = Master
 volatile unsigned char WAITING_FOR_USS = 0;	// 0=MODBUS, 1=USS
-volatile unsigned int * MODBUS_RETURN_VAL = NULL;
+volatile int * MODBUS_RETURN_VAL = NULL;
 
 /******************************************************************************
 * Definições
@@ -75,10 +75,10 @@ typedef struct ads_fator
 } ad_fator;
 
 //-------------------------------   0V  --- 250mV ---  500mV --- 750mV ------- 1V ------ 1,25V ------ 1,5V ----- 2V ------- 3V ------- 4V -------- 5V ------ 6V ------- 7V ------ 8V ------- 9V -------- 10v ---
-struct ads_fator ad0fator[15] = { {7, 0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
-struct ads_fator ad1fator[15] = { {7, 0}, {37, 68}, {59, 88}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
-struct ads_fator ad2fator[15] = { {7, 0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
-struct ads_fator ad3fator[15] = { {7, 0}, {37, 68}, {59, 83}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
+struct ads_fator ad0fator[16] = { {7, 0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
+struct ads_fator ad1fator[16] = { {7, 0}, {37, 68}, {59, 88}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
+struct ads_fator ad2fator[16] = { {7, 0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
+struct ads_fator ad3fator[16] = { {7, 0}, {37, 68}, {59, 83}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
 
 extern volatile unsigned int I2CCount;
 extern volatile unsigned char I2CMasterBuffer[BUFSIZE];
@@ -193,7 +193,7 @@ __IO FlagStatus VeloAccFlag;
 unsigned int ModbusReadCoils(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply);
 unsigned int ModbusTx(unsigned char *data, unsigned int size);
 
-unsigned int ModbusRequest(struct MB_Device * mbdev, unsigned char * buffer, unsigned int sz);
+unsigned int ModbusRequest(unsigned char * buffer, unsigned int sz);
 
 /******************************************************************************
 * lwip TCP/IP
@@ -898,7 +898,7 @@ void TIMER0_IRQHandler (void)
 		} 
 		else // modbus
 		{
-			ModbusRequest(&modbus_slave, modbus_rx_buffer, modbus_rx_index);
+			ModbusRequest(modbus_rx_buffer, modbus_rx_index);
 			modbus_rx_index = 0;
 		}
 
@@ -994,7 +994,7 @@ unsigned int ADCRead(unsigned int a)
 
 	  tensao = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
 
-	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
+	  for (i = 1; i < ARRAY_SIZEOF(ad2fator); i++)
 	  {
 		  if (tensao < ad2fator[i].tensao)
 		  {
@@ -1015,7 +1015,7 @@ unsigned int ADCRead(unsigned int a)
 
 	  tensao = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
 
-	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
+	  for (i = 1; i < ARRAY_SIZEOF(ad3fator); i++)
 	  {
 		  if (tensao < ad3fator[i].tensao)
 		  {
@@ -1165,16 +1165,17 @@ unsigned int RS485Read(unsigned char * buffer, unsigned int size)
 /******************************************************************************
 * Modbus
 ******************************************************************************/
-unsigned int ModbusRequest(struct MB_Device * mbdev, unsigned char * buffer, unsigned int sz)
+unsigned int ModbusRequest(unsigned char * buffer, unsigned int sz)
 {
   struct MB_Reply r;
+  struct MB_PDU valid;
 
   //memset(modbus_rx_buffer, 0, sizeof(modbus_rx_buffer));
   //memset(modbus_tx_buffer, 0, sizeof(modbus_tx_buffer));
 
   if (MODBUS_MASTER)
   {
-    r = MB_ReceiveReply(mbdev, MB_Validate(buffer, sz));
+    r = MB_ReceiveReply(&modbus_master, MB_Validate(buffer, sz));
     if (r.ExceptionCode == MB_EXCEPTION_NONE)
     {
       I_SerialReady = 1;
@@ -1291,7 +1292,7 @@ unsigned int ModbusReadHoldingRegisters(struct MB_Device *dev, union MB_FCD_Data
   if (data->read_holding_registers.start + data->read_holding_registers.quant >= 32)
 	  return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
   else
-	  memcpy(reply->reply.read_holding_registers.data, &M[data->read_holding_registers.start], data->read_holding_registers.quant * 2);
+	  memcpy(reply->reply.read_holding_registers.data, (void *)&M[data->read_holding_registers.start], data->read_holding_registers.quant * 2);
 
   reply->reply.read_holding_registers.size = data->read_holding_registers.quant * 2;
 
@@ -1352,7 +1353,12 @@ unsigned int ModbusWriteMultipleCoils(struct MB_Device *dev, union MB_FCD_Data *
 
 unsigned int ModbusWriteMultipleRegisters(struct MB_Device *dev, union MB_FCD_Data *data, struct MB_Reply *reply)
 {
-  unsigned int pos, i;
+	int i, pos;
+
+  /*if (data->write_multiple_registers.start + data->write_multiple_registers.quant >= 32)
+	  return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
+  else
+	  memcpy((void*)&M[data->write_multiple_registers.start], data->write_multiple_registers.val, data->write_multiple_registers.size);*/
 
   if (data->write_multiple_registers.start + data->write_multiple_registers.quant < 32)
   {

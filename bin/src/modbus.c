@@ -444,7 +444,7 @@ unsigned int MB_SendReply(struct MB_Device *dev, struct MB_Reply *msg)
 
 unsigned int MB_Receive(struct MB_Device *dev, struct MB_PDU msg)
 {
-  unsigned int i;
+  unsigned int i, fc = 0;
   unsigned char tmp;
   struct MB_Reply reply;
   union MB_FCD_Data data;
@@ -457,8 +457,8 @@ unsigned int MB_Receive(struct MB_Device *dev, struct MB_PDU msg)
   reply.FunctionCode  = msg.FunctionCode;
   reply.ExceptionCode = MB_EXCEPTION_ILLEGAL_FUNCTION;
 
-  for(i=0; i<dev->hl_size; i++) {
-    if(msg.FunctionCode == dev->hl[i].FunctionCode) {
+  for(fc=0; fc<dev->hl_size; fc++) {
+    if(msg.FunctionCode == dev->hl[fc].FunctionCode) {
       reply.ExceptionCode = MB_EXCEPTION_NONE;
       switch(msg.FunctionCode) {
       case MB_FC_READ_COILS:
@@ -549,7 +549,7 @@ unsigned int MB_Receive(struct MB_Device *dev, struct MB_PDU msg)
       }
 
       if(reply.ExceptionCode == MB_EXCEPTION_NONE) {
-        reply.ExceptionCode = (*dev->hl[i].FunctionHandler)(dev, &data, &reply);
+        reply.ExceptionCode = (*dev->hl[fc].FunctionHandler)(dev, &data, &reply);
         reply.FunctionCode = msg.FunctionCode; // Atualiza Function Code com codigo enviado.
         reply.Id = msg.Id; // Atualiza Id com o valor recebido do handler.
       }

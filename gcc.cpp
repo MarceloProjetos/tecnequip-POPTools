@@ -715,6 +715,8 @@ DWORD CompileAnsiCToGCC(char *dest)
 	char szAppHeader[MAX_PATH]		= "";
 	char szAppSourceFile[MAX_PATH]	= "";
 
+	MODBUS_MASTER = 0;
+
 	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
 
 	GetTempPath(sizeof(szTempPath), szTempPath);
