@@ -1168,7 +1168,6 @@ unsigned int RS485Read(unsigned char * buffer, unsigned int size)
 unsigned int ModbusRequest(unsigned char * buffer, unsigned int sz)
 {
   struct MB_Reply r;
-  struct MB_PDU valid;
 
   //memset(modbus_rx_buffer, 0, sizeof(modbus_rx_buffer));
   //memset(modbus_tx_buffer, 0, sizeof(modbus_tx_buffer));
@@ -1208,7 +1207,7 @@ unsigned int ModbusRequest(unsigned char * buffer, unsigned int sz)
   }
   else
   {
-    if (MB_Receive(mbdev, MB_Validate(buffer, sz)) == MB_EXCEPTION_NONE)
+    if (MB_Receive(&modbus_slave, MB_Validate(buffer, sz)) == MB_EXCEPTION_NONE)
       I_SerialReady = 1;
   }
 
