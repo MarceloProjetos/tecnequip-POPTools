@@ -1124,7 +1124,8 @@ unsigned int RS485Write(unsigned char * buffer, unsigned int size)
 {
   unsigned int i = 0;
 
-  //UART3->FCR = 0x06;                      /* Reset TX */
+  //UART3->FCR = 0x02;                      /* Reset RX */
+  //UART3->FCR = 0x04;                      /* Reset TX */
 
   GPIO0->FIOSET = RS485_ENABLE;
 
