@@ -195,6 +195,7 @@ unsigned char uss_ready(PPO1 * r, unsigned int sz)
       if (USSValue)
         *USSValue = (r->pweh << 16) | r->pwel;
       I_SerialReady = 1;
+	  USSValue = 0;
       return 1;
     }
   //}

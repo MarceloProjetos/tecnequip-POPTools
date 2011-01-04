@@ -148,7 +148,7 @@ typedef SDWORD SWORD;
 // parallel subcircuits. A parallel subcircuit contains elements or series
 // subcircuits. An element is a set of contacts (possibly negated) or a coil.
 
-#define MAX_ELEMENTS_IN_SUBCKT  16
+#define MAX_ELEMENTS_IN_SUBCKT  50
 
 #define ELEM_PLACEHOLDER        0x01
 #define ELEM_SERIES_SUBCKT      0x02

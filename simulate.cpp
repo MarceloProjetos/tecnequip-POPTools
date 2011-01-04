@@ -816,7 +816,7 @@ static void SimulateIntCode(void)
                             GetSimulationVariable(a->name3);
                     } else {
                         v = 0;
-                        Error(_("Division by zero; halting simulation"));
+                        Error(_("Divisão por zero na variavel: '%s', a simulação será interrompida."), a->name3);
                         StopSimulation();
                     }
                     goto math;
