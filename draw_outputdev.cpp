@@ -135,9 +135,9 @@ static void DrawCharsToScreen(int cx, int cy, char *str)
             }
             if(*str == ']' || *str == '}') inBrace--;
         } else if((
-            (isdigit(*str) && (firstTime || isspace(str[-1]) 
+            ((*str > 0 ? isdigit(*str) : false) && (firstTime || isspace(str[-1]) 
                 || str[-1] == ':' || str[-1] == '[')) ||
-            (*str == '-' && isdigit(str[1]))) && hiOk && !inComment)
+            (*str == '-' && (*str > 0 ? isdigit(str[1]) : false))) && hiOk && !inComment)
         {
             prev = GetTextColor(Hdc);
             SetTextColor(Hdc, HighlightColours.lit);
@@ -164,7 +164,7 @@ static void DrawCharsToScreen(int cx, int cy, char *str)
                 inComment = TRUE;
             }
         } else if(inNumber) {
-            if(isdigit(*str) || *str == '.') {
+            if((*str > 0 ? isdigit(*str) : false) || *str == '.') {
                 prev = GetTextColor(Hdc);
                 SetTextColor(Hdc, HighlightColours.lit);
                 TextOut(Hdc, x, y, str, 1);
