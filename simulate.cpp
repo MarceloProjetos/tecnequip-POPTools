@@ -1333,7 +1333,7 @@ static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int para
 
     sprintf(append, "USS: id=%d, param=%d, index=%d, name=%s, value=%d\r\n", id, param, index, name, val);
 
-#define MAX_SCROLLBACK 256
+#define MAX_SCROLLBACK 16384
     char buf[MAX_SCROLLBACK];
 
     SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
