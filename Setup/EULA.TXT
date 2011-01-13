@@ -18,3 +18,5 @@ Propriedade Intelectual: Todas as Marcas e Direitos contidos no SOFTWARE (inclui
 IMPORTANTE: Este SOFTWARE e todos os arquivos, dados e materiais que o acompanham são fornecidos na forma que se encontram e sem garantias de qualquer tipo, seja expressa ou implicada. Bons procedimentos de processamento de dados afirmam que qualquer programa deve ser testado em situações não-críticas antes de serem considerados seguros. Desta forma o usuário assume sob seu próprio risco o uso do programa.
 
 Não é permitido o uso do SOFTWARE para gerar projetos da POP-7 em aplicações onde sua falha poderá ocasionar ferimentos graves ou a perda de vidas sem autorização por escrito da TECNEQUIP. Desta forma a TECNEQUIP, seus Diretores, Acionistas, Funcionários, Subsidiárias ou Controladoras não podem, de forma alguma, serem responsabilizados por qualquer dano causado pelo uso deste SOFTWARE.
+
+
