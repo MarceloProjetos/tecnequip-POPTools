@@ -237,12 +237,12 @@ HMENU MakeMainWindowMenus(void)
 
     FileMenu = CreatePopupMenu();
     AppendMenu(FileMenu, MF_STRING,   MNU_NEW,    _("&New\tCtrl+N"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_OPEN,   _("&Open...\tCtrl+O"));
+    AppendMenu(FileMenu, MF_STRING,   MNU_OPEN,   _("&Open...\tCtrl+A"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,   _("&Save\tCtrl+S"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_AS,_("Save &As..."));
     AppendMenu(FileMenu, MF_SEPARATOR,0,          "");
     AppendMenu(FileMenu, MF_STRING,   MNU_EXPORT,
-        _("&Export As Text...\tCtrl+E"));
+        _("&Export As Text..."));
     AppendMenu(FileMenu, MF_SEPARATOR,0,          "");
     AppendMenu(FileMenu, MF_STRING,   MNU_EXIT,   _("E&xit"));
 
@@ -251,13 +251,13 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(EditMenu, MF_STRING, MNU_REDO, _("&Redo\tCtrl+Y"));
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
-        _("Insert Rung &Before\tShift+6"));
+        _("Insert Rung &Before\tINS"));
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_AFTER,
-        _("Insert Rung &After\tShift+V"));
+        _("Insert Rung &After\tCtrl+INS"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_UP,
-        _("Move Selected Rung &Up\tShift+Up"));
+        _("Move Selected Rung &Up\tCtrl+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
-        _("Move Selected Rung &Down\tShift+Down"));
+        _("Move Selected Rung &Down\tCtrl+Down"));
     AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_ELEMENT,
         _("&Delete Selected Element\tDel"));
@@ -272,23 +272,23 @@ HMENU MakeMainWindowMenus(void)
         _("Insert &Contacts\tC"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSR,
-        _("Insert OSR (One Shot Rising)\t&/"));
+        _("Insert OSR (One Shot Rising)\tCtrl+(seta acima)"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSF,
-        _("Insert OSF (One Shot Falling)\t&\\"));
+        _("Insert OSF (One Shot Falling)\tCtrl+(seta abaixo)"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TON,
-        _("Insert T&ON (Delayed Turn On)\tO"));
+        _("Insert T&ON (Delayed Turn On)\tT"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TOF,
-        _("Insert TO&F (Delayed Turn Off)\tF"));
+        _("Insert TO&F (Delayed Turn Off)\tCtrl+T"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTO,
-        _("Insert R&TO (Retentive Delayed Turn On)\tT"));
+        _("Insert R&TO (Retentive Delayed Turn On)\tCtrl+R"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
-        _("Insert CT&U (Count Up)\tU"));
+        _("Insert CT&U (Count Up)\tCtrl++"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTD,
-        _("Insert CT&D (Count Down)\tI"));
+        _("Insert CT&D (Count Down)\tCtrl+-"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTC,
-        _("Insert CT&C (Count Circular)\tJ"));
+        _("Insert CT&C (Count Circular)\tCtrl+*"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
 
     //AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
@@ -299,9 +299,9 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_MASTER_RLY,
         _("Insert Master Control Relay"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_SET_BIT, 
-        _("Set/Reset BIT\tD"));
+        _("Set/Reset BIT\tB"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CHECK_BIT, 
-        _("Check BIT\tD"));
+        _("Check BIT\tCtrl+B"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COIL,
         _("Insert Coi&l\tL"));
@@ -316,15 +316,15 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_EQU,
         _("Insert EQU (Compare for Equals)\t="));
     AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_NEQ,
-        _("Insert NEQ (Compare for Not Equals)"));
+        _("Insert NEQ (Compare for Not Equals)\tCtrl+="));
     AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_GRT,
         _("Insert GRT (Compare for Greater Than)\t>"));
     AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_GEQ,
-        _("Insert GEQ (Compare for Greater Than or Equal)\t."));
+        _("Insert GEQ (Compare for Greater Than or Equal)\tCtrl+>"));
     AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_LES,
         _("Insert LES (Compare for Less Than)\t<"));
     AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_LEQ,
-        _("Insert LEQ (Compare for Less Than or Equal)\t,"));
+        _("Insert LEQ (Compare for Less Than or Equal)\tCtrl+<"));
 	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ConditionalMenu,
         _("Instruções Condicionais"));
 
@@ -336,7 +336,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(MathematicMenu, MF_STRING, MNU_INSERT_MUL,
         _("Insert MUL (32-bit Integer Multiply)\t*"));
     AppendMenu(MathematicMenu, MF_STRING, MNU_INSERT_DIV,
-        _("Insert DIV (32-bit Integer Divide)\tD"));
+        _("Insert DIV (32-bit Integer Divide)\t/"));
 	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)MathematicMenu,
         _("Instruções Matemáticas"));
 
@@ -418,11 +418,11 @@ HMENU MakeMainWindowMenus(void)
 
     SimulateMenu = CreatePopupMenu();
     AppendMenu(SimulateMenu, MF_STRING, MNU_SIMULATION_MODE,
-        _("Si&mulation Mode\tCtrl+M"));
+        _("Si&mulation Mode\tF7"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_START_SIMULATION,
-        _("Start &Real-Time Simulation\tCtrl+R"));
+        _("Start &Real-Time Simulation\tF8"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_STOP_SIMULATION,
-        _("&Halt Simulation\tCtrl+H"));
+        _("&Halt Simulation\tESC"));
     AppendMenu(SimulateMenu, MF_STRING | MF_GRAYED, MNU_SINGLE_CYCLE,
         _("Single &Cycle\tSpace"));
 

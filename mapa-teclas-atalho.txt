@@ -1,0 +1,81 @@
+Arquivo:
+
+Ctrl+N ......................: Novo
+Ctrl+A ......................: Abrir
+Ctrl+S ......................: Salvar
+
+Editar:
+
+Ctrl+Z ......................: Desfazer
+Ctrl+Y ......................: Refazer
+
+INS .........................: Inserir linha antes
+Ctrl+INS ....................: Inserir linha depois
+Ctrl+Up .....................: Mover linha selecionada acima: 
+Ctrl+Down ...................: Mover linha selecionada abaixo
+
+Del .........................: Apagar elemento selecionado
+Shift+Del ...................: Apagar linha selecionada: 
+
+Instruções:
+
+; ...........................: Inserir comentário:  
+C ...........................: Inserir contato
+
+Ctrl+(seta acima) ...........: Inserir borda de subida
+Ctrl+(seta abaixo) ..........: Inserir borda de descida
+
+T ...........................: Temporizador para ligar
+Ctrl+T ......................: Temporizador para desligar
+Ctrl+R ......................: Temporizador retentivo
+
+Ctrl+(sinal de +) ...........: Contador incremental
+Ctrl+(sinal de -) ...........: Contador decremental
+Ctrl+(sinal de *) ...........: Contador circular
+
+B ...........................: Set/Reset bit
+Ctrl+B ......................: Clean bit
+
+L ...........................: Inserir bobina
+E ...........................: Inserir RES (Contador/RTO reinicia)
+
+M ...........................: Inserir MOV
+
+Instruções Condicionais:
+
+= ...........................: Inserir EQU (Compara se é igual)
+Ctrl+= ......................: Inserir NEQ (Compara se é diferente)
+> ...........................: Inserir GRT (Compara se é maior que)
+Ctrl+> ......................: Inserir GEQ (Compara se é maior ou agual a): 
+< ...........................: Inserir LES (Compara se é menor que): 
+Ctrl+< ......................: Inserir LEQ (Compara se é menor ou igual a): 
+
+Matematicas:
+
++ ...........................: Inserir ADD
+- ...........................: Inserir SUB
+/ ...........................: Inserir DIV
+* ...........................: Inserir MUL
+
+Leitura do conversor A/D: P
+
+A ...........................: Fazer Normal
+N ...........................: Fazer Negado
+S ...........................: Fazer Ativar-Somente
+R ...........................: Fazer Desativar-Somente
+
+Simulação:
+
+F7 ..........................: Iniciar Simulação
+F8 ..........................: Iniciar Simulação Tempo Real
+ESC .........................: Para Simulação
+Espaço ......................: Simples Ciclo
+
+Compilar:
+
+F5 ..........................: Compilar
+F6 ..........................: Gravar
+
+Ajuda
+
+F1 ..........................: Ajuda
