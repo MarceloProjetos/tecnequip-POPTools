@@ -19,15 +19,15 @@ Shift+Del ...................: Apagar linha selecionada:
 
 Instruções:
 
-; ...........................: Inserir comentário:  
-C ...........................: Inserir contato
+; ...........................:- Inserir comentário:  
+C ...........................:- Inserir contato
 
 Ctrl+(seta acima) ...........: Inserir borda de subida
 Ctrl+(seta abaixo) ..........: Inserir borda de descida
 
-T ...........................: Temporizador para ligar
-Ctrl+T ......................: Temporizador para desligar
-Ctrl+R ......................: Temporizador retentivo
+T ...........................:- Temporizador para ligar
+Ctrl+T ......................:- Temporizador para desligar
+Ctrl+R ......................:- Temporizador retentivo
 
 Ctrl+(sinal de +) ...........: Contador incremental
 Ctrl+(sinal de -) ...........: Contador decremental
@@ -36,7 +36,7 @@ Ctrl+(sinal de *) ...........: Contador circular
 B ...........................: Set/Reset bit
 Ctrl+B ......................: Clean bit
 
-L ...........................: Inserir bobina
+L ...........................:- Inserir bobina
 E ...........................: Inserir RES (Contador/RTO reinicia)
 
 M ...........................: Inserir MOV
