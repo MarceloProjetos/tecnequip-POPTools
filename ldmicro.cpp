@@ -790,11 +790,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
         case WM_KEYDOWN: {
-            if(wParam == VK_F8) {
-                //if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                    ToggleSimulationMode();
-                    break;
-                //}
+			if(wParam == 'M') {
+				if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+					ToggleSimulationMode();
+					break;
+                }
             } else if(wParam == VK_TAB) {
                 SetFocus(IoList);
                 BlinkCursor(0, 0, 0, 0);
@@ -810,12 +810,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         SimulateOneCycle(TRUE);
                         break;
 
-                    case VK_F7:
+                    case 'R':
                         if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
                             StartSimulation();
                         break;
 
-                    case VK_ESCAPE:
+                    case 'H':
                         if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
                             StopSimulation();
                         break;
@@ -850,25 +850,20 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         break;
 
                     case VK_RETURN:
-                    case VK_F8:
+                    case VK_ESCAPE:
                         ToggleSimulationMode();
                         break;
                 }
                 break;
             }
 
-
             switch(wParam) {
                 case VK_F5:
                     CompileProgram(FALSE);
                     break;
 
-                case VK_F6:
-                    WriteProgram(TRUE);
-                    break;
-				
-				case VK_UP:
-                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                case VK_UP:
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(PushRungUp());
                     } else {
                         MoveCursorKeyboard(wParam);
@@ -876,7 +871,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case VK_DOWN:
-                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(PushRungDown());
                     } else {
                         MoveCursorKeyboard(wParam);
@@ -900,7 +895,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
-                case VK_OEM_1:
+                case VK_F2:
                     CHANGING_PROGRAM(AddComment(_("--add comment here--")));
                     break;
 
@@ -908,25 +903,22 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     CHANGING_PROGRAM(AddContact());
                     break;
 
-                // TODO: rather country-specific here
-                case VK_OEM_2:
-                    CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
+                case 'B':
+					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+						CHANGING_PROGRAM(AddCheckBit());
+					} else {
+						CHANGING_PROGRAM(AddSetBit());
+					}
                     break;
 
-                case VK_OEM_5:
-                    CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
-                    break;
+				// TODO: rather country-specific here
 
                 case 'L':
                     CHANGING_PROGRAM(AddCoil());
                     break;
 
                 case 'R':
-					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddTimer(ELEM_RTO));
-					} else { 
-						CHANGING_PROGRAM(MakeResetOnlySelected());
-					}
+                    CHANGING_PROGRAM(MakeResetOnlySelected());
                     break;
 
                 case 'E':
@@ -972,11 +964,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case 'T':
-                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddTimer(ELEM_TOF));
-					} else {
-						CHANGING_PROGRAM(AddTimer(ELEM_TON));
-					}
+                    CHANGING_PROGRAM(AddTimer(ELEM_RTO));
                     break;
 
                 case 'O':
@@ -984,28 +972,24 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         if(CheckSaveUserCancels()) break;
                         OpenDialog();
                     } else {
+                        CHANGING_PROGRAM(AddTimer(ELEM_TON));
                     }
                     break;
 
-                case VK_ADD:
-					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddCounter(ELEM_CTU));
-					} else {
-					}
+                case 'F':
+                    CHANGING_PROGRAM(AddTimer(ELEM_TOF));
                     break;
 
-                case VK_SUBTRACT:
-					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-		                CHANGING_PROGRAM(AddCounter(ELEM_CTD));
-					} else {
-					}
+                case 'U':
+                    CHANGING_PROGRAM(AddCounter(ELEM_CTU));
                     break;
 
-                case VK_MULTIPLY:
-					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-	                    CHANGING_PROGRAM(AddCounter(ELEM_CTC));
-					} else {
-					}
+                case 'I':
+                    CHANGING_PROGRAM(AddCounter(ELEM_CTD));
+                    break;
+
+                case 'J':
+                    CHANGING_PROGRAM(AddCounter(ELEM_CTC));
                     break;
 
                 case 'M':
@@ -1016,18 +1000,23 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     CHANGING_PROGRAM(AddReadAdc());
                     break;
 
-                case VK_OEM_PLUS:
-					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddCounter(ELEM_CTU));
-					} else if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+				case VK_OEM_PLUS:
+				case VK_ADD:
+                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(AddMath(ELEM_ADD));
+					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+						CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
                     } else {
                         CHANGING_PROGRAM(AddCmp(ELEM_EQU));
-                    }
+                    } 
+
                     break;
 
                 case VK_OEM_MINUS:
+				case VK_SUBTRACT:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+						CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
                     } else {
                         CHANGING_PROGRAM(AddMath(ELEM_SUB));
                     }
@@ -1059,15 +1048,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
-                case 'V':
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(InsertRung(TRUE));
-                    }
-                    break;
+                //case 'V':
+                //    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+                //        CHANGING_PROGRAM(InsertRung(TRUE));
+                //    }
+                //    break;
 
-                case '6':
+                case VK_INSERT:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(InsertRung(FALSE));
+                    }
+					else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+                        CHANGING_PROGRAM(InsertRung(TRUE));
                     }
                     break;
 
