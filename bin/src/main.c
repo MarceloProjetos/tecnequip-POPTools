@@ -589,6 +589,8 @@ void init_network()
 
   Init_EMAC();
 
+  netif_list = NULL;
+
   lwip_init();
 
   netif_eth0 = mem_malloc(sizeof(struct netif));
