@@ -790,6 +790,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
         case WM_KEYDOWN: {
+
+			/*if((GetAsyncKeyState(VK_SHIFT) & 0x8000) && 
+				(wParam == 0x31)) {
+				CHAR msg[50];
+				sprintf(msg, "Codigo da Tecla: wParam:0x%x, lParam:0x%x\n", wParam, lParam);
+				MessageBox(hwnd, msg, "Tecla digitada", NULL);
+			}*/
+
 			if(wParam == 'M') {
 				if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
 					ToggleSimulationMode();
@@ -1004,8 +1012,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				case VK_ADD:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(AddMath(ELEM_ADD));
-					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
                     } else {
                         CHANGING_PROGRAM(AddCmp(ELEM_EQU));
                     } 
@@ -1015,13 +1021,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case VK_OEM_MINUS:
 				case VK_SUBTRACT:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
                     } else {
                         CHANGING_PROGRAM(AddMath(ELEM_SUB));
                     }
                     break;
 
+				case 0xc1:
+				case 0x6f:
+					CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
+					break;
+				case 0xe2:
+					CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
+					break;
                 case '8':
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(AddMath(ELEM_MUL));
@@ -1032,6 +1043,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     CHANGING_PROGRAM(AddMath(ELEM_DIV));
                     break;
 
+				case 0x31:
+					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+						CHANGING_PROGRAM(AddCmp(ELEM_NEQ));
+					}
+					break;
                 case VK_OEM_PERIOD:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(AddCmp(ELEM_GRT));
@@ -1058,7 +1074,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(InsertRung(FALSE));
                     }
-					else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+					else {
                         CHANGING_PROGRAM(InsertRung(TRUE));
                     }
                     break;

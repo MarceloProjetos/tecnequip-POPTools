@@ -210,8 +210,8 @@ void WhatCanWeDoFromCursorAndTopology(void)
         CanInsertEnd = FALSE;
         CanInsertOther = FALSE;
     }
-    SetMenusEnabled(canNegate, canNormal, canResetOnly, canSetOnly, canDelete,
-        CanInsertEnd, CanInsertOther, canPushDown, canPushUp, CanInsertComment);
+    /*SetMenusEnabled(canNegate, canNormal, canResetOnly, canSetOnly, canDelete,
+        CanInsertEnd, CanInsertOther, canPushDown, canPushUp, CanInsertComment);*/
 }
 
 //-----------------------------------------------------------------------------

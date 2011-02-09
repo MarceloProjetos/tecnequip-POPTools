@@ -1267,15 +1267,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             }
 
             // We want to respond to rising edges, so yes we need a one shot.
-            char oneShot[MAX_NAME_LEN];
-            GenSymOneShot(oneShot);
-
-            Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_IF_BIT_CLEAR, oneShot);
-                    Op(INT_SET_VARIABLE_TO_LITERAL, seq, (SWORD)0);
-                Op(INT_END_IF);
-            Op(INT_END_IF);
-            Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+			char oneShot[MAX_NAME_LEN];
+			GenSymOneShot(oneShot);
+			char byPass[MAX_NAME_LEN];
+			GenSymOneShot(byPass);
 
             // Everything that involves seqScratch is a terrible hack to
             // avoid an if statement with a big body, which is the risk
@@ -1283,9 +1278,19 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 
             char *seqScratch = "$scratch3";
 
-            Op(INT_SET_VARIABLE_TO_VARIABLE, seqScratch, seq);
+            //Op(INT_SET_VARIABLE_TO_VARIABLE, seqScratch, seq);
 
-            // No point doing any math unless we'll get to transmit this
+            Op(INT_IF_BIT_SET, stateInOut);
+                Op(INT_IF_BIT_CLEAR, oneShot);
+                    Op(INT_SET_VARIABLE_TO_LITERAL, seq, (SWORD)0);
+					Op(INT_SET_VARIABLE_TO_VARIABLE, seqScratch, seq);
+					Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+                Op(INT_END_IF);
+			Op(INT_ELSE);
+				Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
+            Op(INT_END_IF);
+
+			// No point doing any math unless we'll get to transmit this
             // cycle, so check that first.
 
             Op(INT_IF_VARIABLE_LES_LITERAL, seq, steps);
@@ -1293,11 +1298,11 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
             Op(INT_END_IF);
 
-            Op(INT_CLEAR_BIT, "$scratch");
-            Op(INT_UART_SEND, "$scratch", "$scratch");
-            Op(INT_IF_BIT_SET, "$scratch");
-                Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
-            Op(INT_END_IF);
+            //Op(INT_CLEAR_BIT, "$scratch");
+            //Op(INT_UART_SEND, "$scratch", "$scratch");
+            //Op(INT_IF_BIT_SET, "$scratch");
+            //    Op(INT_SET_VARIABLE_TO_LITERAL, seqScratch, -1);
+            //Op(INT_END_IF);
 
             // So we transmit this cycle, so check out which character.
             int i;
@@ -1383,18 +1388,43 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 }
             }
 
-            Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SWORD)0);
+			// OneShot 
+			Op(INT_IF_BIT_SET, stateInOut);
+				Op(INT_IF_BIT_CLEAR, oneShot);
+					Op(INT_IF_BIT_SET, "$SerialReady");
+		                Op(INT_UART_SEND, "$scratch2", "$scratch");
+						Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+						Op(INT_INCREMENT_VARIABLE, seq);
+					Op(INT_END_IF);
+					Op(INT_CLEAR_BIT, stateInOut);
+					Op(INT_COPY_BIT_TO_BIT, byPass, stateInOut);
+				Op(INT_END_IF);
+				Op(INT_IF_BIT_CLEAR, byPass);
+					Op(INT_IF_BIT_SET, "$SerialReady");
+						Op(INT_SET_BIT, byPass);
+					Op(INT_ELSE);
+						Op(INT_CLEAR_BIT, stateInOut);
+					Op(INT_END_IF);
+				Op(INT_END_IF);
+			Op(INT_ELSE);
+				Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+			Op(INT_END_IF);
+
+            /*Op(INT_IF_VARIABLE_LES_LITERAL, seqScratch, (SWORD)0);
             Op(INT_ELSE);
                 Op(INT_SET_BIT, "$scratch");
                 Op(INT_UART_SEND, "$scratch2", "$scratch");
                 Op(INT_INCREMENT_VARIABLE, seq);
-            Op(INT_END_IF);
+            Op(INT_END_IF);*/
     
             // Rung-out state: true if we're still running, else false
-            Op(INT_CLEAR_BIT, stateInOut);
-            Op(INT_IF_VARIABLE_LES_LITERAL, seq, steps);
-                Op(INT_SET_BIT, stateInOut);
-            Op(INT_END_IF);
+            /*Op(INT_IF_BIT_SET, stateInOut);
+				Op(INT_IF_VARIABLE_LES_LITERAL, seq, steps);
+					Op(INT_CLEAR_BIT, stateInOut);
+				Op(INT_ELSE);
+					Op(INT_CLEAR_BIT, oneShot);
+				Op(INT_END_IF);
+			Op(INT_END_IF);*/
             break;
         }
         case ELEM_OPEN:

@@ -253,7 +253,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_BEFORE,
         _("Insert Rung &Before\tShift+INS"));
     AppendMenu(EditMenu, MF_STRING, MNU_INSERT_RUNG_AFTER,
-        _("Insert Rung &After\tCtrl+INS"));
+        _("Insert Rung &After\tINS"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_UP,
         _("Move Selected Rung &Up\tShift+Up"));
     AppendMenu(EditMenu, MF_STRING, MNU_PUSH_RUNG_DOWN,
@@ -272,9 +272,9 @@ HMENU MakeMainWindowMenus(void)
         _("Insert &Contacts\tC"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSR,
-        _("Insert OSR (One Shot Rising)\tCtrl+"));
+        _("Insert OSR (One Shot Rising)\t/"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_OSF,
-        _("Insert OSF (One Shot Falling)\tCtrl-"));
+        _("Insert OSF (One Shot Falling)\t\\"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_TON,
         _("Insert T&ON (Delayed Turn On)\tO"));
@@ -316,7 +316,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_EQU,
         _("Insert EQU (Compare for Equals)\t="));
     AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_NEQ,
-        _("Insert NEQ (Compare for Not Equals)"));
+        _("Insert NEQ (Compare for Not Equals)\t!"));
     AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_GRT,
         _("Insert GRT (Compare for Greater Than)\t>"));
     AppendMenu(ConditionalMenu, MF_STRING, MNU_INSERT_GEQ,
