@@ -368,8 +368,10 @@ HMENU MakeMainWindowMenus(void)
 	AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
 
 	ComunicationMenu = CreatePopupMenu();
-    AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_FMTD_STR,
-        _("Insert Formatted String Over Serial"));
+    /*AppendMenu(ComunicationMenu, MF_STRING, MNU_READ_FMTD_STR,
+        _("Receive Formatted String Over UART"));*/
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_WRITE_FMTD_STR,
+        _("Send Formatted String Over UART"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_SEND,
         _("Insert Serial &Send"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_RECV,

@@ -174,8 +174,11 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
         *which = ELEM_UART_SEND;
     } else if(sscanf(line, "PERSIST %s", l->d.persist.var)==1) {
         *which = ELEM_PERSIST;
-    } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var, 
-        &x)==2)
+	} else if (sscanf(line, "READ_FORMATTED_STRING %s %[^\t\n]", l->d.fmtdStr.var, l->d.fmtdStr.string)==2) {
+		*which = ELEM_READ_FORMATTED_STRING;
+	} else if (sscanf(line, "WRITE_FORMATTED_STRING %s %[^\t\n]", l->d.fmtdStr.var, l->d.fmtdStr.string)==2) {
+		*which = ELEM_WRITE_FORMATTED_STRING;
+    } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var, &x)==2)
     {
         if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
             strcpy(l->d.fmtdStr.var, "");
@@ -620,7 +623,15 @@ cmp:
             fprintf(f, "PERSIST %s\n", l->d.persist.var);
             break;
 
-        case ELEM_FORMATTED_STRING: {
+        case ELEM_READ_FORMATTED_STRING:
+			fprintf(f, "READ_FORMATTED_STRING %s %s\n", l->d.fmtdStr.var, l->d.fmtdStr.string);
+            break;
+
+        case ELEM_WRITE_FORMATTED_STRING:
+            fprintf(f, "WRITE_FORMATTED_STRING %s %s\n", l->d.fmtdStr.var, l->d.fmtdStr.string);
+            break;
+
+		case ELEM_FORMATTED_STRING: {
             int i;
             fprintf(f, "FORMATTED_STRING ");
             if(*(l->d.fmtdStr.var)) {

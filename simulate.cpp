@@ -161,6 +161,7 @@ static int SimulateModbusEthTxCountdown = 0;
 static int SimulateModbusEthRxCountdown = 0;
 
 static void AppendToUartSimulationTextControl(BYTE b);
+static void AppendToFormattedStringSimulationTextControl(char *string, SWORD val);
 static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int param, unsigned int index, char *name, unsigned int val);
 static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int address, char *name);
 static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned int address, char *name);
@@ -638,6 +639,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_PERSIST:
+		case ELEM_READ_FORMATTED_STRING:
+		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
@@ -909,6 +912,16 @@ math:
                 SetSimulationVariable(a->name1, GetResetEncShadow(a->name1));
                 break;
 
+			case INT_READ_FORMATTED_STRING:
+				SetSingleBit("$SerialReady", FALSE);
+				SimulateUSSTxCountdown = 0;
+				AppendToFormattedStringSimulationTextControl(a->name2, GetSimulationVariable(a->name1));
+                break;
+			case INT_WRITE_FORMATTED_STRING:
+				SetSingleBit("$SerialReady", FALSE);
+				SimulateUSSTxCountdown = 0;
+				AppendToFormattedStringSimulationTextControl(a->name2, GetSimulationVariable(a->name1));
+                break;
             case INT_READ_USS:
 				SetSingleBit("$USSReady", FALSE);
 				SimulateUSSTxCountdown = 0;
@@ -1311,7 +1324,30 @@ static void AppendToUartSimulationTextControl(BYTE b)
         sprintf(append, "\\x%02x", b);
     }
 
-#define MAX_SCROLLBACK 16384
+    char buf[MAX_SCROLLBACK];
+
+    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
+        (LPARAM)buf);
+
+    int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
+    if(overBy > 0) {
+        memmove(buf, buf + overBy, strlen(buf));
+    }
+    strcat(buf, append);
+
+    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+}
+
+static void AppendToFormattedStringSimulationTextControl(char *string, SWORD val)
+{
+	char formatstring[125];
+    char append[125];
+
+ 	sprintf(formatstring, string, val);
+    sprintf(append, "Serial: %s\r\n", formatstring);
+
+
     char buf[MAX_SCROLLBACK];
 
     SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
@@ -1333,7 +1369,6 @@ static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int para
 
     sprintf(append, "USS: id=%d, param=%d, index=%d, name=%s, value=%d\r\n", id, param, index, name, val);
 
-#define MAX_SCROLLBACK 16384
     char buf[MAX_SCROLLBACK];
 
     SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
@@ -1355,7 +1390,6 @@ static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int a
 
     sprintf(append, "MODBUS: id=%d, address=%d, name=%s\r\n", id, address, name);
 
-#define MAX_SCROLLBACK 256
     char buf[MAX_SCROLLBACK];
 
     SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
@@ -1377,7 +1411,6 @@ static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned in
 
     sprintf(append, "MODBUS_ETH: id=%d, address=%d, name=%s\r\n", id, address, name);
 
-#define MAX_SCROLLBACK 256
     char buf[MAX_SCROLLBACK];
 
     SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),

@@ -114,6 +114,8 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_READ_MODBUS_ETH	0x50
 #define MNU_INSERT_WRITE_MODBUS_ETH	0x51
 #define MNU_INSERT_CHECK_BIT	0x52
+#define MNU_READ_FMTD_STR		0x53
+#define MNU_WRITE_FMTD_STR		0x54
 
 #define MNU_MCU_SETTINGS        0x56
 #define MNU_PROCESSOR_0         0xa0
@@ -201,6 +203,8 @@ typedef SDWORD SWORD;
 #define ELEM_READ_MODBUS_ETH	0x3a
 #define ELEM_WRITE_MODBUS_ETH  	0x3b
 #define ELEM_CHECK_BIT			0x3c
+#define ELEM_READ_FORMATTED_STRING 0x3d
+#define ELEM_WRITE_FORMATTED_STRING 0x3e
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -248,6 +252,8 @@ typedef SDWORD SWORD;
         case ELEM_SHIFT_REGISTER: \
         case ELEM_LOOK_UP_TABLE: \
         case ELEM_PIECEWISE_LINEAR: \
+		case ELEM_READ_FORMATTED_STRING: \
+		case ELEM_WRITE_FORMATTED_STRING: \
         case ELEM_FORMATTED_STRING: \
         case ELEM_PERSIST:
 
@@ -767,6 +773,8 @@ void AddReadAdc(void);
 void AddSetDA(void);
 void AddReadEnc(void);
 void AddResetEnc(void);
+void AddReadFormatString(void);
+void AddWriteFormatString(void);
 void AddReadUSS(void);
 void AddWriteUSS(void);
 void AddReadModbus(void);
@@ -909,6 +917,7 @@ void DestroyUartSimulationWindow(void);
 void ShowUartSimulationWindow(void);
 extern BOOL InSimulationMode; 
 extern BOOL SimulateRedrawAfterNextCycle;
+#define MAX_SCROLLBACK 16384
 
 // compilecommon.cpp
 void AllocStart(void);

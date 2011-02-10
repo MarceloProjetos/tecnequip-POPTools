@@ -235,6 +235,8 @@ static void GenerateDeclarations(FILE *f)
             case INT_SET_DA:
             case INT_READ_ENC:
             case INT_RESET_ENC:
+			case INT_READ_FORMATTED_STRING:
+			case INT_WRITE_FORMATTED_STRING:
             case INT_READ_USS:
             case INT_WRITE_USS:
             case INT_READ_MODBUS_ETH:
@@ -456,6 +458,12 @@ static void GenerateAnsiC(FILE *f)
 				break;
             case INT_RESET_ENC:
 				fprintf(f, "ENCReset();\n");
+				break;
+			case INT_READ_FORMATTED_STRING:
+				fprintf(f, "read_formatted_string(\"%s\", %s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
+				break;
+			case INT_WRITE_FORMATTED_STRING:
+				fprintf(f, "write_formatted_string(\"%s\", %s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_USS:
 				fprintf(f, "uss_get_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
@@ -836,6 +844,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 "/*****************************************************************************\n"
 " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n"
 " *****************************************************************************/\n"
+"#include <string.h>\n"
 "#include \"uss.h\"\n"
 "#include \"modbus.h\"\n\n"
 "extern void DAC_Write(unsigned int val);\n"

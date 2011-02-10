@@ -587,6 +587,14 @@ static void ProcessMenu(int code)
         case MNU_INSERT_RESET_ENC:
             CHANGING_PROGRAM(AddResetEnc());
             break;
+			
+        case MNU_READ_FMTD_STR:
+            CHANGING_PROGRAM(AddReadFormatString());
+            break;
+
+        case MNU_WRITE_FMTD_STR:
+            CHANGING_PROGRAM(AddWriteFormatString());
+            break;
 
         case MNU_INSERT_READ_USS:
             CHANGING_PROGRAM(AddReadUSS());

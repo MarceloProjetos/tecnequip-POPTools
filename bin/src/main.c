@@ -1102,6 +1102,19 @@ unsigned int ADCRead(unsigned int a)
   return z > 0 ? (unsigned int)(soma / z) : 0;
 }
 
+int write_formatted_string(char *format, int val)
+{
+	int sz = 0;
+	char msg[128];
+
+	sprintf(msg, format, val);
+
+	I_SerialReady = 1;
+
+	(sz = RS485Write(msg, strlen(msg));
+
+	return sz;
+}
 /******************************************************************************
 * Comunicação Serial RS232
 ******************************************************************************/

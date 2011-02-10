@@ -417,6 +417,24 @@ void AddResetEnc(void)
     strcpy(t->d.resetEnc.name, "Znew");
     AddLeaf(ELEM_RESET_ENC, t);
 }
+void AddReadFormatString(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.fmtdStr.var, "var");
+    strcpy(t->d.fmtdStr.string, "value: %d\\r\\n");
+    AddLeaf(ELEM_READ_FORMATTED_STRING, t);
+}
+void AddWriteFormatString(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.fmtdStr.var, "var");
+    strcpy(t->d.fmtdStr.string, "value: %d\\r\\n");
+    AddLeaf(ELEM_WRITE_FORMATTED_STRING, t);
+}
 void AddReadUSS(void)
 {
     if(!CanInsertOther) return;
@@ -1043,6 +1061,11 @@ BOOL UartFunctionUsed(void)
     for(i = 0; i < Prog.numRungs; i++) {
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_UART_RECV, ELEM_UART_SEND, ELEM_FORMATTED_STRING))
+        {
+            return TRUE;
+        }
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_READ_FORMATTED_STRING, ELEM_WRITE_FORMATTED_STRING, ELEM_FORMATTED_STRING))
         {
             return TRUE;
         }

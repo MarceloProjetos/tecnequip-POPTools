@@ -111,6 +111,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_WRITE_MODBUS_ETH:
             return 1;
 
+		case ELEM_READ_FORMATTED_STRING:
+		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING:
             return 2;
 
@@ -875,6 +877,8 @@ cmp:
             *cx += POS_WIDTH;
             break;
         }
+		case ELEM_READ_FORMATTED_STRING:
+		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING: {
             char bot[100];
             sprintf(bot, "{\"%s\"}", leaf->d.fmtdStr.string);
@@ -967,6 +971,8 @@ cmp:
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+		case ELEM_READ_FORMATTED_STRING:
+		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING:
             DM_BOUNDS(gx-1, gy);
             DisplayMatrix[gx-1][gy] = leaf;

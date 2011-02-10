@@ -196,6 +196,8 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.math.dest, IO_TYPE_GENERAL);
             break;
 
+		case ELEM_READ_FORMATTED_STRING:
+		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING:
             if(strlen(l->d.fmtdStr.var) > 0) {
                 AppendIo(l->d.fmtdStr.var, IO_TYPE_UART_TX);

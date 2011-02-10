@@ -121,6 +121,14 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "read enc '%s'", IntCode[i].name1);
                 break;
 
+			case INT_READ_FORMATTED_STRING:
+                fprintf(f, "read format string '%s'", IntCode[i].name1);
+                break;
+
+			case INT_WRITE_FORMATTED_STRING:
+                fprintf(f, "read format string '%s'", IntCode[i].name1);
+                break;
+
             case INT_READ_USS:
                 fprintf(f, "read uss '%s'", IntCode[i].name1);
                 break;
@@ -315,6 +323,12 @@ static void Op(int op, char *name1, char *name2, char *name3, char *name4, SWORD
 		break;
 	case INT_EEPROM_WRITE:
 		strcpy(IntCode[IntCodeLen].desc, "EEPROM_WRITE");
+		break;
+	case INT_READ_FORMATTED_STRING:
+		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_STRING_READ");
+		break;
+	case INT_WRITE_FORMATTED_STRING:
+		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_STRING_READ");
 		break;
 	case INT_READ_ENC:
 		strcpy(IntCode[IntCodeLen].desc, "READ_ENC");
@@ -815,6 +829,48 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 				Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_RESET_ENC, l->d.resetEnc.name);
                 Op(INT_END_IF);
+                break;
+
+	        case ELEM_READ_FORMATTED_STRING: 
+			case ELEM_WRITE_FORMATTED_STRING:
+				{
+				char var[10];
+				char string[128];
+
+				sprintf(var, "%s", l->d.fmtdStr.var);
+				sprintf(string, "%s", l->d.fmtdStr.string);
+
+				// We want to respond to rising edges, so yes we need a one shot.
+				char oneShot[MAX_NAME_LEN];
+				GenSymOneShot(oneShot);
+				char byPass[MAX_NAME_LEN];
+				GenSymOneShot(byPass);
+
+				// OneShot 
+				Op(INT_IF_BIT_SET, stateInOut);
+					Op(INT_IF_BIT_CLEAR, oneShot);
+						Op(INT_IF_BIT_SET, "$SerialReady");
+							if (which == ELEM_READ_USS)
+								Op(INT_READ_FORMATTED_STRING, var, string);
+							else
+								Op(INT_WRITE_FORMATTED_STRING, var, string);
+							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+						Op(INT_END_IF);
+						Op(INT_CLEAR_BIT, stateInOut);
+						Op(INT_COPY_BIT_TO_BIT, byPass, stateInOut);
+					Op(INT_END_IF);
+					Op(INT_IF_BIT_CLEAR, byPass);
+						Op(INT_IF_BIT_SET, "$SerialReady");
+							Op(INT_SET_BIT, byPass);
+						Op(INT_ELSE);
+							Op(INT_CLEAR_BIT, stateInOut);
+						Op(INT_END_IF);
+					Op(INT_END_IF);
+				Op(INT_ELSE);
+					Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+				Op(INT_END_IF);
+
+				}
                 break;
 
             case ELEM_READ_USS:
