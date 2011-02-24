@@ -463,7 +463,7 @@ static void GenerateAnsiC(FILE *f)
 				fprintf(f, "read_formatted_string(\"%s\", %s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
 			case INT_WRITE_FORMATTED_STRING:
-				fprintf(f, "write_formatted_string(\"%s\", %s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "write_formatted_string(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_USS:
 				fprintf(f, "uss_get_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));

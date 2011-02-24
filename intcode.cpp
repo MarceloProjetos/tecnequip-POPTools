@@ -126,7 +126,7 @@ void IntDumpListing(char *outFile)
                 break;
 
 			case INT_WRITE_FORMATTED_STRING:
-                fprintf(f, "read format string '%s'", IntCode[i].name1);
+                fprintf(f, "write format string '%s'", IntCode[i].name1);
                 break;
 
             case INT_READ_USS:
@@ -328,7 +328,7 @@ static void Op(int op, char *name1, char *name2, char *name3, char *name4, SWORD
 		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_STRING_READ");
 		break;
 	case INT_WRITE_FORMATTED_STRING:
-		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_STRING_READ");
+		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_STRING_WRITE");
 		break;
 	case INT_READ_ENC:
 		strcpy(IntCode[IntCodeLen].desc, "READ_ENC");
@@ -827,7 +827,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 
             case ELEM_RESET_ENC:
 				Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_RESET_ENC, l->d.resetEnc.name);
+				Op(INT_RESET_ENC, l->d.resetEnc.name);
                 Op(INT_END_IF);
                 break;
 
@@ -850,7 +850,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 				Op(INT_IF_BIT_SET, stateInOut);
 					Op(INT_IF_BIT_CLEAR, oneShot);
 						Op(INT_IF_BIT_SET, "$SerialReady");
-							if (which == ELEM_READ_USS)
+							if (which == ELEM_READ_FORMATTED_STRING)
 								Op(INT_READ_FORMATTED_STRING, var, string);
 							else
 								Op(INT_WRITE_FORMATTED_STRING, var, string);

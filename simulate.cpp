@@ -161,7 +161,7 @@ static int SimulateModbusEthTxCountdown = 0;
 static int SimulateModbusEthRxCountdown = 0;
 
 static void AppendToUartSimulationTextControl(BYTE b);
-static void AppendToFormattedStringSimulationTextControl(char *string, SWORD val);
+static void AppendToFormattedStringSimulationTextControl(char * text, char *string, SWORD val);
 static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int param, unsigned int index, char *name, unsigned int val);
 static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int address, char *name);
 static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned int address, char *name);
@@ -915,12 +915,12 @@ math:
 			case INT_READ_FORMATTED_STRING:
 				SetSingleBit("$SerialReady", FALSE);
 				SimulateUSSTxCountdown = 0;
-				AppendToFormattedStringSimulationTextControl(a->name2, GetSimulationVariable(a->name1));
+				AppendToFormattedStringSimulationTextControl("RS485 Read: %s\r\n", a->name2, GetSimulationVariable(a->name1));
                 break;
 			case INT_WRITE_FORMATTED_STRING:
 				SetSingleBit("$SerialReady", FALSE);
 				SimulateUSSTxCountdown = 0;
-				AppendToFormattedStringSimulationTextControl(a->name2, GetSimulationVariable(a->name1));
+				AppendToFormattedStringSimulationTextControl("RS485 Write: %s\r\n", a->name2, GetSimulationVariable(a->name1));
                 break;
             case INT_READ_USS:
 				SetSingleBit("$USSReady", FALSE);
@@ -1339,13 +1339,13 @@ static void AppendToUartSimulationTextControl(BYTE b)
     SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
 }
 
-static void AppendToFormattedStringSimulationTextControl(char *string, SWORD val)
+static void AppendToFormattedStringSimulationTextControl(char * text, char *string, SWORD val)
 {
 	char formatstring[125];
     char append[125];
 
  	sprintf(formatstring, string, val);
-    sprintf(append, "Serial: %s\r\n", formatstring);
+    sprintf(append, text, formatstring);
 
 
     char buf[MAX_SCROLLBACK];

@@ -1,4 +1,6 @@
-﻿#include "lpc17xx.h"
+﻿#include <stdio.h>
+
+#include "lpc17xx.h"
 #include "type.h"
 #include "timer.h"
 #include "modbus.h"
@@ -1107,11 +1109,43 @@ int write_formatted_string(char *format, int val)
 	int sz = 0;
 	char msg[128];
 
-	sprintf(msg, format, val);
+	sprintf((void*)msg, format, val);
 
 	I_SerialReady = 1;
 
-	(sz = RS485Write(msg, strlen(msg));
+	sz = RS485Write((unsigned char*)msg, strlen(msg));
+
+	return sz;
+}
+
+int read_formatted_string(char *format, int *val)
+{
+	int sz = 0;
+	char msg[128];
+	char cmp[128];
+
+	*val = 0;
+
+	sz = RS485Read((unsigned char*)msg, sizeof(msg));
+
+	if (sz == 0)
+		*val = -2;
+	else
+	{
+		memset(msg, 0, sizeof(msg));
+		memset(cmp, 0, sizeof(msg));
+
+		//sprintf((void*)msg, format, val);
+		if (sscanf(msg, format, val) != 1)
+			*val = -1;
+
+		sprintf(cmp, format, val);
+
+		if (strncmp(cmp, msg, sz) != 0)
+			*val = -1;		
+	}
+
+	I_SerialReady = 1;
 
 	return sz;
 }

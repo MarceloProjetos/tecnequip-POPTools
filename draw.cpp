@@ -466,7 +466,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         case ELEM_RESET_ENC: {
             ElemResetEnc *r = &leaf->d.resetEnc;
-            //CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{RESET ENC}", poweredBefore,
                 poweredAfter);
             break;
@@ -881,14 +881,17 @@ cmp:
 		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING: {
             char bot[100];
-            sprintf(bot, "{\"%s\"}", leaf->d.fmtdStr.string);
+            sprintf(bot, "%s: %s", which == ELEM_READ_FORMATTED_STRING ? "READ" : "WRITE", 
+										leaf->d.fmtdStr.var);
 
-            int extra = 2*POS_WIDTH - strlen(leaf->d.fmtdStr.var);
+            int extra = 2*POS_WIDTH - strlen(bot);
             PoweredText(poweredAfter);
             NameText();
             DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1,
-                leaf->d.fmtdStr.var);
+                bot);
             BodyText();
+
+			sprintf(bot, "{\"%s\"}", leaf->d.fmtdStr.string);
 
             CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter,
                 2*POS_WIDTH);
