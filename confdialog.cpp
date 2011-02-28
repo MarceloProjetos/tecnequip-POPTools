@@ -452,7 +452,7 @@ void ShowConfDialog(void)
 	for (i = 0; i < sizeof(ComboboxParityItens) / sizeof(ComboboxParityItens[0]); i++)
 		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxParityItens[i]));
 
-	SendMessage(ParityCombobox, CB_SETCURSEL, Prog.parity, 0);
+	SendMessage(ParityCombobox, CB_SETCURSEL, Prog.UART, 0);
 	SendMessage(ParityCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
 	sprintf(buf, "%d", Prog.baudRate);
@@ -538,7 +538,7 @@ void ShowConfDialog(void)
         Prog.baudRate = atoi(buf);
 
 		Prog.comPort = SendMessage(ComPortCombobox, CB_GETCURSEL, 0, 0) + 1;
-		Prog.parity = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
+		Prog.UART = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
     }
 
     EnableWindow(MainWindow, TRUE);

@@ -182,20 +182,20 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 		if (strcmp(l->d.fmtdStr.var,"(empty)") == 0)
 			strcpy(l->d.fmtdStr.var, "");
 		*which = ELEM_WRITE_FORMATTED_STRING;
-	} else if (sscanf(line, "READ_SERVO_IASKAWA %s %s %[^\t\n]", l->d.servoIaskawa.id, l->d.servoIaskawa.var, l->d.servoIaskawa.string)==3) {
-		if (strcmp(l->d.servoIaskawa.var,"(empty)") == 0)
+	} else if (sscanf(line, "READ_SERVO_YASKAWA %s %s %[^\t\n]", l->d.servoYaskawa.id, l->d.servoYaskawa.var, l->d.servoYaskawa.string)==3) {
+		if (strcmp(l->d.servoYaskawa.var,"(empty)") == 0)
 		{
-			strcpy(l->d.servoIaskawa.id, "");
-			strcpy(l->d.servoIaskawa.var, "");
+			strcpy(l->d.servoYaskawa.id, "");
+			strcpy(l->d.servoYaskawa.var, "");
 		}
-		*which = ELEM_READ_SERVO_IASKAWA;
-	} else if (sscanf(line, "WRITE_SERVO_IASKAWA %s %s %[^\t\n]", l->d.servoIaskawa.id, l->d.servoIaskawa.var, l->d.servoIaskawa.string)==3) {
-		if (strcmp(l->d.servoIaskawa.var,"(empty)") == 0)
+		*which = ELEM_READ_SERVO_YASKAWA;
+	} else if (sscanf(line, "WRITE_SERVO_YASKAWA %s %s %[^\t\n]", l->d.servoYaskawa.id, l->d.servoYaskawa.var, l->d.servoYaskawa.string)==3) {
+		if (strcmp(l->d.servoYaskawa.var,"(empty)") == 0)
 		{
-			strcpy(l->d.servoIaskawa.id, "");
-			strcpy(l->d.servoIaskawa.var, "");
+			strcpy(l->d.servoYaskawa.id, "");
+			strcpy(l->d.servoYaskawa.var, "");
 		}
-		*which = ELEM_WRITE_SERVO_IASKAWA;
+		*which = ELEM_WRITE_SERVO_YASKAWA;
     } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var, &x)==2)
     {
         if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
@@ -366,7 +366,7 @@ BOOL LoadProjectFromFile(char *filename)
     if(!f) return FALSE;
 
     char line[512];
-    int crystal, cycle, baud, comPort, parity, ip[4], mask[4], gw[4];
+    int crystal, cycle, baud, comPort, UART, ip[4], mask[4], gw[4];
 
     while(fgets(line, sizeof(line), f)) {
         if(strcmp(line, "IO LIST\n")==0) {
@@ -380,8 +380,8 @@ BOOL LoadProjectFromFile(char *filename)
             Prog.cycleTime = cycle;
         } else if(sscanf(line, "BAUD=%d", &baud)) {
             Prog.baudRate = baud;
-        } else if(sscanf(line, "PARITY=%d", &parity)) {
-			Prog.parity = parity;
+        } else if(sscanf(line, "PARITY=%d", &UART)) {
+			Prog.UART = UART;
         } else if(sscanf(line, "COM=%d", &comPort)) {
             Prog.comPort = comPort;
         } else if(sscanf(line, "IP=%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3])) {
@@ -663,26 +663,26 @@ cmp:
 			fprintf(f, "WRITE_FORMATTED_STRING %s %s\n", s, l->d.fmtdStr.string);
             break;
 			}
-        case ELEM_READ_SERVO_IASKAWA:
+        case ELEM_READ_SERVO_YASKAWA:
 			{
 			char s[128];
-			if (strlen(l->d.servoIaskawa.var) > 0)
-				strcpy(s, l->d.servoIaskawa.var);
+			if (strlen(l->d.servoYaskawa.var) > 0)
+				strcpy(s, l->d.servoYaskawa.var);
 			else
 				strcpy(s, "(empty)");
 
-			fprintf(f, "READ_SERVO_IASKAWA %s %s %s\n", l->d.servoIaskawa.id, s, l->d.servoIaskawa.string);
+			fprintf(f, "READ_SERVO_YASKAWA %s %s %s\n", l->d.servoYaskawa.id, s, l->d.servoYaskawa.string);
             break;
 			}
-        case ELEM_WRITE_SERVO_IASKAWA:
+        case ELEM_WRITE_SERVO_YASKAWA:
 			{
 			char s[128];
-			if (strlen(l->d.servoIaskawa.var) > 0)
-				strcpy(s, l->d.servoIaskawa.var);
+			if (strlen(l->d.servoYaskawa.var) > 0)
+				strcpy(s, l->d.servoYaskawa.var);
 			else
 				strcpy(s, "(empty)");
 
-			fprintf(f, "WRITE_SERVO_IASKAWA %s %s %s\n", l->d.servoIaskawa.id, s, l->d.servoIaskawa.string);
+			fprintf(f, "WRITE_SERVO_YASKAWA %s %s %s\n", l->d.servoYaskawa.id, s, l->d.servoYaskawa.string);
             break;
 			}
 		case ELEM_FORMATTED_STRING: {
@@ -774,7 +774,7 @@ BOOL SaveProjectToFile(char *filename)
     fprintf(f, "CYCLE=%d\n", Prog.cycleTime);
     fprintf(f, "CRYSTAL=%d\n", Prog.mcuClock);
     fprintf(f, "BAUD=%d\n", Prog.baudRate);
-	fprintf(f, "PARITY=%d\n", Prog.parity);
+	fprintf(f, "PARITY=%d\n", Prog.UART);
 	fprintf(f, "COM=%d\n", Prog.comPort);
     fprintf(f, "IP=%d.%d.%d.%d\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
     fprintf(f, "MASK=%d.%d.%d.%d\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);

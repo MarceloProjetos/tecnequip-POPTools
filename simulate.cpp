@@ -641,8 +641,8 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_PERSIST:
 		case ELEM_READ_FORMATTED_STRING:
 		case ELEM_WRITE_FORMATTED_STRING:
-		case ELEM_READ_SERVO_IASKAWA:
-		case ELEM_WRITE_SERVO_IASKAWA:
+		case ELEM_READ_SERVO_YASKAWA:
+		case ELEM_WRITE_SERVO_YASKAWA:
         case ELEM_FORMATTED_STRING:
         case ELEM_SET_PWM:
         case ELEM_MASTER_RELAY:
@@ -924,12 +924,12 @@ math:
 				SimulateUSSTxCountdown = 0;
 				AppendToFormattedStringSimulationTextControl("RS485 Write: %s\r\n", a->name2, GetSimulationVariable(a->name1));
                 break;
-			case INT_READ_SERVO_IASKAWA:
+			case INT_READ_SERVO_YASKAWA:
 				SetSingleBit("$SerialReady", FALSE);
 				SimulateUSSTxCountdown = 0;
 				AppendToFormattedStringSimulationTextControl("Servo Read: %s\r\n", a->name2, GetSimulationVariable(a->name1));
                 break;
-			case INT_WRITE_SERVO_IASKAWA:
+			case INT_WRITE_SERVO_YASKAWA:
 				SetSingleBit("$SerialReady", FALSE);
 				SimulateUSSTxCountdown = 0;
 				AppendToFormattedStringSimulationTextControl("Servo Write: %s\r\n", a->name2, GetSimulationVariable(a->name1));

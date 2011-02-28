@@ -536,10 +536,10 @@ void EditSelectedElement(void)
                 Selected->d.fmtdStr.string);
             break;
 
-		case ELEM_READ_SERVO_IASKAWA:
-		case ELEM_WRITE_SERVO_IASKAWA:
-            ShowServoIaskawaDialog(Selected->d.servoIaskawa.id, Selected->d.servoIaskawa.var,
-                Selected->d.servoIaskawa.string);
+		case ELEM_READ_SERVO_YASKAWA:
+		case ELEM_WRITE_SERVO_YASKAWA:
+            ShowServoYaskawaDialog(Selected->d.servoYaskawa.id, Selected->d.servoYaskawa.var,
+                Selected->d.servoYaskawa.string);
             break;
 
         case ELEM_PIECEWISE_LINEAR:

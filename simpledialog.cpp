@@ -651,12 +651,14 @@ void ShowFormattedStringDialog(char *var, char *string)
     NoCheckingOnBox[1] = FALSE;
 }
 
-void ShowServoIaskawaDialog(char * id, char *var, char *string)
+void ShowServoYaskawaDialog(char * id, char *var, char *string)
 {
     char *labels[] = { _("Id:"), _("Variable:"), _("String:") };
     char *dests[] = { id, var, string };
-    ShowSimpleDialog(_("Servo Iaskawa"), 3, labels, 0x1,
+    NoCheckingOnBox[1] = TRUE;
+    ShowSimpleDialog(_("Servo Yaskawa"), 3, labels, 0x1,
         0x2, 0x7, dests);
+    NoCheckingOnBox[1] = FALSE;
 }
 
 void ShowPersistDialog(char *var)

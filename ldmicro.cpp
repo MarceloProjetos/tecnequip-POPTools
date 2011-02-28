@@ -596,12 +596,12 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddWriteFormatString());
             break;
 
-		case MNU_READ_SERVO_IASKAWA:
-            CHANGING_PROGRAM(AddReadServoIaskawa());
+		case MNU_READ_SERVO_YASKAWA:
+            CHANGING_PROGRAM(AddReadServoYaskawa());
             break;
 
-        case MNU_WRITE_SERVO_IASKAWA:
-            CHANGING_PROGRAM(AddWriteServoIaskawa());
+        case MNU_WRITE_SERVO_YASKAWA:
+            CHANGING_PROGRAM(AddWriteServoYaskawa());
             break;
 
 		case MNU_INSERT_READ_USS:

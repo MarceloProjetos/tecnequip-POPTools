@@ -129,7 +129,7 @@ unsigned char MAC_ADDRESS[6];
 volatile unsigned int saidas = 0;
 volatile unsigned int entradas = 0;
 
-volatile char servo_iaskawa_echo[128];
+volatile char servo_yaskawa_echo[128];
 
 volatile unsigned int plccycle_timer = 0;
 volatile unsigned int serial_timeout = 0;
@@ -1153,7 +1153,7 @@ int read_formatted_string(char *format, int *val)
 
 	return sz;
 }
-int write_servo_iaskawa(char * id, char *format, int val)
+int write_servo_yaskawa(char * id, char *format, int val)
 {
 	int sz = 0;
 	char msg[128];
@@ -1169,12 +1169,12 @@ int write_servo_iaskawa(char * id, char *format, int val)
 
 	sz = RS485Write((unsigned char*)msg, strlen(msg));
 
-	strncpy((char*)servo_iaskawa_echo, msg, strlen(msg));
+	strncpy((char*)servo_yaskawa_echo, msg, strlen(msg));
 
 	return sz;
 }
 
-int read_servo_iaskawa(char * id, char *format, int *val)
+int read_servo_yaskawa(char * id, char *format, int *val)
 {
 	int sz = 0;
 	char msg[128];
@@ -1186,13 +1186,13 @@ int read_servo_iaskawa(char * id, char *format, int *val)
 
 	sz = RS485Read((unsigned char*)msg, sizeof(msg));
 
-	if (sz == 0 || strlen(msg) <= strlen((char*)servo_iaskawa_echo))
+	if (sz == 0 || strlen(msg) <= strlen((char*)servo_yaskawa_echo))
 	{
 		*val = -2;
 		return sz;
 	}
 	else
-		pmsg += strlen((char*)servo_iaskawa_echo);
+		pmsg += strlen((char*)servo_yaskawa_echo);
 
 	if (strncmp(pmsg, id, strlen(id)) != 0)
 		*val = -3;
@@ -1656,14 +1656,36 @@ unsigned int AtualizaEntradas(void)
   return i;
 }
 
-void RS485Config(int baudrate, int parity)
+void RS485Config(int baudrate, int bits, int parity, int stopbit)
 {
-	if (parity == 1)
-		UART3->LCR = 0x1B;          /* 8 bits, even-parity, 1 stop bit */
-	else if (parity == 2)
-		UART3->LCR = 0x0B;          /* 8 bits, odd-parity, 1 stop bit */
-	else
-		UART3->LCR = 0x03;          /* 8 bits, no parity, 1 stop bit */
+	UART3->LCR = 0;
+
+	switch(bits)
+	{
+	case 5:
+		break;
+	case 6:
+		UART3->LCR |= 0x1;
+		break;
+	case 7:
+		UART3->LCR |= 0x2;
+		break;
+	default:  // 8 bits
+		UART3->LCR |= 0x3;
+	}
+
+	if (stopbit == 2)
+		UART3->LCR |= 0x4;
+
+	switch(parity)
+	{
+	case 1: // odd
+		UART3->LCR |= 0x8;
+		break;
+	case 2: // even
+		UART3->LCR |= 0x18;
+		break;
+	}
 
 	if (baudrate == 19200)
 	{

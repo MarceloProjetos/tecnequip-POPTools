@@ -237,8 +237,8 @@ static void GenerateDeclarations(FILE *f)
             case INT_RESET_ENC:
 			case INT_READ_FORMATTED_STRING:
 			case INT_WRITE_FORMATTED_STRING:
-			case INT_READ_SERVO_IASKAWA:
-			case INT_WRITE_SERVO_IASKAWA:
+			case INT_READ_SERVO_YASKAWA:
+			case INT_WRITE_SERVO_YASKAWA:
             case INT_READ_USS:
             case INT_WRITE_USS:
             case INT_READ_MODBUS_ETH:
@@ -467,11 +467,11 @@ static void GenerateAnsiC(FILE *f)
 			case INT_WRITE_FORMATTED_STRING:
 				fprintf(f, "write_formatted_string(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
-			case INT_READ_SERVO_IASKAWA:
-				fprintf(f, "read_servo_iaskawa(\"%s\", \"%s\", %s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
+			case INT_READ_SERVO_YASKAWA:
+				fprintf(f, "read_servo_yaskawa(\"%s\", \"%s\", %s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
-			case INT_WRITE_SERVO_IASKAWA:
-				fprintf(f, "write_servo_iaskawa(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
+			case INT_WRITE_SERVO_YASKAWA:
+				fprintf(f, "write_servo_yaskawa(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_USS:
 				fprintf(f, "uss_get_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
@@ -898,7 +898,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 
 	fprintf(f, "extern struct MB_Device modbus_master;\n");
 	fprintf(f, "extern unsigned int RS232Write(char c);\n");
-	fprintf(f, "extern void RS485Config(int baudrate, int parity);\n");
+	fprintf(f, "extern void RS485Config(int baudrate, int bits, int parity, int stopbit);\n");
 	fprintf(f, "extern unsigned int ADCRead(unsigned int i);\n");
 	fprintf(f, "extern unsigned int ENCRead(void);\n");
 	fprintf(f, "extern unsigned int ENCReset(void);\n");
@@ -907,6 +907,45 @@ DWORD CompileAnsiCToGCC(char *dest)
     // now generate declarations for all variables
     GenerateDeclarations(f);
 
+	struct serialtag
+	{
+		int bits;
+		int parity;
+		int stopbit;
+	} serial;
+
+	switch(Prog.UART)
+	{
+	case 1: // 8-E-1
+		serial.bits = 8;  // 8 bits
+		serial.parity = 2; // even
+		serial.stopbit = 1; // 1 stopbit
+		break;
+	case 2: // 8-O-1
+		serial.bits = 8;  // 8 bits
+		serial.parity = 1; // odd
+		serial.stopbit = 1; // 1 stopbit
+		break;
+	case 3: // 7-N-1
+		serial.bits = 7;  // 8 bits
+		serial.parity = 0; // even
+		serial.stopbit = 1; // 1 stopbit
+		break;
+	case 4: // 7-E-1
+		serial.bits = 7;  // 8 bits
+		serial.parity = 2; // even
+		serial.stopbit = 1; // 1 stopbit
+		break;
+	case 5: // 7-O-1
+		serial.bits = 7;  // 8 bits
+		serial.parity = 1; // odd
+		serial.stopbit = 1; // 1 stopbit
+		break;
+	default: // 8-N-1
+		serial.bits = 8;  // 8 bits
+		serial.parity = 0; // none
+		serial.stopbit = 1; // 1 stopbit
+	}
 	fprintf(f, "volatile unsigned char MODBUS_MASTER = %d; // 0 = Slave, 1 = Master \n", MODBUS_MASTER);
 
     fprintf(f,
@@ -914,11 +953,11 @@ DWORD CompileAnsiCToGCC(char *dest)
 "\n"
 "void ld_Init(void)\n"
 "{\n"
-"  RS485Config(%d, %d);\n"
+"  RS485Config(%d, %d, %d, %d);\n"
 "}\n\n"
 "/* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */\n"
 "void PlcCycle(void)\n"
-"{\n", Prog.baudRate, Prog.parity);
+"{\n", Prog.baudRate, serial.bits, serial.parity, serial.stopbit);
 
     GenerateAnsiC(f);
 

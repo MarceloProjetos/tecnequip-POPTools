@@ -116,8 +116,8 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_CHECK_BIT	0x52
 #define MNU_READ_FMTD_STR		0x53
 #define MNU_WRITE_FMTD_STR		0x54
-#define MNU_READ_SERVO_IASKAWA		0x55
-#define MNU_WRITE_SERVO_IASKAWA		0x56
+#define MNU_READ_SERVO_YASKAWA		0x55
+#define MNU_WRITE_SERVO_YASKAWA		0x56
 
 #define MNU_MCU_SETTINGS        0x57
 #define MNU_PROCESSOR_0         0xa0
@@ -207,8 +207,8 @@ typedef SDWORD SWORD;
 #define ELEM_CHECK_BIT			0x3c
 #define ELEM_READ_FORMATTED_STRING 0x3d
 #define ELEM_WRITE_FORMATTED_STRING 0x3e
-#define ELEM_READ_SERVO_IASKAWA 0x3f
-#define ELEM_WRITE_SERVO_IASKAWA 0x40
+#define ELEM_READ_SERVO_YASKAWA 0x3f
+#define ELEM_WRITE_SERVO_YASKAWA 0x40
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -258,8 +258,8 @@ typedef SDWORD SWORD;
         case ELEM_PIECEWISE_LINEAR: \
 		case ELEM_READ_FORMATTED_STRING: \
 		case ELEM_WRITE_FORMATTED_STRING: \
-		case ELEM_READ_SERVO_IASKAWA: \
-		case ELEM_WRITE_SERVO_IASKAWA: \
+		case ELEM_READ_SERVO_YASKAWA: \
+		case ELEM_WRITE_SERVO_YASKAWA: \
         case ELEM_FORMATTED_STRING: \
         case ELEM_PERSIST:
 
@@ -428,11 +428,11 @@ typedef struct ElemFormattedStringTag {
     char    string[MAX_LOOK_UP_TABLE_LEN];
 } ElemFormattedString;
 
-typedef struct ElemServoIaskawaTag {
+typedef struct ElemServoYaskawaTag {
     char    id[MAX_NAME_LEN];
     char    var[MAX_NAME_LEN];
     char    string[MAX_LOOK_UP_TABLE_LEN];
-} ElemServoIaskawa;
+} ElemServoYaskawa;
 
 typedef struct ElemPerisistTag {
     char    var[MAX_NAME_LEN];
@@ -472,7 +472,7 @@ typedef struct ElemLeafTag {
 		ElemCheckBit		checkBit;
         ElemShiftRegister   shiftRegister;
         ElemFormattedString fmtdStr;
-		ElemServoIaskawa	servoIaskawa;
+		ElemServoYaskawa	servoYaskawa;
         ElemLookUpTable     lookUpTable;
         ElemPiecewiseLinear piecewiseLinear;
         ElemPersist         persist;
@@ -547,7 +547,7 @@ typedef struct PlcProgramTag {
     int         mcuClock;
     int         baudRate;	// RS485 baudrate
 	int			comPort;  // programming com port
-	int			parity;
+	int			UART;
 	unsigned char ip[4];
 	unsigned char mask[4];
 	unsigned char gw[4];
@@ -788,8 +788,8 @@ void AddReadEnc(void);
 void AddResetEnc(void);
 void AddReadFormatString(void);
 void AddWriteFormatString(void);
-void AddReadServoIaskawa(void);
-void AddWriteServoIaskawa(void);
+void AddReadServoYaskawa(void);
+void AddWriteServoYaskawa(void);
 void AddReadUSS(void);
 void AddWriteUSS(void);
 void AddReadModbus(void);
@@ -874,7 +874,7 @@ void ShowCmpDialog(int which, char *op1, char *op2);
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
 void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);
-void ShowServoIaskawaDialog(char *id, char *var, char *string);
+void ShowServoYaskawaDialog(char *id, char *var, char *string);
 void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
