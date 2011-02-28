@@ -182,6 +182,20 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 		if (strcmp(l->d.fmtdStr.var,"(empty)") == 0)
 			strcpy(l->d.fmtdStr.var, "");
 		*which = ELEM_WRITE_FORMATTED_STRING;
+	} else if (sscanf(line, "READ_SERVO_IASKAWA %s %s %[^\t\n]", l->d.servoIaskawa.id, l->d.servoIaskawa.var, l->d.servoIaskawa.string)==3) {
+		if (strcmp(l->d.servoIaskawa.var,"(empty)") == 0)
+		{
+			strcpy(l->d.servoIaskawa.id, "");
+			strcpy(l->d.servoIaskawa.var, "");
+		}
+		*which = ELEM_READ_SERVO_IASKAWA;
+	} else if (sscanf(line, "WRITE_SERVO_IASKAWA %s %s %[^\t\n]", l->d.servoIaskawa.id, l->d.servoIaskawa.var, l->d.servoIaskawa.string)==3) {
+		if (strcmp(l->d.servoIaskawa.var,"(empty)") == 0)
+		{
+			strcpy(l->d.servoIaskawa.id, "");
+			strcpy(l->d.servoIaskawa.var, "");
+		}
+		*which = ELEM_WRITE_SERVO_IASKAWA;
     } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var, &x)==2)
     {
         if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
@@ -647,6 +661,28 @@ cmp:
 				strcpy(s, "(empty)");
 
 			fprintf(f, "WRITE_FORMATTED_STRING %s %s\n", s, l->d.fmtdStr.string);
+            break;
+			}
+        case ELEM_READ_SERVO_IASKAWA:
+			{
+			char s[128];
+			if (strlen(l->d.servoIaskawa.var) > 0)
+				strcpy(s, l->d.servoIaskawa.var);
+			else
+				strcpy(s, "(empty)");
+
+			fprintf(f, "READ_SERVO_IASKAWA %s %s %s\n", l->d.servoIaskawa.id, s, l->d.servoIaskawa.string);
+            break;
+			}
+        case ELEM_WRITE_SERVO_IASKAWA:
+			{
+			char s[128];
+			if (strlen(l->d.servoIaskawa.var) > 0)
+				strcpy(s, l->d.servoIaskawa.var);
+			else
+				strcpy(s, "(empty)");
+
+			fprintf(f, "WRITE_SERVO_IASKAWA %s %s %s\n", l->d.servoIaskawa.id, s, l->d.servoIaskawa.string);
             break;
 			}
 		case ELEM_FORMATTED_STRING: {

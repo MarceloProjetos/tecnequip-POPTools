@@ -113,6 +113,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
 
 		case ELEM_READ_FORMATTED_STRING:
 		case ELEM_WRITE_FORMATTED_STRING:
+		case ELEM_READ_SERVO_IASKAWA:
+		case ELEM_WRITE_SERVO_IASKAWA:
         case ELEM_FORMATTED_STRING:
             return 2;
 
@@ -898,6 +900,26 @@ cmp:
             *cx += 2*POS_WIDTH;
             break;
         }
+		case ELEM_READ_SERVO_IASKAWA:
+		case ELEM_WRITE_SERVO_IASKAWA:{
+            char bot[100];
+            sprintf(bot, "%s: %s", which == ELEM_READ_SERVO_IASKAWA ? "READ" : "WRITE", 
+										leaf->d.servoIaskawa.var);
+
+            int extra = 2*POS_WIDTH - strlen(bot);
+            PoweredText(poweredAfter);
+            NameText();
+            DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1,
+                bot);
+            BodyText();
+
+			sprintf(bot, "{\"%s\"}", leaf->d.servoIaskawa.string);
+
+            CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter,
+                2*POS_WIDTH);
+            *cx += 2*POS_WIDTH;
+            break;
+        }
         case ELEM_SET_BIT:
             CenterWithWires(*cx, *cy, "{SET BIT}", poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, leaf->d.setBit.name, poweredAfter, TRUE);
@@ -976,6 +998,8 @@ cmp:
         case ELEM_DIV:
 		case ELEM_READ_FORMATTED_STRING:
 		case ELEM_WRITE_FORMATTED_STRING:
+		case ELEM_READ_SERVO_IASKAWA:
+		case ELEM_WRITE_SERVO_IASKAWA:
         case ELEM_FORMATTED_STRING:
             DM_BOUNDS(gx-1, gy);
             DisplayMatrix[gx-1][gy] = leaf;

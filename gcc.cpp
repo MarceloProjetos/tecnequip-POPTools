@@ -237,6 +237,8 @@ static void GenerateDeclarations(FILE *f)
             case INT_RESET_ENC:
 			case INT_READ_FORMATTED_STRING:
 			case INT_WRITE_FORMATTED_STRING:
+			case INT_READ_SERVO_IASKAWA:
+			case INT_WRITE_SERVO_IASKAWA:
             case INT_READ_USS:
             case INT_WRITE_USS:
             case INT_READ_MODBUS_ETH:
@@ -464,6 +466,12 @@ static void GenerateAnsiC(FILE *f)
 				break;
 			case INT_WRITE_FORMATTED_STRING:
 				fprintf(f, "write_formatted_string(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
+				break;
+			case INT_READ_SERVO_IASKAWA:
+				fprintf(f, "read_servo_iaskawa(\"%s\", \"%s\", %s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
+				break;
+			case INT_WRITE_SERVO_IASKAWA:
+				fprintf(f, "write_servo_iaskawa(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_USS:
 				fprintf(f, "uss_get_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));

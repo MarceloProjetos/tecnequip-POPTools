@@ -435,6 +435,26 @@ void AddWriteFormatString(void)
     strcpy(t->d.fmtdStr.string, "value: %d\\r\\n");
     AddLeaf(ELEM_WRITE_FORMATTED_STRING, t);
 }
+void AddReadServoIaskawa(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.servoIaskawa.id, "0");
+    strcpy(t->d.servoIaskawa.var, "var");
+    strcpy(t->d.servoIaskawa.string, "value: %d");
+    AddLeaf(ELEM_READ_SERVO_IASKAWA, t);
+}
+void AddWriteServoIaskawa(void)
+{
+    if(!CanInsertOther) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.servoIaskawa.id, "0");
+    strcpy(t->d.servoIaskawa.var, "var");
+    strcpy(t->d.servoIaskawa.string, "value: %d");
+    AddLeaf(ELEM_WRITE_SERVO_IASKAWA, t);
+}
 void AddReadUSS(void)
 {
     if(!CanInsertOther) return;
@@ -1066,6 +1086,11 @@ BOOL UartFunctionUsed(void)
         }
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_READ_FORMATTED_STRING, ELEM_WRITE_FORMATTED_STRING, ELEM_FORMATTED_STRING))
+        {
+            return TRUE;
+        }
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_READ_SERVO_IASKAWA, ELEM_WRITE_SERVO_IASKAWA, ELEM_FORMATTED_STRING))
         {
             return TRUE;
         }

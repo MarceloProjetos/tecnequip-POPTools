@@ -61,7 +61,7 @@ const LPCTSTR ComboboxComPortItens[] = { _("COM1"), _("COM2"), _("COM3"), _("COM
 const LPCTSTR ComboboxBaudRateItens[] = { /*_("2400"), _("4800"), _("7200"),*/ _("9600"), _("14400"), _("19200")/*, _("28800"), 
 						_("38400"), _("57600"), _("115200")*/ };
 
-const LPCTSTR ComboboxParityItens[] = { _("8-None-1"), _("8-Even-1"), _("8-Odd-1") };
+const LPCTSTR ComboboxParityItens[] = { _("8-None-1"), _("8-Even-1"), _("8-Odd-1"), _("7-None-1"), _("7-Even-1"), _("7-Odd-1") };
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.

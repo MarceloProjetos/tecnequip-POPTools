@@ -129,6 +129,14 @@ void IntDumpListing(char *outFile)
                 fprintf(f, "write format string '%s'", IntCode[i].name1);
                 break;
 
+			case INT_READ_SERVO_IASKAWA:
+                fprintf(f, "read servo iaskawa '%s'", IntCode[i].name1);
+                break;
+
+			case INT_WRITE_SERVO_IASKAWA:
+                fprintf(f, "write servo iaskawa '%s'", IntCode[i].name1);
+                break;
+
             case INT_READ_USS:
                 fprintf(f, "read uss '%s'", IntCode[i].name1);
                 break;
@@ -329,6 +337,12 @@ static void Op(int op, char *name1, char *name2, char *name3, char *name4, SWORD
 		break;
 	case INT_WRITE_FORMATTED_STRING:
 		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_STRING_WRITE");
+		break;
+	case INT_READ_SERVO_IASKAWA:
+		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_SERVO_IASKAWA_READ");
+		break;
+	case INT_WRITE_SERVO_IASKAWA:
+		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_SERVO_IASKAWA_WRITE");
 		break;
 	case INT_READ_ENC:
 		strcpy(IntCode[IntCodeLen].desc, "READ_ENC");
@@ -854,6 +868,50 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 								Op(INT_READ_FORMATTED_STRING, var, string);
 							else
 								Op(INT_WRITE_FORMATTED_STRING, var, string);
+							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+						Op(INT_END_IF);
+						Op(INT_CLEAR_BIT, stateInOut);
+						Op(INT_COPY_BIT_TO_BIT, byPass, stateInOut);
+					Op(INT_END_IF);
+					Op(INT_IF_BIT_CLEAR, byPass);
+						Op(INT_IF_BIT_SET, "$SerialReady");
+							Op(INT_SET_BIT, byPass);
+						Op(INT_ELSE);
+							Op(INT_CLEAR_BIT, stateInOut);
+						Op(INT_END_IF);
+					Op(INT_END_IF);
+				Op(INT_ELSE);
+					Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+				Op(INT_END_IF);
+
+				}
+                break;
+
+	        case ELEM_READ_SERVO_IASKAWA: 
+			case ELEM_WRITE_SERVO_IASKAWA:
+				{
+				char id[10];
+				char var[10];
+				char string[128];
+
+				sprintf(id, "%s", l->d.servoIaskawa.id);
+				sprintf(var, "%s", l->d.servoIaskawa.var);
+				sprintf(string, "%s", l->d.servoIaskawa.string);
+
+				// We want to respond to rising edges, so yes we need a one shot.
+				char oneShot[MAX_NAME_LEN];
+				GenSymOneShot(oneShot);
+				char byPass[MAX_NAME_LEN];
+				GenSymOneShot(byPass);
+
+				// OneShot 
+				Op(INT_IF_BIT_SET, stateInOut);
+					Op(INT_IF_BIT_CLEAR, oneShot);
+						Op(INT_IF_BIT_SET, "$SerialReady");
+							if (which == ELEM_READ_SERVO_IASKAWA)
+								Op(INT_READ_SERVO_IASKAWA, var, string, id, 0, 0);
+							else
+								Op(INT_WRITE_SERVO_IASKAWA, var, string, id, 0, 0);
 							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
 						Op(INT_END_IF);
 						Op(INT_CLEAR_BIT, stateInOut);

@@ -372,6 +372,10 @@ HMENU MakeMainWindowMenus(void)
         _("Receive Formatted String Over UART"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_WRITE_FMTD_STR,
         _("Send Formatted String Over UART"));
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_READ_SERVO_IASKAWA,
+        _("Leitura do Controlador do Servo Iaskawa"));
+    AppendMenu(ComunicationMenu, MF_STRING, MNU_WRITE_SERVO_IASKAWA,
+        _("Escrita no Controlador do Servo Iaskawa"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_SEND,
         _("Insert Serial &Send"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_RECV,

@@ -129,6 +129,8 @@ unsigned char MAC_ADDRESS[6];
 volatile unsigned int saidas = 0;
 volatile unsigned int entradas = 0;
 
+volatile char servo_iaskawa_echo[128];
+
 volatile unsigned int plccycle_timer = 0;
 volatile unsigned int serial_timeout = 0;
 volatile unsigned int uss_timeout = 0;
@@ -1125,6 +1127,7 @@ int read_formatted_string(char *format, int *val)
 	char cmp[128];
 
 	*val = 0;
+	memset(msg, 0, sizeof(msg));
 
 	sz = RS485Read((unsigned char*)msg, sizeof(msg));
 
@@ -1132,17 +1135,82 @@ int read_formatted_string(char *format, int *val)
 		*val = -2;
 	else
 	{
-		memset(msg, 0, sizeof(msg));
 		memset(cmp, 0, sizeof(msg));
 
 		//sprintf((void*)msg, format, val);
 		if (sscanf(msg, format, val) != 1)
 			*val = -1;
+		else
+		{
+			sprintf(cmp, format, val);
 
-		sprintf(cmp, format, val);
+			if (strncmp(cmp, msg, sz) != 0)
+				*val = -1;		
+		}
+	}
 
-		if (strncmp(cmp, msg, sz) != 0)
-			*val = -1;		
+	I_SerialReady = 1;
+
+	return sz;
+}
+int write_servo_iaskawa(char * id, char *format, int val)
+{
+	int sz = 0;
+	char msg[128];
+
+	memset(msg, 0, sizeof(msg));
+
+	strcpy(msg, id);
+
+	sprintf((void*)msg+strlen(id), format, val);
+	strcat(msg, "\n");
+
+	I_SerialReady = 1;
+
+	sz = RS485Write((unsigned char*)msg, strlen(msg));
+
+	strncpy((char*)servo_iaskawa_echo, msg, strlen(msg));
+
+	return sz;
+}
+
+int read_servo_iaskawa(char * id, char *format, int *val)
+{
+	int sz = 0;
+	char msg[128];
+	char cmp[128];
+	char * pmsg = msg;
+
+	*val = 0;
+	memset(msg, 0, sizeof(msg));
+
+	sz = RS485Read((unsigned char*)msg, sizeof(msg));
+
+	if (sz == 0 || strlen(msg) <= strlen((char*)servo_iaskawa_echo))
+	{
+		*val = -2;
+		return sz;
+	}
+	else
+		pmsg += strlen((char*)servo_iaskawa_echo);
+
+	if (strncmp(pmsg, id, strlen(id)) != 0)
+		*val = -3;
+	else
+	{
+		memset(cmp, 0, sizeof(cmp));
+
+		//sprintf((void*)msg, format, val);
+		if (sscanf(msg, format, val) != 1)
+			*val = -1;
+		else
+		{
+			sprintf(cmp, format, val);
+			strcat(cmp, "\n");
+
+			if (strncmp(cmp, msg, sz) != 0)
+				*val = -1;		
+		}
 	}
 
 	I_SerialReady = 1;

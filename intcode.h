@@ -60,6 +60,8 @@
 #define INT_CHECK_BIT							29
 #define INT_READ_FORMATTED_STRING				30
 #define INT_WRITE_FORMATTED_STRING				31
+#define INT_READ_SERVO_IASKAWA					32
+#define INT_WRITE_SERVO_IASKAWA					33
 
 #define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50
