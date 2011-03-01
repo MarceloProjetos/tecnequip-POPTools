@@ -184,17 +184,11 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 		*which = ELEM_WRITE_FORMATTED_STRING;
 	} else if (sscanf(line, "READ_SERVO_YASKAWA %s %s %[^\t\n]", l->d.servoYaskawa.id, l->d.servoYaskawa.var, l->d.servoYaskawa.string)==3) {
 		if (strcmp(l->d.servoYaskawa.var,"(empty)") == 0)
-		{
-			strcpy(l->d.servoYaskawa.id, "");
 			strcpy(l->d.servoYaskawa.var, "");
-		}
 		*which = ELEM_READ_SERVO_YASKAWA;
 	} else if (sscanf(line, "WRITE_SERVO_YASKAWA %s %s %[^\t\n]", l->d.servoYaskawa.id, l->d.servoYaskawa.var, l->d.servoYaskawa.string)==3) {
 		if (strcmp(l->d.servoYaskawa.var,"(empty)") == 0)
-		{
-			strcpy(l->d.servoYaskawa.id, "");
 			strcpy(l->d.servoYaskawa.var, "");
-		}
 		*which = ELEM_WRITE_SERVO_YASKAWA;
     } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var, &x)==2)
     {

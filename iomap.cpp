@@ -213,9 +213,14 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
 		case ELEM_READ_SERVO_YASKAWA:
+            if(strlen(l->d.servoYaskawa.var) > 0) {
+                AppendIo(l->d.servoYaskawa.var, IO_TYPE_READ_YASKAWA, 0);
+            }
+            break;
+
 		case ELEM_WRITE_SERVO_YASKAWA:
             if(strlen(l->d.servoYaskawa.var) > 0) {
-                AppendIo(l->d.servoYaskawa.var, IO_TYPE_UART_TX, 0);
+                AppendIo(l->d.servoYaskawa.var, IO_TYPE_WRITE_YASKAWA, 0);
             }
             break;
 

@@ -116,7 +116,9 @@ static char *MapSym(char *str)
 		}
 	}
 
-    if(*str == '$') {
+	if (strlen(str) == 0)
+		sprintf(ret, "VAR_NULL");
+    else if(*str == '$') {
         sprintf(ret, "I_%s", str+1);
     } else {
         sprintf(ret, "U_%s", str);
@@ -462,13 +464,13 @@ static void GenerateAnsiC(FILE *f)
 				fprintf(f, "ENCReset();\n");
 				break;
 			case INT_READ_FORMATTED_STRING:
-				fprintf(f, "read_formatted_string(\"%s\", %s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "read_formatted_string(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
 			case INT_WRITE_FORMATTED_STRING:
 				fprintf(f, "write_formatted_string(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
 			case INT_READ_SERVO_YASKAWA:
-				fprintf(f, "read_servo_yaskawa(\"%s\", \"%s\", %s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "read_servo_yaskawa(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
 			case INT_WRITE_SERVO_YASKAWA:
 				fprintf(f, "write_servo_yaskawa(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));

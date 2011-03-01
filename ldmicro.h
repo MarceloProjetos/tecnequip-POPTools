@@ -530,6 +530,9 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_WRITE_MODBUS    19
 #define IO_TYPE_READ_MODBUS_ETH 20
 #define IO_TYPE_WRITE_MODBUS_ETH 21
+#define IO_TYPE_READ_YASKAWA	23
+#define IO_TYPE_WRITE_YASKAWA	24
+
     int         type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
