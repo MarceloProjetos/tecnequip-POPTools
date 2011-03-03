@@ -903,7 +903,7 @@ cmp:
 		case ELEM_READ_SERVO_YASKAWA:
 		case ELEM_WRITE_SERVO_YASKAWA:{
             char bot[100];
-            sprintf(bot, "%s: %s", which == ELEM_READ_SERVO_YASKAWA ? "READ" : "WRITE", 
+            sprintf(bot, "%s: %s", which == ELEM_READ_SERVO_YASKAWA ? "NS600" : "NS600", 
 										leaf->d.servoYaskawa.var);
 
             int extra = 2*POS_WIDTH - strlen(bot);

@@ -1105,7 +1105,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 break;
             }
             case ELEM_UART_SEND:
+                Op(INT_IF_BIT_SET, stateInOut);
                 Op(INT_UART_SEND, l->d.uart.name, stateInOut);
+                Op(INT_END_IF);
                 break;
 
             case ELEM_UART_RECV:

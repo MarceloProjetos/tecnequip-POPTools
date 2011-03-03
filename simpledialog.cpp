@@ -159,6 +159,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     MakeControls(boxes, labels, fixedFontMask);
   
     int i;
+
     for(i = 0; i < boxes; i++) {
         SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);
 
@@ -200,29 +201,39 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
 
     didCancel = DialogCancel;
 
+	char get[64];
+	char * tmp = new char[sizeof(get) * boxes];
+
+	memcpy(tmp, *dests, sizeof(char*) * boxes);
+
     if(!didCancel) {
         for(i = 0; i < boxes; i++) {
             if(NoCheckingOnBox[i]) {
-                char get[64];
                 SendMessage(Textboxes[i], WM_GETTEXT, 60, (LPARAM)get);
-                strcpy(dests[i], get);
+                strcpy(tmp + (i * sizeof(get)), get);
             } else {
-                char get[20];
-                SendMessage(Textboxes[i], WM_GETTEXT, 15, (LPARAM)get);
+                SendMessage(Textboxes[i], WM_GETTEXT, 60, (LPARAM)get);
 
                 if( (!strchr(get, '\'')) ||
                         (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )
                 {
                     if(strlen(get) == 0) {
                         Error(_("Empty textbox; not permitted."));
+						break;
                     } else {
-                        strcpy(dests[i], get);
+                        strcpy(tmp + (i * sizeof(get)), get);
                     }
                 } else {
                     Error(_("Bad use of quotes: <%s>"), get);
+					break;
                 }
             }
         }
+		if (i == boxes)
+		{
+			for (i = 0; i < boxes; i++)
+				strcpy(dests[i], tmp + (i * sizeof(get)));
+		}
     }
 
     EnableWindow(MainWindow, TRUE);
@@ -658,7 +669,11 @@ void ShowServoYaskawaDialog(char * id, char *var, char *string)
     NoCheckingOnBox[1] = TRUE;
     ShowSimpleDialog(_("Servo Yaskawa"), 3, labels, 0x1,
         0x2, 0x7, dests);
-    NoCheckingOnBox[1] = FALSE;
+
+	while (*string)
+		*(string++) = toupper(*string);
+
+	NoCheckingOnBox[1] = FALSE;
 }
 
 void ShowPersistDialog(char *var)
