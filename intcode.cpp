@@ -848,7 +848,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 	        case ELEM_READ_FORMATTED_STRING: 
 			case ELEM_WRITE_FORMATTED_STRING:
 				{
-				char var[10];
+				char var[128];
 				char string[128];
 
 				sprintf(var, "%s", l->d.fmtdStr.var);
@@ -890,12 +890,12 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 	        case ELEM_READ_SERVO_YASKAWA: 
 			case ELEM_WRITE_SERVO_YASKAWA:
 				{
-				char id[10];
-				char var[10];
+				char id[128];
+				char var_yaskawa[128];
 				char string[128];
 
 				sprintf(id, "%s", l->d.servoYaskawa.id);
-				sprintf(var, "%s", l->d.servoYaskawa.var);
+				sprintf(var_yaskawa, "%s", l->d.servoYaskawa.var);
 				sprintf(string, "%s", l->d.servoYaskawa.string);
 
 				// We want to respond to rising edges, so yes we need a one shot.
@@ -909,9 +909,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 					Op(INT_IF_BIT_CLEAR, oneShot);
 						Op(INT_IF_BIT_SET, "$SerialReady");
 							if (which == ELEM_READ_SERVO_YASKAWA)
-								Op(INT_READ_SERVO_YASKAWA, var, string, id, 0, 0);
+								Op(INT_READ_SERVO_YASKAWA, var_yaskawa, string, id, 0, 0);
 							else
-								Op(INT_WRITE_SERVO_YASKAWA, var, string, id, 0, 0);
+								Op(INT_WRITE_SERVO_YASKAWA, var_yaskawa, string, id, 0, 0);
 							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
 						Op(INT_END_IF);
 						Op(INT_CLEAR_BIT, stateInOut);

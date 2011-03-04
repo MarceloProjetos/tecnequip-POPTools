@@ -132,6 +132,7 @@ volatile unsigned int entradas = 0;
 
 volatile unsigned int plccycle_timer = 0;
 volatile unsigned int serial_timeout = 0;
+volatile unsigned int serial_tx_interval = 0;
 volatile unsigned int uss_timeout = 0;
 volatile unsigned int modbus_timeout = 0;
 
@@ -208,7 +209,7 @@ unsigned int ModbusRequest(unsigned char * buffer, unsigned int sz);
 int Init_EMAC(void);
 int Init_EMAC_phase2(void);
 
-volatile unsigned int I_SerialReady;
+volatile unsigned int I_SerialReady = 1;
 volatile unsigned int I_USSReady;
 volatile unsigned int I_ModbusReady;
 
@@ -883,16 +884,9 @@ void TIMER0_IRQHandler (void)
 	serial_timeout++;
 	//uss_timeout++;
 	modbus_timeout++;
+	serial_tx_interval++;
 
 	plccycle_timer++;
-
-	if (WAITING_FOR_YASKAWA)
-	{
-		if (serial_tx_index < serial_tx_count)
-		{
-			RS485Write(serial_tx_buffer + serial_tx_index++, 1);
-		}
-	}
 
 	if (serial_timeout > 10)
 	{
@@ -918,6 +912,18 @@ void TIMER0_IRQHandler (void)
 		}
 	}
   
+	if (WAITING_FOR_YASKAWA)
+	{
+		if (serial_tx_interval >= 3)
+		{
+			if (serial_tx_index < serial_tx_count)
+			{
+				RS485Write(serial_tx_buffer + serial_tx_index++, 1);
+			}
+			serial_tx_interval = 0;
+		}
+	}
+
  // if (!I_SerialReady && serial_rx_index)
  // {
  //   uss_ready((PPO1*)serial_rx_buffer, serial_rx_index);
@@ -928,7 +934,7 @@ void TIMER0_IRQHandler (void)
   {
     I_SerialReady = 1;
 	WAITING_FOR_USS = 0;
-	WAITING_FOR_YASKAWA = 0;
+	//WAITING_FOR_YASKAWA = 0;
 	modbus_timeout = 0;
   } 
 
@@ -1186,6 +1192,7 @@ int write_servo_yaskawa(char * id, char *format, int * val)
 
 		serial_tx_count = 0;
 		serial_tx_index = 0;
+		serial_tx_interval = 0;
 
 		//sz = RS485Write((unsigned char*)msg, strlen(msg));
 		memset(serial_rx_buffer, 0, sizeof(serial_rx_buffer));
@@ -1195,7 +1202,6 @@ int write_servo_yaskawa(char * id, char *format, int * val)
 		serial_tx_count = strlen(msg);
 
 		I_SerialReady = 1;
-
 	}
 
 	return sz;
@@ -1204,9 +1210,25 @@ int write_servo_yaskawa(char * id, char *format, int * val)
 int read_servo_yaskawa(char * id, char *format, int *val)
 {
 	int sz = 0;
+	int tx_count = 0;
 	char msg[128];
 	char cmp[128];
 	char * pmsg = &msg[0];
+
+	memset(msg, 0, sizeof(msg));
+
+	sz = serial_rx_index;
+	tx_count = serial_tx_count;
+	memcpy(msg, serial_rx_buffer, sz);
+
+	serial_rx_index = 0;
+	serial_tx_index = 0;
+	serial_tx_count = 0;
+	memset(serial_rx_buffer, 0, sizeof(serial_rx_buffer));
+	memset(serial_tx_buffer, 0, sizeof(serial_tx_buffer));
+
+	I_SerialReady = 1;
+	WAITING_FOR_YASKAWA = 0;
 
 	if (val == 0)
 		return -4; // parametros invalidos
@@ -1217,25 +1239,21 @@ int read_servo_yaskawa(char * id, char *format, int *val)
 		return 0;
 	}
 
-	if (serial_rx_index == 0)
+	if (sz == 0)
 	{
 		*val = -2; // sem resposta
 		return 0;
 	}
 
 	*val = 0;
-	memset(msg, 0, sizeof(msg));
 
-	sz = serial_rx_index;
-	memcpy(msg, serial_rx_buffer, sz);
-
-	if (sz <= serial_tx_count)
+	if (sz <= tx_count)
 	{
 		*val = -5; // resposta invalida
 		return sz;
 	}
 
-	pmsg += serial_tx_count;
+	pmsg += tx_count;
 
 	if (strncmp(pmsg, id, strlen(id)) != 0)
 		*val = -3; // id diferente
@@ -1254,11 +1272,6 @@ int read_servo_yaskawa(char * id, char *format, int *val)
 		if (strncmp(cmp, pmsg, strlen(cmp)) != 0)
 			*val = -1;  // formato invalido
 	}
-
-	I_SerialReady = 1;
-	WAITING_FOR_YASKAWA = 0;
-	serial_rx_index = 0;
-	memset(serial_rx_buffer, 0, sizeof(serial_rx_buffer));
 
 	return sz;
 }
