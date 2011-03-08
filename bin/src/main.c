@@ -1170,7 +1170,7 @@ int write_servo_yaskawa(char * id, char *format, int * val)
 
 	strcpy(msg, id);
 	sprintf((void*)(&msg[0] + strlen(id)), format, val);
-	strcat(msg, "\r");
+	strcat(msg, "\r\n");
 
 	WAITING_FOR_YASKAWA = 1;
 
@@ -1178,6 +1178,7 @@ int write_servo_yaskawa(char * id, char *format, int * val)
 	memset(serial_rx_buffer, 0, sizeof(serial_rx_buffer));
 
 	sz = RS485Write((unsigned char*)msg, strlen(msg));
+	serial_tx_count = sz;
 
 	I_SerialReady = 1;
 
@@ -1190,14 +1191,19 @@ int read_servo_yaskawa(char * id, char *format, int *val)
 	int tx_count = 0;
 	char msg[128];
 	char cmp[128];
+	char * pmsg = &msg[0];
 
 	memset(msg, 0, sizeof(msg));
 
 	sz = serial_rx_index;
+	tx_count = serial_tx_count;
 	memcpy(msg, serial_rx_buffer, sz);
 
 	serial_rx_index = 0;
+	serial_tx_count = 0;
+
 	memset(serial_rx_buffer, 0, sizeof(serial_rx_buffer));
+	memset(serial_tx_buffer, 0, sizeof(serial_tx_buffer));
 
 	I_SerialReady = 1;
 	WAITING_FOR_YASKAWA = 0;
@@ -1219,13 +1225,21 @@ int read_servo_yaskawa(char * id, char *format, int *val)
 
 	*val = 0;
 
-	if (strncmp(msg, id, strlen(id)) != 0)
+	if (sz <= tx_count)
+	{
+		*val = -5; // resposta invalida
+		return sz;
+	}
+
+	pmsg += tx_count;
+
+	if (strncmp(pmsg, id, strlen(id)) != 0)
 		*val = -3; // id diferente
 	else
 	{
 		memset(cmp, 0, sizeof(cmp));
 
-		if (sscanf(msg, format, val) != 1)
+		if (sscanf(pmsg, format, val) != 1)
 			*val = 0;  // nenhum valor
 
 		// compara se diferente do formato
@@ -1233,7 +1247,7 @@ int read_servo_yaskawa(char * id, char *format, int *val)
 		sprintf((void*)(&cmp[0] + strlen(id)), format, val);
 		//strcat(cmp, "\r");
 
-		if (strncmp(cmp, msg, strlen(cmp)) != 0)
+		if (strncmp(cmp, pmsg, strlen(cmp)) != 0)
 			*val = -1;  // formato invalido
 	}
 
