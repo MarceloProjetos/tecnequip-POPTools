@@ -1694,7 +1694,8 @@ unsigned int AtualizaEntradas(void)
 
 void RS485Config(int baudrate, int bits, int parity, int stopbit)
 {
-	UART3->LCR = 0;
+	UART3->FCR = 0x7; // FIFO TX/RX Enable/Reset
+	UART3->LCR = 1 << 7; // Enable DLAB
 
 	switch(bits)
 	{
@@ -1741,7 +1742,7 @@ void RS485Config(int baudrate, int bits, int parity, int stopbit)
 		UART3->DLL = 92;
 		UART3->FDR = (13 << 4) | 10;
 	}
-
+	UART3->LCR &= ~(1 << 7); // Disable DLAB
 }
 
 /******************************************************************************
