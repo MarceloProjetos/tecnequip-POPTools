@@ -230,9 +230,9 @@ static void SetSimulationBit(char *name, int bit)
             return;
         }
     }
-    oops();
-}
-
+	MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
+    SetSimulationBit(name, bit);
+} 
 static void ClearSimulationBit(char *name, int bit)
 {
     int i;
@@ -242,7 +242,8 @@ static void ClearSimulationBit(char *name, int bit)
             return;
         }
     }
-    oops();
+	MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
+    SetSimulationBit(name, bit);
 }
 
 static bool CheckSimulationBit(char *name, int bit)
@@ -253,7 +254,8 @@ static bool CheckSimulationBit(char *name, int bit)
             return (((Variables[i].val) & (1 << bit)) > 0);
         }
     }
-    oops();
+	MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
+    CheckSimulationBit(name, bit);
 }
 
 
