@@ -874,9 +874,11 @@ void check_network(void)
 /******************************************************************************
 * Temporizador
 ******************************************************************************/
-void TIMER0_IRQHandler (void)
+void TIMER0_IRQHandler (void)  
 {
 	unsigned int sz;
+
+	// -----------> 10ms <-------------------------
 
 	TIM0->IR = 1;                       /* clear interrupt flag */
 
@@ -886,10 +888,11 @@ void TIMER0_IRQHandler (void)
 
 	plccycle_timer++;
 
+	sz = RS485Read(serial_rx_buffer + serial_rx_index, sizeof(serial_rx_buffer) - serial_rx_index);
+	serial_rx_index += sz;
+
 	if (serial_timeout > 10)
 	{
-		sz = RS485Read(serial_rx_buffer + serial_rx_index, sizeof(serial_rx_buffer) - serial_rx_index);
-		serial_rx_index += sz;
 		serial_timeout = 0;
 
 		if (serial_rx_index && !sz)
@@ -1169,7 +1172,7 @@ int write_servo_yaskawa(char * id, char *format, int * val)
 	memset(msg, 0, sizeof(msg));
 
 	strcpy(msg, id);
-	sprintf((void*)(&msg[0] + strlen(id)), format, val);
+	sprintf((void*)(&msg[0] + strlen(id)), format, *val);
 	strcat(msg, "\r\n");
 
 	WAITING_FOR_YASKAWA = 1;
@@ -1244,7 +1247,7 @@ int read_servo_yaskawa(char * id, char *format, int *val)
 
 		// compara se diferente do formato
 		strcpy(cmp, id);
-		sprintf((void*)(&cmp[0] + strlen(id)), format, val);
+		sprintf((void*)(&cmp[0] + strlen(id)), format, *val);
 		//strcat(cmp, "\r");
 
 		if (strncmp(cmp, pmsg, strlen(cmp)) != 0)

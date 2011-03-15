@@ -670,8 +670,8 @@ void ShowServoYaskawaDialog(char * id, char *var, char *string)
     ShowSimpleDialog(_("Servo Yaskawa"), 3, labels, 0x1,
         0x2, 0x7, dests);
 
-	while (*string)
-		*(string++) = toupper(*string);
+	/*while (*string)
+		*(string++) = toupper(*string);*/
 
 	NoCheckingOnBox[1] = FALSE;
 }
