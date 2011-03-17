@@ -255,7 +255,7 @@ static bool CheckSimulationBit(char *name, int bit)
         }
     }
 	MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
-    CheckSimulationBit(name, bit);
+    return CheckSimulationBit(name, bit);
 }
 
 

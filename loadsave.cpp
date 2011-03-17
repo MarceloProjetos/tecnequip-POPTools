@@ -26,14 +26,16 @@
 
 #include "ldmicro.h"
 
-static ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
+static ElemSubcktSeries *LoadSeriesFromFile(FILE *f, int version);
+
+static const int current_version = 2;
 
 //-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
 // contains a leaf element (coil, contacts, etc.). If so, create an element
 // for and save that in *any and *which, and return TRUE, else return FALSE.
 //-----------------------------------------------------------------------------
-static BOOL LoadLeafFromFile(char *line, void **any, int *which)
+static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
 {
     ElemLeaf *l = AllocLeaf();
     int x;
@@ -273,7 +275,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which)
 // LoadSeriesFromFile. Returns the parallel subcircuit built up, or NULL if
 // something goes wrong.
 //-----------------------------------------------------------------------------
-static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
+static ElemSubcktParallel *LoadParallelFromFile(FILE *f, int version)
 {
     char line[512];
     void *any;
@@ -289,10 +291,10 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
 
         if(strcmp(s, "SERIES\n")==0) {
             which = ELEM_SERIES_SUBCKT;
-            any = LoadSeriesFromFile(f);
+            any = LoadSeriesFromFile(f, version);
             if(!any) return NULL;
 
-        } else if(LoadLeafFromFile(s, &any, &which)) {
+        } else if(LoadLeafFromFile(s, &any, &which, version)) {
             // got it
         } else if(strcmp(s, "END\n")==0) {
             ret->count = cnt;
@@ -311,7 +313,7 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f)
 // Same as LoadParallelFromFile, but for a series subcircuit. Thus builds
 // a series circuit out of parallel circuits and leaf elements.
 //-----------------------------------------------------------------------------
-static ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
+static ElemSubcktSeries *LoadSeriesFromFile(FILE *f, int version)
 {
     char line[512];
     void *any;
@@ -327,10 +329,10 @@ static ElemSubcktSeries *LoadSeriesFromFile(FILE *f)
 
         if(strcmp(s, "PARALLEL\n")==0) {
             which = ELEM_PARALLEL_SUBCKT;
-            any = LoadParallelFromFile(f);
+            any = LoadParallelFromFile(f, version);
             if(!any) return NULL;
 
-        } else if(LoadLeafFromFile(s, &any, &which)) {
+        } else if(LoadLeafFromFile(s, &any, &which, version)) {
             // got it
         } else if(strcmp(s, "END\n")==0) {
             ret->count = cnt;
@@ -360,14 +362,20 @@ BOOL LoadProjectFromFile(char *filename)
     if(!f) return FALSE;
 
     char line[512];
-    int crystal, cycle, baud, comPort, UART, ip[4], mask[4], gw[4];
+    int version, crystal, cycle, baud, comPort, UART, ip[4], mask[4], gw[4];
+
+	version = 0;
 
     while(fgets(line, sizeof(line), f)) {
         if(strcmp(line, "IO LIST\n")==0) {
-            if(!LoadIoListFromFile(f)) {
+            if(!LoadIoListFromFile(f, version)) {
                 fclose(f);
                 return FALSE;
             }
+		} else if(sscanf(line, "LDmicro0.%d", &version)) {
+			if (version < current_version)
+				Error(_("Aviso: O arquivo deste projeto é de uma versão anterior e será atualizado para a versão atual quando for gravado !"));
+			//Prog.version = version;
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
         } else if(sscanf(line, "CYCLE=%d", &cycle)) {
@@ -420,7 +428,7 @@ BOOL LoadProjectFromFile(char *filename)
         if(!fgets(line, sizeof(line), f)) break;
         if(strcmp(line, "RUNG\n")!=0) goto failed;
 
-        Prog.rungs[rung] = LoadSeriesFromFile(f);
+        Prog.rungs[rung] = LoadSeriesFromFile(f, version);
         if(!Prog.rungs[rung]) goto failed;
         rung++;
     }
@@ -761,7 +769,7 @@ BOOL SaveProjectToFile(char *filename)
     FILE *f = fopen(filename, "w");
     if(!f) return FALSE;
 
-    fprintf(f, "LDmicro0.1\n");
+    fprintf(f, "LDmicro0.2\n");
     if(Prog.mcu) {
         fprintf(f, "MICRO=%s\n", Prog.mcu->mcuName);
     }

@@ -839,7 +839,7 @@ BOOL SaveProjectToFile(char *filename);
 int GenerateIoList(int prevSel);
 int GenerateIoMapList(int prevSel);
 void SaveIoListToFile(FILE *f);
-BOOL LoadIoListFromFile(FILE *f);
+BOOL LoadIoListFromFile(FILE *f, int version);
 void ShowIoDialog(int item);
 void ShowIoMapDialog(int item);
 void IoListProc(NMHDR *h);

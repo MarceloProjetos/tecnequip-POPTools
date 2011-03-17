@@ -35,14 +35,9 @@ static HWND SourceInternalRelayRadio;
 static HWND SourceInputPinRadio;
 static HWND SourceOutputPinRadio;
 static HWND NameTextbox;
-static HWND BitCombobox;
+static HWND BitTextbox;
 
 static LONG_PTR PrevNameProc;
-
-const LPCTSTR ComboboxBitItens[] = { _("0"), _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
-									_("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
-									_("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"), 
-									_("31")/*, _("32")*/};
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
@@ -103,10 +98,10 @@ static void MakeControls(void)
         146, 65, 20, 21, ContactsDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
-	BitCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
-        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        176, 65, 65, 140, ContactsDialog, NULL, Instance, NULL);
-    NiceFont(BitCombobox);
+	BitTextbox = CreateWindowEx(0, WC_STATIC, _("0"),
+        WS_CHILD |  WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
+        176, 65, 65, 20, ContactsDialog, NULL, Instance, NULL);
+    NiceFont(BitTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
@@ -129,13 +124,10 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
         100, 100, 404, 95, NULL, NULL, Instance, NULL);
 
     MakeControls();
-   
-	int i;
-
-	for (i = 0; i < sizeof(ComboboxBitItens) / sizeof(ComboboxBitItens[0]); i++)
-		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
-
-	SendMessage(BitCombobox, CB_SETCURSEL, *bit, 0);
+ 
+	char cbit[10];
+	_itoa(*bit, cbit, 10);
+	SetWindowText(BitTextbox, cbit );
 
     if(name[0] == 'R') {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -182,11 +174,6 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
             *negated = FALSE;
         }
 
-		char buf[16];
-        SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
-            (LPARAM)(buf));
-        *bit = atoi(buf);
-
         if(SendMessage(SourceInternalRelayRadio, BM_GETSTATE, 0, 0)
             & BST_CHECKED)
         {
@@ -200,19 +187,9 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
         }
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
 
-        for(int i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) 
-		{
-			for(int j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) 
-			{
-				ElemLeaf *l = DisplayMatrix[i][j];
-				if (l && DisplayMatrixWhich[i][j] == ELEM_COIL) 
-					if (strcmp(name, l->d.coil.name) == 0)
-						l->d.coil.bit = *bit;
-				if (l && DisplayMatrixWhich[i][j] == ELEM_CONTACTS) 
-					if (strcmp(name, l->d.contacts.name) == 0)
-						l->d.contacts.bit = *bit;
-			}
-		}
+		char cbit[10];
+		_itoa(*bit, cbit, 10);
+		SetWindowText(BitTextbox, cbit );
 
     }
 

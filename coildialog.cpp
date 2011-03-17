@@ -37,7 +37,7 @@ static HWND NormalRadio;
 static HWND SetOnlyRadio;
 static HWND ResetOnlyRadio;
 static HWND NameTextbox;
-static HWND BitCombobox;
+static HWND BitTextbox;
 
 static LONG_PTR PrevNameProc;
 
@@ -120,10 +120,10 @@ static void MakeControls(void)
         135, 105, 50, 21, CoilDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
-	BitCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
-        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        190, 105, 65, 140, CoilDialog, NULL, Instance, NULL);
-    NiceFont(BitCombobox);
+	BitTextbox = CreateWindowEx(0, WC_STATIC, _("0"),
+        WS_CHILD |  WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
+        190, 105, 65, 20, CoilDialog, NULL, Instance, NULL);
+    NiceFont(BitTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
@@ -149,12 +149,9 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
 
     MakeControls();
 
-	int i;
-
-	for (i = 0; i < sizeof(ComboboxBitItens) / sizeof(ComboboxBitItens[0]); i++)
-		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
-
-	SendMessage(BitCombobox, CB_SETCURSEL, *bit, 0);
+	char cbit[10];
+	_itoa(*bit, cbit, 10);
+	SetWindowText(BitTextbox, cbit );
 
     if(name[0] == 'R') {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -208,25 +205,6 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
         }
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
 
-		char buf[16];
-        SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
-            (LPARAM)(buf));
-        *bit = atoi(buf);
-		
-        for(int i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) 
-		{
-			for(int j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) 
-			{
-				ElemLeaf *l = DisplayMatrix[i][j];
-				if (l && DisplayMatrixWhich[i][j] == ELEM_COIL) 
-					if (strcmp(name, l->d.coil.name) == 0)
-						l->d.coil.bit = *bit;
-				if (l && DisplayMatrixWhich[i][j] == ELEM_CONTACTS) 
-					if (strcmp(name, l->d.contacts.name) == 0)
-						l->d.contacts.bit = *bit;
-			}
-		}
-
         if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             *negated = FALSE;
             *setOnly = FALSE;
@@ -245,6 +223,11 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
             *setOnly = FALSE;
             *resetOnly = TRUE;
         }
+
+		char cbit[10];
+		_itoa(*bit, cbit, 10);
+		SetWindowText(BitTextbox, cbit );
+
     }
 
     EnableWindow(MainWindow, TRUE);

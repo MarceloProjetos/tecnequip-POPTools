@@ -39,6 +39,7 @@ extern struct {
     char    name[MAX_NAME_LEN];
     int     type;
     int     pin;
+	int		bit;
 } IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
 extern int IoSeenPreviouslyCount;
 
@@ -51,6 +52,7 @@ static HWND IoDialog;
 static HWND PinList;
 static HWND OkButton;
 static HWND CancelButton;
+static HWND BitCombobox;
 
 // stuff for the popup that lets you set the simulated value of an analog in
 static HWND AnalogSliderMain;
@@ -63,6 +65,11 @@ static BOOL AnalogSliderCancel;
 static HWND EncoderSliderTrackbar;
 static BOOL EncoderSliderDone;
 static BOOL EncoderSliderCancel;*/
+
+const LPCTSTR ComboboxBitItens[] = { _("0"), _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
+									_("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
+									_("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"), 
+									_("31")/*, _("32")*/};
 
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
@@ -95,7 +102,7 @@ static void AppendIo(char *name, int type, unsigned char bit)
 // user creates input Xasd, assigns it a pin, deletes, and then recreates it,
 // then it will come back with the correct pin assigned.
 //-----------------------------------------------------------------------------
-static void AppendIoSeenPreviously(char *name, int type, int pin)
+static void AppendIoSeenPreviously(char *name, int type, int pin, int bit)
 {
     if(strcmp(name+1, "new")==0) return;
 
@@ -106,6 +113,7 @@ static void AppendIoSeenPreviously(char *name, int type, int pin)
         {
             if(pin != NO_PIN_ASSIGNED) {
                 IoSeenPreviously[i].pin = pin;
+				IoSeenPreviously[i].bit = bit;
             }
             return;
         }
@@ -120,6 +128,7 @@ static void AppendIoSeenPreviously(char *name, int type, int pin)
     i = IoSeenPreviouslyCount;
     IoSeenPreviously[i].type = type;
     IoSeenPreviously[i].pin = pin;
+	IoSeenPreviously[i].bit = bit;
     strcpy(IoSeenPreviously[i].name, name);
     IoSeenPreviouslyCount++;
 }
@@ -365,7 +374,7 @@ int GenerateIoMapList(int prevSel)
     // remember the pin assignments
     for(i = 0; i < Prog.io.count; i++) {
         AppendIoSeenPreviously(Prog.io.assignment[i].name,
-            Prog.io.assignment[i].type, Prog.io.assignment[i].pin);
+            Prog.io.assignment[i].type, Prog.io.assignment[i].pin, Prog.io.assignment[i].bit);
     }
     // wipe the list
     Prog.io.count = 0;
@@ -388,6 +397,7 @@ int GenerateIoMapList(int prevSel)
                 if(strcmp(Prog.io.assignment[i].name, IoSeenPreviously[j].name) == 0 && Prog.io.assignment[i].type == IoSeenPreviously[j].type)
                 {
                     Prog.io.assignment[i].pin = IoSeenPreviously[j].pin;
+					Prog.io.assignment[i].bit = IoSeenPreviously[j].bit;
                     break;
                 }
             }
@@ -497,15 +507,25 @@ static void MakeControls(void)
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
         LBS_NOTIFY, 6, 18, 115, 320, IoDialog, NULL, Instance, NULL);
     FixedFont(PinList);
+	
+    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        6, 325, 35, 21, IoDialog, NULL, Instance, NULL);
+    NiceFont(textLabel2);
+
+	BitCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        55, 325, 66, 140, IoDialog, NULL, Instance, NULL);
+    NiceFont(BitCombobox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        10, 325, 105, 23, IoDialog, NULL, Instance, NULL); 
+        10, 365, 105, 23, IoDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        10, 356, 105, 23, IoDialog, NULL, Instance, NULL); 
+        10, 396, 105, 23, IoDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 }
 
@@ -568,15 +588,21 @@ void ShowIoMapDialog(int item)
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
         "LDmicroIo", _("I/O Pin"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 127, 387, NULL, NULL, Instance, NULL);
+        100, 100, 127, 430, NULL, NULL, Instance, NULL);
 
     MakeControls();
 
     char buf[40];
+	int i = 0;
+
+	for (i = 0; i < sizeof(ComboboxBitItens) / sizeof(ComboboxBitItens[0]); i++)
+		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
+
+	SendMessage(BitCombobox, CB_SETCURSEL, Prog.io.assignment[item].bit, 0);
 
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
-    int i;
-    for(i = 0; i < Prog.mcu->pinCount; i++) {
+
+	for(i = 0; i < Prog.mcu->pinCount; i++) {
         int j;
         for(j = 0; j < Prog.io.count; j++) 
 		{
@@ -691,12 +717,34 @@ cant_use_this_io:;
 					Prog.io.assignment[item].name)==0 && IoSeenPreviously[i].type == Prog.io.assignment[item].type)
                 {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
+					IoSeenPreviously[i].bit = NO_PIN_ASSIGNED;
                 }
             }
             Prog.io.assignment[item].pin = NO_PIN_ASSIGNED;
+			Prog.io.assignment[item].bit = NO_PIN_ASSIGNED;
         } else {
             Prog.io.assignment[item].pin = atoi(pin);
-            // Only one name can be bound to each pin; make sure that there's
+
+			char buf[16];
+			SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
+				(LPARAM)(buf));
+
+			Prog.io.assignment[item].bit = atoi(buf);
+
+			for(int i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) 
+			{
+				for(int j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) 
+				{
+					ElemLeaf *l = DisplayMatrix[i][j];
+					if (l && DisplayMatrixWhich[i][j] == ELEM_COIL) 
+						if (strcmp(Prog.io.assignment[item].name, l->d.coil.name) == 0)
+							l->d.coil.bit = Prog.io.assignment[item].bit;
+					if (l && DisplayMatrixWhich[i][j] == ELEM_CONTACTS) 
+						if (strcmp(Prog.io.assignment[item].name, l->d.contacts.name) == 0)
+							l->d.contacts.bit = Prog.io.assignment[item].bit;
+				}
+			}
+			// Only one name can be bound to each pin; make sure that there's
             // not another entry for this pin in the IoSeenPreviously list,
             // that might get used if the user creates a new pin with that
             // name.
@@ -704,9 +752,11 @@ cant_use_this_io:;
             for(i = 0; i < IoSeenPreviouslyCount; i++) {
 				if(IoSeenPreviously[i].pin == atoi(pin) && IoSeenPreviously[i].type == Prog.io.assignment[item].type) {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
+					IoSeenPreviously[i].bit = NO_PIN_ASSIGNED;
                 }
             }
-        }
+
+		}
     }
 
     EnableWindow(MainWindow, TRUE);

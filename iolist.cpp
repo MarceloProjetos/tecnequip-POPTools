@@ -39,6 +39,7 @@ struct {
     char    name[MAX_NAME_LEN];
     int     type;
     int     pin;
+	int		bit;
 } IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
 int IoSeenPreviouslyCount;
 
@@ -94,7 +95,7 @@ static void AppendIo(char *name, int type)
 // user creates input Xasd, assigns it a pin, deletes, and then recreates it,
 // then it will come back with the correct pin assigned.
 //-----------------------------------------------------------------------------
-static void AppendIoSeenPreviously(char *name, int type, int pin)
+static void AppendIoSeenPreviously(char *name, int type, int pin, int bit)
 {
     if(strcmp(name+1, "new")==0) return;
 
@@ -105,6 +106,7 @@ static void AppendIoSeenPreviously(char *name, int type, int pin)
         {
             if(pin != NO_PIN_ASSIGNED) {
                 IoSeenPreviously[i].pin = pin;
+				IoSeenPreviously[i].bit = bit;
             }
             return;
         }
@@ -119,6 +121,7 @@ static void AppendIoSeenPreviously(char *name, int type, int pin)
     i = IoSeenPreviouslyCount;
     IoSeenPreviously[i].type = type;
     IoSeenPreviously[i].pin = pin;
+	IoSeenPreviously[i].bit = bit;
     strcpy(IoSeenPreviously[i].name, name);
     IoSeenPreviouslyCount++;
 }
@@ -329,7 +332,7 @@ int GenerateIoList(int prevSel)
     // remember the pin assignments
     for(i = 0; i < Prog.io.count; i++) {
         AppendIoSeenPreviously(Prog.io.assignment[i].name,
-            Prog.io.assignment[i].type, Prog.io.assignment[i].pin);
+            Prog.io.assignment[i].type, Prog.io.assignment[i].pin, Prog.io.assignment[i].bit);
     }
     // wipe the list
     Prog.io.count = 0;
@@ -350,6 +353,7 @@ int GenerateIoList(int prevSel)
                     IoSeenPreviously[j].name)==0)
                 {
                     Prog.io.assignment[i].pin = IoSeenPreviously[j].pin;
+					Prog.io.assignment[i].bit = IoSeenPreviously[j].bit;
                     break;
                 }
             }
@@ -376,28 +380,42 @@ int GenerateIoList(int prevSel)
 // put it into IoSeenPreviously so that it will get used on the next
 // extraction.
 //-----------------------------------------------------------------------------
-BOOL LoadIoListFromFile(FILE *f)
+BOOL LoadIoListFromFile(FILE *f, int version)
 {
     char line[80];
     char name[MAX_NAME_LEN];
-    int pin;
+    int pin, bit = 0;
     while(fgets(line, sizeof(line), f)) {
         if(strcmp(line, "END\n")==0) {
             return TRUE;
         }
         // Don't internationalize this! It's the file format, not UI.
-        if(sscanf(line, "    %s at %d", name, &pin)==2) {
-            int type;
-            switch(name[0]) {
-                case 'X': type = IO_TYPE_DIG_INPUT; break;
-                case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
-                case 'A': type = IO_TYPE_READ_ADC; break;
-                case 'E': type = IO_TYPE_READ_ENC; break;
-                case 'Z': type = IO_TYPE_RESET_ENC; break;
-                default: oops();
-            }
-            AppendIoSeenPreviously(name, type, pin);
+
+		if (version < 2)
+		{
+			if (sscanf(line, "    %s at %d", name, &pin) != 2) 
+			{
+				return FALSE;
+			}
+		}
+		else
+		{
+			if(sscanf(line, "    %s at %d %d", name, &pin, &bit)!=3) 
+			{
+				return FALSE;
+			}
+		}
+
+        int type;
+        switch(name[0]) {
+            case 'X': type = IO_TYPE_DIG_INPUT; break;
+            case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
+            case 'A': type = IO_TYPE_READ_ADC; break;
+            case 'E': type = IO_TYPE_READ_ENC; break;
+            case 'Z': type = IO_TYPE_RESET_ENC; break;
+            default: oops();
         }
+        AppendIoSeenPreviously(name, type, pin, bit);
     }
     return FALSE;
 }
@@ -417,8 +435,8 @@ void SaveIoListToFile(FILE *f)
            Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
         {
             // Don't internationalize this! It's the file format, not UI.
-            fprintf(f, "    %s at %d\n", Prog.io.assignment[i].name,
-                Prog.io.assignment[i].pin);
+            fprintf(f, "    %s at %d %d\n", Prog.io.assignment[i].name,
+                Prog.io.assignment[i].pin, Prog.io.assignment[i].bit);
         }
     }
 }
@@ -918,9 +936,11 @@ cant_use_this_io:;
                     Prog.io.assignment[item].name)==0)
                 {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
+					IoSeenPreviously[i].bit = NO_PIN_ASSIGNED;
                 }
             }
             Prog.io.assignment[item].pin = NO_PIN_ASSIGNED;
+			Prog.io.assignment[item].bit = NO_PIN_ASSIGNED;
         } else {
             Prog.io.assignment[item].pin = atoi(pin);
             // Only one name can be bound to each pin; make sure that there's
@@ -931,6 +951,7 @@ cant_use_this_io:;
             for(i = 0; i < IoSeenPreviouslyCount; i++) {
                 if(IoSeenPreviously[i].pin == atoi(pin)) {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
+					IoSeenPreviously[i].bit = NO_PIN_ASSIGNED;
                 }
             }
         }
