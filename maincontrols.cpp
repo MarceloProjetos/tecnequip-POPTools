@@ -284,9 +284,9 @@ HMENU MakeMainWindowMenus(void)
         _("Insert R&TO (Retentive Delayed Turn On)\tT"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
-        _("Insert CT&U (Count Up)\tU"));
+        _("Insert CT&U (Count Up)\tI"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTD,
-        _("Insert CT&D (Count Down)\tI"));
+        _("Insert CT&D (Count Down)\tU"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTC,
         _("Insert CT&C (Count Circular)\tJ"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);

@@ -375,6 +375,12 @@ BOOL LoadProjectFromFile(char *filename)
 		} else if(sscanf(line, "LDmicro0.%d", &version)) {
 			if (version < current_version)
 				Error(_("Aviso: O arquivo deste projeto é de uma versão anterior e será atualizado para a versão atual quando for gravado !"));
+			else if (version > current_version)
+			{
+				Error(_("Aviso: Este projeto não pode ser aberto porque foi gravado com uma versão mais nova do programa POPTools !"));
+				fclose(f);
+                return FALSE;
+			}
 			//Prog.version = version;
         } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
             Prog.mcuClock = crystal;
@@ -769,7 +775,7 @@ BOOL SaveProjectToFile(char *filename)
     FILE *f = fopen(filename, "w");
     if(!f) return FALSE;
 
-    fprintf(f, "LDmicro0.2\n");
+    fprintf(f, "LDmicro0.%d\n", current_version);
     if(Prog.mcu) {
         fprintf(f, "MICRO=%s\n", Prog.mcu->mcuName);
     }

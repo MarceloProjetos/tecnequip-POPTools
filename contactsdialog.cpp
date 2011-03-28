@@ -39,6 +39,14 @@ static HWND BitTextbox;
 
 static LONG_PTR PrevNameProc;
 
+#define MAX_IO_SEEN_PREVIOUSLY 512
+extern struct {
+    char    name[MAX_NAME_LEN];
+    int     type;
+    int     pin;
+	int		bit;
+} IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
+extern int IoSeenPreviouslyCount;
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
 //-----------------------------------------------------------------------------
@@ -187,9 +195,16 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
         }
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
 
-		char cbit[10];
+		int i;
+		for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
+		{
+			if (strcmp(IoSeenPreviously[i].name, name)==0)
+				*bit = IoSeenPreviously[i].bit;
+		}
+
+		/*char cbit[10];
 		_itoa(*bit, cbit, 10);
-		SetWindowText(BitTextbox, cbit );
+		SetWindowText(BitTextbox, cbit );*/
 
     }
 

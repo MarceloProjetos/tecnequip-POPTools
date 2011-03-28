@@ -685,6 +685,8 @@ cant_use_this_io:;
     ShowWindow(IoDialog, TRUE);
     SetFocus(PinList);
 
+	SendMessage(PinList, LB_SETCURSEL, item, 0);
+
     MSG msg;
     DWORD ret;
     DialogDone = FALSE;

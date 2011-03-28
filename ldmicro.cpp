@@ -1004,11 +1004,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     CHANGING_PROGRAM(AddTimer(ELEM_TOF));
                     break;
 
-                case 'U':
+                case 'I':
                     CHANGING_PROGRAM(AddCounter(ELEM_CTU));
                     break;
 
-                case 'I':
+                case 'U':
                     CHANGING_PROGRAM(AddCounter(ELEM_CTD));
                     break;
 
