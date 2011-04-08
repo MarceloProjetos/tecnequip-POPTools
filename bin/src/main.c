@@ -1445,10 +1445,21 @@ unsigned int ModbusReadHoldingRegisters(struct MB_Device *dev, union MB_FCD_Data
       return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
   }*/
 
+  int i, x;
+
   if (data->read_holding_registers.start + data->read_holding_registers.quant >= 32)
 	  return MB_EXCEPTION_ILLEGAL_DATA_ADDRESS;
   else
-	  memcpy(reply->reply.read_holding_registers.data, (void *)&M[data->read_holding_registers.start], data->read_holding_registers.quant * 2);
+  {
+	  //memcpy(reply->reply.read_holding_registers.data, (void *)&M[data->read_holding_registers.start], data->read_holding_registers.quant * 2);
+	  x = data->read_holding_registers.start;
+	  for(i = data->read_holding_registers.start; 
+		  i <= data->read_holding_registers.start + (data->read_holding_registers.quant * 2); i += 2) {
+		reply->reply.read_holding_registers.data[i - data->read_holding_registers.start] = M[x];
+		reply->reply.read_holding_registers.data[i - data->read_holding_registers.start + 1] = M[x] >> 8;
+		x++;
+	  }
+  }
 
   reply->reply.read_holding_registers.size = data->read_holding_registers.quant * 2;
 
