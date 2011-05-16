@@ -984,7 +984,8 @@ cmp:
 
     int gx = cx0/POS_WIDTH;
     int gy = cy0/POS_HEIGHT;
-    if(CheckBoundsUndoIfFails(gx, gy)) return FALSE;
+    if(CheckBoundsUndoIfFails(gx, gy)) 
+		return FALSE;
     DM_BOUNDS(gx, gy);
 
     DisplayMatrix[gx][gy] = leaf;

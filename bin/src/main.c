@@ -1304,16 +1304,19 @@ unsigned int RS485Read(unsigned char * buffer, unsigned int size)
   unsigned int c = 0;
   unsigned char dummy;
 
-  while(i < size)
+  if (!(GPIO0->FIOPIN & RS485_ENABLE))
   {
-    for(c = 0; c < 10000 && !(UART3->LSR & LSR_RDR); c++);
+	  while(i < size)
+	  {
+		for(c = 0; c < 10000 && !(UART3->LSR & LSR_RDR); c++);
 
-    if (UART3->LSR & (LSR_OE|LSR_PE|LSR_FE|LSR_BI|LSR_RXFE))
-      dummy = UART3->RBR;
-    else if ((UART3->LSR & LSR_RDR)) /** barramento tem dados ? */
-      *(buffer + i++) = UART3->RBR;
-    else
-      break;
+		if (UART3->LSR & (LSR_OE|LSR_PE|LSR_FE|LSR_BI|LSR_RXFE))
+		  dummy = UART3->RBR;
+		else if ((UART3->LSR & LSR_RDR)) /** barramento tem dados ? */
+		  *(buffer + i++) = UART3->RBR;
+		else
+		  break;
+	  }
   }
 
   return i;

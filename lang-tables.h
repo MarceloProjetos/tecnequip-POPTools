@@ -1099,7 +1099,7 @@ static LangTable LangPtTable[] = {
     { "MCU Port", "Porta do PLC" },
     { "LDmicro - Simulation (Running)", "POPTools - Simulação (Executando)" },
     { "LDmicro - Simulation (Stopped)", "POPTools - Simulação (Parado)" },
-    { "LDmicro - Program Editor", "POPTools - Tecnequip Tecnologia em Equipamentos Ltda" },
+    { "LDmicro - Program Editor", "POPTools" },
     { " - (not yet saved)", " - (ainda não salvo)" },
     { "&New\tCtrl+N", "&Novo\tCtrl+N" },
     { "&Open...\tCtrl+O", "&Abrir...\tCtrl+O" },
