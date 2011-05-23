@@ -913,11 +913,11 @@ void TIMER0_IRQHandler (void)
  //   serial_rx_index = 0;
  // }
 
-  if (serial_reset_timeout > 100)
+  if (serial_reset_timeout > 1000)
   {
     I_SerialReady = 1;
 	WAITING_FOR_USS = 0;
-	WAITING_FOR_YASKAWA = 0;
+	//WAITING_FOR_YASKAWA = 0;
 	serial_reset_timeout = 0;
   } 
 
