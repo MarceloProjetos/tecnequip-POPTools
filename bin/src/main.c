@@ -132,6 +132,7 @@ volatile unsigned int entradas = 0;
 
 volatile unsigned int plccycle_timer = 0;
 volatile unsigned int serial_timeout = 0;
+volatile unsigned int serial_reset_timeout = 0;
 
 struct MB_Device modbus_master;
 struct MB_Device modbus_slave;
@@ -879,17 +880,18 @@ void TIMER0_IRQHandler (void)
 	TIM0->IR = 1;                       /* clear interrupt flag */
 
 	serial_timeout++;
+	serial_reset_timeout++;
 
 	plccycle_timer++;
 
 	sz = RS485Read(serial_rx_buffer + serial_rx_index, sizeof(serial_rx_buffer) - serial_rx_index);
 	serial_rx_index += sz;
 
-	if (serial_timeout > 100)
+	if (serial_timeout > 30)
 	{
 		serial_timeout = 0;
 
-		if (serial_rx_index && !sz)
+		if (serial_rx_index)
 		{
 			if (WAITING_FOR_USS == 1) // uss
 			{
@@ -911,11 +913,12 @@ void TIMER0_IRQHandler (void)
  //   serial_rx_index = 0;
  // }
 
-  if (serial_timeout > 1000)
+  if (serial_reset_timeout > 100)
   {
     I_SerialReady = 1;
 	WAITING_FOR_USS = 0;
 	WAITING_FOR_YASKAWA = 0;
+	serial_reset_timeout = 0;
   } 
 
 }
@@ -1370,6 +1373,7 @@ unsigned int ModbusRS485Tx(unsigned char *data, unsigned int size)
   unsigned int sz = 0;
 
   sz = RS485Write(data, size);
+  serial_reset_timeout = 0;
 
   I_SerialReady = 0;
 

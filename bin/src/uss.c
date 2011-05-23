@@ -1,6 +1,6 @@
 #include "uss.h"
 
-//extern unsigned int uss_timeout;
+extern unsigned int serial_reset_timeout;
 extern unsigned int serial_timeout;
 extern volatile unsigned int I_USSReady;
 extern volatile unsigned int I_SerialReady;
@@ -147,7 +147,7 @@ unsigned char uss_get_param(unsigned char addr, unsigned short int param, unsign
   else
     p = uss_PPO1(addr, ((array ? 0x60 : 0x10) << 8) | (param & 0x7FF), (((array ? array - 1 : 0) & 0x3F) << 2) | (param_set & 0x3), 0x0000, 0x0000, 0x0000, 0x0000);
 
-  //uss_timeout = 0;
+  serial_reset_timeout = 0;
   serial_timeout = 0;
 
   //while(uss_timeout < 5);      // delay 1ms
@@ -219,7 +219,7 @@ unsigned char uss_set_param(unsigned char addr, unsigned short int param, unsign
   else
     p = uss_PPO1(addr, ((array ? 0x80 : 0x20) << 8) | (param & 0x7FF), (((array ? array - 1 : 0) & 0x3F) << 2) | (param_set & 0x3), *val >> 16, *val & 0xFFFF, 0x0000, 0x0000);
 
-  //uss_timeout = 0;
+  serial_reset_timeout = 0;
   serial_timeout = 0;
   //while(uss_timeout < 5);      // delay 1ms
 
