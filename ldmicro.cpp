@@ -481,7 +481,8 @@ static void ProcessMenu(int code)
             break;
 
         case MNU_INSERT_COMMENT:
-            CHANGING_PROGRAM(AddComment(_("--add comment here--")));
+			if(CanInsertComment)
+				CHANGING_PROGRAM(AddComment(_("--add comment here--")));
             break;
 
         case MNU_INSERT_CONTACTS:
@@ -919,8 +920,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
-                case VK_F2:
-                    CHANGING_PROGRAM(AddComment(_("--add comment here--")));
+				case 191: // VK_F2:
+					if(CanInsertComment)
+						CHANGING_PROGRAM(AddComment(_("--add comment here--")));
                     break;
 
                 case 'C':

@@ -27,6 +27,17 @@
 
 #include "ldmicro.h"
 
+// I/O that we have seen recently, so that we don't forget pin assignments
+// when we re-extract the list
+#define MAX_IO_SEEN_PREVIOUSLY 512
+extern struct {
+    char    name[MAX_NAME_LEN];
+    int     type;
+    int     pin;
+	int		bit;
+} IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
+extern int IoSeenPreviouslyCount;
+
 // Not all options all available e.g. can't delete the only relay coil in
 // a rung, can't insert two coils in series, etc. Keep track of what is
 // allowed so we don't corrupt our program.
@@ -242,6 +253,17 @@ void ForgetEverything(void)
 {
     memset(DisplayMatrix, 0, sizeof(DisplayMatrix));
     memset(DisplayMatrixWhich, 0, sizeof(DisplayMatrixWhich));
+
+	int i;
+
+	for(i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++) 
+	{
+		memset(IoSeenPreviously[i].name, 0, sizeof(IoSeenPreviously[i].name));
+		IoSeenPreviously[i].type = 0;
+		IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
+		IoSeenPreviously[i].bit = NO_PIN_ASSIGNED;
+    }
+
     Selected = NULL;
     SelectedWhich = 0;
 }

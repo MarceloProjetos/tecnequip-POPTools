@@ -921,17 +921,23 @@ cmp:
             break;
         }
         case ELEM_SET_BIT:
-            CenterWithWires(*cx, *cy, "{SET BIT}", poweredBefore, poweredAfter);
+		{
+			char str[100];
+			sprintf(str, "{%s BIT:%d}", leaf->d.setBit.set ? "SET" : "RST", leaf->d.setBit.bit);
+            CenterWithWires(*cx, *cy, str, poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, leaf->d.setBit.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
             break;
-
+		}
         case ELEM_CHECK_BIT:
-            CenterWithWires(*cx, *cy, "{CHECK BIT}", poweredBefore, poweredAfter);
+		{
+			char str[100];
+			sprintf(str, "{CHECK %s:%d}", leaf->d.checkBit.set ? "ON" : "OFF", leaf->d.checkBit.bit);
+            CenterWithWires(*cx, *cy, str, poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, leaf->d.checkBit.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
             break;
-
+		}
         case ELEM_READ_USS:
         case ELEM_WRITE_USS:
             CenterWithWires(*cx, *cy,

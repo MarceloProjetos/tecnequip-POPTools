@@ -34,7 +34,7 @@
 
 // I/O that we have seen recently, so that we don't forget pin assignments
 // when we re-extract the list
-#define MAX_IO_SEEN_PREVIOUSLY 512
+#define MAX_IO_SEEN_PREVIOUSLY 1024
 struct {
     char    name[MAX_NAME_LEN];
     int     type;
@@ -385,6 +385,17 @@ BOOL LoadIoListFromFile(FILE *f, int version)
     char line[80];
     char name[MAX_NAME_LEN];
     int pin, bit = 0;
+	int i;
+
+	for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
+	{
+		memset(IoSeenPreviously[i].name, 0, sizeof(IoSeenPreviously[i].name));
+		IoSeenPreviously[i].type = 0;
+		IoSeenPreviously[i].pin = 0;
+		IoSeenPreviously[i].bit = 0;
+	}
+	IoSeenPreviouslyCount = 0;
+
     while(fgets(line, sizeof(line), f)) {
         if(strcmp(line, "END\n")==0) {
             return TRUE;

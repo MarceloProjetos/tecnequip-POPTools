@@ -798,6 +798,14 @@ void FreeEntireProgram(void)
 	Prog.gw[1] = 168;
 	Prog.gw[2] = 0;
 	Prog.gw[3] = 1;
+	
+	for(i = 0; i < MAX_IO; i++)
+	{
+		memset(Prog.io.assignment[i].name, 0, sizeof(Prog.io.assignment[i].name));
+		Prog.io.assignment[i].bit = 0;
+		Prog.io.assignment[i].pin = 0;
+		Prog.io.assignment[i].type = 0;
+	}
 
 	for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
 	{
