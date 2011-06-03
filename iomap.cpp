@@ -77,8 +77,9 @@ const LPCTSTR ComboboxBitItens[] = { _("0"), _("1"), _("2"), _("3"), _("4"), _("
 static void AppendIo(char *name, int type, unsigned char bit)
 {
     int i;
+	int idx = 0;
     for(i = 0; i < Prog.io.count; i++) {
-        if(strcmp(Prog.io.assignment[i].name, name)==0) {
+        if(_stricmp(Prog.io.assignment[i].name, name)==0) {
             if(type != IO_TYPE_GENERAL && Prog.io.assignment[i].type ==
                 IO_TYPE_GENERAL)
             {
@@ -88,6 +89,7 @@ static void AppendIo(char *name, int type, unsigned char bit)
             return;
         }
     }
+
     if(i < MAX_IO) {
         Prog.io.assignment[i].type = type;
         Prog.io.assignment[i].pin = NO_PIN_ASSIGNED;
@@ -104,11 +106,11 @@ static void AppendIo(char *name, int type, unsigned char bit)
 //-----------------------------------------------------------------------------
 static void AppendIoSeenPreviously(char *name, int type, int pin, int bit)
 {
-    if(strcmp(name+1, "new")==0) return;
+    if(_stricmp(name+1, "new")==0) return;
 
     int i;
     for(i = 0; i < IoSeenPreviouslyCount; i++) {
-        if(strcmp(name, IoSeenPreviously[i].name)==0 &&
+        if(_stricmp(name, IoSeenPreviously[i].name)==0 &&
             type == IoSeenPreviously[i].type)
         {
             if(pin != NO_PIN_ASSIGNED) {
@@ -340,14 +342,14 @@ static int CompareIo(const void *av, const void *bv)
     PlcProgramSingleIo *a = (PlcProgramSingleIo *)av;
     PlcProgramSingleIo *b = (PlcProgramSingleIo *)bv;
 
-    if(a->type != b->type) {
+    /*if(a->type != b->type) {
         return a->type - b->type;
-    }
+    }*/
 
-    if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
-    if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
+    /*if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
+    if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;*/
 
-    return strcmp(a->name, b->name);
+    return _stricmp(a->name, b->name);
 }
 
 //-----------------------------------------------------------------------------
@@ -394,7 +396,7 @@ int GenerateIoMapList(int prevSel)
         {
             for(j = 0; j < IoSeenPreviouslyCount; j++) 
 			{
-                if(strcmp(Prog.io.assignment[i].name, IoSeenPreviously[j].name) == 0 && Prog.io.assignment[i].type == IoSeenPreviously[j].type)
+                if(_stricmp(Prog.io.assignment[i].name, IoSeenPreviously[j].name) == 0 && Prog.io.assignment[i].type == IoSeenPreviously[j].type)
                 {
                     Prog.io.assignment[i].pin = IoSeenPreviously[j].pin;
 					Prog.io.assignment[i].bit = IoSeenPreviously[j].bit;
@@ -409,7 +411,7 @@ int GenerateIoMapList(int prevSel)
 
     if(prevSel >= 0) {
         for(i = 0; i < Prog.io.count; i++) {
-            if(strcmp(Prog.io.assignment[i].name, selName)==0)
+            if(_stricmp(Prog.io.assignment[i].name, selName)==0)
                 break;
         }
         if(i < Prog.io.count)
@@ -573,7 +575,7 @@ void ShowIoMapDialog(int item)
         return;
     }
 
-    if(strcmp(Prog.io.assignment[item].name+1, "new")==0) {
+    if(_stricmp(Prog.io.assignment[item].name+1, "new")==0) {
         Error(_("Rename I/O from default name ('%s') before assigning "
             "MCU pin."), Prog.io.assignment[item].name);
         return;
@@ -712,10 +714,10 @@ cant_use_this_io:;
         int sel = SendMessage(PinList, LB_GETCURSEL, 0, 0);
         char pin[16];
         SendMessage(PinList, LB_GETTEXT, (WPARAM)sel, (LPARAM)pin);
-        if(strcmp(pin, _("(no pin)"))==0) {
+        if(_stricmp(pin, _("(no pin)"))==0) {
             int i;
             for(i = 0; i < IoSeenPreviouslyCount; i++) {
-                if(strcmp(IoSeenPreviously[i].name,
+                if(_stricmp(IoSeenPreviously[i].name,
 					Prog.io.assignment[item].name)==0 && IoSeenPreviously[i].type == Prog.io.assignment[item].type)
                 {
                     IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
@@ -739,10 +741,10 @@ cant_use_this_io:;
 				{
 					ElemLeaf *l = DisplayMatrix[i][j];
 					if (l && DisplayMatrixWhich[i][j] == ELEM_COIL) 
-						if (strcmp(Prog.io.assignment[item].name, l->d.coil.name) == 0)
+						if (_stricmp(Prog.io.assignment[item].name, l->d.coil.name) == 0)
 							l->d.coil.bit = Prog.io.assignment[item].bit;
 					if (l && DisplayMatrixWhich[i][j] == ELEM_CONTACTS) 
-						if (strcmp(Prog.io.assignment[item].name, l->d.contacts.name) == 0)
+						if (_stricmp(Prog.io.assignment[item].name, l->d.contacts.name) == 0)
 							l->d.contacts.bit = Prog.io.assignment[item].bit;
 				}
 			}

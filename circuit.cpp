@@ -809,7 +809,7 @@ void FreeEntireProgram(void)
 
 	for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
 	{
-		if(strcmp(SupportedMcus[i].mcuName, DEFAULT_CPU)==0) 
+		if(_stricmp(SupportedMcus[i].mcuName, DEFAULT_CPU)==0) 
 		{
 			Prog.mcu = &SupportedMcus[i];
 			break;

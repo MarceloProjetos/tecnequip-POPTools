@@ -140,7 +140,7 @@ void ShowResetDialog(char *name)
         } else {
             name[0] = 'C';
         }
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name+1));
     }
 
     EnableWindow(MainWindow, TRUE);

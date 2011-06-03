@@ -459,7 +459,7 @@ void ShowConfDialog(void)
 	for (i = 0; i < sizeof(ComboboxBaudRateItens) / sizeof(ComboboxBaudRateItens[0]); i++)
 	{
 		SendMessage(BaudRateCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBaudRateItens[i]));
-		if (strcmp(ComboboxBaudRateItens[i], buf) == 0)
+		if (_stricmp(ComboboxBaudRateItens[i], buf) == 0)
 			SendMessage(BaudRateCombobox, CB_SETCURSEL, i, 0);
 	}
 

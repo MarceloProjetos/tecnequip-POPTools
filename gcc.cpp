@@ -46,7 +46,7 @@ static BOOL SeenVariable(char *name)
 {
     int i;
     for(i = 0; i < SeenVariablesCount; i++) {
-        if(strcmp(SeenVariables[i], name)==0) {
+        if(_stricmp(SeenVariables[i], name)==0) {
             return TRUE;
         }
     }
@@ -73,7 +73,7 @@ static char *MapSym(char *str)
 	int i;
     for(i = 0; i < Prog.io.count; i++) 
 	{
-		if (strcmp(Prog.io.assignment[i].name, str) == 0)
+		if (_stricmp(Prog.io.assignment[i].name, str) == 0)
 		{
 			int pin = Prog.io.assignment[i].pin;
 
@@ -136,7 +136,7 @@ static void DeclareInt(FILE *f, char *str)
 		return;
 	}
 
-	if (strcmp(str, "I_SerialReady") == 0) return;
+	if (_stricmp(str, "I_SerialReady") == 0) return;
 
     //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
 #ifdef INT_UNSIGNED
@@ -176,7 +176,7 @@ static void DeclareBit(FILE *f, char *rawStr)
 		return;
     } else if(*rawStr == 'W' || *rawStr == 'G') {
 		return;
-    } else if (strcmp(str, "I_SerialReady") == 0) 
+    } else if (_stricmp(str, "I_SerialReady") == 0) 
 		return;
 
 	fprintf(f, "\n");

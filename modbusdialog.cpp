@@ -215,7 +215,7 @@ void ShowModbusDialog(char *name, int *id, int *address, bool *set)
         else
             *set = FALSE;
 
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name));
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name));
 		SendMessage(IDTextbox, WM_GETTEXT, 16, (LPARAM)(i));
 		SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
 

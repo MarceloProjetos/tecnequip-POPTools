@@ -130,7 +130,7 @@ static void PushProgramStack(ProgramStack *ps, BOOL deepCopy)
     if(deepCopy) {
         int i;
         for(i = 0; i < Prog.numRungs; i++) {
-            //ps->prog[ps->write].rungs[i] = (ElemSubcktSeries *)DeepCopy(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+            ps->prog[ps->write].rungs[i] = (ElemSubcktSeries *)DeepCopy(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
         }
     }
 

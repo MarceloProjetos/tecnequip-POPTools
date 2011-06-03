@@ -178,7 +178,7 @@ static BOOL SingleBitOn(char *name)
 {
     int i;
     for(i = 0; i < SingleBitItemsCount; i++) {
-        if(strcmp(SingleBitItems[i].name, name)==0) {
+        if(_stricmp(SingleBitItems[i].name, name)==0) {
             return SingleBitItems[i].powered;
         }
     }
@@ -193,7 +193,7 @@ static void SetSingleBit(char *name, BOOL state)
 {
     int i;
     for(i = 0; i < SingleBitItemsCount; i++) {
-        if(strcmp(SingleBitItems[i].name, name)==0) {
+        if(_stricmp(SingleBitItems[i].name, name)==0) {
             SingleBitItems[i].powered = state;
             return;
         }
@@ -213,7 +213,7 @@ static void IncrementVariable(char *name)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i].name, name)==0) {
+        if(_stricmp(Variables[i].name, name)==0) {
             (Variables[i].val)++;
             return;
         }
@@ -225,7 +225,7 @@ static void SetSimulationBit(char *name, int bit)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i].name, name)==0) {
+        if(_stricmp(Variables[i].name, name)==0) {
             (Variables[i].val) |= 1 << bit;
             return;
         }
@@ -237,7 +237,7 @@ static void ClearSimulationBit(char *name, int bit)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i].name, name)==0) {
+        if(_stricmp(Variables[i].name, name)==0) {
             (Variables[i].val) &= ~(1 << bit);
             return;
         }
@@ -250,7 +250,7 @@ static bool CheckSimulationBit(char *name, int bit)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i].name, name)==0) {
+        if(_stricmp(Variables[i].name, name)==0) {
             return (((Variables[i].val) & (1 << bit)) > 0);
         }
     }
@@ -266,7 +266,7 @@ static void SetSimulationVariable(char *name, SWORD val)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i].name, name)==0) {
+        if(_stricmp(Variables[i].name, name)==0) {
             Variables[i].val = val;
             return;
         }
@@ -282,7 +282,7 @@ SWORD GetSimulationVariable(char *name)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i].name, name)==0) {
+        if(_stricmp(Variables[i].name, name)==0) {
             return Variables[i].val;
         }
     }
@@ -299,7 +299,7 @@ void SetAdcShadow(char *name, SWORD val)
 {
     int i;
     for(i = 0; i < AdcShadowsCount; i++) {
-        if(strcmp(AdcShadows[i].name, name)==0) {
+        if(_stricmp(AdcShadows[i].name, name)==0) {
             AdcShadows[i].val = val;
             return;
         }
@@ -317,7 +317,7 @@ SWORD GetAdcShadow(char *name)
 {
     int i;
     for(i = 0; i < AdcShadowsCount; i++) {
-        if(strcmp(AdcShadows[i].name, name)==0) {
+        if(_stricmp(AdcShadows[i].name, name)==0) {
             return AdcShadows[i].val;
         }
     }
@@ -333,7 +333,7 @@ void SetDAShadow(char *name, SWORD val)
 {
     int i;
     for(i = 0; i < DAShadowsCount; i++) {
-        if(strcmp(DAShadows[i].name, name)==0) {
+        if(_stricmp(DAShadows[i].name, name)==0) {
             DAShadows[i].val = val;
             return;
         }
@@ -351,7 +351,7 @@ SWORD GetDAShadow(char *name)
 {
     int i;
     for(i = 0; i < DAShadowsCount; i++) {
-        if(strcmp(DAShadows[i].name, name)==0) {
+        if(_stricmp(DAShadows[i].name, name)==0) {
             return DAShadows[i].val;
         }
     }
@@ -367,7 +367,7 @@ void SetEncShadow(char *name, SWORD val)
 {
     int i;
     for(i = 0; i < EncShadowsCount; i++) {
-        if(strcmp(EncShadows[i].name, name)==0) {
+        if(_stricmp(EncShadows[i].name, name)==0) {
             EncShadows[i].val = val;
             return;
         }
@@ -385,7 +385,7 @@ SWORD GetEncShadow(char *name)
 {
     int i;
     for(i = 0; i < EncShadowsCount; i++) {
-        if(strcmp(EncShadows[i].name, name)==0) {
+        if(_stricmp(EncShadows[i].name, name)==0) {
             return EncShadows[i].val;
         }
     }
@@ -401,7 +401,7 @@ void SetResetEncShadow(char *name, SWORD val)
 {
     int i;
     for(i = 0; i < ResetEncShadowsCount; i++) {
-        if(strcmp(ResetEncShadows[i].name, name)==0) {
+        if(_stricmp(ResetEncShadows[i].name, name)==0) {
             ResetEncShadows[i].val = val;
             return;
         }
@@ -419,7 +419,7 @@ SWORD GetResetEncShadow(char *name)
 {
     int i;
     for(i = 0; i < ResetEncShadowsCount; i++) {
-        if(strcmp(ResetEncShadows[i].name, name)==0) {
+        if(_stricmp(ResetEncShadows[i].name, name)==0) {
             return ResetEncShadows[i].val;
         }
     }
@@ -436,7 +436,7 @@ static char *MarkUsedVariable(char *name, DWORD flag)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i].name, name)==0) {
+        if(_stricmp(Variables[i].name, name)==0) {
             break;
         }
     }

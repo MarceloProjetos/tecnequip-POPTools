@@ -161,7 +161,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     int i;
 
     for(i = 0; i < boxes; i++) {
-        SendMessage(Textboxes[i], WM_SETTEXT, 0, (LPARAM)dests[i]);
+        SendMessage(Textboxes[i], WM_SETTEXT, (WPARAM)17, (LPARAM)dests[i]);
 
         if(numOnlyMask & (1 << i)) {
             PrevNumOnlyProc[i] = SetWindowLongPtr(Textboxes[i], GWLP_WNDPROC, 
@@ -209,10 +209,10 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     if(!didCancel) {
         for(i = 0; i < boxes; i++) {
             if(NoCheckingOnBox[i]) {
-                SendMessage(Textboxes[i], WM_GETTEXT, 60, (LPARAM)get);
+                SendMessage(Textboxes[i], WM_GETTEXT, 17, (LPARAM)get);
                 strcpy(tmp + (i * sizeof(get)), get);
             } else {
-                SendMessage(Textboxes[i], WM_GETTEXT, 60, (LPARAM)get);
+                SendMessage(Textboxes[i], WM_GETTEXT, (WPARAM)17, (LPARAM)get);
 
                 if( (!strchr(get, '\'')) ||
                         (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )
@@ -307,11 +307,11 @@ BOOL ShowSimpleDialogWithCheckbox(char *title, int boxes, char **labels, DWORD n
         for(i = 0; i < boxes; i++) {
             if(NoCheckingOnBox[i]) {
                 char get[64];
-                SendMessage(Textboxes[i], WM_GETTEXT, 60, (LPARAM)get);
+                SendMessage(Textboxes[i], WM_GETTEXT, 16, (LPARAM)get);
                 strcpy(dests[i], get);
             } else {
                 char get[20];
-                SendMessage(Textboxes[i], WM_GETTEXT, 15, (LPARAM)get);
+                SendMessage(Textboxes[i], WM_GETTEXT, 16, (LPARAM)get);
 
                 if( (!strchr(get, '\'')) ||
                         (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )
@@ -347,15 +347,16 @@ void ShowTimerDialog(int which, int *delay, char *name)
    
     char *labels[] = { _("Name:"), _("Delay (ms):") };
 
-    char delBuf[16];
-    char nameBuf[16];
+    char delBuf[20];
+    char nameBuf[20];
     sprintf(delBuf, "%.3f", (*delay / 1000.0));
     strcpy(nameBuf, name+1);
     char *dests[] = { nameBuf, delBuf };
 
     if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
         name[0] = 'T';
-        strcpy(name+1, nameBuf);
+        strncpy(name+1, nameBuf, 15);
+		name[16] = '\0';
         double del = atof(delBuf);
         if(del > 2140000) { // 2**31/1000, don't overflow signed int
             Error(_("Delay too long; maximum is 2**31 us."));
@@ -385,6 +386,7 @@ void ShowCounterDialog(int which, int *maxV, char *name)
     sprintf(maxS, "%d", *maxV);
     char *dests[] = { name+1, maxS };
     ShowSimpleDialog(title, 2, labels, 0x2, 0x1, 0x1, dests);
+	name[16] = '\0';
     *maxV = atoi(maxS);
 }
 
@@ -429,6 +431,7 @@ void ShowCmpDialog(int which, char *op1, char *op2)
     char *labels[] = { _("'Closed' if:"), l2 };
     char *dests[] = { op1, op2 };
     ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests);
+
 }
 
 void ShowMoveDialog(char *dest, char *src)
@@ -443,6 +446,7 @@ void ShowReadAdcDialog(char *name)
     char *labels[] = { _("Destination:") };
     char *dests[] = { name };
     ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, dests);
+	name[15] = '\0';
 }
 
 /*void ShowSetBitDialog(char *name)
@@ -468,6 +472,7 @@ void ShowReadEncDialog(char *name)
     char *labels[] = { _("Destination:") };
     char *dests[] = { name };
     ShowSimpleDialog(_("Read Encoder"), 1, labels, 0, 0x1, 0x1, dests);
+	name[15] = '\0';
 }
 
 void ShowResetEncDialog(char *name)
@@ -475,6 +480,7 @@ void ShowResetEncDialog(char *name)
     char *labels[] = { _("Destination:") };
     char *dests[] = { name };
     ShowSimpleDialog(_("Reset Encoder"), 1, labels, 0, 0x1, 0x1, dests);
+	name[15] = '\0';
 }
 
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index)
@@ -609,6 +615,7 @@ void ShowUartDialog(int which, char *name)
 
     ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") :
         _("Send to UART"), 1, labels, 0, 0x1, 0x1, dests);
+
 }
 
 void ShowMathDialog(int which, char *dest, char *op1, char *op2)
@@ -681,4 +688,5 @@ void ShowPersistDialog(char *var)
     char *labels[] = { _("Variable:") };
     char *dests[] = { var };
     ShowSimpleDialog(_("Make Persistent"), 1, labels, 0, 1, 1, dests);
+
 }

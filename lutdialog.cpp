@@ -432,7 +432,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
             char scratch[1024];
             SendMessage(StringTextbox, WM_GETTEXT, (WPARAM)sizeof(scratch),
                 (LPARAM)scratch);
-            if(strcmp(scratch, PrevTableAsString)!=0) {
+            if(_stricmp(scratch, PrevTableAsString)!=0) {
                 if(StringToValuesCache(scratch, &count)) {
                     strcpy(PrevTableAsString, scratch);
                 } else {
@@ -454,8 +454,8 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     }
 
     if(!DialogCancel) {
-        SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(t->dest));
-        SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(t->index));
+        SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(t->dest));
+        SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(t->index));
         DestroyLutControls();
         // The call to DestroyLutControls updated ValuesCache, so just read
         // them out of there (whichever mode we were in before).
@@ -548,8 +548,8 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     }
 
     if(!DialogCancel) {
-        SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(t->dest));
-        SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(t->index));
+        SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(t->dest));
+        SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(t->index));
         DestroyLutControls();
         // The call to DestroyLutControls updated ValuesCache, so just read
         // them out of there.

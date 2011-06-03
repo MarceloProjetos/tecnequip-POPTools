@@ -581,10 +581,10 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             char bot[MAX_NAME_LEN+20];
             memset(bot, ' ', sizeof(bot));
             bot[0] = '{';
-            sprintf(bot+2, "%s0..%d", leaf->d.shiftRegister.name, leaf->d.shiftRegister.stages-1);
+            sprintf(bot+2, "%s:%d", leaf->d.shiftRegister.name, leaf->d.shiftRegister.stages-1);
             bot[strlen(bot)] = ' ';
-            bot[13] = '}';
-            bot[14] = '\0';
+            bot[19] = '}';
+            bot[20] = '\0';
             CenterWithSpaces(*cx, *cy, "{\x01SHIFT REG\x02   }", poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
@@ -606,15 +606,15 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             top[0] = '{';
             sprintf(top+2, "%s :=", dest);
             top[strlen(top)] = ' ';
-            top[13] = '}';
-            top[14] = '\0';
+            top[19] = '}';
+            top[20] = '\0';
             CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
             memset(bot, ' ', sizeof(bot));
             bot[0] = '{';
             sprintf(bot+2, " %s[%s]", str, index);
             bot[strlen(bot)] = ' ';
-            bot[13] = '}';
-            bot[14] = '\0';
+            bot[19] = '}';
+            bot[20] = '\0';
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }

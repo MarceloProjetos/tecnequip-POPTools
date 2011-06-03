@@ -235,7 +235,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
 
 		for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
 		{
-			if (strcmp(IoSeenPreviously[i].name, name)==0)
+			if (_stricmp(IoSeenPreviously[i].name, name)==0)
 				*bit = IoSeenPreviously[i].bit;
 		}
 		//char cbit[10];

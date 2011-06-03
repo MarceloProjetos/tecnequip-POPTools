@@ -115,7 +115,7 @@ static void MemForPin(char *name, DWORD *addr, int *bit, BOOL asInput)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
-        if(strcmp(Prog.io.assignment[i].name, name)==0)
+        if(_stricmp(Prog.io.assignment[i].name, name)==0)
             break;
     }
     if(i >= Prog.io.count) oops();
@@ -150,7 +150,7 @@ BYTE MuxForAdcVariable(char *name)
 {
     int i;
     for(i = 0; i < Prog.io.count; i++) {
-        if(strcmp(Prog.io.assignment[i].name, name)==0)
+        if(_stricmp(Prog.io.assignment[i].name, name)==0)
             break;
     }
     if(i >= Prog.io.count) oops();
@@ -177,7 +177,7 @@ void MemForVariable(char *name, DWORD *addrl, DWORD *addrh)
 {
     int i;
     for(i = 0; i < VariableCount; i++) {
-        if(strcmp(name, Variables[i].name)==0) break;
+        if(_stricmp(name, Variables[i].name)==0) break;
     }
     if(i >= MAX_IO) {
         Error(_("Internal limit exceeded (number of vars)"));
@@ -201,7 +201,7 @@ static void MemForBitInternal(char *name, DWORD *addr, int *bit, BOOL writeTo)
 {
     int i;
     for(i = 0; i < InternalRelayCount; i++) {
-        if(strcmp(name, InternalRelays[i].name)==0)
+        if(_stricmp(name, InternalRelays[i].name)==0)
             break;
     }
     if(i >= MAX_IO) {

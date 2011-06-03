@@ -177,24 +177,24 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
     } else if(sscanf(line, "PERSIST %s", l->d.persist.var)==1) {
         *which = ELEM_PERSIST;
 	} else if (sscanf(line, "READ_FORMATTED_STRING %s %[^\t\n]", l->d.fmtdStr.var, l->d.fmtdStr.string)==2) {
-		if (strcmp(l->d.fmtdStr.var,"(empty)") == 0)
+		if (_stricmp(l->d.fmtdStr.var,"(empty)") == 0)
 			strcpy(l->d.fmtdStr.var, "");
 		*which = ELEM_READ_FORMATTED_STRING;
 	} else if (sscanf(line, "WRITE_FORMATTED_STRING %s %[^\t\n]", l->d.fmtdStr.var, l->d.fmtdStr.string)==2) {
-		if (strcmp(l->d.fmtdStr.var,"(empty)") == 0)
+		if (_stricmp(l->d.fmtdStr.var,"(empty)") == 0)
 			strcpy(l->d.fmtdStr.var, "");
 		*which = ELEM_WRITE_FORMATTED_STRING;
 	} else if (sscanf(line, "READ_SERVO_YASKAWA %s %s %[^\t\n]", l->d.servoYaskawa.id, l->d.servoYaskawa.var, l->d.servoYaskawa.string)==3) {
-		if (strcmp(l->d.servoYaskawa.var,"(empty)") == 0)
+		if (_stricmp(l->d.servoYaskawa.var,"(empty)") == 0)
 			strcpy(l->d.servoYaskawa.var, "");
 		*which = ELEM_READ_SERVO_YASKAWA;
 	} else if (sscanf(line, "WRITE_SERVO_YASKAWA %s %s %[^\t\n]", l->d.servoYaskawa.id, l->d.servoYaskawa.var, l->d.servoYaskawa.string)==3) {
-		if (strcmp(l->d.servoYaskawa.var,"(empty)") == 0)
+		if (_stricmp(l->d.servoYaskawa.var,"(empty)") == 0)
 			strcpy(l->d.servoYaskawa.var, "");
 		*which = ELEM_WRITE_SERVO_YASKAWA;
     } else if(sscanf(line, "FORMATTED_STRING %s %d", l->d.fmtdStr.var, &x)==2)
     {
-        if(strcmp(l->d.fmtdStr.var, "(none)")==0) {
+        if(_stricmp(l->d.fmtdStr.var, "(none)")==0) {
             strcpy(l->d.fmtdStr.var, "");
         }
 
@@ -289,14 +289,14 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f, int version)
         char *s = line;
         while(isspace(*s)) s++;
 
-        if(strcmp(s, "SERIES\n")==0) {
+        if(_stricmp(s, "SERIES\n")==0) {
             which = ELEM_SERIES_SUBCKT;
             any = LoadSeriesFromFile(f, version);
             if(!any) return NULL;
 
         } else if(LoadLeafFromFile(s, &any, &which, version)) {
             // got it
-        } else if(strcmp(s, "END\n")==0) {
+        } else if(_stricmp(s, "END\n")==0) {
             ret->count = cnt;
             return ret;
         } else {
@@ -327,14 +327,14 @@ static ElemSubcktSeries *LoadSeriesFromFile(FILE *f, int version)
         char *s = line;
         while(isspace(*s)) s++;
 
-        if(strcmp(s, "PARALLEL\n")==0) {
+        if(_stricmp(s, "PARALLEL\n")==0) {
             which = ELEM_PARALLEL_SUBCKT;
             any = LoadParallelFromFile(f, version);
             if(!any) return NULL;
 
         } else if(LoadLeafFromFile(s, &any, &which, version)) {
             // got it
-        } else if(strcmp(s, "END\n")==0) {
+        } else if(_stricmp(s, "END\n")==0) {
             ret->count = cnt;
             return ret;
         } else {
@@ -367,7 +367,7 @@ BOOL LoadProjectFromFile(char *filename)
 	version = 0;
 
     while(fgets(line, sizeof(line), f)) {
-        if(strcmp(line, "IO LIST\n")==0) {
+        if(_stricmp(line, "IO LIST\n")==0) {
             if(!LoadIoListFromFile(f, version)) {
                 fclose(f);
                 return FALSE;
@@ -414,7 +414,7 @@ BOOL LoadProjectFromFile(char *filename)
             line[strlen(line)-1] = '\0';
             int i;
             for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-                if(strcmp(SupportedMcus[i].mcuName, line+6)==0) {
+                if(_stricmp(SupportedMcus[i].mcuName, line+6)==0) {
                     Prog.mcu = &SupportedMcus[i];
                     break;
                 }
@@ -423,16 +423,16 @@ BOOL LoadProjectFromFile(char *filename)
                 Error(_("Microcontroller '%s' not supported.\r\n\r\n"
                     "Defaulting to no selected MCU."), line+6);
             }
-        } else if(strcmp(line, "PROGRAM\n")==0) {
+        } else if(_stricmp(line, "PROGRAM\n")==0) {
             break;
         }
     }
-    if(strcmp(line, "PROGRAM\n") != 0) goto failed;
+    if(_stricmp(line, "PROGRAM\n") != 0) goto failed;
 
     int rung;
     for(rung = 0;;) {
         if(!fgets(line, sizeof(line), f)) break;
-        if(strcmp(line, "RUNG\n")!=0) goto failed;
+        if(_stricmp(line, "RUNG\n")!=0) goto failed;
 
         Prog.rungs[rung] = LoadSeriesFromFile(f, version);
         if(!Prog.rungs[rung]) goto failed;

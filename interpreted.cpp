@@ -50,7 +50,7 @@ static WORD AddrForInternalRelay(char *name)
 {
     int i;
     for(i = 0; i < InternalRelaysCount; i++) {
-        if(strcmp(InternalRelays[i], name)==0) {
+        if(_stricmp(InternalRelays[i], name)==0) {
             return i;
         }
     }
@@ -63,7 +63,7 @@ static WORD AddrForVariable(char *name)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
-        if(strcmp(Variables[i], name)==0) {
+        if(_stricmp(Variables[i], name)==0) {
             return i;
         }
     }

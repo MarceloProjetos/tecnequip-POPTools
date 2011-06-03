@@ -41,7 +41,7 @@ static BOOL SeenVariable(char *name)
 {
     int i;
     for(i = 0; i < SeenVariablesCount; i++) {
-        if(strcmp(SeenVariables[i], name)==0) {
+        if(_stricmp(SeenVariables[i], name)==0) {
             return TRUE;
         }
     }

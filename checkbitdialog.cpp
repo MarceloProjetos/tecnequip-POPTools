@@ -164,12 +164,12 @@ void ShowCheckBitDialog(char *name, int * set, int * bit)
         else
             *set = FALSE;
 
-		char buf[16];
+		char buf[20];
         SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
             (LPARAM)(buf));
         *bit = atoi(buf);
 
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name));
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name));
     }
 
     EnableWindow(MainWindow, TRUE);

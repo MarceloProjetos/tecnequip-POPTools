@@ -69,7 +69,7 @@ char *_(char *in)
     int i;
 
     for(i = 0; i < l->n; i++) {
-        if(strcmp(in, l->tab[i].from)==0) {
+        if(_stricmp(in, l->tab[i].from)==0) {
             return l->tab[i].to;
         }
     }
