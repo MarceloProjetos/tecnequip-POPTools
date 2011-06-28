@@ -489,14 +489,14 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_READ_MODBUS: {
             ElemReadModbus *r = &leaf->d.readModbus;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{READ MODBUS}", poweredBefore,
+            CenterWithWires(*cx, *cy, "{READ MB 485}", poweredBefore,
                 poweredAfter);
             break;
         }
         case ELEM_WRITE_MODBUS: {
             ElemWriteModbus *r = &leaf->d.writeModbus;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{WRITE MODBUS}", poweredBefore,
+            CenterWithWires(*cx, *cy, "{WRITE MB 485}", poweredBefore,
                 poweredAfter);
             break;
         }
@@ -950,7 +950,7 @@ cmp:
         case ELEM_READ_MODBUS:
         case ELEM_WRITE_MODBUS:
             CenterWithWires(*cx, *cy,
-                (which == ELEM_READ_MODBUS) ? "{READ MODBUS}" : "{WRITE MODBUS}",
+                (which == ELEM_READ_MODBUS) ? "{READ MB 485}" : "{WRITE MB 485}",
                 poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, (which == ELEM_READ_MODBUS) ? leaf->d.readModbus.name : leaf->d.writeModbus.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;

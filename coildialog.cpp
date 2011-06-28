@@ -150,7 +150,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
 {
     CoilDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Coil"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 359, 135, NULL, NULL, Instance, NULL);
+        100, 100, 359, 135, MainWindow, NULL, Instance, NULL);
     RECT r;
     GetClientRect(CoilDialog, &r);
 

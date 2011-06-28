@@ -123,8 +123,70 @@ void MakeMainWindowControls(void)
 // Set up the title bar text for the main window; indicate whether we are in
 // simulation or editing mode, and indicate the filename.
 //-----------------------------------------------------------------------------
+struct VS_VERSIONINFO
+{
+    WORD                wLength;
+    WORD                wValueLength;
+    WORD                wType;
+    WCHAR               szKey[1];
+    WORD                wPadding1[1];
+    VS_FIXEDFILEINFO    Value;
+    WORD                wPadding2[1];
+    WORD                wChildren[1];
+};
+
+struct
+{
+    WORD wLanguage;
+    WORD wCodePage;
+} *lpTranslate;
+
+// these macros help to align on r-byte boundaries (thanks Ted Peck)
+#define roundoffs(a,b,r) (((BYTE *) (b) - (BYTE *) (a) + ((r) - 1)) & ~((r) - 1))
+#define roundpos(a,b,r) (((BYTE *) (a)) + roundoffs(a,b,r))
+
 void UpdateMainWindowTitleBar(void)
 {
+	LPCTSTR lpszFilename = TEXT("POPTools.exe");
+	DWORD   dwHandle,
+			dwSize;
+
+	WORD wMajor, wMinor, wBuild, wRevision;
+	//DWORD dwFileVersionMS, dwFileVersionLS, dwProductVersionMS, dwProductVersionLS;
+
+	// determine the size of the resource information
+
+	dwSize = GetFileVersionInfoSize(lpszFilename, &dwHandle);
+	if (0 < dwSize)
+	{
+		LPBYTE lpBuffer = new BYTE[dwSize];
+
+		GetFileVersionInfo(lpszFilename, 0, dwSize, lpBuffer);
+
+		// 'point to' the start of the version information block
+
+		VS_VERSIONINFO *pVerInfo = (VS_VERSIONINFO *) lpBuffer;
+
+		// the fixed section starts right after the 'VS_VERSION_INFO' string
+
+		LPBYTE pOffsetBytes = (BYTE *) &pVerInfo->szKey[wcslen(pVerInfo->szKey) + 1];
+
+		VS_FIXEDFILEINFO *pFixedInfo = (VS_FIXEDFILEINFO *) roundpos(pVerInfo, pOffsetBytes, 4);
+
+        // increment the numbers!
+        /*dwFileVersionMS    = HIWORD(pFixedInfo->dwFileVersionMS);
+        dwFileVersionLS    = LOWORD(pFixedInfo->dwFileVersionLS);
+        dwProductVersionMS = HIWORD(pFixedInfo->dwProductVersionMS);
+        dwProductVersionLS = LOWORD(pFixedInfo->dwProductVersionLS);*/
+
+		wMajor    = HIWORD(pFixedInfo->dwFileVersionMS);
+        wMinor    = LOWORD(pFixedInfo->dwFileVersionMS);
+		wBuild    = HIWORD(pFixedInfo->dwFileVersionLS);
+        wRevision = LOWORD(pFixedInfo->dwFileVersionLS);
+
+		delete [] lpBuffer;
+	}
+
     char line[MAX_PATH+100];
     if(InSimulationMode) {
         if(RealTimeSimulationRunning) {
@@ -136,9 +198,19 @@ void UpdateMainWindowTitleBar(void)
         strcpy(line, _("LDmicro - Program Editor"));
     }
     if(strlen(CurrentSaveFile) > 0) {
-        sprintf(line+strlen(line), " - %s", CurrentSaveFile);
+        sprintf(line+strlen(line), " - %d.%d.%d.%d - %s", 
+			wMajor,
+			wMinor,
+			wBuild,
+			wRevision,
+			CurrentSaveFile);
     } else {
-        strcat(line, _(" - (not yet saved)"));
+        sprintf(line+strlen(line), " - %d.%d.%d.%d%s", 
+			wMajor,
+			wMinor,
+			wBuild,
+			wRevision,
+			_(" - (not yet saved)"));
     }
 
     SetWindowText(MainWindow, line);
@@ -286,9 +358,9 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
         _("Insert CT&U (Count Up)\tI"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTD,
-        _("Insert CT&D (Count Down)\tU"));
+        _("Insert CT&D (Count Down)\tD"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTC,
-        _("Insert CT&C (Count Circular)\tJ"));
+        _("Insert CT&C (Count Circular)\tShift+C"));
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
 
     //AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
@@ -336,7 +408,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(MathematicMenu, MF_STRING, MNU_INSERT_MUL,
         _("Insert MUL (32-bit Integer Multiply)\t*"));
     AppendMenu(MathematicMenu, MF_STRING, MNU_INSERT_DIV,
-        _("Insert DIV (32-bit Integer Divide)\tD"));
+        _("Insert DIV (32-bit Integer Divide)\tShift+/"));
 	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)MathematicMenu,
         _("Instruções Matemáticas"));
 
@@ -348,19 +420,19 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_PWL,
         _("Insert Piecewise Linear"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_READ_ADC,
-        _("Insert A/D Converter Read\tP"));
+        _("Insert A/D Converter Read\tCtrl+A"));
 
     AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
 
 	MotorControlMenu = CreatePopupMenu();
 	AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_SET_PWM,
-        _("Insert Set PWM Output"));
+        _("Insert Set PWM Output\tW"));
     AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_SET_DA,
-        _("Conversor Digital/Analogico (D/A)"));
+        _("Conversor Digital/Analogico (D/A)\tCtrl+D"));
     AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_READ_ENC,
-        _("Leitura do Encoder Quadratura"));
+        _("Leitura do Encoder Quadratura\tQ"));
     AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_RESET_ENC,
-        _("Reset do Encoder Quadratura"));
+        _("Reset do Encoder Quadratura\tCtrl+Q"));
     AppendMenu(MotorControlMenu, MF_SEPARATOR, 0, NULL);
 	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)MotorControlMenu,
         _("Controle de Motor"));
@@ -373,25 +445,25 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(ComunicationMenu, MF_STRING, MNU_WRITE_FMTD_STR,
         _("Send Formatted String Over UART"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_READ_SERVO_YASKAWA,
-        _("Leitura NS-600 Yaskawa"));
+        _("Leitura NS-600 Yaskawa\tShift+K"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_WRITE_SERVO_YASKAWA,
-        _("Escrita NS-600 Yaskawa"));
+        _("Escrita NS-600 Yaskawa\tCtrl+K"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_SEND,
         _("Insert Serial &Send"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_RECV,
         _("Insert Serial &Receive"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_READ_USS,
-        _("Leitura de Parametro do Inversor da Nord"));
+        _("Leitura de Parametro do USS\tShift+U"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_WRITE_USS,
-        _("Escrita de Parametro no Inversor da Nord"));
+        _("Escrita de Parametro do USS\tCtrl+U"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_READ_MODBUS,
-        _("Leitura de registrador do MODBUS RS485"));
+        _("Leitura de registrador do MODBUS RS485\tShift+4"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_WRITE_MODBUS,
-        _("Escrita em registrador do MODBUS RS485"));
+        _("Escrita em registrador do MODBUS RS485\tCtrl+4"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_READ_MODBUS_ETH,
-        _("Leitura de registrador do MODBUS Ethernet"));
+        _("Leitura de registrador do MODBUS Ethernet\tShift+X"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_WRITE_MODBUS_ETH,
-        _("Escrita em registrador do MODBUS Ethernet"));
+        _("Escrita em registrador do MODBUS Ethernet\tCtrl+X"));
 	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)ComunicationMenu,
         _("Comunicação"));
 

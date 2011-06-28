@@ -4,6 +4,14 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "POPTools", "POPTools.vcxproj", "{0CFD125F-09D6-4BED-8FE0-7C943C980933}"
 EndProject
 Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfsbasic01.tfsmadeeasy.com/tfs/alermancollection
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = POPTools.vcxproj
+		SccLocalPath1 = .
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32

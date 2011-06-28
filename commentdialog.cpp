@@ -54,7 +54,7 @@ void ShowCommentDialog(char *comment)
 {
     CommentDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Comment"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 700, 65, NULL, NULL, Instance, NULL);
+        100, 100, 700, 65, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
    

@@ -44,7 +44,7 @@ static HHOOK       MouseHookHandle;
 static int         MouseY;
 
 // For the open/save dialog boxes
-#define LDMICRO_PATTERN "LDmicro Ladder Logic Programs (*.ld)\0*.ld\0" \
+#define LDMICRO_PATTERN "POPTools Projeto Ladder (*.ld)\0*.ld\0" \
                      "All files\0*\0\0"
 char CurrentSaveFile[MAX_PATH];
 static BOOL ProgramChangedNotSaved = FALSE;
@@ -77,6 +77,7 @@ static BOOL SaveAsDialog(void)
     ofn.lpstrDefExt = "ld";
     ofn.lpstrFile = CurrentSaveFile;
     ofn.nMaxFile = sizeof(CurrentSaveFile);
+	ofn.hwndOwner = MainWindow;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
     if(!GetSaveFileName(&ofn))
@@ -109,6 +110,7 @@ static void ExportDialog(void)
     ofn.lpstrFile = exportFile;
     ofn.lpstrTitle = _("Export As Text");
     ofn.nMaxFile = sizeof(exportFile);
+	ofn.hwndOwner = MainWindow;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
     if(!GetSaveFileName(&ofn))
@@ -254,6 +256,7 @@ static void WriteProgram(BOOL compileAs)
         }
         ofn.lpstrFile = CurrentCompileFile;
         ofn.nMaxFile = sizeof(CurrentCompileFile);
+		ofn.hwndOwner = MainWindow;
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
         if(!GetSaveFileName(&ofn))
@@ -320,7 +323,7 @@ BOOL CheckSaveUserCancels(void)
 
     int r = MessageBox(MainWindow, 
         _("The program has changed since it was last saved.\r\n\r\n"
-        "Do you want to save the changes?"), "LDmicro",
+        "Do you want to save the changes?"), "POPTools",
         MB_YESNOCANCEL | MB_ICONWARNING);
     switch(r) {
         case IDYES:
@@ -357,6 +360,7 @@ static void OpenDialog(void)
     ofn.lpstrDefExt = "ld";
     ofn.lpstrFile = tempSaveFile;
     ofn.nMaxFile = sizeof(tempSaveFile);
+	ofn.hwndOwner = MainWindow;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 
     if(!GetOpenFileName(&ofn))
@@ -926,7 +930,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case 'C':
-                    CHANGING_PROGRAM(AddContact());
+					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+						CHANGING_PROGRAM(AddCounter(ELEM_CTC));
+					} else if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000)) {
+						CHANGING_PROGRAM(AddContact());
+					}
                     break;
 
                 case 'B':
@@ -939,6 +947,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 				// TODO: rather country-specific here
 
+				case 'K':
+					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+						CHANGING_PROGRAM(AddReadServoYaskawa());
+					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+						CHANGING_PROGRAM(AddWriteServoYaskawa());
+					}
                 case 'L':
                     CHANGING_PROGRAM(AddCoil());
                     break;
@@ -970,7 +984,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         if(!ProgramChangedNotSaved) {
                             int r = MessageBox(MainWindow, 
                                 _("Start new program?"),
-                                "LDmicro", MB_YESNO | MB_DEFBUTTON2 |
+                                "POPTools", MB_YESNO | MB_DEFBUTTON2 |
                                 MB_ICONQUESTION);
                             if(r == IDNO) break;
                         }
@@ -986,7 +1000,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case 'A':
-                    CHANGING_PROGRAM(MakeNormalSelected());
+					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+						CHANGING_PROGRAM(AddReadAdc());
+					} else {
+						CHANGING_PROGRAM(MakeNormalSelected());
+					}
                     break;
 
                 case 'T':
@@ -1011,7 +1029,27 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case 'U':
-                    CHANGING_PROGRAM(AddCounter(ELEM_CTD));
+					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+						CHANGING_PROGRAM(AddReadUSS());
+					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+						CHANGING_PROGRAM(AddWriteUSS());
+					}
+                    break;
+
+                case '4':
+					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+						CHANGING_PROGRAM(AddReadModbus());
+					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+						CHANGING_PROGRAM(AddWriteModbus());
+					}
+                    break;
+
+                case 'X':
+					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+						CHANGING_PROGRAM(AddReadModbusEth());
+					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+						CHANGING_PROGRAM(AddWriteModbusEth());
+					}
                     break;
 
                 case 'J':
@@ -1022,9 +1060,21 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     CHANGING_PROGRAM(AddMove());
                     break;
 
-                case 'P':
+                /*case 'P':
                     CHANGING_PROGRAM(AddReadAdc());
+                    break;*/
+
+				case 'Q':
+					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+						CHANGING_PROGRAM(AddResetEnc());
+					} else {
+						CHANGING_PROGRAM(AddReadEnc());
+					}
                     break;
+
+				case 'W':
+					CHANGING_PROGRAM(AddSetPwm());
+					break;
 
 				case VK_OEM_PLUS:
 				case VK_ADD:
@@ -1046,7 +1096,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 				case 0xc1:
 				case 0x6f:
-					CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
+					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+						CHANGING_PROGRAM(AddMath(ELEM_DIV));
+					} else {
+						CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
+					}
 					break;
 				case 0xe2:
 					CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
@@ -1058,7 +1112,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case 'D':
-                    CHANGING_PROGRAM(AddMath(ELEM_DIV));
+					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+						CHANGING_PROGRAM(AddSetDA());
+					} else {
+						CHANGING_PROGRAM(AddCounter(ELEM_CTD));
+					}
                     break;
 
 				case 0x31:
@@ -1271,7 +1329,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         RunningInBatchMode = TRUE;
 
         char *err =
-            "Bad command line arguments: run 'ldmicro /c src.ld dest.hex'";
+            "Bad command line arguments: run 'poptools /c src.ld dest.hex'";
 
         char *source = lpCmdLine + 2;
         while(isspace(*source)) {

@@ -164,7 +164,7 @@ void ShowModbusDialog(char *name, int *id, int *address, bool *set)
 {
     SetBitDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Modbus"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 404, 115, NULL, NULL, Instance, NULL);
+        100, 100, 404, 115, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
 

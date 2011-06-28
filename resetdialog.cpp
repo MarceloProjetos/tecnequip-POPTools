@@ -97,7 +97,7 @@ void ShowResetDialog(char *name)
 {
     ResetDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Reset"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 404, 75, NULL, NULL, Instance, NULL);
+        100, 100, 404, 75, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
    

@@ -24,6 +24,11 @@
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
+#include <windows.h>
+#include <tchar.h>
+#include <wchar.h>
+#include <math.h>
+
 #include <setjmp.h>
 typedef signed long SDWORD;
 //typedef signed short SWORD;

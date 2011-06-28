@@ -2530,7 +2530,7 @@ char *HelpText[] = {
     "",
     "    Os pontos precisam ser especificados em ordem crescente em xvar. Em alguns",
     "    casos, por questões matemáticas e de limitações do processamento aritmético de 16",
-    "    bits, o LDmicro poderá gerar mensagens de erro relativas a conversão. Neste caso,",
+    "    bits, o POPTools poderá gerar mensagens de erro relativas a conversão. Neste caso,",
     "    adicione mais dados à tabela.",
     "    Ex: Isso irá produzir um erro, se lançado estes dois pontos:",
     "",

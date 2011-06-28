@@ -114,7 +114,7 @@ void ShowCheckBitDialog(char *name, int * set, int * bit)
 {
     CheckBitDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Check Bit"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 404, 75, NULL, NULL, Instance, NULL);
+        100, 100, 404, 75, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
    

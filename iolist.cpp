@@ -523,7 +523,7 @@ void ShowAnalogSliderPopup(char *name)
     
     AnalogSliderMain = CreateWindowClient(0, "LDmicroAnalogSlider", "I/O Pin",
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
-        left, top, 30, 100, NULL, NULL, Instance, NULL);
+        left, top, 30, 100, MainWindow, NULL, Instance, NULL);
 
     AnalogSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
         TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE, 
@@ -648,7 +648,7 @@ void ShowEncoderSliderPopup(char *name)
     
     EncoderSliderMain = CreateWindowClient(0, "LDmicroEncoderSlider", "I/O Pin",
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
-        left, top, 30, 100, NULL, NULL, Instance, NULL);
+        left, top, 30, 100, MainWindow, NULL, Instance, NULL);
 
     EncoderSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
         TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE, 
@@ -845,7 +845,7 @@ void ShowIoDialog(int item)
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
         "LDmicroIo", _("I/O Pin"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 107, 387, NULL, NULL, Instance, NULL);
+        100, 100, 107, 387, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
 

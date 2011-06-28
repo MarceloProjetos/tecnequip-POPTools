@@ -415,7 +415,7 @@ void ShowConfDialog(void)
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "LDmicroDialog", _("PLC Configuration"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 335, 285, NULL, NULL, Instance, NULL);
+        100, 100, 335, 285, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
    

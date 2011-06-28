@@ -369,7 +369,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     // on show style/entry count) controls for the initial configuration.
     LutDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Look-Up Table"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 320, 375, NULL, NULL, Instance, NULL);
+        100, 100, 320, 375, MainWindow, NULL, Instance, NULL);
     MakeFixedControls(FALSE);
     MakeLutControls(asString, count, FALSE);
   
@@ -494,7 +494,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
     // on show style/entry count) controls for the initial configuration.
     LutDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Piecewise Linear Table"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 320, 375, NULL, NULL, Instance, NULL);
+        100, 100, 320, 375, MainWindow, NULL, Instance, NULL);
     MakeFixedControls(TRUE);
     MakeLutControls(FALSE, count*2, TRUE);
   

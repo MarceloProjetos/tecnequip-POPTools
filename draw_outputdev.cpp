@@ -535,7 +535,7 @@ void ExportDrawingAsText(char *file)
         return;
     }
 
-    fprintf(f, "LDmicro export text\n");
+    fprintf(f, "POPTools export text\n");
 
     if(Prog.mcu) {
         fprintf(f, "for '%s', %.6f MHz crystal, %.1f ms cycle time\n\n",

@@ -590,7 +590,7 @@ void ShowIoMapDialog(int item)
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
         "LDmicroIo", _("I/O Pin"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 127, 430, NULL, NULL, Instance, NULL);
+        100, 100, 127, 430, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
 

@@ -129,7 +129,7 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 {
     ContactsDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Contacts"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 404, 95, NULL, NULL, Instance, NULL);
+        100, 100, 404, 95, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
  
