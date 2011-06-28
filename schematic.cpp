@@ -171,7 +171,7 @@ void WhatCanWeDoFromCursorAndTopology(void)
          SelectedWhich == ELEM_CTC ||
          SelectedWhich == ELEM_READ_ADC ||
 		 SelectedWhich == ELEM_READ_ENC ||
-		 SelectedWhich == ELEM_READ_ENC ||
+		 SelectedWhich == ELEM_RESET_ENC ||
          SelectedWhich == ELEM_SET_PWM ||
 		 SelectedWhich == ELEM_SET_DA ||
          SelectedWhich == ELEM_MASTER_RELAY ||
