@@ -60,6 +60,9 @@ static HWND AnalogSliderTrackbar;
 static BOOL AnalogSliderDone;
 static BOOL AnalogSliderCancel;
 
+static int nSortColumn = 0;
+static BOOL bSortAscending = TRUE;
+
 // stuff for the popup that lets you set the simulated value of an encode in
 /*static HWND EncoderSliderMain;
 static HWND EncoderSliderTrackbar;
@@ -337,7 +340,15 @@ static void ExtractNamesFromCircuit(int which, void *any)
 // Compare function to qsort() the I/O list. Group by type, then 
 // alphabetically within each section.
 //-----------------------------------------------------------------------------
-static int CompareIo(const void *av, const void *bv)
+static int CompareIoName(const void *av, const void *bv)
+{
+    PlcProgramSingleIo *a = (PlcProgramSingleIo *)av;
+    PlcProgramSingleIo *b = (PlcProgramSingleIo *)bv;
+
+    return bSortAscending ? _stricmp(a->name, b->name) : _stricmp(b->name, a->name);
+}
+
+static int CompareIoPin(const void *av, const void *bv)
 {
     PlcProgramSingleIo *a = (PlcProgramSingleIo *)av;
     PlcProgramSingleIo *b = (PlcProgramSingleIo *)bv;
@@ -346,12 +357,166 @@ static int CompareIo(const void *av, const void *bv)
         return a->type - b->type;
     }*/
 
-    /*if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
-    if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;*/
+    if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
+    if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
 
-    return _stricmp(a->name, b->name);
+    return bSortAscending ? a->pin - b->pin : b->pin - a->pin;
 }
 
+static int CompareIoPort(const void *av, const void *bv)
+{
+    PlcProgramSingleIo *a = (PlcProgramSingleIo *)av;
+    PlcProgramSingleIo *b = (PlcProgramSingleIo *)bv;
+
+	int i1 = 0;
+	int i2 = 0;
+
+    //if(a->type != b->type) {
+    //    return a->type - b->type;
+    //}
+
+    if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
+    if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
+
+    if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
+        i1 = 0;
+    }
+
+    if(a->type != IO_TYPE_DIG_INPUT && a->type != IO_TYPE_DIG_OUTPUT
+        && a->type != IO_TYPE_READ_ADC && a->type != IO_TYPE_READ_ENC && a->type != IO_TYPE_RESET_ENC
+		&& a->type != IO_TYPE_READ_USS && a->type != IO_TYPE_WRITE_USS)
+    {
+        i1 = 0;;
+    }
+
+    int pin = a->pin;
+    if(pin == NO_PIN_ASSIGNED || !Prog.mcu) {
+        i1 = 0;
+    }
+
+    if(UartFunctionUsed() && Prog.mcu) {
+        if((Prog.mcu->uartNeeds.rxPin == pin) ||
+            (Prog.mcu->uartNeeds.txPin == pin))
+        {
+            i1 = 0; // "<UART needs!>"
+        }
+    }
+
+    if(PwmFunctionUsed() && Prog.mcu) {
+        if(Prog.mcu->pwmNeedsPin == pin) {
+            i1 = 0; // "<PWM needs!>"
+        }
+    }
+
+    int j;
+    for(j = 0; j < Prog.mcu->pinCount; j++) 
+	{
+        if(Prog.mcu->pinInfo[j].pin == pin) 
+		{
+			if (a->type == IO_TYPE_DIG_OUTPUT && a->pin == 17)
+				i1 = 90000;
+			else if (a->type == IO_TYPE_DIG_OUTPUT && a->pin == 18)
+				i1 = 90001;
+			else if (a->type == IO_TYPE_DIG_OUTPUT && a->pin > 19)
+				i1 = 40000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit; // "M%d.%d"
+			else if (a->type == IO_TYPE_DIG_OUTPUT)
+				i1 = 50000 + Prog.mcu->pinInfo[j].bit;
+			else if (a->type == IO_TYPE_DIG_INPUT && a->pin > 19)
+				i1 = 40000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit;
+			else if (a->type == IO_TYPE_DIG_INPUT)
+				i1 = 30000 + Prog.mcu->pinInfo[j].bit;
+			else if (a->type == IO_TYPE_READ_ADC)
+				if (a->pin == 6)
+					i1 = 90003;
+				else
+					i1 = 60000 + Prog.mcu->pinInfo[j].bit;
+			else if (a->type == IO_TYPE_READ_ENC || a->type == IO_TYPE_RESET_ENC)
+				i1 = 70000 + Prog.mcu->pinInfo[j].bit;
+            break;
+        }
+    }
+    if(j == Prog.mcu->pinCount) {
+        i1 = 0; // "<not an I/O!>";
+    }
+
+	// 2o. parameter content compare 
+    if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
+        i2 = 0;
+    }
+
+    if(b->type != IO_TYPE_DIG_INPUT && b->type != IO_TYPE_DIG_OUTPUT
+        && b->type != IO_TYPE_READ_ADC && b->type != IO_TYPE_READ_ENC && b->type != IO_TYPE_RESET_ENC
+		&& b->type != IO_TYPE_READ_USS && b->type != IO_TYPE_WRITE_USS)
+    {
+        i2 = 0;
+    }
+
+    pin = b->pin;
+    if(pin == NO_PIN_ASSIGNED || !Prog.mcu) {
+        i2 = 0;
+    }
+
+    if(UartFunctionUsed() && Prog.mcu) {
+        if((Prog.mcu->uartNeeds.rxPin == pin) ||
+            (Prog.mcu->uartNeeds.txPin == pin))
+        {
+            i2 = 0; // "<UART needs!>";
+        }
+    }
+
+    if(PwmFunctionUsed() && Prog.mcu) {
+        if(Prog.mcu->pwmNeedsPin == pin) {
+            i2 = 0; // "<PWM needs!>";
+        }
+    }
+
+    for(j = 0; j < Prog.mcu->pinCount; j++) 
+	{
+        if(Prog.mcu->pinInfo[j].pin == pin) 
+		{
+			if (b->type == IO_TYPE_DIG_OUTPUT && b->pin == 17)
+				i2 = 90000;
+			else if (b->type == IO_TYPE_DIG_OUTPUT && b->pin == 18)
+				i2 = 90001;
+			else if (b->type == IO_TYPE_DIG_OUTPUT && b->pin > 19)
+				i2 = 40000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit; // "M%d.%d"
+			else if (b->type == IO_TYPE_DIG_OUTPUT)
+				i2 = 50000 + Prog.mcu->pinInfo[j].bit;
+			else if (b->type == IO_TYPE_DIG_INPUT && b->pin > 19)
+				i2 = 40000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit;
+			else if (b->type == IO_TYPE_DIG_INPUT)
+				i2 = 30000 + Prog.mcu->pinInfo[j].bit;
+			else if (b->type == IO_TYPE_READ_ADC)
+				if (b->pin == 6)
+					i2 = 90003;
+				else
+					i2 = 60000 + Prog.mcu->pinInfo[j].bit;
+			else if (b->type == IO_TYPE_READ_ENC || b->type == IO_TYPE_RESET_ENC)
+				i2 = 70000 + Prog.mcu->pinInfo[j].bit;
+            break;
+        }
+    }
+    if(j == Prog.mcu->pinCount) {
+        i2 = 0; // "<not an I/O!>";
+    }
+
+    return bSortAscending ? i1 - i2 : i2 - i1;
+}
+
+static int CompareIoType(const void *av, const void *bv)
+{
+    PlcProgramSingleIo *a = (PlcProgramSingleIo *)av;
+    PlcProgramSingleIo *b = (PlcProgramSingleIo *)bv;
+
+    //if(a->type != b->type) {
+    //    return a->type - b->type;
+    //}
+
+    //if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
+    //if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
+
+	return bSortAscending ? a->type - b->type : b->type - a->type;
+}
 //-----------------------------------------------------------------------------
 // Wipe the I/O list and then re-extract it from the PLC program, taking
 // care not to forget the pin assignments. Gets passed the selected item
@@ -407,7 +572,7 @@ int GenerateIoMapList(int prevSel)
     }
 
 	qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo),
-        CompareIo);
+        CompareIoName);
 
     if(prevSel >= 0) {
         for(i = 0; i < Prog.io.count; i++) {
@@ -596,6 +761,7 @@ void ShowIoMapDialog(int item)
 
     char buf[40];
 	int i = 0;
+	int PinListItemCount = 0;
 
 	for (i = 0; i < sizeof(ComboboxBitItens) / sizeof(ComboboxBitItens[0]); i++)
 		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
@@ -603,6 +769,7 @@ void ShowIoMapDialog(int item)
 	SendMessage(BitCombobox, CB_SETCURSEL, Prog.io.assignment[item].bit, 0);
 
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
+	PinListItemCount++;
 
 	for(i = 0; i < Prog.mcu->pinCount; i++) {
         int j;
@@ -638,7 +805,9 @@ void ShowIoMapDialog(int item)
 					sprintf(buf, "%3d TEMP", Prog.mcu->adcInfo[j].pin);
 				else
 					sprintf(buf, "%3d ADC%d", Prog.mcu->adcInfo[j].pin, Prog.mcu->adcInfo[j].muxRegValue);
+
 				SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+				PinListItemCount++;
                 //}
             }
             if(j == Prog.mcu->adcCount) {
@@ -654,6 +823,7 @@ void ShowIoMapDialog(int item)
 				//{
 					sprintf(buf, "%3d ENC%d", Prog.mcu->encInfo[j].pin, Prog.mcu->encInfo[j].muxRegValue);
 					SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+					PinListItemCount++;
                 //}
             }
             if(j == Prog.mcu->encCount) {
@@ -679,6 +849,7 @@ void ShowIoMapDialog(int item)
 					Prog.mcu->pinInfo[i].bit);
 
 			SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
+			PinListItemCount++;
 		}
 cant_use_this_io:;
     }
@@ -687,7 +858,15 @@ cant_use_this_io:;
     ShowWindow(IoDialog, TRUE);
     SetFocus(PinList);
 
-	SendMessage(PinList, LB_SETCURSEL, item, 0);
+	//SendMessage(PinList, LB_SETCURSEL, item, 0);
+	for (i = 0; i < PinListItemCount; i++)
+	{
+		int sel = SendMessage(PinList, LB_GETSEL, i, 0);
+        char pin[16];
+        SendMessage(PinList, LB_GETTEXT, (WPARAM)i, (LPARAM)pin);
+		if (Prog.io.assignment[item].pin == atoi(pin))
+			SendMessage(PinList, LB_SETCURSEL, i, 0);
+	}
 
     MSG msg;
     DWORD ret;
@@ -774,9 +953,72 @@ cant_use_this_io:;
 // where (LPSTR_TEXTCALLBACK); that way we don't have two parallel copies of
 // the I/O list to keep in sync.
 //-----------------------------------------------------------------------------
+int CALLBACK CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+{
+	BOOL bSortAscending = (lParamSort > 0);
+	int nColumn = abs(lParamSort) - 1;
+
+	char lpszItem1[MAX_NAME_LEN];
+	char lpszItem2[MAX_NAME_LEN];
+
+	LVITEM itm;
+	itm.mask = LVIF_TEXT;
+	itm.iSubItem = nColumn;
+
+	itm.iItem = lParam1;
+	itm.pszText = lpszItem1;
+	itm.cchTextMax = sizeof(lpszItem1);
+
+	ListView_GetItem(IoList, &itm);
+
+	itm.iItem = lParam2;
+	itm.pszText = lpszItem2;
+	itm.cchTextMax = sizeof(lpszItem2);
+
+	ListView_GetItem(IoList, &itm);
+
+	return bSortAscending ? _stricmp(lpszItem1, lpszItem2) : _stricmp(lpszItem2, lpszItem1);
+}
+
 void IoMapListProc(NMHDR *h)
 {
+	int c = LVN_COLUMNCLICK;
     switch(h->code) {
+		case LVN_COLUMNCLICK:
+			{
+				LPARAM lParamSort;
+
+				LPNMLISTVIEW pLVInfo = (LPNMLISTVIEW)h;
+
+				// get new sort parameters
+				if (pLVInfo->iSubItem == nSortColumn)
+					bSortAscending = !bSortAscending;
+				else
+				{
+					nSortColumn = pLVInfo->iSubItem;
+					bSortAscending = TRUE;
+				}
+
+				// combine sort info into a single value we can send to our sort function
+				lParamSort = 1 + nSortColumn;
+				if (!bSortAscending)
+					lParamSort = -lParamSort;
+
+				// sort list
+				//ListView_SortItems(pLVInfo->hdr.hwndFrom, CompareListItems, lParamSort);
+				if (nSortColumn == 0)
+					qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoName);
+				else if (nSortColumn == 1)
+					qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoType);
+				else if (nSortColumn == 3)
+					qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPin);
+				else if (nSortColumn == 4)
+					qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPort);
+
+				RefreshControlsToSettings();
+
+			}
+			break;
         case LVN_GETDISPINFO: {
             NMLVDISPINFO *i = (NMLVDISPINFO *)h;
             int item = i->item.iItem;
@@ -890,7 +1132,7 @@ void IoMapListProc(NMHDR *h)
             break;
         }
         case LVN_ITEMACTIVATE: {
-            NMITEMACTIVATE *i = (NMITEMACTIVATE *)h;
+			NMITEMACTIVATE *i = (NMITEMACTIVATE *)h;
             if(InSimulationMode) {
                 char *name = Prog.io.assignment[i->iItem].name;
                 if(name[0] == 'X') {

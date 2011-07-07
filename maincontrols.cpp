@@ -84,7 +84,7 @@ void MakeMainWindowControls(void)
         ListView_InsertColumn(hWnd, i, &lvc); \
     } while(0)
     IoList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, "", WS_CHILD |
-        LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS | WS_TABSTOP |
+        LVS_REPORT | LVS_SHOWSELALWAYS | WS_TABSTOP |
         LVS_SINGLESEL | WS_CLIPSIBLINGS, 
         12, 25, 300, 300, MainWindow, NULL, Instance, NULL);
     ListView_SetExtendedListViewStyle(IoList, LVS_EX_FULLROWSELECT);
