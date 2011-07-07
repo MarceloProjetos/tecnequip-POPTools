@@ -418,11 +418,11 @@ static int CompareIoPort(const void *av, const void *bv)
 			else if (a->type == IO_TYPE_DIG_OUTPUT && a->pin == 18)
 				i1 = 90001;
 			else if (a->type == IO_TYPE_DIG_OUTPUT && a->pin > 19)
-				i1 = 40000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit; // "M%d.%d"
+				i1 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit; // "M%d.%d"
 			else if (a->type == IO_TYPE_DIG_OUTPUT)
-				i1 = 50000 + Prog.mcu->pinInfo[j].bit;
+				i1 = 40000 + Prog.mcu->pinInfo[j].bit;
 			else if (a->type == IO_TYPE_DIG_INPUT && a->pin > 19)
-				i1 = 40000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit;
+				i1 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit;
 			else if (a->type == IO_TYPE_DIG_INPUT)
 				i1 = 30000 + Prog.mcu->pinInfo[j].bit;
 			else if (a->type == IO_TYPE_READ_ADC)
@@ -479,11 +479,11 @@ static int CompareIoPort(const void *av, const void *bv)
 			else if (b->type == IO_TYPE_DIG_OUTPUT && b->pin == 18)
 				i2 = 90001;
 			else if (b->type == IO_TYPE_DIG_OUTPUT && b->pin > 19)
-				i2 = 40000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit; // "M%d.%d"
+				i2 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit; // "M%d.%d"
 			else if (b->type == IO_TYPE_DIG_OUTPUT)
-				i2 = 50000 + Prog.mcu->pinInfo[j].bit;
+				i2 = 40000 + Prog.mcu->pinInfo[j].bit;
 			else if (b->type == IO_TYPE_DIG_INPUT && b->pin > 19)
-				i2 = 40000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit;
+				i2 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit;
 			else if (b->type == IO_TYPE_DIG_INPUT)
 				i2 = 30000 + Prog.mcu->pinInfo[j].bit;
 			else if (b->type == IO_TYPE_READ_ADC)

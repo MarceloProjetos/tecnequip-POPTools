@@ -1,5 +1,28 @@
-// we need a manifest if we want visual styles; put in numbers since somethings a bit screwy
-// with my SDK install (I don't think I've got *.rh right)
-1 24 "ldmicro.exe.manifest"
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
 
-4000 ICON "favicon.ico"
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_MANIFEST
+//
+
+1                       RT_MANIFEST             "ldmicro.exe.manifest"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+4000                    ICON                    "favicon.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_SPLASH              BITMAP                  "C:\\Users\\Administrador\\Documents\\Visual Studio 2010\\Projects\\POPTools\\splash.bmp"
+
+

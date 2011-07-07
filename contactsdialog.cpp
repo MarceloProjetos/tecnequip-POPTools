@@ -195,6 +195,7 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
         }
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
 
+		*bit = 0;
 		int i;
 		for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
 		{

@@ -111,6 +111,9 @@
     <ClCompile Include="checkbitdialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="splash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -140,6 +143,9 @@
     <ClInclude Include="VersionInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="splash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ldmicro.rc">
@@ -148,5 +154,19 @@
     <ResourceCompile Include="version.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="splash.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="favicon.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="ldmicro.exe.manifest" />
   </ItemGroup>
 </Project>

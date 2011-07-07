@@ -233,6 +233,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
 
 		int i;
 
+		*bit = 0;
 		for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
 		{
 			if (_stricmp(IoSeenPreviously[i].name, name)==0)

@@ -38,6 +38,8 @@ HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
 
+SPLASH mysplash;
+
 // parameters used to capture the mouse when implementing our totally non-
 // general splitter control
 static HHOOK       MouseHookHandle;
@@ -758,7 +760,8 @@ cmp:
             break;
 
         case MNU_ABOUT:
-            ShowHelpDialog(TRUE);
+            //ShowHelpDialog(TRUE);
+			mysplash.Show();
             break;
     }
 }
@@ -769,6 +772,16 @@ cmp:
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
+		case WM_CREATE: 
+			mysplash.Init(hwnd/*MainWindow*/,Instance,IDB_SPLASH);
+
+			//mysplash.Show();
+			//simulate lengthy window initialization
+			//Sleep(3000);
+			//hide the splash screen as the main window appears
+			//mysplash.Hide();
+
+			break;
         case WM_ERASEBKGND:
             break;
 
@@ -1189,6 +1202,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
         case WM_LBUTTONDOWN: {
+			if(mysplash.SHOWING)
+                mysplash.Hide();
+
             int x = LOWORD(lParam);
             int y = HIWORD(lParam);
             if((y > (IoListTop - 9)) && (y < (IoListTop + 3))) {

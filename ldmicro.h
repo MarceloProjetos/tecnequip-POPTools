@@ -45,6 +45,8 @@ typedef SDWORD SWORD;
 #define FONT_WIDTH   7
 #define FONT_HEIGHT 13
 
+#include "resource.h"
+#include "splash.h"
 
 //-----------------------------------------------
 // Constants for the GUI. We have drop-down menus, a listview for the I/Os,

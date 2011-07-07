@@ -511,7 +511,7 @@ HMENU MakeMainWindowMenus(void)
     //AppendMenu(compile, MF_STRING, MNU_PROGRAM_AS, _("Gravar &como..."));
 
     help = CreatePopupMenu();
-    AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
+    //AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
 //#ifdef ZERO
     AppendMenu(help, MF_STRING, MNU_ABOUT, _("&About..."));
 //#endif

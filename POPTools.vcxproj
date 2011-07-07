@@ -122,6 +122,7 @@
     <ClCompile Include="setbitdialog.cpp" />
     <ClCompile Include="simpledialog.cpp" />
     <ClCompile Include="simulate.cpp" />
+    <ClCompile Include="splash.cpp" />
     <ClCompile Include="undoredo.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -133,11 +134,20 @@
     <ClInclude Include="ldmicro.h" />
     <ClInclude Include="mcutable.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="splash.h" />
     <ClInclude Include="VersionInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ldmicro.rc" />
     <ResourceCompile Include="version.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bitmap1.bmp" />
+    <None Include="favicon.ico" />
+    <None Include="splash.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="ldmicro.exe.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
