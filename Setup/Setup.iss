@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{943E92A3-A70E-415D-B55D-44C8C15FE3F6}
 AppName=POPTools
-AppVerName=POPTools 1.0.777.5324
+AppVerName=POPTools 1.0.777.5417
 AppPublisher=Tecnequip Tecnologia em Equipamentos Ltda
 AppPublisherURL=http://www.tecnequip.com.br/
 AppSupportURL=http://www.tecnequip.com.br/
