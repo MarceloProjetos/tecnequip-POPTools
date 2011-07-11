@@ -14,7 +14,7 @@ class SPLASH
 public:
 	void Hide();
 	void Show();
-	void Init(HWND hWnd,HINSTANCE hInst,int resid);
+	void Init(HWND hWnd);
 	HBITMAP hBitmap;
 	int tx,ty;
 	int pwidth,pheight;

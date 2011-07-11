@@ -1,4 +1,4 @@
-LDmicro0.1
+POPTools:1.2
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
@@ -11,50 +11,56 @@ GW=192.168.0.1
 COMPILED=C:\Users\Tecnequip\Documents\adc_led.hex
 
 IO LIST
-    XAD1 at 1
-    XAD2 at 2
-    XAD3 at 3
-    XAD4 at 4
-    XAD5 at 5
-    XAD6 at 6
-    XMAD1 at 20
-    XMAD2 at 20
-    XMAD3 at 20
-    XMAD4 at 20
-    XMAD5 at 20
-    XMAD6 at 20
-    YADVAL at 21
-    YLED at 18
-    YS1 at 1
-    YS10 at 10
-    YS11 at 11
-    YS12 at 12
-    YS13 at 13
-    YS14 at 14
-    YS15 at 15
-    YS16 at 16
-    YS2 at 2
-    YS3 at 3
-    YS4 at 4
-    YS5 at 5
-    YS6 at 6
-    YS7 at 7
-    YS8 at 8
-    YS9 at 9
-    ADC1 at 1
-    ADC2 at 2
-    ADC3 at 3
-    ADC4 at 4
-    ADC5 at 5
-    ADCT at 6
+    XAD1 at 1 0
+    XAD2 at 2 0
+    XAD3 at 3 0
+    XAD4 at 4 0
+    XAD5 at 5 0
+    XAD6 at 6 0
+    YS1 at 1 0
+    YS2 at 2 0
+    YS3 at 3 0
+    YS4 at 4 0
+    YS5 at 5 0
+    YS6 at 6 0
+    YS7 at 7 0
+    YS8 at 8 0
+    YS9 at 9 0
+    YS10 at 10 0
+    YS11 at 11 0
+    YS12 at 12 0
+    YS13 at 13 0
+    YS14 at 14 0
+    YS15 at 15 0
+    YS16 at 16 0
+    XMAD1 at 20 0
+    XMAD2 at 20 1
+    XMAD3 at 20 2
+    XMAD4 at 20 3
+    XMAD5 at 20 4
+    XMAD6 at 20 5
+    YADVAL at 21 0
+    ADC1 at 1 0
+    ADC2 at 2 0
+    ADC3 at 3 0
+    ADC4 at 4 0
+    ADC5 at 5 0
+    YLED at 18 0
+    ADCT at 6 0
 END
 
 PROGRAM
+RUNG
+    COMMENT Código para piscar o led de CPU
+END
 RUNG
     CONTACTS YLED 1 0
     TON TON 500000
     TOF TOFF 500000
     COIL YLED 0 0 0 0
+END
+RUNG
+    COMMENT Leitura dos A/Ds
 END
 RUNG
     PARALLEL
@@ -65,6 +71,9 @@ RUNG
         READ_ADC ADC5
         READ_ADC ADCT
     END
+END
+RUNG
+    COMMENT Seleção do A/D atual
 END
 RUNG
     MOVE ADC 0
@@ -110,6 +119,9 @@ RUNG
         CONTACTS XMAD6 0 5
     END
     MOVE ADC ADCT
+END
+RUNG
+    COMMENT Lógica para criar um indicador com os leds de saída de forma a visualizar o valor do A/D atual
 END
 RUNG
     GRT ADC 0
@@ -176,7 +188,11 @@ RUNG
     COIL YS16 0 0 0 0
 END
 RUNG
-    CONTACTS YADVAL 0 0
+    COMMENT Declaração de variável para ModBUS e atribuição do valor do A/D atual a ela
+END
+RUNG
+    OSR
+    COIL YADVAL 0 0 1 0
 END
 RUNG
     MOVE YADVAL ADC

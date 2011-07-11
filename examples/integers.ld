@@ -1,4 +1,4 @@
-LDmicro0.1
+POPTools:1.2
 MICRO=NXP LPC1768 LQFP100
 CYCLE=50000
 CRYSTAL=10000000
@@ -11,9 +11,9 @@ GW=192.168.0.1
 COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\integer.hex
 
 IO LIST
-    Xa at 1
-    Yno at 16
-    Yok at 1
+    Xa at 1 0
+    Yno at 16 0
+    Yok at 1 0
 END
 
 PROGRAM
@@ -41,20 +41,14 @@ RUNG
     END
 END
 RUNG
-    PARALLEL
-        EQU a 1323
-        SHORT
-    END
+    EQU a 1323
     PARALLEL
         LES c 0
         LEQ d 1318
-        SHORT
     END
-    SHORT
     PARALLEL
         GRT c 20000
         GEQ e 3969
-        OPEN
     END
     COIL Yok 0 0 0 0
 END

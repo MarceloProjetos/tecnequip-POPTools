@@ -773,7 +773,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
 		case WM_CREATE: 
-			mysplash.Init(hwnd/*MainWindow*/,Instance,IDB_SPLASH);
+			mysplash.Init(hwnd);
 
 			//mysplash.Show();
 			//simulate lengthy window initialization

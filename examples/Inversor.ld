@@ -1,4 +1,4 @@
-LDmicro0.1
+POPTools:1.2
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
@@ -11,7 +11,7 @@ GW=192.168.0.1
 COMPILED=C:\Users\Alessandro\Documents\Visual Studio 2010\Projects\POPTools\examples\inversor.hex
 
 IO LIST
-    YINVERSOR_OK at 1
+    YINVERSOR_OK at 1 0
 END
 
 PROGRAM

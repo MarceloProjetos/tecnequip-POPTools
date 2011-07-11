@@ -1,4 +1,4 @@
-LDmicro0.1
+POPTools:1.2
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=100000000
@@ -11,13 +11,13 @@ GW=192.168.0.10
 COMPILED=C:\Users\Tecnequip\Documents\enc.hex
 
 IO LIST
-    XResetEnc at 1
-    YS1 at 1
-    YS2 at 2
-    YS3 at 3
-    YS4 at 4
-    EValEnc at 1
-    ZResetVal at 1
+    EValEnc at 1 0
+    XResetEnc at 1 0
+    YS1 at 1 0
+    YS2 at 2 0
+    YS3 at 3 0
+    YS4 at 4 0
+    ZResetVal at 1 0
 END
 
 PROGRAM

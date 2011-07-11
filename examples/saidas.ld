@@ -1,4 +1,4 @@
-LDmicro0.1
+POPTools:1.2
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=100000000
@@ -11,22 +11,22 @@ GW=192.168.0.1
 COMPILED=C:\Users\Tecnequip\Documents\saidas.hex
 
 IO LIST
-    YS1 at 1
-    YS10 at 10
-    YS11 at 11
-    YS12 at 12
-    YS13 at 13
-    YS14 at 14
-    YS15 at 15
-    YS16 at 16
-    YS2 at 2
-    YS3 at 3
-    YS4 at 4
-    YS5 at 5
-    YS6 at 6
-    YS7 at 7
-    YS8 at 8
-    YS9 at 9
+    YS1 at 1 0
+    YS10 at 10 0
+    YS11 at 11 0
+    YS12 at 12 0
+    YS13 at 13 0
+    YS14 at 14 0
+    YS15 at 15 0
+    YS16 at 16 0
+    YS2 at 2 0
+    YS3 at 3 0
+    YS4 at 4 0
+    YS5 at 5 0
+    YS6 at 6 0
+    YS7 at 7 0
+    YS8 at 8 0
+    YS9 at 9 0
 END
 
 PROGRAM

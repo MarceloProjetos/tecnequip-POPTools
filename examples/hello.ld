@@ -1,4 +1,4 @@
-LDmicro0.1
+POPTools:1.2
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
@@ -15,15 +15,12 @@ END
 
 PROGRAM
 RUNG
-    COMMENT Very simple, just print 'Hello, world' over serial, over and over.
+    COMMENT Exemplo onde se envia a string "Hello, world" a cada segundo pela serial.\r\nInclui ainda um contador
 END
 RUNG
     CONTACTS Rosc 0 0
     TON Tosc 1000000
     COIL Rosc 1 0 0 0
-END
-RUNG
-    COMMENT For no particular reason, keep a counter that increments with each\r\nline that we print.
 END
 RUNG
     CONTACTS Rosc 0 0
@@ -32,5 +29,5 @@ RUNG
 END
 RUNG
     CONTACTS Rosc 0 0
-    FORMATTED_STRING cnt 21 72 101 108 108 111 44 32 119 111 114 108 100 58 32 92 45 53 92 114 92 110
+    WRITE_FORMATTED_STRING cnt Hello, world: %d
 END

@@ -39,9 +39,13 @@ LRESULT CALLBACK SplashWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			EndPaint(hwnd, &ps);
         }
         break;
+	case WM_LBUTTONDOWN:
+		EnableWindow(GetParent(hwnd), TRUE);
+		DestroyWindow(hwnd);
+		break;
     case WM_CLOSE:
     case WM_DESTROY:
-
+		EnableWindow(GetParent(hwnd), TRUE);
     default:
         return DefWindowProc(hwnd, msg, wParam, lParam);
     }
@@ -59,67 +63,66 @@ SPLASH::~SPLASH()
  DestroyWindow(hSplashWnd);
 }
 
-void SPLASH::Init(HWND hWnd,HINSTANCE hInst,int resid)
+void SPLASH::Init(HWND hWnd)
+{
+	hParentWindow=hWnd;
+}
+
+void SPLASH::Show()
 {
 	char* c_szSplashClass = "SplashWindow";
 
 	WNDCLASS wc = { 0 };
     wc.lpfnWndProc = SplashWndProc;
 	wc.style = CS_OWNDC | CS_VREDRAW | CS_HREDRAW;
-    wc.hInstance = hInst;
+    wc.hInstance = GetModuleHandle(NULL);
     //wc.hIcon = LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_SPLASHICON));
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
     wc.lpszClassName = c_szSplashClass;
     RegisterClass(&wc);
 
-	hParentWindow=hWnd;
 	hSplashWnd=CreateWindowEx(WS_EX_CLIENTEDGE,c_szSplashClass,"Sobre...",
-		WS_POPUPWINDOW|WS_EX_TOPMOST|WS_EX_TOOLWINDOW | WS_DLGFRAME| SS_BITMAP,440,300,420,330,hWnd,NULL,hInst,NULL);
+		WS_POPUPWINDOW|WS_EX_TOPMOST|WS_EX_TOOLWINDOW | WS_DLGFRAME| SS_BITMAP,440,300,420,330,hParentWindow,NULL,GetModuleHandle(NULL),NULL);
 
 	HBITMAP hBitmap;
-	hBitmap = LoadBitmap(hInst,MAKEINTRESOURCE(resid));
+	hBitmap = LoadBitmap(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SPLASH));
 	//SendMessage(hSplashWnd,STM_SETIMAGE,IMAGE_BITMAP,(LPARAM)LoadBitmap(hInst,MAKEINTRESOURCE(resid)));
 
 	this->SHOWING = FALSE;
-}
+
+	//get size of hSplashWnd (width and height)
+	int x,y;
+
+	HDWP windefer;
+	RECT rect,prect;
+	GetClientRect(hSplashWnd,&rect);
+	x=rect.right;y=rect.bottom;
+	//get parent screen coordinates
+	GetWindowRect(this->hParentWindow,&prect);
+
+	//center splash window on parent window
+	pwidth=prect.right-prect.left;
+	pheight=prect.bottom - prect.top;
+
+	tx=(pwidth/2) - (x/2);
+	ty=(pheight/2) - (y/2);
+
+	tx+=prect.left;
+	ty+=prect.top;
 
 
-void SPLASH::Show()
-{
-  //get size of hSplashWnd (width and height)
-  int x,y;
+	windefer=BeginDeferWindowPos(1);
+	DeferWindowPos(windefer,hSplashWnd,HWND_NOTOPMOST,tx,ty,50,50,SWP_NOSIZE|SWP_SHOWWINDOW|SWP_NOZORDER);
+	EndDeferWindowPos(windefer);
 
-  //HDWP windefer;
-  RECT rect,prect;
-  GetClientRect(hSplashWnd,&rect);
-  x=rect.right;y=rect.bottom;
-  //get parent screen coordinates
-  GetWindowRect(this->hParentWindow,&prect);
-
-  //center splash window on parent window
-  pwidth=prect.right-prect.left;
-  pheight=prect.bottom - prect.top;
-
-  tx=(pwidth/2) - (x/2);
-  ty=(pheight/2) - (y/2);
-
-  tx+=prect.left;
-  ty+=prect.top;
-
-
-  /*windefer=BeginDeferWindowPos(1);
-  DeferWindowPos(windefer,hSplashWnd,HWND_NOTOPMOST,tx,ty,50,50,SWP_NOSIZE|SWP_SHOWWINDOW|SWP_NOZORDER);
-  EndDeferWindowPos(windefer);*/
-
-  ShowWindow(hSplashWnd,SW_SHOWNORMAL);
-  UpdateWindow(hSplashWnd);
-  this->SHOWING = TRUE;
+	EnableWindow(hParentWindow, FALSE);
+	ShowWindow(hSplashWnd,SW_SHOWNORMAL);
+	UpdateWindow(hSplashWnd);
 }
 
 void SPLASH::Hide()
 {
   ShowWindow(hSplashWnd,SW_HIDE);
-  this->SHOWING = FALSE;
 }
 

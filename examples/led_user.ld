@@ -1,4 +1,4 @@
-LDmicro0.1
+POPTools:1.2
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=100000000
@@ -11,9 +11,9 @@ GW=192.168.0.1
 COMPILED=C:\Users\Tecnequip\Documents\led_user.hex
 
 IO LIST
-    YLED_CPU at 18
-    YLED_ERRO at 17
-    YS at 1
+    YLED_CPU at 18 0
+    YLED_ERRO at 17 0
+    YS at 1 0
 END
 
 PROGRAM

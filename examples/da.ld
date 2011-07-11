@@ -1,4 +1,4 @@
-LDmicro0.1
+POPTools:1.2
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=100000000
@@ -11,7 +11,7 @@ GW=192.168.0.1
 COMPILED=C:\Users\Alessandro\Documents\da.hex
 
 IO LIST
-    YS1 at 1
+    YS1 at 1 0
 END
 
 PROGRAM
@@ -26,9 +26,9 @@ RUNG
     ADD DA DA 100
 END
 RUNG
-    SET_DA DA
-END
-RUNG
     GRT DA 4095
     MOVE DA 0
+END
+RUNG
+    SET_DA DA
 END

@@ -162,9 +162,6 @@
     <None Include="favicon.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="bitmap1.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="ldmicro.exe.manifest" />
