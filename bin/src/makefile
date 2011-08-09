@@ -89,7 +89,7 @@ LWIP_INC +=-I./lwip/arch
 # -fstack-protector "no memory region specified for loadable section `__libc_freeres_fn'"
 # -fomit-frame-pointer -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Wdeclaration-after-statement -Wno-pointer-sign
 # -static
-GCC_FLAGS_OPT=-mcpu=cortex-m3 -static -mlittle-endian -mthumb -Wall -I $(LWIP_INC) -I $(TEMP_PATH) -I.
+GCC_FLAGS_OPT=-mcpu=cortex-m3 -static -save-temps -mlittle-endian -mthumb -Wall -I $(LWIP_INC) -I $(TEMP_PATH) -I.
 #  $(GCC_MODE_FLAG) -I $(GCC_INC) -I $(LIB_INC)
 CFLAGS0=$(GCC_FLAGS_OPT)
 CFLAGS1=$(CFLAGS0)
