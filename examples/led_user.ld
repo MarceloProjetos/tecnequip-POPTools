@@ -4,11 +4,11 @@ CYCLE=10000
 CRYSTAL=100000000
 BAUD=9600
 PARITY=0
-COM=1
+COM=3
 IP=192.168.0.254
 MASK=255.255.255.0
 GW=192.168.0.1
-COMPILED=C:\Users\Tecnequip\Documents\led_user.hex
+COMPILED=C:\Users\Administrador\Documents\x.hex
 
 IO LIST
     YLED_CPU at 18 0

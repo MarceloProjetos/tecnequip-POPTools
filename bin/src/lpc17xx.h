@@ -415,7 +415,8 @@ typedef struct
 typedef struct
 {
   __IO uint8_t  ILR;
-       uint8_t  RESERVED0[3];
+       uint8_t  RESERVED[3];
+       uint8_t  RESERVED0[4];
   __IO uint8_t  CCR;
        uint8_t  RESERVED1[3];
   __IO uint8_t  CIIR;
@@ -447,9 +448,9 @@ typedef struct
   __IO uint32_t GPREG2;
   __IO uint32_t GPREG3;
   __IO uint32_t GPREG4;
-  __IO uint8_t  WAKEUPDIS;
+  __IO uint8_t  RTC_AUXEN;
        uint8_t  RESERVED12[3];
-  __IO uint8_t  PWRCTRL;
+  __IO uint8_t  RTC_AUX;
        uint8_t  RESERVED13[3];
   __IO uint8_t  ALSEC;
        uint8_t  RESERVED14[3];

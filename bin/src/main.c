@@ -1,4 +1,5 @@
 ﻿#include <stdio.h>
+#include <stdlib.h>
 
 #include "lpc17xx.h"
 #include "type.h"
@@ -8,6 +9,7 @@
 #include "uss.h"
 #include "i2c.h"
 #include "dac.h"
+#include "rtc.h"
 
 #define NORD_USS_ENABLE
 
@@ -37,7 +39,7 @@
 #include "timer.h"
 
 extern volatile unsigned int CYCLE_TIME;
-
+extern RTCTime relogio_atual;
 extern volatile unsigned char MODBUS_MASTER;  // 0 = Slave, 1 = Master
 volatile unsigned char WAITING_FOR_USS = 0;	// 
 volatile unsigned char WAITING_FOR_YASKAWA = 0;	// 
@@ -177,6 +179,13 @@ unsigned char serial_tx_buffer[MB_BUFFER_SIZE];
 unsigned int serial_rx_index = 0;
 unsigned int serial_tx_index = 0;
 unsigned int serial_tx_count = 0;
+
+unsigned char rs232_rx_buffer[128];
+//unsigned char rs232_tx_buffer[MB_BUFFER_SIZE];
+
+unsigned int rs232_rx_index = 0;
+//unsigned int rs232_tx_index = 0;
+//unsigned int rs232_tx_count = 0;
 
 #ifdef QEI_CHECK
 /************************** ENCODER *************************/
@@ -1253,18 +1262,98 @@ int read_servo_yaskawa(char * id, char *format, int *val)
 /******************************************************************************
 * Comunicação Serial RS232
 ******************************************************************************/
-unsigned int RS232Write(unsigned int c)
+unsigned int RS232Write(unsigned char * buffer, unsigned int size)
 {
-  while (!(UART0->LSR & LSR_TEMT) );      /* THRE status, contain valid data */
-  UART0->THR = (char)c;
-  while (!(UART0->LSR & LSR_TEMT) );
+	unsigned int i = 0;
 
-  return 0;  // not busy
+	while (!(UART0->LSR & LSR_TEMT) );      /* THRE status, contain valid data */
+
+	while (i < size)
+	{
+		UART0->THR = *(buffer + i++);
+		while(!(UART0->LSR & LSR_TEMT));      /* THRE status, contain valid data */
+	}
+
+	return i;
 }
 
-unsigned int RS232Read(void)
+unsigned int RS232Read(unsigned char * buffer, unsigned int size)
 {
-  return 0;
+	unsigned int i = 0;
+	unsigned int c = 0;
+	unsigned char dummy;
+
+	while(i < size)
+	{
+		for(c = 0; c < 10000 && !(UART0->LSR & LSR_RDR); c++);
+
+		if (UART0->LSR & (LSR_OE|LSR_PE|LSR_FE|LSR_BI|LSR_RXFE))
+			dummy = UART0->RBR;
+		else if ((UART0->LSR & LSR_RDR)) /** barramento tem dados ? */
+			*(buffer + i++) = UART0->RBR;
+		else
+			break;
+	}
+
+	return i;
+}
+
+void RS232Cmd(void)
+{
+	unsigned int sz = 0;
+
+	sz = RS232Read(rs232_rx_buffer + rs232_rx_index, sizeof(rs232_rx_buffer) - rs232_rx_index);
+	rs232_rx_index += sz;
+
+	RTCTime Time;
+	char date_buffer[128];
+
+	if (sz > 0)
+	{
+		if (*(rs232_rx_buffer + rs232_rx_index - 1) == '\r' ||
+			*(rs232_rx_buffer + rs232_rx_index - 1) == '\n')
+		{
+			if (strncmp(rs232_rx_buffer, "?", 1) == 0)
+			{
+				Time = RTCGetTime();
+				sprintf(date_buffer, "%02d/%02d/%04d %02d:%02d:%02d %01d %03d\n", 
+					Time.Mday, Time.Mon, Time.Year, Time.Hour, Time.Min, Time.Sec, Time.Wday, Time.Yday);
+				RS232Write(date_buffer, strlen(date_buffer));
+			} 
+			else if (strncmp(rs232_rx_buffer, "#", 1) == 0)
+			{
+				memset(&Time, 0, sizeof(Time));
+
+				if (sscanf(rs232_rx_buffer, "# %d/%d/%d %d:%d:%d %d %d\n", &Time.Mday, &Time.Mon, &Time.Year, &Time.Hour, &Time.Min, &Time.Sec, &Time.Wday, &Time.Yday) == 8)
+				{
+					if (RTCSetTime(Time) == 0)
+					{
+						sprintf(date_buffer, "NOk %d/%d/%d %d:%d:%d %d %d\n", Time.Mday, Time.Mon, Time.Year, Time.Hour, Time.Min, Time.Sec, Time.Wday, Time.Yday);
+						RS232Write(date_buffer, strlen(date_buffer));
+					}
+					else
+					{
+						RTCSetTime(Time);
+
+						memset(&Time, 0, sizeof(Time));
+						Time = RTCGetTime();
+
+						sprintf(date_buffer, "Ok %02d/%02d/%04d %02d:%02d:%02d %01d %03d\n", 
+							Time.Mday, Time.Mon, Time.Year, Time.Hour, Time.Min, Time.Sec, Time.Wday, Time.Yday);
+						RS232Write(date_buffer, strlen(date_buffer));
+					}
+				}
+				else
+				{	sprintf(date_buffer, "NOk (DD/MM/YYYY HH:MM:SS WD YD)\n");
+					RS232Write(date_buffer, strlen(date_buffer));
+				}
+			}
+
+			rs232_rx_index = 0;
+			memset(rs232_rx_buffer, 0, sizeof(rs232_rx_buffer));
+		}
+	}
+
 }
 
 /******************************************************************************
@@ -1772,6 +1861,14 @@ void HardwareInit(void)
   UART0->LCR = 0x03;          /* DLAB = 0 */
   UART0->FCR = 0x07;          /* Enable and reset TX and RX FIFO. */
 
+  memset(rs232_rx_buffer, 0, sizeof(rs232_rx_buffer));
+  rs232_rx_index = 0;
+
+  // Inicializacao RTC
+  RTCInit();
+  RTCStart();
+  //NVIC_EnableIRQ(RTC_IRQn) ;
+
   // Inicializacao RS485
   SC->PCONP |= 1 << 25;
   PINCON->PINSEL0 &= ~0xF;
@@ -2062,6 +2159,8 @@ int main (void)
       saidas = AtualizaSaidas();
 	  PlcCycle();
     }
+
+	RS232Cmd();
   }
 
   return(0);
