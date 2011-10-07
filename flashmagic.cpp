@@ -3,13 +3,62 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "ldmicro.h"
 #include "intcode.h"
 
 #include "flashmagicarmcortex.h"
 
+#include <Strsafe.h>
+
 static unsigned long totalWrite = 0;
+
+BYTE CheckSum(BYTE * buffer, int size)
+{
+	BYTE chk = 0;
+	int i = 0;
+
+	while(i < size)
+	{
+		chk ^= *(buffer + i++);
+	}
+
+	return chk;
+}
+
+void ShowError(LPTSTR lpszFunction) 
+{ 
+    // Retrieve the system error message for the last-error code
+
+    LPVOID lpMsgBuf;
+    LPVOID lpDisplayBuf;
+    DWORD dw = GetLastError(); 
+
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        dw,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR) &lpMsgBuf,
+        0, NULL );
+
+    // Display the error message and exit the process
+
+    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, 
+        (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR)); 
+    StringCchPrintf((LPTSTR)lpDisplayBuf, 
+        LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+        TEXT("%s failed with error %d: %s"), 
+        lpszFunction, dw, lpMsgBuf); 
+    MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK); 
+
+    LocalFree(lpMsgBuf);
+    LocalFree(lpDisplayBuf);
+    //ExitProcess(dw); 
+}
 
 // erase progress function
 // return 1 to continue erase
@@ -236,6 +285,140 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 
 	// disconnect from device
 	fm_disconnect();
+
+	CHAR lpszCommPort[10];
+
+	sprintf(lpszCommPort, "COM%d", ComPort);
+
+	HANDLE hCommPort = ::CreateFile( lpszCommPort,
+		   GENERIC_READ|GENERIC_WRITE,  // access ( read and write)
+		   0,                           // (share) 0:cannot share the
+										// COM port
+		   0,                           // security  (None)
+		   OPEN_EXISTING,               // creation : open_existing
+		   NULL,        // we want overlapped operation
+		   0                            // no templates file for
+										// COM port...
+		   );
+
+	DCB dcb = {0};
+	dcb.DCBlength = sizeof(DCB);
+
+	if (!GetCommState(hCommPort,&dcb))
+	{
+		CloseHandle(hCommPort);
+		ProgramSuccessfulMessage("Falha ao obter o status da porta de comunicação serial !");
+		return FALSE;
+	}
+
+	dcb.BaudRate  = 115200;
+	dcb.ByteSize  = 8; // 8 Bits
+	dcb.Parity    = 0; // None
+	dcb.StopBits  = ONESTOPBIT;
+	dcb.fDtrControl = DTR_CONTROL_DISABLE;
+	dcb.fRtsControl = DTR_CONTROL_DISABLE;
+
+	if (!SetCommState(hCommPort, &dcb))
+	{
+		CloseHandle(hCommPort);
+		ProgramSuccessfulMessage("Falha ao configurar a porta serial !");
+		return FALSE;
+	}
+
+	DWORD dwFunction;
+
+	dwFunction = CLRRTS; // SETRTS;
+	EscapeCommFunction(hCommPort, dwFunction);
+
+	dwFunction = CLRDTR; // SETDTR;
+	EscapeCommFunction(hCommPort, dwFunction);
+
+	COMMTIMEOUTS comTimeOut;                   
+
+	comTimeOut.ReadIntervalTimeout = 3;
+	comTimeOut.ReadTotalTimeoutMultiplier = 3;
+	comTimeOut.ReadTotalTimeoutConstant = 2;
+	comTimeOut.WriteTotalTimeoutMultiplier = 3;
+	comTimeOut.WriteTotalTimeoutConstant = 2;
+
+	if (!SetCommTimeouts(hCommPort, &comTimeOut))
+	{
+		CloseHandle(hCommPort);
+		ProgramSuccessfulMessage("Falha ao configurar o timeout da porta serial !");
+		return FALSE;
+	}
+
+	BYTE cWriteBuffer[128];
+	BYTE cReadBuffer[128];
+	DWORD writenBytes, readedBytes;
+
+	memset(cWriteBuffer, 0, sizeof(cWriteBuffer));
+	memset(cReadBuffer, 0, sizeof(cReadBuffer));
+
+	time_t rawtime;
+	struct tm * t;
+
+	time ( &rawtime );
+	t = localtime ( &rawtime );
+
+	t->tm_year += 1900;
+	t->tm_mon++;
+	t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
+
+    memcpy(&cWriteBuffer[0], &t->tm_mday, 1);
+    memcpy(&cWriteBuffer[1], &t->tm_mon, 1);
+    memcpy(&cWriteBuffer[2], &t->tm_year, 2);
+    memcpy(&cWriteBuffer[4], &t->tm_hour, 1);
+    memcpy(&cWriteBuffer[5], &t->tm_min, 1);
+    memcpy(&cWriteBuffer[6], &t->tm_sec, 1);
+    memcpy(&cWriteBuffer[7], &t->tm_wday, 1);
+    memcpy(&cWriteBuffer[8], &t->tm_yday, 2);
+
+	WORD checksum = 0;
+	checksum = CheckSum(cWriteBuffer, 10);
+
+	cWriteBuffer[10] = (BYTE)checksum;
+
+	if (WriteFile(hCommPort,
+					cWriteBuffer,
+					11,
+					&writenBytes,NULL) == 0)
+
+	{
+		if (GetLastError() != ERROR_IO_PENDING) 
+		{
+			CloseHandle(hCommPort);
+			//ProgramSuccessfulMessage("Falha ao escrever na porta serial !");
+			ShowError("Write");
+			return FALSE;
+		}
+	}
+
+	if (ReadFile(hCommPort,
+				cReadBuffer,
+				11,
+				&readedBytes,
+				NULL) == 0)
+
+	{
+		if (GetLastError() != ERROR_IO_PENDING) 
+		{
+			CloseHandle(hCommPort);
+			//ProgramSuccessfulMessage("Falha ao ler a porta serial !");
+			ShowError("Read");
+			return FALSE;
+		}
+	}
+
+	if (memcmp(cWriteBuffer, cReadBuffer, 11) != 0)
+	{
+		CloseHandle(hCommPort);
+		//ProgramSuccessfulMessage("Falha ao ler a porta serial !");
+		ShowError("CRC");
+		return FALSE;
+	}
+
+	CloseHandle(hCommPort);
 
 	// tell user we are done
 	StatusBarSetText(0, "Gravação concluída com sucesso");

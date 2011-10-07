@@ -1,5 +1,6 @@
 ﻿#include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "lpc17xx.h"
 #include "type.h"
@@ -180,12 +181,11 @@ unsigned int serial_rx_index = 0;
 unsigned int serial_tx_index = 0;
 unsigned int serial_tx_count = 0;
 
-unsigned char rs232_rx_buffer[128];
-//unsigned char rs232_tx_buffer[MB_BUFFER_SIZE];
+unsigned char rs232_rx_buffer[32];
+unsigned char rs232_tx_buffer[32];
 
 unsigned int rs232_rx_index = 0;
-//unsigned int rs232_tx_index = 0;
-//unsigned int rs232_tx_count = 0;
+unsigned int rs232_tx_index = 0;
 
 #ifdef QEI_CHECK
 /************************** ENCODER *************************/
@@ -1298,6 +1298,19 @@ unsigned int RS232Read(unsigned char * buffer, unsigned int size)
 	return i;
 }
 
+uint8_t RS232CRC(unsigned char * buffer, unsigned int size)
+{
+	uint8_t crc = 0;
+	unsigned int i = 0;
+
+	while (i < size)
+	{
+		crc ^= *(buffer + i++);
+	}
+
+	return crc;
+}
+
 void RS232Cmd(void)
 {
 	unsigned int sz = 0;
@@ -1306,52 +1319,66 @@ void RS232Cmd(void)
 	rs232_rx_index += sz;
 
 	RTCTime Time;
-	char date_buffer[128];
 
 	if (sz > 0)
 	{
-		if (*(rs232_rx_buffer + rs232_rx_index - 1) == '\r' ||
-			*(rs232_rx_buffer + rs232_rx_index - 1) == '\n')
+		if (rs232_rx_index == 11)
 		{
-			if (strncmp(rs232_rx_buffer, "?", 1) == 0)
+			memset(&Time, 0, sizeof(Time));
+
+			Time.Mday = *(rs232_rx_buffer);
+			Time.Mon = *(rs232_rx_buffer + 1);
+			Time.Year = *((uint16_t*)(rs232_rx_buffer + 2));
+			Time.Hour = *(rs232_rx_buffer + 4);
+			Time.Min = *(rs232_rx_buffer + 5);
+			Time.Sec = *(rs232_rx_buffer + 6);
+			Time.Wday = *(rs232_rx_buffer + 7);
+			Time.Yday = *((uint16_t*)(rs232_rx_buffer + 8));
+
+			memset(rs232_tx_buffer, 0, sizeof(rs232_tx_buffer));
+
+			if (RTCSetTime(Time) == 0 || 
+				RS232CRC(rs232_rx_buffer, 10) != rs232_rx_buffer[10])
 			{
-				Time = RTCGetTime();
-				sprintf(date_buffer, "%02d/%02d/%04d %02d:%02d:%02d %01d %03d\n", 
-					Time.Mday, Time.Mon, Time.Year, Time.Hour, Time.Min, Time.Sec, Time.Wday, Time.Yday);
-				RS232Write(date_buffer, strlen(date_buffer));
-			} 
-			else if (strncmp(rs232_rx_buffer, "#", 1) == 0)
+				rs232_tx_buffer[0] = 0xFF;
+				RS232Write(rs232_tx_buffer, 1);
+			}
+			else
 			{
 				memset(&Time, 0, sizeof(Time));
 
-				if (sscanf(rs232_rx_buffer, "# %d/%d/%d %d:%d:%d %d %d\n", &Time.Mday, &Time.Mon, &Time.Year, &Time.Hour, &Time.Min, &Time.Sec, &Time.Wday, &Time.Yday) == 8)
-				{
-					if (RTCSetTime(Time) == 0)
-					{
-						sprintf(date_buffer, "NOk %d/%d/%d %d:%d:%d %d %d\n", Time.Mday, Time.Mon, Time.Year, Time.Hour, Time.Min, Time.Sec, Time.Wday, Time.Yday);
-						RS232Write(date_buffer, strlen(date_buffer));
-					}
-					else
-					{
-						RTCSetTime(Time);
+				Time = RTCGetTime();
 
-						memset(&Time, 0, sizeof(Time));
-						Time = RTCGetTime();
+				rs232_tx_buffer[0] = (uint8_t)Time.Mday;
+				rs232_tx_buffer[1] = (uint8_t)Time.Mon;
+				rs232_tx_buffer[2] = (uint8_t)Time.Year;
+				rs232_tx_buffer[3] = (uint8_t)(Time.Year >> 8);
+				rs232_tx_buffer[4] = (uint8_t)Time.Hour;
+				rs232_tx_buffer[5] = (uint8_t)Time.Min;
+				rs232_tx_buffer[6] = (uint8_t)Time.Sec;
+				rs232_tx_buffer[7] = (uint8_t)Time.Wday;
+				rs232_tx_buffer[8] = (uint8_t)Time.Yday;
+				rs232_tx_buffer[9] = (uint8_t)(Time.Yday >> 8);
+				rs232_tx_buffer[10] = RS232CRC(rs232_tx_buffer, 10);
 
-						sprintf(date_buffer, "Ok %02d/%02d/%04d %02d:%02d:%02d %01d %03d\n", 
-							Time.Mday, Time.Mon, Time.Year, Time.Hour, Time.Min, Time.Sec, Time.Wday, Time.Yday);
-						RS232Write(date_buffer, strlen(date_buffer));
-					}
-				}
-				else
-				{	sprintf(date_buffer, "NOk (DD/MM/YYYY HH:MM:SS WD YD)\n");
-					RS232Write(date_buffer, strlen(date_buffer));
-				}
+				RS232Write(rs232_tx_buffer, 11);
 			}
 
 			rs232_rx_index = 0;
 			memset(rs232_rx_buffer, 0, sizeof(rs232_rx_buffer));
-		}
+		} 
+		else if (strncmp(rs232_rx_buffer, "?", 1) == 0)
+		{
+			memset(rs232_tx_buffer, 0, sizeof(rs232_tx_buffer));
+
+			Time = RTCGetTime();
+
+			sprintf(rs232_tx_buffer, "%02d%02d%04d%02d%02d%02d%01d%03d\n", 
+				Time.Mday, Time.Mon, Time.Year, Time.Hour, Time.Min, Time.Sec, Time.Wday, Time.Yday);
+
+			RS232Write(rs232_tx_buffer, strlen(rs232_tx_buffer));
+		} 
+
 	}
 
 }
