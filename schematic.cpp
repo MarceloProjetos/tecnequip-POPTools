@@ -449,7 +449,13 @@ void EditSelectedElement(void)
                 Selected->d.timer.name);
             break;
 
-        case ELEM_CTU:
+		case ELEM_RTC:
+			ShowRTCDialog(&Selected->d.rtc.wday, 
+							&Selected->d.rtc.mday, &Selected->d.rtc.month, &Selected->d.rtc.year,
+							&Selected->d.rtc.hour, &Selected->d.rtc.minute, &Selected->d.rtc.second);
+            break;
+
+		case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_CTC:
             ShowCounterDialog(SelectedWhich, &(Selected->d.counter.max),

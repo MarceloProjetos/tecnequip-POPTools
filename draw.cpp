@@ -85,6 +85,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_TON:
         case ELEM_TOF:
         case ELEM_RTO:
+		case ELEM_RTC:
         case ELEM_CTU:
         case ELEM_CTD:
         case ELEM_ONE_SHOT_RISING:
@@ -879,6 +880,45 @@ cmp:
             *cx += POS_WIDTH;
             break;
         }
+		case ELEM_RTC:
+		{
+            char buf[256];
+
+			char month[10];
+			char year[10];
+
+			memset(month, 0, sizeof(month));
+			memset(year, 0, sizeof(year));
+
+            ElemRTC *t = &leaf->d.rtc;
+			
+			if (t->month)
+				sprintf(month, "/%d", t->month);
+
+			if (t->year)
+				sprintf(year, "/%02d", t->year);			
+
+            if(t->wday & (1 << 7)) 
+			{
+				sprintf(buf, "[%s%s%s%s%s%s%s %02d:%02d:%02d]", 
+					(t->wday & 1) ? "D" : "_",
+					(t->wday & 2) ? "S" : "_",
+					(t->wday & 4) ? "T" : "_",
+					(t->wday & 8) ? "Q" : "_",
+					(t->wday & 16) ? "Q" : "_",
+					(t->wday & 32) ? "S" : "_",
+					(t->wday & 64) ? "S" : "_",
+					t->hour, t->minute, t->second);
+            } else {
+				sprintf(buf, "[%d%s%s %02d:%02d:%02d]", t->mday, month, year, t->hour, t->minute, t->second);
+            } 
+
+            CenterWithSpaces(*cx, *cy, "RTC", poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
+
+            *cx += POS_WIDTH;
+            break;
+		}
 		case ELEM_READ_FORMATTED_STRING:
 		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING: {

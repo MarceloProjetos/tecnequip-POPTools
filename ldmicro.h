@@ -125,8 +125,9 @@ typedef SDWORD SWORD;
 #define MNU_WRITE_FMTD_STR		0x54
 #define MNU_READ_SERVO_YASKAWA		0x55
 #define MNU_WRITE_SERVO_YASKAWA		0x56
+#define MNU_INSERT_RTC			0x57
 
-#define MNU_MCU_SETTINGS        0x57
+#define MNU_MCU_SETTINGS        0x58
 #define MNU_PROCESSOR_0         0xa0
 
 #define MNU_SIMULATION_MODE     0x60
@@ -216,6 +217,7 @@ typedef SDWORD SWORD;
 #define ELEM_WRITE_FORMATTED_STRING 0x3e
 #define ELEM_READ_SERVO_YASKAWA 0x3f
 #define ELEM_WRITE_SERVO_YASKAWA 0x40
+#define ELEM_RTC				0x41
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -225,6 +227,7 @@ typedef SDWORD SWORD;
         case ELEM_TON: \
         case ELEM_TOF: \
         case ELEM_RTO: \
+		case ELEM_RTC: \
         case ELEM_CTD: \
         case ELEM_CTU: \
         case ELEM_CTC: \
@@ -302,6 +305,17 @@ typedef struct ElemTimeTag {
 typedef struct ElemResetTag {
     char    name[MAX_NAME_LEN];
 } ElemReset;
+
+typedef struct ElemRTCTag {
+	//unsigned char select; // 0 -> Week Day, 1 -> Month Day
+    unsigned char wday;  // [0:0] Sum, [0:1] Mon, [0:2] Tue, [0:3] Wed, [0:4] Thu, [0:5] Fri, [0:6] Sat, [0:7] WDay 1=YES, 0=No
+	unsigned char mday;
+	unsigned char month;
+	unsigned int year;
+	unsigned char hour;
+	unsigned char minute;
+	unsigned char second;
+} ElemRTC;
 
 typedef struct ElemMoveTag {
     char    src[MAX_NAME_LEN];
@@ -458,6 +472,7 @@ typedef struct ElemLeafTag {
         ElemContacts        contacts;
         ElemCoil            coil;
         ElemTimer           timer;
+		ElemRTC				rtc;
         ElemReset           reset;
         ElemMove            move;
         ElemMath            math;
@@ -784,6 +799,7 @@ extern BOOL CanInsertComment;
 
 // circuit.cpp
 void AddTimer(int which);
+void AddRTC(int which);
 void AddCoil(void);
 void AddContact(void);
 void AddEmpty(int which);
@@ -862,6 +878,7 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit);
 void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, unsigned char *bit);
 // simpledialog.cpp
 void ShowTimerDialog(int which, int *delay, char *name);
+void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * month, unsigned int * year, unsigned char * hour, unsigned char * minute, unsigned char * second);
 void ShowCounterDialog(int which, int *count, char *name);
 void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);

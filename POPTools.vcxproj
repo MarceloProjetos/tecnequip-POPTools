@@ -118,6 +118,7 @@
     <ClCompile Include="miscutil.cpp" />
     <ClCompile Include="modbusdialog.cpp" />
     <ClCompile Include="resetdialog.cpp" />
+    <ClCompile Include="rtcdialog.cpp" />
     <ClCompile Include="schematic.cpp" />
     <ClCompile Include="setbitdialog.cpp" />
     <ClCompile Include="simpledialog.cpp" />
@@ -151,4 +152,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties BuildVersion_BuildVersioningStyle="" BuildVersion_UpdateAssemblyVersion="" BuildVersion_UpdateFileVersion="" BuildVersion_StartDate="" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

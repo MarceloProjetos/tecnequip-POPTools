@@ -511,6 +511,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddTimer(ELEM_RTO));
             break;
 
+        case MNU_INSERT_RTC:
+            CHANGING_PROGRAM(AddRTC(ELEM_RTC));
+            break;
+
         case MNU_INSERT_CTU:
             CHANGING_PROGRAM(AddCounter(ELEM_CTU));
             break;

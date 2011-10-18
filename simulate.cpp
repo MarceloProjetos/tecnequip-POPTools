@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <time.h>
 
 #include "ldmicro.h"
 #include "intcode.h"
@@ -665,6 +666,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
+		case ELEM_RTC:
             break;
 
         default:
@@ -995,6 +997,44 @@ math:
                 }
                 break;
 
+			case INT_CHECK_RTC:
+				{
+					time_t rawtime;
+					struct tm * t;
+
+					time ( &rawtime );
+					t = localtime ( &rawtime );
+
+					t->tm_year += 1900;
+					t->tm_mon++;
+					t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
+
+					int d, m, y, h, mm, s;
+
+					d = atoi(a->name2);
+					m = atoi(a->name3);
+					y = atoi(a->name4);
+					h = atoi(a->name5);
+					mm = atoi(a->name6);
+					s = atoi(a->name7);
+
+					if (a->bit)
+						SetSingleBit(a->name1,	(a->literal & (1 << t->tm_wday)) && 
+												(t->tm_hour == h) && 
+												(t->tm_min == mm) && 
+												(t->tm_sec == s));
+					else
+					{
+						SetSingleBit(a->name1,	(t->tm_mday == d) && 
+												(m > 0 ? t->tm_mon == m : 1) && 
+												(y > 0 ? t->tm_year == y : 1) && 
+												(t->tm_hour == h) && 
+												(t->tm_min == mm) && 
+												(t->tm_sec == s));
+
+					}
+				}
+				break;
             case INT_END_IF:
             case INT_ELSE:
                 return;

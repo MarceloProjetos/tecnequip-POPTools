@@ -24,6 +24,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "ldmicro.h"
 
@@ -266,6 +267,31 @@ void AddTimer(int which)
     t->d.timer.delay = 100000;
 
     AddLeaf(which, t);
+}
+void AddRTC(int which)
+{
+    if(!CanInsertOther) return;
+
+	time_t rawtime;
+	struct tm * t;
+
+	time ( &rawtime );
+	t = localtime ( &rawtime );
+
+	t->tm_year += 1900;
+	t->tm_mon++;
+	t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
+
+    ElemLeaf *l = AllocLeaf();
+	l->d.rtc.wday = 255;
+	l->d.rtc.mday = t->tm_mday;
+	l->d.rtc.month = 0;
+	l->d.rtc.year = 0;
+	l->d.rtc.hour = t->tm_hour;
+	l->d.rtc.minute = t->tm_min;
+	l->d.rtc.second = t->tm_sec;
+
+    AddLeaf(which, l);
 }
 void AddEmpty(int which)
 {

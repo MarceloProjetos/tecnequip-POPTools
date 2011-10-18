@@ -285,6 +285,7 @@ static void GenerateDeclarations(FILE *f)
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
+			case INT_CHECK_RTC:
                 break;
 
             default:
@@ -457,6 +458,27 @@ static void GenerateAnsiC(FILE *f)
             case INT_SET_DA:
 				fprintf(f, "DAC_Write(%s);\n", MapSym(IntCode[i].name1));
 				break;
+			case INT_CHECK_RTC:
+				fprintf(f, "now = RTCGetTime();\n");
+				
+				int j;
+				for(j = 0; j < indent; j++) fprintf(f, "    ");
+
+				fprintf(f, "%s = ", MapSym(IntCode[i].name1));
+				if (IntCode[i].bit)
+					fprintf(f, "(%d & (1 << now.Wday)) && ", IntCode[i].literal);
+				else
+				{
+					fprintf(f, "now.Mday == %s && ", IntCode[i].name2);
+					if (strcmp(IntCode[i].name3, "0") != 0)
+						fprintf(f, "now.Mon == %s && ", IntCode[i].name3);
+					if (strcmp(IntCode[i].name4, "0") != 0)
+						fprintf(f, "now.Year == %s && ", IntCode[i].name4);
+				}
+
+				fprintf(f, "now.Hour == %s && now.Min == %s && now.Sec == %s;\n", 
+							IntCode[i].name5, IntCode[i].name6, IntCode[i].name7);
+				break;
             case INT_READ_ENC:
 				fprintf(f, "%s = ENCRead();\n", MapSym(IntCode[i].name1));
 				break;
@@ -477,7 +499,7 @@ static void GenerateAnsiC(FILE *f)
 				break;
             case INT_READ_USS:
 				fprintf(f, "uss_get_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
-				break;
+				break; 
             case INT_WRITE_USS:
 				fprintf(f, "uss_set_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
 				break;
@@ -857,7 +879,8 @@ DWORD CompileAnsiCToGCC(char *dest)
 " *****************************************************************************/\n"
 "#include <string.h>\n"
 "#include \"uss.h\"\n"
-"#include \"modbus.h\"\n\n"
+"#include \"modbus.h\"\n"
+"#include \"rtc.h\"\n\n"
 "extern void DAC_Write(unsigned int val);\n"
 "extern void modbus_send(unsigned char id,\n"
 "                        int fc,\n"
@@ -953,6 +976,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 
     fprintf(f,
 "\n"
+"RTCTime now;\n"
 "\n"
 "void ld_Init(void)\n"
 "{\n"

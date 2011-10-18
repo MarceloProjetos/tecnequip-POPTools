@@ -62,6 +62,7 @@
 #define INT_WRITE_FORMATTED_STRING				31
 #define INT_READ_SERVO_YASKAWA					32
 #define INT_WRITE_SERVO_YASKAWA					33
+#define INT_CHECK_RTC							34
 
 #define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50
@@ -90,6 +91,9 @@
         char        name2[MAX_NAME_LEN];
         char        name3[MAX_NAME_LEN];
         char        name4[MAX_NAME_LEN];
+        char        name5[MAX_NAME_LEN];
+        char        name6[MAX_NAME_LEN];
+		char        name7[MAX_NAME_LEN];
         SWORD       literal;
         BOOL       *poweredAfter;
 		unsigned char bit;

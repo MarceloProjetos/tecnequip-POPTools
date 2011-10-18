@@ -64,12 +64,12 @@ void ShowError(LPTSTR lpszFunction)
 // return 1 to continue erase
 int EraseProgress(int status, unsigned long value, unsigned long value2, void *callbackparam)
 {
-	char text[100];
+	TCHAR text[100];
 
 	if (value)
-		sprintf(text, "Preparando para gravar... %d%% concluído !", (unsigned int)(((float)value / (float)29) * 100));
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Preparando para gravar... %d%% concluído !", (unsigned int)(((float)value / (float)29) * 100));
 	else
-		sprintf(text, "Preparação concluída com sucesso !");
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Preparação concluída com sucesso !");
 
 	StatusBarSetText(0, text);
 
@@ -84,9 +84,9 @@ int VerifyProgress(int status, unsigned long value, unsigned long value2, void *
 		totalWrite = value;
 
 	if (value)
-		sprintf(text, "Verificando... %d%% concluído !", (unsigned int)(((float)value / (float)totalWrite) * 100));
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Verificando... %d%% concluído !", (unsigned int)(((float)value / (float)totalWrite) * 100));
 	else
-		sprintf(text, "Verificação concluída com sucesso !");
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Verificação concluída com sucesso !");
 
 	StatusBarSetText(0, text);
 
@@ -103,9 +103,9 @@ int ProgramProgress(int status, unsigned long value, unsigned long value2, void 
 		totalWrite = value;
 
 	if (value)
-		sprintf(text, "Gravando... %d%% concluído !", 100 - (unsigned int)(((float)value / (float)totalWrite) * 100));
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Gravando... %d%% concluído !", 100 - (unsigned int)(((float)value / (float)totalWrite) * 100));
 	else
-		sprintf(text, "Gravação concluída com sucesso !");
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Gravação concluída com sucesso !");
 
 	StatusBarSetText(0, text);
 
@@ -286,9 +286,9 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	// disconnect from device
 	fm_disconnect();
 
-	CHAR lpszCommPort[10];
+	TCHAR lpszCommPort[10];
 
-	sprintf(lpszCommPort, "COM%d", ComPort);
+	StringCchPrintf(lpszCommPort, sizeof(lpszCommPort) / sizeof(TCHAR), "COM%d", ComPort);
 
 	HANDLE hCommPort = ::CreateFile( lpszCommPort,
 		   GENERIC_READ|GENERIC_WRITE,  // access ( read and write)

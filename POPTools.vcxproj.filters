@@ -114,6 +114,9 @@
     <ClCompile Include="splash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rtcdialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">

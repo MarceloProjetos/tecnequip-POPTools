@@ -102,6 +102,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
         &l->d.timer.delay)==2))
     {
         *which = ELEM_RTO;
+	} else if((sscanf(line, "RTC %d %d/%d/%d %d:%d:%d", &l->d.rtc.wday, &l->d.rtc.mday, &l->d.rtc.month, &l->d.rtc.year,
+		&l->d.rtc.hour, &l->d.rtc.minute, &l->d.rtc.second)==7))
+    {
+        *which = ELEM_RTC;
     } else if((sscanf(line, "CTD %s %d", l->d.counter.name,
         &l->d.counter.max)==2))
     {
@@ -555,7 +559,10 @@ static void SaveElemToFile(FILE *f, int which, void *any, int depth)
 timer:
             fprintf(f, "%s %s %d\n", s, l->d.timer.name, l->d.timer.delay);
             break;
-
+		case ELEM_RTC:
+			fprintf(f, "RTC %d %d/%d/%d %d:%d:%d\n", l->d.rtc.wday, l->d.rtc.mday, l->d.rtc.month, l->d.rtc.year,
+												l->d.rtc.hour, l->d.rtc.minute, l->d.rtc.second);
+			break;
         case ELEM_CTU:
             s = "CTU"; goto counter;
         case ELEM_CTD:

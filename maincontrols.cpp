@@ -354,7 +354,9 @@ HMENU MakeMainWindowMenus(void)
         _("Insert TO&F (Delayed Turn Off)\tF"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTO,
         _("Insert R&TO (Retentive Delayed Turn On)\tT"));
-    AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
+	AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_RTC,
+        _("Inserir RTC (Agendador de Tarefa)"));
+	AppendMenu(InstructionMenu, MF_SEPARATOR, 0, NULL);
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTU,
         _("Insert CT&U (Count Up)\tI"));
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_CTD,

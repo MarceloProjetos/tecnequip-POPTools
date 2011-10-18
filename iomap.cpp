@@ -314,6 +314,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.piecewiseLinear.dest, IO_TYPE_GENERAL, 0);
             break;
 
+		case ELEM_RTC:
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_SHORT:

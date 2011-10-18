@@ -266,13 +266,16 @@ static void GenSymFormattedString(char *dest)
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void Op(int op, char *name1, char *name2, char *name3, char *name4, SWORD lit, unsigned char bit)
+static void Op(int op, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, char *name7, SWORD lit, unsigned char bit)
 {
     IntCode[IntCodeLen].op = op;
     if(name1) strcpy(IntCode[IntCodeLen].name1, name1);
     if(name2) strcpy(IntCode[IntCodeLen].name2, name2);
     if(name3) strcpy(IntCode[IntCodeLen].name3, name3);
     if(name4) strcpy(IntCode[IntCodeLen].name4, name4);
+    if(name5) strcpy(IntCode[IntCodeLen].name5, name5);
+    if(name6) strcpy(IntCode[IntCodeLen].name6, name6);
+	if(name7) strcpy(IntCode[IntCodeLen].name7, name7);
     IntCode[IntCodeLen].literal = lit;
 	IntCode[IntCodeLen].bit = bit;
 
@@ -393,6 +396,10 @@ static void Op(int op, char *name1, char *name2, char *name3, char *name4, SWORD
 	}
 
     IntCodeLen++;
+}
+static void Op(int op, char *name1, char *name2, char *name3, char *name4, SWORD lit, unsigned char bit)
+{
+	Op(op, name1, name2, name3, name4, NULL, NULL, NULL, lit, bit);
 }
 static void Op(int op, char *name1, char *name2, char *name3, SWORD lit, unsigned char bit)
 {
@@ -630,7 +637,22 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 
             break;
         }
-        case ELEM_RES:
+         case ELEM_RTC: {
+			char d[10],m[10],y[10],h[10],mm[10],s[10];
+			_itoa(l->d.rtc.mday, d, 10);
+			_itoa(l->d.rtc.month, m, 10);
+            _itoa(l->d.rtc.year, y, 10);
+			_itoa(l->d.rtc.hour, h, 10);
+			_itoa(l->d.rtc.minute, mm, 10);
+			_itoa(l->d.rtc.second, s, 10);
+
+            Op(INT_IF_BIT_SET, stateInOut);
+				Op(INT_CHECK_RTC, stateInOut, d, m, y, h, mm, s, l->d.rtc.wday & 0x7f, l->d.rtc.wday >> 7);
+            Op(INT_END_IF);
+
+            break;
+        }       
+		 case ELEM_RES:
             Op(INT_IF_BIT_SET, stateInOut);
             Op(INT_SET_VARIABLE_TO_LITERAL, l->d.reset.name);
             Op(INT_END_IF);
