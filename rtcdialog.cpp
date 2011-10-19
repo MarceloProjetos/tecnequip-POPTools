@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <commctrl.h>
+#include <time.h>
 
 #include "ldmicro.h"
 
@@ -53,10 +54,10 @@ const LPCTSTR MDayItens[] = { _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _(
 									_("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"), 
 									_("31")};
 
-const LPCTSTR MonthItens[] = { _("*"), _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
-									_("11"), _("12")};
+const LPCTSTR MonthItens[] = { _("Todos"), _("Jan"), _("Fev"), _("Mar"), _("Abr"), _("Mai"), _("Jun"), _("Jul"), _("Ago"), _("Set"), _("Out"), 
+									_("Nov"), _("Dez")};
 
-const LPCTSTR YearItens[] = { _("*"), _("2011"), _("2012"), _("2013"), _("2014"), _("2015"), _("2016"), _("2017"), _("2018"), _("2019"), _("2020")};
+const LPCTSTR YearItens[] = { _("Todos"), _("2011"), _("2012"), _("2013"), _("2014"), _("2015"), _("2016"), _("2017"), _("2018"), _("2019"), _("2020")};
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
@@ -84,7 +85,7 @@ static void MakeControls(void)
 
     WDayRadio = CreateWindowEx(0, WC_BUTTON, _("Dia da Semana"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        5, 21, 110, 20, grouper, NULL, Instance, NULL);
+        15, 30, 110, 20, RTCDialog, NULL, Instance, NULL);
     NiceFont(WDayRadio);
 
     HWND textLabel0 = CreateWindowEx(0, WC_STATIC, _("D"),
@@ -122,44 +123,44 @@ static void MakeControls(void)
         240, 21, 40, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel6);
 
-    WDayCheckbox0 = CreateWindowEx(0, WC_BUTTON, NULL,
+    WDayCheckbox0 = CreateWindowEx(0, WC_BUTTON, _(""),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         122, 35, 15, 21, grouper, NULL, Instance, NULL);
     NiceFont(WDayCheckbox0);
 
-    WDayCheckbox1 = CreateWindowEx(0, WC_BUTTON, NULL,
+    WDayCheckbox1 = CreateWindowEx(0, WC_BUTTON, _(""),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         145, 35, 15, 21, grouper, NULL, Instance, NULL);
     NiceFont(WDayCheckbox0);
 
-    WDayCheckbox2 = CreateWindowEx(0, WC_BUTTON, NULL,
+    WDayCheckbox2 = CreateWindowEx(0, WC_BUTTON, _(""),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         170, 35, 15, 21, grouper, NULL, Instance, NULL);
     NiceFont(WDayCheckbox0);
 
-    WDayCheckbox3 = CreateWindowEx(0, WC_BUTTON, NULL,
+    WDayCheckbox3 = CreateWindowEx(0, WC_BUTTON, _(""),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         195, 35, 15, 21, grouper, NULL, Instance, NULL);
     NiceFont(WDayCheckbox0);
 
-    WDayCheckbox4 = CreateWindowEx(0, WC_BUTTON, NULL,
+    WDayCheckbox4 = CreateWindowEx(0, WC_BUTTON, _(""),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         220, 35, 15, 21, grouper, NULL, Instance, NULL);
     NiceFont(WDayCheckbox0);
 
-    WDayCheckbox5 = CreateWindowEx(0, WC_BUTTON, NULL,
+    WDayCheckbox5 = CreateWindowEx(0, WC_BUTTON, _(""),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         245, 35, 15, 21, grouper, NULL, Instance, NULL);
     NiceFont(WDayCheckbox0);
 
-    WDayCheckbox6 = CreateWindowEx(0, WC_BUTTON, NULL,
+    WDayCheckbox6 = CreateWindowEx(0, WC_BUTTON, _(""),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         270, 35, 15, 21, grouper, NULL, Instance, NULL);
     NiceFont(WDayCheckbox0);
 
     MDayRadio = CreateWindowEx(0, WC_BUTTON, _("Dia do Mês"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        5, 61, 100, 20, grouper, NULL, Instance, NULL);
+        15, 61, 100, 20, RTCDialog, NULL, Instance, NULL);
     NiceFont(MDayRadio);
 
 	MDayCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
@@ -169,12 +170,12 @@ static void MakeControls(void)
 
 	MonthCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        167, 61, 45, 140, grouper, NULL, Instance, NULL);
+        171, 61, 45, 140, grouper, NULL, Instance, NULL);
     NiceFont(MonthCombobox);
 
 	YearCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        212, 61, 65, 140, grouper, NULL, Instance, NULL);
+        220, 61, 65, 140, grouper, NULL, Instance, NULL);
     NiceFont(YearCombobox);
 
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Horário:"),
@@ -189,12 +190,12 @@ static void MakeControls(void)
 
     MinTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        160, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
+        165, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
     FixedFont(MinTextbox);
 
     SecTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
+        200, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
     FixedFont(SecTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
@@ -289,6 +290,35 @@ void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * m
         SendMessage(MinTextbox, WM_GETTEXT, (WPARAM)3, (LPARAM)(cminute));
         SendMessage(SecTextbox, WM_GETTEXT, (WPARAM)3, (LPARAM)(csecond));
 
+		/*
+		char cday[10];
+		char cmonth[10];
+		char cyear[10];
+
+		SendMessage(MDayCombobox, WM_GETTEXT, (WPARAM)sizeof(cday),
+			(LPARAM)(cday));
+
+		SendMessage(MonthCombobox, WM_GETTEXT, (WPARAM)sizeof(cmonth),
+			(LPARAM)(cmonth));
+
+		SendMessage(YearCombobox, WM_GETTEXT, (WPARAM)sizeof(cyear),
+			(LPARAM)(cyear));
+		*/
+
+		int y, m ,d;
+
+		d = SendMessage(MDayCombobox, CB_GETCURSEL, (WPARAM)0,
+			(LPARAM)0) + 1;
+
+		m = SendMessage(MonthCombobox, CB_GETCURSEL, (WPARAM)0,
+			(LPARAM)0);
+
+		y = SendMessage(YearCombobox, CB_GETCURSEL, (WPARAM)0,
+			(LPARAM)0);
+
+		if (y > 0)
+			y += 2010;
+
 		if (atoi(chour) > 23)
 			Error(_("Hora invalida, deve estar entre 0 e 23."));
 		else if (atoi(cminute) > 59)
@@ -297,37 +327,54 @@ void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * m
 			Error(_("Segundo invalido, deve estar entre 0 e 59."));
 		else
 		{
-			char buf[20];
-			SendMessage(MDayCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
-				(LPARAM)(buf));
-			*mday = atoi(buf);
+			bool valid = true;
 
-			SendMessage(MonthCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
-				(LPARAM)(buf));
-			*month = atoi(buf);
+			if(SendMessage(MDayRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
+			{
+				/*
+				d = atoi(cday);
+				m = atoi(cmonth);
+				y = atoi(cyear);
+				*/
+				if (d > 30 && m == 2)
+				{
+					Error(_("Data inválida."));
+					valid = false;
+				}
 
-			SendMessage(YearCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
-				(LPARAM)(buf));
-			*year = atoi(buf);
+			}
+			
+			if (valid)
+			{
+				/*
+				*mday = atoi(cday);
+				*month = atoi(cmonth);
+				*year = atoi(cyear);
+				*/
 
-			*hour = atoi(chour);
-			*minute = atoi(cminute);
-			*second = atoi(csecond);
+				*mday = d;
+				*month = m;
+				*year = y;
 
-			*wday = 0;
+				*hour = atoi(chour);
+				*minute = atoi(cminute);
+				*second = atoi(csecond);
 
-			if(SendMessage(WDayRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-				*wday |= 1 << 7;
-			else
-				*wday &= ~(1 << 7);
+				*wday = 0;
 
-			if (SendMessage(WDayCheckbox0, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 1;
-			if (SendMessage(WDayCheckbox1, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 2;
-			if (SendMessage(WDayCheckbox2, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 4;
-			if (SendMessage(WDayCheckbox3, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 8;
-			if (SendMessage(WDayCheckbox4, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 16;
-			if (SendMessage(WDayCheckbox5, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 32;
-			if (SendMessage(WDayCheckbox6, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 64;
+				if(SendMessage(WDayRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
+					*wday |= 1 << 7;
+				else
+					*wday &= ~(1 << 7);
+
+				if (SendMessage(WDayCheckbox0, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 1;
+				if (SendMessage(WDayCheckbox1, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 2;
+				if (SendMessage(WDayCheckbox2, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 4;
+				if (SendMessage(WDayCheckbox3, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 8;
+				if (SendMessage(WDayCheckbox4, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 16;
+				if (SendMessage(WDayCheckbox5, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 32;
+				if (SendMessage(WDayCheckbox6, BM_GETSTATE, 0, 0) & BST_CHECKED) *wday |= 64;
+			}
 		}
     }
 
