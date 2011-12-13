@@ -172,6 +172,7 @@ void WhatCanWeDoFromCursorAndTopology(void)
          SelectedWhich == ELEM_READ_ADC ||
 		 SelectedWhich == ELEM_READ_ENC ||
 		 SelectedWhich == ELEM_RESET_ENC ||
+		 SelectedWhich == ELEM_MULTISET_DA ||
          SelectedWhich == ELEM_SET_PWM ||
 		 SelectedWhich == ELEM_SET_DA ||
          SelectedWhich == ELEM_MASTER_RELAY ||
@@ -515,6 +516,10 @@ void EditSelectedElement(void)
 
         case ELEM_RESET_ENC:
             ShowResetEncDialog(Selected->d.resetEnc.name+1);
+            break;
+
+        case ELEM_MULTISET_DA: {
+			ShowMultisetDADialog(&Selected->d.multisetDA); }
             break;
 
         case ELEM_READ_USS:

@@ -30,6 +30,8 @@
 
 static ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 
+extern void CalculateDAPoints(ElemMultisetDA *l);
+
 //-----------------------------------------------------------------------------
 // Convenience routines for allocating frequently-used data structures.
 //-----------------------------------------------------------------------------
@@ -443,6 +445,30 @@ void AddResetEnc(void)
     strcpy(t->d.resetEnc.name, "Znew");
     AddLeaf(ELEM_RESET_ENC, t);
 }
+void AddMultisetDA(void)
+{
+    if(!CanInsertEnd) return;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.multisetDA.name, "600");
+	strcpy(t->d.multisetDA.name1, "2047");
+	t->d.multisetDA.time = 600;
+	t->d.multisetDA.desloc = DA_RESOLUTION;
+	t->d.multisetDA.resolt = 10;
+	t->d.multisetDA.resold = 10;
+	//t->d.multisetDA.linear = 1;
+	//t->d.multisetDA.forward = 1;
+	t->d.multisetDA.speedup = 1;
+	
+	memset(t->d.multisetDA.points, 0, sizeof(t->d.multisetDA.points));
+
+	//t->d.multisetDA.resolt = abs(t->d.multisetDA.time / DA_RESOLUTION);
+	//t->d.multisetDA.resold = abs(t->d.multisetDA.desloc / DA_RESOLUTION);
+
+	CalculateDAPoints(&t->d.multisetDA);
+
+    AddLeaf(ELEM_MULTISET_DA, t);
+}
 void AddReadFormatString(void)
 {
     if(!CanInsertOther) return;
@@ -809,6 +835,13 @@ void FreeEntireProgram(void)
 	memset(&Prog.ip, 0, sizeof(Prog.ip));
 	memset(&Prog.mask, 0, sizeof(Prog.mask));
 	memset(&Prog.gw, 0, sizeof(Prog.gw));
+	memset(&Prog.dns, 0, sizeof(Prog.dns));
+	memset(&Prog.sntp, 0, sizeof(Prog.sntp));
+
+	strncpy(Prog.sntp, "pool.ntp.org", sizeof(Prog.sntp));
+
+	Prog.gmt = 9;
+	Prog.dailysave = 0;
 
 	Prog.ip[0] = 192;
 	Prog.ip[1] = 168;
@@ -824,7 +857,12 @@ void FreeEntireProgram(void)
 	Prog.gw[1] = 168;
 	Prog.gw[2] = 0;
 	Prog.gw[3] = 1;
-	
+
+	Prog.dns[0] = 192;
+	Prog.dns[1] = 168;
+	Prog.dns[2] = 0;
+	Prog.dns[3] = 1;
+
 	for(i = 0; i < MAX_IO; i++)
 	{
 		memset(Prog.io.assignment[i].name, 0, sizeof(Prog.io.assignment[i].name));

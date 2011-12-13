@@ -29,6 +29,53 @@
 #include <wchar.h>
 #include <math.h>
 
+#include <vector>
+
+// Direct2D Header Files
+#include <d2d1.h>
+#include <d2d1helper.h>
+#include <dwrite.h>
+#include <wincodec.h>
+
+#pragma warning(disable : 4995)
+
+// String Safe Header File
+#include <strsafe.h>
+
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "WindowsCodecs.lib")
+#pragma comment(lib, "dwrite.lib")
+
+using namespace std;
+using namespace D2D1;
+
+template<class Interface>
+inline void
+SafeRelease(
+    Interface **ppInterfaceToRelease
+    )
+{
+    if (*ppInterfaceToRelease != NULL)
+    {
+        (*ppInterfaceToRelease)->Release();
+
+        (*ppInterfaceToRelease) = NULL;
+    }
+}
+
+#ifndef Assert
+#if defined( DEBUG ) || defined( _DEBUG )
+#define Assert(b) if (!(b)) {OutputDebugStringA("Assert: " #b "\n");}
+#else
+#define Assert(b)
+#endif //DEBUG || _DEBUG
+#endif
+
+#ifndef HINST_THISCOMPONENT
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+#define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
+#endif
+
 #include <setjmp.h>
 typedef signed long SDWORD;
 //typedef signed short SWORD;
@@ -126,8 +173,9 @@ typedef SDWORD SWORD;
 #define MNU_READ_SERVO_YASKAWA		0x55
 #define MNU_WRITE_SERVO_YASKAWA		0x56
 #define MNU_INSERT_RTC			0x57
+#define MNU_INSERT_MULTISET_DA  0x58
 
-#define MNU_MCU_SETTINGS        0x58
+#define MNU_MCU_SETTINGS        0x59
 #define MNU_PROCESSOR_0         0xa0
 
 #define MNU_SIMULATION_MODE     0x60
@@ -218,6 +266,7 @@ typedef SDWORD SWORD;
 #define ELEM_READ_SERVO_YASKAWA 0x3f
 #define ELEM_WRITE_SERVO_YASKAWA 0x40
 #define ELEM_RTC				0x41
+#define ELEM_MULTISET_DA		0x42
 
 #define CASE_LEAF \
         case ELEM_PLACEHOLDER: \
@@ -253,6 +302,7 @@ typedef SDWORD SWORD;
 		case ELEM_SET_DA: \
         case ELEM_READ_ENC: \
         case ELEM_RESET_ENC: \
+		case ELEM_MULTISET_DA: \
         case ELEM_READ_USS: \
         case ELEM_WRITE_USS: \
         case ELEM_READ_MODBUS: \
@@ -276,6 +326,7 @@ typedef SDWORD SWORD;
 #define MAX_NAME_LEN                128
 #define MAX_COMMENT_LEN             384
 #define MAX_LOOK_UP_TABLE_LEN        60
+#define DA_RESOLUTION		(4096 / 2)
 
 typedef struct ElemSubckParallelTag ElemSubcktParallel;
 
@@ -354,6 +405,19 @@ typedef struct ElemReadEncTag {
 typedef struct ElemResetEncTag {
     char    name[MAX_NAME_LEN];
 } ElemResetEnc;
+
+typedef struct ElemMultisetDATag {
+	char    name[MAX_NAME_LEN];		// Tempo
+	char    name1[MAX_NAME_LEN];	// Deslocamento
+	//BOOL	linear;					// Linear, Curva Ascendente/Descendente, Personalizada
+	//BOOL	forward;				// Avança, Recua
+	unsigned char	speedup;				// Aceleração, Desaceleração
+    int		resolt;
+	int		resold;
+	int		time;
+	float	desloc;
+	float	points[DA_RESOLUTION];
+} ElemMultisetDA;
 
 typedef struct ElemReadUSSTag {
     char    name[MAX_NAME_LEN];
@@ -482,6 +546,7 @@ typedef struct ElemLeafTag {
 		ElemSetDA			setDA;
         ElemReadEnc         readEnc;
         ElemResetEnc        resetEnc;
+		ElemMultisetDA      multisetDA;
         ElemReadUSS         readUSS;
         ElemWriteUSS        writeUSS;
         ElemReadModbus      readModbus;
@@ -576,6 +641,10 @@ typedef struct PlcProgramTag {
 	unsigned char ip[4];
 	unsigned char mask[4];
 	unsigned char gw[4];
+	unsigned char dns[4];
+	char		sntp[126];
+	int			gmt;
+	unsigned char dailysave;
 
 #define MAX_RUNGS 999
     ElemSubcktSeries *rungs[MAX_RUNGS];
@@ -812,6 +881,7 @@ void AddReadAdc(void);
 void AddSetDA(void);
 void AddReadEnc(void);
 void AddResetEnc(void);
+void AddMultisetDA(void);
 void AddReadFormatString(void);
 void AddWriteFormatString(void);
 void AddReadServoYaskawa(void);
@@ -876,6 +946,7 @@ void ShowCommentDialog(char *comment);
 void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit);
 // coildialog.cpp
 void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, unsigned char *bit);
+void ShowMultisetDADialog(ElemMultisetDA *l);
 // simpledialog.cpp
 void ShowTimerDialog(int which, int *delay, char *name);
 void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * month, unsigned int * year, unsigned char * hour, unsigned char * minute, unsigned char * second);
@@ -988,5 +1059,6 @@ DWORD CompileAnsiCToGCC(char *outFile);
 void CompileInterpreted(char *outFile);
 
 BOOL FlashProgram(char * hexFile, int ComPort, long BaudRate);
+
 
 #endif

@@ -50,7 +50,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>true</EmbedManifest>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -99,6 +99,7 @@
     <ClCompile Include="compilecommon.cpp" />
     <ClCompile Include="confdialog.cpp" />
     <ClCompile Include="contactsdialog.cpp" />
+    <ClCompile Include="multisetdadialog.cpp" />
     <ClCompile Include="draw.cpp" />
     <ClCompile Include="draw_outputdev.cpp" />
     <ClCompile Include="flashmagic.cpp" />

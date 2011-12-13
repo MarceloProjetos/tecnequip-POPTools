@@ -867,6 +867,22 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_END_IF);
                 break;
 
+			case ELEM_MULTISET_DA:
+				{
+					char oneShot[MAX_NAME_LEN];
+					GenSymOneShot(oneShot);
+
+					Op(INT_IF_BIT_SET, stateInOut);
+						Op(INT_IF_BIT_CLEAR, oneShot);
+							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+							OpBit(INT_MULTISET_DA, l->d.multisetDA.name, l->d.multisetDA.name1, l->d.multisetDA.speedup);
+						Op(INT_END_IF);
+					Op(INT_ELSE);
+						Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+					Op(INT_END_IF);
+				}
+				break;
+
 	        case ELEM_READ_FORMATTED_STRING: 
 			case ELEM_WRITE_FORMATTED_STRING:
 				{

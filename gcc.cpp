@@ -81,12 +81,12 @@ static char *MapSym(char *str)
 			{
 				if (pin > 18)
 				{
-					sprintf(ret, "M[%d]", pin - 20);
+					sprintf(ret, "MODBUS_REGISTER[%d]", pin - 20);
 					return ret;
 				}
 				else
 				{
-					sprintf(ret, "U%d", pin);
+					sprintf(ret, "GPIO_OUTPUT_PORT%d", pin);
 					return ret;
 				}
 			} 
@@ -104,12 +104,12 @@ static char *MapSym(char *str)
 			{
 				if (pin > 19)
 				{
-					sprintf(ret, "M[%d]", pin - 20);
+					sprintf(ret, "MODBUS_REGISTER[%d]", pin - 20);
 					return ret;
 				}
 				else
 				{
-					sprintf(ret, "I%d", pin);
+					sprintf(ret, "GPIO_INPUT_PORT%d", pin);
 					return ret;
 				}
 			}
@@ -179,7 +179,7 @@ static void DeclareBit(FILE *f, char *rawStr)
     } else if (_stricmp(str, "I_SerialReady") == 0) 
 		return;
 
-	fprintf(f, "\n");
+	//fprintf(f, "\n");
 #ifdef INT_UNSIGNED
 	fprintf(f, "volatile unsigned int %s = 0;\n", str);
 #else
@@ -278,6 +278,11 @@ static void GenerateDeclarations(FILE *f)
                 intVar2 = IntCode[i].name2;
                 break;
 
+			case INT_MULTISET_DA:
+                intVar1 = IntCode[i].name1;
+                intVar2 = IntCode[i].name2;
+                break;
+
             case INT_END_IF:
             case INT_ELSE:
             case INT_COMMENT:
@@ -319,14 +324,14 @@ static void GenerateAnsiC(FILE *f)
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
-				if (strncmp(str, "M[", 2) == 0)
+				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
 					fprintf(f, "%s |= (1 << %d);  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 	                fprintf(f, "%s = 1;\n", MapSym(IntCode[i].name1));
                 break;
 
             case INT_CLEAR_BIT:
-				if (strncmp(str, "M[", 2) == 0)
+				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
 					fprintf(f, "%s &= ~(1 << %d);  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 	                fprintf(f, "%s = 0;\n", MapSym(IntCode[i].name1));
@@ -341,7 +346,7 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-				if (strncmp(str, "M[", 2) == 0)
+				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
 	                fprintf(f, "%s &= ~(1 << %d); %s |= %s << %d;  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), MapSym(IntCode[i].name2), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1), MapSym(IntCode[i].name2));
@@ -377,7 +382,7 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_IF_BIT_SET:
-				if (strncmp(str, "M[", 2) == 0)
+				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
 	                fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "if (%s) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].name1);
@@ -385,7 +390,7 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_IF_BIT_CLEAR:
-				if (strncmp(str, "M[", 2) == 0)
+				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
 	                fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "if (!%s) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].name1);
@@ -393,7 +398,7 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_IF_BIT_CHECK_SET:
-				if (strncmp(str, "M[", 2) == 0)
+				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
 	                fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
@@ -401,7 +406,7 @@ static void GenerateAnsiC(FILE *f)
                 break;
 
             case INT_IF_BIT_CHECK_CLEAR:
-				if (strncmp(str, "M[", 2) == 0)
+				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
 	                fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
 					fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
@@ -453,75 +458,81 @@ static void GenerateAnsiC(FILE *f)
             case INT_EEPROM_WRITE:
 				break;
             case INT_READ_ADC:
-				fprintf(f, "%s = ADCRead(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1) + 1));
+				fprintf(f, "%s = ADC_Read(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1) + 1));
 				break;
             case INT_SET_DA:
 				fprintf(f, "DAC_Write(%s);\n", MapSym(IntCode[i].name1));
 				break;
+			case INT_MULTISET_DA:
+				if (IntCode[i].bit)
+					fprintf(f, "DAC_StartUp(%s, %s);\n", IntCode[i].name1, IntCode[i].name2);
+				else
+					fprintf(f, "DAC_StartDown(%s, %s);\n", IntCode[i].name1, IntCode[i].name2);
+				break;
 			case INT_CHECK_RTC:
-				fprintf(f, "now = RTCGetTime();\n");
+				fprintf(f, "RTC_Now = RTC_GetTime();\n");
 				
 				int j;
 				for(j = 0; j < indent; j++) fprintf(f, "    ");
 
 				fprintf(f, "%s = ", MapSym(IntCode[i].name1));
 				if (IntCode[i].bit)
-					fprintf(f, "(%d & (1 << now.Wday)) && ", IntCode[i].literal);
+					fprintf(f, "(%d & (1 << RTC_Now.Wday)) && ", IntCode[i].literal);
 				else
 				{
-					fprintf(f, "now.Mday == %s && ", IntCode[i].name2);
+					fprintf(f, "RTC_Now.Mday == %s && ", IntCode[i].name2);
 					if (strcmp(IntCode[i].name3, "0") != 0)
-						fprintf(f, "now.Mon == %s && ", IntCode[i].name3);
+						fprintf(f, "RTC_Now.Mon == %s && ", IntCode[i].name3);
 					if (strcmp(IntCode[i].name4, "0") != 0)
-						fprintf(f, "now.Year == %s && ", IntCode[i].name4);
+						fprintf(f, "RTC_Now.Year == %s && ", IntCode[i].name4);
 				}
 
-				fprintf(f, "now.Hour == %s && now.Min == %s && now.Sec == %s;\n", 
+				fprintf(f, "RTC_Now.Hour == %s && RTC_Now.Min == %s && RTC_Now.Sec == %s;\n", 
 							IntCode[i].name5, IntCode[i].name6, IntCode[i].name7);
 				break;
             case INT_READ_ENC:
-				fprintf(f, "%s = ENCRead();\n", MapSym(IntCode[i].name1));
+				fprintf(f, "%s = ENC_Read();\n", MapSym(IntCode[i].name1));
 				break;
             case INT_RESET_ENC:
-				fprintf(f, "ENCReset();\n");
+				fprintf(f, "ENC_Reset();\n");
 				break;
 			case INT_READ_FORMATTED_STRING:
-				fprintf(f, "read_formatted_string(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "Format_String_Read(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
 			case INT_WRITE_FORMATTED_STRING:
-				fprintf(f, "write_formatted_string(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "Format_String_Write(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
 			case INT_READ_SERVO_YASKAWA:
-				fprintf(f, "read_servo_yaskawa(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "Yaskawa_Read(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
 			case INT_WRITE_SERVO_YASKAWA:
-				fprintf(f, "write_servo_yaskawa(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "Yaskawa_Write(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_USS:
-				fprintf(f, "uss_get_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
+				fprintf(f, "USS_Get_Param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
 				break; 
             case INT_WRITE_USS:
-				fprintf(f, "uss_set_param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
+				fprintf(f, "USS_Set_Param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_MODBUS:
-				fprintf(f, "modbus_send(%d, MB_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
+				fprintf(f, "Modbus_Send(%d, MODBUS_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
 				break;
             case INT_WRITE_MODBUS:
-				fprintf(f, "modbus_send(%d, MB_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
+				fprintf(f, "Modbus_Send(%d, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
 				break;
             case INT_READ_MODBUS_ETH:
-				fprintf(f, "modbus_tcp_send(%d, MB_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
+				fprintf(f, "Modbus_TCP_Send(%d, MODBUS_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
 				break;
             case INT_WRITE_MODBUS_ETH:
-				fprintf(f, "modbus_tcp_send(%d, MB_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
+				fprintf(f, "Modbus_TCP_Send(%d, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
 				break;
             case INT_SET_PWM:
 				break;
             case INT_UART_RECV:
-				fprintf(f, "%s = RS485Read(&%s, 1);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
+				fprintf(f, "%s = RS232_Read((unsigned char *)&%s, 1);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
 				break;
             case INT_UART_SEND:
-				fprintf(f, "%s = RS485Write(&%s, 1);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
+				fprintf(f, "%s = RS232_Write((unsigned char *)&%s, 1);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
                 break;
 
             default:
@@ -570,13 +581,27 @@ char * SplitPathFileNameAndExt(char * dest)
 char * ConvertToUNIXPath(char * dest)
 {
 	unsigned int i = 0;
+	unsigned int x = 0;
 
 	for (i = strlen(dest); i; i--)
 	{
-		if (dest[i] == '\\')
+		if (dest[i] == '\\' && dest[i + 1] != ' ')
 			dest[i] = '/';
 	}
 
+	for (i = strlen(dest); i; i--)
+	{
+		if (dest[i] == ' ' && i > 0)
+		{
+			if (dest[i - 1] != '\\')
+			{
+				for (x = strlen(dest)+1; x > i; x--)
+					dest[x+1] = dest[x];
+				dest[i] = '\\';
+				dest[i + 1] = ' ';
+			}
+		}
+	}
 	return dest;
 }
 
@@ -612,24 +637,37 @@ DWORD InvokeGCC(char* dest)
 	char *pDefaultCMD = "CMD.EXE";
 	ULONG exitCode;
 	
+	char szAppProgramFilesLong[MAX_PATH]   = "";
 	char szAppProgramFiles[MAX_PATH]   = "";
 	char szToolsProgramFiles[MAX_PATH]   = "";
+	char szAppPathLong[MAX_PATH]      = "";
 	char szAppPath[MAX_PATH]      = "";
+	char szTmpPathLong[MAX_PATH]		= "";
 	char szTmpPath[MAX_PATH]		= "";
 	char szTempPath[MAX_PATH]		= "";
+	//char szAppDirectoryLong[MAX_PATH] = "";
 	char szAppDirectory[MAX_PATH] = "";
 	char szAppDestPath[MAX_PATH]  = "";
 	char szAppOutputDir[MAX_PATH] = "";
 	char * fileName;
 
-	if(!SUCCEEDED(SHGetSpecialFolderPath(0, szAppProgramFiles, CSIDL_PROGRAM_FILES, FALSE))) 
+	if (!SUCCEEDED(SHGetSpecialFolderPath(0, szAppProgramFilesLong, CSIDL_PROGRAM_FILES, FALSE))) 
+		return GetLastError();
+
+	if (!SUCCEEDED(GetShortPathName(szAppProgramFilesLong, szAppProgramFiles, sizeof(szAppProgramFiles))))
 		return GetLastError();
 
 	strcpy(szToolsProgramFiles, szAppProgramFiles);
 
-	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
+	::GetModuleFileName(0, szAppPathLong, sizeof(szAppPathLong) - 1);
 
-	GetTempPath(sizeof(szTmpPath), szTmpPath);
+	if (!SUCCEEDED(GetShortPathName(szAppPathLong, szAppPath, sizeof(szAppPath))))
+		return GetLastError();
+
+	GetTempPath(sizeof(szTmpPathLong), szTmpPathLong);
+
+	if (!SUCCEEDED(GetShortPathName(szTmpPathLong, szTmpPath, sizeof(szTmpPath))))
+		return GetLastError();
 
 	strcat(szTmpPath, "POPTools\\");
 	if (!CreateDirectory(szTmpPath, NULL))
@@ -678,17 +716,31 @@ DWORD InvokeGCC(char* dest)
 	else
 		strcat(szCmd, pDefaultCMD);
 
+#ifndef _USE_GCC_LOCAL_PATH
+#ifdef _USE_PROGRAM_FILES_FULL_PATH
 	// "/C" option - Do the command then terminate the command window
 	// "/K" option - Wait exit 
 	strcat(szArgs, " /C \""); 
 
 	//the application you would like to run from the command window
 	strcat(szArgs, "\"");
-	strcat(szArgs, szAppDirectory);
+	strcat(szArgs, szAppProgramFiles); // C:\PROGRA~2
+	strcat(szArgs, "\\yagarto\\bin\\make.exe\" -f compile -C \"");
+#else
+	strcat(szArgs, " /C \""); 
+#ifdef _DEBUG
+	strcat(szArgs, "\"C:\\yagarto\\bin\\make.exe\" -f makefile -C \"");
+#else
+	strcat(szArgs, "\"C:\\yagarto\\bin\\make.exe\" -f compile -C \"");
+#endif
+#endif
+#else
+	strcat(szArgs, szAppDirectory); // C:\Users\ADMINI~1\DOCUME~1\VISUAL~3\Projects\POPTools\bin
 #ifdef _DEBUG
 	strcat(szArgs, "\\src\\gcc\\bin\\make.exe\" -f makefile -C \"");
 #else
 	strcat(szArgs, "\\src\\gcc\\bin\\make.exe\" -f compile -C \"");
+#endif
 #endif
 	strcat(szArgs, ConvertToUNIXPath(szAppDirectory));
 	strcat(szArgs, "/src/\"");
@@ -783,20 +835,23 @@ DWORD CompileAnsiCToGCC(char *dest)
 
 	// Extract directory
 	//strncpy(szAppHeader, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
-	strncpy(szAppHeader, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
-	szAppHeader[strlen(szAppHeader)] = '\0';
+	//strncpy(szAppHeader, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
+	//szAppHeader[strlen(szAppHeader)] = '\0';
 	//strcat(szAppHeader, "\\src\\ld.h");
-	strcat(szAppHeader, "\\ld.h");
+	//strcat(szAppHeader, "\\ld.h");
 
-	FILE *h = fopen(szAppHeader, "w");
+	/*FILE *h = fopen(szAppHeader, "w");
     if(!h) {
         Error(_("Couldn't open file '%s'"), szAppHeader);
         return 1;
-    }
+    }*/
 
-	fprintf(h, "/*=========================================================================*/\n");
-	fprintf(h, "/*  DEFINE: All code exported                                              */\n");
-	fprintf(h, "/*=========================================================================*/\n\n");
+	//fprintf(h, "/*=========================================================================*/\n");
+	//fprintf(h, "/*  DEFINE: All code exported                                              */\n");
+	//fprintf(h, "/*=========================================================================*/\n\n");
+
+	/*fprintf(h, "#ifndef LD_H_\n");
+	fprintf(h, "#define LD_H_\n\n");
 
 	fprintf(h, "volatile unsigned int I1 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int I2 __attribute__((weak)) = 0;\n");
@@ -835,22 +890,27 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(h, "volatile unsigned int U15 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int U16 __attribute__((weak)) = 0;\n");
 	fprintf(h, "volatile unsigned int U17 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U18 __attribute__((weak)) = 0;\n\n");
+	fprintf(h, "volatile unsigned int U18 __attribute__((weak)) = 0;\n\n");*/
 
 #ifdef INT_UNSIGNED
-	fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
+	//fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
 #else
-	fprintf(h, "volatile int M[32] __attribute__((weak));\n");
+	//fprintf(h, "volatile int M[32] __attribute__((weak));\n");
 #endif
-	fprintf(h, "volatile int ENC1 __attribute__((weak)) = 0;\n\n");
+	/*fprintf(h, "volatile int ENC1 __attribute__((weak)) = 0;\n\n");
 
 	fprintf(h, "volatile unsigned char MODBUS_MASTER __attribute__((weak)) = 0;\n\n");
 
 	fprintf(h, "extern void PlcCycle(void);\n");
 	fprintf(h, "extern volatile unsigned int TIME_INTERVAL;\n");
-	fprintf(h, "void ld_Init(void);\n");
+	fprintf(h, "void ld_Init(void);\n\n");
 
-	fclose(h);
+	fprintf(h, "void PLC_Init(void);\n");
+	fprintf(h, "void PLC_Cycle(void *pdata);\n\n");
+
+	fprintf(h, "#endif\n");
+
+	fclose(h);*/
 
 	//strncpy(szAppSourceFile, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
 	strncpy(szAppSourceFile, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
@@ -873,34 +933,55 @@ DWORD CompileAnsiCToGCC(char *dest)
     BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
     BuildDirectionRegisters(isInput, isOutput);
 
-    fprintf(f,
-"/*****************************************************************************\n"
-" * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n"
-" *****************************************************************************/\n"
-"#include <string.h>\n"
-"#include \"uss.h\"\n"
-"#include \"modbus.h\"\n"
-"#include \"rtc.h\"\n\n"
-"extern void DAC_Write(unsigned int val);\n"
-"extern void modbus_send(unsigned char id,\n"
-"                        int fc,\n"
-"                        unsigned short int address,\n"
-"                        unsigned short int size,\n"
-"                        volatile int * value);\n\n"
-"extern void modbus_tcp_send(unsigned char id,\n"
-"                        int fc,\n"
-"                        unsigned short int address,\n"
-"                        unsigned short int size,\n"
-"                        volatile int * value);\n\n"
-"volatile unsigned int CYCLE_TIME = %d;\n"
-"volatile unsigned int TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n"
-"volatile int M[32];\n"
-"volatile int ENC1;\n\n"
-	, Prog.cycleTime / 1000, Prog.cycleTime / 1000);
+	fprintf(f, "/*****************************************************************************\n");
+	fprintf(f, " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n");
+	fprintf(f, " *****************************************************************************/\n");
+	fprintf(f, "#include <string.h>\n");
+	fprintf(f, "#include \"lwip/opt.h\"\n");
+	fprintf(f, "#include \"lwip/arch.h\"\n");
+	fprintf(f, "#include \"lwip/api.h\"\n");
+	fprintf(f, "#include \"coos.h\"\n");
 
-	fprintf(f, "volatile unsigned char IP_ADDR[4] = { %d, %d, %d, %d };\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
-	fprintf(f, "volatile unsigned char IP_MASK[4] = { %d, %d, %d, %d };\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
-	fprintf(f, "volatile unsigned char IP_GW[4] = { %d, %d, %d, %d };\n\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
+	fprintf(f, "\n");
+	fprintf(f, "#include \"rtc.h\"\n");
+	fprintf(f, "#include \"gpio.h\"\n");
+	fprintf(f, "#include \"rtc.h\"\n");
+	fprintf(f, "#include \"dac.h\"\n");
+	fprintf(f, "#include \"adc.h\"\n");
+	fprintf(f, "#include \"rs485.h\"\n");
+	fprintf(f, "#include \"rs232.h\"\n");
+	fprintf(f, "#include \"modbus.h\"\n");
+	fprintf(f, "#include \"uss.h\"\n");
+	fprintf(f, "#include \"yaskawa.h\"\n");
+	fprintf(f, "#include \"format_str.h\"\n");
+
+	fprintf(f, "\n");
+	fprintf(f, "const volatile unsigned int 	CYCLE_TIME = %d;\n", Prog.cycleTime / 1000);
+	//fprintf(f, "const volatile unsigned int		TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n", Prog.cycleTime / 1000);
+	
+	fprintf(f, "\n");
+	fprintf(f, "extern volatile unsigned char 	MODBUS_MASTER; // 0 = Slave, 1 = Master\n");
+	fprintf(f, "extern volatile int 			MODBUS_REGISTER[32];\n");
+	fprintf(f, "extern struct 					MB_Device modbus_master;\n");
+	fprintf(f, "extern volatile unsigned int 	GPIO_OUTPUT;\n");
+	fprintf(f, "extern volatile unsigned int 	GPIO_INPUT;\n");
+	//fprintf(f, "extern volatile int 			ENCODER1;\n");
+	fprintf(f, "extern RTC_Time 				RTC_Now;\n");
+	fprintf(f, "extern volatile unsigned int 	I_SerialReady;\n");
+
+	fprintf(f, "\n");
+	fprintf(f, "extern struct ip_addr 			IP_ADDRESS;\n");
+	fprintf(f, "extern struct ip_addr 			IP_NETMASK;\n");
+	fprintf(f, "extern struct ip_addr 			IP_GATEWAY;\n");
+	fprintf(f, "extern struct ip_addr			IP_DNS;\n");
+
+	fprintf(f, "\n");
+	fprintf(f, "char 							SNTP_SERVER_ADDRESS[] = \"%s\";\n", Prog.sntp);
+	fprintf(f, "int								SNTP_GMT = %d;\n", Prog.gmt > 12 ? Prog.gmt - 12 : Prog.gmt - 12);
+	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", Prog.dailysave);
+
+	fprintf(f, "\n");
+	fprintf(f, "OS_STK							PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];\n");
 
 	//int j;
 
@@ -922,16 +1003,21 @@ DWORD CompileAnsiCToGCC(char *dest)
 	//		break;
 	//}
 
-	fprintf(f, "extern struct MB_Device modbus_master;\n");
-	fprintf(f, "extern unsigned int RS232Write(char c);\n");
+	//fprintf(f, "extern struct MB_Device modbus_master;\n");
+	/*fprintf(f, "extern unsigned int RS232Write(char c);\n");
 	fprintf(f, "extern void RS485Config(int baudrate, int bits, int parity, int stopbit);\n");
 	fprintf(f, "extern unsigned int ADCRead(unsigned int i);\n");
 	fprintf(f, "extern unsigned int ENCRead(void);\n");
-	fprintf(f, "extern unsigned int ENCReset(void);\n");
-	fprintf(f, "extern volatile unsigned int I_SerialReady;\n\n");
+	fprintf(f, "extern unsigned int ENCReset(void);\n");*/
+	//fprintf(f, "extern volatile unsigned int I_SerialReady;\n\n");
 
-    // now generate declarations for all variables
+	fprintf(f, "\n");
+	fprintf(f, "// Variaveis PLC\n");
+
+	// now generate declarations for all variables
     GenerateDeclarations(f);
+
+	fprintf(f, "\n");
 
 	struct serialtag
 	{
@@ -972,23 +1058,43 @@ DWORD CompileAnsiCToGCC(char *dest)
 		serial.parity = 0; // none
 		serial.stopbit = 1; // 1 stopbit
 	}
-	fprintf(f, "volatile unsigned char MODBUS_MASTER = %d; // 0 = Slave, 1 = Master \n", MODBUS_MASTER);
 
-    fprintf(f,
-"\n"
-"RTCTime now;\n"
-"\n"
-"void ld_Init(void)\n"
-"{\n"
-"  RS485Config(%d, %d, %d, %d);\n"
-"}\n\n"
-"/* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */\n"
-"void PlcCycle(void)\n"
-"{\n", Prog.baudRate, serial.bits, serial.parity, serial.stopbit);
+    fprintf(f,"void PLC_Run(void)\n{\n");
 
     GenerateAnsiC(f);
 
     fprintf(f, "}\n");
+
+	fprintf(f, "\n");
+	fprintf(f, "/* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */\n");
+	fprintf(f, "void PLC_Cycle(void *pdata)\n");
+	fprintf(f, "{\n");
+	fprintf(f, "	for (;;)\n");
+	fprintf(f, "	{\n");
+	fprintf(f, "		GPIO_Output(GPIO_OUTPUT);\n");
+	fprintf(f, "		GPIO_INPUT = GPIO_Input();\n");
+	fprintf(f, "\n");
+	fprintf(f, "		RS485_Handler();\n");
+	fprintf(f, "\n");
+	fprintf(f, "		PLC_Run();\n");
+	fprintf(f, "\n");
+	fprintf(f, "		CoTickDelay(CYCLE_TIME);\n");
+	fprintf(f, "	}\n");
+	fprintf(f, "}\n");
+	fprintf(f, "\n");
+	fprintf(f, "void PLC_Init(void)\n");
+	fprintf(f, "{\n");
+	fprintf(f, "	I_SerialReady = 1;\n");
+	fprintf(f, "	MODBUS_MASTER = %d;\n", MODBUS_MASTER);
+	fprintf(f, "\n");
+	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", Prog.baudRate, serial.bits, serial.parity, serial.stopbit);
+	fprintf(f, "\n");
+	fprintf(f, "	IP4_ADDR(&IP_ADDRESS, %d,%d,%d,%d);\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
+	fprintf(f, "	IP4_ADDR(&IP_NETMASK, %d,%d,%d,%d);\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
+	fprintf(f, "	IP4_ADDR(&IP_GATEWAY, %d,%d,%d,%d);\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
+	fprintf(f, "	IP4_ADDR(&IP_DNS, %d,%d,%d,%d);\n", Prog.dns[0], Prog.dns[1], Prog.dns[2], Prog.dns[3]);
+	fprintf(f, "}\n");
+
     fclose(f);
 
     char str[MAX_PATH+500];

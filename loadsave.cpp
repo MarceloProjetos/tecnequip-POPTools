@@ -124,22 +124,6 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
         *which = ELEM_RES;
     } else if(sscanf(line, "MOVE %s %s", l->d.move.dest, l->d.move.src)==2) {
         *which = ELEM_MOVE;
-    } else if(sscanf(line, "ADD %s %s %s", l->d.math.dest, l->d.math.op1,
-        l->d.math.op2)==3)
-    {
-        *which = ELEM_ADD;
-    } else if(sscanf(line, "SUB %s %s %s", l->d.math.dest, l->d.math.op1,
-        l->d.math.op2)==3)
-    {
-        *which = ELEM_SUB;
-    } else if(sscanf(line, "MUL %s %s %s", l->d.math.dest, l->d.math.op1,
-        l->d.math.op2)==3)
-    {
-        *which = ELEM_MUL;
-    } else if(sscanf(line, "DIV %s %s %s", l->d.math.dest, l->d.math.op1,
-        l->d.math.op2)==3)
-    {
-        *which = ELEM_DIV;
     } else if(sscanf(line, "EQU %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
         *which = ELEM_EQU;
     } else if(sscanf(line, "NEQ %s %s", l->d.cmp.op1, l->d.cmp.op2)==2) {
@@ -156,6 +140,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
         *which = ELEM_READ_ADC;
     } else if(sscanf(line, "SET_DA %s", l->d.setDA.name)==1) {
         *which = ELEM_SET_DA;
+    } else if(sscanf(line, "MULTISET_DA %s %s", l->d.multisetDA.name, l->d.multisetDA.name1)==2) {
+        *which = ELEM_MULTISET_DA;
     } else if(sscanf(line, "READ_ENC %s", l->d.readEnc.name)==1) {
         *which = ELEM_READ_ENC;
 	} else if(sscanf(line, "READ_USS %s %d %d %d %d", l->d.readUSS.name, &l->d.readUSS.id, &l->d.readUSS.parameter, &l->d.readUSS.parameter_set, &l->d.readUSS.index)==5) {
@@ -263,7 +249,23 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
                 p++;
         }
         *which = ELEM_PIECEWISE_LINEAR;
-    } else {
+    } else if(sscanf(line, "ADD %s %s %s", l->d.math.dest, l->d.math.op1,
+        l->d.math.op2)==3)
+    {
+        *which = ELEM_ADD;
+    } else if(sscanf(line, "SUB %s %s %s", l->d.math.dest, l->d.math.op1,
+        l->d.math.op2)==3)
+    {
+        *which = ELEM_SUB;
+    } else if(sscanf(line, "MUL %s %s %s", l->d.math.dest, l->d.math.op1,
+        l->d.math.op2)==3)
+    {
+        *which = ELEM_MUL;
+    } else if(sscanf(line, "DIV %s %s %s", l->d.math.dest, l->d.math.op1,
+        l->d.math.op2)==3)
+    {
+        *which = ELEM_DIV;
+	} else {
         // that's odd; nothing matched
         CheckFree(l);
         return FALSE;
@@ -366,7 +368,8 @@ BOOL LoadProjectFromFile(char *filename)
     if(!f) return FALSE;
 
     char line[512];
-    int version, crystal, cycle, baud, comPort, UART, ip[4], mask[4], gw[4];
+    int version, crystal, cycle, baud, comPort, UART, ip[4], mask[4], gw[4], dns[4];
+	char sntp[126];
 
 	version = 0;
 
@@ -421,6 +424,13 @@ BOOL LoadProjectFromFile(char *filename)
             Prog.gw[1] = gw[1];
             Prog.gw[2] = gw[2];
             Prog.gw[3] = gw[3];
+        } else if(sscanf(line, "DNS=%d.%d.%d.%d", &dns[0], &dns[1], &dns[2], &dns[3])) {
+            Prog.dns[0] = dns[0];
+            Prog.dns[1] = dns[1];
+            Prog.dns[2] = dns[2];
+            Prog.dns[3] = dns[3];
+		} else if(sscanf(line, "SNTP=%d-%d:%s", &Prog.gmt, &Prog.dailysave, &sntp)) {
+			strncpy(Prog.sntp, sntp, sizeof(Prog.sntp));
         } else if(memcmp(line, "COMPILED=", 9)==0) {
             line[strlen(line)-1] = '\0';
             strcpy(CurrentCompileFile, line+9);
@@ -617,6 +627,10 @@ cmp:
 			fprintf(f, "SET_DA %s\n", l->d.setDA.name);
             break;
 
+		case ELEM_MULTISET_DA:
+			fprintf(f, "MULTISET_DA %s %s\n", l->d.multisetDA.name, l->d.multisetDA.name1);
+            break;
+
         case ELEM_READ_ENC:
             fprintf(f, "READ_ENC %s\n", l->d.readEnc.name);
             break;
@@ -804,6 +818,8 @@ BOOL SaveProjectToFile(char *filename)
     fprintf(f, "IP=%d.%d.%d.%d\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
     fprintf(f, "MASK=%d.%d.%d.%d\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
     fprintf(f, "GW=%d.%d.%d.%d\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
+	fprintf(f, "DNS=%d.%d.%d.%d\n", Prog.dns[0], Prog.dns[1], Prog.dns[2], Prog.dns[3]);
+	fprintf(f, "SNTP=%d-%d:%s\n", Prog.gmt, Prog.dailysave, Prog.sntp);
     if(strlen(CurrentCompileFile) > 0) {
         fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }

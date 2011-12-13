@@ -667,6 +667,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_LES:
         case ELEM_LEQ:
 		case ELEM_RTC:
+		case ELEM_MULTISET_DA:
             break;
 
         default:
@@ -917,6 +918,11 @@ math:
             case INT_RESET_ENC:
                 SetSimulationVariable(a->name1, GetResetEncShadow(a->name1));
                 break;
+
+			case INT_MULTISET_DA:
+				//SetSimulationVariable(a->name, GetMultiDAShadow(a->name));
+				//SetSimulationVariable(a->name1, GetMultiDAShadow(a->name1));
+				break;
 
 			case INT_READ_FORMATTED_STRING:
 				SetSingleBit("$SerialReady", FALSE);

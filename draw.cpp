@@ -106,6 +106,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_READ_ADC:
         case ELEM_READ_ENC:
         case ELEM_RESET_ENC:
+		case ELEM_MULTISET_DA:
         case ELEM_READ_MODBUS:
         case ELEM_WRITE_MODBUS:
         case ELEM_READ_MODBUS_ETH:
@@ -467,6 +468,14 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
                 poweredAfter);
             break;
         }
+		case ELEM_MULTISET_DA : {
+			ElemMultisetDA *r = &leaf->d.multisetDA;
+			//CenterWithSpaces(*cx, *cy, r->forward ? "AVANCAR" : "RECUAR", poweredAfter, TRUE);
+			CenterWithSpaces(*cx, *cy, "RAMPA", poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, r->speedup ? "{ACELERACAO}" : "{DESACELERACAO}", poweredBefore,
+                poweredAfter);
+            break;
+		}
         case ELEM_RESET_ENC: {
             ElemResetEnc *r = &leaf->d.resetEnc;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);

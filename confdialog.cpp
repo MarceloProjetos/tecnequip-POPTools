@@ -38,10 +38,14 @@ static HWND PLCCombobox;
 static HWND BaudRateCombobox;
 static HWND ComPortCombobox;
 static HWND ParityCombobox;
+static HWND SNTPCombobox;
+static HWND GMTCombobox;
+static HWND DailySaveCheckbox;
 
 static HWND ip[4];
 static HWND mask[4];
 static HWND gw[4];
+static HWND dns[4];
 
 static LONG_PTR PrevCrystalProc;
 static LONG_PTR PrevCycleProc;
@@ -51,6 +55,7 @@ static LONG_PTR PrevComPortProc;
 static LONG_PTR PrevIpProc[4];
 static LONG_PTR PrevMaskProc[4];
 static LONG_PTR PrevGwProc[4];
+static LONG_PTR PrevDnsProc[4];
 
 const LPCTSTR ComboboxPLCItens[] = { _("POP7"), _("POP9") };
 
@@ -58,10 +63,31 @@ const LPCTSTR ComboboxComPortItens[] = { _("COM1"), _("COM2"), _("COM3"), _("COM
 						_("COM8"), _("COM9"), _("COM10"), _("COM11"), _("COM12"), _("COM13"), _("COM14"), _("COM15"), _("COM16"),
 						_("COM17"), _("COM18"), _("COM19"), _("COM20"), _("COM21"), _("COM22") };
 
+const LPCTSTR ComboboxGMTItens[] = { _("(GMT-12:00) Linha de Data Internacional Oeste"), _("(GMT-11:00) Ilhas Midway,Samoa"),
+								_("(GMT-10:00) Hawaí"), _("(GMT-09:00) Alasca"),
+								_("(GMT-08:00) Hora do Pacífico"), _("(GMT-07:00) Hora das Montanhas (EUA e Canadá)"),
+								_("(GMT-06:00) América Central, Hora Central EUA/Canadá"), _("(GMT-05:00) Rio Branco, Lima, Bogotá"),
+								_("(GMT-04:00) Manaus, Caracas, La Paz"), _("(GMT-03:00) Brasilia, Buenos Aires"),
+								_("(GMT-02:00) Atlântico Central"), _("(GMT-01:00) Açores, Cabo Verde"),
+								_("(GMT 00:00) Hora de Greenwich: Londres, Dublin, Lisboa"), _("(GMT+01:00) Berlim, Estocolmo, Roma, Bruxelas"),
+								_("(GMT+02:00) Atenas, Helsinque, Leste Europeu, Jerusalém"), _("(GMT+03:00) Bagdá, Kuwait, Nairóbi, Moscou,Riad"),
+								_("(GMT+04:00) Abu Dhabi, Mascate, Hora Padrão do Cáucaso"), _("(GMT+05:00) Islamabad, Karachi, Ekaterinburgo"),
+								_("(GMT+06:00) Almaty, Dacca"), _("(GMT+07:00) Bangcoc, Jacarta, Hanói"),
+								_("(GMT+08:00) Pequim, Hong Kong, Taiwan, Cingapura"), _("(GMT+09:00) Tóquio, Osaka, Sapporo, Seul, Yakutsk"),
+								_("(GMT+10:00) Brisbane, Camberra, Melbourne, Sydney"), _("(GMT+11:00) Magadã, Ilhas Salomão, Nova Caledônia"),
+								_("(GMT+12:00) Fiji, Kamchatka, Auckland"), _("(GMT+13:00) Nuku'alofa") };
+
 const LPCTSTR ComboboxBaudRateItens[] = { /*_("2400"), _("4800"), _("7200"),*/ _("9600"), _("14400"), _("19200")/*, _("28800"), 
 						_("38400"), _("57600"), _("115200")*/ };
 
 const LPCTSTR ComboboxParityItens[] = { _("8-None-1"), _("8-Even-1"), _("8-Odd-1"), _("7-None-1"), _("7-Even-1"), _("7-Odd-1") };
+
+// http://www.ntp.br/
+// http://pt.wikipedia.org/wiki/Network_Time_Protocol
+// http://tf.nist.gov/tf-cgi/servers.cgi
+// https://support.ntp.org/bin/view/Servers/StratumOneTimeServers
+// http://support.ntp.org/bin/view/Servers/NTPPoolServers
+const LPCTSTR ComboboxSNTPItens[] = { _("pool.ntp.org"), _("a.ntp.br"), _("gps.ntp.br"), _("server0.br.pool.ntp.org"), _("time-nw.nist.gov")/*, _("www.nist.gov")*/, _("time.microsoft.com") };
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
@@ -124,6 +150,14 @@ static LRESULT CALLBACK MyByteProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		h = gw[2];
     else if(hwnd == gw[3])
 		h = gw[3];
+    else if(hwnd == dns[0])
+		h = dns[0];
+    else if(hwnd == dns[1])
+		h = dns[1];
+    else if(hwnd == dns[2])
+		h = dns[2];
+    else if(hwnd == dns[3])
+		h = dns[3];
 
 	if (h != NULL)
 	{
@@ -157,6 +191,14 @@ static LRESULT CALLBACK MyByteProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
         t = PrevGwProc[2];
     else if(hwnd == gw[3])
         t = PrevGwProc[3];
+    else if(hwnd == dns[0])
+        t = PrevDnsProc[0];
+    else if(hwnd == dns[1])
+        t = PrevDnsProc[1];
+    else if(hwnd == dns[2])
+        t = PrevDnsProc[2];
+    else if(hwnd == dns[3])
+        t = PrevDnsProc[3];
     else
         oops();
 
@@ -239,7 +281,7 @@ static void MakeControls(void)
 	HWND textPoint2 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         229, 186, 5, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textPoint1);
+    NiceFont(textPoint2);
 
     ip[2] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
@@ -249,7 +291,7 @@ static void MakeControls(void)
 	HWND textPoint3 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         269, 186, 5, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textPoint1);
+    NiceFont(textPoint3);
 
     ip[3] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
@@ -269,7 +311,7 @@ static void MakeControls(void)
 	HWND textPoint4 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         189, 214, 5, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textPoint1);
+    NiceFont(textPoint4);
 
     mask[1] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
@@ -279,7 +321,7 @@ static void MakeControls(void)
 	HWND textPoint5 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         229, 214, 5, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textPoint1);
+    NiceFont(textPoint5);
 
     mask[2] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
@@ -289,7 +331,7 @@ static void MakeControls(void)
 	HWND textPoint6 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         269, 214, 5, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textPoint1);
+    NiceFont(textPoint6);
 
     mask[3] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
@@ -306,39 +348,104 @@ static void MakeControls(void)
         155, 235, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[0]);
 
-	HWND textPoint7 = CreateWindowEx(0, WC_STATIC, _("."),
+	HWND textPoint8 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         189, 241, 5, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textPoint1);
+    NiceFont(textPoint8);
 
     gw[1] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         195, 235, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[1]);
 
-	HWND textPoint8 = CreateWindowEx(0, WC_STATIC, _("."),
+	HWND textPoint9 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         229, 241, 5, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textPoint1);
+    NiceFont(textPoint9);
 
     gw[2] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         235, 235, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[2]);
 
-	HWND textPoint9 = CreateWindowEx(0, WC_STATIC, _("."),
+	HWND textPoint10 = CreateWindowEx(0, WC_STATIC, _("."),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         269, 241, 5, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textPoint1);
+    NiceFont(textPoint10);
 
     gw[3] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         275, 235, 35, 21, ConfDialog, NULL, Instance, NULL);
     NiceFont(gw[3]);
-	
+
+    HWND textLabel11 = CreateWindowEx(0, WC_STATIC, _("DNS:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 265, 145, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textLabel11);
+
+    dns[0] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 262, 35, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(dns[0]);
+
+	HWND textPoint12 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        189, 265, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint12);
+
+    dns[1] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        195, 262, 35, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(dns[1]);
+
+	HWND textPoint13 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        229, 265, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint13);
+
+    dns[2] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        235, 262, 35, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(dns[2]);
+
+	HWND textPoint14 = CreateWindowEx(0, WC_STATIC, _("."),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        269, 265, 5, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textPoint14);
+
+    dns[3] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        275, 262, 35, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(dns[3]);
+
+    HWND textLabel15 = CreateWindowEx(0, WC_STATIC, _("Servidor de Tempo:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 295, 145, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textLabel15);
+
+	SNTPCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWN,
+        155, 292, 155, 145, ConfDialog, NULL, Instance, NULL);
+    NiceFont(SNTPCombobox);
+
+	HWND textLabel16 = CreateWindowEx(0, WC_STATIC, _("Fuso Horário:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 325, 145, 21, ConfDialog, NULL, Instance, NULL);
+    NiceFont(textLabel16);
+
+	GMTCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWN,
+        155, 322, 155, 145, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GMTCombobox);
+    
+	DailySaveCheckbox = CreateWindowEx(0, WC_BUTTON, _("Horário de verão"),
+        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
+        155, 348, 160, 20, ConfDialog, NULL, Instance, NULL);
+    NiceFont(DailySaveCheckbox);
+
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Configuração de Rede"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        5, 160, 325, 105, ConfDialog, NULL, Instance, NULL);
+        5, 160, 322, 220, ConfDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
 	//if(!UartFunctionUsed()) {   
@@ -408,6 +515,17 @@ static void MakeControls(void)
 	PrevGwProc[3] = SetWindowLongPtr(gw[3], GWLP_WNDPROC, 
 		(LONG_PTR)MyByteProc);
 
+    PrevDnsProc[0] = SetWindowLongPtr(dns[0], GWLP_WNDPROC, 
+	    (LONG_PTR)MyByteProc);
+
+	PrevDnsProc[1] = SetWindowLongPtr(dns[1], GWLP_WNDPROC, 
+		(LONG_PTR)MyByteProc);
+
+	PrevDnsProc[2] = SetWindowLongPtr(dns[2], GWLP_WNDPROC, 
+		(LONG_PTR)MyByteProc);
+
+	PrevDnsProc[3] = SetWindowLongPtr(dns[3], GWLP_WNDPROC, 
+		(LONG_PTR)MyByteProc);
 }
 
 void ShowConfDialog(void)
@@ -415,7 +533,7 @@ void ShowConfDialog(void)
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "LDmicroDialog", _("PLC Configuration"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 335, 285, MainWindow, NULL, Instance, NULL);
+        100, 100, 335, 395, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
    
@@ -435,6 +553,9 @@ void ShowConfDialog(void)
 
 		sprintf(buf, "%d", Prog.gw[i]);
 		SendMessage(gw[i], WM_SETTEXT, 0, (LPARAM)buf);
+
+		sprintf(buf, "%d", Prog.dns[i]);
+		SendMessage(dns[i], WM_SETTEXT, 0, (LPARAM)buf);
 	}
 
 	for (i = 0; i < sizeof(ComboboxPLCItens) / sizeof(ComboboxPLCItens[0]); i++)
@@ -462,6 +583,18 @@ void ShowConfDialog(void)
 		if (_stricmp(ComboboxBaudRateItens[i], buf) == 0)
 			SendMessage(BaudRateCombobox, CB_SETCURSEL, i, 0);
 	}
+
+	for (i = 0; i < sizeof(ComboboxSNTPItens) / sizeof(ComboboxSNTPItens[0]); i++)
+		SendMessage(SNTPCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxSNTPItens[i]));
+	SendMessage(SNTPCombobox, WM_SETTEXT, 0, (LPARAM)Prog.sntp);
+
+	for (i = 0; i < sizeof(ComboboxGMTItens) / sizeof(ComboboxGMTItens[0]); i++)
+		SendMessage(GMTCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxGMTItens[i]));
+	SendMessage(GMTCombobox, CB_SETCURSEL, Prog.gmt, 0);
+	SendMessage(GMTCombobox, CB_SETDROPPEDWIDTH, 300, 0);
+
+	if (Prog.dailysave)
+		SendMessage(DailySaveCheckbox, BM_SETCHECK, BST_CHECKED, 0);
 
 	//SendMessage(BaudRateCombobox, CB_SETCURSEL, 0, 0);
 	SendMessage(BaudRateCombobox, CB_SETDROPPEDWIDTH, 100, 0);
@@ -531,6 +664,13 @@ void ShowConfDialog(void)
 				Error(_("Gateway invalido. Deve ser entre 0.0.0.0 a 255.255.255.255 !"));
 			else 
 				Prog.gw[i] = atoi(buf);
+
+			SendMessage(dns[i], WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+
+			if (atoi(buf) > 255)
+				Error(_("DNS invalido. Deve ser entre 0.0.0.0 a 255.255.255.255 !"));
+			else 
+				Prog.dns[i] = atoi(buf);
 		}
 
         SendMessage(BaudRateCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
@@ -539,6 +679,13 @@ void ShowConfDialog(void)
 
 		Prog.comPort = SendMessage(ComPortCombobox, CB_GETCURSEL, 0, 0) + 1;
 		Prog.UART = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
+
+		SendMessage(SNTPCombobox, WM_GETTEXT, (WPARAM)sizeof(Prog.sntp),
+            (LPARAM)(Prog.sntp));
+
+
+		Prog.gmt = SendMessage(GMTCombobox, CB_GETCURSEL, 0, 0);
+		Prog.dailysave = SendMessage(DailySaveCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
     }
 
     EnableWindow(MainWindow, TRUE);

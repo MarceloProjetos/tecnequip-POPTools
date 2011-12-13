@@ -330,6 +330,7 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_LEQ:
         case ELEM_RES:
         case ELEM_PERSIST:
+		case ELEM_MULTISET_DA:
             break;
 
         default:

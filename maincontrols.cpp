@@ -435,7 +435,9 @@ HMENU MakeMainWindowMenus(void)
         _("Leitura do Encoder Quadratura\tQ"));
     AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_RESET_ENC,
         _("Reset do Encoder Quadratura\tCtrl+Q"));
-    AppendMenu(MotorControlMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(MotorControlMenu, MF_STRING, MNU_INSERT_MULTISET_DA,
+        _("Rampa Aceleração/Desaceleração"));
+    //AppendMenu(MotorControlMenu, MF_SEPARATOR, 0, NULL);
 	AppendMenu(InstructionMenu, MF_STRING | MF_POPUP, (UINT_PTR)MotorControlMenu,
         _("Controle de Motor"));
 

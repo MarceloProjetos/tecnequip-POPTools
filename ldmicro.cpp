@@ -38,6 +38,10 @@ HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
 
+ID2D1Factory*		pD2DFactory;
+IDWriteFactory*		pWriteFactory;
+IWICImagingFactory *	pWICFactory;
+
 SPLASH mysplash;
 
 // parameters used to capture the mouse when implementing our totally non-
@@ -599,6 +603,10 @@ static void ProcessMenu(int code)
             CHANGING_PROGRAM(AddResetEnc());
             break;
 			
+		case MNU_INSERT_MULTISET_DA:
+            CHANGING_PROGRAM(AddMultisetDA());
+            break;
+
         case MNU_READ_FMTD_STR:
             CHANGING_PROGRAM(AddReadFormatString());
             break;
@@ -1309,6 +1317,45 @@ static BOOL MakeWindowClass()
     return RegisterClassEx(&wc);
 }
 
+// Creates resources that are not bound to a particular device.
+// Their lifetime effectively extends for the duration of the
+// application.
+static HRESULT CreateDeviceIndependentResources()
+{
+	HRESULT hr;
+
+	// Create a Direct2D factory.
+	hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &pD2DFactory);
+
+	if (SUCCEEDED(hr))
+	{
+		hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+			__uuidof(IDWriteFactory),
+			reinterpret_cast<IUnknown**>(&pWriteFactory));
+	}
+	
+	if (SUCCEEDED(hr))
+	{
+		// Create WIC factory.
+		hr = CoCreateInstance(
+			CLSID_WICImagingFactory,
+			NULL,
+			CLSCTX_INPROC_SERVER,
+			IID_IWICImagingFactory,
+			reinterpret_cast<void **>(&pWICFactory)
+			);
+	}
+
+	return hr;
+}	
+
+static void DiscardDeviceIndependentResources()
+{
+	SafeRelease(&pWICFactory);
+	SafeRelease(&pWriteFactory);
+	SafeRelease(&pD2DFactory);
+}
+
 //-----------------------------------------------------------------------------
 // Entry point into the program.
 //-----------------------------------------------------------------------------
@@ -1333,6 +1380,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     InitCommonControls();
     InitForDrawing();
+	CreateDeviceIndependentResources();
 
     MakeMainWindowControls();
     MainWindowResized();

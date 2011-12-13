@@ -279,6 +279,33 @@ void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * m
             }
         }
 
+		if(SendMessage(WDayRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
+		{
+			EnableWindow(MDayCombobox, FALSE);
+			EnableWindow(MonthCombobox, FALSE);
+			EnableWindow(YearCombobox, FALSE);
+			EnableWindow(WDayCheckbox0, TRUE);
+			EnableWindow(WDayCheckbox1, TRUE);
+			EnableWindow(WDayCheckbox2, TRUE);
+			EnableWindow(WDayCheckbox3, TRUE);
+			EnableWindow(WDayCheckbox4, TRUE);
+			EnableWindow(WDayCheckbox5, TRUE);
+			EnableWindow(WDayCheckbox6, TRUE);
+		}
+		else
+		{
+			EnableWindow(MDayCombobox, TRUE);
+			EnableWindow(MonthCombobox, TRUE);
+			EnableWindow(YearCombobox, TRUE);
+			EnableWindow(WDayCheckbox0, FALSE);
+			EnableWindow(WDayCheckbox1, FALSE);
+			EnableWindow(WDayCheckbox2, FALSE);
+			EnableWindow(WDayCheckbox3, FALSE);
+			EnableWindow(WDayCheckbox4, FALSE);
+			EnableWindow(WDayCheckbox5, FALSE);
+			EnableWindow(WDayCheckbox6, FALSE);
+		}
+
         if(IsDialogMessage(RTCDialog, &msg)) continue;
         TranslateMessage(&msg);
         DispatchMessage(&msg);
