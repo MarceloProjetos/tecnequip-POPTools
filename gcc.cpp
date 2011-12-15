@@ -948,6 +948,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "#include \"rtc.h\"\n");
 	fprintf(f, "#include \"dac.h\"\n");
 	fprintf(f, "#include \"adc.h\"\n");
+	fprintf(f, "#include \"qei.h\"\n");
 	fprintf(f, "#include \"rs485.h\"\n");
 	fprintf(f, "#include \"rs232.h\"\n");
 	fprintf(f, "#include \"modbus.h\"\n");

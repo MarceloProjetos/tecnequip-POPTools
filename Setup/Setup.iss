@@ -29,7 +29,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; Name: "restart"; Description: "Reiniciar o computador. A reinicialização do computador é necessária para o correto funcionamento do compilador que acompanha o programa POP7Tools. (mais informações em http://www.yagarto.de)"; Flags: restart
 
 [Files]
-Source: "..\Release\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\flashmagicarmcortex.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\src\*.h"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
 Source: "..\bin\src\*.a"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
@@ -41,11 +41,11 @@ Source: "..\bin\src\gcc\*.a"; DestDir: "{app}\src\gcc"; Permissions: users-modif
 Source: "..\bin\src\gcc\*.o"; DestDir: "{app}\src\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\bin\src\gcc\*.dll"; DestDir: "{app}\src\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\bin\src\gcc\*.exe"; DestDir: "{app}\src\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\lwip\*.h"; DestDir: "{app}\src\lwip"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\lwip\*.a"; DestDir: "{app}\src\lwip"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\lwip\*.o"; DestDir: "{app}\src\lwip"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\lwip\*.dll"; DestDir: "{app}\src\lwip"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\lwip\*.exe"; DestDir: "{app}\src\lwip"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\src\lwip-1.4.0\*.h"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\src\lwip-1.4.0\*.a"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\src\lwip-1.4.0\*.o"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\src\lwip-1.4.0\*.dll"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\src\lwip-1.4.0\*.exe"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\examples\*"; DestDir: "{app}\examples"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Setup\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; DestDir: "{app}\usb_driver"; Flags: ignoreversion
 ; Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; DestDir: "{app}"; Flags: ignoreversion
