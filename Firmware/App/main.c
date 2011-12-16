@@ -25,7 +25,7 @@ void Hardware_Init(void)
 	RS485_Init();
 
 	RTC_Init();
-	RTC_Start();
+	//RTC_Start();
 
 	//RTC_Time t;
 	//memset(&t, 0, sizeof(t));
@@ -33,12 +33,25 @@ void Hardware_Init(void)
 
 	I2C_Init( (unsigned int)I2CMASTER );
 
-	ADC_Init();
-	DAC_Init();
-	QEI_Init();
+	//ADC_Init();
+	//DAC_Init();
+	//QEI_Init();
 	GPIO_Init();
 
 }
+
+// Task list
+// See lwip-1.4.0/port/CoOS/lwipopts.h for stack size and priority
+//
+// TaskID - Prio - Task Name
+//   0    -  64  - CoOS Idle task
+//   1    -  25  - tcpip_thread task
+//   2    -  26  - ethernet_if_input task
+//   3    -  54  - HTTP_Connect task
+//   4    -  59  - SNTP_Thread task
+//   5    -  30  - Modbus_TCP_Connect
+//   6    -  15  - PLC_Cycle
+//   7    -  10  - DAC_StartUp/DAC_StartDown task
 
 int main()
 {

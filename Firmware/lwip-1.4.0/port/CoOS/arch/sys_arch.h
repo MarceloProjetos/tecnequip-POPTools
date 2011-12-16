@@ -48,7 +48,7 @@ typedef u32_t sys_prot_t;
 
 #define LWIP_TASK_MAX    5
 
-#define LWIP_START_PRIO  3
+#define LWIP_START_PRIO  5
 
 #define LWIP_MAX_QUEUE 		10
 #define LWIP_SIZE_QUEUE 	10

@@ -236,33 +236,34 @@
 // ---------- Thread options ----------
 //
 //*****************************************************************************
-#define DEFAULT_THREAD_NAME               "lwip_thread"
-#define DEFAULT_THREAD_STACKSIZE          376
-#define DEFAULT_THREAD_PRIO               LWIP_START_PRIO
 
 #define DAC_CYCLE_THREAD_NAME            "dac_cycle_thread"
 #define DAC_CYCLE_THREAD_STACKSIZE		  128
-#define DAC_CYCLE_THREAD_PRIO  		      LWIP_START_PRIO + 1
+#define DAC_CYCLE_THREAD_PRIO  		      LWIP_START_PRIO + 5
 
 #define PLC_CYCLE_THREAD_NAME            "plc_thread"
 #define PLC_CYCLE_THREAD_STACKSIZE		  512
 #define PLC_CYCLE_THREAD_PRIO  		      LWIP_START_PRIO + 10
 
+#define DEFAULT_THREAD_NAME               "lwip_thread"
+#define DEFAULT_THREAD_STACKSIZE          376
+#define DEFAULT_THREAD_PRIO               LWIP_START_PRIO + 15
+
 #define TCPIP_THREAD_NAME                 "tcpip_thread"
 #define TCPIP_THREAD_STACKSIZE            376
-#define TCPIP_THREAD_PRIO                 LWIP_START_PRIO + 11
-
-#define HTTP_THREAD_NAME                  "http_thread"
-#define HTTP_THREAD_STACKSIZE  			  128
-#define HTTP_THREAD_PRIO  				  LWIP_START_PRIO + 12
+#define TCPIP_THREAD_PRIO                 LWIP_START_PRIO + 20
 
 #define MODBUS_TCP_THREAD_NAME            "modbus_tcp_thread"
-#define MODBUS_TCP_THREAD_STACKSIZE		  128
-#define MODBUS_TCP_THREAD_PRIO  		  LWIP_START_PRIO + 13
+#define MODBUS_TCP_THREAD_STACKSIZE		  192
+#define MODBUS_TCP_THREAD_PRIO  		  LWIP_START_PRIO + 25
+
+#define HTTP_THREAD_NAME                  "http_thread"
+#define HTTP_THREAD_STACKSIZE  			  192
+#define HTTP_THREAD_PRIO  				  CFG_LOWEST_PRIO - 10
 
 #define SNTP_THREAD_NAME                  "sntp_thread"
-#define SNTP_THREAD_STACKSIZE             128
-#define SNTP_THREAD_PRIO                  CFG_LOWEST_PRIO - 11
+#define SNTP_THREAD_STACKSIZE             192
+#define SNTP_THREAD_PRIO                  CFG_LOWEST_PRIO - 5
 
 //#define TCPIP_MBOX_SIZE                 0
 //#define SLIPIF_THREAD_NAME              "slipif_loop"

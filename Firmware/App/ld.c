@@ -44,8 +44,8 @@ OS_STK							PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 // Variaveis PLC
 //volatile int I_mcr = 0;
 
-//#include "PLC_Null.inc"
-#include "PLC_Comm_Test.inc"
+#include "PLC_Null.inc"
+//#include "PLC_Comm_Test.inc"
 //#include "PLC_ColunaN.inc"
 
 /*void PLC_Run(void)

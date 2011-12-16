@@ -33,10 +33,10 @@ void Net_Init(void)
 	netif_set_default(netif_add(lpc17xx_netif, &IP_ADDRESS, &IP_NETMASK, &IP_GATEWAY, NULL, ethernetif_init, tcpip_input));
 	netif_set_up(lpc17xx_netif);
 
-	HTTP_Init();
 	dns_init();
-	SNTP_Init();
 
+	HTTP_Init();
+	SNTP_Init();
 	Modbus_Init();
 
 }
