@@ -49,6 +49,10 @@ static HWND GraphBox;
 static LONG_PTR PrevGraphBoxProc;
 #endif
 
+static int		time;
+static int		desloc;
+static float	points[DA_RESOLUTION];
+
 static ElemMultisetDA *current;
 
 static vector<D2D1_POINT_2F>	DAPoints;
@@ -83,23 +87,29 @@ extern struct {
 } IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
 extern int IoSeenPreviouslyCount;
 
-void CalculateDAPoints(ElemMultisetDA * l)
+void CalcUp(int calc_time, int calc_desloc)
 {
 	int tm = 0;
 	float factor = 0;
 
-	for (int i = 0; i < l->desloc; i++)
+	if (calc_desloc > DA_RESOLUTION || 
+		calc_desloc < (DA_RESOLUTION * -1))
+		return;
+
+	memset(points, 0, sizeof(points));
+
+	for (int i = 0; i < calc_time / DA_CYCLE_INTERVAL; i++)
 	{
-		tm = i * l->resolt;
-		if (tm < l->time)
+		tm = i * DA_CYCLE_INTERVAL;
+		if (tm < calc_time)
 		{
-			if (tm < l->time / 2)
+			if (tm < calc_time / 2)
 			{
-				factor = pow((tm * 1000.0f) / l->time, 2);
+				factor = pow((tm * 1000.0f) / calc_time, 2);
 			}
 			else
 			{
-				factor = 500000.0f - pow(1000.0f - (tm * 1000.0f) / l->time, 2);	
+				factor = 500000.0f - pow(1000.0f - (tm * 1000.0f) / calc_time, 2);	
 			}
 			factor /= 1000.0f;
 		}
@@ -107,10 +117,45 @@ void CalculateDAPoints(ElemMultisetDA * l)
 		{
 			factor = 500.0f;
 		}
-		l->points[i] = l->desloc + (l->desloc * 2 * factor) / 1000.0f;
+		points[i] = DA_RESOLUTION + (calc_desloc * 2 * factor) / 1000.0f;
 	}
 }
 
+void CalcDown(int calc_time, int calc_desloc)
+{
+	int tm = 0;
+	float factor = 0;
+
+	if (calc_desloc > DA_RESOLUTION || 
+		calc_desloc < (DA_RESOLUTION * -1))
+		return;
+
+	memset(points, 0, sizeof(points));
+
+	for (int i = 0; i < calc_time / DA_CYCLE_INTERVAL; i++)
+	{
+		tm = i * DA_CYCLE_INTERVAL;
+		if (tm < calc_time)
+		{
+			if (tm < calc_time / 2)
+			{
+				factor = 500000.0f - pow((tm * 1000.0f) / calc_time, 2);
+			}
+			else
+			{
+				factor = pow(1000.0f - (tm * 1000.0f) / calc_time, 2);
+			}
+			factor /= 1000.0f;
+		}
+		else
+		{
+			factor = 0.0f;
+		}
+		points[i] = /*DA_RESOLUTION +*/ (calc_desloc * 2 * factor) / 1000.0f;
+	}
+
+	
+}
 #if SHOW_GRAPH
 D2D1_POINT_2F PixelToDIP(LPARAM lParam)
 {
@@ -262,7 +307,7 @@ void ReleasePoint(D2D1_POINT_2F p)
 {
 }
 
-void Render(D2D1_RECT_F Rect)
+void Render()
 {
     HRESULT hr;
 
@@ -291,8 +336,8 @@ void Render(D2D1_RECT_F Rect)
 		WCHAR Num[24];
 
 		// Draw X Scale
-		float interval = (size.width - MARGIN * 2) / current->resolt;
-		for (int i = 1; i < size.width / current->resolt; i++)
+		float interval = (size.width - MARGIN * 2) / DA_CYCLE_INTERVAL;
+		for (int i = 1; i < size.width / DA_CYCLE_INTERVAL; i++)
 		{
 			/*pRenderTarget->DrawLine(D2D1::Point2F(MARGIN - 1.0f + (interval * i), size.height - MARGIN - 1.0f - 5.0f), 
 									D2D1::Point2F(MARGIN - 1.0f + (interval * i), size.height - MARGIN - 1.0f + 5.0f), pAxisBrush);*/
@@ -302,7 +347,7 @@ void Render(D2D1_RECT_F Rect)
 										MARGIN - 1.0f + (interval * i) + (FONT_SIZE * 1.5f), 
 										size.height - 5.0f);
 
-			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", (current->time / current->resolt) * i );
+			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", (abs(time) / DA_CYCLE_INTERVAL) * i );
 
 			pRenderTarget->DrawText(Num, static_cast<UINT>(wcslen(Num)), pTextFormat, &r, pAxisBrush);
 		}
@@ -322,22 +367,22 @@ void Render(D2D1_RECT_F Rect)
 										(MARGIN * 2) - 5.0f, 
 										MARGIN - 1.0f + (interval * i) + FONT_SIZE);
 
-			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", static_cast<int>(current->desloc * (0.25f * (4 - i))));
+			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", static_cast<int>(abs(desloc) * (0.25f * (4 - i))));
 
 			pRenderTarget->DrawText(Num, static_cast<UINT>(wcslen(Num)), pTextFormat, &r, pAxisBrush);
 		}
 
 		// Scale to draw graph
-		float scaleX = (size.width - (MARGIN * 3)) / current->time; // (DA_RESOLUTION * current->resolt);
-		float scaleY = (size.height - (MARGIN * 2)) / current->desloc; // (DA_RESOLUTION * current->resold);
+		float scaleX = (size.width - (MARGIN * 3)) / abs(time); // (DA_RESOLUTION * DA_CYCLE_INTERVAL);
+		float scaleY = (size.height - (MARGIN * 2)) / abs(desloc); // (DA_RESOLUTION * current->resold);
 
 		size.width = ceil((size.width - (MARGIN * 3)) / scaleX); 
 		size.height = ceil((size.height - (MARGIN * 2)) / scaleY);
 
 		D2D1_MATRIX_3X2_F scale = D2D1::Matrix3x2F::Scale(scaleX, scaleY, D2D1::Point2F(0.0f, 0.0f));
 		
-		float intervalX = size.width / (current->time / current->resolt);
-		float intervalY = (size.height - (MARGIN * 2)) / (current->desloc);
+		float intervalX = size.width / (abs(time) / DA_CYCLE_INTERVAL);
+		float intervalY = (size.height - (MARGIN * 2)) / abs(desloc);
 
 		D2D1_MATRIX_3X2_F translate = D2D1::Matrix3x2F::Translation(MARGIN * 2, MARGIN);
 
@@ -349,20 +394,26 @@ void Render(D2D1_RECT_F Rect)
 
 		hr = pLineFillPathGeometry->Open(&pSink);
 
-		D2D1_POINT_2F point = D2D1::Point2F(0, size.height - (current->points[0] - size.height));
-
 		pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
 
-		pSink->BeginFigure(point, D2D1_FIGURE_BEGIN_FILLED);
+		pSink->BeginFigure(D2D1::Point2F(0.0f, size.height - (current->speedup ? points[0] - DA_RESOLUTION : points[0])), D2D1_FIGURE_BEGIN_FILLED);
 
 		int i;
-		for (i = 1; i < ceil(static_cast<float>(current->time / current->resolt)); i++)
+		for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
 		{
-			pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current->points[i] - size.height) - intervalY));
+			pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current->speedup ? points[i] - DA_RESOLUTION : points[i])));
 		}
-		pSink->AddLine(D2D1::Point2F(intervalX * i, 0));
-		pSink->AddLine(D2D1::Point2F(intervalX * i, size.height));
-		
+		if (current->speedup)
+		{
+			pSink->AddLine(D2D1::Point2F(intervalX * i, 0.0f));
+			pSink->AddLine(D2D1::Point2F(intervalX * i, DA_RESOLUTION));
+		}
+		else
+		{
+			pSink->AddLine(D2D1::Point2F(intervalX * i, DA_RESOLUTION));
+			pSink->AddLine(D2D1::Point2F(0.0f, DA_RESOLUTION));
+		}
+
 		pSink->EndFigure(D2D1_FIGURE_END_CLOSED); // D2D1_FIGURE_END_OPEN D2D1_FIGURE_END_CLOSED
 		
 		hr = pSink->Close();
@@ -371,6 +422,53 @@ void Render(D2D1_RECT_F Rect)
 		// Draw graph
 		pRenderTarget->FillGeometry(pLineFillPathGeometry, pLineFillBrush);
 		//pRenderTarget->DrawGeometry(pLineFillPathGeometry, pLineFillBrush);
+
+		// Draw graphic line
+		pRenderTarget->SetTransform(translate);
+		size = pRenderTarget->GetSize();
+
+		intervalX = (size.width - (MARGIN * 3)) / (abs(time) / DA_CYCLE_INTERVAL);
+		intervalY = (size.height - (MARGIN * 2)) / abs(desloc);
+
+		float point1, point2 = 0.0f;
+		for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
+		{
+			if (current->speedup)
+			{
+				point1 = (points[i - 1] - DA_RESOLUTION) * scaleY;
+				point2 = (points[i] - DA_RESOLUTION) * scaleY;
+				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), size.height - point1 - (MARGIN * 2)),
+										D2D1::Point2F(intervalX * i, size.height - point2 - (MARGIN * 2)), 
+										pLineBrush, 4.0f, pLineStrokeStyle);
+			}
+			else
+			{
+				point1 = points[i - 1] * scaleY;
+				point2 = points[i] * scaleY;
+
+				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), size.height - point1 - (MARGIN * 2)),
+										D2D1::Point2F(intervalX * i, size.height - point2 - (MARGIN * 2)), 
+										pLineBrush, 4.0f, pLineStrokeStyle);
+			}
+
+		}
+
+		if (current->speedup)
+		{
+			point1 = (points[i - 1] - DA_RESOLUTION) * scaleY;
+
+			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), size.height - point1 - (MARGIN * 2)),
+									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, 0), 
+									pLineBrush, 4.0f, pLineStrokeStyle);
+		}
+		else
+		{
+			point1 = points[i - 1] * scaleY;
+
+			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), size.height - point1 - (MARGIN * 2)),
+									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, size.height - (MARGIN * 2)), 
+									pLineBrush, 4.0f, pLineStrokeStyle);
+		}
 
 		// Translate geometry
 		/*D2D1_MATRIX_3X2_F transform = scale * translate;
@@ -386,17 +484,17 @@ void Render(D2D1_RECT_F Rect)
 
 		SafeRelease(&pTransformedGeometry);*/
 
-		/*for (i = 0; i < (current->time / current->resolt) - 1; i++)
+		/*for (i = 0; i < (time / DA_CYCLE_INTERVAL) - 1; i++)
 		{
-			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * i, size.height - (current->points[i] - size.height) - intervalY),
-									D2D1::Point2F(intervalX * i, size.height - (current->points[i + 1] - size.height) - intervalY), 
+			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * i, size.height - (points[i] - size.height) - intervalY),
+									D2D1::Point2F(intervalX * i, size.height - (points[i + 1] - size.height) - intervalY), 
 									pLineBrush, 5, pLineStrokeStyle);
 		}*/
 
 		// Draw points
-		/*for (i = 1; i < current->time / current->resolt; i++)
+		/*for (i = 1; i < time / DA_CYCLE_INTERVAL; i++)
 		{
-			pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F(intervalX * i, size.height - (current->points[i] - size.height) - intervalY), 5.0f, 5.0f), pPointBrush);
+			pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F(intervalX * i, size.height - (points[i] - size.height) - intervalY), 5.0f, 5.0f), pPointBrush);
 		}*/
 
 		//hr = pLinePathGeometry->Open(&pSink);
@@ -405,9 +503,9 @@ void Render(D2D1_RECT_F Rect)
 
 		//pSink->BeginFigure(point, D2D1_FIGURE_BEGIN_FILLED);
 
-		//for (i = 0; i < current->time / current->resolt - 1; i++)
+		//for (i = 0; i < time / DA_CYCLE_INTERVAL - 1; i++)
 		//{
-		//	pSink->AddLine(D2D1::Point2F(intervalX + (intervalX * i+1), size.height - (current->points[i] - size.height) - intervalY));
+		//	pSink->AddLine(D2D1::Point2F(intervalX + (intervalX * i+1), size.height - (points[i] - size.height) - intervalY));
 		//}
 		//pSink->EndFigure(D2D1_FIGURE_END_OPEN);
 
@@ -471,9 +569,9 @@ static LRESULT CALLBACK GraphBoxProc(HWND hwnd, UINT msg, WPARAM wParam,
 				if (r.right == 0 && r.bottom == 0)
 					r = ps.rcPaint;
 
-				D2D1_RECT_F Rect = RectF(static_cast<FLOAT>(r.left), static_cast<FLOAT>(r.top), static_cast<FLOAT>(r.right), static_cast<FLOAT>(r.bottom));
+				//D2D1_RECT_F Rect = RectF(static_cast<FLOAT>(r.left), static_cast<FLOAT>(r.top), static_cast<FLOAT>(r.right), static_cast<FLOAT>(r.bottom));
 
-				Render(Rect);
+				Render(/*Rect*/);
 
 				EndPaint(hwnd, &ps); 
 				//ValidateRect(hwnd, NULL);
@@ -496,31 +594,24 @@ static LRESULT CALLBACK GraphBoxProc(HWND hwnd, UINT msg, WPARAM wParam,
 // Don't allow any characters other than A-Za-z0-9_ in the name.
 //-----------------------------------------------------------------------------
 
-static LRESULT CALLBACK TimeNameProc(HWND hwnd, UINT msg, WPARAM wParam,
+static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
     LPARAM lParam)
 {
     if(msg == WM_CHAR) {
-        if(!(isalpha(wParam) || isdigit(wParam) || wParam == '_' || wParam == '-' ||
-            wParam == '\b'))
-        {
+        if(!(isdigit(wParam) || wParam == '-' || wParam == '\b')) {
             return 0;
         }
     }
 
-    return CallWindowProc((WNDPROC)PrevTimeNameProc, hwnd, msg, wParam, lParam);
-}
-static LRESULT CALLBACK DeslNameProc(HWND hwnd, UINT msg, WPARAM wParam,
-    LPARAM lParam)
-{
-    if(msg == WM_CHAR) {
-        if(!(isalpha(wParam) || isdigit(wParam) || wParam == '_' || wParam == '-' ||
-            wParam == '\b'))
-        {
-            return 0;
-        }
-    }
+	LONG_PTR t;
+    if(hwnd == TimeTextbox)
+        t = PrevTimeNameProc;
+    else if(hwnd == DeslTextbox)
+        t = PrevDeslNameProc;
+    else
+        oops();
 
-    return CallWindowProc((WNDPROC)PrevDeslNameProc, hwnd, msg, wParam, lParam);
+    return CallWindowProc((WNDPROC)t, hwnd, msg, wParam, lParam);
 }
 
 static void MakeControls(void)
@@ -535,7 +626,7 @@ static void MakeControls(void)
         16, 20, 120, 25, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(LinearRadio);
 
-    CustomRadio = CreateWindowEx(0, WC_BUTTON, _("Curva Ascendente"),
+    CustomRadio = CreateWindowEx(0, WC_BUTTON, _("Curva"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 42, 125, 25, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(CustomRadio);
@@ -626,10 +717,10 @@ static void MakeControls(void)
     NiceFont(CancelButton);
 
     PrevTimeNameProc = SetWindowLongPtr(TimeTextbox, GWLP_WNDPROC, 
-        (LONG_PTR)TimeNameProc);
+        (LONG_PTR)MyNumberProc);
 
 	PrevDeslNameProc = SetWindowLongPtr(DeslTextbox, GWLP_WNDPROC, 
-        (LONG_PTR)DeslNameProc);
+        (LONG_PTR)MyNumberProc);
 
 #if SHOW_GRAPH
     GraphBox = CreateWindowEx(0, WC_STATIC, NULL,
@@ -658,16 +749,25 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 	SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(l->name));
 	SendMessage(DeslTextbox, WM_SETTEXT, 0, (LPARAM)(l->name1));
 
+	time = l->time;
+	desloc = l->desloc;
+
+	if (l->speedup)
+		CalcUp(time, desloc);
+	else
+		CalcDown(time, desloc);
+
 	_itoa(l->time, num, 10);
     SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 	_itoa(l->desloc, num, 10);
     SendMessage(DeslTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 	_itoa(l->resolt, num, 10);
-    /*SendMessage(ResTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-	_itoa(l->resold, num, 10);
-    SendMessage(ResDeslTextbox, WM_SETTEXT, 0, (LPARAM)(num));*/
 
-    /*if(l->linear) {
+    SendMessage(ResTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+	_itoa(l->resold, num, 10);
+    SendMessage(ResDeslTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+
+    if(l->linear) {
         SendMessage(LinearRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else {
         SendMessage(CustomRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -676,7 +776,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
         SendMessage(ForwardRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else {
         SendMessage(BackwardRadio, BM_SETCHECK, BST_CHECKED, 0);
-    }*/ 
+    } 
     if(l->speedup) {
         SendMessage(SpeedUpRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else {
@@ -703,6 +803,27 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
                 break;
             }
         }
+
+        SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
+		if (l->time != atoi(num))
+		{
+			time = atoi(num);
+			if (l->speedup)
+				CalcUp(time, desloc);
+			else
+				CalcDown(time, desloc);
+		}
+
+        SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
+		if (l->desloc != atoi(num))
+		{
+			desloc = atoi(num);
+			if (l->speedup)
+				CalcUp(time, desloc);
+			else
+				CalcDown(time, desloc);
+		}
+
 		if(IsDialogMessage(MultisetDADialog, &msg)) continue;
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
@@ -710,7 +831,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 
     if(!DialogCancel) {
 
-        /*if(SendMessage(LinearRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+        if(SendMessage(LinearRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             l->linear = TRUE;
         } else if(SendMessage(CustomRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             l->linear = FALSE;
@@ -719,7 +840,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
             l->forward = TRUE;
         } else if(SendMessage(BackwardRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             l->forward = FALSE;
-        }*/          
+        }          
 		if(SendMessage(SpeedUpRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
             l->speedup = TRUE;
         } else if(SendMessage(SpeedDownRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
@@ -733,8 +854,6 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 
 		SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(l->name));
 		SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(l->name1));
-
-		CalculateDAPoints(l);
 
 		//int i;
 

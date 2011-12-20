@@ -30,8 +30,6 @@
 
 static ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 
-extern void CalculateDAPoints(ElemMultisetDA *l);
-
 //-----------------------------------------------------------------------------
 // Convenience routines for allocating frequently-used data structures.
 //-----------------------------------------------------------------------------
@@ -456,16 +454,11 @@ void AddMultisetDA(void)
 	t->d.multisetDA.desloc = DA_RESOLUTION;
 	t->d.multisetDA.resolt = 10;
 	t->d.multisetDA.resold = 10;
-	//t->d.multisetDA.linear = 1;
-	//t->d.multisetDA.forward = 1;
+	t->d.multisetDA.linear = 1;
+	t->d.multisetDA.forward = 1;
 	t->d.multisetDA.speedup = 1;
 	
 	memset(t->d.multisetDA.points, 0, sizeof(t->d.multisetDA.points));
-
-	//t->d.multisetDA.resolt = abs(t->d.multisetDA.time / DA_RESOLUTION);
-	//t->d.multisetDA.resold = abs(t->d.multisetDA.desloc / DA_RESOLUTION);
-
-	CalculateDAPoints(&t->d.multisetDA);
 
     AddLeaf(ELEM_MULTISET_DA, t);
 }

@@ -326,7 +326,8 @@ typedef SDWORD SWORD;
 #define MAX_NAME_LEN                128
 #define MAX_COMMENT_LEN             384
 #define MAX_LOOK_UP_TABLE_LEN        60
-#define DA_RESOLUTION		(4096 / 2)
+#define DA_RESOLUTION		(4096 / 2)	// da resolution 12 bits
+#define DA_CYCLE_INTERVAL	10			// miliseconds
 
 typedef struct ElemSubckParallelTag ElemSubcktParallel;
 
@@ -409,13 +410,13 @@ typedef struct ElemResetEncTag {
 typedef struct ElemMultisetDATag {
 	char    name[MAX_NAME_LEN];		// Tempo
 	char    name1[MAX_NAME_LEN];	// Deslocamento
-	//BOOL	linear;					// Linear, Curva Ascendente/Descendente, Personalizada
-	//BOOL	forward;				// Avança, Recua
-	unsigned char	speedup;				// Aceleração, Desaceleração
+	BOOL	linear;					// Linear, Curva Ascendente/Descendente, Personalizada
+	BOOL	forward;				// Avança, Recua
+	unsigned char	speedup;		// Aceleração, Desaceleração
     int		resolt;
 	int		resold;
 	int		time;
-	float	desloc;
+	int		desloc;
 	float	points[DA_RESOLUTION];
 } ElemMultisetDA;
 
