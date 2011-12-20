@@ -19,6 +19,7 @@ extern IWICImagingFactory *	pWICFactory;
 static HWND MultisetDADialog;
 static ID2D1HwndRenderTarget*	pRenderTarget;
 static ID2D1StrokeStyle *		pLineStrokeStyle;
+static ID2D1TransformedGeometry * pTransformedGeometry;
 static ID2D1PathGeometry*		pLinePathGeometry;
 static ID2D1PathGeometry*		pLineFillPathGeometry;
 static IDWriteTextFormat*		pTextFormat;
@@ -271,24 +272,60 @@ void Render(D2D1_RECT_F Rect)
 
         pRenderTarget->BeginDraw();	
 
-		float scaleX = size.width / current->time; // (DA_RESOLUTION * current->resolt);
-		float scaleY = size.height / current->desloc; // (DA_RESOLUTION * current->resold);
-
-		//scaleX *= 0.9f;
-		//scaleY *= 0.9f;
-
-        pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
-		pRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(scaleX, scaleY, D2D1::Point2F(0.0f, 0.0f)));
-
-		size.width = ceil(size.width / scaleX); 
-		size.height = ceil(size.height / scaleY);
-
 		pRenderTarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), pBackgroundBrush);
 
-		float intervalX = size.width / (current->time / current->resolt);
-		float intervalY = size.height / current->desloc;
+		float scaleX = (size.width - 50.0f) / current->time; // (DA_RESOLUTION * current->resolt);
+		float scaleY = (size.height - 50.0f) / current->desloc; // (DA_RESOLUTION * current->resold);
 
-		//pRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(intervalX * -1.0f, intervalY * -1.0f));
+		size.width = ceil((size.width - 50.0f) / scaleX); 
+		size.height = ceil((size.height - 50.0f) / scaleY);
+
+		D2D1_MATRIX_3X2_F scale = D2D1::Matrix3x2F::Scale(scaleX, scaleY, D2D1::Point2F(0.0f, 0.0f));
+		
+		float intervalX = (size.width - 50.0f) / (current->time / current->resolt);
+		float intervalY = (size.height - 50.0f) / (current->desloc);
+
+		D2D1_MATRIX_3X2_F translate = D2D1::Matrix3x2F::Translation(25.0f, 25.0f);
+
+        pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
+		pRenderTarget->SetTransform(scale * translate);
+
+		ID2D1GeometrySink *pSink = NULL;
+
+		hr = pLineFillPathGeometry->Open(&pSink);
+
+		D2D1_POINT_2F point = D2D1::Point2F(0, size.height - (current->points[0] - size.height));
+
+		pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
+
+		pSink->BeginFigure(point, D2D1_FIGURE_BEGIN_FILLED);
+
+		int i = 0;
+		for (i = 1; i < current->time / current->resolt; i++)
+		{
+			pSink->AddLine(D2D1::Point2F(intervalX * (i + 1), size.height - (current->points[i] - size.height) - intervalY));
+		}
+		pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current->points[0] - size.height)));
+		
+		pSink->EndFigure(D2D1_FIGURE_END_CLOSED); // D2D1_FIGURE_END_OPEN D2D1_FIGURE_END_CLOSED
+		
+		hr = pSink->Close();
+		SafeRelease(&pSink);
+
+		pRenderTarget->FillGeometry(pLineFillPathGeometry, pLineFillBrush);
+
+		/*D2D1_MATRIX_3X2_F transform = scale * translate;
+
+		hr = pD2DFactory->CreateTransformedGeometry(
+			 pLineFillPathGeometry,
+			 &transform,
+			 &pTransformedGeometry
+			 );
+
+		pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
+		pRenderTarget->FillGeometry(pTransformedGeometry, pLineFillBrush);
+
+		SafeRelease(&pTransformedGeometry);*/
 
 		//pRenderTarget->PushAxisAlignedClip(Rect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 
@@ -333,30 +370,6 @@ void Render(D2D1_RECT_F Rect)
 
 		//	pRenderTarget->DrawText(Num, static_cast<UINT>(wcslen(Num)), pTextFormat, &r, pAxisBrush);
 		//}
-
-		int i = 0;
-		ID2D1GeometrySink *pSink = NULL;
-
-		hr = pLineFillPathGeometry->Open(&pSink);
-
-		D2D1_POINT_2F point = D2D1::Point2F(0, size.height - (current->points[0] - size.height));
-
-		pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
-
-		pSink->BeginFigure(point, D2D1_FIGURE_BEGIN_FILLED);
-
-		for (i = 1; i < current->time / current->resolt; i++)
-		{
-			pSink->AddLine(D2D1::Point2F(intervalX * (i + 1), size.height - (current->points[i] - size.height) - intervalY));
-		}
-		pSink->AddLine(D2D1::Point2F(size.width, size.height));
-
-        pSink->EndFigure(D2D1_FIGURE_END_CLOSED); // D2D1_FIGURE_END_OPEN D2D1_FIGURE_END_CLOSED
-
-		pRenderTarget->FillGeometry(pLineFillPathGeometry, pLineFillBrush);
-
-		hr = pSink->Close();
-		SafeRelease(&pSink);
 
 		/*for (i = 0; i < (current->time / current->resolt) - 1; i++)
 		{
