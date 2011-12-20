@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <commctrl.h>
+#include <math.h>
 
 #include "ldmicro.h"
 
@@ -9,7 +10,7 @@
 #define FONT_NAME	L"Verdana"
 #define FONT_SIZE	20.0f
 
-#define SHOW_GRAPH	0
+#define SHOW_GRAPH	1
 
 extern ID2D1Factory*		pD2DFactory;
 extern IDWriteFactory*		pWriteFactory;
@@ -17,6 +18,7 @@ extern IWICImagingFactory *	pWICFactory;
 
 static HWND MultisetDADialog;
 static ID2D1HwndRenderTarget*	pRenderTarget;
+static ID2D1StrokeStyle *		pLineStrokeStyle;
 static ID2D1PathGeometry*		pLinePathGeometry;
 static ID2D1PathGeometry*		pLineFillPathGeometry;
 static IDWriteTextFormat*		pTextFormat;
@@ -156,6 +158,23 @@ HRESULT CreateDeviceResources()
 
 		if (SUCCEEDED(hr))
 		{
+			hr = pD2DFactory->CreateStrokeStyle(
+				D2D1::StrokeStyleProperties(
+					D2D1_CAP_STYLE_ROUND,
+					D2D1_CAP_STYLE_ROUND,
+					D2D1_CAP_STYLE_FLAT,
+					D2D1_LINE_JOIN_ROUND,
+					2.0f,
+					D2D1_DASH_STYLE_SOLID,
+					0.0f),
+				NULL,
+				0,
+				&pLineStrokeStyle
+				);
+		}
+
+		if (SUCCEEDED(hr))
+		{
 			hr = pRenderTarget->CreateSolidColorBrush(
 				D2D1::ColorF(D2D1::ColorF::White),
 				&pBackgroundBrush
@@ -248,41 +267,32 @@ void Render(D2D1_RECT_F Rect)
     if (SUCCEEDED(hr) && !(pRenderTarget->CheckWindowState() & D2D1_WINDOW_STATE_OCCLUDED))
     {
         // Retrieve the size of the render target.
-        D2D1_SIZE_F sz = pRenderTarget->GetSize();
-
-		float margin = 50.0f;
-
-		//float scaleX = (sz.width) / ((current->time / current->resolt) + 5.0f); // (DA_RESOLUTION * current->resolt);
-		//float scaleY = (sz.height) / (current->desloc + 50.0f); // (DA_RESOLUTION * current->resold);
-		float scaleX = sz.width / (current->time / current->resolt); // (DA_RESOLUTION * current->resolt);
-		float scaleY = sz.height / current->desloc; // (DA_RESOLUTION * current->resold);
+        D2D1_SIZE_F size = pRenderTarget->GetSize();
 
         pRenderTarget->BeginDraw();	
 
+		float scaleX = size.width / current->time; // (DA_RESOLUTION * current->resolt);
+		float scaleY = size.height / current->desloc; // (DA_RESOLUTION * current->resold);
+
+		//scaleX *= 0.9f;
+		//scaleY *= 0.9f;
+
         pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
+		pRenderTarget->SetTransform(D2D1::Matrix3x2F::Scale(scaleX, scaleY, D2D1::Point2F(0.0f, 0.0f)));
 
-		D2D1_MATRIX_3X2_F m = D2D1::Matrix3x2F::Scale(scaleX, scaleY, D2D1::Point2F(0.0f, 0.0f));
-		//D2D1::Matrix3x2F::Translation(scaleX, scaleY);
+		size.width = ceil(size.width / scaleX); 
+		size.height = ceil(size.height / scaleY);
 
-		pRenderTarget->SetTransform(&m);
+		pRenderTarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), pBackgroundBrush);
 
-		Rect.right /= scaleX; 
-		Rect.bottom /= scaleY;
+		float intervalX = size.width / (current->time / current->resolt);
+		float intervalY = size.height / current->desloc;
 
-		D2D1_SIZE_F size = sz;
-
-		size.width *= scaleX; 
-		size.height *= scaleY;
-
-		//float intervalX = (sz.width - 5.0f)  / (current->time / current->resolt);
-		//float intervalY = (sz.height - 50.0f) / current->desloc;
-		float intervalX = (sz.width - 5.0f)  / (current->time / current->resolt);
-		float intervalY = (sz.height - 50.0f) / current->desloc;
+		//pRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(intervalX * -1.0f, intervalY * -1.0f));
 
 		//pRenderTarget->PushAxisAlignedClip(Rect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 
 		// Draw background
-		pRenderTarget->FillRectangle(&Rect, pBackgroundBrush);
 
 		// Draw X, Y Axis
 		//pRenderTarget->DrawLine(D2D1::Point2F(intervalX, intervalY), 
@@ -324,29 +334,41 @@ void Render(D2D1_RECT_F Rect)
 		//	pRenderTarget->DrawText(Num, static_cast<UINT>(wcslen(Num)), pTextFormat, &r, pAxisBrush);
 		//}
 
-		int i;
+		int i = 0;
 		ID2D1GeometrySink *pSink = NULL;
 
 		hr = pLineFillPathGeometry->Open(&pSink);
 
-		D2D1_POINT_2F point = D2D1::Point2F(intervalX, size.height - (current->points[0] - size.height));
+		D2D1_POINT_2F point = D2D1::Point2F(0, size.height - (current->points[0] - size.height));
 
 		pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
 
 		pSink->BeginFigure(point, D2D1_FIGURE_BEGIN_FILLED);
 
-		for (i = 0; i < current->time / current->resolt - 1; i++)
+		for (i = 1; i < current->time / current->resolt; i++)
 		{
-			pSink->AddLine(D2D1::Point2F(intervalX + (intervalX * i+1), size.height - (current->points[i] - size.height) - intervalY));
+			pSink->AddLine(D2D1::Point2F(intervalX * (i + 1), size.height - (current->points[i] - size.height) - intervalY));
 		}
-		pSink->AddLine(D2D1::Point2F(intervalX + (intervalX * i), size.height));
+		pSink->AddLine(D2D1::Point2F(size.width, size.height));
 
-        pSink->EndFigure(D2D1_FIGURE_END_CLOSED);
+        pSink->EndFigure(D2D1_FIGURE_END_CLOSED); // D2D1_FIGURE_END_OPEN D2D1_FIGURE_END_CLOSED
 
 		pRenderTarget->FillGeometry(pLineFillPathGeometry, pLineFillBrush);
 
 		hr = pSink->Close();
 		SafeRelease(&pSink);
+
+		/*for (i = 0; i < (current->time / current->resolt) - 1; i++)
+		{
+			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * i, size.height - (current->points[i] - size.height) - intervalY),
+									D2D1::Point2F(intervalX * i, size.height - (current->points[i + 1] - size.height) - intervalY), 
+									pLineBrush, 5, pLineStrokeStyle);
+		}*/
+
+		/*for (i = 1; i < current->time / current->resolt; i++)
+		{
+			pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F(intervalX * i, size.height - (current->points[i] - size.height) - intervalY), 5.0f, 5.0f), pPointBrush);
+		}*/
 
 		//hr = pLinePathGeometry->Open(&pSink);
 
@@ -474,74 +496,74 @@ static LRESULT CALLBACK DeslNameProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static void MakeControls(void)
 {
-    /*HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Tipo de Rampa"),
+    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Tipo de Rampa"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE | WS_TABSTOP,
         7, 3, 140, 85, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(grouper);*/
+    NiceFont(grouper);
 
-    /*LinearRadio = CreateWindowEx(0, WC_BUTTON, _("Linear"),
+    LinearRadio = CreateWindowEx(0, WC_BUTTON, _("Linear"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE | WS_GROUP,
         16, 18, 120, 25, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(LinearRadio);*/
+    NiceFont(LinearRadio);
 
-    /*CustomRadio = CreateWindowEx(0, WC_BUTTON, _("Curva Ascendente"),
+    CustomRadio = CreateWindowEx(0, WC_BUTTON, _("Curva Ascendente"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 38, 125, 25, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(CustomRadio);*/
+    NiceFont(CustomRadio);
 
-    /*CustomRadio = CreateWindowEx(0, WC_BUTTON, _("Personalizada"),
+    CustomRadio = CreateWindowEx(0, WC_BUTTON, _("Personalizada"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 58, 120, 25, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(CustomRadio);*/
+    NiceFont(CustomRadio);
 
-    /*HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Direção do Movimento"),
+    HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Direção do Movimento"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
         150, 3, 145, 85, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(grouper2);*/
+    NiceFont(grouper2);
 
     /*ForwardRadio = CreateWindowEx(0, WC_BUTTON, _("Avançar"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_GROUP | WS_TABSTOP,
         159, 18, 100, 25, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(ForwardRadio);*/
+    NiceFont(ForwardRadio);
 
-    /*BackwardRadio = CreateWindowEx(0, WC_BUTTON, _("Recuar"),
+    BackwardRadio = CreateWindowEx(0, WC_BUTTON, _("Recuar"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
         159, 38, 100, 25, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(BackwardRadio); */
+    NiceFont(BackwardRadio);*/ 
 
     HWND grouper3 = CreateWindowEx(0, WC_BUTTON, _("Variação Velocidade"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        7, 3/*300, 3*/, 140, 68, MultisetDADialog, NULL, Instance, NULL);
+        /*7, 3*/300, 3, 140, 68, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper3);
 
     SpeedUpRadio = CreateWindowEx(0, WC_BUTTON, _("Aceleração"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_GROUP | WS_TABSTOP,
-        16, 18/*309, 18*/, 120, 25, MultisetDADialog, NULL, Instance, NULL);
+        /*16, 18*/309, 18, 120, 25, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(SpeedUpRadio);
 
     SpeedDownRadio = CreateWindowEx(0, WC_BUTTON, _("Desaceleração"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
-        16, 40/*309, 38*/, 120, 25, MultisetDADialog, NULL, Instance, NULL);
+        /*16, 40*/309, 38, 120, 25, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(SpeedDownRadio); 
 
     HWND timeLabel = CreateWindowEx(0, WC_STATIC, _("Tempo:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        150, 20/*450, 5*/, 100, 21, MultisetDADialog, NULL, Instance, NULL);
+        /*150, 20*/450, 5, 100, 21, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(timeLabel);
 
     TimeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        250, 20/*550, 5*/, 50, 21, MultisetDADialog, NULL, Instance, NULL);
+        /*250, 20*/550, 5, 50, 21, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(TimeTextbox);
 
     HWND deslLabel = CreateWindowEx(0, WC_STATIC, _("Deslocamento:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        150, 45/*450, 25*/, 100, 21, MultisetDADialog, NULL, Instance, NULL);
+        /*150, 45*/450, 25, 100, 21, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(deslLabel);
 
     DeslTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        250, 45/*550, 25*/, 50, 21, MultisetDADialog, NULL, Instance, NULL);
+        /*250, 45*/550, 25, 50, 21, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(DeslTextbox);
 
     /*HWND restimeLabel = CreateWindowEx(0, WC_STATIC, _("Escala T (ms):"),
@@ -566,12 +588,12 @@ static void MakeControls(void)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        340, 15/*720, 10*/, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
+        /*340, 15*/720, 10, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        340, 45/*720, 40*/, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
+        /*340, 45*/720, 40, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 
     PrevTimeNameProc = SetWindowLongPtr(TimeTextbox, GWLP_WNDPROC, 
@@ -597,7 +619,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 
     MultisetDADialog = CreateWindowClient(0, "LDmicroDialog",
         _("MultisetDA"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, /*800, 600*/420, 80, MainWindow, NULL, Instance, NULL);
+        100, 100, 800, 600/*420, 80*/, MainWindow, NULL, Instance, NULL);
     RECT r;
     GetClientRect(MultisetDADialog, &r);
 
@@ -683,7 +705,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 		SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(l->name));
 		SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(l->name1));
 
-		//CalculateDAPoints(l);
+		CalculateDAPoints(l);
 
 		//int i;
 
