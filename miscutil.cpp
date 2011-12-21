@@ -262,6 +262,8 @@ static LRESULT CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam,
                 DialogDone = TRUE;
                 DialogCancel = TRUE;
             }
+			else
+				return DefWindowProc(hwnd, msg, wParam, lParam);
             break;
         }
 
@@ -276,6 +278,7 @@ static LRESULT CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam,
     }
 
     return 1;
+	
 }
 
 //-----------------------------------------------------------------------------

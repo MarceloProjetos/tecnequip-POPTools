@@ -983,7 +983,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case 'R':
-                    CHANGING_PROGRAM(MakeResetOnlySelected());
+					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+						CHANGING_PROGRAM(AddMultisetDA());
+					} else {
+						CHANGING_PROGRAM(MakeResetOnlySelected());
+					}
                     break;
 
                 case 'E':

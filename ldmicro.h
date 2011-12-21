@@ -327,6 +327,7 @@ typedef SDWORD SWORD;
 #define MAX_COMMENT_LEN             384
 #define MAX_LOOK_UP_TABLE_LEN        60
 #define DA_RESOLUTION		(4096 / 2)	// da resolution 12 bits
+#define DA_VOLTAGE			10000.0f	// voltagem DA em mV (-10V +10V)
 #define DA_CYCLE_INTERVAL	10			// miliseconds
 
 typedef struct ElemSubckParallelTag ElemSubcktParallel;
@@ -417,7 +418,8 @@ typedef struct ElemMultisetDATag {
 	int		resold;
 	int		time;
 	int		desloc;
-	float	points[DA_RESOLUTION];
+	int		type;					// 0 = Valor saida do DA (2048 ~ -2048), 1 = milivolt (mV) (10V ~-10V), 2 = percentual (%)
+	int		adjust;
 } ElemMultisetDA;
 
 typedef struct ElemReadUSSTag {

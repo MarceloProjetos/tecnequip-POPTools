@@ -38,16 +38,18 @@ static HWND LinearRadio;
 static HWND CustomRadio;
 static HWND TimeTextbox;
 static HWND DeslTextbox;
+static HWND AdjustTextbox;
 static HWND ResTimeTextbox;
 static HWND ResDeslTextbox;
+static HWND UpdateButton;
+static HWND DeslTypeCombobox;
 
-static LONG_PTR PrevTimeNameProc;
-static LONG_PTR PrevDeslNameProc;
+static LONG_PTR PrevNumProc;
+static LONG_PTR PrevUpdateButtonProc;
+static LONG_PTR PrevDeslTypeProc;
 
-#if SHOW_GRAPH
-static HWND GraphBox;
+static HWND		GraphBox;
 static LONG_PTR PrevGraphBoxProc;
-#endif
 
 static int		time;
 static int		desloc;
@@ -57,26 +59,27 @@ static ElemMultisetDA *current;
 
 static vector<D2D1_POINT_2F>	DAPoints;
 
-const LPCTSTR ComboboxTimeResolItens[] = { _("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
-										   _("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"),
-										   _("31"), _("32"), _("33"), _("34"), _("35"), _("36"), _("37"), _("38"), _("39"), _("40"),
-										   _("41"), _("42"), _("43"), _("44"), _("45"), _("46"), _("47"), _("48"), _("49"), _("50"),
-										   _("51"), _("52"), _("53"), _("54"), _("55"), _("56"), _("57"), _("58"), _("59"), _("60"),
-										   _("61"), _("62"), _("63"), _("64"), _("65"), _("66"), _("67"), _("68"), _("69"), _("70"),
-										   _("71"), _("72"), _("73"), _("74"), _("75"), _("76"), _("77"), _("78"), _("79"), _("80"),
-										   _("81"), _("82"), _("83"), _("84"), _("85"), _("86"), _("87"), _("88"), _("89"), _("90"),
-										   _("91"), _("92"), _("93"), _("94"), _("95"), _("96"), _("97"), _("98"), _("99"), _("100") };
+//const LPCTSTR ComboboxTimeResolItens[] = { _("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
+//										   _("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"),
+//										   _("31"), _("32"), _("33"), _("34"), _("35"), _("36"), _("37"), _("38"), _("39"), _("40"),
+//										   _("41"), _("42"), _("43"), _("44"), _("45"), _("46"), _("47"), _("48"), _("49"), _("50"),
+//										   _("51"), _("52"), _("53"), _("54"), _("55"), _("56"), _("57"), _("58"), _("59"), _("60"),
+//										   _("61"), _("62"), _("63"), _("64"), _("65"), _("66"), _("67"), _("68"), _("69"), _("70"),
+//										   _("71"), _("72"), _("73"), _("74"), _("75"), _("76"), _("77"), _("78"), _("79"), _("80"),
+//										   _("81"), _("82"), _("83"), _("84"), _("85"), _("86"), _("87"), _("88"), _("89"), _("90"),
+//										   _("91"), _("92"), _("93"), _("94"), _("95"), _("96"), _("97"), _("98"), _("99"), _("100") };
 
-const LPCTSTR ComboboxDeslResolItens[] = { _("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
-										   _("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"),
-										   _("31"), _("32"), _("33"), _("34"), _("35"), _("36"), _("37"), _("38"), _("39"), _("40"),
-										   _("41"), _("42"), _("43"), _("44"), _("45"), _("46"), _("47"), _("48"), _("49"), _("50"),
-										   _("51"), _("52"), _("53"), _("54"), _("55"), _("56"), _("57"), _("58"), _("59"), _("60"),
-										   _("61"), _("62"), _("63"), _("64"), _("65"), _("66"), _("67"), _("68"), _("69"), _("70"),
-										   _("71"), _("72"), _("73"), _("74"), _("75"), _("76"), _("77"), _("78"), _("79"), _("80"),
-										   _("81"), _("82"), _("83"), _("84"), _("85"), _("86"), _("87"), _("88"), _("89"), _("90"),
-										   _("91"), _("92"), _("93"), _("94"), _("95"), _("96"), _("97"), _("98"), _("99"), _("100") };
+//const LPCTSTR ComboboxDeslResolItens[] = { _("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
+//										   _("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"),
+//										   _("31"), _("32"), _("33"), _("34"), _("35"), _("36"), _("37"), _("38"), _("39"), _("40"),
+//										   _("41"), _("42"), _("43"), _("44"), _("45"), _("46"), _("47"), _("48"), _("49"), _("50"),
+//										   _("51"), _("52"), _("53"), _("54"), _("55"), _("56"), _("57"), _("58"), _("59"), _("60"),
+//										   _("61"), _("62"), _("63"), _("64"), _("65"), _("66"), _("67"), _("68"), _("69"), _("70"),
+//										   _("71"), _("72"), _("73"), _("74"), _("75"), _("76"), _("77"), _("78"), _("79"), _("80"),
+//										   _("81"), _("82"), _("83"), _("84"), _("85"), _("86"), _("87"), _("88"), _("89"), _("90"),
+//										   _("91"), _("92"), _("93"), _("94"), _("95"), _("96"), _("97"), _("98"), _("99"), _("100") };
 
+const LPCTSTR DeslTypeItens[] = { _("Deslocamento (DA):"), _("Deslocamento (mV)"), _("Deslocamento (%)") };
 
 #define MAX_IO_SEEN_PREVIOUSLY 512
 extern struct {
@@ -156,7 +159,7 @@ void CalcDown(int calc_time, int calc_desloc)
 
 	
 }
-#if SHOW_GRAPH
+
 D2D1_POINT_2F PixelToDIP(LPARAM lParam)
 {
     static D2D1_POINT_2F dpi = {96, 96}; // The default DPI
@@ -221,6 +224,7 @@ HRESULT CreateDeviceResources()
 
 		if (SUCCEEDED(hr))
 		{
+			//D2D1_COLOR_F c = D2D1::ColorF(0xf0ffff);
 			hr = pRenderTarget->CreateSolidColorBrush(
 				D2D1::ColorF(D2D1::ColorF::White),
 				&pBackgroundBrush
@@ -330,8 +334,9 @@ void Render()
 		// Draw Y Axis
 		pRenderTarget->DrawLine(D2D1::Point2F((MARGIN * 2) - 1.0f, MARGIN - 1.0f), 
 								D2D1::Point2F((MARGIN * 2) - 1.0f, size.height - MARGIN + 1.0f), pAxisBrush);
-		pRenderTarget->DrawLine(D2D1::Point2F(size.width - MARGIN, MARGIN - 1.0f), 
-								D2D1::Point2F(size.width - MARGIN, size.height - MARGIN + 1.0f), pAxisBrush);
+
+		/*pRenderTarget->DrawLine(D2D1::Point2F(size.width - MARGIN, MARGIN - 1.0f), 
+								D2D1::Point2F(size.width - MARGIN, size.height - MARGIN + 1.0f), pAxisBrush);*/
 
 		WCHAR Num[24];
 
@@ -354,27 +359,28 @@ void Render()
 
 		// Draw Y Scale
 		interval = (size.height - MARGIN * 2) / 4;
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 5; i++)
 		{
-			pRenderTarget->DrawLine(//D2D1::Point2F((MARGIN * 2) - 1.0f - 5.0f, MARGIN - 1.0f + (interval * i)), 
-									//D2D1::Point2F((MARGIN * 2) - 1.0f + 5.0f, MARGIN - 1.0f + (interval * i)), 
-									D2D1::Point2F((MARGIN * 2) - 1.0f, MARGIN - 1.0f + (interval * i)),
-									D2D1::Point2F(size.width - MARGIN, MARGIN - 1.0f + (interval * i)), 
-									pAxisBrush);
+			if (i < 4)
+				pRenderTarget->DrawLine(//D2D1::Point2F((MARGIN * 2) - 1.0f - 5.0f, MARGIN - 1.0f + (interval * i)), 
+										//D2D1::Point2F((MARGIN * 2) - 1.0f + 5.0f, MARGIN - 1.0f + (interval * i)), 
+										D2D1::Point2F((MARGIN * 2) - 1.0f, MARGIN - 1.0f + (interval * i)),
+										D2D1::Point2F(size.width - MARGIN, MARGIN - 1.0f + (interval * i)), 
+										pAxisBrush);
 
 			D2D1_RECT_F r = D2D1::RectF(5.0f, 
 										MARGIN - 1.0f + (interval * i) - FONT_SIZE, 
 										(MARGIN * 2) - 5.0f, 
 										MARGIN - 1.0f + (interval * i) + FONT_SIZE);
 
-			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", static_cast<int>(abs(desloc) * (0.25f * (4 - i))));
+			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", static_cast<int>(desloc < 0 ? DA_RESOLUTION * (0.25f * i) * -1.0f: DA_RESOLUTION * (0.25f * (4 - i))));
 
 			pRenderTarget->DrawText(Num, static_cast<UINT>(wcslen(Num)), pTextFormat, &r, pAxisBrush);
 		}
 
 		// Scale to draw graph
-		float scaleX = (size.width - (MARGIN * 3)) / abs(time); // (DA_RESOLUTION * DA_CYCLE_INTERVAL);
-		float scaleY = (size.height - (MARGIN * 2)) / abs(desloc); // (DA_RESOLUTION * current->resold);
+		float scaleX = (size.width - (MARGIN * 3)) / abs(time);
+		float scaleY = (size.height - (MARGIN * 2)) / DA_RESOLUTION; // abs(desloc);
 
 		size.width = ceil((size.width - (MARGIN * 3)) / scaleX); 
 		size.height = ceil((size.height - (MARGIN * 2)) / scaleY);
@@ -382,7 +388,7 @@ void Render()
 		D2D1_MATRIX_3X2_F scale = D2D1::Matrix3x2F::Scale(scaleX, scaleY, D2D1::Point2F(0.0f, 0.0f));
 		
 		float intervalX = size.width / (abs(time) / DA_CYCLE_INTERVAL);
-		float intervalY = (size.height - (MARGIN * 2)) / abs(desloc);
+		float intervalY = (size.height - (MARGIN * 2)) / DA_RESOLUTION; // abs(desloc);
 
 		D2D1_MATRIX_3X2_F translate = D2D1::Matrix3x2F::Translation(MARGIN * 2, MARGIN);
 
@@ -396,22 +402,24 @@ void Render()
 
 		pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
 
-		pSink->BeginFigure(D2D1::Point2F(0.0f, size.height - (current->speedup ? points[0] - DA_RESOLUTION : points[0])), D2D1_FIGURE_BEGIN_FILLED);
+		// Calculate graphic points
+		pSink->BeginFigure(D2D1::Point2F(0.0f, size.height - (current->speedup ? (desloc < 0 ? points[0] : points[0] - DA_RESOLUTION) : (desloc < 0 ? points[0] + DA_RESOLUTION : points[0]))), D2D1_FIGURE_BEGIN_FILLED);
 
 		int i;
 		for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
 		{
-			pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current->speedup ? points[i] - DA_RESOLUTION : points[i])));
+			pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current->speedup ? (desloc < 0 ? points[i] : points[i] - DA_RESOLUTION) : (desloc < 0 ? points[i] + DA_RESOLUTION : points[i]))));
 		}
+
 		if (current->speedup)
 		{
-			pSink->AddLine(D2D1::Point2F(intervalX * i, 0.0f));
-			pSink->AddLine(D2D1::Point2F(intervalX * i, DA_RESOLUTION));
+			pSink->AddLine(D2D1::Point2F(intervalX * i, desloc < 0 ? abs(desloc) : size.height - desloc));
+			pSink->AddLine(D2D1::Point2F(intervalX * i, desloc < 0 ? 0.0f : DA_RESOLUTION));
 		}
 		else
 		{
-			pSink->AddLine(D2D1::Point2F(intervalX * i, DA_RESOLUTION));
-			pSink->AddLine(D2D1::Point2F(0.0f, DA_RESOLUTION));
+			pSink->AddLine(D2D1::Point2F(intervalX * i, desloc < 0 ? 0.0f : DA_RESOLUTION));
+			pSink->AddLine(D2D1::Point2F(desloc < 0 ? 0.0f : 0.0f, desloc < 0 ? 0.0f : DA_RESOLUTION));
 		}
 
 		pSink->EndFigure(D2D1_FIGURE_END_CLOSED); // D2D1_FIGURE_END_OPEN D2D1_FIGURE_END_CLOSED
@@ -419,7 +427,7 @@ void Render()
 		hr = pSink->Close();
 		SafeRelease(&pSink);
 
-		// Draw graph
+		// Draw graph area
 		pRenderTarget->FillGeometry(pLineFillPathGeometry, pLineFillBrush);
 		//pRenderTarget->DrawGeometry(pLineFillPathGeometry, pLineFillBrush);
 
@@ -437,8 +445,9 @@ void Render()
 			{
 				point1 = (points[i - 1] - DA_RESOLUTION) * scaleY;
 				point2 = (points[i] - DA_RESOLUTION) * scaleY;
-				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), size.height - point1 - (MARGIN * 2)),
-										D2D1::Point2F(intervalX * i, size.height - point2 - (MARGIN * 2)), 
+
+				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), desloc < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
+										D2D1::Point2F(intervalX * i, desloc < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
 										pLineBrush, 4.0f, pLineStrokeStyle);
 			}
 			else
@@ -446,8 +455,8 @@ void Render()
 				point1 = points[i - 1] * scaleY;
 				point2 = points[i] * scaleY;
 
-				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), size.height - point1 - (MARGIN * 2)),
-										D2D1::Point2F(intervalX * i, size.height - point2 - (MARGIN * 2)), 
+				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), desloc < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
+										D2D1::Point2F(intervalX * i, desloc < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
 										pLineBrush, 4.0f, pLineStrokeStyle);
 			}
 
@@ -457,16 +466,16 @@ void Render()
 		{
 			point1 = (points[i - 1] - DA_RESOLUTION) * scaleY;
 
-			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), size.height - point1 - (MARGIN * 2)),
-									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, 0), 
+			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), desloc < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
+									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, desloc < 0 ? abs(desloc * scaleY) : size.height - (desloc * scaleY) - (MARGIN * 2)), 
 									pLineBrush, 4.0f, pLineStrokeStyle);
 		}
 		else
 		{
 			point1 = points[i - 1] * scaleY;
 
-			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), size.height - point1 - (MARGIN * 2)),
-									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, size.height - (MARGIN * 2)), 
+			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), desloc < 0 ?  abs(point1) : size.height - point1 - (MARGIN * 2)),
+									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, desloc < 0 ? 0.0f : size.height - (MARGIN * 2)), 
 									pLineBrush, 4.0f, pLineStrokeStyle);
 		}
 
@@ -588,13 +597,12 @@ static LRESULT CALLBACK GraphBoxProc(HWND hwnd, UINT msg, WPARAM wParam,
 
     return 1;
 }
-#endif
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
 //-----------------------------------------------------------------------------
 
-static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
+static LRESULT CALLBACK NumberProc(HWND hwnd, UINT msg, WPARAM wParam,
     LPARAM lParam)
 {
     if(msg == WM_CHAR) {
@@ -603,15 +611,59 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
         }
     }
 
-	LONG_PTR t;
+	/*LONG_PTR t;
     if(hwnd == TimeTextbox)
         t = PrevTimeNameProc;
     else if(hwnd == DeslTextbox)
         t = PrevDeslNameProc;
     else
-        oops();
+        oops();*/
 
-    return CallWindowProc((WNDPROC)t, hwnd, msg, wParam, lParam);
+    return CallWindowProc((WNDPROC)PrevNumProc, hwnd, msg, wParam, lParam);
+}
+
+static LRESULT CALLBACK UpdateButtonProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char num[12];
+
+	switch(msg)
+	{
+	case WM_COMMAND:
+		{
+		SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
+		time = atoi(num);
+
+		SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
+		desloc = atoi(num);
+
+		if(SendMessage(LinearRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+			current->linear = TRUE;
+		} else if(SendMessage(CustomRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+			current->linear = FALSE;
+		} 
+		if(SendMessage(ForwardRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+			current->forward = TRUE;
+		} else if(SendMessage(BackwardRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+			current->forward = FALSE;
+		}          
+		if(SendMessage(SpeedUpRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+			current->speedup = TRUE;
+		} else if(SendMessage(SpeedDownRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+			current->speedup = FALSE;
+		}
+
+		if (current->speedup)
+			CalcUp(time, desloc);
+		else
+			CalcDown(time, desloc);
+
+		InvalidateRect(GraphBox, NULL, FALSE);
+
+		return 1;
+		}
+	};
+
+    return CallWindowProc((WNDPROC)PrevUpdateButtonProc, hwnd, msg, wParam, lParam);
 }
 
 static void MakeControls(void)
@@ -666,24 +718,39 @@ static void MakeControls(void)
         /*16, 40*/309, 42, 120, 25, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(SpeedDownRadio); 
 
-    HWND timeLabel = CreateWindowEx(0, WC_STATIC, _("Tempo:"),
+    HWND timeLabel = CreateWindowEx(0, WC_STATIC, _("Tempo (ms):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        /*150, 20*/450, 10, 100, 21, MultisetDADialog, NULL, Instance, NULL);
+        /*150, 20*/445, 10, 150, 21, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(timeLabel);
 
     TimeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        /*250, 20*/550, 10, 50, 21, MultisetDADialog, NULL, Instance, NULL);
+        /*250, 20*/600, 10, 50, 21, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(TimeTextbox);
 
-    HWND deslLabel = CreateWindowEx(0, WC_STATIC, _("Deslocamento:"),
+	DeslTypeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        445, 33, 150, 100, MultisetDADialog, NULL, Instance, NULL);
+    NiceFont(DeslTypeCombobox);
+
+    HWND adjustLabel = CreateWindowEx(0, WC_STATIC, _("(Fator Ajuste ???):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        /*150, 45*/450, 35, 100, 21, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(deslLabel);
+        445, 62, 150, 21, MultisetDADialog, NULL, Instance, NULL);
+    NiceFont(adjustLabel);
+
+    AdjustTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        600, 60, 50, 21, MultisetDADialog, NULL, Instance, NULL);
+    FixedFont(AdjustTextbox);
+
+    //HWND deslLabel = CreateWindowEx(0, WC_STATIC, _("Deslocamento:"),
+    //    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+    //    /*150, 45*/450, 35, 100, 21, MultisetDADialog, NULL, Instance, NULL);
+    //NiceFont(deslLabel);
 
     DeslTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        /*250, 45*/550, 35, 50, 21, MultisetDADialog, NULL, Instance, NULL);
+        /*250, 45*/600, 35, 50, 21, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(DeslTextbox);
 
     /*HWND restimeLabel = CreateWindowEx(0, WC_STATIC, _("Escala T (ms):"),
@@ -716,20 +783,29 @@ static void MakeControls(void)
         /*340, 45*/720, 40, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 
-    PrevTimeNameProc = SetWindowLongPtr(TimeTextbox, GWLP_WNDPROC, 
-        (LONG_PTR)MyNumberProc);
+    UpdateButton = CreateWindowEx(0, WC_BUTTON, _("Atualizar"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        /*340, 45*/720, 70, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
+    NiceFont(UpdateButton);
 
-	PrevDeslNameProc = SetWindowLongPtr(DeslTextbox, GWLP_WNDPROC, 
-        (LONG_PTR)MyNumberProc);
-
-#if SHOW_GRAPH
     GraphBox = CreateWindowEx(0, WC_STATIC, NULL,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         7, 100, /*984, 690*/784, 490, MultisetDADialog, NULL, Instance, NULL);
+
+    PrevUpdateButtonProc = SetWindowLongPtr(UpdateButton, GWLP_WNDPROC, 
+        (LONG_PTR)UpdateButtonProc);
+
+    PrevNumProc = SetWindowLongPtr(TimeTextbox, GWLP_WNDPROC, 
+        (LONG_PTR)NumberProc);
+
+	PrevNumProc = SetWindowLongPtr(DeslTextbox, GWLP_WNDPROC, 
+        (LONG_PTR)NumberProc);
+
+	PrevNumProc = SetWindowLongPtr(AdjustTextbox, GWLP_WNDPROC, 
+        (LONG_PTR)NumberProc);
+
 	PrevGraphBoxProc = SetWindowLongPtr(GraphBox, GWLP_WNDPROC, 
         (LONG_PTR)GraphBoxProc);
-#endif
-
 
 }
 
@@ -739,18 +815,31 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 	current = l;
 
     MultisetDADialog = CreateWindowClient(0, "LDmicroDialog",
-        _("MultisetDA"), WS_OVERLAPPED | WS_SYSMENU,
+        _("Rampa de Aceleração/Desaceleração"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 800, 600/*420, 80*/, MainWindow, NULL, Instance, NULL);
     RECT r;
     GetClientRect(MultisetDADialog, &r);
 
     MakeControls();
 
+	for (int i = 0; i < sizeof(DeslTypeItens) / sizeof(DeslTypeItens[0]); i++)
+		SendMessage(DeslTypeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)DeslTypeItens[i]));
+
+	SendMessage(DeslTypeCombobox, CB_SETCURSEL, l->type, 0);
+	SendMessage(DeslTypeCombobox, CB_SETDROPPEDWIDTH, 150, 0);
+
 	SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(l->name));
 	SendMessage(DeslTextbox, WM_SETTEXT, 0, (LPARAM)(l->name1));
 
 	time = l->time;
 	desloc = l->desloc;
+
+	if (l->type == 1)  // (mV)
+		desloc = static_cast<int>(DA_RESOLUTION * (l->desloc / DA_VOLTAGE));
+	else if (l->type == 2) // (%)
+		desloc = static_cast<int>(DA_RESOLUTION * (l->desloc / 100.0f));
+	else // DA 
+		desloc = l->desloc;
 
 	if (l->speedup)
 		CalcUp(time, desloc);
@@ -766,6 +855,8 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
     SendMessage(ResTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 	_itoa(l->resold, num, 10);
     SendMessage(ResDeslTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+	_itoa(l->adjust, num, 10);
+    SendMessage(AdjustTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 
     if(l->linear) {
         SendMessage(LinearRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -804,26 +895,6 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
             }
         }
 
-        SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		if (l->time != atoi(num))
-		{
-			time = atoi(num);
-			if (l->speedup)
-				CalcUp(time, desloc);
-			else
-				CalcDown(time, desloc);
-		}
-
-        SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		if (l->desloc != atoi(num))
-		{
-			desloc = atoi(num);
-			if (l->speedup)
-				CalcUp(time, desloc);
-			else
-				CalcDown(time, desloc);
-		}
-
 		if(IsDialogMessage(MultisetDADialog, &msg)) continue;
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
@@ -848,12 +919,29 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
         }
 
         SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		l->time = atoi(num);
-        SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		l->desloc = atoi(num);
+		l->time = max(30, min(2000, abs(atoi(num))));
 
-		SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(l->name));
-		SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(l->name1));
+		l->type = SendMessage(DeslTypeCombobox, CB_GETCURSEL, 0, 0);
+
+		SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
+
+		if (l->type == 1)  // (mV)
+			l->desloc = min(10000, abs(atoi(num)));
+		else if (l->type == 2) // (%)
+			l->desloc = min(100, abs(atoi(num)));
+		else // DA 
+			l->desloc = min(DA_RESOLUTION, abs(atoi(num)));
+
+		l->desloc = l->forward ?  l->desloc : l->desloc * -1;
+
+		SendMessage(AdjustTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
+		l->adjust = abs(atoi(num));
+
+		_itoa(l->time, l->name, 10);
+		_itoa(l->desloc, l->name1, 10);
+
+		//SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(l->name));
+		//SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(l->name1));
 
 		//int i;
 

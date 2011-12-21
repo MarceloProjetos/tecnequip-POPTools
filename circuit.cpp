@@ -454,12 +454,10 @@ void AddMultisetDA(void)
 	t->d.multisetDA.desloc = DA_RESOLUTION;
 	t->d.multisetDA.resolt = 10;
 	t->d.multisetDA.resold = 10;
-	t->d.multisetDA.linear = 1;
+	t->d.multisetDA.linear = 0;
 	t->d.multisetDA.forward = 1;
 	t->d.multisetDA.speedup = 1;
 	
-	memset(t->d.multisetDA.points, 0, sizeof(t->d.multisetDA.points));
-
     AddLeaf(ELEM_MULTISET_DA, t);
 }
 void AddReadFormatString(void)
