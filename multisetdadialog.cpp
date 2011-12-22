@@ -10,8 +10,6 @@
 #define FONT_NAME	L"Verdana"
 #define FONT_SIZE	12.0f
 
-#define SHOW_GRAPH	1
-
 extern ID2D1Factory*		pD2DFactory;
 extern IDWriteFactory*		pWriteFactory;
 extern IWICImagingFactory *	pWICFactory;
@@ -90,7 +88,66 @@ extern struct {
 } IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
 extern int IoSeenPreviouslyCount;
 
-void CalcUp(int calc_time, int calc_desloc)
+void CalcLinearUp(int calc_time, int calc_desloc)
+{
+	int tm = 0;
+
+	if (calc_desloc > DA_RESOLUTION || 
+		calc_desloc < (DA_RESOLUTION * -1))
+		return;
+
+	float t = static_cast<float>(calc_time);
+	float d = static_cast<float>(calc_desloc);
+
+	memset(points, 0, sizeof(points));
+
+	float a = d / t; // coeficiente angular
+	float l = 0.0f; // coeficiente linear
+
+	for (int i = 0; i < calc_time / DA_CYCLE_INTERVAL; i++)
+	{
+		tm = i * DA_CYCLE_INTERVAL;
+		points[i] = DA_RESOLUTION + ((tm * a) + l); // y = a.x + b
+	}
+}
+
+void CalcLinearDown(int calc_time, int calc_desloc)
+{
+	int tm = 0;
+
+	if (calc_desloc > DA_RESOLUTION || 
+		calc_desloc < (DA_RESOLUTION * -1))
+		return;
+
+	float t = static_cast<float>(calc_time);
+	float d = static_cast<float>(calc_desloc);
+
+	memset(points, 0, sizeof(points));
+
+	float a = abs(d) / t; // coeficiente angular
+	float l = static_cast<float>(calc_desloc); // coeficiente linear
+
+	if (d < 0)
+	{
+		for (int i = 0; i < calc_time / DA_CYCLE_INTERVAL; i++)
+		{
+			tm = i * DA_CYCLE_INTERVAL;
+			points[i] = ((tm * a) + l); // y = a.x + b
+		}
+	}
+	else
+	{
+		a *= -1.0f;
+		for (int i = 0; i < calc_time / DA_CYCLE_INTERVAL; i++)
+		{
+			tm = i * DA_CYCLE_INTERVAL;
+			points[i] = ((tm * a) + l); // y = a.x + b
+		}
+	}
+
+}
+
+void CalcCurveUp(int calc_time, int calc_desloc)
 {
 	int tm = 0;
 	float factor = 0;
@@ -124,7 +181,7 @@ void CalcUp(int calc_time, int calc_desloc)
 	}
 }
 
-void CalcDown(int calc_time, int calc_desloc)
+void CalcCurveDown(int calc_time, int calc_desloc)
 {
 	int tm = 0;
 	float factor = 0;
@@ -297,6 +354,17 @@ void DiscardDeviceResources()
 {
 	SafeRelease(&pBackgroundBrush);
 	SafeRelease(&pRenderTarget);
+	SafeRelease(&pLineStrokeStyle);
+	SafeRelease(&pTransformedGeometry);
+	SafeRelease(&pLinePathGeometry);
+	SafeRelease(&pLineFillPathGeometry);
+	SafeRelease(&pTextFormat);
+	SafeRelease(&pBackgroundBrush);
+	SafeRelease(&pAxisBrush);
+	SafeRelease(&pLineBrush);
+	SafeRelease(&pLineFillBrush);
+	SafeRelease(&pPointBrush);
+	SafeRelease(&pFontBrush);
 }
 
 void MoveGraphPoint(D2D1_POINT_2F p)
@@ -567,22 +635,26 @@ static LRESULT CALLBACK GraphBoxProc(HWND hwnd, UINT msg, WPARAM wParam,
 			}
 			break;
 
+		case WM_DRAWITEM:
+			Render(/*Rect*/);
+			break;
 		case WM_PAINT:
 			{
-				RECT r;
+				/*RECT r;
 				GetClientRect(hwnd, &r);
 
 				PAINTSTRUCT ps;
-				BeginPaint(hwnd, &ps);
+				BeginPaint(hwnd, &ps);*/
 
-				if (r.right == 0 && r.bottom == 0)
-					r = ps.rcPaint;
+				/*if (r.right == 0 && r.bottom == 0)
+					r = ps.rcPaint;*/
 
 				//D2D1_RECT_F Rect = RectF(static_cast<FLOAT>(r.left), static_cast<FLOAT>(r.top), static_cast<FLOAT>(r.right), static_cast<FLOAT>(r.bottom));
 
 				Render(/*Rect*/);
+				ValidateRect(hwnd, NULL);
 
-				EndPaint(hwnd, &ps); 
+				//EndPaint(hwnd, &ps); 
 				//ValidateRect(hwnd, NULL);
 			}
 			break;
@@ -628,13 +700,22 @@ static LRESULT CALLBACK UpdateButtonProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
 	switch(msg)
 	{
-	case WM_COMMAND:
+	case WM_LBUTTONDOWN:
 		{
-		SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		time = atoi(num);
+
+        SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
+		current->time = max(30, min(2000, abs(atoi(num))));
 
 		SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		desloc = atoi(num);
+
+		current->type = SendMessage(DeslTypeCombobox, CB_GETCURSEL, 0, 0);
+
+		if (current->type == 1)  // (mV)
+			current->desloc = min(10000, abs(atoi(num)));
+		else if (current->type == 2) // (%)
+			current->desloc = min(100, abs(atoi(num)));
+		else // DA 
+			current->desloc = min(DA_RESOLUTION, abs(atoi(num)));
 
 		if(SendMessage(LinearRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
 			current->linear = TRUE;
@@ -652,15 +733,51 @@ static LRESULT CALLBACK UpdateButtonProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 			current->speedup = FALSE;
 		}
 
-		if (current->speedup)
-			CalcUp(time, desloc);
-		else
-			CalcDown(time, desloc);
+		if (current->type == 1)  // (mV)
+			desloc = static_cast<int>(DA_RESOLUTION * (current->desloc / DA_VOLTAGE));
+		else if (current->type == 2) // (%)
+			desloc = static_cast<int>(DA_RESOLUTION * (current->desloc / 100.0f));
+		else // DA 
+			desloc = current->desloc;
+		
+		current->desloc = current->forward ? current->desloc : current->desloc * -1;
+		desloc = current->forward ? desloc : desloc * -1;
 
-		InvalidateRect(GraphBox, NULL, FALSE);
+		_itoa(current->time, num, 10);
+		SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+		_itoa(current->desloc, num, 10);
+		SendMessage(DeslTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+		_itoa(current->resolt, num, 10);
 
-		return 1;
+		SendMessage(ResTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+		_itoa(current->resold, num, 10);
+		SendMessage(ResDeslTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+		_itoa(current->adjust, num, 10);
+		SendMessage(AdjustTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+
+		if (current->linear)
+		{
+			if (current->speedup)
+				CalcLinearUp(time, desloc);
+			else
+				CalcLinearDown(time, desloc);
 		}
+		else
+		{
+			if (current->speedup)
+				CalcCurveUp(time, desloc);
+			else
+				CalcCurveDown(time, desloc);
+		}
+		 
+		DiscardDeviceResources();
+		//Render();
+		//SendMessage(GraphBox, WM_PAINT, 0, 0);
+		/*RECT r;
+		GetClientRect(MultisetDADialog, &r);*/
+		InvalidateRect(GraphBox, NULL, FALSE);
+		}
+		break;
 	};
 
     return CallWindowProc((WNDPROC)PrevUpdateButtonProc, hwnd, msg, wParam, lParam);
@@ -783,15 +900,16 @@ static void MakeControls(void)
         /*340, 45*/720, 40, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 
-    UpdateButton = CreateWindowEx(0, WC_BUTTON, _("Atualizar"),
+    UpdateButton = CreateWindowEx(WS_EX_CONTROLPARENT, WC_BUTTON, _("Atualizar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         /*340, 45*/720, 70, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
     NiceFont(UpdateButton);
 
     GraphBox = CreateWindowEx(0, WC_STATIC, NULL,
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        WS_CHILD | SS_OWNERDRAW | WS_VISIBLE,
         7, 100, /*984, 690*/784, 490, MultisetDADialog, NULL, Instance, NULL);
 
+	//PrevUpdateButtonProc = reinterpret_cast<WNDPROC>(GetWindowLongPtr(UpdateButton, GWLP_WNDPROC));
     PrevUpdateButtonProc = SetWindowLongPtr(UpdateButton, GWLP_WNDPROC, 
         (LONG_PTR)UpdateButtonProc);
 
@@ -841,10 +959,20 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 	else // DA 
 		desloc = l->desloc;
 
-	if (l->speedup)
-		CalcUp(time, desloc);
+	if (l->linear)
+	{
+		if (l->speedup)
+			CalcLinearUp(time, desloc);
+		else
+			CalcLinearDown(time, desloc);
+	}
 	else
-		CalcDown(time, desloc);
+	{
+		if (l->speedup)
+			CalcCurveUp(time, desloc);
+		else
+			CalcCurveDown(time, desloc);
+	}
 
 	_itoa(l->time, num, 10);
     SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
