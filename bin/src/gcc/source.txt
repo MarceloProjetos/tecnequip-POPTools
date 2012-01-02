@@ -1,6 +1,0 @@
-
-The source for the YAGARTO toolchain can be found here:
-
-http://www.yagarto.de/source
-
-(01.05.2010, mifi)
