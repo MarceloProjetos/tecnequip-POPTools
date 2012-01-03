@@ -5,9 +5,10 @@
 
 #if LWIP_NETCONN
 
-//const static char http_html_hdr[] = "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
-//const static char http_index_html[] = "<html><head><title>Tecnequip Tecnologia em Equipamentos Ltda</title></head><body><h1>POP7</h1><p>Página de configuração do CLP POP7.</p>";
-//const static char http_bottom[] = "<p><a href=\"http://www.tecnequip.com.br\">http://www.tecnequip.com.br</a><p></body></html>";
+const static char http_not_found_hdr[] = "HTTP/1.1 404 Not Found\r\nContent-type: text/html\r\n\r\n";
+const static char http_html_hdr[] = "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
+const static char http_index_html[] = "<html><head><title>Tecnequip Tecnologia em Equipamentos Ltda</title></head><body><h1>POP7</h1><p>Página de configuração do CLP POP7.</p>";
+const static char http_bottom[] = "<p><a href=\"http://www.tecnequip.com.br\">http://www.tecnequip.com.br</a><p></body></html>";
 
 OS_STK HTTPStack[HTTP_THREAD_STACKSIZE];
 
@@ -17,12 +18,12 @@ void HTTP_Request(struct netconn *conn) {
   u16_t buflen;
   err_t err;
 
-  unsigned char Hour, Minute, Second;
-  unsigned short int Millisecond;
+  //unsigned char Hour, Minute, Second;
+  //unsigned short int Millisecond;
 
-  char http_data[80];
+  //char http_data[80];
   
-  RTC_Time now = RTC_GetTime();
+  //RTC_Time now = RTC_GetTime();
 
   /* Read the data from the port, blocking if nothing yet there. 
    We assume the request (the part we care about) is in one netbuf */
@@ -39,12 +40,19 @@ void HTTP_Request(struct netconn *conn) {
         buf[2]=='T' &&
         buf[3]==' ' &&
         buf[4]=='/' ) {
-      
+
       /* Send the HTML header 
-             * subtract 1 from the size, since we dont send the \0 in the string
-             * NETCONN_NOCOPY: our data is const static, so no need to copy it
+	   * subtract 1 from the size, since we dont send the \0 in the string
+	   * NETCONN_NOCOPY: our data is const static, so no need to copy it
        */
-      //netconn_write(conn, http_html_hdr, sizeof(http_html_hdr)-1, NETCONN_NOCOPY);
+      netconn_write(conn, http_html_hdr, sizeof(http_html_hdr)-1, NETCONN_NOCOPY);
+
+ 	  /* Send our HTML page */
+	  netconn_write(conn, http_index_html, sizeof(http_index_html)-1, NETCONN_NOCOPY);
+
+      netconn_write(conn, http_bottom, sizeof(http_bottom)-1, NETCONN_NOCOPY);
+
+      /*
       sprintf(http_data, "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n");
       netconn_write(conn, http_data, strlen(http_data), NETCONN_COPY);
 
@@ -57,9 +65,6 @@ void HTTP_Request(struct netconn *conn) {
       sprintf(http_data, "<p><a href=\"http://www.tecnequip.com.br\">http://www.tecnequip.com.br</a><p></body></html>");
       netconn_write(conn, http_data, strlen(http_data), NETCONN_COPY);
       
-      /* Send our HTML page */
-      //netconn_write(conn, http_index_html, sizeof(http_index_html)-1, NETCONN_NOCOPY);
-
       //sprintf(http_body, "<p>RTC: %02d/%02d/%02d %02d:%02d:%02d %d,%03d</p>", now.Mday, now.Mon, now.Year, now.Hour, now.Min, now.Sec, now.Wday, now.Yday);
       sprintf(http_data, "<p>RTC: %02d/%02d/%02d %02d:%02d:%02d</p>", now.Mday, now.Mon, now.Year, now.Hour, now.Min, now.Sec);
       netconn_write(conn, http_data, strlen(http_data), NETCONN_COPY);
@@ -68,10 +73,13 @@ void HTTP_Request(struct netconn *conn) {
       sprintf(http_data, "<p>OSTime: %3d:%02d:%02d.%03d</p>", Hour, Minute, Second, Millisecond);
       netconn_write(conn, http_data, strlen(http_data), NETCONN_COPY);
 
-      //netconn_write(conn, http_bottom, sizeof(http_bottom)-1, NETCONN_NOCOPY);
-
       sprintf(http_data, "<p><a href=\"http://www.tecnequip.com.br\">http://www.tecnequip.com.br</a><p></body></html>");
       netconn_write(conn, http_data, strlen(http_data), NETCONN_COPY);
+      */
+    }
+    else
+    {
+    	netconn_write(conn, http_not_found_hdr, sizeof(http_not_found_hdr)-1, NETCONN_NOCOPY);
     }
   }
   /* Close the connection (server closes in HTTP) */

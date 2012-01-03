@@ -771,11 +771,9 @@ static LRESULT CALLBACK UpdateButtonProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		}
 		 
 		DiscardDeviceResources();
-		//Render();
-		//SendMessage(GraphBox, WM_PAINT, 0, 0);
-		/*RECT r;
-		GetClientRect(MultisetDADialog, &r);*/
+
 		InvalidateRect(GraphBox, NULL, FALSE);
+
 		}
 		break;
 	};
@@ -1084,7 +1082,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 		//SetWindowText(BitTextbox, cbit );
 
     }
-	//DiscardDeviceResources();
+	DiscardDeviceResources();
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(MultisetDADialog);
     return;

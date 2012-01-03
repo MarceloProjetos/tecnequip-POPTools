@@ -829,7 +829,7 @@ void FreeEntireProgram(void)
 	memset(&Prog.dns, 0, sizeof(Prog.dns));
 	memset(&Prog.sntp, 0, sizeof(Prog.sntp));
 
-	strncpy(Prog.sntp, "pool.ntp.org", sizeof(Prog.sntp));
+	strncpy(Prog.sntp, "br.pool.ntp.org", sizeof(Prog.sntp));
 
 	Prog.gmt = 9;
 	Prog.dailysave = 0;
@@ -853,6 +853,11 @@ void FreeEntireProgram(void)
 	Prog.dns[1] = 168;
 	Prog.dns[2] = 0;
 	Prog.dns[3] = 1;
+
+	Prog.diameter = 0;
+	Prog.pulses = 0;
+	Prog.factor = 0;
+	Prog.x4 = 1;
 
 	for(i = 0; i < MAX_IO; i++)
 	{

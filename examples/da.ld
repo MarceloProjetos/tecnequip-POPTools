@@ -8,7 +8,9 @@ COM=1
 IP=192.168.0.254
 MASK=255.255.255.0
 GW=192.168.0.1
-COMPILED=C:\Users\Alessandro\Documents\da.hex
+DNS=192.168.0.1
+SNTP=9-0:pool.ntp.org
+COMPILED=C:\CooCox\CoIDE\workspace\POPTools\examples\x.hex
 
 IO LIST
     YS1 at 1 0

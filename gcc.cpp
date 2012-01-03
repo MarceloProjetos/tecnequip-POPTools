@@ -243,12 +243,12 @@ static void GenerateDeclarations(FILE *f)
 			case INT_WRITE_SERVO_YASKAWA:
             case INT_READ_USS:
             case INT_WRITE_USS:
-            case INT_READ_MODBUS_ETH:
-            case INT_WRITE_MODBUS_ETH:
             case INT_SET_PWM:
                 intVar1 = IntCode[i].name1;
                 break;
 
+            case INT_READ_MODBUS_ETH:
+            case INT_WRITE_MODBUS_ETH:
             case INT_READ_MODBUS:
             case INT_WRITE_MODBUS:
 				MODBUS_MASTER = 1;
@@ -716,32 +716,9 @@ DWORD InvokeGCC(char* dest)
 	else
 		strcat(szCmd, pDefaultCMD);
 
-#ifndef _USE_GCC_LOCAL_PATH
-#ifdef _USE_PROGRAM_FILES_FULL_PATH
-	// "/C" option - Do the command then terminate the command window
-	// "/K" option - Wait exit 
-	strcat(szArgs, " /C \""); 
-
-	//the application you would like to run from the command window
-	strcat(szArgs, "\"");
-	strcat(szArgs, szAppProgramFiles); // C:\PROGRA~2
-	strcat(szArgs, "\\yagarto\\bin\\make.exe\" -f compile -C \"");
-#else
-	strcat(szArgs, " /C \""); 
-#ifdef _DEBUG
-	strcat(szArgs, "\"C:\\yagarto\\bin\\make.exe\" -f makefile -C \"");
-#else
-	strcat(szArgs, "\"C:\\yagarto\\bin\\make.exe\" -f compile -C \"");
-#endif
-#endif
-#else
+	strcat(szArgs, " /C \"\""); 
 	strcat(szArgs, szAppDirectory); // C:\Users\ADMINI~1\DOCUME~1\VISUAL~3\Projects\POPTools\bin
-#ifdef _DEBUG
-	strcat(szArgs, "\\src\\gcc\\bin\\make.exe\" -f makefile -C \"");
-#else
-	strcat(szArgs, "\\src\\gcc\\bin\\make.exe\" -f compile -C \"");
-#endif
-#endif
+	strcat(szArgs, "\\gcc\\bin\\cs-make.exe\" -f compile -C \"");
 	strcat(szArgs, ConvertToUNIXPath(szAppDirectory));
 	strcat(szArgs, "/src/\"");
 	strcat(szArgs, " HEX_FILE=\""); 
@@ -833,11 +810,10 @@ DWORD CompileAnsiCToGCC(char *dest)
 		}
 	}
 
+
 	// Extract directory
-	//strncpy(szAppHeader, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
 	//strncpy(szAppHeader, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
 	//szAppHeader[strlen(szAppHeader)] = '\0';
-	//strcat(szAppHeader, "\\src\\ld.h");
 	//strcat(szAppHeader, "\\ld.h");
 
 	/*FILE *h = fopen(szAppHeader, "w");
@@ -853,69 +829,12 @@ DWORD CompileAnsiCToGCC(char *dest)
 	/*fprintf(h, "#ifndef LD_H_\n");
 	fprintf(h, "#define LD_H_\n\n");
 
-	fprintf(h, "volatile unsigned int I1 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I2 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I3 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I4 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I5 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I6 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I7 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I8 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I9 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I10 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I11 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I12 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I13 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I14 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I15 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I16 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I17 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I18 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int I19 __attribute__((weak)) = 0;\n\n");
-
-	fprintf(h, "volatile unsigned int U1 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U2 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U3 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U4 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U5 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U6 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U7 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U8 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U9 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U10 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U11 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U12 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U13 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U14 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U15 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U16 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U17 __attribute__((weak)) = 0;\n");
-	fprintf(h, "volatile unsigned int U18 __attribute__((weak)) = 0;\n\n");*/
-
-#ifdef INT_UNSIGNED
-	//fprintf(h, "volatile unsigned int M[32] __attribute__((weak));\n");
-#else
-	//fprintf(h, "volatile int M[32] __attribute__((weak));\n");
-#endif
-	/*fprintf(h, "volatile int ENC1 __attribute__((weak)) = 0;\n\n");
-
-	fprintf(h, "volatile unsigned char MODBUS_MASTER __attribute__((weak)) = 0;\n\n");
-
-	fprintf(h, "extern void PlcCycle(void);\n");
-	fprintf(h, "extern volatile unsigned int TIME_INTERVAL;\n");
-	fprintf(h, "void ld_Init(void);\n\n");
-
-	fprintf(h, "void PLC_Init(void);\n");
-	fprintf(h, "void PLC_Cycle(void *pdata);\n\n");
-
-	fprintf(h, "#endif\n");
+	fprintf(h, "#endif\n\n");
 
 	fclose(h);*/
 
-	//strncpy(szAppSourceFile, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
 	strncpy(szAppSourceFile, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
 	szAppSourceFile[strlen(szAppSourceFile)] = '\0';
-	//strcat(szAppSourceFile, "\\src\\ld.c");
 	strcat(szAppSourceFile, "\\ld.c");
 
     FILE *f = fopen(szAppSourceFile, "w");
@@ -936,7 +855,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "/*****************************************************************************\n");
 	fprintf(f, " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n");
 	fprintf(f, " *****************************************************************************/\n");
-	fprintf(f, "#include <string.h>\n");
+	/*fprintf(f, "#include <string.h>\n");
 	fprintf(f, "#include \"lwip/opt.h\"\n");
 	fprintf(f, "#include \"lwip/arch.h\"\n");
 	fprintf(f, "#include \"lwip/api.h\"\n");
@@ -954,7 +873,9 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "#include \"modbus.h\"\n");
 	fprintf(f, "#include \"uss.h\"\n");
 	fprintf(f, "#include \"yaskawa.h\"\n");
-	fprintf(f, "#include \"format_str.h\"\n");
+	fprintf(f, "#include \"format_str.h\"\n");*/
+
+	fprintf(f, "#include \"ld.h\"\n");
 
 	fprintf(f, "\n");
 	fprintf(f, "const volatile unsigned int 	CYCLE_TIME = %d;\n", Prog.cycleTime / 1000);
@@ -982,7 +903,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", Prog.dailysave);
 
 	fprintf(f, "\n");
-	fprintf(f, "OS_STK							PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];\n");
+	fprintf(f, "unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];\n");
 
 	//int j;
 

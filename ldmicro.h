@@ -648,6 +648,10 @@ typedef struct PlcProgramTag {
 	char		sntp[126];
 	int			gmt;
 	unsigned char dailysave;
+	int			diameter;
+	int			pulses;
+	float		factor;
+	unsigned char x4;
 
 #define MAX_RUNGS 999
     ElemSubcktSeries *rungs[MAX_RUNGS];

@@ -1,6 +1,6 @@
 
-#ifndef __RS485_H
-#define __RS485_H
+#ifndef __RS485_H__
+#define __RS485_H__
 
 #include "serial.h"
 

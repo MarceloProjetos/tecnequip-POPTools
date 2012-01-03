@@ -1,30 +1,13 @@
 /*****************************************************************************
  * Tecnequip Tecnologia em Equipamentos Ltda                                 *
  *****************************************************************************/
-#include <string.h>
-#include "lwip/opt.h"
-#include "lwip/arch.h"
-#include "lwip/api.h"
-#include "coos.h"
-
-#include "rtc.h"
-#include "gpio.h"
-#include "rtc.h"
-#include "dac.h"
-#include "adc.h"
-#include "qei.h"
-#include "rs485.h"
-#include "rs232.h"
-#include "modbus.h"
-#include "uss.h"
-#include "yaskawa.h"
-#include "format_str.h"
+#include "ld.h"
 
 const volatile unsigned int 	CYCLE_TIME = 10;
 
 extern volatile unsigned char 	MODBUS_MASTER; // 0 = Slave, 1 = Master
 extern volatile int 			MODBUS_REGISTER[32];
-extern struct 					MB_Device modbus_master;
+extern struct MB_Device 		modbus_master;
 extern volatile unsigned int 	GPIO_OUTPUT;
 extern volatile unsigned int 	GPIO_INPUT;
 extern RTC_Time 				RTC_Now;
@@ -39,20 +22,41 @@ char 							SNTP_SERVER_ADDRESS[] = "servidor.local";
 int								SNTP_GMT = -3;
 int								SNTP_DAILY_SAVE = 0;
 
-OS_STK							PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
+unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 
+#define PLC_RS485
+
+#if defined(PLC_NULL)
+#include "POPTools/PLC_Null.h"
+#elif defined(PLC_RS485)
+#include "POPTools/PLC_RS485.h"
+#elif defined(PLC_COLUNAN)
+#include "POPTools/PLC_ColunaN.h"
+#elif defined(PLC_ADC)
+#include "POPTools/PLC_ADC.h"
+#elif defined(PLC_ADC_LED)
+#include "POPTools/PLC_ADC_Led.h"
+#elif defined(PLC_BLINK)
+#include "POPTools/PLC_Blink.h"
+#elif defined(PLC_CONTACT)
+#include "POPTools/PLC_Contact.h"
+#elif defined(PLC_DA)
+#include "POPTools/PLC_DA.h"
+#elif defined(PLC_CPU_LED)
+#include "POPTools/PLC_CPU_LED.h"
+#elif defined(PLC_DAC_RAMPA_CURVA)
+#include "POPTools/PLC_DAC_RAMPA_CURVA.h"
+#elif defined(PLC_DAC_RAMPA_CURVA_RECUAR)
+#include "POPTools/PLC_DAC_RAMPA_CURVA_RECUAR.h"
+#else
 // Variaveis PLC
-//volatile int I_mcr = 0;
+volatile int I_mcr = 0;
 
-#include "PLC_Null.inc"
-//#include "PLC_Comm_Test.inc"
-//#include "PLC_ColunaN.inc"
-
-/*void PLC_Run(void)
+void PLC_Run(void)
 {
     I_mcr = 1;
-}*/
-
+}
+#endif
 
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
 void PLC_Cycle(void *pdata)
@@ -66,7 +70,8 @@ void PLC_Cycle(void *pdata)
 
 		PLC_Run();
 
-		CoTickDelay(CYCLE_TIME);
+		//CoTickDelay(CYCLE_TIME);
+		CoTimeDelay(0, 0, 0, CYCLE_TIME);
 	}
 }
 

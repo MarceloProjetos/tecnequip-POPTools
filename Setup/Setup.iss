@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{943E92A3-A70E-415D-B55D-44C8C15FE3F6}
 AppName=POPTools
-AppVerName=POPTools 1.0
+AppVerName=POPTools 1.2
 AppPublisher=Tecnequip Tecnologia em Equipamentos Ltda
 AppPublisherURL=http://www.tecnequip.com.br/
 AppSupportURL=http://www.tecnequip.com.br/
@@ -36,16 +36,16 @@ Source: "..\bin\src\*.a"; DestDir: "{app}\src"; Permissions: users-modify; Flags
 Source: "..\bin\src\*.ld"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
 Source: "..\bin\src\*.o"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
 Source: "..\bin\src\compile"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\src\gcc\*.h"; DestDir: "{app}\src\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\gcc\*.a"; DestDir: "{app}\src\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\gcc\*.o"; DestDir: "{app}\src\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\gcc\*.dll"; DestDir: "{app}\src\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\gcc\*.exe"; DestDir: "{app}\src\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\lwip-1.4.0\*.h"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\lwip-1.4.0\*.a"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\lwip-1.4.0\*.o"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\lwip-1.4.0\*.dll"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\src\lwip-1.4.0\*.exe"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\*.h"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\*.a"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\*.o"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\*.dll"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\*.exe"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+;Source: "..\bin\src\lwip-1.4.0\*.h"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+;Source: "..\bin\src\lwip-1.4.0\*.a"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+;Source: "..\bin\src\lwip-1.4.0\*.o"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+;Source: "..\bin\src\lwip-1.4.0\*.dll"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+;Source: "..\bin\src\lwip-1.4.0\*.exe"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\examples\*"; DestDir: "{app}\examples"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Setup\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; DestDir: "{app}\usb_driver"; Flags: ignoreversion
 ; Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; DestDir: "{app}"; Flags: ignoreversion

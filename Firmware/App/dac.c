@@ -77,8 +77,60 @@ unsigned int DAC_Read(void)
 {
   return DAC_Value;
 }
+unsigned int DAC_CalcLinearUp(int time, int desloc, int i)
+{
+	int tm = 0;
 
-unsigned int DAC_CalcUp(int time, int desloc, int i)
+	if (desloc > DAC_RESOLUTION ||
+		desloc < (DAC_RESOLUTION * -1))
+		return 0;
+
+	float t = (float)(time);
+	float d = (float)(desloc);
+
+	float a = d / t; // coeficiente angular
+	float l = 0.0f; // coeficiente linear
+
+	tm = i * DAC_CYCLE_INTERVAL;
+	if (tm < time)
+	{
+		return DAC_RESOLUTION + ((tm * a) + l); // y = a.x + b
+	}
+
+	return DAC_RESOLUTION;
+}
+
+unsigned int DAC_CalcLinearDown(int time, int desloc, int i)
+{
+	int tm = 0;
+
+	if (desloc > DAC_RESOLUTION ||
+		desloc < (DAC_RESOLUTION * -1))
+		return 0;
+
+	float t = (float)(time);
+	float d = (float)(desloc);
+
+	float a = d / t; // abs(d) / t; // coeficiente angular
+	float l = (float)(desloc); // coeficiente linear
+
+	tm = i * DAC_CYCLE_INTERVAL;
+	if (tm < time)
+	{
+		if (d < 0)
+		{
+			return ((tm * a) + l); // y = a.x + b
+		}
+		else
+		{
+			a *= -1.0f;
+			return ((tm * a) + l); // y = a.x + b
+		}
+	}
+	return 0;
+}
+
+unsigned int DAC_CalcCurveUp(int time, int desloc, int i)
 {
 	int tm = 0;
 	float factor = 0;
@@ -104,7 +156,7 @@ unsigned int DAC_CalcUp(int time, int desloc, int i)
 	return DAC_RESOLUTION + (desloc * 2 * factor) / 1000.0f;
 }
 
-unsigned int DAC_CalcDown(int time, int desloc, int i)
+unsigned int DAC_CalcCurveDown(int time, int desloc, int i)
 {
 	int tm = 0;
 	float factor = 0;
@@ -141,17 +193,18 @@ void DAC_CycleUp(void * pdata)
 	time = ((DA_Set*)pdata)->time;
 	desloc = ((DA_Set*)pdata)->desloc;
 
-	if (time == 0 || time > 5000)
-		return;
+	if (time < DAC_CYCLE_INTERVAL * 2 || time > 3000)
+		CoExitTask();
 
-	if (desloc > 2047 || desloc < -2048)
-		return;
+	if (desloc < -2048 || desloc > 2047)
+		CoExitTask();
 
 	count = (unsigned int)(time / DAC_CYCLE_INTERVAL);
 
 	for (i = 0; i < count; i++)
 	{
-		DAC_Write(DAC_CalcUp(time, desloc, i));
+		DAC_Write(DAC_CalcCurveUp(time, desloc, i));
+		//DAC_Write(DAC_CalcLinearUp(time, desloc, i));
 		CoTickDelay(DAC_CYCLE_INTERVAL);
 	}
 
@@ -169,17 +222,18 @@ void DAC_CycleDown(void * pdata)
 	time = ((DA_Set*)pdata)->time;
 	desloc = ((DA_Set*)pdata)->desloc;
 
-	if (time == 0 || time > 5000)
-		return;
+	if (time < DAC_CYCLE_INTERVAL * 2 || time > 3000)
+		CoExitTask();
 
-	if (desloc > 2047 || desloc < -2048)
-		return;
+	if (desloc < -2048 || desloc > 2047)
+		CoExitTask();
 
 	count = (unsigned int)(time / DAC_CYCLE_INTERVAL);
 
 	for (i = 0; i < count; i++)
 	{
-		DAC_Write(DAC_CalcDown(time, desloc, i));
+		DAC_Write(DAC_CalcCurveDown(time, desloc, i));
+		//DAC_Write(DAC_CalcLinearDown(time, desloc, i));
 		CoTickDelay(DAC_CYCLE_INTERVAL);
 	}
 
@@ -212,6 +266,3 @@ void DAC_StartDown(int time, int desloc)
 				  DAC_CYCLE_THREAD_STACKSIZE);
 }
 
-/******************************************************************************
-**                            End Of File
-******************************************************************************/

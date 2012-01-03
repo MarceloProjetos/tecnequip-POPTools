@@ -25,7 +25,7 @@ void Hardware_Init(void)
 	RS485_Init();
 
 	RTC_Init();
-	//RTC_Start();
+	RTC_Start();
 
 	//RTC_Time t;
 	//memset(&t, 0, sizeof(t));
@@ -33,9 +33,9 @@ void Hardware_Init(void)
 
 	I2C_Init( (unsigned int)I2CMASTER );
 
-	//ADC_Init();
-	//DAC_Init();
-	//QEI_Init();
+	ADC_Init();
+	DAC_Init();
+	QEI_Init();
 	GPIO_Init();
 
 }

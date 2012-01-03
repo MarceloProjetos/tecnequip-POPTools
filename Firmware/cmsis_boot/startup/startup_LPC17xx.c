@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include "lpc_types.h"
 #include "lpc17xx_nvic.h"
-#include "rs232.h"
+//#include "rs232.h"
 
 /*----------Stack Configuration-----------------------------------------------*/  
 #define STACK_SIZE       0x00000100      /*!< Stack size (in Words)           */
@@ -260,8 +260,8 @@ void Default_Reset_Handler(void)
   */
 static void Default_Handler(void) 
 {
-	char handle[115];
-	sprintf(handle, "SHCSR:%04x, CFSR:%04x, HFSR:%04x, DFSR:%04x, MMFAR:%04x, BFAR:%04x, AFSR:%04x",
+	//char handle[115];
+	/*sprintf(handle, "SHCSR:%04x, CFSR:%04x, HFSR:%04x, DFSR:%04x, MMFAR:%04x, BFAR:%04x, AFSR:%04x",
 			(unsigned int)SCB->SHCSR,
 			(unsigned int)SCB->CFSR,
 			(unsigned int)SCB->HFSR,
@@ -269,7 +269,8 @@ static void Default_Handler(void)
 			(unsigned int)SCB->MMFAR,
 			(unsigned int)SCB->BFAR,
 			(unsigned int)SCB->AFSR);
-	RS232_Write((unsigned char*)handle, sizeof(handle));
+	RS232_Write((unsigned char*)handle, sizeof(handle));*/
+	GPIO1->FIOPIN &= ~((0x1) << 21);
 	/* Go into an infinite loop. */
 	while (1) 
 	{

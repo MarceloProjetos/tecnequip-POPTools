@@ -140,7 +140,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
         *which = ELEM_READ_ADC;
     } else if(sscanf(line, "SET_DA %s", l->d.setDA.name)==1) {
         *which = ELEM_SET_DA;
-    } else if(sscanf(line, "MULTISET_DA %s %s", l->d.multisetDA.name, l->d.multisetDA.name1)==2) {
+	} else if(sscanf(line, "MULTISET_DA %s %s %d %d %d %d %d", l->d.multisetDA.name, l->d.multisetDA.name1, &l->d.multisetDA.linear, 
+		&l->d.multisetDA.speedup, &l->d.multisetDA.forward, &l->d.multisetDA.time, &l->d.multisetDA.desloc)==7) {
         *which = ELEM_MULTISET_DA;
     } else if(sscanf(line, "READ_ENC %s", l->d.readEnc.name)==1) {
         *which = ELEM_READ_ENC;
@@ -432,8 +433,8 @@ BOOL LoadProjectFromFile(char *filename)
 		} else if(sscanf(line, "SNTP=%d-%d:%s", &Prog.gmt, &Prog.dailysave, &sntp)) {
 			strncpy(Prog.sntp, sntp, sizeof(Prog.sntp));
         } else if(memcmp(line, "COMPILED=", 9)==0) {
-            line[strlen(line)-1] = '\0';
-            strcpy(CurrentCompileFile, line+9);
+            //line[strlen(line)-1] = '\0';
+            //strcpy(CurrentCompileFile, line+9);
         } else if(memcmp(line, "MICRO=", 6)==0) {
             line[strlen(line)-1] = '\0';
             int i;
@@ -559,6 +560,11 @@ static void SaveElemToFile(FILE *f, int which, void *any, int depth)
                 l->d.coil.setOnly, l->d.coil.resetOnly, l->d.coil.bit);
             break;
 
+		case ELEM_MULTISET_DA:
+			fprintf(f, "MULTISET_DA %s %s %d %d %d %d %d\n", l->d.multisetDA.name, l->d.multisetDA.name1, l->d.multisetDA.linear, 
+		l->d.multisetDA.speedup, l->d.multisetDA.forward, l->d.multisetDA.time, l->d.multisetDA.desloc);
+            break;
+
         case ELEM_TON:
             s = "TON"; goto timer;
         case ELEM_TOF:
@@ -625,10 +631,6 @@ cmp:
 
         case ELEM_SET_DA:
 			fprintf(f, "SET_DA %s\n", l->d.setDA.name);
-            break;
-
-		case ELEM_MULTISET_DA:
-			fprintf(f, "MULTISET_DA %s %s\n", l->d.multisetDA.name, l->d.multisetDA.name1);
             break;
 
         case ELEM_READ_ENC:
@@ -821,7 +823,7 @@ BOOL SaveProjectToFile(char *filename)
 	fprintf(f, "DNS=%d.%d.%d.%d\n", Prog.dns[0], Prog.dns[1], Prog.dns[2], Prog.dns[3]);
 	fprintf(f, "SNTP=%d-%d:%s\n", Prog.gmt, Prog.dailysave, Prog.sntp);
     if(strlen(CurrentCompileFile) > 0) {
-        fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
+        //fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }
 
     fprintf(f, "\n");
