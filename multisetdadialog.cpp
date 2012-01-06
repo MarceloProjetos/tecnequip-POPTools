@@ -17,6 +17,7 @@ extern IWICImagingFactory *	pWICFactory;
 static HWND MultisetDADialog;
 static ID2D1HwndRenderTarget*	pRenderTarget;
 static ID2D1StrokeStyle *		pLineStrokeStyle;
+static ID2D1StrokeStyle *		pDashStrokeStyle;
 static ID2D1TransformedGeometry * pTransformedGeometry;
 static ID2D1PathGeometry*		pLinePathGeometry;
 static ID2D1PathGeometry*		pLineFillPathGeometry;
@@ -24,6 +25,7 @@ static IDWriteTextFormat*		pTextFormat;
 static ID2D1SolidColorBrush*	pBackgroundBrush;
 static ID2D1SolidColorBrush*	pAxisBrush;
 static ID2D1SolidColorBrush*	pLineBrush;
+static ID2D1SolidColorBrush*	pGainBrush;
 static ID2D1SolidColorBrush*	pLineFillBrush;
 static ID2D1SolidColorBrush*	pPointBrush;
 static ID2D1SolidColorBrush*	pFontBrush;
@@ -36,7 +38,7 @@ static HWND LinearRadio;
 static HWND CustomRadio;
 static HWND TimeTextbox;
 static HWND DeslTextbox;
-static HWND AdjustTextbox;
+static HWND GainTextbox;
 static HWND ResTimeTextbox;
 static HWND ResDeslTextbox;
 static HWND UpdateButton;
@@ -51,7 +53,10 @@ static LONG_PTR PrevGraphBoxProc;
 
 static int		time;
 static int		desloc;
+static int		gain;
+static int		gain_idx;
 static float	points[DA_RESOLUTION];
+static float	gains[DA_RESOLUTION];
 
 static ElemMultisetDA *current;
 
@@ -143,6 +148,84 @@ void CalcLinearDown(int calc_time, int calc_desloc)
 			tm = i * DA_CYCLE_INTERVAL;
 			points[i] = ((tm * a) + l); // y = a.x + b
 		}
+	}
+
+}
+
+void CalcGainDown(int calc_time, int calc_desloc, int calc_gain)
+{
+	int tm = 0;
+	int i;
+
+	if (calc_desloc > DA_RESOLUTION || 
+		calc_desloc < (DA_RESOLUTION * -1))
+		return;
+
+	float g = static_cast<float>(calc_gain);
+	float t = static_cast<float>(calc_time);
+	float d = static_cast<float>(calc_desloc);
+
+	memset(gains, 0, sizeof(gains));
+
+	// desenha curva de ganho proporcional
+	float gd = 100.0f; // d * (g / 100.0f); // offset da curva de ganho
+	float gt = t * (g / 100.0f); // offset do tempo
+	float gdeltay = (d - gd) - d;
+	float gdeltax = gt;
+	float ga = gdeltay / gdeltax; // coeficiente angular da curva de ganho
+	float gb = d;
+
+	for (i = 0; i < gt / DA_CYCLE_INTERVAL; i++)
+	{
+		tm = i * DA_CYCLE_INTERVAL;
+		gains[i] = ((tm * ga) + gb); // y = a.x + b
+	}
+
+	float gy = 100.0f; // offset constante da curva de ganho no eixo y
+	float deltax = (t * (1.0f - (g / 100.0f))) - (t * (g / 100.0f));
+	float deltay = gy - (d - gy);
+	float a = deltay / deltax; // coeficiente angular (a = (Yb - Ya) / (Xb - Xa))
+	float y = (d - gy);
+	float ax = (a * (t * (g / 100.0f)));
+	float b = y - ax; // coeficiente linear (b = y - ax)
+
+	if (d < 0)
+	{
+		for (; i < t / DA_CYCLE_INTERVAL; i++)
+		{
+			tm = i * DA_CYCLE_INTERVAL;
+			gains[i] = ((tm * a) + b); // y = a.x + b
+		}
+	}
+	else
+	{
+		for (; i < (t - gt) / DA_CYCLE_INTERVAL; i++)
+		{
+			tm = i * DA_CYCLE_INTERVAL;
+			if (((tm * a) + b) > (DA_RESOLUTION - 100.0f))
+				gains[i] = i == 0 ? DA_RESOLUTION : DA_RESOLUTION - 100.0f;
+			else if (((tm * a) + b) < 100.0f)
+				gains[i] = i == calc_time / DA_CYCLE_INTERVAL - 1 ? 0.0f : 100.0f;
+			else
+				gains[i] = ((tm * a) + b); // y = a.x + b
+
+		}
+	}
+
+	// desenha curva de ganho
+	//float gd = 100.0f; // d * (g / 100.0f); // offset da curva de ganho
+	//float gt = t * (g / 100.0f); // offset do tempo
+	gdeltay = gd;
+	gdeltax = (t - gt) - t;
+	ga = gdeltay / gdeltax; // coeficiente angular da curva de ganho
+	gb = gy - (ga * (t - gt));
+
+	gain_idx = i;
+
+	for (; i < t / DA_CYCLE_INTERVAL; i++)
+	{
+		tm = i * DA_CYCLE_INTERVAL;
+		gains[i] = ((tm * ga) + gb); // y = a.x + b
 	}
 
 }
@@ -318,6 +401,14 @@ HRESULT CreateDeviceResources()
 		if (SUCCEEDED(hr))
 		{
 			hr = pRenderTarget->CreateSolidColorBrush(
+				D2D1::ColorF(D2D1::ColorF::Red),
+				&pGainBrush
+				);
+		}
+
+		if (SUCCEEDED(hr))
+		{
+			hr = pRenderTarget->CreateSolidColorBrush(
 				D2D1::ColorF(D2D1::ColorF::LightBlue),
 				&pPointBrush
 				);
@@ -336,6 +427,22 @@ HRESULT CreateDeviceResources()
 				L"", //locale
 				&pTextFormat
 				);
+		}
+		
+		if (SUCCEEDED(hr))
+		{
+			
+			D2D1_STROKE_STYLE_PROPERTIES properties = D2D1::StrokeStyleProperties();
+			properties.dashStyle = D2D1_DASH_STYLE_DASH;
+
+			/*float dashes[] =
+			{
+			2.0f, 1.0f,
+			3.0f, 1.0f,
+			};*/
+
+			//hr = m_pDrawArea->Factory->CreateStrokeStyle(properties, dashes, _countof(dashes), &m_strokeStyle);
+			pD2DFactory->CreateStrokeStyle(properties, NULL, NULL, &pDashStrokeStyle);
 		}
 
 		if (SUCCEEDED(hr))
@@ -516,7 +623,7 @@ void Render()
 
 				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), desloc < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
 										D2D1::Point2F(intervalX * i, desloc < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
-										pLineBrush, 4.0f, pLineStrokeStyle);
+										pLineBrush, current->linear & !current->speedup ? 2.0f : 4.0f, current->linear & !current->speedup ? pDashStrokeStyle : pLineStrokeStyle);
 			}
 			else
 			{
@@ -525,7 +632,7 @@ void Render()
 
 				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), desloc < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
 										D2D1::Point2F(intervalX * i, desloc < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
-										pLineBrush, 4.0f, pLineStrokeStyle);
+										pLineBrush, current->linear & !current->speedup ? 2.0f : 4.0f, current->linear & !current->speedup ? pDashStrokeStyle : pLineStrokeStyle);
 			}
 
 		}
@@ -536,7 +643,7 @@ void Render()
 
 			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), desloc < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
 									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, desloc < 0 ? abs(desloc * scaleY) : size.height - (desloc * scaleY) - (MARGIN * 2)), 
-									pLineBrush, 4.0f, pLineStrokeStyle);
+									pLineBrush, current->linear & !current->speedup ? 2.0f : 4.0f, current->linear & !current->speedup ? pDashStrokeStyle : pLineStrokeStyle);
 		}
 		else
 		{
@@ -544,7 +651,37 @@ void Render()
 
 			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), desloc < 0 ?  abs(point1) : size.height - point1 - (MARGIN * 2)),
 									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, desloc < 0 ? 0.0f : size.height - (MARGIN * 2)), 
-									pLineBrush, 4.0f, pLineStrokeStyle);
+									pLineBrush, current->linear & !current->speedup ? 2.0f : 4.0f, current->linear & !current->speedup ? pDashStrokeStyle : pLineStrokeStyle);
+		}
+
+		if (current->linear)
+		{
+
+			for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
+			{
+				if (!current->speedup)
+				{
+					point1 = gains[i - 1] * scaleY;
+					point2 = gains[i] * scaleY;
+					
+					pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), desloc < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
+											D2D1::Point2F(intervalX * i, desloc < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
+											i > gain_idx ? pGainBrush : pLineBrush, 4.0f, pLineStrokeStyle);
+				}
+
+			}
+
+			if (!current->speedup)
+			{
+				point1 = gains[i - 1] * scaleY;
+
+				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), desloc < 0 ?  abs(point1) : size.height - point1 - (MARGIN * 2)),
+										D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, desloc < 0 ? 0.0f : size.height - (MARGIN * 2)), 
+										pGainBrush, 4.0f, pLineStrokeStyle);
+
+				pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F((current->time / 2) * scaleX, (DA_RESOLUTION - (current->desloc / 2)) * scaleY), 4.0f, 4.0f),
+										pLineBrush);
+			}
 		}
 
 		// Translate geometry
@@ -638,6 +775,7 @@ static LRESULT CALLBACK GraphBoxProc(HWND hwnd, UINT msg, WPARAM wParam,
 		case WM_DRAWITEM:
 			Render(/*Rect*/);
 			break;
+		case WM_ERASEBKGND:
 		case WM_PAINT:
 			{
 				/*RECT r;
@@ -705,6 +843,11 @@ static LRESULT CALLBACK UpdateButtonProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
         SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
 		current->time = max(30, min(2000, abs(atoi(num))));
+		time = current->time;
+
+        SendMessage(GainTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
+		current->gain = max(min(abs(atoi(num)), 100), 0);
+		gain = current->gain;
 
 		SendMessage(DeslTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
 
@@ -752,15 +895,18 @@ static LRESULT CALLBACK UpdateButtonProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		SendMessage(ResTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 		_itoa(current->resold, num, 10);
 		SendMessage(ResDeslTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		_itoa(current->adjust, num, 10);
-		SendMessage(AdjustTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+		_itoa(current->gain, num, 10);
+		SendMessage(GainTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 
 		if (current->linear)
 		{
 			if (current->speedup)
 				CalcLinearUp(time, desloc);
 			else
+			{
 				CalcLinearDown(time, desloc);
+				CalcGainDown(time, desloc, gain);
+			}
 		}
 		else
 		{
@@ -848,15 +994,15 @@ static void MakeControls(void)
         445, 33, 150, 100, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(DeslTypeCombobox);
 
-    HWND adjustLabel = CreateWindowEx(0, WC_STATIC, _("(Fator Ajuste ???):"),
+    HWND gainLabel = CreateWindowEx(0, WC_STATIC, _("Curva Ganho (%):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         445, 62, 150, 21, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(adjustLabel);
+    NiceFont(gainLabel);
 
-    AdjustTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    GainTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         600, 60, 50, 21, MultisetDADialog, NULL, Instance, NULL);
-    FixedFont(AdjustTextbox);
+    FixedFont(GainTextbox);
 
     //HWND deslLabel = CreateWindowEx(0, WC_STATIC, _("Deslocamento:"),
     //    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -917,7 +1063,7 @@ static void MakeControls(void)
 	PrevNumProc = SetWindowLongPtr(DeslTextbox, GWLP_WNDPROC, 
         (LONG_PTR)NumberProc);
 
-	PrevNumProc = SetWindowLongPtr(AdjustTextbox, GWLP_WNDPROC, 
+	PrevNumProc = SetWindowLongPtr(GainTextbox, GWLP_WNDPROC, 
         (LONG_PTR)NumberProc);
 
 	PrevGraphBoxProc = SetWindowLongPtr(GraphBox, GWLP_WNDPROC, 
@@ -981,8 +1127,8 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
     SendMessage(ResTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 	_itoa(l->resold, num, 10);
     SendMessage(ResDeslTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-	_itoa(l->adjust, num, 10);
-    SendMessage(AdjustTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+	_itoa(l->gain, num, 10);
+    SendMessage(GainTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 
     if(l->linear) {
         SendMessage(LinearRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -1060,8 +1206,8 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 
 		l->desloc = l->forward ?  l->desloc : l->desloc * -1;
 
-		SendMessage(AdjustTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		l->adjust = abs(atoi(num));
+		SendMessage(GainTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
+		l->gain = min(max(abs(atoi(num)), 0), 100);
 
 		_itoa(l->time, l->name, 10);
 		_itoa(l->desloc, l->name1, 10);

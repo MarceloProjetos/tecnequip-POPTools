@@ -451,12 +451,13 @@ void AddMultisetDA(void)
     strcpy(t->d.multisetDA.name, "600");
 	strcpy(t->d.multisetDA.name1, "2047");
 	t->d.multisetDA.time = 600;
+	t->d.multisetDA.gain = 10;
 	t->d.multisetDA.desloc = DA_RESOLUTION;
-	t->d.multisetDA.resolt = 10;
-	t->d.multisetDA.resold = 10;
-	t->d.multisetDA.linear = 0;
-	t->d.multisetDA.forward = 1;
-	t->d.multisetDA.speedup = 1;
+	t->d.multisetDA.resolt = 10; // resolução do tempo
+	t->d.multisetDA.resold = 10; // resolução do deslocamento
+	t->d.multisetDA.linear = 1; // 1 linear, 0 curva
+	t->d.multisetDA.forward = 1; // 1 avanço, 0 recuo
+	t->d.multisetDA.speedup = 0; // ' aceleração, 0 desaceleração
 	
     AddLeaf(ELEM_MULTISET_DA, t);
 }
