@@ -451,8 +451,9 @@ void AddMultisetDA(void)
     strcpy(t->d.multisetDA.name, "600");
 	strcpy(t->d.multisetDA.name1, "2047");
 	t->d.multisetDA.time = 600;
-	t->d.multisetDA.gain = 10;
-	t->d.multisetDA.desloc = DA_RESOLUTION;
+	t->d.multisetDA.gaind = 10;
+	t->d.multisetDA.gaint = 5;
+	t->d.multisetDA.initval = DA_RESOLUTION;
 	t->d.multisetDA.resolt = 10; // resolução do tempo
 	t->d.multisetDA.resold = 10; // resolução do deslocamento
 	t->d.multisetDA.linear = 1; // 1 linear, 0 curva

@@ -141,7 +141,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
     } else if(sscanf(line, "SET_DA %s", l->d.setDA.name)==1) {
         *which = ELEM_SET_DA;
 	} else if(sscanf(line, "MULTISET_DA %s %s %d %d %d %d %d", l->d.multisetDA.name, l->d.multisetDA.name1, &l->d.multisetDA.linear, 
-		&l->d.multisetDA.speedup, &l->d.multisetDA.forward, &l->d.multisetDA.time, &l->d.multisetDA.desloc)==7) {
+		&l->d.multisetDA.speedup, &l->d.multisetDA.forward, &l->d.multisetDA.time, &l->d.multisetDA.initval)==7) {
         *which = ELEM_MULTISET_DA;
     } else if(sscanf(line, "READ_ENC %s", l->d.readEnc.name)==1) {
         *which = ELEM_READ_ENC;
@@ -562,7 +562,7 @@ static void SaveElemToFile(FILE *f, int which, void *any, int depth)
 
 		case ELEM_MULTISET_DA:
 			fprintf(f, "MULTISET_DA %s %s %d %d %d %d %d\n", l->d.multisetDA.name, l->d.multisetDA.name1, l->d.multisetDA.linear, 
-		l->d.multisetDA.speedup, l->d.multisetDA.forward, l->d.multisetDA.time, l->d.multisetDA.desloc);
+		l->d.multisetDA.speedup, l->d.multisetDA.forward, l->d.multisetDA.time, l->d.multisetDA.initval);
             break;
 
         case ELEM_TON:

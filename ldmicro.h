@@ -416,10 +416,11 @@ typedef struct ElemMultisetDATag {
 	unsigned char	speedup;		// Aceleração, Desaceleração
     int		resolt;
 	int		resold;
-	int		time;
-	int		desloc;
+	int		time;					// tempo total da rampa
+	int		initval;					// valor inicial do DA na rampa
 	int		type;					// 0 = Valor saida do DA (2048 ~ -2048), 1 = milivolt (mV) (10V ~-10V), 2 = percentual (%)
-	int		gain;
+	int		gaind;
+	int		gaint;
 } ElemMultisetDA;
 
 typedef struct ElemReadUSSTag {
