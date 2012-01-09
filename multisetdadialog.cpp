@@ -581,9 +581,11 @@ void Render()
 		pSink->BeginFigure(D2D1::Point2F(0.0f, size.height - (current->speedup ? (desloc < 0 ? points[0] : points[0] - DA_RESOLUTION) : (desloc < 0 ? points[0] + DA_RESOLUTION : points[0]))), D2D1_FIGURE_BEGIN_FILLED);
 
 		int i;
+		float p;
 		for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
 		{
-			pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current->speedup ? (desloc < 0 ? points[i] : points[i] - DA_RESOLUTION) : (desloc < 0 ? points[i] + DA_RESOLUTION : points[i]))));
+			p = current->linear && !current->speedup ? gains[i] : points[i];
+			pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current->speedup ? (desloc < 0 ? p : p - DA_RESOLUTION) : (desloc < 0 ? p + DA_RESOLUTION : p))));
 		}
 
 		if (current->speedup)
@@ -773,8 +775,6 @@ static LRESULT CALLBACK GraphBoxProc(HWND hwnd, UINT msg, WPARAM wParam,
 			break;
 
 		case WM_DRAWITEM:
-			Render(/*Rect*/);
-			break;
 		case WM_ERASEBKGND:
 		case WM_PAINT:
 			{
