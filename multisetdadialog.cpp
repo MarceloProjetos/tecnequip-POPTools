@@ -151,11 +151,11 @@ void CalcGainDown(int calc_time, int calc_initval, int calc_gainx, int calc_gain
 	memset(gains, 0, sizeof(gains));
 
 	// desenha curva de ganho proporcional
-	float gd = d * (gy / 100.0f); // altura (y) da curva de ganho 5%
-	float gt = t * (gx / 100.0f); // largura (x) do tempo
-	float gdeltay = (d - gd) - d;
+	float gd = d * (gy / 100.0f);	// altura (y) da curva de ganho 5%
+	float gt = t * (gx / 100.0f);	// largura (x) do tempo
+	float gdeltay = (d - gd) - d;	
 	float gdeltax = gt;
-	float ga = gdeltay / gdeltax; // coeficiente angular da curva de ganho
+	float ga = gdeltay / gdeltax;	// coeficiente angular da curva de ganho
 	float gb = d;
 
 	for (i = 0; i < gt / DA_CYCLE_INTERVAL; i++)
@@ -166,37 +166,19 @@ void CalcGainDown(int calc_time, int calc_initval, int calc_gainx, int calc_gain
 
 	float deltax = (t * (1.0f - (gx / 100.0f))) - (t * (gx / 100.0f));
 	float deltay = gd - (d - gd);
-	float a = deltay / deltax; // coeficiente angular (a = (Yb - Ya) / (Xb - Xa))
+	float a = deltay / deltax;		// coeficiente angular (a = (Yb - Ya) / (Xb - Xa))
 	float y = (d - gd);
 	float ax = (a * (t * (gx / 100.0f)));
-	float b = y - ax; // coeficiente linear (b = y - ax)
+	float b = y - ax;				// coeficiente linear (b = y - ax)
 
-	//if (d < 0)
-	//{
-	//	for (; i < t / DA_CYCLE_INTERVAL; i++)
-	//	{
-	//		tm = i * DA_CYCLE_INTERVAL;
-	//		gains[i] = ((tm * a) + b); // y = a.x + b
-	//	}
-	//}
-	//else
-	//{
-		for (; i < (t - gt) / DA_CYCLE_INTERVAL; i++)
-		{
-			tm = i * DA_CYCLE_INTERVAL;
-			if (((tm * a) + b) > (DA_RESOLUTION - gd))
-				gains[i] = i == 0 ? DA_RESOLUTION : DA_RESOLUTION - gd;
-			else if (((tm * a) + b) < gd)
-				gains[i] = i == calc_time / DA_CYCLE_INTERVAL - 1 ? 0.0f : gd;
-			else
-				gains[i] = ((tm * a) + b); // y = a.x + b
+	for (; i < (t - gt) / DA_CYCLE_INTERVAL; i++)
+	{
+		tm = i * DA_CYCLE_INTERVAL;
 
-		}
-	//}
+		gains[i] = ((tm * a) + b); // y = a.x + b
+	}
 
 	// desenha curva de ganho
-	//float gd = 100.0f; // d * (g / 100.0f); // offset da curva de ganho
-	//float gt = t * (g / 100.0f); // offset do tempo
 	gdeltay = gd;
 	gdeltax = (t - gt) - t;
 	ga = gdeltay / gdeltax; // coeficiente angular da curva de ganho
@@ -501,8 +483,8 @@ void Render()
 		float interval = (size.width - MARGIN * 2) / DA_CYCLE_INTERVAL;
 		for (int i = 1; i < size.width / DA_CYCLE_INTERVAL; i++)
 		{
-			/*pRenderTarget->DrawLine(D2D1::Point2F(MARGIN - 1.0f + (interval * i), size.height - MARGIN - 1.0f - 5.0f), 
-									D2D1::Point2F(MARGIN - 1.0f + (interval * i), size.height - MARGIN - 1.0f + 5.0f), pAxisBrush);*/
+			pRenderTarget->DrawLine(D2D1::Point2F(MARGIN - 1.0f + (interval * i), size.height - MARGIN + 1.0f - 5.0f), 
+									D2D1::Point2F(MARGIN - 1.0f + (interval * i), size.height - MARGIN + 1.0f + 5.0f), pAxisBrush);
 
 			D2D1_RECT_F r = D2D1::RectF(MARGIN - 1.0f + (interval * i) - (FONT_SIZE * 1.5f),
 										size.height - FONT_SIZE - 5.0f, 
@@ -519,9 +501,7 @@ void Render()
 		for (int i = 0; i < 5; i++)
 		{
 			if (i < 4)
-				pRenderTarget->DrawLine(//D2D1::Point2F((MARGIN * 2) - 1.0f - 5.0f, MARGIN - 1.0f + (interval * i)), 
-										//D2D1::Point2F((MARGIN * 2) - 1.0f + 5.0f, MARGIN - 1.0f + (interval * i)), 
-										D2D1::Point2F((MARGIN * 2) - 1.0f, MARGIN - 1.0f + (interval * i)),
+				pRenderTarget->DrawLine(D2D1::Point2F((MARGIN * 2) - 1.0f, MARGIN - 1.0f + (interval * i)),
 										D2D1::Point2F(size.width - MARGIN, MARGIN - 1.0f + (interval * i)), 
 										pAxisBrush);
 
@@ -663,56 +643,17 @@ void Render()
 										D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? 0.0f : size.height - (MARGIN * 2)), 
 										pGainBrush, 4.0f, pLineStrokeStyle);
 
-				pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F((current->time / 2) * scaleX, (DA_RESOLUTION - (current->initval / 2)) * scaleY), 4.0f, 4.0f),
+				if (current->type == 1)  // (mV)
+					point1 = (current->initval < 0 ? (DA_RESOLUTION * (abs(current->initval) / DA_VOLTAGE)) / 2 : DA_RESOLUTION - ((DA_RESOLUTION * (abs(current->initval) / DA_VOLTAGE)) / 2)) * scaleY;
+				else if (current->type == 2) // (%)
+					point1 = (current->initval < 0 ? (DA_RESOLUTION * (abs(current->initval) / 100.0f)) / 2 : DA_RESOLUTION - ((DA_RESOLUTION * (abs(current->initval) / 100.0f)) / 2)) * scaleY;
+				else // DA 
+					point1 = (current->initval < 0 ? abs(current->initval) / 2 : DA_RESOLUTION - (abs(current->initval) / 2)) * scaleY;
+
+				pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F((current->time / 2) * scaleX, point1), 4.0f, 4.0f),
 										pLineBrush);
 			}
 		}
-
-		// Translate geometry
-		/*D2D1_MATRIX_3X2_F transform = scale * translate;
-
-		hr = pD2DFactory->CreateTransformedGeometry(
-			 pLineFillPathGeometry,
-			 &transform,
-			 &pTransformedGeometry
-			 );
-
-		pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
-		pRenderTarget->FillGeometry(pTransformedGeometry, pLineFillBrush);
-
-		SafeRelease(&pTransformedGeometry);*/
-
-		/*for (i = 0; i < (time / DA_CYCLE_INTERVAL) - 1; i++)
-		{
-			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * i, size.height - (points[i] - size.height) - intervalY),
-									D2D1::Point2F(intervalX * i, size.height - (points[i + 1] - size.height) - intervalY), 
-									pLineBrush, 5, pLineStrokeStyle);
-		}*/
-
-		// Draw points
-		/*for (i = 1; i < time / DA_CYCLE_INTERVAL; i++)
-		{
-			pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F(intervalX * i, size.height - (points[i] - size.height) - intervalY), 5.0f, 5.0f), pPointBrush);
-		}*/
-
-		//hr = pLinePathGeometry->Open(&pSink);
-
-		//pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
-
-		//pSink->BeginFigure(point, D2D1_FIGURE_BEGIN_FILLED);
-
-		//for (i = 0; i < time / DA_CYCLE_INTERVAL - 1; i++)
-		//{
-		//	pSink->AddLine(D2D1::Point2F(intervalX + (intervalX * i+1), size.height - (points[i] - size.height) - intervalY));
-		//}
-		//pSink->EndFigure(D2D1_FIGURE_END_OPEN);
-
-		//pRenderTarget->DrawGeometry(pLinePathGeometry, pLineBrush, 1.0f);
-
-		//hr = pSink->Close();
-		//SafeRelease(&pSink);
-
-		//pRenderTarget->PopAxisAlignedClip();
 
 		hr = pRenderTarget->EndDraw();
 
@@ -1084,7 +1025,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 
     MultisetDADialog = CreateWindowClient(0, "LDmicroDialog",
         _("Rampa de Aceleração/Desaceleração"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 880, 600/*420, 80*/, MainWindow, NULL, Instance, NULL);
+        100, 100, 880, 600, MainWindow, NULL, Instance, NULL);
     RECT r;
     GetClientRect(MultisetDADialog, &r);
 
@@ -1223,21 +1164,6 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 
 		_itoa(l->time, l->name, 10);
 		_itoa(l->initval, l->name1, 10);
-
-		//SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(l->name));
-		//SendMessage(InitVallTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(l->name1));
-
-		//int i;
-
-		/**bit = 0;
-		for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
-		{
-			if (_stricmp(IoSeenPreviously[i].name, name)==0)
-				*bit = IoSeenPreviously[i].bit;
-		}*/
-		//char cbit[10];
-		//_itoa(*bit, cbit, 10);
-		//SetWindowText(BitTextbox, cbit );
 
     }
 	DiscardDeviceResources();
