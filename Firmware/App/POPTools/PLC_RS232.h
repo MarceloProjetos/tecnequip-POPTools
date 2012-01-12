@@ -5,21 +5,21 @@ volatile int GPIO_OUTPUT_PORT1 = 0;
 volatile int U_TON = 0;
 volatile int I_TOFF_antiglitch = 0;
 volatile int U_TOFF = 0;
+volatile int U_mensagem = 0;
 volatile int I_oneShot_0000 = 0;
-volatile int I_oneShot_0001 = 0;
 
 void PLC_Run(void)
 {
     I_mcr = 1;
-    
+
     /* start rung 1 */
     I_rung_top = I_mcr;
-    
+
     /* start series [ */
-    if (GPIO_OUTPUT_PORT1) {  // YS1
+    if (GPIO_OUTPUT_PORT1) {  // YLED
         I_rung_top = 0;
     }
-    
+
     if (I_rung_top) {  // $rung_top
         if (U_TON < 49) {
             U_TON++;
@@ -28,7 +28,7 @@ void PLC_Run(void)
     } else {
         U_TON = 0;
     }
-    
+
     if (!I_TOFF_antiglitch) {  // $TOFF_antiglitch
         U_TOFF = 49;
     }
@@ -41,46 +41,31 @@ void PLC_Run(void)
     } else {
         U_TOFF = 0;
     }
-    
+
     GPIO_OUTPUT_PORT1 = I_rung_top;
-    
+
     /* ] finish series */
-    
+
     /* start rung 2 */
     I_rung_top = I_mcr;
-    
+
     /* start series [ */
-    if (!GPIO_OUTPUT_PORT1) {  // YS1
+    if (!GPIO_OUTPUT_PORT1) {  // YLED
         I_rung_top = 0;
     }
-    
+
+    if (I_rung_top) {  // $rung_top
+        I_rung_top = RS232_Write((unsigned char *)&U_mensagem, 1);
+    }
+
     if (I_rung_top) {  // $rung_top
         if (!I_oneShot_0000) {  // $oneShot_0000
             I_oneShot_0000 = I_rung_top;
-            DAC_StartDown(0, 30, 10, 600, 2047);
+            DAC_StartDown(600, 2048);
         }
     } else {
         I_oneShot_0000 = I_rung_top;
     }
-    
-    /* ] finish series */
-    
-    /* start rung 3 */
-    I_rung_top = I_mcr;
-    
-    /* start series [ */
-    if (GPIO_OUTPUT_PORT1) {  // YS1
-        I_rung_top = 0;
-    }
-    
-    if (I_rung_top) {  // $rung_top
-        if (!I_oneShot_0001) {  // $oneShot_0001
-            I_oneShot_0001 = I_rung_top;
-            DAC_StartUp(0, 600, 2047);
-        }
-    } else {
-        I_oneShot_0001 = I_rung_top;
-    }
-    
+
     /* ] finish series */
 }

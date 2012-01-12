@@ -453,7 +453,7 @@ void AddMultisetDA(void)
 	t->d.multisetDA.time = 600;
 	t->d.multisetDA.gaint = 10;
 	t->d.multisetDA.gainr = 5;
-	t->d.multisetDA.initval = DA_RESOLUTION;
+	t->d.multisetDA.initval = DA_RESOLUTION - 1;
 	t->d.multisetDA.linear = 1; // 1 linear, 0 curva
 	t->d.multisetDA.forward = 1; // 1 avanço, 0 recuo
 	t->d.multisetDA.speedup = 0; // ' aceleração, 0 desaceleração

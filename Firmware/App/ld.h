@@ -291,8 +291,8 @@ unsigned char  CoTimeDelay(unsigned char hour,unsigned char minute,unsigned char
 #ifndef __DAC_H
 extern unsigned int DAC_Read (void);
 void			DAC_Write(unsigned int val);
-void 			DAC_StartUp(int time, int desloc);
-void 			DAC_StartDown(int time, int desloc);
+void 			DAC_StartUp(unsigned char linear, int time, int value);
+void 			DAC_StartDown(unsigned char linear, unsigned char gaint, unsigned char gainr, int time, int value);
 #endif
 
 /***************************************************************************/

@@ -741,15 +741,17 @@ void UpdateWindow(void)
 	else // DA 
 	{
 		current.initval = max(static_cast<int>(DA_RESOLUTION * 0.1f), min(DA_RESOLUTION, abs(atoi(num))));
+		if (current.forward && current.initval >= DA_RESOLUTION)
+			current.initval = DA_RESOLUTION - 1;
 	}
 	
-	if ((current.type == 0 && (atoi(num) > DA_RESOLUTION || atoi(num) < static_cast<int>(DA_RESOLUTION * 0.1f))) ||
+	if ((current.type == 0 && (((current.forward && atoi(num) > DA_RESOLUTION - 1) || (!current.forward && atoi(num) > DA_RESOLUTION)) || atoi(num) < static_cast<int>(DA_RESOLUTION * 0.1f))) ||
 		(current.type == 1 && (atoi(num) > MAX_MILIVOLT_VAL || atoi(num) < static_cast<int>(MAX_MILIVOLT_VAL * 0.1f))) || 
 		(current.type == 2 && (atoi(num) > 100 || atoi(num) < 10)))
 	{
 		_itoa(current.initval, num, 10);
 		SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		StringCchPrintf(msg, sizeof(msg), _("O valor permitido para o campo Resolução DA no Tamanho da Rampa esta entre %d e %d."), current.initval, current.type == 0 ? DA_RESOLUTION : (current.type == 1 ? MAX_MILIVOLT_VAL : 100));
+		StringCchPrintf(msg, sizeof(msg), _("O valor permitido para o campo Resolução DA no Tamanho da Rampa esta entre %d e %d."), current.type == 0 ? static_cast<int>(DA_RESOLUTION * 0.1f) : (current.type == 1 ? static_cast<int>(MAX_MILIVOLT_VAL * 0.1f)  : 10), current.type == 0 ? DA_RESOLUTION - 1 : (current.type == 1 ? MAX_MILIVOLT_VAL : 100));
 		MessageBox(MultisetDADialog, msg, "Valor inválido no campo Resolução DA !", MB_OK | MB_ICONEXCLAMATION);
 	}
 

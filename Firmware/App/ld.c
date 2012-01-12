@@ -24,7 +24,7 @@ int								SNTP_DAILY_SAVE = 0;
 
 unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 
-#define PLC_BLINK
+#define PLC_DAC_RAMPA_LINEAR
 
 #if defined(PLC_NULL)
 #include "POPTools/PLC_Null.h"
@@ -46,6 +46,8 @@ unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 #include "POPTools/PLC_DA.h"
 #elif defined(PLC_CPU_LED)
 #include "POPTools/PLC_CPU_LED.h"
+#elif defined(PLC_DAC_RAMPA_LINEAR)
+#include "POPTools/PLC_DAC_RAMPA_LINEAR.h"
 #elif defined(PLC_DAC_RAMPA_CURVA)
 #include "POPTools/PLC_DAC_RAMPA_CURVA.h"
 #elif defined(PLC_DAC_RAMPA_CURVA_RECUAR)

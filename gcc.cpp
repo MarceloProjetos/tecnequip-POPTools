@@ -199,7 +199,7 @@ static void GenerateDeclarations(FILE *f)
     int i;
     for(i = 0; i < IntCodeLen; i++) {
         char *bitVar1 = NULL, *bitVar2 = NULL;
-        char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
+        char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL, *intVar4 = NULL;
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
@@ -281,6 +281,8 @@ static void GenerateDeclarations(FILE *f)
 			case INT_MULTISET_DA:
                 intVar1 = IntCode[i].name1;
                 intVar2 = IntCode[i].name2;
+				intVar3 = IntCode[i].name3;
+				intVar4 = IntCode[i].name4;
                 break;
 
             case INT_END_IF:
@@ -465,9 +467,9 @@ static void GenerateAnsiC(FILE *f)
 				break;
 			case INT_MULTISET_DA:
 				if (IntCode[i].bit)
-					fprintf(f, "DAC_StartUp(%s, %s);\n", IntCode[i].name1, IntCode[i].name2);
+					fprintf(f, "DAC_StartUp(%d, %s, %s);\n", IntCode[i].literal, IntCode[i].name1, IntCode[i].name2);
 				else
-					fprintf(f, "DAC_StartDown(%s, %s);\n", IntCode[i].name1, IntCode[i].name2);
+					fprintf(f, "DAC_StartDown(%d, %s, %s, %s, %s);\n", IntCode[i].literal, IntCode[i].name3, IntCode[i].name4, IntCode[i].name1, IntCode[i].name2);
 				break;
 			case INT_CHECK_RTC:
 				fprintf(f, "RTC_Now = RTC_GetTime();\n");

@@ -57,7 +57,7 @@ void PLC_Run(void)
     if (I_rung_top) {  // $rung_top
         if (!I_oneShot_0000) {  // $oneShot_0000
             I_oneShot_0000 = I_rung_top;
-            DAC_StartDown(0, 30, 10, 600, 2047);
+            DAC_StartDown(0, 30, 10, 600, -2048);
         }
     } else {
         I_oneShot_0000 = I_rung_top;
@@ -76,7 +76,7 @@ void PLC_Run(void)
     if (I_rung_top) {  // $rung_top
         if (!I_oneShot_0001) {  // $oneShot_0001
             I_oneShot_0001 = I_rung_top;
-            DAC_StartUp(0, 600, 2047);
+            DAC_StartUp(0, 600, -2048);
         }
     } else {
         I_oneShot_0001 = I_rung_top;

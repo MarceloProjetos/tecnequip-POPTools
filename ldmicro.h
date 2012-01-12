@@ -25,6 +25,7 @@
 #define __LDMICRO_H
 
 #include <windows.h>
+#include <windowsx.h>
 #include <tchar.h>
 #include <wchar.h>
 #include <math.h>
@@ -37,14 +38,30 @@
 #include <dwrite.h>
 #include <wincodec.h>
 
-#pragma warning(disable : 4995)
-
+#include <assert.h>
 // String Safe Header File
 #include <strsafe.h>
+
+#pragma warning(disable : 4995)
+
+#include <commctrl.h>
+#pragma comment(lib, "comctl32.lib")
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "WindowsCodecs.lib")
 #pragma comment(lib, "dwrite.lib")
+
+// Enable Visual Style
+#if defined _M_IX86
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_IA64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='ia64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_X64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#else
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
+#pragma endregion
 
 using namespace std;
 using namespace D2D1;
@@ -84,7 +101,7 @@ typedef SDWORD SWORD;
 // `Configuration options.'
 
 // The library that I use to do registry stuff.
-#define FREEZE_SUBKEY "LDMicro"
+#define FREEZE_SUBKEY "POPTools"
 
 #define DEFAULT_CPU "NXP LPC1768 LQFP100"
 
@@ -412,11 +429,11 @@ typedef struct ElemResetEncTag {
 typedef struct ElemMultisetDATag {
 	char    name[MAX_NAME_LEN];		// Tempo
 	char    name1[MAX_NAME_LEN];	// Deslocamento
-	BOOL	linear;					// Linear, Curva Ascendente/Descendente, Personalizada
-	BOOL	forward;				// Avança, Recua
-	unsigned char	speedup;		// Aceleração, Desaceleração
+	BOOL	linear;					// 1 = Linear, 0 = Curva Ascendente/Descendente
+	BOOL	forward;				// 1 = Avança, 0 = Recua
+	BOOL	speedup;				// 1 = Aceleração, 0 = Desaceleração
 	int		time;					// tempo total da rampa
-	int		initval;					// valor inicial do DA na rampa
+	int		initval;				// valor inicial do DA na rampa
 	int		type;					// 0 = Valor saida do DA (2048 ~ -2048), 1 = milivolt (mV) (10V ~-10V), 2 = percentual (%)
 	int		gaint;					// tempo da curva de ganho em %
 	int		gainr;					// resolução da curva de ganho em %
