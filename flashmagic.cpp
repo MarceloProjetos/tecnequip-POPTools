@@ -114,34 +114,34 @@ int ProgramProgress(int status, unsigned long value, unsigned long value2, void 
 
 BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 {
-  fm_results *presults;
-  fm_connectoptions_com options;
+	fm_results *presults;
+	fm_connectoptions_com options;
 
-  // use standard timeouts
-  fm_set_default_timeouts();
+	// use standard timeouts
+	fm_set_default_timeouts();
 
-  // generate a debug file containing all ISP commands
-  //fm_select_debug_mode(FM_DEBUG_MODE_ON, "fmtest.fmd");
+	// generate a debug file containing all ISP commands
+	//fm_select_debug_mode(FM_DEBUG_MODE_ON, "fmtest.fmd");
 
-  options.osc            = 12.000;
-  options.port           = ComPort;
-  options.baudrate       = BaudRate;
-  options.selecteddevice = FM_LPC1768;
-  options.highspeed      = 0;
-  options.clocks         = 0;
-  options.halfduplex     = 0;
-  options.hwconfig       = FM_HWBOOTEXEC;
-  options.hwt1           = 200;
-  options.hwt2           = 200;
-  options.i2caddr        = 0;
-  options.maxbaudrate    = 230400;
-  options.usinginterface = 0;
-  options.interfacetype  = FM_INTERFACETYPE_NONE;
+	options.osc            = 12.000;
+	options.port           = ComPort;
+	options.baudrate       = BaudRate;
+	options.selecteddevice = FM_LPC1768;
+	options.highspeed      = 0;
+	options.clocks         = 0;
+	options.halfduplex     = 0;
+	options.hwconfig       = FM_HWBOOTEXEC;
+	options.hwt1           = 200;
+	options.hwt2           = 200;
+	options.i2caddr        = 0;
+	options.maxbaudrate    = 230400;
+	options.usinginterface = 0;
+	options.interfacetype  = FM_INTERFACETYPE_NONE;
 
 	// connect to the device on the specified com port using the specified baud rate
-  presults = fm_connect(&options, sizeof(options));
-  if (presults->result != FM_OK)
-  {
+	presults = fm_connect(&options, sizeof(options));
+	if (presults->result != FM_OK)
+	{
 		switch (presults->result)
 		{
 		  case FM_ERROR_PORT:
@@ -164,10 +164,10 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 				break;
 		}
 		return FALSE;
-  }
+	}
 
 	// erase whole device except bootloader
-  presults = fm_erase(FM_BLOCKS, 0x3FFFFFFF, 1, EraseProgress, 0, NULL);
+	presults = fm_erase(FM_BLOCKS, 0x3FFFFFFF, 1, EraseProgress, 0, NULL);
 	if (presults->result != FM_OK)
 	{
 		switch (presults->result)
@@ -194,7 +194,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 				Error("Ocorreu um erro desconhecido ao apagar a memória flash !");
 				break;
 		}
-  	fm_disconnect();
+  		fm_disconnect();
 		return FALSE;
 	}
 
@@ -279,12 +279,25 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 				Error("Ocorreu um erro desconhecido ao verificar a gravação do programa !");
 				break;
 		}
-	  fm_disconnect();
-      return FALSE;
+		presults = fm_disconnect();
+		return FALSE;
 	}
 
 	// disconnect from device
-	fm_disconnect();
+	presults = fm_disconnect();
+	if (presults->result != FM_OK)
+	{
+		Error("Ocorreu um erro desconhecido ao desconectar !");
+		return FALSE;
+	}
+
+	char text[100];
+
+	StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Atualizando o relógio RTC da POP...");
+
+	StatusBarSetText(0, text);
+
+	Sleep(1000);
 
 	TCHAR lpszCommPort[10];
 
@@ -348,9 +361,10 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 		return FALSE;
 	}
 
-	BYTE cWriteBuffer[128];
-	BYTE cReadBuffer[128];
-	DWORD writenBytes, readedBytes;
+	BYTE cWriteBuffer[11];
+	BYTE cReadBuffer[11];
+	DWORD writenBytes, readedBytes = 0;
+	int trycount = 0;
 
 	memset(cWriteBuffer, 0, sizeof(cWriteBuffer));
 	memset(cReadBuffer, 0, sizeof(cReadBuffer));
@@ -358,64 +372,79 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	time_t rawtime;
 	struct tm * t;
 
-	time ( &rawtime );
-	t = localtime ( &rawtime );
-
-	t->tm_year += 1900;
-	t->tm_mon++;
-	t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
-
-    memcpy(&cWriteBuffer[0], &t->tm_mday, 1);
-    memcpy(&cWriteBuffer[1], &t->tm_mon, 1);
-    memcpy(&cWriteBuffer[2], &t->tm_year, 2);
-    memcpy(&cWriteBuffer[4], &t->tm_hour, 1);
-    memcpy(&cWriteBuffer[5], &t->tm_min, 1);
-    memcpy(&cWriteBuffer[6], &t->tm_sec, 1);
-    memcpy(&cWriteBuffer[7], &t->tm_wday, 1);
-    memcpy(&cWriteBuffer[8], &t->tm_yday, 2);
-
-	WORD checksum = 0;
-	checksum = CheckSum(cWriteBuffer, 10);
-
-	cWriteBuffer[10] = (BYTE)checksum;
-
-	if (WriteFile(hCommPort,
-					cWriteBuffer,
-					11,
-					&writenBytes,NULL) == 0)
-
+	while (!readedBytes && trycount < 3)
 	{
-		if (GetLastError() != ERROR_IO_PENDING) 
+		time ( &rawtime );
+		t = localtime ( &rawtime );
+
+		t->tm_year += 1900;
+		t->tm_mon++;
+		t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
+
+		memcpy(&cWriteBuffer[0], &t->tm_mday, 1);
+		memcpy(&cWriteBuffer[1], &t->tm_mon, 1);
+		memcpy(&cWriteBuffer[2], &t->tm_year, 2);
+		memcpy(&cWriteBuffer[4], &t->tm_hour, 1);
+		memcpy(&cWriteBuffer[5], &t->tm_min, 1);
+		memcpy(&cWriteBuffer[6], &t->tm_sec, 1);
+		memcpy(&cWriteBuffer[7], &t->tm_wday, 1);
+		memcpy(&cWriteBuffer[8], &t->tm_yday, 2);
+
+		WORD checksum = 0;
+		checksum = CheckSum(cWriteBuffer, sizeof(cWriteBuffer) - 1);
+
+		cWriteBuffer[sizeof(cWriteBuffer) - 1] = (BYTE)checksum;
+
+		if (WriteFile(hCommPort,
+						cWriteBuffer,
+						sizeof(cWriteBuffer),
+						&writenBytes,NULL) == 0)
+
 		{
-			CloseHandle(hCommPort);
-			//ProgramSuccessfulMessage("Falha ao escrever na porta serial !");
-			ShowError("Write");
-			return FALSE;
+			if (GetLastError() != ERROR_IO_PENDING) 
+			{
+				//CloseHandle(hCommPort);
+				//ProgramSuccessfulMessage("Falha ao escrever na porta serial !");
+				//ShowError("Write");
+				//return FALSE;
+				break;
+			}
 		}
+
+		if (ReadFile(hCommPort,
+					cReadBuffer,
+					sizeof(cReadBuffer) - 1,
+					&readedBytes,
+					NULL) == 0)
+
+		{
+			if (GetLastError() != ERROR_IO_PENDING) 
+			{
+				//CloseHandle(hCommPort);
+				//ProgramSuccessfulMessage("Falha ao ler a porta serial !");
+				//ShowError("Read");
+				//return FALSE;
+				break;
+			}
+		}
+
+		trycount++;
+		if (!readedBytes)
+			Sleep(1000);
 	}
 
-	if (ReadFile(hCommPort,
-				cReadBuffer,
-				11,
-				&readedBytes,
-				NULL) == 0)
-
+	if (memcmp(cWriteBuffer, cReadBuffer, sizeof(cWriteBuffer)) != 0)
 	{
-		if (GetLastError() != ERROR_IO_PENDING) 
-		{
-			CloseHandle(hCommPort);
-			//ProgramSuccessfulMessage("Falha ao ler a porta serial !");
-			ShowError("Read");
-			return FALSE;
-		}
-	}
-
-	if (memcmp(cWriteBuffer, cReadBuffer, 11) != 0)
-	{
-		CloseHandle(hCommPort);
+		//CloseHandle(hCommPort);
 		//ProgramSuccessfulMessage("Falha ao ler a porta serial !");
-		ShowError("CRC");
-		return FALSE;
+		//ShowError("CRC");
+		if (!readedBytes)
+			MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nNão foi possível verificar se a data/hora foi atualizada corretamente por que a leitura do RTC retornou 0 bytes !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
+		else if (readedBytes == sizeof(cReadBuffer))
+			MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nA data/hora lida do RTC é diferente da data/hora escrita !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
+		else if (!readedBytes)
+			MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nNão foi possível verificar se a data/hora foi atualizada corretamente por que a leitura do RTC retornou dados inválidos !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
+		//return FALSE;
 	}
 
 	CloseHandle(hCommPort);

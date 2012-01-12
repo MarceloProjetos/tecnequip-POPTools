@@ -996,6 +996,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "		GPIO_Output(GPIO_OUTPUT);\n");
 	fprintf(f, "		GPIO_INPUT = GPIO_Input();\n");
 	fprintf(f, "\n");
+	fprintf(f, "		RS232_Console();\n");
 	fprintf(f, "		RS485_Handler();\n");
 	fprintf(f, "\n");
 	fprintf(f, "		PLC_Run();\n");

@@ -24,19 +24,21 @@ int								SNTP_DAILY_SAVE = 0;
 
 unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 
-#define PLC_RS485
+#define PLC_BLINK
 
 #if defined(PLC_NULL)
 #include "POPTools/PLC_Null.h"
 #elif defined(PLC_RS485)
 #include "POPTools/PLC_RS485.h"
+#elif defined(PLC_RS232)
+#include "POPTools/PLC_RS232.h"
 #elif defined(PLC_COLUNAN)
 #include "POPTools/PLC_ColunaN.h"
 #elif defined(PLC_ADC)
 #include "POPTools/PLC_ADC.h"
 #elif defined(PLC_ADC_LED)
 #include "POPTools/PLC_ADC_Led.h"
-#elif defined(PLC_BLINK)
+#elif defined(PLC_BLINK)	// Pisca led
 #include "POPTools/PLC_Blink.h"
 #elif defined(PLC_CONTACT)
 #include "POPTools/PLC_Contact.h"
@@ -66,6 +68,7 @@ void PLC_Cycle(void *pdata)
 		GPIO_Output(GPIO_OUTPUT);
 		GPIO_INPUT = GPIO_Input();
 
+		RS232_Console();
 		RS485_Handler();
 
 		PLC_Run();

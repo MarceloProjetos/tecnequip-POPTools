@@ -8,7 +8,7 @@
 #include <string.h>
 
 /***************************************************************************/
-/* RTCTime                                                                 */
+/* RTC                                                                 */
 /***************************************************************************/
 #ifndef __RTC_H__
 typedef struct {
@@ -61,6 +61,7 @@ extern unsigned int RS485_Read(unsigned char * buffer, unsigned int size);
 #ifndef __RS232_H__
 extern unsigned int RS232_Write(unsigned char * buffer, unsigned int size);
 extern unsigned int RS232_Read(unsigned char * buffer, unsigned int size);
+extern void RS232_Console(void);
 #endif
 
 /***************************************************************************/
