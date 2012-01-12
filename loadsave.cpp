@@ -140,8 +140,8 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
         *which = ELEM_READ_ADC;
     } else if(sscanf(line, "SET_DA %s", l->d.setDA.name)==1) {
         *which = ELEM_SET_DA;
-	} else if(sscanf(line, "MULTISET_DA %s %s %d %d %d %d %d", l->d.multisetDA.name, l->d.multisetDA.name1, &l->d.multisetDA.linear, 
-		&l->d.multisetDA.speedup, &l->d.multisetDA.forward, &l->d.multisetDA.time, &l->d.multisetDA.initval)==7) {
+	} else if(sscanf(line, "MULTISET_DA %s %s %d %d %d %d %d %d %d", l->d.multisetDA.name, l->d.multisetDA.name1, &l->d.multisetDA.linear, 
+		&l->d.multisetDA.speedup, &l->d.multisetDA.forward, &l->d.multisetDA.time, &l->d.multisetDA.initval, &l->d.multisetDA.gaint, &l->d.multisetDA.gainr)==9) {
         *which = ELEM_MULTISET_DA;
     } else if(sscanf(line, "READ_ENC %s", l->d.readEnc.name)==1) {
         *which = ELEM_READ_ENC;
@@ -561,8 +561,8 @@ static void SaveElemToFile(FILE *f, int which, void *any, int depth)
             break;
 
 		case ELEM_MULTISET_DA:
-			fprintf(f, "MULTISET_DA %s %s %d %d %d %d %d\n", l->d.multisetDA.name, l->d.multisetDA.name1, l->d.multisetDA.linear, 
-		l->d.multisetDA.speedup, l->d.multisetDA.forward, l->d.multisetDA.time, l->d.multisetDA.initval);
+			fprintf(f, "MULTISET_DA %s %s %d %d %d %d %d %d %d\n", l->d.multisetDA.name, l->d.multisetDA.name1, l->d.multisetDA.linear, 
+				l->d.multisetDA.speedup, l->d.multisetDA.forward, l->d.multisetDA.time, l->d.multisetDA.initval, l->d.multisetDA.gaint, l->d.multisetDA.gainr);
             break;
 
         case ELEM_TON:

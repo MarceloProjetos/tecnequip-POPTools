@@ -10,6 +10,12 @@
 #define FONT_NAME	L"Verdana"
 #define FONT_SIZE	12.0f
 
+#define MAX_GAIN_TIME_VAL			49	// Max gain in %
+#define MAX_GAIN_RESOLUTION_VAL	MAX_GAIN_TIME_VAL
+#define MAX_TIME_VAL				10000
+#define MAX_MILIVOLT_VAL			10000
+#define MIN_TIME_VAL				30
+
 extern ID2D1Factory*		pD2DFactory;
 extern IDWriteFactory*		pWriteFactory;
 extern IWICImagingFactory *	pWICFactory;
@@ -35,32 +41,29 @@ static HWND BackwardRadio;
 static HWND SpeedUpRadio;
 static HWND SpeedDownRadio;
 static HWND LinearRadio;
-static HWND CustomRadio;
+static HWND CurveRadio;
 static HWND TimeTextbox;
-static HWND InitVallTextbox;
-static HWND GainInitVallTextbox;
+static HWND InitValTextbox;
+static HWND GainInitValTextbox;
 static HWND GainTimeTextbox;
-static HWND ResTimeTextbox;
-static HWND ResInitVallTextbox;
 static HWND UpdateButton;
 static HWND ResolTypeCombobox;
+static HWND GraphBox;
 
+static LONG_PTR PrevMultisetDADialogProc;
 static LONG_PTR PrevNumProc;
-static LONG_PTR PrevUpdateButtonProc;
-static LONG_PTR PrevDeslTypeProc;
-
-static HWND		GraphBox;
+static LONG_PTR PrevResolTypeProc;
 static LONG_PTR PrevGraphBoxProc;
 
 static int		time;
 static int		initval;
-static int		gaind;
+static int		gainr;
 static int		gaint;
 static int		gain_idx;
 static float	points[DA_RESOLUTION];
 static float	gains[DA_RESOLUTION];
 
-static ElemMultisetDA *current;
+static ElemMultisetDA current;
 
 static vector<D2D1_POINT_2F>	DAPoints;
 
@@ -137,7 +140,7 @@ void CalcLinearDown(int calc_time, int calc_initval)
 void CalcGainDown(int calc_time, int calc_initval, int calc_gainx, int calc_gainy = 5)
 {
 	int tm = 0;
-	int i;
+	int i = 0;
 
 	if (calc_initval > DA_RESOLUTION || 
 		calc_initval < (DA_RESOLUTION * -1))
@@ -150,13 +153,13 @@ void CalcGainDown(int calc_time, int calc_initval, int calc_gainx, int calc_gain
 
 	memset(gains, 0, sizeof(gains));
 
-	// desenha curva de ganho proporcional
-	float gd = d * (gy / 100.0f);	// altura (y) da curva de ganho 5%
-	float gt = t * (gx / 100.0f);	// largura (x) do tempo
-	float gdeltay = (d - gd) - d;	
-	float gdeltax = gt;
-	float ga = gdeltay / gdeltax;	// coeficiente angular da curva de ganho
-	float gb = d;
+	// calcula os pontos da linha da curva de ganho proporcional
+	float gd = d * (gy / 100.0f);	// % altura (y) da curva de ganho
+	float gt = t * (gx / 100.0f);	// % largura (x) do tempo
+	float gdeltay = (d - gd) - d;	// DeltaY = (Yb - Ya)
+	float gdeltax = gt;				// DeltaX = (Xb - Xa)
+	float ga = gdeltay / gdeltax;	// coeficiente angular (a = DeltaY / DeltaX)
+	float gb = d;					// coeficiente linear (b = y - ax)
 
 	for (i = 0; i < gt / DA_CYCLE_INTERVAL; i++)
 	{
@@ -164,12 +167,13 @@ void CalcGainDown(int calc_time, int calc_initval, int calc_gainx, int calc_gain
 		gains[i] = ((tm * ga) + gb); // y = a.x + b
 	}
 
-	float deltax = (t * (1.0f - (gx / 100.0f))) - (t * (gx / 100.0f));
-	float deltay = gd - (d - gd);
-	float a = deltay / deltax;		// coeficiente angular (a = (Yb - Ya) / (Xb - Xa))
-	float y = (d - gd);
-	float ax = (a * (t * (gx / 100.0f)));
-	float b = y - ax;				// coeficiente linear (b = y - ax)
+	// calcula os pontos da linha de aceleração/desaceleração
+	float deltax = (t * (1.0f - (gx / 100.0f))) - (t * (gx / 100.0f));	// DeltaY = (Yb - Ya)
+	float deltay = gd - (d - gd);										// DeltaX = (Xb - Xa)
+	float a = deltay / deltax;											// coeficiente angular (a = DeltaY / DeltaX)
+	float y = (d - gd);													// um ponto qualquer no eixo y
+	float ax = (a * (t * (gx / 100.0f)));								// a * x
+	float b = y - ax;													// coeficiente linear (b = y - ax)
 
 	for (; i < (t - gt) / DA_CYCLE_INTERVAL; i++)
 	{
@@ -178,11 +182,11 @@ void CalcGainDown(int calc_time, int calc_initval, int calc_gainx, int calc_gain
 		gains[i] = ((tm * a) + b); // y = a.x + b
 	}
 
-	// desenha curva de ganho
-	gdeltay = gd;
-	gdeltax = (t - gt) - t;
-	ga = gdeltay / gdeltax; // coeficiente angular da curva de ganho
-	gb = gd - (ga * (t - gt));
+	// calcula os pontos da linha da curva de ganho
+	gdeltay = gd;					// DeltaY = (Yb - Ya)
+	gdeltax = (t - gt) - t;			// DeltaX = (Xb - Xa)
+	ga = gdeltay / gdeltax;			// coeficiente angular (a = DeltaY / DeltaX)
+	gb = gd - (ga * (t - gt));		// coeficiente linear (b = y - ax)
 
 	gain_idx = i;
 
@@ -479,16 +483,16 @@ void Render()
 
 		WCHAR Num[24];
 
-		// Draw X Scale
+		// Draw Text X Scale
 		float interval = (size.width - MARGIN * 2) / DA_CYCLE_INTERVAL;
 		for (int i = 1; i < size.width / DA_CYCLE_INTERVAL; i++)
 		{
 			pRenderTarget->DrawLine(D2D1::Point2F(MARGIN - 1.0f + (interval * i), size.height - MARGIN + 1.0f - 5.0f), 
 									D2D1::Point2F(MARGIN - 1.0f + (interval * i), size.height - MARGIN + 1.0f + 5.0f), pAxisBrush);
 
-			D2D1_RECT_F r = D2D1::RectF(MARGIN - 1.0f + (interval * i) - (FONT_SIZE * 1.5f),
+			D2D1_RECT_F r = D2D1::RectF(MARGIN - 1.0f + (interval * i) - (FONT_SIZE * 2.0f),
 										size.height - FONT_SIZE - 5.0f, 
-										MARGIN - 1.0f + (interval * i) + (FONT_SIZE * 1.5f), 
+										MARGIN - 1.0f + (interval * i) + (FONT_SIZE * 2.0f), 
 										size.height - 5.0f);
 
 			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", (abs(time) / DA_CYCLE_INTERVAL) * i );
@@ -540,17 +544,17 @@ void Render()
 		pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
 
 		// Calculate graphic points
-		pSink->BeginFigure(D2D1::Point2F(0.0f, size.height - (current->speedup ? (initval < 0 ? points[0] : points[0] - DA_RESOLUTION) : (initval < 0 ? points[0] + DA_RESOLUTION : points[0]))), D2D1_FIGURE_BEGIN_FILLED);
+		pSink->BeginFigure(D2D1::Point2F(0.0f, size.height - (current.speedup ? (initval < 0 ? points[0] : points[0] - DA_RESOLUTION) : (initval < 0 ? points[0] + DA_RESOLUTION : points[0]))), D2D1_FIGURE_BEGIN_FILLED);
 
 		int i;
 		float p;
 		for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
 		{
-			p = current->linear && !current->speedup ? gains[i] : points[i];
-			pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current->speedup ? (initval < 0 ? p : p - DA_RESOLUTION) : (initval < 0 ? p + DA_RESOLUTION : p))));
+			p = current.linear && !current.speedup ? gains[i] : points[i];
+			pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current.speedup ? (initval < 0 ? p : p - DA_RESOLUTION) : (initval < 0 ? p + DA_RESOLUTION : p))));
 		}
 
-		if (current->speedup)
+		if (current.speedup)
 		{
 			pSink->AddLine(D2D1::Point2F(intervalX * i, initval < 0 ? abs(initval) : size.height - initval));
 			pSink->AddLine(D2D1::Point2F(intervalX * i, initval < 0 ? 0.0f : DA_RESOLUTION));
@@ -580,14 +584,14 @@ void Render()
 		float point1, point2 = 0.0f;
 		for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
 		{
-			if (current->speedup)
+			if (current.speedup)
 			{
 				point1 = (points[i - 1] - DA_RESOLUTION) * scaleY;
 				point2 = (points[i] - DA_RESOLUTION) * scaleY;
 
 				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
 										D2D1::Point2F(intervalX * i, initval < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
-										pLineBrush, current->linear & !current->speedup ? 2.0f : 4.0f, current->linear & !current->speedup ? pDashStrokeStyle : pLineStrokeStyle);
+										pLineBrush, current.linear & !current.speedup ? 2.0f : 4.0f, current.linear & !current.speedup ? pDashStrokeStyle : pLineStrokeStyle);
 			}
 			else
 			{
@@ -596,18 +600,18 @@ void Render()
 
 				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
 										D2D1::Point2F(intervalX * i, initval < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
-										pLineBrush, current->linear & !current->speedup ? 2.0f : 4.0f, current->linear & !current->speedup ? pDashStrokeStyle : pLineStrokeStyle);
+										pLineBrush, current.linear & !current.speedup ? 2.0f : 4.0f, current.linear & !current.speedup ? pDashStrokeStyle : pLineStrokeStyle);
 			}
 
 		}
 
-		if (current->speedup)
+		if (current.speedup)
 		{
 			point1 = (points[i - 1] - DA_RESOLUTION) * scaleY;
 
 			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
 									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? abs(initval * scaleY) : size.height - (initval * scaleY) - (MARGIN * 2)), 
-									pLineBrush, current->linear & !current->speedup ? 2.0f : 4.0f, current->linear & !current->speedup ? pDashStrokeStyle : pLineStrokeStyle);
+									pLineBrush, current.linear & !current.speedup ? 2.0f : 4.0f, current.linear & !current.speedup ? pDashStrokeStyle : pLineStrokeStyle);
 		}
 		else
 		{
@@ -615,15 +619,15 @@ void Render()
 
 			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ?  abs(point1) : size.height - point1 - (MARGIN * 2)),
 									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? 0.0f : size.height - (MARGIN * 2)), 
-									pLineBrush, current->linear & !current->speedup ? 2.0f : 4.0f, current->linear & !current->speedup ? pDashStrokeStyle : pLineStrokeStyle);
+									pLineBrush, current.linear & !current.speedup ? 2.0f : 4.0f, current.linear & !current.speedup ? pDashStrokeStyle : pLineStrokeStyle);
 		}
 
-		if (current->linear)
+		if (current.linear)
 		{
 
 			for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
 			{
-				if (!current->speedup)
+				if (!current.speedup)
 				{
 					point1 = gains[i - 1] * scaleY;
 					point2 = gains[i] * scaleY;
@@ -635,7 +639,7 @@ void Render()
 
 			}
 
-			if (!current->speedup)
+			if (!current.speedup)
 			{
 				point1 = gains[i - 1] * scaleY;
 
@@ -643,14 +647,14 @@ void Render()
 										D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? 0.0f : size.height - (MARGIN * 2)), 
 										pGainBrush, 4.0f, pLineStrokeStyle);
 
-				if (current->type == 1)  // (mV)
-					point1 = (current->initval < 0 ? (DA_RESOLUTION * (abs(current->initval) / DA_VOLTAGE)) / 2 : DA_RESOLUTION - ((DA_RESOLUTION * (abs(current->initval) / DA_VOLTAGE)) / 2)) * scaleY;
-				else if (current->type == 2) // (%)
-					point1 = (current->initval < 0 ? (DA_RESOLUTION * (abs(current->initval) / 100.0f)) / 2 : DA_RESOLUTION - ((DA_RESOLUTION * (abs(current->initval) / 100.0f)) / 2)) * scaleY;
+				if (current.type == 1)  // (mV)
+					point1 = (current.initval < 0 ? (DA_RESOLUTION * (abs(current.initval) / DA_VOLTAGE)) / 2 : DA_RESOLUTION - ((DA_RESOLUTION * (abs(current.initval) / DA_VOLTAGE)) / 2)) * scaleY;
+				else if (current.type == 2) // (%)
+					point1 = (current.initval < 0 ? (DA_RESOLUTION * (abs(current.initval) / 100.0f)) / 2 : DA_RESOLUTION - ((DA_RESOLUTION * (abs(current.initval) / 100.0f)) / 2)) * scaleY;
 				else // DA 
-					point1 = (current->initval < 0 ? abs(current->initval) / 2 : DA_RESOLUTION - (abs(current->initval) / 2)) * scaleY;
+					point1 = (current.initval < 0 ? abs(current.initval) / 2 : DA_RESOLUTION - (abs(current.initval) / 2)) * scaleY;
 
-				pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F((current->time / 2) * scaleX, point1), 4.0f, 4.0f),
+				pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F((current.time / 2) * scaleX, point1), 4.0f, 4.0f),
 										pLineBrush);
 			}
 		}
@@ -662,198 +666,292 @@ void Render()
 	}
 }
 
+void UpdateWindow(void)
+{
+	char msg[512];
+	char num[12];
+
+	if(SendMessage(LinearRadio, BM_GETCHECK, 0, 0) & BST_CHECKED && !SendMessage(CurveRadio, BM_GETCHECK, 0, 0) & BST_CHECKED)
+		current.linear = TRUE;
+	else 
+		current.linear = FALSE;
+
+	if(SendMessage(ForwardRadio, BM_GETSTATE, 0, 0) & BST_CHECKED && !SendMessage(BackwardRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) 
+		current.forward = TRUE;
+	else
+		current.forward = FALSE;
+
+	if(SendMessage(SpeedUpRadio, BM_GETSTATE, 0, 0) & BST_CHECKED && !SendMessage(SpeedDownRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
+		current.speedup = TRUE;
+	else
+		current.speedup = FALSE;
+
+	SendMessage(GainTimeTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
+
+	if (atoi(num) > MAX_GAIN_TIME_VAL)
+	{
+		_itoa(MAX_GAIN_TIME_VAL, num, 10);
+		SendMessage(GainTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+		StringCchPrintf(msg, sizeof(msg), _("O valor máximo permitido para o campo Tempo (%%) da Curva de Ganho é %d."), MAX_GAIN_TIME_VAL);
+		MessageBox(MultisetDADialog, msg, "Valor inválido no campo Tempo (%) !", MB_OK | MB_ICONEXCLAMATION);
+	}
+
+	current.gaint = max(0, min(MAX_GAIN_TIME_VAL, abs(atoi(num))));
+	gaint = current.gaint;
+
+	SendMessage(GainInitValTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
+
+	if (atoi(num) > MAX_GAIN_RESOLUTION_VAL || atoi(num) > current.gaint)
+	{
+		_itoa(min(current.gaint, MAX_GAIN_RESOLUTION_VAL), num, 10);
+		SendMessage(GainInitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+		StringCchPrintf(msg, sizeof(msg), _("O valor máximo permitido para o campo Resolução (%%) da Curva de Ganho é %s."), num);
+		MessageBox(MultisetDADialog, msg, "Valor inválido no campo Resolução (%) !", MB_OK | MB_ICONEXCLAMATION);
+	}
+
+	current.gainr = max(0, min(MAX_GAIN_RESOLUTION_VAL, abs(atoi(num))));
+	current.gainr = min(current.gaint, current.gainr);
+	gainr = current.gainr;
+
+	SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
+
+	if (atoi(num) > MAX_TIME_VAL || atoi(num) < MIN_TIME_VAL)
+	{
+		_itoa(max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num)))), num, 10);
+		SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+		StringCchPrintf(msg, sizeof(msg), _("O valor permitido para o campo Tempo (ms) no Tamanho da Rampa esta entre %d e %d."), MIN_TIME_VAL, MAX_TIME_VAL);
+		MessageBox(MultisetDADialog, msg, "Valor inválido no campo Tempo (ms) !", MB_OK | MB_ICONEXCLAMATION);
+	}
+
+	current.time = max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num))));
+	time = current.time;
+
+	current.type = SendMessage(ResolTypeCombobox, CB_GETCURSEL, 0, 0);
+
+	SendMessage(InitValTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
+
+	if (current.type == 1)  // (mV)
+	{
+		current.initval = max(static_cast<int>(MAX_MILIVOLT_VAL * 0.1f), min(MAX_MILIVOLT_VAL, abs(atoi(num))));
+	}
+	else if (current.type == 2) // (%)
+	{
+		current.initval = max(10, min(100, abs(atoi(num))));
+	}
+	else // DA 
+	{
+		current.initval = max(static_cast<int>(DA_RESOLUTION * 0.1f), min(DA_RESOLUTION, abs(atoi(num))));
+	}
+	
+	if ((current.type == 0 && (atoi(num) > DA_RESOLUTION || atoi(num) < static_cast<int>(DA_RESOLUTION * 0.1f))) ||
+		(current.type == 1 && (atoi(num) > MAX_MILIVOLT_VAL || atoi(num) < static_cast<int>(MAX_MILIVOLT_VAL * 0.1f))) || 
+		(current.type == 2 && (atoi(num) > 100 || atoi(num) < 10)))
+	{
+		_itoa(current.initval, num, 10);
+		SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+		StringCchPrintf(msg, sizeof(msg), _("O valor permitido para o campo Resolução DA no Tamanho da Rampa esta entre %d e %d."), current.initval, current.type == 0 ? DA_RESOLUTION : (current.type == 1 ? MAX_MILIVOLT_VAL : 100));
+		MessageBox(MultisetDADialog, msg, "Valor inválido no campo Resolução DA !", MB_OK | MB_ICONEXCLAMATION);
+	}
+
+	if (current.type == 1)  // (mV)
+		initval = static_cast<int>(DA_RESOLUTION * (current.initval / DA_VOLTAGE));
+	else if (current.type == 2) // (%)
+		initval = static_cast<int>(DA_RESOLUTION * (current.initval / 100.0f));
+	else // DA 
+		initval = current.initval;
+		
+	initval = current.forward ? initval : initval * -1;
+
+	_itoa(current.time, num, 10);
+	SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+	_itoa(current.initval, num, 10);
+	SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+
+	_itoa(current.gainr, num, 10);
+	SendMessage(GainInitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+	_itoa(current.gaint, num, 10);
+	SendMessage(GainTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+	
+	_itoa(current.time, current.name, 10);
+	_itoa(current.initval, current.name1, 10);
+
+	if (current.linear)
+	{
+		if (current.speedup)
+			CalcLinearUp(time, initval);
+		else
+		{
+			CalcLinearDown(time, initval);
+			CalcGainDown(time, initval, gaint, gainr);
+		}
+	}
+	else
+	{
+		if (current.speedup)
+			CalcCurveUp(time, initval);
+		else
+			CalcCurveDown(time, initval);
+	}
+		 
+	DiscardDeviceResources();
+
+	InvalidateRect(GraphBox, NULL, FALSE);
+
+}
+
+void ConvertResolType(int r)
+{
+	char num[12];
+	int i;
+	float p;
+	float c; // convert
+
+	SendMessage(InitValTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
+	i = atoi(num);
+
+	if (current.type == 1)  // (mV)
+		c = static_cast<float>(DA_VOLTAGE);
+	else if (current.type == 2) // (%)
+		c = 100.0f;
+	else // DA 
+		c = static_cast<float>(DA_RESOLUTION);
+
+	p = static_cast<float>(i / c);
+
+	// value round down version							// value round up version
+	if (r == 1)  // (mV)
+		i = static_cast<int>(floor(DA_VOLTAGE * p));	// static_cast<int>(ceil(DA_VOLTAGE * p))
+	else if (r == 2) // (%)
+		i = static_cast<int>(floor(100.f * p));			// static_cast<int>(ceil(100.f * p))
+	else // DA 
+		i = static_cast<int>(floor(DA_RESOLUTION * p));	// static_cast<int>(ceil(DA_RESOLUTION * p))
+
+	_itoa(i, num, 10);
+
+	SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+
+	UpdateWindow();
+}
+
 //-----------------------------------------------------------------------------
 // Window proc for the dialog boxes. This Ok/Cancel stuff is common to a lot
 // of places, and there are no other callbacks from the children.
 //-----------------------------------------------------------------------------
-static LRESULT CALLBACK GraphBoxProc(HWND hwnd, UINT msg, WPARAM wParam,
-    LPARAM lParam)
+static LRESULT CALLBACK MultisetDADialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	HWND h;
+
+	switch (msg) 
+	{
+        case WM_NOTIFY:
+            break;
+		case WM_COMMAND:
+			h = (HWND)lParam;
+			if (wParam == BN_CLICKED) 
+			{
+				UpdateWindow();
+			}
+			break;
+		case WM_NCPAINT:
+		case WM_PAINT:
+			UpdateWindow();
+			break;
+	}
+
+	return CallWindowProc((WNDPROC)PrevMultisetDADialogProc, hwnd, msg, wParam, lParam);
+}
+
+static LRESULT CALLBACK ResolTypeProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	LRESULT r;
+
+    switch (msg) 
+	{
+		case WM_COMMAND:
+			if ( HIWORD(wParam) == CBN_SELCHANGE) 
+			{               
+                r = SendMessage(ResolTypeCombobox, CB_GETCURSEL, 0, 0);
+                ConvertResolType(r);
+			}
+			break;
+	}
+
+	return CallWindowProc((WNDPROC)PrevResolTypeProc, hwnd, msg, wParam, lParam);
+}
+
+static LRESULT CALLBACK GraphBoxProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	D2D1_POINT_2F p;
+
     switch (msg) {
         case WM_NOTIFY:
             break;
-
 		case WM_MOUSEMOVE:
-			{
-				D2D1_POINT_2F p = PixelToDIP(lParam);
-
-				MoveGraphPoint(p);
-			}
+			p = PixelToDIP(lParam);
+			MoveGraphPoint(p);
 			break;
-
 		case WM_LBUTTONDOWN:
-			{
-				D2D1_POINT_2F p = PixelToDIP(lParam);
-
-				CapturePoint(p);
-			}
+			p = PixelToDIP(lParam);
+			CapturePoint(p);
 			break;
-
 		case WM_LBUTTONUP:
-			{
-				D2D1_POINT_2F p = PixelToDIP(lParam);
-
-				ReleasePoint(p);
-			}
+			p = PixelToDIP(lParam);
+			ReleasePoint(p);
 			break;
-
 		case WM_DRAWITEM:
 		case WM_ERASEBKGND:
+		case WM_NCPAINT:
 		case WM_PAINT:
-			{
-				/*RECT r;
-				GetClientRect(hwnd, &r);
+			RECT r;
+			GetClientRect(hwnd, &r);
 
-				PAINTSTRUCT ps;
-				BeginPaint(hwnd, &ps);*/
+			PAINTSTRUCT ps;
+			BeginPaint(hwnd, &ps);
 
-				/*if (r.right == 0 && r.bottom == 0)
-					r = ps.rcPaint;*/
+			Render();
+			ValidateRect(hwnd, NULL);
 
-				//D2D1_RECT_F Rect = RectF(static_cast<FLOAT>(r.left), static_cast<FLOAT>(r.top), static_cast<FLOAT>(r.right), static_cast<FLOAT>(r.bottom));
-
-				Render(/*Rect*/);
-				ValidateRect(hwnd, NULL);
-
-				//EndPaint(hwnd, &ps); 
-				//ValidateRect(hwnd, NULL);
-			}
+			EndPaint(hwnd, &ps); 
+			ValidateRect(hwnd, NULL);
 			break;
         case WM_CLOSE:
         case WM_DESTROY:
             DiscardDeviceResources();
             break;
-
-        default:
-			return CallWindowProc((WNDPROC)PrevGraphBoxProc, hwnd, msg, wParam, lParam);
     }
 
-    return 1;
+    return CallWindowProc((WNDPROC)PrevGraphBoxProc, hwnd, msg, wParam, lParam);
 }
 
 //-----------------------------------------------------------------------------
-// Don't allow any characters other than A-Za-z0-9_ in the name.
+// Don't allow any characters other than 0-9 in the name.
 //-----------------------------------------------------------------------------
-
-static LRESULT CALLBACK NumberProc(HWND hwnd, UINT msg, WPARAM wParam,
-    LPARAM lParam)
+static LRESULT CALLBACK NumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    if(msg == WM_CHAR) {
-        if(!(isdigit(wParam) || wParam == '-' || wParam == '\b')) {
-            return 0;
-        }
+	switch (msg) 
+	{
+		case WM_GETDLGCODE:
+			{
+				MSG * m = (MSG *)lParam;
+			
+				if(m && m->message == WM_KEYDOWN && m->wParam == VK_RETURN)
+				{
+					UpdateWindow();
+					return 0;
+				}
+				//return DLGC_WANTALLKEYS;
+			}
+			break;
+		case WM_KILLFOCUS:	
+			UpdateWindow();
+			break;
+		case WM_CHAR:
+			if(!(isdigit(wParam) || /*wParam == '-' ||*/ wParam == '\b')) 
+		        return 0;
+			break;
     }
-
-	/*LONG_PTR t;
-    if(hwnd == TimeTextbox)
-        t = PrevTimeNameProc;
-    else if(hwnd == InitVallTextbox)
-        t = PrevDeslNameProc;
-    else
-        oops();*/
 
     return CallWindowProc((WNDPROC)PrevNumProc, hwnd, msg, wParam, lParam);
-}
-
-static LRESULT CALLBACK UpdateButtonProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	char num[12];
-
-	switch(msg)
-	{
-	case WM_LBUTTONDOWN:
-		{
-
-        SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		current->time = max(30, min(2000, abs(atoi(num))));
-		time = current->time;
-
-        SendMessage(GainInitVallTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		current->gaind = max(min(abs(atoi(num)), 100), 0);
-		gaind = current->gaind;
-
-        SendMessage(GainTimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		current->gaint = max(min(abs(atoi(num)), 100), 0);
-		gaint = current->gaint;
-
-		SendMessage(InitVallTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-
-		current->type = SendMessage(ResolTypeCombobox, CB_GETCURSEL, 0, 0);
-
-		if (current->type == 1)  // (mV)
-			current->initval = min(10000, abs(atoi(num)));
-		else if (current->type == 2) // (%)
-			current->initval = min(100, abs(atoi(num)));
-		else // DA 
-			current->initval = min(DA_RESOLUTION, abs(atoi(num)));
-
-		if(SendMessage(LinearRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-			current->linear = TRUE;
-		} else if(SendMessage(CustomRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-			current->linear = FALSE;
-		} 
-		if(SendMessage(ForwardRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-			current->forward = TRUE;
-		} else if(SendMessage(BackwardRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-			current->forward = FALSE;
-		}          
-		if(SendMessage(SpeedUpRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-			current->speedup = TRUE;
-		} else if(SendMessage(SpeedDownRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-			current->speedup = FALSE;
-		}
-
-		if (current->type == 1)  // (mV)
-			initval = static_cast<int>(DA_RESOLUTION * (current->initval / DA_VOLTAGE));
-		else if (current->type == 2) // (%)
-			initval = static_cast<int>(DA_RESOLUTION * (current->initval / 100.0f));
-		else // DA 
-			initval = current->initval;
-		
-		current->initval = current->forward ? current->initval : current->initval * -1;
-		initval = current->forward ? initval : initval * -1;
-
-		_itoa(current->time, num, 10);
-		SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		_itoa(current->initval, num, 10);
-		SendMessage(InitVallTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		_itoa(current->resolt, num, 10);
-
-		SendMessage(ResTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		_itoa(current->resold, num, 10);
-		SendMessage(ResInitVallTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		_itoa(current->gaind, num, 10);
-		SendMessage(GainInitVallTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		_itoa(current->gaint, num, 10);
-		SendMessage(GainTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-
-		if (current->linear)
-		{
-			if (current->speedup)
-				CalcLinearUp(time, initval);
-			else
-			{
-				CalcLinearDown(time, initval);
-				CalcGainDown(time, initval, gaind, gaint);
-			}
-		}
-		else
-		{
-			if (current->speedup)
-				CalcCurveUp(time, initval);
-			else
-				CalcCurveDown(time, initval);
-		}
-		 
-		DiscardDeviceResources();
-
-		InvalidateRect(GraphBox, NULL, FALSE);
-
-		}
-		break;
-	};
-
-    return CallWindowProc((WNDPROC)PrevUpdateButtonProc, hwnd, msg, wParam, lParam);
 }
 
 static void MakeControls(void)
@@ -868,15 +966,10 @@ static void MakeControls(void)
         16, 20, 80, 25, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(LinearRadio);
 
-    CustomRadio = CreateWindowEx(0, WC_BUTTON, _("Curva"),
+    CurveRadio = CreateWindowEx(0, WC_BUTTON, _("Curva"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 42, 80, 25, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(CustomRadio);
-
-    /*CustomRadio = CreateWindowEx(0, WC_BUTTON, _("Personalizada"),
-        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        16, 58, 120, 25, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(CustomRadio);*/
+    NiceFont(CurveRadio);
 
     HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Direção do Movimento"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
@@ -895,52 +988,52 @@ static void MakeControls(void)
 
     HWND grouper3 = CreateWindowEx(0, WC_BUTTON, _("Variação Velocidade"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        /*7, 3*/268, 3, 140, 68, MultisetDADialog, NULL, Instance, NULL);
+        268, 3, 140, 68, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper3);
 
     SpeedUpRadio = CreateWindowEx(0, WC_BUTTON, _("Aceleração"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_GROUP | WS_TABSTOP,
-        /*16, 18*/279, 20, 120, 25, MultisetDADialog, NULL, Instance, NULL);
+        279, 20, 120, 25, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(SpeedUpRadio);
 
     SpeedDownRadio = CreateWindowEx(0, WC_BUTTON, _("Desaceleração"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
-        /*16, 40*/279, 42, 120, 25, MultisetDADialog, NULL, Instance, NULL);
+        279, 42, 120, 25, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(SpeedDownRadio); 
 
-    HWND timegainLabel = CreateWindowEx(0, WC_STATIC, _("Tempo (%):"),
+    HWND GainTimeLabel = CreateWindowEx(0, WC_STATIC, _("Tempo (%):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         410, 20, 120, 21, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(timegainLabel);
-
-    GainInitVallTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        535, 20, 25, 21, MultisetDADialog, NULL, Instance, NULL);
-    FixedFont(GainInitVallTextbox);
-    
-    HWND deslgainLabel = CreateWindowEx(0, WC_STATIC, _("Resolução DA (%):"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        410, 45, 120, 21, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(deslgainLabel);
+    NiceFont(GainTimeLabel);
 
 	GainTimeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        535, 45, 25, 21, MultisetDADialog, NULL, Instance, NULL);
+        535, 20, 25, 21, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(GainTimeTextbox);
 
+    HWND GainResolLabel = CreateWindowEx(0, WC_STATIC, _("Resolução DA (%):"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        410, 45, 120, 21, MultisetDADialog, NULL, Instance, NULL);
+    NiceFont(GainResolLabel);
+
+    GainInitValTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        535, 45, 25, 21, MultisetDADialog, NULL, Instance, NULL);
+    FixedFont(GainInitValTextbox);
+    
     HWND grouper4 = CreateWindowEx(0, WC_BUTTON, _("Curva de Ganho"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        /*7, 3*/411, 3, 155, 68, MultisetDADialog, NULL, Instance, NULL);
+        411, 3, 155, 68, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper4);
 
     HWND timeLabel = CreateWindowEx(0, WC_STATIC, _("Tempo (ms):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        /*150, 20*/580, 20, 150, 21, MultisetDADialog, NULL, Instance, NULL);
+        580, 20, 150, 21, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(timeLabel);
 
     TimeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        /*250, 20*/735, 20, 50, 21, MultisetDADialog, NULL, Instance, NULL);
+        735, 20, 50, 21, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(TimeTextbox);
 
 	ResolTypeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
@@ -948,66 +1041,40 @@ static void MakeControls(void)
         580, 43, 150, 100, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(ResolTypeCombobox);
 
-    InitVallTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    InitValTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        /*250, 45*/735, 45, 50, 21, MultisetDADialog, NULL, Instance, NULL);
-    FixedFont(InitVallTextbox);
+        735, 45, 50, 21, MultisetDADialog, NULL, Instance, NULL);
+    FixedFont(InitValTextbox);
 
     HWND grouper5 = CreateWindowEx(0, WC_BUTTON, _("Tamanho da Rampa"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        /*7, 3*/570, 3, 225, 68, MultisetDADialog, NULL, Instance, NULL);
+        570, 3, 225, 68, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper5);
-
-    /*HWND restimeLabel = CreateWindowEx(0, WC_STATIC, _("Escala T (ms):"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        450, 45, 100, 21, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(restimeLabel);
-
-    ResTimeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        550, 45, 50, 21, MultisetDADialog, NULL, Instance, NULL);
-    FixedFont(ResTimeTextbox);
-
-    HWND resdeslLabel = CreateWindowEx(0, WC_STATIC, _("Escala D (mm):"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        450, 65, 100, 21, MultisetDADialog, NULL, Instance, NULL);
-    NiceFont(resdeslLabel);
-
-    ResInitVallTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        550, 65, 50, 21, MultisetDADialog, NULL, Instance, NULL);
-    FixedFont(ResInitVallTextbox);*/
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        /*340, 15*/800, 10, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
+        800, 10, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    //CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
-    //    WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-    //    /*340, 45*/800, 40, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
-    //NiceFont(CancelButton);
-
-    UpdateButton = CreateWindowEx(WS_EX_CONTROLPARENT, WC_BUTTON, _("Atualizar"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        800, /*70*/45, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
-    NiceFont(UpdateButton);
+        800, 40, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
+    NiceFont(CancelButton);
 
     GraphBox = CreateWindowEx(0, WC_STATIC, NULL,
-        WS_CHILD | SS_OWNERDRAW | WS_VISIBLE,
-        7, /*100*/80, /*984, 690*/864, 490, MultisetDADialog, NULL, Instance, NULL);
+        WS_CHILD | SS_OWNERDRAW | WS_VISIBLE | CS_VREDRAW | WS_CLIPSIBLINGS | CS_HREDRAW | CS_PARENTDC,
+        7, 80, 864, 490, MultisetDADialog, NULL, Instance, NULL);
 
-	//PrevUpdateButtonProc = reinterpret_cast<WNDPROC>(GetWindowLongPtr(UpdateButton, GWLP_WNDPROC));
-    PrevUpdateButtonProc = SetWindowLongPtr(UpdateButton, GWLP_WNDPROC, 
-        (LONG_PTR)UpdateButtonProc);
+	PrevResolTypeProc = SetWindowLongPtr(ResolTypeCombobox, GWLP_WNDPROC, 
+        (LONG_PTR)ResolTypeProc);
 
     PrevNumProc = SetWindowLongPtr(TimeTextbox, GWLP_WNDPROC, 
         (LONG_PTR)NumberProc);
 
-	PrevNumProc = SetWindowLongPtr(InitVallTextbox, GWLP_WNDPROC, 
+	PrevNumProc = SetWindowLongPtr(InitValTextbox, GWLP_WNDPROC, 
         (LONG_PTR)NumberProc);
 
-	PrevNumProc = SetWindowLongPtr(GainInitVallTextbox, GWLP_WNDPROC, 
+	PrevNumProc = SetWindowLongPtr(GainInitValTextbox, GWLP_WNDPROC, 
         (LONG_PTR)NumberProc);
 
 	PrevNumProc = SetWindowLongPtr(GainTimeTextbox, GWLP_WNDPROC, 
@@ -1021,11 +1088,18 @@ static void MakeControls(void)
 void ShowMultisetDADialog(ElemMultisetDA *l)
 {
 	char num[12];
-	current = l;
 
-    MultisetDADialog = CreateWindowClient(0, "LDmicroDialog",
-        _("Rampa de Aceleração/Desaceleração"), WS_OVERLAPPED | WS_SYSMENU,
+	current = *l;
+	time = current.time;
+	//initval = current.initval;
+
+	MultisetDADialog = CreateWindowClient(0, "LDmicroDialog",
+        _("Rampa de Aceleração/Desaceleração"), WS_OVERLAPPED | WS_SYSMENU | WS_EX_CONTROLPARENT,
         100, 100, 880, 600, MainWindow, NULL, Instance, NULL);
+
+	PrevMultisetDADialogProc = SetWindowLongPtr(MultisetDADialog, GWLP_WNDPROC, 
+        (LONG_PTR)MultisetDADialogProc);
+
     RECT r;
     GetClientRect(MultisetDADialog, &r);
 
@@ -1034,140 +1108,80 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 	for (int i = 0; i < sizeof(ResollTypeItens) / sizeof(ResollTypeItens[0]); i++)
 		SendMessage(ResolTypeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ResollTypeItens[i]));
 
-	SendMessage(ResolTypeCombobox, CB_SETCURSEL, l->type, 0);
+	SendMessage(ResolTypeCombobox, CB_SETCURSEL, current.type, 0);
 	SendMessage(ResolTypeCombobox, CB_SETDROPPEDWIDTH, 230, 0);
 
-	SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(l->name));
-	SendMessage(InitVallTextbox, WM_SETTEXT, 0, (LPARAM)(l->name1));
-
-	time = l->time;
-	initval = l->initval;
-
-	if (l->type == 1)  // (mV)
-		initval = static_cast<int>(DA_RESOLUTION * (l->initval / DA_VOLTAGE));
-	else if (l->type == 2) // (%)
-		initval = static_cast<int>(DA_RESOLUTION * (l->initval / 100.0f));
-	else // DA 
-		initval = l->initval;
-
-	if (l->linear)
-	{
-		if (l->speedup)
-			CalcLinearUp(time, initval);
-		else
-			CalcLinearDown(time, initval);
-	}
-	else
-	{
-		if (l->speedup)
-			CalcCurveUp(time, initval);
-		else
-			CalcCurveDown(time, initval);
-	}
-
-	_itoa(l->time, num, 10);
-    SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-	_itoa(l->initval, num, 10);
-    SendMessage(InitVallTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-	_itoa(l->resolt, num, 10);
-
-    SendMessage(ResTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-	_itoa(l->resold, num, 10);
-    SendMessage(ResInitVallTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-	_itoa(l->gaind, num, 10);
-    SendMessage(GainInitVallTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-	_itoa(l->gaint, num, 10);
+	_itoa(current.gaint, num, 10);
     SendMessage(GainTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 
-    if(l->linear) {
+	_itoa(current.gainr, num, 10);
+    SendMessage(GainInitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+
+	_itoa(current.time, num, 10);
+    SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+
+	_itoa(current.initval, num, 10);
+    SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+
+    if(current.linear) {
         SendMessage(LinearRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else {
-        SendMessage(CustomRadio, BM_SETCHECK, BST_CHECKED, 0);
+        SendMessage(CurveRadio, BM_SETCHECK, BST_CHECKED, 0);
     } 
-	if(l->forward) {
+	if(current.forward) {
         SendMessage(ForwardRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else {
         SendMessage(BackwardRadio, BM_SETCHECK, BST_CHECKED, 0);
     } 
-    if(l->speedup) {
+    if(current.speedup) {
         SendMessage(SpeedUpRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else {
         SendMessage(SpeedDownRadio, BM_SETCHECK, BST_CHECKED, 0);
-    }     
+    }
 
-	SendMessage(UpdateButton, WM_LBUTTONDOWN, (WPARAM)0, (LPARAM)0);
     EnableWindow(MainWindow, FALSE);
     ShowWindow(MultisetDADialog, TRUE);
-    SetFocus(TimeTextbox);
+
+	UpdateWindow();
+
+	SetFocus(TimeTextbox);
     SendMessage(TimeTextbox, EM_SETSEL, 0, -1);
 
     MSG msg;
     DWORD ret;
     DialogDone = FALSE;
     DialogCancel = FALSE;
-    while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
-        if(msg.message == WM_KEYDOWN) {
-            if(msg.wParam == VK_RETURN) {
+
+    while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) 
+	{
+        if(msg.message == WM_KEYDOWN) 
+		{
+            if(msg.wParam == VK_RETURN && msg.hwnd == MultisetDADialog) 
+			{
                 DialogDone = TRUE;
                 break;
-            } else if(msg.wParam == VK_ESCAPE) {
+            } 
+			else if(msg.wParam == VK_ESCAPE) 
+			{
                 DialogDone = TRUE;
                 DialogCancel = TRUE;
                 break;
             }
         }
 
-		if(IsDialogMessage(MultisetDADialog, &msg)) continue;
+		if (IsDialogMessage(MultisetDADialog, &msg)) 
+			continue;
+
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
     }
 
-    if(!DialogCancel) {
+    if(!DialogCancel) 
+		*l = current;
 
-        if(SendMessage(LinearRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            l->linear = TRUE;
-        } else if(SendMessage(CustomRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            l->linear = FALSE;
-        } 
-        if(SendMessage(ForwardRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            l->forward = TRUE;
-        } else if(SendMessage(BackwardRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            l->forward = FALSE;
-        }          
-		if(SendMessage(SpeedUpRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            l->speedup = TRUE;
-        } else if(SendMessage(SpeedDownRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            l->speedup = FALSE;
-        }
-
-        SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		l->time = max(30, min(2000, abs(atoi(num))));
-
-		l->type = SendMessage(ResolTypeCombobox, CB_GETCURSEL, 0, 0);
-
-		SendMessage(InitVallTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-
-		if (l->type == 1)  // (mV)
-			l->initval = min(10000, abs(atoi(num)));
-		else if (l->type == 2) // (%)
-			l->initval = min(100, abs(atoi(num)));
-		else // DA 
-			l->initval = min(DA_RESOLUTION, abs(atoi(num)));
-
-		l->initval = l->forward ?  l->initval : l->initval * -1;
-
-		SendMessage(GainInitVallTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		l->gaind = min(max(abs(atoi(num)), 0), 100);
-
-		SendMessage(GainTimeTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(num));
-		l->gaint = min(max(abs(atoi(num)), 0), 100);
-
-		_itoa(l->time, l->name, 10);
-		_itoa(l->initval, l->name1, 10);
-
-    }
 	DiscardDeviceResources();
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(MultisetDADialog);
+
     return;
 }

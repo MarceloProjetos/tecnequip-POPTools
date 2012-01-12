@@ -92,6 +92,10 @@ typedef SDWORD SWORD;
 #define FONT_WIDTH   7
 #define FONT_HEIGHT 13
 
+#define DA_RESOLUTION		2048		// DA resolution 12 bits (4096 / 2) 
+#define DA_VOLTAGE			10000.0f	// voltagem DA em mV (-10V +10V)
+#define DA_CYCLE_INTERVAL	10			// miliseconds
+
 #include "resource.h"
 #include "splash.h"
 
@@ -326,9 +330,6 @@ typedef SDWORD SWORD;
 #define MAX_NAME_LEN                128
 #define MAX_COMMENT_LEN             384
 #define MAX_LOOK_UP_TABLE_LEN        60
-#define DA_RESOLUTION		(4096 / 2)	// da resolution 12 bits
-#define DA_VOLTAGE			10000.0f	// voltagem DA em mV (-10V +10V)
-#define DA_CYCLE_INTERVAL	10			// miliseconds
 
 typedef struct ElemSubckParallelTag ElemSubcktParallel;
 
@@ -414,13 +415,11 @@ typedef struct ElemMultisetDATag {
 	BOOL	linear;					// Linear, Curva Ascendente/Descendente, Personalizada
 	BOOL	forward;				// Avança, Recua
 	unsigned char	speedup;		// Aceleração, Desaceleração
-    int		resolt;
-	int		resold;
 	int		time;					// tempo total da rampa
 	int		initval;					// valor inicial do DA na rampa
 	int		type;					// 0 = Valor saida do DA (2048 ~ -2048), 1 = milivolt (mV) (10V ~-10V), 2 = percentual (%)
-	int		gaind;
-	int		gaint;
+	int		gaint;					// tempo da curva de ganho em %
+	int		gainr;					// resolução da curva de ganho em %
 } ElemMultisetDA;
 
 typedef struct ElemReadUSSTag {
