@@ -775,7 +775,7 @@ void UpdateWindow(void)
 	SendMessage(GainTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 	
 	_itoa(current.time, current.name, 10);
-	_itoa(current.initval, current.name1, 10);
+	_itoa(current.forward ? current.initval : current.initval * -1, current.name1, 10);
 
 	if (current.linear)
 	{

@@ -57,7 +57,7 @@ void PLC_Run(void)
     if (I_rung_top) {  // $rung_top
         if (!I_oneShot_0000) {  // $oneShot_0000
             I_oneShot_0000 = I_rung_top;
-            DAC_StartDown(1, 30, 10, 600, 2047);
+            DAC_StartUp(1, 600, 2047);
         }
     } else {
         I_oneShot_0000 = I_rung_top;
@@ -65,5 +65,22 @@ void PLC_Run(void)
 
     /* ] finish series */
 
+    /* start rung 3 */
+    I_rung_top = I_mcr;
 
+    /* start series [ */
+    if (GPIO_OUTPUT_PORT1) {  // YS1
+        I_rung_top = 0;
+    }
+
+    if (I_rung_top) {  // $rung_top
+        if (!I_oneShot_0001) {  // $oneShot_0001
+            I_oneShot_0001 = I_rung_top;
+            DAC_StartDown(1, 40, 15, 600, 2047);
+        }
+    } else {
+        I_oneShot_0001 = I_rung_top;
+    }
+
+    /* ] finish series */
 }
