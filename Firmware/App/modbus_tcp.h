@@ -38,7 +38,7 @@ err_t Modbus_TCP_Poll_Callback(void *arg, struct tcp_pcb *tpcb);
 err_t Modbus_TCP_Send_Callback(void *arg, struct tcp_pcb *tpcb, u16_t len);
 err_t Modbus_TCP_Accept_Callback(void *arg, struct tcp_pcb *newpcb, err_t err);
 
-#define MODBUS_TCP_STACK_SIZE  	200
+#define MODBUS_TCP_STACK_SIZE  	64     // defined in lwipopts.h
 #define MODBUS_TCP_TASK_PRIO  	50
 
 #endif

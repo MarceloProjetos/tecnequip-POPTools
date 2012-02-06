@@ -156,7 +156,7 @@ void RS485_Config(int baudrate, int bits, int parity, int stopbit)
 	else if (baudrate == 14400)
 	{
 		UART3->DLM = 0;
-		UART3->DLL = 92;
+		UART3->DLL = 93;
 		UART3->FDR = (6 << 4) | 1;
 	}
 	else  // 9600

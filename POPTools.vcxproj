@@ -132,6 +132,7 @@
     <ClCompile Include="undoredo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\src\ld.h" />
     <ClInclude Include="flashmagicarmcortex.h" />
     <ClInclude Include="flashmagiccommon.h" />
     <ClInclude Include="freeze.h" />
@@ -148,6 +149,13 @@
     <ResourceCompile Include="version.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\src\compile" />
+    <None Include="bin\src\libpop.a" />
+    <None Include="bin\src\libpop.map" />
+    <None Include="bin\src\link.ld" />
+    <None Include="bin\src\memory.ld" />
+    <None Include="bin\src\startup_LPC17xx.o" />
+    <None Include="bin\src\syscalls.o" />
     <None Include="favicon.ico" />
     <None Include="splash.bmp" />
   </ItemGroup>

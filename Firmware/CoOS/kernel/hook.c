@@ -17,6 +17,8 @@
 /*---------------------------- Inlcude --------------------------------------*/
 #include <coocox.h>
 
+extern unsigned int PLC_ERROR;
+
 /**
  *******************************************************************************
  * @brief      IDLE task of OS	 
@@ -51,10 +53,11 @@ void CoIdleTask(void* pdata)
  */
 void CoStkOverflowHook(OS_TID taskID)
 {
+
     /* Process stack overflow  here */
     for(; ;) 
     {
-      
+    	PLC_ERROR |= 1 << 28;
     }
 }
 

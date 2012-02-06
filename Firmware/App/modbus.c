@@ -9,7 +9,7 @@ extern volatile unsigned int I_SerialReady;
 extern volatile unsigned int rs485_timeout;
 extern volatile unsigned int rs485_reset_timeout;
 
-volatile unsigned char MODBUS_MASTER;  // 0 = Slave, 1 = Master
+volatile unsigned char MODBUS_MASTER = 0;  // 0 = Slave, 1 = Master
 
 volatile int * MODBUS_RETURN_VAL = NULL;
 
@@ -69,8 +69,6 @@ void Modbus_Init(void)
 	modbus_tcp_slave.hl_size = ARRAY_SIZE(ModbusHandlers);
 	modbus_tcp_slave.mode    = MODBUS_MODE_SLAVE;
 	modbus_tcp_slave.TX      = Modbus_TCP_Tx;
-
-	Modbus_TCP_Init();
 
 	memset((void*)MODBUS_REGISTER, 0, sizeof(MODBUS_REGISTER));
 

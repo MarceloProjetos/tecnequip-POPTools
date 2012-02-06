@@ -168,6 +168,30 @@
     <None Include="favicon.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="bin\src\compile">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bin\src\libpop.a">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bin\src\libpop.map">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bin\src\link.ld">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bin\src\memory.ld">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bin\src\startup_LPC17xx.o">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bin\src\syscalls.o">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bin\src\ld.h">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="ldmicro.exe.manifest" />

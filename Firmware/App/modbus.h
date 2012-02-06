@@ -8,7 +8,7 @@
 
 volatile int MODBUS_REGISTER[32] __attribute__((weak));
 
-volatile unsigned char MODBUS_MASTER __attribute__((weak)) = 0;
+extern volatile unsigned char MODBUS_MASTER; // __attribute__((weak)) = 0;
 
 unsigned int Modbus_ReadCoils(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
 unsigned int Modbus_ReadDiscreteInputs(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);

@@ -130,8 +130,8 @@ unsigned int GPIO_Output(unsigned int OUTPUT)
 
   // U17 - ERRO
   // U18 - CPU
-  GPIO1->FIOPIN |= 0x3 << 21;
-  GPIO1->FIOPIN &= ~(((GPIO_OUTPUT_PORT17 & 0x1) << 21) | ((GPIO_OUTPUT_PORT18 & 0x1) << 22));
+  //GPIO1->FIOPIN |= 0x3 << 21;
+  //GPIO1->FIOPIN &= ~(((GPIO_OUTPUT_PORT17 & 0x1) << 21) | ((GPIO_OUTPUT_PORT18 & 0x1) << 22));
 
   return i;
 }

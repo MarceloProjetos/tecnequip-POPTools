@@ -183,7 +183,7 @@ static void DeclareBit(FILE *f, char *rawStr)
 #ifdef INT_UNSIGNED
 	fprintf(f, "volatile unsigned int %s = 0;\n", str);
 #else
-	fprintf(f, "volatile int %s = 0;\n", str);
+	fprintf(f, "volatile unsigned char %s = 0;\n", str);
 #endif
 
 	//fprintf(f, "#define Read_%s() %s\n", str, str);
@@ -880,7 +880,8 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "#include \"ld.h\"\n");
 
 	fprintf(f, "\n");
-	fprintf(f, "const volatile unsigned int 	CYCLE_TIME = %d;\n", Prog.cycleTime / 1000);
+	//fprintf(f, "const volatile unsigned int 	CYCLE_TIME = %d;\n", Prog.cycleTime / 1000);
+	fprintf(f, "volatile unsigned int 			PLC_ERROR = 0;\n");
 	//fprintf(f, "const volatile unsigned int		TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n", Prog.cycleTime / 1000);
 	
 	fprintf(f, "\n");
@@ -993,6 +994,8 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "/* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */\n");
 	fprintf(f, "void PLC_Cycle(void *pdata)\n");
 	fprintf(f, "{\n");
+	//fprintf(f, "    StatusType s;\n");
+	//fprintf(f, "\n");
 	fprintf(f, "	for (;;)\n");
 	fprintf(f, "	{\n");
 	fprintf(f, "		GPIO_Output(GPIO_OUTPUT);\n");
@@ -1003,7 +1006,14 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "\n");
 	fprintf(f, "		PLC_Run();\n");
 	fprintf(f, "\n");
-	fprintf(f, "		CoTickDelay(CYCLE_TIME);\n");
+	fprintf(f, "		CoTickDelay(12);\n");
+	/*fprintf(f, "		s = CoTickDelay(12);\n");
+	fprintf(f, "\n");
+	fprintf(f, "		if (s != E_OK)\n");
+	fprintf(f, "			PLC_ERROR |= 1 << 20;\n");
+	fprintf(f, "		else\n");
+	fprintf(f, "			PLC_ERROR &= ~(1 << 20);\n");
+	fprintf(f, "\n");*/
 	fprintf(f, "	}\n");
 	fprintf(f, "}\n");
 	fprintf(f, "\n");

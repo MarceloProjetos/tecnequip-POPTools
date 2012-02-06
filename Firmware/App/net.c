@@ -28,15 +28,15 @@ void Net_Init(void)
 	//IP4_ADDR(&IP_GATEWAY, 10,0,0,1);
 	//IP4_ADDR(&IP_DNS, 10,0,0,2);
 
-	dns_setserver(0, &IP_DNS);
-
 	netif_set_default(netif_add(lpc17xx_netif, &IP_ADDRESS, &IP_NETMASK, &IP_GATEWAY, NULL, ethernetif_init, tcpip_input));
-	netif_set_up(lpc17xx_netif);
 
+	dns_setserver(0, &IP_DNS);
 	dns_init();
 
-	HTTP_Init();
-	SNTP_Init();
+	//HTTP_Init();
+	//SNTP_Init();
 	Modbus_Init();
+	//Modbus_TCP_Init();
 
+	netif_set_up(lpc17xx_netif);
 }

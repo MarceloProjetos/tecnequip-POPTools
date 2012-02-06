@@ -561,6 +561,8 @@ void SystemInit (void)
 #else
   SCB->VTOR  = 0x00000000 & 0x3FFFFF80;
 #endif
+
+  SystemCoreClockUpdate();
 }
 
 /**

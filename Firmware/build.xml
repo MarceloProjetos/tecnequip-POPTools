@@ -74,19 +74,22 @@
       <compilerarg value="-Wall"/>   
       <compilerarg value="--static"/>   
       <compilerarg value="-ffunction-sections"/>
+      
+      <compilerarg value="-fdata-sections"/>
+      
       <compilerarg value="-O0"/>
       <compilerarg value="-g"/>
       
       <!-- arm-none-eabi-gcc linker arguments -->
-      <linkerarg value="-O0"/>
       <linkerarg value="-nostartfiles"/>
       <linkerarg value="-Map=${project.name}.map"/>
       <linkerarg value="-mcpu=cortex-m3"/>
       <linkerarg value="-mthumb"/>
       <linkerarg value="-L${linkdir}"/>
-      <linkerarg value="--gc-sections"/>
-      <linkerarg value="-T${linkdir}\link.ld"/>
       
+      <linkerarg value="-T${linkdir}\link.ld"/>
+      <linkerarg value="--gc-sections"/>
+      <linkerarg value="-Os"/>
     </cc>
   </target>
 

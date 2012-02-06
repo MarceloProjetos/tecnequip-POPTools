@@ -238,31 +238,31 @@
 //*****************************************************************************
 
 #define DAC_CYCLE_THREAD_NAME            "dac_cycle_thread"
-#define DAC_CYCLE_THREAD_STACKSIZE		  128
+#define DAC_CYCLE_THREAD_STACKSIZE		  64
 #define DAC_CYCLE_THREAD_PRIO  		      LWIP_START_PRIO + 5
 
 #define PLC_CYCLE_THREAD_NAME            "plc_thread"
-#define PLC_CYCLE_THREAD_STACKSIZE		  512
+//#define PLC_CYCLE_THREAD_STACKSIZE		  256	//defined in ld.h
 #define PLC_CYCLE_THREAD_PRIO  		      LWIP_START_PRIO + 10
 
 #define DEFAULT_THREAD_NAME               "lwip_thread"
-#define DEFAULT_THREAD_STACKSIZE          376
+#define DEFAULT_THREAD_STACKSIZE          196
 #define DEFAULT_THREAD_PRIO               LWIP_START_PRIO + 15
 
 #define TCPIP_THREAD_NAME                 "tcpip_thread"
-#define TCPIP_THREAD_STACKSIZE            376
+#define TCPIP_THREAD_STACKSIZE            196
 #define TCPIP_THREAD_PRIO                 LWIP_START_PRIO + 20
 
 #define MODBUS_TCP_THREAD_NAME            "modbus_tcp_thread"
-#define MODBUS_TCP_THREAD_STACKSIZE		  192
+#define MODBUS_TCP_THREAD_STACKSIZE		  64
 #define MODBUS_TCP_THREAD_PRIO  		  LWIP_START_PRIO + 25
 
 #define HTTP_THREAD_NAME                  "http_thread"
-#define HTTP_THREAD_STACKSIZE  			  192
+#define HTTP_THREAD_STACKSIZE  			  64
 #define HTTP_THREAD_PRIO  				  CFG_LOWEST_PRIO - 10
 
 #define SNTP_THREAD_NAME                  "sntp_thread"
-#define SNTP_THREAD_STACKSIZE             192
+#define SNTP_THREAD_STACKSIZE             64
 #define SNTP_THREAD_PRIO                  CFG_LOWEST_PRIO - 5
 
 //#define TCPIP_MBOX_SIZE                 0
@@ -390,7 +390,7 @@ extern void LWIPDebug(const char *pcString, ...);
 //#define LWIP_DBG_MIN_LEVEL              LWIP_DBG_LEVEL_SERIOUS
 //#define LWIP_DBG_MIN_LEVEL              LWIP_DBG_LEVEL_SEVERE
 
-#define LWIP_DBG_TYPES_ON              LWIP_DBG_ON
+#define LWIP_DBG_TYPES_ON              LWIP_DBG_OFF
 //#define LWIP_DBG_TYPES_ON               (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH)
 
 #define ETHARP_DEBUG                   LWIP_DBG_OFF     // default is OFF

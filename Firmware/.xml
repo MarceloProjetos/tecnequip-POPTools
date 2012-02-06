@@ -2,6 +2,6 @@
 <UserRuns>
   <Run isBefore="1" isSelected="0" value=""/>
   <Run isBefore="1" isSelected="0" value=""/>
-  <Run isBefore="0" isSelected="0" value="&quot;${gcc.home}\arm-none-eabi-ar&quot; &quot;r&quot; &quot;${project.bin}\${project.name}.a&quot; &quot;${project.obj}\*.o&quot;"/>
+  <Run isBefore="0" isSelected="0" value="&quot;${gcc.home}\arm-none-eabi-ar&quot; &quot;rs&quot; &quot;${project.bin}\${project.name}.a&quot; &quot;${project.obj}\*.o&quot;"/>
   <Run isBefore="0" isSelected="0" value="&quot;${gcc.home}\arm-none-eabi-ar&quot; &quot;d&quot; &quot;${project.bin}\${project.name}.a&quot; &quot;${project.obj}\ld.o&quot;"/>
 </UserRuns>

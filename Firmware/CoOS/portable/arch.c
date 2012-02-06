@@ -14,7 +14,13 @@
 
 /*---------------------------- Include ---------------------------------------*/
 #include <coocox.h>
-U64     OSTickCnt = 0;                  /*!< Current system tick counter      */ 																			 
+#include "lpc17xx.h"
+
+U64     OSTickCnt = 0;                  /*!< Current system tick counter      */
+U64 	OSTimerCnt = 0;
+char 	OSTimerCPULed = 0;
+
+extern unsigned int PLC_ERROR;
 
 /**
  ******************************************************************************
@@ -62,6 +68,23 @@ void SysTick_Handler(void)
 {
     OSSchedLock++;                  /* Lock scheduler.                        */
     OSTickCnt++;                    /* Increment systerm time.                */
+
+    OSTimerCnt++;
+
+    if (OSTimerCnt >= CFG_SYSTICK_FREQ)
+    {
+    	OSTimerCPULed = ~(OSTimerCPULed);
+    	GPIO1->FIOPIN |= 0x1 << 22;
+    	GPIO1->FIOPIN &= ~(((OSTimerCPULed & 0x1) << 22));
+    	OSTimerCnt = 0;
+    }
+
+    // U17 - ERRO
+	if (PLC_ERROR)
+		GPIO1->FIOPIN &= ~(0x1 << 21);
+	else
+		GPIO1->FIOPIN |= (0x1 << 21);
+
 #if CFG_TASK_WAITTING_EN >0    
     if(DlyList != Co_NULL)             /* Have task in delay list?               */
     {
