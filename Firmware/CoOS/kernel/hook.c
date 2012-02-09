@@ -17,7 +17,7 @@
 /*---------------------------- Inlcude --------------------------------------*/
 #include <coocox.h>
 
-extern unsigned int PLC_ERROR;
+extern volatile unsigned int PLC_ERROR;
 
 /**
  *******************************************************************************

@@ -30,12 +30,14 @@ int								SNTP_DAILY_SAVE = 0;
 
 unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 
-#define PLC_TESTE_RS485
+#define PLC_RTC_BUG
 
 #if defined(PLC_NULL)
 #include "POPTools/PLC_NULL.h"
 #elif defined(PLC_ERR_LED)
 #include "POPTools/PLC_ERR_LED.h"
+#elif defined(PLC_RTC_BUG)
+#include "POPTools/PLC_RTC_BUG.h"
 #elif defined(PLC_RS485)
 #include "POPTools/PLC_RS485.h"
 #elif defined(PLC_TESTE_RS485)
@@ -97,7 +99,7 @@ void PLC_Cycle(void *pdata)
 
 		//CoTickDelay(10);
 
-		s = CoTickDelay(12);
+		s = CoTickDelay(6);
 		//s = CoTimeDelay(0, 0, 0, CYCLE_TIME);
 
 		if (s != E_OK)

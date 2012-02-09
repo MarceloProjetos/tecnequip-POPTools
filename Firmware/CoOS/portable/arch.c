@@ -20,7 +20,7 @@ U64     OSTickCnt = 0;                  /*!< Current system tick counter      */
 U64 	OSTimerCnt = 0;
 char 	OSTimerCPULed = 0;
 
-extern unsigned int PLC_ERROR;
+extern volatile unsigned int PLC_ERROR;
 
 /**
  ******************************************************************************

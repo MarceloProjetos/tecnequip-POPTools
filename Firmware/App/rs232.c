@@ -82,7 +82,7 @@ unsigned char RS232_CRC(char * buffer, unsigned int size)
 
 	while (i < size)
 	{
-			crc ^= *(buffer + i++);
+		crc ^= *(buffer + i++);
 	}
 
 	return crc;
@@ -114,14 +114,16 @@ void RS232_Console(void)
 
 			memset(rs232_tx_buffer, 0, sizeof(rs232_tx_buffer));
 
-			if (RTC_SetTime(Time) == 0 ||
-				RS232_CRC(rs232_rx_buffer, 10) != rs232_rx_buffer[10])
+			if (RS232_CRC(rs232_rx_buffer, 10) != rs232_rx_buffer[10])
 			{
-				rs232_tx_buffer[0] = 0xFF;
-				RS232_Write(rs232_tx_buffer, 1);
+				memset(rs232_tx_buffer, 0xFF, 10);
+				rs232_tx_buffer[10] = RS232_CRC(rs232_tx_buffer, 10);
+				RS232_Write(rs232_tx_buffer, 11);
 			}
 			else
 			{
+				RTC_SetTime(Time);
+
 				memset(&Time, 0, sizeof(Time));
 
 				Time = RTC_GetTime();

@@ -297,7 +297,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 
 	StatusBarSetText(0, text);
 
-	Sleep(1000);
+	Sleep(5000);
 
 	TCHAR lpszCommPort[10];
 
@@ -348,7 +348,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 
 	COMMTIMEOUTS comTimeOut;                   
 
-	comTimeOut.ReadIntervalTimeout = 3;
+	comTimeOut.ReadIntervalTimeout = 5;
 	comTimeOut.ReadTotalTimeoutMultiplier = 3;
 	comTimeOut.ReadTotalTimeoutConstant = 2;
 	comTimeOut.WriteTotalTimeoutMultiplier = 3;
@@ -366,14 +366,19 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	DWORD writenBytes, readedBytes = 0;
 	int trycount = 0;
 
-	memset(cWriteBuffer, 0, sizeof(cWriteBuffer));
-	memset(cReadBuffer, 0, sizeof(cReadBuffer));
-
 	time_t rawtime;
 	struct tm * t;
 
-	while (!readedBytes && trycount < 3)
+	while (readedBytes < sizeof(cReadBuffer) && trycount < 10)
 	{
+		readedBytes = 0;
+		writenBytes = 0;
+
+		PurgeComm(hCommPort, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXABORT | PURGE_TXCLEAR);
+
+		memset(cWriteBuffer, 0, sizeof(cWriteBuffer));
+		memset(cReadBuffer, 0, sizeof(cReadBuffer));
+
 		time ( &rawtime );
 		t = localtime ( &rawtime );
 
@@ -386,7 +391,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 		memcpy(&cWriteBuffer[2], &t->tm_year, 2);
 		memcpy(&cWriteBuffer[4], &t->tm_hour, 1);
 		memcpy(&cWriteBuffer[5], &t->tm_min, 1);
-		memcpy(&cWriteBuffer[6], &t->tm_sec, 1);
+		cWriteBuffer[6] = 0; //memcpy(&cWriteBuffer[6], &t->tm_sec, 1);
 		memcpy(&cWriteBuffer[7], &t->tm_wday, 1);
 		memcpy(&cWriteBuffer[8], &t->tm_yday, 2);
 
@@ -407,42 +412,55 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 				//ProgramSuccessfulMessage("Falha ao escrever na porta serial !");
 				//ShowError("Write");
 				//return FALSE;
+				MessageBox(NULL, "Falha ao escrever na porta serial do CLP !", "Atualizando o RTC...", MB_OK);
 				break;
 			}
 		}
 
-		if (ReadFile(hCommPort,
-					cReadBuffer,
-					sizeof(cReadBuffer) - 1,
-					&readedBytes,
-					NULL) == 0)
-
+		if (writenBytes)
 		{
-			if (GetLastError() != ERROR_IO_PENDING) 
+			Sleep(500);
+
+			if (ReadFile(hCommPort,
+						cReadBuffer,
+						sizeof(cReadBuffer),
+						&readedBytes,
+						NULL) == 0)
+
 			{
-				//CloseHandle(hCommPort);
-				//ProgramSuccessfulMessage("Falha ao ler a porta serial !");
-				//ShowError("Read");
-				//return FALSE;
-				break;
+				if (GetLastError() != ERROR_IO_PENDING) 
+				{
+					//CloseHandle(hCommPort);
+					//ProgramSuccessfulMessage("Falha ao ler a porta serial !");
+					//ShowError("Read");
+					//return FALSE;
+					MessageBox(NULL, "Falha ao ler da porta serial do CLP !", "Atualizando o RTC...", MB_OK);
+					break;
+				}
 			}
 		}
 
 		trycount++;
-		if (!readedBytes)
-			Sleep(1000);
+		if (readedBytes == sizeof(cReadBuffer))
+			break;
+
+		Sleep(1000);
+
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Atualizando o relógio RTC da POP...[%d]", trycount);
+		StatusBarSetText(0, text);
 	}
 
-	if (memcmp(cWriteBuffer, cReadBuffer, sizeof(cWriteBuffer)) != 0)
+	if (readedBytes == 0)
+		MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nNão foi possível verificar se a data/hora foi atualizada corretamente por que a leitura do RTC retornou 0 bytes !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
+	else if (memcmp(cWriteBuffer, cReadBuffer, sizeof(cWriteBuffer)) != 0)
 	{
 		//CloseHandle(hCommPort);
 		//ProgramSuccessfulMessage("Falha ao ler a porta serial !");
 		//ShowError("CRC");
-		if (!readedBytes)
-			MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nNão foi possível verificar se a data/hora foi atualizada corretamente por que a leitura do RTC retornou 0 bytes !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
-		else if (readedBytes == sizeof(cReadBuffer))
+		
+		if (readedBytes == sizeof(cReadBuffer))
 			MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nA data/hora lida do RTC é diferente da data/hora escrita !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
-		else if (!readedBytes)
+		else if (readedBytes)
 			MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nNão foi possível verificar se a data/hora foi atualizada corretamente por que a leitura do RTC retornou dados inválidos !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
 		//return FALSE;
 	}

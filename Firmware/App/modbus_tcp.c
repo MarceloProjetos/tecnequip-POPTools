@@ -224,13 +224,14 @@ void Modbus_TCP_Connect(void *pdata)
 	/* Put the connection into LISTEN state */
 	netconn_listen(conn);
 
-	while(1) {
-	err = netconn_accept(conn, &newconn);
+	while(1)
+	{
+		err = netconn_accept(conn, &newconn);
 
-	if (err == ERR_OK)
-		Modbus_TCP_Request(newconn);
+		if (err == ERR_OK)
+			Modbus_TCP_Request(newconn);
 
-	netconn_delete(newconn);
+		netconn_delete(newconn);
 	}
 
   /*struct tcp_pcb* tcpweb;
