@@ -23,6 +23,6 @@
 // Bitmap
 //
 
-IDB_SPLASH              BITMAP                  "C:\\Users\\Administrador\\Documents\\Visual Studio 2010\\Projects\\POPTools\\splash.bmp"
+IDB_SPLASH              BITMAP                  "splash.bmp"
 
 

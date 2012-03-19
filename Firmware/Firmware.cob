@@ -15,4 +15,5 @@
     <Component id="c24d8502-96ed-11df-80ae-001d7d723e56" name="GPIO"/>
     <Component id="c2c4b0d1-96ed-11df-80ae-001d7d723e56" name="UART"/>
   </Components>
+  <ExcludedFiles/>
 </Project>
