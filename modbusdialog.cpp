@@ -162,6 +162,7 @@ static void MakeControls(void)
 
 void ShowModbusDialog(char *name, int *id, int *address, bool *set)
 {
+	char name_temp[MAX_NAME_LEN];
     SetBitDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Modbus"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 404, 115, MainWindow, NULL, Instance, NULL);
@@ -210,19 +211,23 @@ void ShowModbusDialog(char *name, int *id, int *address, bool *set)
     }
 
     if(!DialogCancel) {
-        if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-            *set = TRUE;
-        else
-            *set = FALSE;
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_temp));
+		if(toupper(name_temp[0]) < 'A' || toupper(name_temp[0]) > 'Z') {
+			Error(_("Obrigatório usar variável ao invés de número no campo 'Variável'"));
+		} else {
+			strcpy(name, name_temp);
+	        if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
+		        *set = TRUE;
+			else
+				*set = FALSE;
 
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name));
-		SendMessage(IDTextbox, WM_GETTEXT, 16, (LPARAM)(i));
-		SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
+			SendMessage(IDTextbox, WM_GETTEXT, 16, (LPARAM)(i));
+			SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
 
-		*id = atoi(i);
-		*address = atoi(addr);
-
-    }
+			*id = atoi(i);
+			*address = atoi(addr);
+		}
+	}
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(SetBitDialog);

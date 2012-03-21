@@ -369,7 +369,7 @@ static void GenerateAnsiC(FILE *f)
                 case INT_SET_VARIABLE_ADD: op = '+'; goto arith;
                 case INT_SET_VARIABLE_SUBTRACT: op = '-'; goto arith;
                 case INT_SET_VARIABLE_MULTIPLY: op = '*'; goto arith;
-                case INT_SET_VARIABLE_DIVIDE: op = '/'; goto arith;
+                case INT_SET_VARIABLE_DIVIDE: op = '/'; fprintf(f, "if(%s) ", MapSym(IntCode[i].name3)); goto arith;
                 arith:
                     fprintf(f, "%s = %s %c %s;\n",
                         MapSym(IntCode[i].name1),
@@ -1028,9 +1028,15 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "	IP4_ADDR(&IP_NETMASK, %d,%d,%d,%d);\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
 	fprintf(f, "	IP4_ADDR(&IP_GATEWAY, %d,%d,%d,%d);\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
 	fprintf(f, "	IP4_ADDR(&IP_DNS, %d,%d,%d,%d);\n", Prog.dns[0], Prog.dns[1], Prog.dns[2], Prog.dns[3]);
+	fprintf(f, "\n");
+	if(Prog.x4) {
+		fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_4X;\n");
+	} else {
+		fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_2X;\n");
+	}
 	fprintf(f, "}\n");
-
-    fclose(f);
+	
+	fclose(f);
 
     char str[MAX_PATH+500];
 	DWORD err = 0;

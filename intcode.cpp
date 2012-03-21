@@ -1160,10 +1160,15 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 break;
         }
 
+        case ELEM_DIV: {
+			if(IsNumber(l->d.math.op2) && !atol(l->d.math.op2)) {
+                Error(_("Math instruction: '%s' divided by zero!"),
+                    l->d.math.op1);
+                CompileError();
+            }
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
-        case ELEM_DIV: {
             if(IsNumber(l->d.math.dest)) {
                 Error(_("Math instruction: '%s' not a valid destination."),
                     l->d.math.dest);

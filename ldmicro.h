@@ -1045,7 +1045,7 @@ void SimulateOneCycle(BOOL forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void StartSimulationTimer(void);
 void ClearSimulationData(void);
-void DescribeForIoList(char *name, char *out);
+void DescribeForIoList(char *name, int type, char *out);
 void SimulationToggleContact(char *name);
 void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);

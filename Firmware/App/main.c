@@ -11,7 +11,6 @@
 #include "gpio.h"
 #include "adc.h"
 #include "dac.h"
-#include "ld.h"
 #include "qei.h"
 #include "ld.h"
 

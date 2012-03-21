@@ -144,6 +144,19 @@ static BOOL SaveProgram(void)
     }
 }
 
+void ChangeFileExtension(char *name, char *ext)
+{
+	unsigned int pos;
+
+	pos = strlen(name) - 1;
+	while(name[pos] != '.' && pos) pos--;
+	if(pos) {
+		name[pos] = 0;
+	}
+
+	sprintf(name, "%s.%s", name, ext);
+}
+
 //-----------------------------------------------------------------------------
 // Compile the program to a hex file for the target micro. Get the output
 // file name if necessary, then call the micro-specific compile routines.
@@ -164,6 +177,11 @@ static void CompileProgram(BOOL compileAs)
 	{
         OPENFILENAME ofn;
 
+		if(strlen(CurrentSaveFile)) {
+			strcpy(CurrentCompileFile, CurrentSaveFile);
+			ChangeFileExtension(CurrentCompileFile, "hex");
+		}
+
         memset(&ofn, 0, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
         ofn.hInstance = Instance;
@@ -182,8 +200,16 @@ static void CompileProgram(BOOL compileAs)
         ofn.nMaxFile = sizeof(CurrentCompileFile);
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
-        if(!GetSaveFileName(&ofn))
+        if(!GetSaveFileName(&ofn)) {
             return;
+		} else if(ofn.Flags & OFN_EXTENSIONDIFFERENT) {
+			if(MessageBox(NULL, _("Tipo de arquivo deve ser .hex\nA extensão será alterada automaticamente."),"Aviso", MB_ICONEXCLAMATION | MB_OKCANCEL) == IDCANCEL) {
+				strcpy(CurrentCompileFile, "");
+				return;
+			}
+
+		ChangeFileExtension(CurrentCompileFile, "hex");
+		}
 
         // hex output filename is stored in the .ld file
         ProgramChangedNotSaved = TRUE;
@@ -736,6 +762,7 @@ cmp:
             break;
 
         case MNU_SIMULATION_MODE:
+            if(CheckSaveUserCancels()) break;
             ToggleSimulationMode();
             break;
 
@@ -752,18 +779,22 @@ cmp:
             break;
 
         case MNU_COMPILE:
+            if(CheckSaveUserCancels()) break;
             CompileProgram(FALSE);
             break;
 
         case MNU_COMPILE_AS:
+            if(CheckSaveUserCancels()) break;
             CompileProgram(TRUE);
             break;
 
         case MNU_PROGRAM:
+            if(CheckSaveUserCancels()) break;
             WriteProgram(FALSE);
             break;
 
         case MNU_PROGRAM_AS:
+            if(CheckSaveUserCancels()) break;
             WriteProgram(TRUE);
             break;
 

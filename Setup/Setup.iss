@@ -24,8 +24,18 @@ ChangesAssociations=yes
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 
+; [Types]
+; Name: "full"; Description: "Instalação Completa"
+; Name: "compact"; Description: "Instalação Compacta"
+; Name: "custom"; Description: "Instalação Personalizada"; Flags: iscustom
+
+; [Components]
+; Name:"Principal"; Description:"POPTools versão 1.2"; Types: full compact custom; Flags: fixed
+; Name:"DriverUSB"; Description:"Driver USB para gravação da POP-7"; Types: full custom
+
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "installusbdriver"; Description: "Instalar Driver USB"; GroupDescription: "Drivers";
 ; Name: "restart"; Description: "Reiniciar o computador. A reinicialização do computador é necessária para o correto funcionamento do compilador que acompanha o programa POP7Tools. (mais informações em http://www.yagarto.de)"; Flags: restart
 
 [Files]
@@ -66,6 +76,7 @@ Root: HKCR; Subkey: "POPToolsFiles\shell\open\command"; ValueType: string; Value
 [Run]
 ; Filename: "{app}\yagarto-tools-20100703-setup.exe"; Parameters: "/S /D={pf}\yagarto"; Description: "Ferramentas de Compilação"; Flags: runascurrentuser
 ; Filename: "{app}\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; Parameters: "/S /D={pf}\yagarto"; Description: "Compilador e Linker"; Flags: runascurrentuser
+Filename: "{app}\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; Description: "{cm:LaunchProgram,POPTools}"; Tasks: installusbdriver; Flags: nowait postinstall skipifsilent
 Filename: "{app}\POPTools.exe"; Description: "{cm:LaunchProgram,POPTools}"; Flags: nowait postinstall skipifsilent
 
 

@@ -1066,7 +1066,7 @@ void IoListProc(NMHDR *h)
                 case LV_IO_STATE: {
                     if(InSimulationMode) {
                         char *name = Prog.io.assignment[item].name;
-                        DescribeForIoList(name, i->item.pszText);
+                        DescribeForIoList(name, Prog.io.assignment[item].type, i->item.pszText);
                     } else {
                         strcpy(i->item.pszText, "");
                     }

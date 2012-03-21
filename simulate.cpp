@@ -804,6 +804,7 @@ static void SimulateIntCode(void)
 
             case INT_INCREMENT_VARIABLE:
                 IncrementVariable(a->name1);
+				NeedRedraw = TRUE;
                 break;
 
             {
@@ -1179,16 +1180,18 @@ void ClearSimulationData(void)
 // Provide a description for an item (Xcontacts, Ycoil, Rrelay, Ttimer,
 // or other) in the I/O list.
 //-----------------------------------------------------------------------------
-void DescribeForIoList(char *name, char *out)
+void DescribeForIoList(char *name, int type, char *out)
 {
-    switch(name[0]) {
-        case 'R':
-        case 'X':
-        case 'Y':
+    switch(type) {
+        case IO_TYPE_INTERNAL_RELAY:
+        case IO_TYPE_DIG_OUTPUT:
+        case IO_TYPE_DIG_INPUT:
             sprintf(out, "%d", SingleBitOn(name));
             break;
 
-        case 'T': {
+        case IO_TYPE_TON:
+        case IO_TYPE_TOF:
+        case IO_TYPE_RTO: {
             double dtms = GetSimulationVariable(name) * (Prog.cycleTime / 1000.0);
             if(dtms < 1000) {
                 sprintf(out, "%.2f ms", dtms);
@@ -1196,7 +1199,7 @@ void DescribeForIoList(char *name, char *out)
                 sprintf(out, "%.3f s", dtms / 1000);
             }
             break;
-        }
+			}
         default: {
             SWORD v = GetSimulationVariable(name);
             sprintf(out, "%i (0x%08x)", v, v);

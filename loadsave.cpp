@@ -369,7 +369,7 @@ BOOL LoadProjectFromFile(char *filename)
     if(!f) return FALSE;
 
     char line[512];
-    int version, crystal, cycle, baud, comPort, UART, ip[4], mask[4], gw[4], dns[4];
+    int version, crystal, cycle, baud, comPort, UART, ip[4], mask[4], gw[4], dns[4], x4;
 	char sntp[126];
 
 	version = 0;
@@ -432,6 +432,8 @@ BOOL LoadProjectFromFile(char *filename)
             Prog.dns[3] = dns[3];
 		} else if(sscanf(line, "SNTP=%d-%d:%s", &Prog.gmt, &Prog.dailysave, &sntp)) {
 			strncpy(Prog.sntp, sntp, sizeof(Prog.sntp));
+		} else if(sscanf(line, "X4=%d", &x4)) {
+			Prog.x4 = x4;
         } else if(memcmp(line, "COMPILED=", 9)==0) {
             //line[strlen(line)-1] = '\0';
             //strcpy(CurrentCompileFile, line+9);
@@ -822,6 +824,7 @@ BOOL SaveProjectToFile(char *filename)
     fprintf(f, "GW=%d.%d.%d.%d\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
 	fprintf(f, "DNS=%d.%d.%d.%d\n", Prog.dns[0], Prog.dns[1], Prog.dns[2], Prog.dns[3]);
 	fprintf(f, "SNTP=%d-%d:%s\n", Prog.gmt, Prog.dailysave, Prog.sntp);
+	fprintf(f, "X4=%d\n", Prog.x4);
     if(strlen(CurrentCompileFile) > 0) {
         //fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }

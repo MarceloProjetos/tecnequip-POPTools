@@ -306,6 +306,30 @@ extern unsigned int ADC_Read(unsigned int a);
 /* ENC                                                                     */
 /***************************************************************************/
 #ifndef __QEI_H
+/* QEI Capture Mode Option */
+#define QEI_CAPMODE_2X			((unsigned int)(0))		/**< Capture mode: Only Phase-A edges are counted (2X) */
+#define QEI_CAPMODE_4X			((unsigned int)(1))		/**< Capture mode: BOTH PhA and PhB edges are counted (4X)*/
+
+typedef struct {
+	unsigned int DirectionInvert	:1; 	/**< Direction invert option:
+										- QEI_DIRINV_NONE: QEI Direction is normal
+										- QEI_DIRINV_CMPL: QEI Direction is complemented
+										*/
+	unsigned int SignalMode			:1; 	/**< Signal mode Option:
+										- QEI_SIGNALMODE_QUAD: Signal is in Quadrature phase mode
+										- QEI_SIGNALMODE_CLKDIR: Signal is in Clock/Direction mode
+										*/
+	unsigned int CaptureMode		:1;		/**< Capture Mode Option:
+										- QEI_CAPMODE_2X: Only Phase-A edges are counted (2X)
+										- QEI_CAPMODE_4X: BOTH Phase-A and Phase-B edges are counted (4X)
+										*/
+	unsigned int InvertIndex		:1; 	/**< Invert Index Option:
+										- QEI_INVINX_NONE: the sense of the index input is normal
+										- QEI_INVINX_EN: inverts the sense of the index input
+										*/
+} QEI_CFG_Type;
+extern QEI_CFG_Type QEIConfig;
+
 extern int ENC_Read(void);
 extern void ENC_Reset(void);
 #endif

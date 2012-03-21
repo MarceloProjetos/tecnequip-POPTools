@@ -1168,6 +1168,16 @@ BOOL UartFunctionUsed(void)
         {
             return TRUE;
         }
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_READ_MODBUS, ELEM_WRITE_MODBUS, ELEM_FORMATTED_STRING))
+        {
+            return TRUE;
+        }
+        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
+            ELEM_READ_MODBUS_ETH, ELEM_WRITE_MODBUS_ETH, ELEM_FORMATTED_STRING))
+        {
+            return TRUE;
+        }
     }
     return FALSE;
 }

@@ -526,11 +526,12 @@ void QEI_Init(void)
 	//NVIC_SetPriorityGrouping(0x05);
 
 	/* Initialize QEI configuration structure to default value */
-	#if CAP_MODE
+	// Capture Mode from ld.c
+/*	#if CAP_MODE
 	QEIConfig.CaptureMode = QEI_CAPMODE_4X;
 	#else
 	QEIConfig.CaptureMode = QEI_CAPMODE_2X;
-	#endif
+	#endif*/
 	QEIConfig.DirectionInvert = QEI_DIRINV_NONE;
 	QEIConfig.InvertIndex = QEI_INVINX_NONE;
 	#if SIGNAL_MODE

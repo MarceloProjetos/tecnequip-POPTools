@@ -497,13 +497,13 @@ static void MakeControls(void)
     NiceFont(FactorTextbox);
 
 	X2Checkbox = CreateWindowEx(0, WC_BUTTON, _("x 2"),
-        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        155, 464, 160, 20, ConfDialog, NULL, Instance, NULL);
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        155, 464, 40, 20, ConfDialog, NULL, Instance, NULL);
     NiceFont(X2Checkbox);
 	    
 	X4Checkbox = CreateWindowEx(0, WC_BUTTON, _("x 4"),
-        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        195, 464, 160, 20, ConfDialog, NULL, Instance, NULL);
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        195, 464, 40, 20, ConfDialog, NULL, Instance, NULL);
     NiceFont(X4Checkbox);
 
 	HWND grouper1 = CreateWindowEx(0, WC_BUTTON, _("Configuração do Encoder"),
@@ -748,10 +748,11 @@ void ShowConfDialog(void)
 		SendMessage(SNTPCombobox, WM_GETTEXT, (WPARAM)sizeof(Prog.sntp),
             (LPARAM)(Prog.sntp));
 
-
 		Prog.gmt = SendMessage(GMTCombobox, CB_GETCURSEL, 0, 0);
 		Prog.dailysave = SendMessage(DailySaveCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
-    }
+
+		Prog.x4 = (char)SendMessage(X4Checkbox, BM_GETCHECK, 0, 0);
+	}
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(ConfDialog);

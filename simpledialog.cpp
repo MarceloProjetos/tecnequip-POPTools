@@ -485,6 +485,9 @@ void ShowResetEncDialog(char *name)
 
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index)
 {
+	char name_temp[100];
+	strcpy(name_temp, name);
+
     char i[100];
     sprintf(i, "%d", *id);
 
@@ -498,17 +501,25 @@ void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, 
     sprintf(idx, "%d", *index);
 
 	char *labels[] = { _("Destination:"), _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
-    char *dests[] = { name, i, param, param_set, idx };
+    char *dests[] = { name_temp, i, param, param_set, idx };
     ShowSimpleDialog(_("Le Parametro do Inversor da Nord"), 5, labels, 0x1E, 0x1, 0x1E, dests);
 
-	*id = atoi(i);
-	*parameter = atoi(param);
-	*parameter_set = atoi(param_set);
-	*index = atoi(idx);
+	if(toupper(name_temp[0]) < 'A' || toupper(name_temp[0]) > 'Z') {
+		Error(_("Obrigatório usar variável ao invés de número no campo 'Destino'"));
+	} else {
+		strcpy(name, name_temp);
+		*id = atoi(i);
+		*parameter = atoi(param);
+		*parameter_set = atoi(param_set);
+		*index = atoi(idx);
+	}
 }
 
 void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index)
 {
+	char name_temp[100];
+	strcpy(name_temp, name);
+
     char i[100];
     sprintf(i, "%d", *id);
 
@@ -522,13 +533,18 @@ void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set,
     sprintf(idx, "%d", *index);
 
 	char *labels[] = { _("Origem:"), _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
-    char *dests[] = { name, i, param, param_set, idx };
+    char *dests[] = { name_temp, i, param, param_set, idx };
     ShowSimpleDialog(_("Escreve Parametro no Inversor da Nord"), 5, labels, 0x1E, 0x1, 0x1E, dests);
 
-	*id = atoi(i);
-	*parameter = atoi(param);
-	*parameter_set = atoi(param_set);
-	*index = atoi(idx);
+	if(toupper(name_temp[0]) < 'A' || toupper(name_temp[0]) > 'Z') {
+		Error(_("Obrigatório usar variável ao invés de número no campo 'Destino'"));
+	} else {
+		strcpy(name, name_temp);
+		*id = atoi(i);
+		*parameter = atoi(param);
+		*parameter_set = atoi(param_set);
+		*index = atoi(idx);
+	}
 }
 
 void ShowReadModbusDialog(char *name, int *id, int *address)
