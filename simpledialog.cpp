@@ -89,7 +89,7 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     oops();
 }
 
-static void MakeControls(int boxes, char **labels, DWORD fixedFontMask)
+static void MakeControls(int boxes, char **labels, DWORD fixedFontMask, DWORD useComboBox)
 {
     int i;
     HDC hdc = GetDC(SimpleDialog);
@@ -119,11 +119,22 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask)
             SimpleDialog, NULL, Instance, NULL);
         NiceFont(Labels[i]);
 
-        Textboxes[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-            WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
-            WS_VISIBLE,
-            80 + adj, 12 + 30*i, 120 - adj, 21,
-            SimpleDialog, NULL, Instance, NULL);
+		if(useComboBox & (1 << i)) {
+	        Textboxes[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+		        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
+			    CBS_SORT | WS_VISIBLE | CBS_DROPDOWN | WS_VSCROLL,
+				80 + adj, 12 + 30*i, 120 - adj, 321,
+				SimpleDialog, NULL, Instance, NULL);
+
+			LoadIOListToComboBox(Textboxes[i], IO_TYPE_ALL);
+			SendMessage(Textboxes[i], CB_SETDROPPEDWIDTH, 300, 0);
+		} else {
+	        Textboxes[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+		        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS |
+			    WS_VISIBLE,
+				80 + adj, 12 + 30*i, 120 - adj, 21,
+				SimpleDialog, NULL, Instance, NULL);
+		}
 
         if(fixedFontMask & (1 << i)) {
             FixedFont(Textboxes[i]);
@@ -145,7 +156,7 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask)
 }
 
 BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
-    DWORD alnumOnlyMask, DWORD fixedFontMask, char **dests)
+    DWORD alnumOnlyMask, DWORD fixedFontMask, DWORD useComboBox, char **dests)
 {
     BOOL didCancel;
 
@@ -156,7 +167,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
         100, 100, 304, 15 + 30*(boxes < 2 ? 2 : boxes), MainWindow, NULL,
         Instance, NULL);
 
-    MakeControls(boxes, labels, fixedFontMask);
+    MakeControls(boxes, labels, fixedFontMask, useComboBox);
   
     int i;
 
@@ -241,7 +252,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
 
     return !didCancel;
 }
-
+/*
 BOOL ShowSimpleDialogWithCheckbox(char *title, int boxes, char **labels, DWORD numOnlyMask,
     DWORD alnumOnlyMask, DWORD checkOnlyMask, DWORD fixedFontMask, char **dests)
 {
@@ -333,7 +344,7 @@ BOOL ShowSimpleDialogWithCheckbox(char *title, int boxes, char **labels, DWORD n
 
     return !didCancel;
 }
-
+*/
 void ShowTimerDialog(int which, int *delay, char *name)
 {
     char *s;
@@ -353,7 +364,7 @@ void ShowTimerDialog(int which, int *delay, char *name)
     strcpy(nameBuf, name+1);
     char *dests[] = { nameBuf, delBuf };
 
-    if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), dests)) {
+    if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), (1 << 0), dests)) {
         name[0] = 'T';
         strncpy(name+1, nameBuf, 15);
 		name[16] = '\0';
@@ -385,7 +396,7 @@ void ShowCounterDialog(int which, int *maxV, char *name)
     char maxS[128];
     sprintf(maxS, "%d", *maxV);
     char *dests[] = { name+1, maxS };
-    ShowSimpleDialog(title, 2, labels, 0x2, 0x1, 0x1, dests);
+    ShowSimpleDialog(title, 2, labels, 0x2, 0x1, 0x1, 0x1, dests);
 	name[16] = '\0';
     *maxV = atoi(maxS);
 }
@@ -430,22 +441,33 @@ void ShowCmpDialog(int which, char *op1, char *op2)
     }
     char *labels[] = { _("'Closed' if:"), l2 };
     char *dests[] = { op1, op2 };
-    ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, dests);
+    ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, 0x3, dests);
 
 }
 
 void ShowMoveDialog(char *dest, char *src)
 {
+	char dest_tmp[MAX_NAME_LEN], src_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Destination:"), _("Source:") };
-    char *dests[] = { dest, src };
-    ShowSimpleDialog(_("Move"), 2, labels, 0, 0x3, 0x3, dests);
+    char *dests[] = { dest_tmp, src_tmp };
+
+	strcpy(src_tmp , src );
+	strcpy(dest_tmp, dest);
+    ShowSimpleDialog(_("Move"), 2, labels, 0, 0x3, 0x3, 0x3, dests);
+
+	if(IsNumber(dest_tmp)) {
+        Error(_("Destino não pode ser número!"));
+	} else {
+		strcpy(src , src_tmp );
+		strcpy(dest, dest_tmp);
+	}
 }
 
 void ShowReadAdcDialog(char *name)
 {
     char *labels[] = { _("Destination:") };
     char *dests[] = { name };
-    ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, dests);
+    ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
 	name[15] = '\0';
 }
 
@@ -463,7 +485,7 @@ void ShowSetDADialog(char *name)
 
 	char *labels[] = { _("Value:") };
     char *dests[] = { name };
-    ShowSimpleDialog(_("Conversor Digital/Analogico (DA)"), 1, labels, 0x0, 0x1, 0x1, dests);
+    ShowSimpleDialog(_("Conversor Digital/Analogico (DA)"), 1, labels, 0x0, 0x1, 0x1, 0x1, dests);
 
 	//*name = (int)(10000 * atof(name) + 0.5);
 }
@@ -471,7 +493,7 @@ void ShowReadEncDialog(char *name)
 {
     char *labels[] = { _("Destination:") };
     char *dests[] = { name };
-    ShowSimpleDialog(_("Read Encoder"), 1, labels, 0, 0x1, 0x1, dests);
+    ShowSimpleDialog(_("Read Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
 	name[15] = '\0';
 }
 
@@ -479,7 +501,7 @@ void ShowResetEncDialog(char *name)
 {
     char *labels[] = { _("Destination:") };
     char *dests[] = { name };
-    ShowSimpleDialog(_("Reset Encoder"), 1, labels, 0, 0x1, 0x1, dests);
+    ShowSimpleDialog(_("Reset Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
 	name[15] = '\0';
 }
 
@@ -502,9 +524,9 @@ void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, 
 
 	char *labels[] = { _("Destination:"), _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
     char *dests[] = { name_temp, i, param, param_set, idx };
-    ShowSimpleDialog(_("Le Parametro do Inversor da Nord"), 5, labels, 0x1E, 0x1, 0x1E, dests);
+    ShowSimpleDialog(_("Le Parametro do Inversor da Nord"), 5, labels, 0x1E, 0x1, 0x1E, 0x1, dests);
 
-	if(toupper(name_temp[0]) < 'A' || toupper(name_temp[0]) > 'Z') {
+	if(IsNumber(name_temp)) {
 		Error(_("Obrigatório usar variável ao invés de número no campo 'Destino'"));
 	} else {
 		strcpy(name, name_temp);
@@ -534,9 +556,9 @@ void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set,
 
 	char *labels[] = { _("Origem:"), _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
     char *dests[] = { name_temp, i, param, param_set, idx };
-    ShowSimpleDialog(_("Escreve Parametro no Inversor da Nord"), 5, labels, 0x1E, 0x1, 0x1E, dests);
+    ShowSimpleDialog(_("Escreve Parametro no Inversor da Nord"), 5, labels, 0x1E, 0x1, 0x1E, 0x1, dests);
 
-	if(toupper(name_temp[0]) < 'A' || toupper(name_temp[0]) > 'Z') {
+	if(IsNumber(name_temp)) {
 		Error(_("Obrigatório usar variável ao invés de número no campo 'Destino'"));
 	} else {
 		strcpy(name, name_temp);
@@ -547,70 +569,6 @@ void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set,
 	}
 }
 
-void ShowReadModbusDialog(char *name, int *id, int *address)
-{
-    char i[100];
-    sprintf(i, "%d", *id);
-
-    char addr[100];
-    sprintf(addr, "%d", *address);
-
-	char *labels[] = { _("Destino:"), _("ID:"), _("Endereço:") };
-    char *dests[] = { name, i, addr };
-    ShowSimpleDialog(_("Lê Registrador do Modbus"), 3, labels, 0x6, 0x1, 0x6, dests);
-
-	*id = atoi(i);
-	*address = atoi(addr);
-}
-
-void ShowWriteModbusDialog(char *name, int *id, int *address)
-{
-    char i[100];
-    sprintf(i, "%d", *id);
-
-    char addr[100];
-    sprintf(addr, "%d", *address);
-
-	char *labels[] = { _("Origem:"), _("ID:"), _("Endereço:") };
-    char *dests[] = { name, i, addr };
-    ShowSimpleDialog(_("Escreve Registrador do Modbus"), 3, labels, 0x6, 0x1, 0x6, dests);
-
-	*id = atoi(i);
-	*address = atoi(addr);
-}
-
-void ShowReadModbusEthDialog(char *name, int *id, int *address)
-{
-    char i[100];
-    sprintf(i, "%d", *id);
-
-    char addr[100];
-    sprintf(addr, "%d", *address);
-
-	char *labels[] = { _("Destino:"), _("ID:"), _("Endereço:") };
-    char *dests[] = { name, i, addr };
-    ShowSimpleDialog(_("Lê Registrador do Modbus Ethernet"), 3, labels, 0x6, 0x1, 0x6, dests);
-
-	*id = atoi(i);
-	*address = atoi(addr);
-}
-
-void ShowWriteModbusEthDialog(char *name, int *id, int *address)
-{
-    char i[100];
-    sprintf(i, "%d", *id);
-
-    char addr[100];
-    sprintf(addr, "%d", *address);
-
-	char *labels[] = { _("Origem:"), _("ID:"), _("Endereço:") };
-    char *dests[] = { name, i, addr };
-    ShowSimpleDialog(_("Escreve Registrador do Modbus Ethernet"), 3, labels, 0x6, 0x1, 0x6, dests);
-
-	*id = atoi(i);
-	*address = atoi(addr);
-}
-
 void ShowSetPwmDialog(char *name, int *targetFreq)
 {
     char freq[100];
@@ -618,7 +576,7 @@ void ShowSetPwmDialog(char *name, int *targetFreq)
 
     char *labels[] = { _("Duty cycle var:"), _("Frequency (Hz):") };
     char *dests[] = { name, freq };
-    ShowSimpleDialog(_("Set PWM Duty Cycle"), 2, labels, 0x2, 0x1, 0x1, dests);
+    ShowSimpleDialog(_("Set PWM Duty Cycle"), 2, labels, 0x2, 0x1, 0x1, 0x1, dests);
 
     *targetFreq = atoi(freq);
 }
@@ -630,7 +588,7 @@ void ShowUartDialog(int which, char *name)
     char *dests[] = { name };
 
     ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") :
-        _("Send to UART"), 1, labels, 0, 0x1, 0x1, dests);
+        _("Send to UART"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
 
 }
 
@@ -651,9 +609,22 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
         title = _("Divide");
     } else oops();
 
+	char dest_tmp[MAX_NAME_LEN], op1_tmp[MAX_NAME_LEN], op2_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Destination:"), _("is set := :"), l2 };
-    char *dests[] = { dest, op1, op2 };
-    ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, dests);
+    char *dests[] = { dest_tmp, op1_tmp, op2_tmp };
+
+	strcpy(op1_tmp , op1 );
+	strcpy(op2_tmp , op2 );
+	strcpy(dest_tmp, dest);
+	ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, 0x7, dests);
+
+	if(IsNumber(dest_tmp)) {
+        Error(_("Destino não pode ser número!"));
+	} else {
+		strcpy(op1 , op1_tmp );
+		strcpy(op2 , op2_tmp );
+		strcpy(dest, dest_tmp);
+	}
 }
 
 void ShowShiftRegisterDialog(char *name, int *stages)
@@ -663,7 +634,7 @@ void ShowShiftRegisterDialog(char *name, int *stages)
 
     char *labels[] = { _("Name:"), _("Stages:") };
     char *dests[] = { name, stagesStr };
-    ShowSimpleDialog(_("Shift Register"), 2, labels, 0x2, 0x1, 0x1, dests);
+    ShowSimpleDialog(_("Shift Register"), 2, labels, 0x2, 0x1, 0x1, 0x1, dests);
 
     *stages = atoi(stagesStr);
 
@@ -680,7 +651,7 @@ void ShowFormattedStringDialog(char *var, char *string)
     NoCheckingOnBox[0] = TRUE;
     NoCheckingOnBox[1] = TRUE;
     ShowSimpleDialog(_("Formatted String Over UART"), 2, labels, 0x0,
-        0x1, 0x3, dests);
+        0x1, 0x3, 0x1, dests);
     NoCheckingOnBox[0] = FALSE;
     NoCheckingOnBox[1] = FALSE;
 }
@@ -691,7 +662,7 @@ void ShowServoYaskawaDialog(char * id, char *var, char *string)
     char *dests[] = { id, var, string };
     NoCheckingOnBox[1] = TRUE;
     ShowSimpleDialog(_("Servo Yaskawa"), 3, labels, 0x1,
-        0x2, 0x7, dests);
+        0x2, 0x7, 0x2, dests);
 
 	/*while (*string)
 		*(string++) = toupper(*string);*/
@@ -699,10 +670,26 @@ void ShowServoYaskawaDialog(char * id, char *var, char *string)
 	NoCheckingOnBox[1] = FALSE;
 }
 
+void ShowSimulationVarSetDialog(char *name, char *val)
+{
+    char *labels[] = { _("Valor:") };
+    char *dests[] = { val };
+
+	ShowSimpleDialog(_("Novo Valor"), 1, labels, 0x1, 0x0, 0x1, 0, dests);
+}
+
 void ShowPersistDialog(char *var)
 {
+	char var_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Variable:") };
-    char *dests[] = { var };
-    ShowSimpleDialog(_("Make Persistent"), 1, labels, 0, 1, 1, dests);
+    char *dests[] = { var_tmp };
 
+	strcpy(var_tmp, var);
+    ShowSimpleDialog(_("Make Persistent"), 1, labels, 0, 1, 1, 1, dests);
+
+	if(IsNumber(var_tmp)) {
+        Error(_("Variável não pode ser número!"));
+	} else {
+		strcpy(var, var_tmp);
+	}
 }

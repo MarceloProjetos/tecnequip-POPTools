@@ -28,7 +28,7 @@
 
 static ElemSubcktSeries *LoadSeriesFromFile(FILE *f, int version);
 
-static const int current_version = 2;
+static const int current_version = 3;
 
 //-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
@@ -467,7 +467,10 @@ BOOL LoadProjectFromFile(char *filename)
     }
     Prog.numRungs = rung;
 
-    fclose(f);
+	UpdateTypesFromSeenPreviouslyList();
+	UpdateTypeForInternalRelays();
+
+	fclose(f);
     return TRUE;
 
 failed:

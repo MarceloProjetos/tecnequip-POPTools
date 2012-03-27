@@ -228,6 +228,7 @@ static void SetSimulationBit(char *name, int bit)
     for(i = 0; i < VariablesCount; i++) {
         if(_stricmp(Variables[i].name, name)==0) {
             (Variables[i].val) |= 1 << bit;
+			NeedRedraw = TRUE;
             return;
         }
     }
@@ -240,6 +241,7 @@ static void ClearSimulationBit(char *name, int bit)
     for(i = 0; i < VariablesCount; i++) {
         if(_stricmp(Variables[i].name, name)==0) {
             (Variables[i].val) &= ~(1 << bit);
+			NeedRedraw = TRUE;
             return;
         }
     }
@@ -263,12 +265,13 @@ static bool CheckSimulationBit(char *name, int bit)
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
-static void SetSimulationVariable(char *name, SWORD val)
+void SetSimulationVariable(char *name, SWORD val)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
         if(_stricmp(Variables[i].name, name)==0) {
             Variables[i].val = val;
+			NeedRedraw = TRUE;
             return;
         }
     }
@@ -1084,8 +1087,6 @@ void SimulateOneCycle(BOOL forceRefresh)
     if(Simulating) return;
     Simulating = TRUE;
 
-    NeedRedraw = FALSE;
-
     if(SimulateUartTxCountdown > 0) {
         SimulateUartTxCountdown--;
     } else {
@@ -1120,6 +1121,7 @@ void SimulateOneCycle(BOOL forceRefresh)
     SimulateIntCode();
 
     if(NeedRedraw || SimulateRedrawAfterNextCycle || forceRefresh) {
+		NeedRedraw = FALSE;
         InvalidateRect(MainWindow, NULL, FALSE);
         ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
     }

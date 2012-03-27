@@ -357,6 +357,7 @@ typedef struct ElemCommentTag {
 typedef struct ElemContactsTag {
     char    name[MAX_NAME_LEN];
     BOOL    negated;
+	unsigned int type;
 	unsigned char bit;
 } ElemContacts;
 
@@ -365,6 +366,7 @@ typedef struct ElemCoilTag {
     BOOL    negated;
     BOOL    setOnly;
     BOOL    resetOnly;
+	unsigned int  type;
 	unsigned char bit;
 } ElemCoil;
 
@@ -614,33 +616,34 @@ typedef struct McuIoInfoTag McuIoInfo;
 
 typedef struct PlcProgramSingleIoTag {
     char        name[MAX_NAME_LEN];
-#define IO_TYPE_PENDING         0
+#define IO_TYPE_PENDING         0x00000000
+#define IO_TYPE_ALL             0xFFFFFFFF
 
-#define IO_TYPE_DIG_INPUT       1
-#define IO_TYPE_DIG_OUTPUT      2
-#define IO_TYPE_READ_ADC        3
-#define IO_TYPE_UART_TX         4
-#define IO_TYPE_UART_RX         5
-#define IO_TYPE_PWM_OUTPUT      6
-#define IO_TYPE_INTERNAL_RELAY  7
-#define IO_TYPE_TON             8
-#define IO_TYPE_TOF             9
-#define IO_TYPE_RTO             10
-#define IO_TYPE_COUNTER         11
-#define IO_TYPE_GENERAL         12
-#define IO_TYPE_READ_ENC        13
-#define IO_TYPE_RESET_ENC       14
-#define IO_TYPE_READ_USS        15
-#define IO_TYPE_WRITE_USS       16
-#define IO_TYPE_SET_DA			17
-#define IO_TYPE_READ_MODBUS     18
-#define IO_TYPE_WRITE_MODBUS    19
-#define IO_TYPE_READ_MODBUS_ETH 20
-#define IO_TYPE_WRITE_MODBUS_ETH 21
-#define IO_TYPE_READ_YASKAWA	23
-#define IO_TYPE_WRITE_YASKAWA	24
+#define IO_TYPE_DIG_INPUT        0x00000001
+#define IO_TYPE_DIG_OUTPUT       0x00000002
+#define IO_TYPE_READ_ADC         0x00000004
+#define IO_TYPE_UART_TX          0x00000008
+#define IO_TYPE_UART_RX          0x00000010
+#define IO_TYPE_PWM_OUTPUT       0x00000020
+#define IO_TYPE_INTERNAL_RELAY   0x00000040
+#define IO_TYPE_TON              0x00000080
+#define IO_TYPE_TOF              0x00000100
+#define IO_TYPE_RTO              0x00000200
+#define IO_TYPE_COUNTER          0x00000400
+#define IO_TYPE_GENERAL          0x00000800
+#define IO_TYPE_READ_ENC         0x00001000
+#define IO_TYPE_RESET_ENC        0x00002000
+#define IO_TYPE_READ_USS         0x00004000
+#define IO_TYPE_WRITE_USS        0x00008000
+#define IO_TYPE_SET_DA			 0x00010000
+#define IO_TYPE_READ_MODBUS      0x00020000
+#define IO_TYPE_WRITE_MODBUS     0x00040000
+#define IO_TYPE_READ_MODBUS_ETH  0x00080000
+#define IO_TYPE_WRITE_MODBUS_ETH 0x00100000
+#define IO_TYPE_READ_YASKAWA	 0x00200000
+#define IO_TYPE_WRITE_YASKAWA	 0x00400000
 
-    int         type;
+    unsigned int  type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
 	unsigned char bit;
@@ -997,6 +1000,7 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2);
 void ShowShiftRegisterDialog(char *name, int *stages);
 void ShowFormattedStringDialog(char *var, char *string);
 void ShowServoYaskawaDialog(char *id, char *var, char *string);
+void ShowSimulationVarSetDialog(char *name, char *val);
 void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
@@ -1004,6 +1008,13 @@ void ShowResetDialog(char *name);
 void ShowConfDialog(void);
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
+
+// iomap.cpp
+void ExtractNamesFromCircuit(int which, void *any);
+void UpdateTypeInCircuit(char *name, unsigned int type);
+void UpdateTypesFromSeenPreviouslyList();
+void UpdateTypeForInternalRelays();
+BOOL ExistsCoilWithName(char *name);
 
 // miscutil.cpp
 #define oops() { \
@@ -1029,6 +1040,10 @@ void NiceFont(HWND h);
 void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str);
 void ProgramSuccessfulMessage(char *str);
+BOOL IsNumber(char *str);
+void LoadIOListToComboBox(HWND ComboBox, unsigned int mask);
+unsigned int GetTypeFromName(char *name);
+BOOL IsValidNameAndType(char *old_name, char *name, unsigned int new_type);
 extern BOOL RunningInBatchMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
@@ -1051,6 +1066,8 @@ void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
 void SetEncShadow(char *name, SWORD val);
 SWORD GetEncShadow(char *name);
+void SetSimulationVariable(char *name, SWORD val);
+SWORD GetSimulationVariable(char *name);
 void DestroyUartSimulationWindow(void);
 void ShowUartSimulationWindow(void);
 extern BOOL InSimulationMode; 

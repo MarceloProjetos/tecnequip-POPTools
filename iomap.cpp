@@ -142,7 +142,7 @@ static void AppendIoSeenPreviously(char *name, int type, int pin, int bit)
 // Walk a subcircuit, calling ourselves recursively and extracting all the
 // I/O names out of it.
 //-----------------------------------------------------------------------------
-static void ExtractNamesFromCircuit(int which, void *any)
+void ExtractNamesFromCircuit(int which, void *any)
 {
     ElemLeaf *l = (ElemLeaf *)any;
 
@@ -166,17 +166,17 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
         }
         case ELEM_CONTACTS:
-            switch(l->d.contacts.name[0]) {
-                case 'R':
+            switch(l->d.contacts.type) {
+                case IO_TYPE_INTERNAL_RELAY:
                     AppendIo(l->d.contacts.name, IO_TYPE_INTERNAL_RELAY, l->d.contacts.bit);
                     break;
 
-                case 'Y':
-                    AppendIo(l->d.contacts.name, IO_TYPE_DIG_OUTPUT, l->d.contacts.bit);
+                case IO_TYPE_DIG_INPUT:
+                    AppendIo(l->d.contacts.name, IO_TYPE_DIG_INPUT, l->d.contacts.bit);
                     break;
 
-                case 'X':
-                    AppendIo(l->d.contacts.name, IO_TYPE_DIG_INPUT, l->d.contacts.bit);
+                case IO_TYPE_DIG_OUTPUT:
+                    AppendIo(l->d.contacts.name, IO_TYPE_DIG_OUTPUT, l->d.contacts.bit);
                     break;
 
                 default:
@@ -186,7 +186,11 @@ static void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_COIL:
-            AppendIo(l->d.coil.name, l->d.coil.name[0] == 'R' ? IO_TYPE_INTERNAL_RELAY : IO_TYPE_DIG_OUTPUT, l->d.coil.bit);
+			if(l->d.coil.type == IO_TYPE_INTERNAL_RELAY || l->d.coil.type == IO_TYPE_DIG_OUTPUT) {
+	            AppendIo(l->d.coil.name, l->d.coil.type, l->d.coil.bit);
+			} else {
+                oops();
+			}
             break;
 
         case ELEM_TON:
@@ -201,6 +205,8 @@ static void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_MOVE:
             AppendIo(l->d.move.dest, IO_TYPE_GENERAL, 0);
+			if(!IsNumber(l->d.move.src))
+				AppendIo(l->d.move.src, IO_TYPE_GENERAL, 0);
             break;
 
         case ELEM_SET_BIT:
@@ -216,6 +222,10 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_MUL:
         case ELEM_DIV:
             AppendIo(l->d.math.dest, IO_TYPE_GENERAL, 0);
+			if(!IsNumber(l->d.math.op1))
+	            AppendIo(l->d.math.op1, IO_TYPE_GENERAL, 0);
+			if(!IsNumber(l->d.math.op2))
+	            AppendIo(l->d.math.op2, IO_TYPE_GENERAL, 0);
             break;
 
 		case ELEM_READ_FORMATTED_STRING:
@@ -307,12 +317,28 @@ static void ExtractNamesFromCircuit(int which, void *any)
         }
 
         case ELEM_LOOK_UP_TABLE:
-            AppendIo(l->d.lookUpTable.dest, IO_TYPE_GENERAL, 0);
+            AppendIo(l->d.lookUpTable.dest , IO_TYPE_GENERAL, 0);
+			AppendIo(l->d.lookUpTable.index, IO_TYPE_GENERAL, 0);
             break;
 
         case ELEM_PIECEWISE_LINEAR:
             AppendIo(l->d.piecewiseLinear.dest, IO_TYPE_GENERAL, 0);
             break;
+
+        case ELEM_EQU:
+        case ELEM_NEQ:
+        case ELEM_GRT:
+        case ELEM_GEQ:
+        case ELEM_LES:
+        case ELEM_LEQ:
+			if(!IsNumber(l->d.cmp.op1))
+	            AppendIo(l->d.cmp.op1, IO_TYPE_GENERAL, 0);
+			if(!IsNumber(l->d.cmp.op2))
+	            AppendIo(l->d.cmp.op2, IO_TYPE_GENERAL, 0);
+            break;
+
+        case ELEM_PERSIST:
+			AppendIo(l->d.persist.var, IO_TYPE_GENERAL, 0);
 
 		case ELEM_RTC:
         case ELEM_PLACEHOLDER:
@@ -322,20 +348,161 @@ static void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_MASTER_RELAY:
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
-        case ELEM_EQU:
-        case ELEM_NEQ:
-        case ELEM_GRT:
-        case ELEM_GEQ:
-        case ELEM_LES:
-        case ELEM_LEQ:
         case ELEM_RES:
-        case ELEM_PERSIST:
 		case ELEM_MULTISET_DA:
             break;
 
         default:
             oops();
     }
+}
+
+void UpdateTypeInRung(char *name, unsigned int type, int which, void *any)
+{
+    ElemLeaf *l = (ElemLeaf *)any;
+
+    switch(which) {
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            int i;
+            for(i = 0; i < p->count; i++) {
+                UpdateTypeInRung(name, type, p->contents[i].which, p->contents[i].d.any);
+            }
+            break;
+        }
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int i;
+            for(i = 0; i < s->count; i++) {
+                UpdateTypeInRung(name, type, s->contents[i].which, s->contents[i].d.any);
+            }
+            break;
+        }
+
+		case ELEM_CONTACTS:
+			if(!_stricmp(name, l->d.contacts.name))
+				l->d.contacts.type = type;
+            break;
+
+        case ELEM_COIL:
+			if(!_stricmp(name, l->d.coil.name))
+				l->d.coil.type = type;
+            break;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Walk a subcircuit, calling ourselves recursively and extracting all the
+// I/O names out of it.
+//-----------------------------------------------------------------------------
+void UpdateTypeInCircuit(char *name, unsigned int type)
+{
+	int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+		UpdateTypeInRung(name, type, ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+    }
+}
+
+void UpdateTypeForInternalRelaysInRung(int which, void *any)
+{
+    ElemLeaf *l = (ElemLeaf *)any;
+
+    switch(which) {
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            int i;
+            for(i = 0; i < p->count; i++) {
+                UpdateTypeForInternalRelaysInRung(p->contents[i].which, p->contents[i].d.any);
+            }
+            break;
+        }
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int i;
+            for(i = 0; i < s->count; i++) {
+                UpdateTypeForInternalRelaysInRung(s->contents[i].which, s->contents[i].d.any);
+            }
+            break;
+        }
+
+		case ELEM_CONTACTS:
+			if(l->d.contacts.type == IO_TYPE_PENDING)
+				l->d.contacts.type = IO_TYPE_INTERNAL_RELAY;
+            break;
+
+        case ELEM_COIL:
+			if(l->d.coil.type == IO_TYPE_PENDING)
+				l->d.coil.type = IO_TYPE_INTERNAL_RELAY;
+            break;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Walk a subcircuit, calling ourselves recursively and extracting all the
+// I/O names out of it.
+//-----------------------------------------------------------------------------
+void UpdateTypeForInternalRelays()
+{
+	int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+		UpdateTypeForInternalRelaysInRung(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+    }
+}
+
+void UpdateTypesFromSeenPreviouslyList()
+{
+	int i;
+
+	// Search for Coils and Contacts in the loaded I/O List to update their types in Program Rungs.
+	for(i=0; i<IoSeenPreviouslyCount; i++) {
+		if(IoSeenPreviously[i].type == IO_TYPE_INTERNAL_RELAY ||
+		   IoSeenPreviously[i].type == IO_TYPE_DIG_INPUT ||
+		   IoSeenPreviously[i].type == IO_TYPE_DIG_OUTPUT)
+				UpdateTypeInCircuit(IoSeenPreviously[i].name, IoSeenPreviously[i].type);
+	}
+}
+
+BOOL ExistsCoilWithNameInRung(char *name, int which, void *any)
+{
+    ElemLeaf *l = (ElemLeaf *)any;
+
+    switch(which) {
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            int i;
+            for(i = 0; i < p->count; i++) {
+                if(ExistsCoilWithNameInRung(name, p->contents[i].which, p->contents[i].d.any))
+					return TRUE;
+            }
+            break;
+        }
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int i;
+            for(i = 0; i < s->count; i++) {
+                if(ExistsCoilWithNameInRung(name, s->contents[i].which, s->contents[i].d.any))
+					return TRUE;
+            }
+            break;
+        }
+
+        case ELEM_COIL:
+			if(!_stricmp(name, l->d.coil.name))
+				return TRUE;
+            break;
+	}
+
+	return FALSE;
+}
+
+BOOL ExistsCoilWithName(char *name)
+{
+	int i;
+    for(i = 0; i < Prog.numRungs; i++) {
+		if(ExistsCoilWithNameInRung(name, ELEM_SERIES_SUBCKT, Prog.rungs[i]))
+			return TRUE;
+    }
+	return FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -519,6 +686,31 @@ static int CompareIoType(const void *av, const void *bv)
 
 	return bSortAscending ? a->type - b->type : b->type - a->type;
 }
+
+void SortList(int NewSortColumn)
+{
+	// get new sort parameters. If NewSortColumn < 0, use previous settings
+	if (NewSortColumn == nSortColumn) {
+		bSortAscending = !bSortAscending;
+	} else if(NewSortColumn >= 0) {
+		nSortColumn = NewSortColumn;
+		bSortAscending = TRUE;
+	}
+
+	// sort list
+	//ListView_SortItems(pLVInfo->hdr.hwndFrom, CompareListItems, lParamSort);
+	if (nSortColumn == 0)
+		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoName);
+	else if (nSortColumn == 1)
+		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoType);
+	else if (nSortColumn == 3)
+		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPin);
+	else if (nSortColumn == 4)
+		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPort);
+
+	RefreshControlsToSettings();
+}
+
 //-----------------------------------------------------------------------------
 // Wipe the I/O list and then re-extract it from the PLC program, taking
 // care not to forget the pin assignments. Gets passed the selected item
@@ -573,8 +765,7 @@ int GenerateIoMapList(int prevSel)
         }
     }
 
-	qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo),
-        CompareIoName);
+	SortList(-1);
 
     if(prevSel >= 0) {
         for(i = 0; i < Prog.io.count; i++) {
@@ -586,6 +777,91 @@ int GenerateIoMapList(int prevSel)
     }
     // no previous, or selected was deleted
     return -1;
+}
+
+//-----------------------------------------------------------------------------
+// Load the I/O list from a file. Since we are just loading pin assignments,
+// put it into IoSeenPreviously so that it will get used on the next
+// extraction.
+//-----------------------------------------------------------------------------
+BOOL LoadIoListFromFile(FILE *f, int version)
+{
+    char line[80];
+    char name[MAX_NAME_LEN];
+    int pin, bit = 0;
+	int i;
+    unsigned int type;
+
+	for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
+	{
+		memset(IoSeenPreviously[i].name, 0, sizeof(IoSeenPreviously[i].name));
+		IoSeenPreviously[i].type = 0;
+		IoSeenPreviously[i].pin = 0;
+		IoSeenPreviously[i].bit = 0;
+	}
+	IoSeenPreviouslyCount = 0;
+
+    while(fgets(line, sizeof(line), f)) {
+        if(_stricmp(line, "END\n")==0) {
+            return TRUE;
+        }
+        // Don't internationalize this! It's the file format, not UI.
+
+		if (version < 2)
+		{
+			if (sscanf(line, "    %s at %d", name, &pin) != 2) 
+			{
+				return FALSE;
+			}
+		}
+		else if (version < 3)
+		{
+			if(sscanf(line, "    %s at %d %d", name, &pin, &bit)!=3) 
+			{
+				return FALSE;
+			}
+
+			switch(name[0]) {
+				case 'X': type = IO_TYPE_DIG_INPUT; break;
+		        case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
+	            case 'A': type = IO_TYPE_READ_ADC; break;
+				case 'E': type = IO_TYPE_READ_ENC; break;
+			    case 'Z': type = IO_TYPE_RESET_ENC; break;
+		        default: oops();
+	        }
+		}
+		else
+		{
+			if(sscanf(line, "    %s at %d %d type %u", name, &pin, &bit, &type)!=4) 
+			{
+				return FALSE;
+			}
+		}
+
+        AppendIoSeenPreviously(name, type, pin, bit);
+    }
+    return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+// Write the I/O list to a file. Since everything except the pin assignment
+// can be extracted from the schematic, just write the Xs and Ys.
+//-----------------------------------------------------------------------------
+void SaveIoListToFile(FILE *f)
+{
+    int i;
+    for(i = 0; i < Prog.io.count; i++) {
+        if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT  ||
+           Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
+           Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
+           Prog.io.assignment[i].type == IO_TYPE_READ_ENC ||
+           Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
+        {
+            // Don't internationalize this! It's the file format, not UI.
+            fprintf(f, "    %s at %d %d type %u\n", Prog.io.assignment[i].name,
+                Prog.io.assignment[i].pin, Prog.io.assignment[i].bit, Prog.io.assignment[i].type);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -721,23 +997,23 @@ void ShowIoMapDialog(int item)
         return;
     }
 
-    if(Prog.io.assignment[item].name[0] != 'X' && 
-       Prog.io.assignment[item].name[0] != 'Y' &&
-       Prog.io.assignment[item].name[0] != 'A' &&
-       Prog.io.assignment[item].name[0] != 'E' &&
-       Prog.io.assignment[item].name[0] != 'Z')
+    if(Prog.io.assignment[item].type != IO_TYPE_DIG_INPUT && 
+       Prog.io.assignment[item].type != IO_TYPE_DIG_OUTPUT &&
+       Prog.io.assignment[item].type != IO_TYPE_READ_ADC &&
+       Prog.io.assignment[item].type != IO_TYPE_READ_ENC &&
+       Prog.io.assignment[item].type != IO_TYPE_RESET_ENC)
     {
         Error(_("Can only assign pin number to input/output pins (Xname or "
             "Yname or Aname)."));
         return;
     }
 
-    if(Prog.io.assignment[item].name[0] == 'A' && Prog.mcu->adcCount == 0) {
+    if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC && Prog.mcu->adcCount == 0) {
         Error(_("No ADC or ADC not supported for this micro."));
         return;
     }
 
-    if(Prog.io.assignment[item].name[0] == 'E' && Prog.mcu->encCount == 0) {
+	if(Prog.io.assignment[item].type == IO_TYPE_READ_ENC && Prog.mcu->encCount == 0) {
         Error(_("ENCODER not supported for this micro."));
         return;
     }
@@ -779,7 +1055,7 @@ void ShowIoMapDialog(int item)
 		{
             if(j == item) continue;
             if(Prog.io.assignment[j].pin == Prog.mcu->pinInfo[i].pin && Prog.io.assignment[j].type == Prog.io.assignment[item].type && 
-				!((Prog.io.assignment[j].name[0] == 'X' && i > 18) || (Prog.io.assignment[j].name[0] == 'Y' && i > 68)) )
+				!((Prog.io.assignment[j].type == IO_TYPE_DIG_INPUT && i > 18) || (Prog.io.assignment[j].type == IO_TYPE_DIG_OUTPUT && i > 68)) )
 			{
                 goto cant_use_this_io;
             }
@@ -798,7 +1074,7 @@ void ShowIoMapDialog(int item)
             goto cant_use_this_io;
         }
 
-        if(Prog.io.assignment[item].name[0] == 'A') {
+        if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
             for(j = 0; j < Prog.mcu->adcCount; j++) 
 			{
                 //if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) 
@@ -818,7 +1094,7 @@ void ShowIoMapDialog(int item)
             }
         }
 
-        if(Prog.io.assignment[item].name[0] == 'E' || Prog.io.assignment[item].name[0] == 'Z') {
+		if(Prog.io.assignment[item].type == IO_TYPE_READ_ENC || Prog.io.assignment[item].type == IO_TYPE_RESET_ENC) {
             for(j = 0; j < Prog.mcu->encCount; j++) 
 			{
                 //if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) 
@@ -834,8 +1110,8 @@ void ShowIoMapDialog(int item)
             }
         }
 
-		if ((Prog.io.assignment[item].name[0] == 'X' && i < 51) ||
-			(Prog.io.assignment[item].name[0] == 'Y' && i > 50))
+		if ((Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT && i < 51) ||
+			(Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && i > 50))
 		{
 			if (i == 67)
 				sprintf(buf, "%3d LED ERRO", Prog.mcu->pinInfo[i].bit,
@@ -984,41 +1260,13 @@ int CALLBACK CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 
 void IoMapListProc(NMHDR *h)
 {
+	char val[20];
 	int c = LVN_COLUMNCLICK;
     switch(h->code) {
 		case LVN_COLUMNCLICK:
 			{
-				LPARAM lParamSort;
-
 				LPNMLISTVIEW pLVInfo = (LPNMLISTVIEW)h;
-
-				// get new sort parameters
-				if (pLVInfo->iSubItem == nSortColumn)
-					bSortAscending = !bSortAscending;
-				else
-				{
-					nSortColumn = pLVInfo->iSubItem;
-					bSortAscending = TRUE;
-				}
-
-				// combine sort info into a single value we can send to our sort function
-				lParamSort = 1 + nSortColumn;
-				if (!bSortAscending)
-					lParamSort = -lParamSort;
-
-				// sort list
-				//ListView_SortItems(pLVInfo->hdr.hwndFrom, CompareListItems, lParamSort);
-				if (nSortColumn == 0)
-					qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoName);
-				else if (nSortColumn == 1)
-					qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoType);
-				else if (nSortColumn == 3)
-					qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPin);
-				else if (nSortColumn == 4)
-					qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPort);
-
-				RefreshControlsToSettings();
-
+				SortList(pLVInfo->iSubItem);
 			}
 			break;
         case LVN_GETDISPINFO: {
@@ -1137,12 +1385,17 @@ void IoMapListProc(NMHDR *h)
 			NMITEMACTIVATE *i = (NMITEMACTIVATE *)h;
             if(InSimulationMode) {
                 char *name = Prog.io.assignment[i->iItem].name;
-                if(name[0] == 'X') {
+                if(Prog.io.assignment[i->iItem].type == IO_TYPE_DIG_INPUT) {
                     SimulationToggleContact(name);
-                } else if(name[0] == 'A') {
+                } else if(Prog.io.assignment[i->iItem].type == IO_TYPE_READ_ADC) {
                     ShowAnalogSliderPopup(name);
-                } else if(name[0] == 'E') {
+                } else if(Prog.io.assignment[i->iItem].type == IO_TYPE_READ_ENC) {
                     ShowEncoderSliderPopup(name);
+				} else if(Prog.io.assignment[i->iItem].type == IO_TYPE_COUNTER ||
+						Prog.io.assignment[i->iItem].type == IO_TYPE_GENERAL) {
+					sprintf(val, "%d", GetSimulationVariable(name));
+                    ShowSimulationVarSetDialog(name, val);
+					SetSimulationVariable(name, atoi(val));
                 }
             } else {
                 UndoRemember();

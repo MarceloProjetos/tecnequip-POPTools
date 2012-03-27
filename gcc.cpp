@@ -154,40 +154,15 @@ static void DeclareInt(FILE *f, char *str)
 static void DeclareBit(FILE *f, char *rawStr)
 {
     char *str = MapSym(rawStr);
-	if (strncmp(str, "M", 1) == 0)
-	{
+	if (!strncmp(str, "M", 1) || !_stricmp(str, "I_SerialReady")) {
 		return;
-	} else if(*rawStr == 'X') {
-        //fprintf(f, "\n");
-        //fprintf(f, "/* You provide this function. */\n");
-        //fprintf(f, "PROTO(extern BOOL Read_%s(void);)\n", str);
-        //fprintf(f, "\n");
-    } else if(*rawStr == 'Y') {
-        //fprintf(f, "\n");
-        //fprintf(f, "/* You provide these functions. */\n");
-        //fprintf(f, "PROTO(BOOL Read_%s(void);)\n", str);
-        //fprintf(f, "PROTO(void Write_%s(BOOL v);)\n", str);
-        //fprintf(f, "\n");
-    } else if(*rawStr == 'P' || *rawStr == 'M') {
-		//fprintf(f, "\n");
-		//fprintf(f, "volatile unsigned int %s = 0;\n", str);
-		//fprintf(f, "#define Read_%s(x) %s = ReadParameter(atoi(%s[1]))\n", str, str);
-		//fprintf(f, "#define Write_%s(x) WriteParameter(atoi(%s[1]), %s)\n", str, str);
-		return;
-    } else if(*rawStr == 'W' || *rawStr == 'G') {
-		return;
-    } else if (_stricmp(str, "I_SerialReady") == 0) 
-		return;
+	}
 
-	//fprintf(f, "\n");
 #ifdef INT_UNSIGNED
 	fprintf(f, "volatile unsigned int %s = 0;\n", str);
 #else
 	fprintf(f, "volatile unsigned char %s = 0;\n", str);
 #endif
-
-	//fprintf(f, "#define Read_%s() %s\n", str, str);
-	//fprintf(f, "#define Write_%s(x) %s = x\n", str, str);
 }
 
 //-----------------------------------------------------------------------------
@@ -204,9 +179,12 @@ static void GenerateDeclarations(FILE *f)
         switch(IntCode[i].op) {
             case INT_SET_BIT:
             case INT_CLEAR_BIT:
+                bitVar1 = IntCode[i].name1;
+                break;
+
 			case INT_SET_SINGLE_BIT:
 			case INT_CLEAR_SINGLE_BIT:
-                bitVar1 = IntCode[i].name1;
+                intVar1 = IntCode[i].name1;
                 break;
 
             case INT_COPY_BIT_TO_BIT:
@@ -263,9 +241,12 @@ static void GenerateDeclarations(FILE *f)
 
             case INT_IF_BIT_SET:
             case INT_IF_BIT_CLEAR:
+                bitVar1 = IntCode[i].name1;
+                break;
+
 			case INT_IF_BIT_CHECK_SET:
 			case INT_IF_BIT_CHECK_CLEAR:
-                bitVar1 = IntCode[i].name1;
+                intVar1 = IntCode[i].name1;
                 break;
 
             case INT_IF_VARIABLE_LES_LITERAL:

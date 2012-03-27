@@ -129,20 +129,26 @@ static void MakeFixedControls(BOOL forPwl)
         0, 10, 78, 21, LutDialog, NULL, Instance, NULL);
     NiceFont(Labels[0]);
 
-    DestTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        85, 10, 120, 21, LutDialog, NULL, Instance, NULL);
+    DestTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
+        85, 10, 120, 321, LutDialog, NULL, Instance, NULL);
     FixedFont(DestTextbox);
+
+	LoadIOListToComboBox(DestTextbox, IO_TYPE_ALL);
+	SendMessage(DestTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     Labels[1] = CreateWindowEx(0, WC_STATIC, _("Index:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         10, 40, 68, 21, LutDialog, NULL, Instance, NULL);
     NiceFont(Labels[1]);
 
-    IndexTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        85, 40, 120, 21, LutDialog, NULL, Instance, NULL);
+    IndexTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
+        85, 40, 120, 321, LutDialog, NULL, Instance, NULL);
     FixedFont(IndexTextbox);
+
+	LoadIOListToComboBox(IndexTextbox, IO_TYPE_ALL);
+	SendMessage(IndexTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     Labels[2] = CreateWindowEx(0,WC_STATIC, forPwl ? _("Points:") : _("Count:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,

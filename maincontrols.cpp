@@ -59,6 +59,9 @@ static BOOL         IoListOutOfSync;
 int                 IoListHeight;
 int                 IoListTop;
 
+// Program Changed and Not Saved ?
+extern BOOL ProgramChangedNotSaved;
+
 // whether the simulation is running in real time
 static BOOL         RealTimeSimulationRunning;
 
@@ -198,12 +201,13 @@ void UpdateMainWindowTitleBar(void)
         strcpy(line, _("LDmicro - Program Editor"));
     }
     if(strlen(CurrentSaveFile) > 0) {
-        sprintf(line+strlen(line), " - %d.%d.%d.%d - %s", 
+        sprintf(line+strlen(line), " - %d.%d.%d.%d - %s%s", 
 			wMajor,
 			wMinor,
 			wBuild,
 			wRevision,
-			CurrentSaveFile);
+			CurrentSaveFile,
+			ProgramChangedNotSaved ? " *" : "");
     } else {
         sprintf(line+strlen(line), " - %d.%d.%d.%d%s", 
 			wMajor,

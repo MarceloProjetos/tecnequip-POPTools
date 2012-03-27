@@ -74,10 +74,13 @@ static void MakeControls(void)
         135, 16, 50, 21, ResetDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 16, 115, 21, ResetDialog, NULL, Instance, NULL);
+    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
+        190, 16, 115, 321, ResetDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
+
+	LoadIOListToComboBox(NameTextbox, IO_TYPE_TOF | IO_TYPE_TON | IO_TYPE_COUNTER);
+	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,

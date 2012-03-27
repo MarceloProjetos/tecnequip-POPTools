@@ -503,7 +503,7 @@ void EditSelectedElement(void)
             break;
 
 		case ELEM_READ_ADC:
-            ShowReadAdcDialog(Selected->d.readAdc.name+1);
+            ShowReadAdcDialog(Selected->d.readAdc.name);
             break;
 
         case ELEM_SET_DA:
@@ -511,11 +511,11 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_READ_ENC:
-            ShowReadEncDialog(Selected->d.readEnc.name+1);
+            ShowReadEncDialog(Selected->d.readEnc.name);
             break;
 
         case ELEM_RESET_ENC:
-            ShowResetEncDialog(Selected->d.resetEnc.name+1);
+            ShowResetEncDialog(Selected->d.resetEnc.name);
             break;
 
         case ELEM_MULTISET_DA: {
@@ -609,7 +609,7 @@ void EditElementMouseDoubleclick(int x, int y)
         ElemLeaf *l = DisplayMatrix[gx][gy];
         if(l && DisplayMatrixWhich[gx][gy] == ELEM_CONTACTS) {
             char *name = l->d.contacts.name;
-            if(name[0] == 'X') {
+            if(GetTypeFromName(name) == IO_TYPE_DIG_INPUT) {
                 SimulationToggleContact(name);
             } 
         } else if(l && DisplayMatrixWhich[gx][gy] == ELEM_READ_ADC) {

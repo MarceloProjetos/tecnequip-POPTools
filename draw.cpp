@@ -629,7 +629,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
         }
         case ELEM_COIL: {
-            char buf[4];
+            char buf[4], name_with_type[MAX_NAME_LEN+4];
             ElemCoil *c = &leaf->d.coil;
 
             buf[0] = '(';
@@ -645,7 +645,9 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             buf[2] = ')';
             buf[3] = '\0';
 
-            CenterWithSpaces(*cx, *cy, c->name, poweredAfter, TRUE);
+			sprintf(name_with_type, "%s (%c)", c->name, c->type == IO_TYPE_DIG_OUTPUT ? 'S' : 'R');
+
+			CenterWithSpaces(*cx, *cy, name_with_type, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
             break;
         }
@@ -759,7 +761,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
         }
         case ELEM_CONTACTS: {
-            char buf[4];
+            char buf[4], name_with_type[MAX_NAME_LEN+4];
             ElemContacts *c = &leaf->d.contacts;
 
             buf[0] = ']';
@@ -767,7 +769,9 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             buf[2] = '[';
             buf[3] = '\0';
 
-            CenterWithSpaces(*cx, *cy, c->name, poweredAfter, TRUE);
+			sprintf(name_with_type, "%s (%c)", c->name, c->type == IO_TYPE_DIG_INPUT ? 'E' : (c->type == IO_TYPE_DIG_OUTPUT ? 'S' : 'R'));
+
+            CenterWithSpaces(*cx, *cy, name_with_type, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;

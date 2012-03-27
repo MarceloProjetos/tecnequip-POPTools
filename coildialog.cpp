@@ -40,6 +40,7 @@ static HWND NameTextbox;
 static HWND BitTextbox;
 
 static LONG_PTR PrevNameProc;
+static LONG_PTR PrevCoilDialogProc;
 
 const LPCTSTR ComboboxBitItens[] = { _("0"), _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
 									_("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
@@ -117,10 +118,13 @@ static void MakeControls(void)
         135, 80, 50, 21, CoilDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 80, 100, 21, CoilDialog, NULL, Instance, NULL);
+    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
+        190, 80, 100, 321, CoilDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
+
+	LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT | IO_TYPE_INTERNAL_RELAY);
+	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -146,13 +150,44 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
+//-----------------------------------------------------------------------------
+// Window proc for the dialog boxes. This Ok/Cancel stuff is common to a lot
+// of places, and there are no other callbacks from the children.
+//-----------------------------------------------------------------------------
+static LRESULT CALLBACK CoilDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char name[MAX_NAME_LEN];
+	switch(msg) {
+		case WM_COMMAND:
+            HWND h = (HWND)lParam;
+            if(wParam == BN_CLICKED) {
+				SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)name);
+				if(h == SourceInternalRelayRadio) {
+					LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_RELAY);
+				} else if(h == SourceMcuPinRadio) {
+					LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
+				}
+				SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)name);
+            }
+            break;
+	}
+
+	return CallWindowProc((WNDPROC)PrevCoilDialogProc, hwnd, msg, wParam, lParam);
+}
+
 void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, unsigned char * bit)
 {
-    CoilDialog = CreateWindowClient(0, "LDmicroDialog",
+	unsigned int type;
+	char name_tmp[MAX_NAME_LEN];
+
+	CoilDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Coil"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 359, 135, MainWindow, NULL, Instance, NULL);
     RECT r;
     GetClientRect(CoilDialog, &r);
+
+	PrevCoilDialogProc = SetWindowLongPtr(CoilDialog, GWLP_WNDPROC, 
+        (LONG_PTR)CoilDialogProc);
 
     MakeControls();
 
@@ -160,13 +195,18 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
 	_itoa(*bit, cbit, 10);
 	SetWindowText(BitTextbox, cbit );
 
-    if(name[0] == 'R') {
+    if(GetTypeFromName(name) == IO_TYPE_INTERNAL_RELAY) {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
+		LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_RELAY);
     } else {
         SendMessage(SourceMcuPinRadio, BM_SETCHECK, BST_CHECKED, 0);
+		LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
     }
-    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name + 1));
-    if(*negated) {
+
+	strcpy(name_tmp, name);
+    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)name_tmp);
+
+	if(*negated) {
         SendMessage(NegatedRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else if(*setOnly) {
         SendMessage(SetOnlyRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -203,46 +243,49 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
     }
 
     if(!DialogCancel) {
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)name_tmp);
         if(SendMessage(SourceInternalRelayRadio, BM_GETSTATE, 0, 0)
             & BST_CHECKED)
         {
-            name[0] = 'R';
+            type = IO_TYPE_INTERNAL_RELAY;
         } else {
-            name[0] = 'Y';
-        }
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
-
-        if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            *negated = FALSE;
-            *setOnly = FALSE;
-            *resetOnly = FALSE;
-        } else if(SendMessage(NegatedRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            *negated = TRUE;
-            *setOnly = FALSE;
-            *resetOnly = FALSE;
-        } else if(SendMessage(SetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            *negated = FALSE;
-            *setOnly = TRUE;
-            *resetOnly = FALSE;
-        } else if(SendMessage(ResetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-        {
-            *negated = FALSE;
-            *setOnly = FALSE;
-            *resetOnly = TRUE;
+            type = IO_TYPE_DIG_OUTPUT;
         }
 
-		int i;
+		if(IsValidNameAndType(name, name_tmp, type)) {
+			strcpy(name, name_tmp);
+            UpdateTypeInCircuit(name, type);
 
-		*bit = 0;
-		for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
-		{
-			if (_stricmp(IoSeenPreviously[i].name, name)==0)
-				*bit = IoSeenPreviously[i].bit;
+	        if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+		        *negated = FALSE;
+			    *setOnly = FALSE;
+				*resetOnly = FALSE;
+	        } else if(SendMessage(NegatedRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+		        *negated = TRUE;
+			    *setOnly = FALSE;
+				*resetOnly = FALSE;
+	        } else if(SendMessage(SetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+		        *negated = FALSE;
+			    *setOnly = TRUE;
+				*resetOnly = FALSE;
+	        } else if(SendMessage(ResetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+	            *negated = FALSE;
+		        *setOnly = FALSE;
+			    *resetOnly = TRUE;
+	        }
+
+			int i;
+
+			*bit = 0;
+			for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
+			{
+				if (_stricmp(IoSeenPreviously[i].name, name)==0)
+					*bit = IoSeenPreviously[i].bit;
+			}
+			//char cbit[10];
+			//_itoa(*bit, cbit, 10);
+			//SetWindowText(BitTextbox, cbit );
 		}
-		//char cbit[10];
-		//_itoa(*bit, cbit, 10);
-		//SetWindowText(BitTextbox, cbit );
-
     }
 
     EnableWindow(MainWindow, TRUE);

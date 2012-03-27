@@ -481,21 +481,6 @@ static int TimerPeriod(ElemLeaf *l)
 }
 
 //-----------------------------------------------------------------------------
-// Is an expression that could be either a variable name or a number a number?
-//-----------------------------------------------------------------------------
-static BOOL IsNumber(char *str)
-{
-    if(*str == '-' || isdigit(*str)) {
-        return TRUE;
-    } else if(*str == '\'') {
-        // special case--literal single character
-        return TRUE;
-    } else {
-        return FALSE;
-    }
-}
-
-//-----------------------------------------------------------------------------
 // Try to turn a string into a 16-bit constant, and raise an error if
 // something bad happens when we do so (e.g. out of range).
 //-----------------------------------------------------------------------------

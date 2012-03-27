@@ -81,12 +81,15 @@ static void MakeControls(void)
         16, 41, 100, 20, SetBitDialog, NULL, Instance, NULL);
     NiceFont(ClearBitRadio);
 
-    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
         190, 16, 115, 21, SetBitDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
+	LoadIOListToComboBox(NameTextbox, IO_TYPE_ALL);
+	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
+
+	HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         135, 41, 50, 21, SetBitDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);

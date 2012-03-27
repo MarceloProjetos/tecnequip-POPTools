@@ -242,6 +242,7 @@ void AddContact(void)
     ElemLeaf *c = AllocLeaf();
     strcpy(c->d.contacts.name, "Xnew");
     c->d.contacts.negated = FALSE;
+	c->d.contacts.type = IO_TYPE_DIG_INPUT;
 
     AddLeaf(ELEM_CONTACTS, c);
 }
@@ -255,6 +256,7 @@ void AddCoil(void)
     c->d.coil.setOnly = FALSE;
     c->d.coil.resetOnly = FALSE;
 	c->d.coil.bit = 0;
+	c->d.coil.type = IO_TYPE_DIG_OUTPUT;
 
     AddLeaf(ELEM_COIL, c);
 }
@@ -263,7 +265,7 @@ void AddTimer(int which)
     if(!CanInsertOther) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.timer.name, "Tnew");
+    strcpy(t->d.timer.name, "new");
     t->d.timer.delay = 100000;
 
     AddLeaf(which, t);
@@ -305,7 +307,7 @@ void AddReset(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.reset.name, "Tnew");
+    strcpy(t->d.reset.name, "new");
     AddLeaf(ELEM_RES, t);
 }
 void AddMasterRelay(void)
@@ -407,7 +409,7 @@ void AddCounter(int which)
     }
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.counter.name, "Cnew");
+    strcpy(t->d.counter.name, "new");
     t->d.counter.max = 0;
     AddLeaf(which, t);
 }
@@ -424,7 +426,7 @@ void AddReadAdc(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readAdc.name, "Anew");
+    strcpy(t->d.readAdc.name, "new");
     AddLeaf(ELEM_READ_ADC, t);
 }
 void AddReadEnc(void)
@@ -432,7 +434,7 @@ void AddReadEnc(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readEnc.name, "Enew");
+    strcpy(t->d.readEnc.name, "new");
     AddLeaf(ELEM_READ_ENC, t);
 }
 void AddResetEnc(void)
@@ -440,7 +442,7 @@ void AddResetEnc(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.resetEnc.name, "Znew");
+    strcpy(t->d.resetEnc.name, "new");
     AddLeaf(ELEM_RESET_ENC, t);
 }
 void AddMultisetDA(void)
@@ -503,7 +505,7 @@ void AddReadUSS(void)
     if(!CanInsertOther) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readUSS.name, "Gnew");
+    strcpy(t->d.readUSS.name, "new");
     AddLeaf(ELEM_READ_USS, t);
 }
 void AddWriteUSS(void)
@@ -519,7 +521,7 @@ void AddReadModbus(void)
     if(!CanInsertOther) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readModbus.name, "Knew");
+    strcpy(t->d.readModbus.name, "new");
     AddLeaf(ELEM_READ_MODBUS, t);
 }
 void AddWriteModbus(void)
@@ -527,7 +529,7 @@ void AddWriteModbus(void)
     if(!CanInsertOther) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.writeModbus.name, "Vnew");
+    strcpy(t->d.writeModbus.name, "new");
     AddLeaf(ELEM_WRITE_MODBUS, t);
 }
 void AddReadModbusEth(void)
@@ -535,7 +537,7 @@ void AddReadModbusEth(void)
     if(!CanInsertOther) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readModbusEth.name, "Knew");
+    strcpy(t->d.readModbusEth.name, "new");
     AddLeaf(ELEM_READ_MODBUS_ETH, t);
 }
 void AddWriteModbusEth(void)
@@ -543,7 +545,7 @@ void AddWriteModbusEth(void)
     if(!CanInsertOther) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.writeModbusEth.name, "Vnew");
+    strcpy(t->d.writeModbusEth.name, "new");
     AddLeaf(ELEM_WRITE_MODBUS_ETH, t);
 }
 void AddSetPwm(void)

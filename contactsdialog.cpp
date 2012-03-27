@@ -38,6 +38,7 @@ static HWND NameTextbox;
 static HWND BitTextbox;
 
 static LONG_PTR PrevNameProc;
+static LONG_PTR PrevContactsDialogProc;
 
 #define MAX_IO_SEEN_PREVIOUSLY 512
 extern struct {
@@ -91,10 +92,12 @@ static void MakeControls(void)
         135, 16, 50, 21, ContactsDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 16, 115, 21, ContactsDialog, NULL, Instance, NULL);
+    NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
+        190, 16, 115, 321, ContactsDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
+
+	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     NegatedCheckbox = CreateWindowEx(0, WC_BUTTON, _("|/| Negated"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
@@ -125,11 +128,44 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
+//-----------------------------------------------------------------------------
+// Window proc for the dialog boxes. This Ok/Cancel stuff is common to a lot
+// of places, and there are no other callbacks from the children.
+//-----------------------------------------------------------------------------
+static LRESULT CALLBACK ContactsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char name[MAX_NAME_LEN];
+	switch(msg) {
+		case WM_COMMAND:
+            HWND h = (HWND)lParam;
+            if(wParam == BN_CLICKED) {
+				SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)name);
+				if(h == SourceInternalRelayRadio) {
+					LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_RELAY);
+				} else if(h == SourceInputPinRadio) {
+					LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_INPUT);
+				} else if(h == SourceOutputPinRadio) {
+					LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
+				}
+				SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)name);
+            }
+            break;
+	}
+
+	return CallWindowProc((WNDPROC)PrevContactsDialogProc, hwnd, msg, wParam, lParam);
+}
+
 void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 {
-    ContactsDialog = CreateWindowClient(0, "LDmicroDialog",
+	char name_tmp[MAX_NAME_LEN];
+	unsigned int type;
+
+	ContactsDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Contacts"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 404, 95, MainWindow, NULL, Instance, NULL);
+
+	PrevContactsDialogProc = SetWindowLongPtr(ContactsDialog, GWLP_WNDPROC, 
+        (LONG_PTR)ContactsDialogProc);
 
     MakeControls();
  
@@ -137,17 +173,22 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 	_itoa(*bit, cbit, 10);
 	SetWindowText(BitTextbox, cbit );
 
-    if(name[0] == 'R') {
+    if(GetTypeFromName(name) == IO_TYPE_INTERNAL_RELAY) {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
-    } else if(name[0] == 'Y') {
+		LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_RELAY);
+    } else if(GetTypeFromName(name) == IO_TYPE_DIG_OUTPUT) {
         SendMessage(SourceOutputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
+		LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
     } else {
         SendMessage(SourceInputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
+		LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_INPUT);
     }
     if(*negated) {
         SendMessage(NegatedCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
-    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name + 1));
+
+	strcpy(name_tmp, name);
+	SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)name_tmp);
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(ContactsDialog, TRUE);
@@ -176,36 +217,41 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
     }
 
     if(!DialogCancel) {
-        if(SendMessage(NegatedCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-            *negated = TRUE;
-        } else {
-            *negated = FALSE;
-        }
-
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)name_tmp);
         if(SendMessage(SourceInternalRelayRadio, BM_GETSTATE, 0, 0)
-            & BST_CHECKED)
-        {
-            name[0] = 'R';
-        } else if(SendMessage(SourceInputPinRadio, BM_GETSTATE, 0, 0)
-            & BST_CHECKED)
-        {
-            name[0] = 'X';
-        } else {
-            name[0] = 'Y';
-        }
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)16, (LPARAM)(name+1));
-
-		*bit = 0;
-		int i;
-		for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
+	        & BST_CHECKED)
 		{
-			if (_stricmp(IoSeenPreviously[i].name, name)==0)
-				*bit = IoSeenPreviously[i].bit;
+			type = IO_TYPE_INTERNAL_RELAY;
+        } else if(SendMessage(SourceInputPinRadio, BM_GETSTATE, 0, 0)
+	        & BST_CHECKED)
+		{
+			type = IO_TYPE_DIG_INPUT;
+        } else {
+			type = IO_TYPE_DIG_OUTPUT;
 		}
 
-		/*char cbit[10];
-		_itoa(*bit, cbit, 10);
-		SetWindowText(BitTextbox, cbit );*/
+		if(IsValidNameAndType(name, name_tmp, type)) {
+			strcpy(name, name_tmp);
+			UpdateTypeInCircuit(name, type);
+
+			if(SendMessage(NegatedCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+		        *negated = TRUE;
+			} else {
+				*negated = FALSE;
+	        }
+
+			*bit = 0;
+			int i;
+			for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
+			{
+				if (_stricmp(IoSeenPreviously[i].name, name)==0)
+					*bit = IoSeenPreviously[i].bit;
+			}
+
+			/*char cbit[10];
+			_itoa(*bit, cbit, 10);
+			SetWindowText(BitTextbox, cbit );*/
+		}
 
     }
 

@@ -254,7 +254,7 @@ static LRESULT CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam,
         case WM_NOTIFY:
             break;
 
-        case WM_COMMAND: {
+		case WM_COMMAND: {
             HWND h = (HWND)lParam;
             if(h == OkButton && wParam == BN_CLICKED) {
                 DialogDone = TRUE;
@@ -263,7 +263,7 @@ static LRESULT CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam,
                 DialogCancel = TRUE;
             }
             break;
-        }
+			}
 
         case WM_CLOSE:
         case WM_DESTROY:
@@ -413,4 +413,76 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
     } else {
         strcpy(dest, "");
     }
+}
+
+//-----------------------------------------------------------------------------
+// Is an expression that could be either a variable name or a number a number?
+//-----------------------------------------------------------------------------
+BOOL IsNumber(char *str)
+{
+    if(*str == '-' || isdigit(*str)) {
+        return TRUE;
+    } else if(*str == '\'') {
+        // special case--literal single character
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+void LoadIOListToComboBox(HWND ComboBox, unsigned int mask)
+{
+	int i, idx = 0;
+
+	SendMessage(ComboBox, CB_RESETCONTENT, 0, 0);
+	for(i = 0; i < Prog.io.count; i++) {
+		if(Prog.io.assignment[i].type & mask) {
+			SendMessage(ComboBox, CB_INSERTSTRING, idx++, (LPARAM)((LPCTSTR)Prog.io.assignment[i].name));
+		}
+    }
+}
+
+unsigned int GetTypeFromName(char *name)
+{
+	int i;
+
+	for(i=0; i<Prog.io.count; i++) {
+		if(!_stricmp(name, Prog.io.assignment[i].name))
+			return Prog.io.assignment[i].type;
+	}
+
+	return IO_TYPE_PENDING;
+}
+
+BOOL IsValidNameAndType(char *old_name, char *name, unsigned int new_type)
+{
+	BOOL ret = FALSE;
+	unsigned int current_type = GetTypeFromName(name);
+
+	if(new_type == current_type) { // no type change, ok!
+		ret = TRUE;
+	} else if(current_type == IO_TYPE_PENDING) { // Inexistent name, ok!
+		ret = TRUE;
+	} else if(new_type == IO_TYPE_DIG_INPUT && (current_type == IO_TYPE_DIG_OUTPUT || current_type == IO_TYPE_INTERNAL_RELAY) && ExistsCoilWithName(name)) {
+		Error(_("Saída em uso! Não é possível alterar para Entrada."));
+	} else if(!_stricmp(old_name, name)) { // name not changed, ok!
+		ret = TRUE;
+	// name changed, check for type changes
+	} else if(new_type == IO_TYPE_INTERNAL_RELAY && current_type == IO_TYPE_DIG_OUTPUT) { // changing existent output to internal relay, needs confirmation
+		if(MessageBox(MainWindow, _("Já existe uma Saída com este nome. Alterar para Rele Interno?"), "Confirmar alteração de Saída para Rele Interno", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+			ret = TRUE;
+		}
+	} else if(new_type == IO_TYPE_DIG_OUTPUT && current_type == IO_TYPE_INTERNAL_RELAY) { // changing existent output to internal relay, needs confirmation
+		if(MessageBox(MainWindow, _("Já existe um Rele Interno com este nome. Alterar para Saída?"), "Confirmar alteração de Rele Interno para Saída", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+			ret = TRUE;
+		}
+	} else if(new_type == IO_TYPE_DIG_OUTPUT && current_type == IO_TYPE_DIG_INPUT) { // changing existent input to output, needs confirmation
+		if(MessageBox(MainWindow, _("Já existe uma Entrada com este nome. Alterar para Saída?"), "Confirmar alteração de Entrada para Saída", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+			ret = TRUE;
+		}
+	} else { // no wrong conditions, ok!
+		ret = TRUE;
+	}
+
+	return ret;
 }

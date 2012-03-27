@@ -53,7 +53,7 @@ static int         MouseY;
 #define LDMICRO_PATTERN "POPTools Projeto Ladder (*.ld)\0*.ld\0" \
                      "All files\0*\0\0"
 char CurrentSaveFile[MAX_PATH];
-static BOOL ProgramChangedNotSaved = FALSE;
+BOOL ProgramChangedNotSaved = FALSE;
 
 #define HEX_PATTERN  "Intel Hex Files (*.hex)\0*.hex\0All files\0*\0\0"
 #define C_PATTERN "C Source Files (*.c)\0*.c\0All Files\0*\0\0"
@@ -114,6 +114,7 @@ static void ExportDialog(void)
     ofn.hInstance = Instance;
     ofn.lpstrFilter = TXT_PATTERN;
     ofn.lpstrFile = exportFile;
+	ofn.lpstrDefExt = "txt";
     ofn.lpstrTitle = _("Export As Text");
     ofn.nMaxFile = sizeof(exportFile);
 	ofn.hwndOwner = MainWindow;
@@ -203,7 +204,7 @@ static void CompileProgram(BOOL compileAs)
         if(!GetSaveFileName(&ofn)) {
             return;
 		} else if(ofn.Flags & OFN_EXTENSIONDIFFERENT) {
-			if(MessageBox(NULL, _("Tipo de arquivo deve ser .hex\nA extensão será alterada automaticamente."),"Aviso", MB_ICONEXCLAMATION | MB_OKCANCEL) == IDCANCEL) {
+			if(MessageBox(MainWindow, _("Tipo de arquivo deve ser .hex\nA extensão será alterada automaticamente."),"Aviso", MB_ICONEXCLAMATION | MB_OKCANCEL) == IDCANCEL) {
 				strcpy(CurrentCompileFile, "");
 				return;
 			}
@@ -422,6 +423,7 @@ void ProgramChanged(void)
     ProgramChangedNotSaved = TRUE;
     GenerateIoListDontLoseSelection();
     RefreshScrollbars();
+    UpdateMainWindowTitleBar();
 }
 #define CHANGING_PROGRAM(x) { \
         UndoRemember(); \
@@ -762,7 +764,7 @@ cmp:
             break;
 
         case MNU_SIMULATION_MODE:
-            if(CheckSaveUserCancels()) break;
+            if(!InSimulationMode && CheckSaveUserCancels()) break;
             ToggleSimulationMode();
             break;
 
@@ -936,8 +938,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                     case VK_RETURN:
                     case VK_ESCAPE:
-                        ToggleSimulationMode();
-                        break;
+						if(MessageBox(MainWindow, _("Tem certeza que deseja sair da simulação?"),"Aviso", MB_ICONEXCLAMATION | MB_YESNO) == IDYES) {
+	                        ToggleSimulationMode();
+						}
+	                    break;
                 }
                 break;
             }
@@ -972,6 +976,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     CHANGING_PROGRAM(EditSelectedElement());
                     break;
 
+				case VK_BACK:
                 case VK_DELETE:
                     if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
                         CHANGING_PROGRAM(DeleteSelectedRung());
@@ -1297,7 +1302,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             NMHDR *h = (NMHDR *)lParam;
             if(h->hwndFrom == IoList) {
                 IoMapListProc(h);
-            }
+			}
             return 0;
         }
         case WM_VSCROLL:
