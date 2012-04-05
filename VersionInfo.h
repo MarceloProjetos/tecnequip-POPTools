@@ -36,8 +36,8 @@
 #define TEMPLATE "1.3.*"
 
 // Use this constant to display the version number.
-#define VERSION TEXT("1.2.993.5390")
+#define VERSION TEXT("1.3.1050.3167")
 
 // Don't remove the line below. This number is incrementing by building process.
-#define BUILD 1410
+#define BUILD 1411
 
