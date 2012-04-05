@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{943E92A3-A70E-415D-B55D-44C8C15FE3F6}
 AppName=POPTools
-AppVerName=POPTools 1.2.966.8153
+AppVerName=POPTools 1.3
 AppPublisher=Tecnequip Tecnologia em Equipamentos Ltda
 AppPublisherURL=http://www.tecnequip.com.br/
 AppSupportURL=http://www.tecnequip.com.br/
@@ -15,7 +15,7 @@ AppUpdatesURL=http://www.tecnequip.com.br/
 DefaultDirName={pf}\POPTools
 DefaultGroupName=POPTools
 OutputDir=..\Setup
-OutputBaseFilename=POPTools_Setup_v1.2.966.8153
+OutputBaseFilename=POPTools_Setup_v1.3
 Compression=lzma
 SolidCompression=yes
 LicenseFile=..\Setup\EULA.TXT
@@ -35,11 +35,13 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "installusbdriver"; Description: "Instalar Driver USB"; GroupDescription: "Drivers";
+Name: "installusbdriver"; Description: "Instalar Driver USB"; GroupDescription: "Drivers:";
 ; Name: "restart"; Description: "Reiniciar o computador. A reinicialização do computador é necessária para o correto funcionamento do compilador que acompanha o programa POP7Tools. (mais informações em http://www.yagarto.de)"; Flags: restart
 
 [Files]
 Source: "..\bin\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Setup\EULA.TXT"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\popsettings.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\flashmagicarmcortex.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\src\*.h"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
 Source: "..\bin\src\*.a"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
@@ -64,6 +66,7 @@ Source: "..\Setup\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; DestDir: "{app}"; Flags: 
 
 [Icons]
 Name: "{group}\POPTools"; Filename: "{app}\POPTools.exe"
+Name: "{group}\Licença de Uso"; Filename: "{app}\EULA.TXT"
 Name: "{commondesktop}\POPTools"; Filename: "{app}\POPTools.exe"; Tasks: desktopicon
 
 [Registry]
@@ -76,7 +79,7 @@ Root: HKCR; Subkey: "POPToolsFiles\shell\open\command"; ValueType: string; Value
 [Run]
 ; Filename: "{app}\yagarto-tools-20100703-setup.exe"; Parameters: "/S /D={pf}\yagarto"; Description: "Ferramentas de Compilação"; Flags: runascurrentuser
 ; Filename: "{app}\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; Parameters: "/S /D={pf}\yagarto"; Description: "Compilador e Linker"; Flags: runascurrentuser
-Filename: "{app}\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; Description: "{cm:LaunchProgram,POPTools}"; Tasks: installusbdriver; Flags: nowait postinstall skipifsilent
+Filename: "{app}\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; StatusMsg: "Aguardando finalizar instalação do Driver USB"; Tasks: installusbdriver
 Filename: "{app}\POPTools.exe"; Description: "{cm:LaunchProgram,POPTools}"; Flags: nowait postinstall skipifsilent
 
 

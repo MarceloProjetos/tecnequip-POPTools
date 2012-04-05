@@ -995,7 +995,13 @@ void InsertRung(BOOL afterCursor)
     memmove(&Prog.rungs[i+1], &Prog.rungs[i],
         (Prog.numRungs - i)*sizeof(Prog.rungs[0]));
     Prog.rungs[i] = AllocEmptyRung();
-    (Prog.numRungs)++;
+
+	Selected->selectedState = SELECTED_NONE;
+	SelectedWhich = Prog.rungs[i]->contents->which;
+	Selected = Prog.rungs[i]->contents->d.leaf;
+	Selected->selectedState = SELECTED_LEFT;
+
+	(Prog.numRungs)++;
 
     WhatCanWeDoFromCursorAndTopology();
 }

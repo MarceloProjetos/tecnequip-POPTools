@@ -187,9 +187,10 @@ void UndoUndo(void)
 {
     if(Undo.undo.count <= 0) return;
 
-    ForgetEverything();
-
     PushProgramStack(&(Undo.redo), FALSE);
+
+	ForgetEverything();
+
     PopProgramStack(&(Undo.undo));
 
     if(Undo.undo.count > 0) {
@@ -210,9 +211,10 @@ void UndoRedo(void)
 {
     if(Undo.redo.count <= 0) return;
 
-    ForgetEverything();
-
     PushProgramStack(&(Undo.undo), FALSE);
+
+	ForgetEverything();
+
     PopProgramStack(&(Undo.redo));
 
     if(Undo.redo.count > 0) {

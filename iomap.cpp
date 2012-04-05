@@ -1392,6 +1392,8 @@ void IoMapListProc(NMHDR *h)
                 } else if(Prog.io.assignment[i->iItem].type == IO_TYPE_READ_ENC) {
                     ShowEncoderSliderPopup(name);
 				} else if(Prog.io.assignment[i->iItem].type == IO_TYPE_COUNTER ||
+						Prog.io.assignment[i->iItem].type == IO_TYPE_TOF ||
+						Prog.io.assignment[i->iItem].type == IO_TYPE_TON ||
 						Prog.io.assignment[i->iItem].type == IO_TYPE_GENERAL) {
 					sprintf(val, "%d", GetSimulationVariable(name));
                     ShowSimulationVarSetDialog(name, val);

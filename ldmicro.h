@@ -26,6 +26,7 @@
 
 #include <windows.h>
 #include <windowsx.h>
+#include <comutil.h>
 #include <tchar.h>
 #include <wchar.h>
 #include <math.h>
@@ -115,6 +116,7 @@ typedef SDWORD SWORD;
 
 #include "resource.h"
 #include "splash.h"
+#include "XMLWrapper.h"
 
 //-----------------------------------------------
 // Constants for the GUI. We have drop-down menus, a listview for the I/Os,
@@ -128,6 +130,8 @@ typedef SDWORD SWORD;
 #define MNU_SAVE_AS             0x04
 #define MNU_EXPORT              0x05
 #define MNU_EXIT                0x06
+#define MNU_RECENT_CLEAR        0x07
+#define MNU_RECENT_START        0x100
 
 #define MNU_UNDO                0x10
 #define MNU_REDO                0x11
@@ -137,6 +141,8 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_RUNG_AFTER   0x15
 #define MNU_DELETE_ELEMENT      0x16
 #define MNU_DELETE_RUNG         0x17
+#define MNU_FIND_AND_REPLACE    0x18
+#define MNU_FIND_AND_REPLACE_NEXT 0x19
 
 #define MNU_INSERT_COMMENT      0x20
 #define MNU_INSERT_CONTACTS     0x21
@@ -197,6 +203,7 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_MULTISET_DA  0x58
 
 #define MNU_MCU_SETTINGS        0x59
+#define MNU_MCU_PREFERENCES     0x5a
 #define MNU_PROCESSOR_0         0xa0
 
 #define MNU_SIMULATION_MODE     0x60
@@ -699,6 +706,20 @@ typedef struct PlcCursorTag {
     int height;
 } PlcCursor;
 
+#define MAX_RECENT_ITEMS     10
+#define MAX_RECENT_MENU_LEN 100
+
+// Settings structure
+typedef struct SettingsTag {
+	// Simulation settings
+	BOOL ShowSimulationWarnings;
+	// Find And Replace settings
+	char last_search_text[MAX_NAME_LEN];
+	char last_new_text[MAX_NAME_LEN];
+	// Recent List
+	char recent_list[MAX_RECENT_ITEMS][MAX_PATH];
+} Settings;
+
 //-----------------------------------------------
 // The syntax highlighting style colours; a structure for the palette.
 
@@ -802,6 +823,8 @@ extern HINSTANCE Instance;
 extern HWND MainWindow;
 extern HDC Hdc;
 extern PlcProgram Prog;
+extern Settings POPSettings;
+extern XMLWrapper XmlSettings;
 extern char CurrentSaveFile[MAX_PATH];
 extern char CurrentCompileFile[MAX_PATH];
 extern McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS];
@@ -824,6 +847,7 @@ void StopSimulation(void);
 void StartSimulation(void);
 void UpdateMainWindowTitleBar(void);
 void StatusBarSetText(int bar, char * text);
+void PopulateRecentListMenu(void);
 extern int ScrollWidth;
 extern int ScrollHeight;
 extern BOOL NeedHoriz;
@@ -892,6 +916,16 @@ extern PlcCursor Cursor;
 extern BOOL CanInsertEnd;
 extern BOOL CanInsertOther;
 extern BOOL CanInsertComment;
+
+#define FAR_FIND_FIRST    0x01
+#define FAR_FIND_NEXT     0x02
+#define FAR_REPLACE_FIRST 0x11
+#define FAR_REPLACE_NEXT  0x12
+#define FAR_REPLACE_ALL   0x13
+
+#define FAR_MODE_REPLACE(mode) (mode & 0x10)
+
+unsigned int FindAndReplace(char *search_text, char *new_text, int mode);
 
 // circuit.cpp
 void AddTimer(int which);
@@ -1008,6 +1042,10 @@ void ShowResetDialog(char *name);
 void ShowConfDialog(void);
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
+// FARdialog.cpp
+void ShowFARDialog();
+// prefdialog.cpp
+void ShowPrefDialog(void);
 
 // iomap.cpp
 void ExtractNamesFromCircuit(int which, void *any);

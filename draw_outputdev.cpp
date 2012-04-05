@@ -293,8 +293,8 @@ void PaintWindow(void)
         // we still must draw a bit above and below so that the DisplayMatrix
         // is filled in enough to make it possible to reselect using the
         // cursor keys.
-        if(((cy + thisHeight) >= (ScrollYOffset - 8)*POS_HEIGHT) &&
-            (cy < (ScrollYOffset + rowsAvailable + 8)*POS_HEIGHT))
+//        if(((cy + thisHeight) >= (ScrollYOffset - 8)*POS_HEIGHT) &&
+//            (cy < (ScrollYOffset + rowsAvailable + 8)*POS_HEIGHT))
         {
             SetBkColor(Hdc, InSimulationMode ? HighlightColours.simBg :
                 HighlightColours.bg);
@@ -500,8 +500,8 @@ void ExportDrawingAsText(char *file)
     for(i = 0; i < totalHeight; i++) {
         ExportBuffer[i] = (char *)CheckMalloc(l);
         memset(ExportBuffer[i], ' ', l-1);
+        ExportBuffer[i][5] = '|';
         ExportBuffer[i][4] = '|';
-        ExportBuffer[i][3] = '|';
         ExportBuffer[i][l-3] = '|';
         ExportBuffer[i][l-2] = '|';
         ExportBuffer[i][l-1] = '\0';
@@ -511,23 +511,23 @@ void ExportDrawingAsText(char *file)
 
     int cy = 1;
     for(i = 0; i < Prog.numRungs; i++) {
-        int cx = 5;
+        int cx = 6;
         DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, 
             Prog.rungPowered[i]);
 
-        if((i + 1) < 10) {
-            ExportBuffer[cy+1][1] = '0' + (i + 1);
-        } else {
-            ExportBuffer[cy+1][1] = '0' + ((i + 1) % 10);
-            ExportBuffer[cy+1][0] = '0' + ((i + 1) / 10);
-        }
+        ExportBuffer[cy+1][2] = '0' +      (i + 1)       % 10;
+        if((i+1) >= 10)
+            ExportBuffer[cy+1][1] = '0' + ((i + 1) / 10) % 10;
+
+		if((i+1) >= 100)
+            ExportBuffer[cy+1][0] = '0' + ((i + 1) /100) % 10;
 
         cy += POS_HEIGHT*CountHeightOfElement(ELEM_SERIES_SUBCKT,
             Prog.rungs[i]);
         cy += POS_HEIGHT;
     }
     cy -= 2;
-    DrawEndRung(5, cy);
+    DrawEndRung(6, cy);
 
     FILE *f = fopen(file, "w");
     if(!f) {

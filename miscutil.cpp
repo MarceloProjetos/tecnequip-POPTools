@@ -361,8 +361,8 @@ char *IoTypeToString(int ioType)
 		case IO_TYPE_WRITE_MODBUS:      return _("escrita modbus"); 
 		case IO_TYPE_READ_MODBUS_ETH:   return _("leitura modbus eth"); 
 		case IO_TYPE_WRITE_MODBUS_ETH:  return _("escrita modbus eth"); 
-		case IO_TYPE_READ_YASKAWA:		return _("leitura NS600 Yaskawa"); 
-		case IO_TYPE_WRITE_YASKAWA:		return _("escrita NS600 Yaskawa"); 
+		case IO_TYPE_READ_YASKAWA:		return _("leitura NS600"); 
+		case IO_TYPE_WRITE_YASKAWA:		return _("escrita NS600"); 
         default:                        return _("");
     }
 }

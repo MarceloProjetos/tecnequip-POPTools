@@ -63,9 +63,6 @@
     <ClCompile Include="lang.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ldmicro.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="loadsave.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -120,6 +117,18 @@
     <ClCompile Include="multisetdadialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="XMLWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FARdialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="prefdialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="poptools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -146,10 +155,13 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VersionInfo.h">
+    <ClInclude Include="splash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="splash.h">
+    <ClInclude Include="XMLWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VersionInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -190,6 +202,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="bin\src\ld.h">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bin\popsettings.xml">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="poptools.ico">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

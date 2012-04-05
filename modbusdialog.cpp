@@ -215,7 +215,7 @@ void ShowModbusDialog(char *name, int *id, int *address, bool *set)
 
     if(!DialogCancel) {
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_temp));
-		if(toupper(name_temp[0]) < 'A' || toupper(name_temp[0]) > 'Z') {
+		if(IsNumber(name_temp)) {
 			Error(_("Obrigatório usar variável ao invés de número no campo 'Variável'"));
 		} else {
 			strcpy(name, name_temp);

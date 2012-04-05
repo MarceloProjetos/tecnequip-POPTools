@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<?xml:stylesheet type="text/xsl" href="popsettings.xsl"?>
+<POPSettings xmlns:dt="urn:schemas-microsoft-com:datatypes">
+	<RecentList>
+		<RecentFile>\\fileserver\Eletronica\windows\Projetos\Maquinas\Controlador Tecnequip\Controlador.ld</RecentFile><RecentFile>F:\Testes\bit.ld</RecentFile><RecentFile>F:\Testes\io.ld</RecentFile><RecentFile>F:\Testes\zero.ld</RecentFile><RecentFile>F:\Testes\modbus.ld</RecentFile><RecentFile>F:\Testes\v13.ld</RecentFile></RecentList>
+	<SimulationSettings>
+		<ShowWarnings>1</ShowWarnings>
+	</SimulationSettings>
+</POPSettings>

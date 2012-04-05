@@ -41,6 +41,7 @@ static HWND         StatusBar;
 
 // have to get back to the menus to gray/ungray, check/uncheck things
 static HMENU        FileMenu;
+static HMENU        RecentMenu;
 static HMENU        EditMenu;
 static HMENU        InstructionMenu;
 static HMENU		ConditionalMenu;
@@ -299,6 +300,46 @@ void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled)
     EnableMenuItem(EditMenu, MNU_REDO, redoEnabled ? MF_ENABLED : MF_GRAYED);
 }
 
+void PopulateRecentListMenu(void)
+{
+	int i, len, mid;
+	char menu_text[MAX_RECENT_MENU_LEN+1];
+
+	// Clear all current items
+	for(i=0; i<MAX_RECENT_ITEMS; i++) {
+		DeleteMenu(RecentMenu, MNU_RECENT_START + i, 0);
+	}
+
+	DeleteMenu(RecentMenu, 0, 0);
+	DeleteMenu(RecentMenu, MNU_RECENT_CLEAR, 0);
+
+	if(POPSettings.recent_list[0] != NULL && strlen(POPSettings.recent_list[0])) {
+		for(i=0; i<MAX_RECENT_ITEMS; i++) {
+			if(POPSettings.recent_list[i]==NULL || !strlen(POPSettings.recent_list[i]))
+				break;
+
+			len = strlen(POPSettings.recent_list[i]);
+			mid = MAX_RECENT_MENU_LEN/2;
+			if(len > MAX_RECENT_MENU_LEN) {
+				strncpy(menu_text      , POPSettings.recent_list[i]        , mid-3);
+				strncpy(menu_text+mid  , POPSettings.recent_list[i]+len-mid, mid  );
+				strncpy(menu_text+mid-3, "...", 3);
+				menu_text[MAX_RECENT_MENU_LEN] = 0;
+			} else {
+				strcpy(menu_text, POPSettings.recent_list[i]);
+			}
+			AppendMenu(RecentMenu, MF_STRING, MNU_RECENT_START + i, menu_text);
+		}
+
+		AppendMenu(RecentMenu, MF_SEPARATOR,0, "");
+		AppendMenu(RecentMenu, MF_STRING, MNU_RECENT_CLEAR, _("Limpar Recentes"));
+	} else {
+		AppendMenu(RecentMenu, MF_STRING | MF_GRAYED, MNU_RECENT_CLEAR, _("Vazio..."));
+	}
+
+	DrawMenuBar(MainWindow);
+}
+
 //-----------------------------------------------------------------------------
 // Create the top-level menu bar for the main window. Mostly static, but we
 // create the "select processor" menu from the list in mcutable.h dynamically.
@@ -314,7 +355,12 @@ HMENU MakeMainWindowMenus(void)
     FileMenu = CreatePopupMenu();
     AppendMenu(FileMenu, MF_STRING,   MNU_NEW,    _("&New\tCtrl+N"));
     AppendMenu(FileMenu, MF_STRING,   MNU_OPEN,   _("&Open...\tCtrl+O"));
-    AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,   _("&Save\tCtrl+S"));
+
+	RecentMenu = CreatePopupMenu();
+	PopulateRecentListMenu();
+	AppendMenu(FileMenu, MF_STRING | MF_POPUP, (UINT_PTR)RecentMenu, _("Recentes"));
+
+	AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,   _("&Save\tCtrl+S"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_AS,_("Save &As..."));
     AppendMenu(FileMenu, MF_SEPARATOR,0,          "");
     AppendMenu(FileMenu, MF_STRING,   MNU_EXPORT,
@@ -339,6 +385,11 @@ HMENU MakeMainWindowMenus(void)
         _("&Delete Selected Element\tDel"));
     AppendMenu(EditMenu, MF_STRING, MNU_DELETE_RUNG,
         _("D&elete Rung\tShift+Del"));
+    AppendMenu(EditMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(EditMenu, MF_STRING, MNU_FIND_AND_REPLACE,
+        _("Localizar e Substituir...\tF3"));
+    AppendMenu(EditMenu, MF_STRING, MNU_FIND_AND_REPLACE_NEXT,
+        _("Localizar próxima...\tShift+F3"));
 
     InstructionMenu = CreatePopupMenu();
     AppendMenu(InstructionMenu, MF_STRING, MNU_INSERT_COMMENT,
@@ -501,6 +552,8 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(settings, MF_STRING | MF_POPUP, (UINT_PTR)ProcessorMenu,
         _("&Microcontroller"));
 #endif
+	AppendMenu(settings, MF_SEPARATOR, 0, NULL);
+    AppendMenu(settings, MF_STRING, MNU_MCU_PREFERENCES, _("Preferências"));
 
     SimulateMenu = CreatePopupMenu();
     AppendMenu(SimulateMenu, MF_STRING, MNU_SIMULATION_MODE,

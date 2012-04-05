@@ -16,7 +16,8 @@
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-4000                    ICON                    "favicon.ico"
+//4000                    ICON                    "favicon.ico"
+4000                    ICON                    "poptools32.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

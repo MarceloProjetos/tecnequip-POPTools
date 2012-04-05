@@ -86,6 +86,191 @@ BOOL FindSelected(int *gx, int *gy)
     return FALSE;
 }
 
+#define FAR_EXEC_ACTION(name) do { if(!_stricmp(name, search_text)) { if(FAR_MODE_REPLACE(mode)) strcpy(name, new_text); matches++; SelectElement(x, y, SELECTED_LEFT); } } while(0)
+
+unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
+{
+	int x, y;
+	unsigned int matches=0;
+
+	if(search_text == NULL || !strlen(search_text)) {
+		if(!strlen(POPSettings.last_search_text)) {
+			return 0;
+		} else {
+			search_text = POPSettings.last_search_text;
+		}
+	} else {
+		strcpy(POPSettings.last_search_text, search_text);
+	}
+
+	if(new_text == NULL) {
+		new_text = POPSettings.last_new_text;
+	} else {
+		strcpy(POPSettings.last_new_text, new_text);
+	}
+
+	if((mode == FAR_FIND_NEXT || mode == FAR_REPLACE_NEXT) && FindSelected(&x, &y)) {
+		x++;
+	} else {
+		x = 0;
+		y = 0;
+	}
+
+	for(; y<DISPLAY_MATRIX_Y_SIZE && (!matches || mode==FAR_REPLACE_ALL); y++, x=0) {
+		for(; x<DISPLAY_MATRIX_X_SIZE && (!matches || mode==FAR_REPLACE_ALL); x++) {
+			if(VALID_LEAF(DisplayMatrix[x][y])) {
+				switch(DisplayMatrixWhich[x][y]) {
+				case ELEM_CONTACTS:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.contacts.name);
+					break;
+
+				case ELEM_COIL:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.coil.name);
+					break;
+
+				case ELEM_TON:
+				case ELEM_TOF:
+				case ELEM_RTO:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.timer.name);
+					break;
+
+				case ELEM_CTD:
+				case ELEM_CTU:
+				case ELEM_CTC:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.counter.name);
+					break;
+
+				case ELEM_RES:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.reset.name);
+					break;
+
+				case ELEM_EQU:
+				case ELEM_NEQ:
+				case ELEM_GRT:
+				case ELEM_GEQ:
+				case ELEM_LES:
+				case ELEM_LEQ:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.cmp.op1);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.cmp.op2);
+					break;
+
+				case ELEM_ADD:
+				case ELEM_SUB:
+				case ELEM_MUL:
+				case ELEM_DIV:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.math.dest);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.math.op1);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.math.op2);
+					break;
+
+				case ELEM_MOVE:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.move.dest);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.move.src);
+					break;
+
+				case ELEM_SET_BIT:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.setBit.name);
+					break;
+
+				case ELEM_CHECK_BIT:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.checkBit.name);
+					break;
+
+				case ELEM_READ_ADC:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.readAdc.name);
+					break;
+
+				case ELEM_SET_DA:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.setDA.name);
+					break;
+
+				case ELEM_READ_ENC:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.readEnc.name);
+					break;
+
+				case ELEM_RESET_ENC:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.resetEnc.name);
+					break;
+
+				case ELEM_READ_USS:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.readUSS.name);
+					break;
+
+				case ELEM_WRITE_USS:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.writeUSS.name);
+					break;
+
+				case ELEM_READ_MODBUS:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.readModbus.name);
+					break;
+
+				case ELEM_WRITE_MODBUS:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.writeModbus.name);
+					break;
+
+				case ELEM_READ_MODBUS_ETH:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.readModbusEth.name);
+					break;
+
+				case ELEM_WRITE_MODBUS_ETH:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.writeModbusEth.name);
+					break;
+
+				case ELEM_SET_PWM:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.setPwm.name);
+					break;
+
+				case ELEM_UART_SEND:
+				case ELEM_UART_RECV:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.uart.name);
+					break;
+
+				case ELEM_SHIFT_REGISTER:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.shiftRegister.name);
+					break;
+
+				case ELEM_LOOK_UP_TABLE:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.lookUpTable.dest);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.lookUpTable.index);
+					break;
+
+				case ELEM_PIECEWISE_LINEAR:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.piecewiseLinear.dest);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.piecewiseLinear.index);
+					break;
+
+				case ELEM_READ_FORMATTED_STRING:
+				case ELEM_WRITE_FORMATTED_STRING:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.fmtdStr.var);
+					break;
+
+				case ELEM_READ_SERVO_YASKAWA:
+				case ELEM_WRITE_SERVO_YASKAWA:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.servoYaskawa.var);
+					break;
+
+				case ELEM_FORMATTED_STRING:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.fmtdStr.var);
+					break;
+
+				case ELEM_PERSIST:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.persist.var);
+					break;
+
+				case ELEM_RTC:
+				case ELEM_SHORT:
+				case ELEM_OPEN:
+				case ELEM_MULTISET_DA:
+				case ELEM_MASTER_RELAY:
+					break;
+				}
+			}
+		}
+	}
+
+	return matches;
+}
+
 //-----------------------------------------------------------------------------
 // Select the item in DisplayMatrix at (gx, gy), and then update everything
 // to reflect that. In particular change the enabled state of the menus so
