@@ -1571,15 +1571,24 @@ static BOOL MakeWindowClass()
     return RegisterClassEx(&wc);
 }
 
+#define SETTINGS_FILE (L"POPTools\\settings.xml")
+
 void LoadSettings(void)
 {
 	char *pStr;
-	unsigned int i;
+	PWSTR settings_path;
+	wchar_t *settings_file;
+	unsigned int i, totallen;
 	XMLWrapperElementList *pElementList, *pCurrentElementList;
 
 	memset(&POPSettings, 0, sizeof(POPSettings));
 
-	if(!XmlSettings.Open(L"popsettings.xml")) {
+	SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &settings_path);
+	totallen = wcslen(settings_path) + wcslen(SETTINGS_FILE) + 1;
+	settings_file = new wchar_t[totallen+1];
+	swprintf(settings_file, totallen+1, L"%s\\%s", settings_path, SETTINGS_FILE);
+
+	if(!XmlSettings.Open(settings_file)) {
 		ShowTaskDialog(L"Erro ao carregar as preferências", L"Será utilizada a configuração padrão", TD_ERROR_ICON, TDCBF_OK_BUTTON);
 
 	POPSettings.ShowSimulationWarnings = TRUE;
@@ -1770,11 +1779,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
         char *s;
         GetFullPathName(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
-        if(!LoadProjectFromFile(CurrentSaveFile)) {
-            NewProgram();
-            Error(_("Couldn't open '%s'."), CurrentSaveFile);
-            CurrentSaveFile[0] = '\0';
-        }
+        OpenDialog(CurrentSaveFile);
         UndoFlush();
     }
 

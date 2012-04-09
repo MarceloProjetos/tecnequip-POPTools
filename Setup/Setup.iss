@@ -41,7 +41,8 @@ Name: "installusbdriver"; Description: "Instalar Driver USB"; GroupDescription: 
 [Files]
 Source: "..\bin\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Setup\EULA.TXT"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin\popsettings.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\settings.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\settings.xml"; DestDir: "{localappdata}\POPTools"; Flags: ignoreversion
 Source: "..\flashmagicarmcortex.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\src\*.h"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
 Source: "..\bin\src\*.a"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion

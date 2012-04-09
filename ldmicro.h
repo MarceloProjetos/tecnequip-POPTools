@@ -27,6 +27,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <comutil.h>
+#include <ShlObj.h>
 #include <tchar.h>
 #include <wchar.h>
 #include <math.h>

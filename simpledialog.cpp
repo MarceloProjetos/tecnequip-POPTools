@@ -361,21 +361,24 @@ void ShowTimerDialog(int which, int *delay, char *name)
     char delBuf[20];
     char nameBuf[20];
     sprintf(delBuf, "%.3f", (*delay / 1000.0));
-    strcpy(nameBuf, name+1);
+    strcpy(nameBuf, name);
     char *dests[] = { nameBuf, delBuf };
 
     if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), (1 << 0), dests)) {
-        name[0] = 'T';
-        strncpy(name+1, nameBuf, 15);
-		name[16] = '\0';
-        double del = atof(delBuf);
-        if(del > 2140000) { // 2**31/1000, don't overflow signed int
-            Error(_("Delay too long; maximum is 2**31 us."));
-        } else if(del <= 0) {
-            Error(_("Delay cannot be zero or negative."));
-        } else {
-            *delay = (int)(1000*del + 0.5);
-        }
+		if(IsNumber(nameBuf)) {
+	        Error(_("Nome não pode ser número!"));
+		} else {
+			double del = atof(delBuf);
+	        if(del > 2140000) { // 2**31/1000, don't overflow signed int
+		        Error(_("Delay too long; maximum is 2**31 us."));
+			} else if(del <= 0) {
+				Error(_("Delay cannot be zero or negative."));
+	        } else {
+		        *delay = (int)(1000*del + 0.5);
+		        strncpy(name, nameBuf, 16);
+				name[16] = '\0';
+			}
+		}
     }
 }
 
@@ -393,12 +396,17 @@ void ShowCounterDialog(int which, int *maxV, char *name)
 
     char *labels[] = { _("Name:"), (which == ELEM_CTC ? _("Max value:") : 
         _("True if >= :")) };
-    char maxS[128];
+    char maxS[MAX_NAME_LEN], name_tmp[MAX_NAME_LEN];
     sprintf(maxS, "%d", *maxV);
-    char *dests[] = { name+1, maxS };
+	strcpy(name_tmp, name);
+    char *dests[] = { name_tmp, maxS };
     ShowSimpleDialog(title, 2, labels, 0x2, 0x1, 0x1, 0x1, dests);
-	name[16] = '\0';
-    *maxV = atoi(maxS);
+	if(IsNumber(name_tmp)) {
+	} else {
+		strncpy(name, name_tmp, 16);
+		name[16] = '\0';
+		*maxV = atoi(maxS);
+	}
 }
 
 void ShowCmpDialog(int which, char *op1, char *op2)
@@ -468,7 +476,7 @@ void ShowReadAdcDialog(char *name)
     char *labels[] = { _("Destination:") };
     char *dests[] = { name };
     ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
-	name[15] = '\0';
+	name[16] = '\0';
 }
 
 /*void ShowSetBitDialog(char *name)
