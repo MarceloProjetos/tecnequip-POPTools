@@ -249,6 +249,7 @@ void Default_Reset_Handler(void)
 #pragma weak USBActivity_IRQHandler = Default_Handler
 #pragma weak CANActivity_IRQHandler = Default_Handler
 
+extern volatile unsigned int PLC_ERROR;
 
 /**
   * @brief  This is the code that gets called when the processor receives an 
@@ -266,6 +267,7 @@ static void Default_Handler(void)
 	/* Go into an infinite loop. */
 	while (1) 
 	{
+//		PLC_ERROR |= 1 << 29;
 	}
 }
 

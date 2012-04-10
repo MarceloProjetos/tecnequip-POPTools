@@ -178,7 +178,7 @@ void RS485_Handler (void)
 	sz = RS485_Read(rs485_rx_buffer + rs485_rx_index, sizeof(rs485_rx_buffer) - rs485_rx_index);
 	rs485_rx_index += sz;
 
-	if (rs485_timeout > 30)
+	if (rs485_timeout > 3)
 	{
 		rs485_timeout = 0;
 

@@ -86,11 +86,20 @@ BOOL FindSelected(int *gx, int *gy)
     return FALSE;
 }
 
-#define FAR_EXEC_ACTION(name) do { if(!_stricmp(name, search_text)) { if(FAR_MODE_REPLACE(mode)) strcpy(name, new_text); matches++; SelectElement(x, y, SELECTED_LEFT); } } while(0)
+#define FAR_EXEC_ACTION(name) do \
+{ \
+	if(!_stricmp(name, search_text)) { \
+		if(FAR_MODE_REPLACE(mode)) { \
+			strcpy(name, new_text); \
+		} \
+		matches++; \
+		SelectElement(x, y, SELECTED_LEFT); \
+	} \
+} while(0)
 
 unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
 {
-	int x, y;
+	int x, y, i;
 	unsigned int matches=0;
 
 	if(search_text == NULL || !strlen(search_text)) {
@@ -266,6 +275,21 @@ unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
 				}
 			}
 		}
+	}
+
+	// Program changed! Update internal references
+	if(matches && FAR_MODE_REPLACE(mode)) {
+		// There were matches when replacing all occurrences and the new name has IO_TYPE as pending...
+		// Probably it is an inexistent variable so we can securely use the previous assignment for this new one.
+		if(mode==FAR_REPLACE_ALL && GetTypeFromName(new_text)==IO_TYPE_PENDING) {
+			for(i=0; i<IoSeenPreviouslyCount; i++) {
+				if(!_stricmp(search_text, IoSeenPreviously[i].name)) {
+					strcpy(IoSeenPreviously[i].name, new_text);
+					break;
+				}
+			}
+		}
+		ProgramChanged();
 	}
 
 	return matches;

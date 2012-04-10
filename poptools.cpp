@@ -295,8 +295,10 @@ void ChangeFileExtension(char *name, char *ext)
 // Compile the program to a hex file for the target micro. Get the output
 // file name if necessary, then call the micro-specific compile routines.
 //-----------------------------------------------------------------------------
-static void CompileProgram(BOOL compileAs)
+static BOOL CompileProgram(BOOL compileAs)
 {
+	BOOL ret = FALSE;
+
 	// check if a valid path and write permission
 	if (compileAs || strlen(CurrentCompileFile) > 0)
 	{
@@ -335,11 +337,11 @@ static void CompileProgram(BOOL compileAs)
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
         if(!GetSaveFileName(&ofn)) {
-            return;
+            goto CompileProgramEnd;
 		} else if(ofn.Flags & OFN_EXTENSIONDIFFERENT) {
 			if(MessageBox(MainWindow, _("Tipo de arquivo deve ser .hex\nA extensão será alterada automaticamente."),"Aviso", MB_ICONEXCLAMATION | MB_OKCANCEL) == IDCANCEL) {
 				strcpy(CurrentCompileFile, "");
-				return;
+				goto CompileProgramEnd;
 			}
 
 		ChangeFileExtension(CurrentCompileFile, "hex");
@@ -349,21 +351,21 @@ static void CompileProgram(BOOL compileAs)
         ProgramChangedNotSaved = TRUE;
     }
 
-    if(!GenerateIntermediateCode()) return;
+    if(!GenerateIntermediateCode()) goto CompileProgramEnd;
 
     if(Prog.mcu == NULL) {
         Error(_("Must choose a target microcontroller before compiling."));
-        return;
+        goto CompileProgramEnd;
     } 
 
     if(UartFunctionUsed() && Prog.mcu->uartNeeds.rxPin == 0) {
         Error(_("UART function used but not supported for this micro."));
-        return;
+        goto CompileProgramEnd;
     }
     
     if(PwmFunctionUsed() && Prog.mcu->pwmNeedsPin == 0) {
         Error(_("PWM function used but not supported for this micro."));
-        return;
+        goto CompileProgramEnd;
     }
 
 	StatusBarSetText(0, "Compilando... aguarde");
@@ -378,12 +380,17 @@ static void CompileProgram(BOOL compileAs)
 		//	break;
   //      default: oops();
   //  }
-	CompileAnsiCToGCC(CurrentCompileFile);
+	if(CompileAnsiCToGCC(CurrentCompileFile) == 0)
+		ret = TRUE;
+
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
 
 	StatusBarSetText(0, "");
 
 //    IntDumpListing("t.pl");
+
+CompileProgramEnd:
+	return ret;
 }
 
 //-----------------------------------------------------------------------------
@@ -392,70 +399,12 @@ static void CompileProgram(BOOL compileAs)
 //-----------------------------------------------------------------------------
 static void WriteProgram(BOOL compileAs)
 {
-	// check if a valid path and write permission
-	if (compileAs || strlen(CurrentCompileFile) > 0)
-	{
-	    FILE *f = fopen(CurrentCompileFile, "w");
-		if(!f)
-			CurrentCompileFile[0] = '\0';
-		else
-			fclose(f);
-	}
-
-    if(compileAs || strlen(CurrentCompileFile)==0) 
-	{
-        OPENFILENAME ofn;
-
-        memset(&ofn, 0, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hInstance = Instance;
-        ofn.lpstrTitle = _("Compile To");
-        if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
-            ofn.lpstrFilter = C_PATTERN;
-            ofn.lpstrDefExt = "c";
-        } else if(Prog.mcu && Prog.mcu->whichIsa == ISA_INTERPRETED) {
-            ofn.lpstrFilter = INTERPRETED_PATTERN;
-            ofn.lpstrDefExt = "int";
-        } else {
-            ofn.lpstrFilter = HEX_PATTERN;
-            ofn.lpstrDefExt = "hex";
-        }
-        ofn.lpstrFile = CurrentCompileFile;
-        ofn.nMaxFile = sizeof(CurrentCompileFile);
-		ofn.hwndOwner = MainWindow;
-        ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
-
-        if(!GetSaveFileName(&ofn))
-            return;
-
-        // hex output filename is stored in the .ld file
-        ProgramChangedNotSaved = TRUE;
-    }
-
-    if(!GenerateIntermediateCode()) return;
-
-    if(Prog.mcu == NULL) {
-        Error(_("Must choose a target microcontroller before compiling."));
-        return;
-    } 
-
-    if(UartFunctionUsed() && Prog.mcu->uartNeeds.rxPin == 0) {
-        Error(_("UART function used but not supported for this micro."));
-        return;
-    }
-    
-    if(PwmFunctionUsed() && Prog.mcu->pwmNeedsPin == 0) {
-        Error(_("PWM function used but not supported for this micro."));
-        return;
-    }
-  
-	SetCursor(LoadCursor(NULL, IDC_WAIT));
-
 	BOOL PreviousRunningInBatchMode = RunningInBatchMode;
 
 	RunningInBatchMode = TRUE;
-    if (CompileAnsiCToGCC(CurrentCompileFile) == 0) 
+    if (CompileProgram(compileAs)) 
 	{
+		SetCursor(LoadCursor(NULL, IDC_WAIT));
 		RunningInBatchMode = PreviousRunningInBatchMode;
 		FlashProgram(CurrentCompileFile, Prog.comPort, 230400);
 	} 

@@ -16,13 +16,8 @@
 
 extern OS_STK PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 
-void Hardware_Init(void)
+void Devices_Init(void)
 {
-	SystemInit();
-
-	RS232_Init();
-	RS485_Init();
-
 	RTC_Init();
 	RTC_Start();
 
@@ -36,7 +31,14 @@ void Hardware_Init(void)
 	DAC_Init();
 	QEI_Init();
 	GPIO_Init();
+}
 
+void Hardware_Init(void)
+{
+	SystemInit();
+
+	RS232_Init();
+	RS485_Init();
 }
 
 // Task list
@@ -59,6 +61,8 @@ int main()
 	CoInitOS();
 
 	PLC_Init();
+
+	Devices_Init();
 
 	Net_Init();
 

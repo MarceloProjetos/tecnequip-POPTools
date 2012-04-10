@@ -979,13 +979,14 @@ DWORD CompileAnsiCToGCC(char *dest)
 	//fprintf(f, "\n");
 	fprintf(f, "	for (;;)\n");
 	fprintf(f, "	{\n");
-	fprintf(f, "		GPIO_Output(GPIO_OUTPUT);\n");
 	fprintf(f, "		GPIO_INPUT = GPIO_Input();\n");
 	fprintf(f, "\n");
 	fprintf(f, "		RS232_Console();\n");
 	fprintf(f, "		RS485_Handler();\n");
 	fprintf(f, "\n");
 	fprintf(f, "		PLC_Run();\n");
+	fprintf(f, "\n");
+	fprintf(f, "		GPIO_Output(GPIO_OUTPUT);\n");
 	fprintf(f, "\n");
 	fprintf(f, "		CoTickDelay(6);\n");
 	/*fprintf(f, "		s = CoTickDelay(12);\n");
