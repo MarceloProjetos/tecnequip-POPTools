@@ -728,6 +728,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
     BOOL poweredBefore)
 {
+	char ch;
     int cx0 = *cx, cy0 = *cy;
     BOOL poweredAfter = leaf->poweredAfter;
 
@@ -769,7 +770,28 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             buf[2] = '[';
             buf[3] = '\0';
 
-			sprintf(name_with_type, "%s (%c)", c->name, c->type == IO_TYPE_DIG_INPUT ? 'E' : (c->type == IO_TYPE_DIG_OUTPUT ? 'S' : 'R'));
+			switch(c->type) {
+			case IO_TYPE_DIG_INPUT:
+				ch = 'E';
+				break;
+
+			case IO_TYPE_DIG_OUTPUT:
+				ch = 'S';
+				break;
+
+			case IO_TYPE_INTERNAL_RELAY:
+				ch = 'R';
+				break;
+
+			case IO_TYPE_INTERNAL_FLAG:
+				ch = 'F';
+				break;
+
+			default:
+				ch = '?';
+				break;
+			}
+			sprintf(name_with_type, "%s (%c)", c->name, ch);
 
             CenterWithSpaces(*cx, *cy, name_with_type, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);

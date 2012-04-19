@@ -115,7 +115,9 @@ static void MakeControls(void)
 
 void ShowCheckBitDialog(char *name, int * set, int * bit)
 {
-    CheckBitDialog = CreateWindowClient(0, "LDmicroDialog",
+	char name_tmp[MAX_NAME_LEN];
+
+	CheckBitDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Check Bit"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 404, 75, MainWindow, NULL, Instance, NULL);
 
@@ -162,17 +164,21 @@ void ShowCheckBitDialog(char *name, int * set, int * bit)
     }
 
     if(!DialogCancel) {
-        if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-            *set = TRUE;
-        else
-            *set = FALSE;
+        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_tmp));
 
-		char buf[20];
-        SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
-            (LPARAM)(buf));
-        *bit = atoi(buf);
+		if(IsValidNameAndType(name, name_tmp, GetTypeFromName(name))) {
+			strcpy(name, name_tmp);
 
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name));
+			if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
+		        *set = TRUE;
+			else
+				*set = FALSE;
+
+			char buf[20];
+		    SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
+				(LPARAM)(buf));
+			*bit = atoi(buf);
+		}
     }
 
     EnableWindow(MainWindow, TRUE);

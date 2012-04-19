@@ -380,6 +380,9 @@ static void Op(int op, char *name1, char *name2, char *name3, char *name4, char 
 	case INT_ELSE:
 		strcpy(IntCode[IntCodeLen].desc, "ELSE");
 		break;
+	case INT_ELSE_IF:
+		strcpy(IntCode[IntCodeLen].desc, "ELSE IF");
+		break;
 	case INT_END_IF:
 		strcpy(IntCode[IntCodeLen].desc, "END_IF");
 		break;
@@ -575,10 +578,16 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             break;
         }
         case ELEM_CONTACTS: {
+			char name[MAX_NAME_LEN+2];
+			if(l->d.contacts.type == IO_TYPE_INTERNAL_FLAG) {
+				sprintf(name, "$%s", l->d.contacts.name);
+			} else {
+				strcpy(name, l->d.contacts.name);
+			}
             if(l->d.contacts.negated) {
-                OpBit(INT_IF_BIT_SET, l->d.contacts.name, l->d.contacts.bit);
+                OpBit(INT_IF_BIT_SET, name, l->d.contacts.bit);
             } else {
-                OpBit(INT_IF_BIT_CLEAR, l->d.contacts.name, l->d.contacts.bit);
+                OpBit(INT_IF_BIT_CLEAR, name, l->d.contacts.bit);
             }
 			OpBit(INT_CLEAR_BIT, stateInOut, l->d.contacts.bit);
             Op(INT_END_IF);
@@ -1036,11 +1045,22 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 					Op(INT_IF_BIT_CLEAR, byPass);
 						Op(INT_IF_BIT_SET, "$SerialReady");
 							Op(INT_SET_BIT, byPass);
+						if(which == ELEM_READ_MODBUS ? l->d.readModbus.retransmitir : l->d.writeModbus.retransmitir) { // Retransmitir?
+							Op(INT_ELSE_IF); Op(INT_IF_BIT_SET, "$SerialTimeout");
+								if (which == ELEM_READ_MODBUS)
+									Op(INT_READ_MODBUS, l->d.readModbus.name, id, addr, 0, (unsigned char)l->d.readModbus.int32);
+								else
+									Op(INT_WRITE_MODBUS, l->d.writeModbus.name, id, addr, 0, (unsigned char)l->d.writeModbus.int32);
+								Op(INT_CLEAR_BIT, "$SerialTimeout");
+						}
 						Op(INT_ELSE);
 							Op(INT_CLEAR_BIT, stateInOut);
 						Op(INT_END_IF);
 					Op(INT_END_IF);
 				Op(INT_ELSE);
+					Op(INT_IF_BIT_SET, oneShot);
+						Op(INT_SET_BIT, "$SerialReady");
+					Op(INT_END_IF);
 					Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
 				Op(INT_END_IF);
 

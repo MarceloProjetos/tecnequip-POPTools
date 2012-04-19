@@ -90,8 +90,6 @@
       <linkerarg value="-T${linkdir}\link.ld"/>
       <linkerarg value="--gc-sections"/>
       <linkerarg value="-Os"/>
-    <!-- linked libraries -->
-    <libset dir="Debug\bin\" libs="Firmware"/>
     </cc>
   </target>
 

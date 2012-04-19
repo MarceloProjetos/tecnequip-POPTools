@@ -63,6 +63,9 @@ char CurrentCompileFile[MAX_PATH];
 
 #define TXT_PATTERN  "Text Files (*.txt)\0*.txt\0All files\0*\0\0"
 
+// Internal flags available to the users.
+char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "" };
+
 // Everything relating to the PLC's program, I/O configuration, processor
 // choice, and so on--basically everything that would be saved in the
 // project file.
@@ -201,6 +204,34 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 	return ret;
 }
 
+void UpdateRecentList(char *filename)
+{
+	unsigned int i;
+
+	if(filename == NULL || !strlen(filename))
+		return;
+
+	// Search for first free position
+	for(i=0; i<MAX_RECENT_ITEMS; i++) {
+		if(!_stricmp(filename, POPSettings.recent_list[i])) // it is already in the list, break to put it to top
+			break;
+		else if(!strlen(POPSettings.recent_list[i])) // Empty item, break
+			break;
+	}
+
+	if(i > MAX_RECENT_ITEMS-1)
+		i = MAX_RECENT_ITEMS-1;
+
+	while(i) {
+		strcpy(POPSettings.recent_list[i], POPSettings.recent_list[i-1]);
+		i--;
+	}
+
+	strcpy(POPSettings.recent_list[0], filename);
+
+	PopulateRecentListMenu();
+}
+
 //-----------------------------------------------------------------------------
 // Get a filename with a common dialog box and then save the program to that
 // file and then set our default filename to that.
@@ -226,6 +257,7 @@ static BOOL SaveAsDialog(void)
         Error(_("Couldn't write to '%s'."), CurrentSaveFile);
         return FALSE;
     } else {
+		UpdateRecentList(CurrentSaveFile);
         ProgramChangedNotSaved = FALSE;
         return TRUE;
     }
@@ -337,6 +369,7 @@ static BOOL CompileProgram(BOOL compileAs)
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
         if(!GetSaveFileName(&ofn)) {
+			CurrentCompileFile[0] = '\0';
             goto CompileProgramEnd;
 		} else if(ofn.Flags & OFN_EXTENSIONDIFFERENT) {
 			if(MessageBox(MainWindow, _("Tipo de arquivo deve ser .hex\nA extensão será alterada automaticamente."),"Aviso", MB_ICONEXCLAMATION | MB_OKCANCEL) == IDCANCEL) {
@@ -458,34 +491,6 @@ BOOL CheckSaveUserCancels(void)
     }
 }
 
-void UpdateRecentList(char *filename)
-{
-	unsigned int i;
-
-	if(filename == NULL || !strlen(filename))
-		return;
-
-	// Search for first free position
-	for(i=0; i<MAX_RECENT_ITEMS; i++) {
-		if(!_stricmp(filename, POPSettings.recent_list[i])) // it is already in the list, break to put it to top
-			break;
-		else if(!strlen(POPSettings.recent_list[i])) // Empty item, break
-			break;
-	}
-
-	if(i > MAX_RECENT_ITEMS-1)
-		i = MAX_RECENT_ITEMS-1;
-
-	while(i) {
-		strcpy(POPSettings.recent_list[i], POPSettings.recent_list[i-1]);
-		i--;
-	}
-
-	strcpy(POPSettings.recent_list[0], filename);
-
-	PopulateRecentListMenu();
-}
-	
 //-----------------------------------------------------------------------------
 // Load a new program from a file. If it succeeds then set our default filename
 // to that, else we end up with an empty file then.
@@ -632,6 +637,7 @@ static void ProcessMenu(int code)
         case MNU_RECENT_START+7:
         case MNU_RECENT_START+8:
         case MNU_RECENT_START+9:
+            if(CheckSaveUserCancels()) break;
 			recent_index = code - MNU_RECENT_START;
 			OpenDialog(POPSettings.recent_list[recent_index]);
             break;

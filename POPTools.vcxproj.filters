@@ -129,6 +129,9 @@
     <ClCompile Include="poptools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Firmware\App\modbus_rtu.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -162,6 +165,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VersionInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Firmware\App\modbus_rtu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

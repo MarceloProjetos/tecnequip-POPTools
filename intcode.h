@@ -74,8 +74,11 @@
 #define INT_IF_BIT_CHECK_SET					55
 #define INT_IF_BIT_CHECK_CLEAR					56
 
+#define INT_ELSE_GROUP(x) (((x) >= 60) && ((x) < 70))
 #define INT_ELSE                                60
-#define INT_END_IF                              61
+#define INT_ELSE_IF                             61
+
+#define INT_END_IF                              70
 
 #define INT_SIMULATE_NODE_STATE                 80
 

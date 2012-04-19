@@ -3,6 +3,7 @@
 
 #include "lpc_types.h"
 
+#include "rs485.h"
 #include "modbus_rtu.h"
 #include "modbus_tcp.h"
 
@@ -27,7 +28,6 @@ unsigned int Modbus_ReadExceptionStatus(struct MODBUS_Device *dev, union MODBUS_
 ******************************************************************************/
 
 void 		 Modbus_Init(void);
-unsigned int Modbus_Tx(unsigned char *data, unsigned int size);
 unsigned int Modbus_Request(unsigned char * buffer, unsigned int sz);
 void Modbus_Send(unsigned char id,
                   int fc,

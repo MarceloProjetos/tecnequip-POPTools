@@ -696,14 +696,14 @@ static void IfConditionTrue(void)
     // now PC is on the first statement of the IF body
     SimulateIntCode();
     // now PC is on the ELSE or the END IF
-    if(IntCode[IntPc].op == INT_ELSE) {
+    if(INT_ELSE_GROUP(IntCode[IntPc].op)) {
         int nesting = 1;
         for(; ; IntPc++) {
             if(IntPc >= IntCodeLen) oops();
 
             if(IntCode[IntPc].op == INT_END_IF) {
                 nesting--;
-            } else if(INT_IF_GROUP(IntCode[IntPc].op)) {
+            } else if(INT_IF_GROUP(IntCode[IntPc].op) && IntCode[IntPc-1].op != INT_ELSE_IF) {
                 nesting++;
             }
             if(nesting == 0) break;
@@ -722,29 +722,37 @@ static void IfConditionTrue(void)
 //-----------------------------------------------------------------------------
 static void IfConditionFalse(void)
 {
-    int nesting = 0;
-    for(; ; IntPc++) {
+    int nesting = 1;
+	bool is_elseif = IntCode[IntPc-1].op == INT_ELSE_IF;
+
+	IntPc++;
+
+	for(; ; IntPc++) {
         if(IntPc >= IntCodeLen) oops();
 
         if(IntCode[IntPc].op == INT_END_IF) {
             nesting--;
         } else if(INT_IF_GROUP(IntCode[IntPc].op)) {
-            nesting++;
-        } else if(IntCode[IntPc].op == INT_ELSE && nesting == 1) {
+			if(IntCode[IntPc-1].op != INT_ELSE_IF) // when else if, no nesting!
+				nesting++;
+        } else if(INT_ELSE_GROUP(IntCode[IntPc].op) && nesting == 1) {
             break;
         }
-        if(nesting == 0) break;
+		if(nesting == 0) break;
     }
 
-    // now PC is on the ELSE or the END IF
-    if(IntCode[IntPc].op == INT_ELSE) {
+    // now PC is on the ELSE, ELSE IF or the END IF
+    if(INT_ELSE_GROUP(IntCode[IntPc].op)) {
         IntPc++;
         SimulateIntCode();
     } else if(IntCode[IntPc].op == INT_END_IF) {
+		if(is_elseif) IntPc--; // I am elseif, this endif is for upper level
         return;
     } else {
         oops();
     }
+
+	if(is_elseif) IntPc--; // I am elseif, this endif is for upper level
 }
 
 //-----------------------------------------------------------------------------
@@ -1046,6 +1054,7 @@ math:
 				}
 				break;
             case INT_END_IF:
+            case INT_ELSE_IF:
             case INT_ELSE:
                 return;
 

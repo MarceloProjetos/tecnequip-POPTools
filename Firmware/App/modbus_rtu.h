@@ -2,7 +2,6 @@
 #define MODBUS_H
 
 #include <string.h> // Para memset
-#include "rs485.h"
 //#define MB_DEBUG
 
 // Codigos de excecoes
@@ -27,15 +26,22 @@
 #define MODBUS_FC_READ_DEVICE_IDENTIFICATION 0x2B0E
 
 // Modos de operacao do ModBus
-#define MODBUS_MODE_MASTER 0
-#define MODBUS_MODE_SLAVE  1
+#define MODBUS_MODE_MASTER     0x00
+#define MODBUS_MODE_SLAVE      0x01
+#define MODBUS_MODE_TCP_MASTER 0x10
+#define MODBUS_MODE_TCP_SLAVE  0x11
 
-#define MODBUS_BUFFER_SIZE 260
+// Indica se operando em modo ModBUS/TCP
+#define MODBUS_MODE_IS_TCP(mode) (mode & 0x10)
+
+#define MODBUS_TCP_OVERHEAD 6
+#define MODBUS_BUFFER_SIZE  (260 + MODBUS_TCP_OVERHEAD)
 
 #define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
 
 struct MODBUS_PDU {
   unsigned char   Id;
+  unsigned short int  TransactionId;
   unsigned short int  FunctionCode;
   unsigned char  *Data;
   unsigned int  ds;
@@ -110,6 +116,7 @@ union MODBUS_FCD_Data {
 
 struct MODBUS_Reply {
   unsigned char  Id;
+  unsigned short int TransactionId;
   unsigned short int FunctionCode; // Para retorno do status
   unsigned char  ExceptionCode; // Para retornar o erro
   union {
@@ -193,11 +200,10 @@ struct MODBUS_Device {
   MODBUS_HANDLER_TX_PTR(TX); // Ponteiro para funcao que faz a transmissao do pacote
 };
 
-unsigned int 		Modbus_RTU_Tx(unsigned char *data, unsigned int size);
 void            	Modbus_RTU_Init     (struct MODBUS_Device *dev);
 
-struct MODBUS_PDU   Modbus_RTU_Validate (unsigned char *buf, unsigned int size);
-struct MODBUS_Reply Modbus_RTU_Send     (struct MODBUS_Device *dev, unsigned short int FunctionCode, union MODBUS_FCD_Data *data);
+struct MODBUS_PDU   Modbus_RTU_Validate (unsigned char *buf, unsigned int size, unsigned int mode_tcp);
+struct MODBUS_Reply Modbus_RTU_Send     (struct MODBUS_Device *dev, unsigned short int TransactionId, unsigned short int FunctionCode, union MODBUS_FCD_Data *data);
 unsigned int    	Modbus_RTU_SendReply(struct MODBUS_Device *dev, struct MODBUS_Reply *msg);
 unsigned int    	Modbus_RTU_Receive  (struct MODBUS_Device *dev, struct MODBUS_PDU    msg);
 struct MODBUS_Reply Modbus_RTU_ReceiveReply(struct MODBUS_Device *dev, struct MODBUS_PDU msg);

@@ -10,7 +10,11 @@
 
 #define RS485_ENABLE    (1 << 20)
 
+#define MAX_RETRIES 1
+
 volatile unsigned int I_SerialReady = 1;
+volatile unsigned int I_SerialTimeout = 0;
+volatile unsigned int I_SerialAborted = 0;
 volatile unsigned int I_USSReady;
 volatile unsigned int I_ModbusReady;
 
@@ -94,15 +98,12 @@ unsigned int RS485_Write(unsigned char * buffer, unsigned int size)
 unsigned int RS485_Read(unsigned char * buffer, unsigned int size)
 {
   unsigned int i = 0;
-  unsigned int c = 0;
   unsigned char dummy;
 
   if (!(GPIO0->FIOPIN & RS485_ENABLE))
   {
 	  while(i < size)
 	  {
-		for(c = 0; c < 10000 && !(UART3->LSR & UART_LSR_RDR); c++);
-
 		if (UART3->LSR & (UART_LSR_OE|UART_LSR_PE|UART_LSR_FE|UART_LSR_BI|UART_LSR_RXFE))
 		  dummy = UART3->RBR;
 		else if ((UART3->LSR & UART_LSR_RDR)) /** barramento tem dados ? */
@@ -171,9 +172,9 @@ void RS485_Config(int baudrate, int bits, int parity, int stopbit)
 void RS485_Handler (void)
 {
 	unsigned int sz;
+	static unsigned int retries = 0;
 
 	rs485_timeout++;
-	rs485_reset_timeout++;
 
 	sz = RS485_Read(rs485_rx_buffer + rs485_rx_index, sizeof(rs485_rx_buffer) - rs485_rx_index);
 	rs485_rx_index += sz;
@@ -204,12 +205,27 @@ void RS485_Handler (void)
  //   serial_rx_index = 0;
  // }
 
-  if (rs485_reset_timeout > 1000)
-  {
-    I_SerialReady = 1;
-	WAITING_FOR_USS = 0;
-	//WAITING_FOR_YASKAWA = 0;
-	rs485_reset_timeout = 0;
+  if(I_SerialReady) {
+    retries = 0;
+    I_SerialTimeout = 0;
+    I_SerialAborted = 0;
+    rs485_reset_timeout = 0;
+  } else {
+    rs485_reset_timeout++;
+    if(rs485_reset_timeout > 50 && !I_SerialTimeout && retries++ < MAX_RETRIES) {
+      I_SerialTimeout = 1;
+	  rs485_reset_timeout = 0;
+    } else if (rs485_reset_timeout > 50 && I_SerialTimeout) {
+    	I_SerialAborted = 1;
+    } else if (rs485_reset_timeout > 300) {
+      retries = 0;
+      I_SerialReady = 1;
+      I_SerialTimeout = 0;
+      I_SerialAborted = 0;
+	  WAITING_FOR_USS = 0;
+	  //WAITING_FOR_YASKAWA = 0;
+	  rs485_reset_timeout = 0;
+    }
   }
 
 }

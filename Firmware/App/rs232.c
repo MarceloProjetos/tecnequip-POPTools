@@ -57,13 +57,10 @@ unsigned int RS232_Write(char * buffer, unsigned int size)
 unsigned int RS232_Read(char * buffer, unsigned int size)
 {
 	unsigned int i = 0;
-	unsigned int c = 0;
 	unsigned char dummy;
 
 	while(i < size)
 	{
-		for(c = 0; c < 10000 && !(UART0->LSR & UART_LSR_RDR); c++);
-
 		if (UART0->LSR & (UART_LSR_OE|UART_LSR_PE|UART_LSR_FE|UART_LSR_BI|UART_LSR_RXFE))
 			dummy = UART0->RBR;
 		else if ((UART0->LSR & UART_LSR_RDR)) /** barramento tem dados ? */

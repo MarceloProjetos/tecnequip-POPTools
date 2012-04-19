@@ -34,6 +34,7 @@ static HWND NegatedCheckbox;
 static HWND SourceInternalRelayRadio;
 static HWND SourceInputPinRadio;
 static HWND SourceOutputPinRadio;
+static HWND InternalFlagRadio;
 static HWND NameTextbox;
 static HWND BitTextbox;
 
@@ -69,7 +70,7 @@ static void MakeControls(void)
 {
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Source"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        7, 3, 120, 85, ContactsDialog, NULL, Instance, NULL);
+        7, 3, 120, 105, ContactsDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
     SourceInternalRelayRadio = CreateWindowEx(0, WC_BUTTON, _("Internal Relay"),
@@ -87,6 +88,11 @@ static void MakeControls(void)
         16, 61, 100, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(SourceOutputPinRadio);
 
+    InternalFlagRadio = CreateWindowEx(0, WC_BUTTON, _("Flag Interna"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        16, 81, 100, 20, ContactsDialog, NULL, Instance, NULL);
+    NiceFont(InternalFlagRadio);
+
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         135, 16, 50, 21, ContactsDialog, NULL, Instance, NULL);
@@ -101,17 +107,17 @@ static void MakeControls(void)
 
     NegatedCheckbox = CreateWindowEx(0, WC_BUTTON, _("|/| Negated"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        146, 44, 160, 20, ContactsDialog, NULL, Instance, NULL);
+        190, 85, 160, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(NegatedCheckbox);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        146, 65, 20, 21, ContactsDialog, NULL, Instance, NULL);
+        135, 54, 50, 21, ContactsDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
 	BitTextbox = CreateWindowEx(0, WC_STATIC, _("0"),
         WS_CHILD |  WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
-        176, 65, 65, 20, ContactsDialog, NULL, Instance, NULL);
+        190, 54, 65, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(BitTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
@@ -146,6 +152,8 @@ static LRESULT CALLBACK ContactsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, L
 					LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_INPUT);
 				} else if(h == SourceOutputPinRadio) {
 					LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
+				} else if(h == InternalFlagRadio) {
+					LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_FLAG);
 				}
 				SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)name);
             }
@@ -162,7 +170,7 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 
 	ContactsDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Contacts"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 404, 95, MainWindow, NULL, Instance, NULL);
+        100, 100, 404, 115, MainWindow, NULL, Instance, NULL);
 
 	PrevContactsDialogProc = SetWindowLongPtr(ContactsDialog, GWLP_WNDPROC, 
         (LONG_PTR)ContactsDialogProc);
@@ -179,9 +187,12 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
     } else if(GetTypeFromName(name) == IO_TYPE_DIG_OUTPUT) {
         SendMessage(SourceOutputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
 		LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
-    } else {
+    } else if(GetTypeFromName(name) == IO_TYPE_DIG_INPUT) {
         SendMessage(SourceInputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
 		LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_INPUT);
+    } else { // Internal Flag
+        SendMessage(InternalFlagRadio, BM_SETCHECK, BST_CHECKED, 0);
+		LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_FLAG);
     }
     if(*negated) {
         SendMessage(NegatedCheckbox, BM_SETCHECK, BST_CHECKED, 0);
@@ -226,6 +237,10 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 	        & BST_CHECKED)
 		{
 			type = IO_TYPE_DIG_INPUT;
+        } else if(SendMessage(InternalFlagRadio, BM_GETSTATE, 0, 0)
+	        & BST_CHECKED)
+		{
+			type = IO_TYPE_INTERNAL_FLAG;
         } else {
 			type = IO_TYPE_DIG_OUTPUT;
 		}

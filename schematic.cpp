@@ -741,22 +741,22 @@ void EditSelectedElement(void)
 
         case ELEM_READ_MODBUS:
 			//ShowReadModbusDialog(Selected->d.readModbus.name, &Selected->d.readModbus.id, &Selected->d.readModbus.address);
-			ShowModbusDialog(Selected->d.readModbus.name, &Selected->d.readModbus.id, &Selected->d.readModbus.address, &Selected->d.readModbus.int32);
+			ShowModbusDialog(Selected->d.readModbus.name, &Selected->d.readModbus.id, &Selected->d.readModbus.address, &Selected->d.readModbus.int32, &Selected->d.readModbus.retransmitir);
             break;
 
         case ELEM_WRITE_MODBUS:
 			//ShowWriteModbusDialog(Selected->d.writeModbus.name, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address);
-			ShowModbusDialog(Selected->d.writeModbus.name, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address, &Selected->d.writeModbus.int32);
+			ShowModbusDialog(Selected->d.writeModbus.name, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address, &Selected->d.writeModbus.int32, &Selected->d.readModbus.retransmitir);
             break;
 
         case ELEM_READ_MODBUS_ETH:
 			//ShowReadModbusEthDialog(Selected->d.readModbusEth.name, &Selected->d.readModbusEth.id, &Selected->d.readModbusEth.address);
-			ShowModbusDialog(Selected->d.readModbusEth.name, &Selected->d.readModbusEth.id, &Selected->d.readModbusEth.address, &Selected->d.readModbusEth.int32);
+			ShowModbusDialog(Selected->d.readModbusEth.name, &Selected->d.readModbusEth.id, &Selected->d.readModbusEth.address, &Selected->d.readModbusEth.int32, &Selected->d.readModbus.retransmitir);
             break;
 
         case ELEM_WRITE_MODBUS_ETH:
 			//ShowWriteModbusEthDialog(Selected->d.writeModbusEth.name, &Selected->d.writeModbusEth.id, &Selected->d.writeModbusEth.address);
-			ShowModbusDialog(Selected->d.writeModbusEth.name, &Selected->d.writeModbusEth.id, &Selected->d.writeModbusEth.address, &Selected->d.writeModbusEth.int32);
+			ShowModbusDialog(Selected->d.writeModbusEth.name, &Selected->d.writeModbusEth.id, &Selected->d.writeModbusEth.address, &Selected->d.writeModbusEth.int32, &Selected->d.readModbus.retransmitir);
             break;
 
         case ELEM_UART_RECV:
@@ -818,7 +818,7 @@ void EditElementMouseDoubleclick(int x, int y)
         ElemLeaf *l = DisplayMatrix[gx][gy];
         if(l && DisplayMatrixWhich[gx][gy] == ELEM_CONTACTS) {
             char *name = l->d.contacts.name;
-            if(GetTypeFromName(name) == IO_TYPE_DIG_INPUT) {
+			if(GetTypeFromName(name) == IO_TYPE_DIG_INPUT || GetTypeFromName(name) == IO_TYPE_INTERNAL_FLAG) {
                 SimulationToggleContact(name);
             } 
         } else if(l && DisplayMatrixWhich[gx][gy] == ELEM_READ_ADC) {

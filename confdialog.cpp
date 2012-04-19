@@ -365,12 +365,12 @@ static void MakeControls(void)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        5, 265, 70, 23, ConfDialog, NULL, Instance, NULL); 
+        185, 260, 70, 23, ConfDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        260, 265, 70, 23, ConfDialog, NULL, Instance, NULL); 
+        260, 260, 70, 23, ConfDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 
 //    PrevCycleProc = SetWindowLongPtr(CycleTextbox, GWLP_WNDPROC, 
@@ -391,7 +391,7 @@ void ShowConfDialog(void)
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "LDmicroDialog", _("PLC Configuration"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 335, 295, MainWindow, NULL, Instance, NULL);
+        100, 100, 335, 288, MainWindow, NULL, Instance, NULL);
 
 	PrevConfDialogProc = SetWindowLongPtr(ConfDialog, GWLP_WNDPROC, 
         (LONG_PTR)ConfDialogProc);

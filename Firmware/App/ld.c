@@ -30,7 +30,7 @@ int								SNTP_DAILY_SAVE = 0;
 
 unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 
-#define PLC_RTC_BUG
+#define PLC_ENCODER
 
 #if defined(PLC_NULL)
 #include "POPTools/PLC_NULL.h"
@@ -72,6 +72,8 @@ unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 #include "POPTools/PLC_DAC_RAMPA_CURVA.h"
 #elif defined(PLC_DAC_RAMPA_CURVA_RECUAR)
 #include "POPTools/PLC_DAC_RAMPA_CURVA_RECUAR.h"
+#elif defined(PLC_ENCODER)
+#include "POPTools/PLC_ENCODER.h"
 #else
 // Variaveis PLC
 volatile int I_mcr = 0;
@@ -85,10 +87,13 @@ void PLC_Run(void)
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
 void PLC_Cycle(void *pdata)
 {
+	U64 start_tick, diff_tick;
 	StatusType s;
 
 	for (;;)
 	{
+		start_tick = OSTickCnt;
+
 		GPIO_Output(GPIO_OUTPUT);
 		GPIO_INPUT = GPIO_Input();
 
@@ -99,7 +104,8 @@ void PLC_Cycle(void *pdata)
 
 		//CoTickDelay(10);
 
-		s = CoTickDelay(6);
+		diff_tick = 10 - (OSTickCnt - start_tick);
+		s = CoTickDelay(diff_tick > 10 ? 10 : diff_tick);
 		//s = CoTimeDelay(0, 0, 0, CYCLE_TIME);
 
 		if (s != E_OK)
@@ -118,7 +124,7 @@ void PLC_Init(void)
 	RS485_Config(19200, 8, 2, 1);
 	//RS485_Config(9600, 8, 0, 1);
 
-	IP4_ADDR(&IP_ADDRESS, 192,168,0,240);
+	IP4_ADDR(&IP_ADDRESS, 192,168,0,235);
 	IP4_ADDR(&IP_NETMASK, 255,255,255,0);
 	IP4_ADDR(&IP_GATEWAY, 192,168,0,10);
 	IP4_ADDR(&IP_DNS, 192,168,0,10);

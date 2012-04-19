@@ -357,6 +357,8 @@ BOOL StringToValuesCache(char *str, int *c)
 //-----------------------------------------------------------------------------
 void ShowLookUpTableDialog(ElemLeaf *l)
 {
+	char dest_tmp[MAX_NAME_LEN], index_tmp[MAX_NAME_LEN];
+
     ElemLookUpTable *t = &(l->d.lookUpTable);
 
     // First copy over all the stuff from the leaf structure; in particular,
@@ -460,17 +462,24 @@ void ShowLookUpTableDialog(ElemLeaf *l)
     }
 
     if(!DialogCancel) {
-        SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(t->dest));
-        SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(t->index));
+        SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(dest_tmp));
+        SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(index_tmp));
         DestroyLutControls();
-        // The call to DestroyLutControls updated ValuesCache, so just read
-        // them out of there (whichever mode we were in before).
-        int i;
-        for(i = 0; i < count; i++) {
-            t->vals[i] = ValuesCache[i];
-        }
-        t->count = count;
-        t->editAsString = asString;
+		if(IsValidNameAndType(t->dest , dest_tmp , "Destino", VALIDATE_IS_VAR           , GetTypeFromName(dest_tmp ), 0, 0) &&
+		   IsValidNameAndType(t->index, index_tmp, "Indice" , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(index_tmp), -10, 50)) {
+			// The call to DestroyLutControls updated ValuesCache, so just read
+			// them out of there (whichever mode we were in before).
+		    int i;
+	        for(i = 0; i < count; i++) {
+				t->vals[i] = ValuesCache[i];
+			}
+
+			strcpy(t->dest , dest_tmp );
+			strcpy(t->index, index_tmp);
+
+			t->count = count;
+	        t->editAsString = asString;
+		}
     }
 
     EnableWindow(MainWindow, TRUE);

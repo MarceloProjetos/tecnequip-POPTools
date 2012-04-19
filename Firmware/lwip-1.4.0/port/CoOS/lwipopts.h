@@ -250,11 +250,11 @@
 #define DEFAULT_THREAD_PRIO               LWIP_START_PRIO + 15
 
 #define TCPIP_THREAD_NAME                 "tcpip_thread"
-#define TCPIP_THREAD_STACKSIZE            196
+#define TCPIP_THREAD_STACKSIZE            512
 #define TCPIP_THREAD_PRIO                 LWIP_START_PRIO + 20
 
 #define MODBUS_TCP_THREAD_NAME            "modbus_tcp_thread"
-#define MODBUS_TCP_THREAD_STACKSIZE		  196
+#define MODBUS_TCP_THREAD_STACKSIZE		  512
 #define MODBUS_TCP_THREAD_PRIO  		  LWIP_START_PRIO + 25
 
 #define HTTP_THREAD_NAME                  "http_thread"

@@ -1,4 +1,3 @@
-#include "rs485.h"
 #include "modbus_rtu.h"
 
 /* Table of CRC values for high-order byte */
@@ -45,9 +44,6 @@ static unsigned char auchCRCLo[] = {
 0x40
 } ;
 
-extern volatile unsigned int I_SerialReady;
-extern volatile unsigned int rs485_reset_timeout;
-
 void Modbus_RTU_Init(struct MODBUS_Device *dev)
 {
   memset(dev, 0, sizeof(struct MODBUS_Device));
@@ -62,45 +58,64 @@ void Modbus_RTU_Init(struct MODBUS_Device *dev)
   dev->identification.UserApplicationName = "";
 }
 
-unsigned int Modbus_RTU_Tx(unsigned char *data, unsigned int size)
+struct MODBUS_PDU Modbus_RTU_Validate(unsigned char *buf, unsigned int size, unsigned int mode_tcp)
 {
-  unsigned int sz = 0;
-
-  sz = RS485_Write(data, size);
-  rs485_reset_timeout = 0;
-
-  I_SerialReady = 0;
-
-  //return sz;
-  return 0;
-}
-
-struct MODBUS_PDU Modbus_RTU_Validate(unsigned char *buf, unsigned int size)
-{
-  unsigned int offset = 0;
+  unsigned int len, offset = 0, min_packet_size, valid_packet = 0;
   unsigned short int crc16_calc, crc16_real;
   struct MODBUS_PDU msg;
 
   memset(&msg, 0, sizeof(msg));
 
-  if(size >= 4) {
-    crc16_calc = Modbus_RTU_CRC16(buf, size-2);
-    crc16_real = (unsigned short int)(buf[size-2]) | (((unsigned short int)(buf[size-1]))<<8);
+  // O codigo a seguir existe APENAS para efeito de compatibilidade entre a POP-7 e as IHMs
+  // que comunicam pela rede mas sem usar a extensao TCP do protocol ModBUS.
+  // Deve deixar de existir em um momento futuro...
+/*  if(mode_tcp && size >= 1 && buf[0] != 0) { // Transaction diferente de zero, deve ser formato antigo
+    mode_tcp = 0;
+  }
+*/
+  if(mode_tcp) {
+    min_packet_size = MODBUS_TCP_OVERHEAD + 2; // MODBUS_TCP_OVERHEAD (Transaction + Protocol + Length) + Unit ID + Function Code
+  } else {
+    min_packet_size = 4; // Slave Address + Function Code + CRC16
+  }
 
-    if(crc16_calc == crc16_real) {
+  if(size >= min_packet_size) {
+    if(mode_tcp) {
+      len = ((unsigned short int)(buf[4])<<8) | buf[5];
+      // Tamanho do buffer deve ser o tamanho dos dados + 6 bytes de overhead do ModBUS/TCP
+   	  valid_packet = (size == len+MODBUS_TCP_OVERHEAD);
+    } else {
+      crc16_calc = Modbus_RTU_CRC16(buf, size-2);
+      crc16_real = (unsigned short int)(buf[size-2]) | (((unsigned short int)(buf[size-1]))<<8);
+
+      valid_packet = (crc16_calc == crc16_real);
+    }
+
+    if(valid_packet) {
+      if(mode_tcp) {
+        msg.TransactionId = ((unsigned short int)(buf[offset+0])<<8) | buf[offset+1];
+        offset += MODBUS_TCP_OVERHEAD; // Descarta o trecho relacionado ao adicional do TCP no ModBUS
+      } else {
+        size -= 2; // Descarta o CRC do buffer
+      }
+
       msg.Id           = buf[offset++];
       msg.FunctionCode = buf[offset++];
       if(msg.FunctionCode == 0x08 || msg.FunctionCode == 0x2B)
         msg.FunctionCode = (msg.FunctionCode<<8) | buf[offset++];
       msg.Data         = buf  + offset;
-      msg.ds           = size - offset - 2; // total - tamanho utilizado - CRC16
+      msg.ds           = size - offset; // total - tamanho utilizado
+#ifdef MODBUS_DEBUG
     } else {
-  #ifdef MODBUS_DEBUG
-      printf("MODBUS: Erro de CRC. Recebido 0x%x, Calculado: 0x%x\n", crc16_real, crc16_calc);
+      if(mode_tcp) {
+        printf("MODBUS: Len invalido: len = %d, size = %d\n", len, size);
+      } else {
+        printf("MODBUS: Erro de CRC. Recebido 0x%x, Calculado: 0x%x\n", crc16_real, crc16_calc);
+      }
   #endif
     }
-  } else {
 #ifdef MODBUS_DEBUG
+  } else {
     printf("MODBUS: Poucos dados. Size: %d\n", size);
 #endif
   }
@@ -115,7 +130,8 @@ struct MODBUS_Reply Modbus_RTU_ReceiveReply(struct MODBUS_Device *dev, struct MO
   unsigned int i;
 
   if(msg.Data != NULL) {
-    r.FunctionCode = msg.FunctionCode & 0xFF ? msg.FunctionCode & 0x7FFF : msg.FunctionCode & 0x7F;
+    r.TransactionId = msg.TransactionId;
+    r.FunctionCode  = msg.FunctionCode & 0xFF ? msg.FunctionCode & 0x7FFF : msg.FunctionCode & 0x7F;
     r.ExceptionCode = MODBUS_EXCEPTION_NONE;
     switch(msg.FunctionCode) {
     case MODBUS_FC_READ_COILS:
@@ -203,16 +219,29 @@ struct MODBUS_Reply Modbus_RTU_ReceiveReply(struct MODBUS_Device *dev, struct MO
   return r;
 }
 
-struct MODBUS_Reply Modbus_RTU_Send(struct MODBUS_Device *dev, unsigned short int FunctionCode, union MODBUS_FCD_Data *data)
+struct MODBUS_Reply Modbus_RTU_Send(struct MODBUS_Device *dev, unsigned short int TransactionId, unsigned short int FunctionCode, union MODBUS_FCD_Data *data)
 {
   unsigned short int crc16;
-  unsigned int size=0, i;
+  unsigned int size=0, i, mode_tcp = MODBUS_MODE_IS_TCP(dev->mode);
   struct MODBUS_Reply r;
   //struct MODBUS_PDU msg;
   unsigned char buf[MODBUS_BUFFER_SIZE];
 
   memset(r.reply.reply_buffer, 0, ARRAY_SIZE(r.reply.reply_buffer));
   r.ExceptionCode = MODBUS_EXCEPTION_ILLEGAL_FUNCTION; // Invalid Function Code
+
+  if(mode_tcp) {
+    buf[size++] = (TransactionId>>8) & 0xFF;
+    buf[size++] = (TransactionId>>0) & 0xFF;
+
+    // Protocol
+    buf[size++] = 0;
+    buf[size++] = 0;
+
+    // Length. Preenchido no final
+    buf[size++] = 0;
+    buf[size++] = 0;
+  }
 
   buf[size++] = dev->identification.Id; // Id
   if(FunctionCode & 0xFF00) // Possui SubFunctionCode
@@ -322,15 +351,19 @@ struct MODBUS_Reply Modbus_RTU_Send(struct MODBUS_Device *dev, unsigned short in
       return r;
     }
 
-  crc16 = Modbus_RTU_CRC16(buf, size);
+  if(mode_tcp) {
+    buf[5] = size - MODBUS_TCP_OVERHEAD;
+  } else {
+    crc16 = Modbus_RTU_CRC16(buf, size);
 
-  buf[size++] = (crc16   ) & 0xFF;
-  buf[size++] = (crc16>>8) & 0xFF;
+    buf[size++] = (crc16   ) & 0xFF;
+    buf[size++] = (crc16>>8) & 0xFF;
+  }
 
   size = (*dev->TX)(buf, size);
 
   if(size) {
-    r = Modbus_RTU_ReceiveReply(dev, Modbus_RTU_Validate(buf, size));
+    r = Modbus_RTU_ReceiveReply(dev, Modbus_RTU_Validate(buf, size, mode_tcp));
   } else {
     r.FunctionCode  = FunctionCode;
     r.ExceptionCode = MODBUS_EXCEPTION_SLAVE_DEVICE_FAILURE;
@@ -342,8 +375,21 @@ struct MODBUS_Reply Modbus_RTU_Send(struct MODBUS_Device *dev, unsigned short in
 unsigned int Modbus_RTU_SendReply(struct MODBUS_Device *dev, struct MODBUS_Reply *msg)
 {
   unsigned short int crc16;
-  unsigned int i, size = 0;
+  unsigned int i, size = 0, mode_tcp = MODBUS_MODE_IS_TCP(dev->mode);
   unsigned char buf[MODBUS_BUFFER_SIZE];
+
+  if(mode_tcp) {
+    buf[size++] = (msg->TransactionId>>8) & 0xFF;
+    buf[size++] = (msg->TransactionId>>0) & 0xFF;
+
+    // Protocol
+    buf[size++] = 0;
+    buf[size++] = 0;
+
+    // Length. Preenchido no final
+    buf[size++] = 0;
+    buf[size++] = 0;
+  }
 
   buf[size++] = msg->Id;
 
@@ -447,10 +493,14 @@ unsigned int Modbus_RTU_SendReply(struct MODBUS_Device *dev, struct MODBUS_Reply
     buf[size++] = msg->ExceptionCode;
   }
 
-  crc16 = Modbus_RTU_CRC16(buf, size);
+  if(mode_tcp) {
+    buf[5] = size - MODBUS_TCP_OVERHEAD;
+  } else {
+    crc16 = Modbus_RTU_CRC16(buf, size);
 
-  buf[size++] = (crc16   ) & 0xFF;
-  buf[size++] = (crc16>>8) & 0xFF;
+    buf[size++] = (crc16   ) & 0xFF;
+    buf[size++] = (crc16>>8) & 0xFF;
+  }
 
   (*dev->TX)(buf, size);
 
@@ -468,6 +518,7 @@ unsigned int Modbus_RTU_Receive(struct MODBUS_Device *dev, struct MODBUS_PDU msg
   if(msg.Data == NULL)
     return MODBUS_EXCEPTION_ILLEGAL_DATA_VALUE;
 
+  reply.TransactionId = msg.TransactionId;
   reply.Id            = msg.Id;
   reply.FunctionCode  = msg.FunctionCode;
   reply.ExceptionCode = MODBUS_EXCEPTION_ILLEGAL_FUNCTION;

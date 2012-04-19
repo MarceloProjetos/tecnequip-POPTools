@@ -6,13 +6,13 @@ extern struct MODBUS_Device modbus_tcp_slave;
 
 extern volatile int * MODBUS_RETURN_VAL;
 
-struct tcp_pcb *tpcb_modbus_request;
+struct netconn *current_conn;
 
 OS_STK ModbusTCPStack[MODBUS_TCP_STACK_SIZE];
 
 unsigned int Modbus_TCP_Tx(unsigned char *data, unsigned int size)
 {
-  if (tcp_write(tpcb_modbus_request, data, size, 1) != ERR_OK)
+  if (netconn_write(current_conn, data, size, NETCONN_NOCOPY) != ERR_OK)
   {
 //    tcp_close(tpcb_modbus_request);
     return 0;
@@ -109,7 +109,7 @@ void Modbus_TCP_Send(unsigned char id,
 	return;
   }
 
-  rp = Modbus_RTU_Send(mbdev, fc, &data);
+  rp = Modbus_RTU_Send(mbdev, 0, fc, &data);
 
 }
 
@@ -117,10 +117,8 @@ err_t Modbus_TCP_Recv_Callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, 
 {
   if (p != NULL)
   {
-    tpcb_modbus_request = tpcb;
-
     if (p->len > 2)
-      Modbus_RTU_Receive(&modbus_tcp_slave, Modbus_RTU_Validate(p->payload, p->len));
+      Modbus_RTU_Receive(&modbus_tcp_slave, Modbus_RTU_Validate(p->payload, p->len, TRUE));
 
     tcp_recved(tpcb, p->len);
     pbuf_free(p);
@@ -192,7 +190,8 @@ void Modbus_TCP_Request(struct netconn *conn) {
     there are other formats for GET, and we're keeping it very simple )*/
     if ( buflen >= 2 )
     {
-    	Modbus_RTU_Receive(&modbus_tcp_slave, Modbus_RTU_Validate((unsigned char*)buf, buflen));
+    	current_conn = conn;
+    	Modbus_RTU_Receive(&modbus_tcp_slave, Modbus_RTU_Validate((unsigned char*)buf, buflen, TRUE));
 
     	//netconn_write(conn, http_html_hdr, sizeof(http_html_hdr)-1, NETCONN_NOCOPY);
 
@@ -219,7 +218,7 @@ void Modbus_TCP_Connect(void *pdata)
 	//  LWIP_ERROR("http_server: invalid conn", (conn != NULL), return -1;);
 
 	/* Bind to port 80 (HTTP) with default IP address */
-	netconn_bind(conn, NULL, 502);
+	netconn_bind(conn, IP_ADDR_ANY, 502);
 
 	/* Put the connection into LISTEN state */
 	netconn_listen(conn);

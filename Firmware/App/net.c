@@ -35,8 +35,7 @@ void Net_Init(void)
 
 	//HTTP_Init();
 	//SNTP_Init();
-	Modbus_Init();
-//	Modbus_TCP_Init();
+	Modbus_TCP_Init();
 
 	netif_set_up(lpc17xx_netif);
 }

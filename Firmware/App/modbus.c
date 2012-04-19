@@ -1,7 +1,5 @@
 #include "modbus.h"
 
-struct MODBUS_Device mbdev;
-
 extern volatile unsigned int GPIO_OUTPUT;
 extern volatile unsigned int GPIO_INPUT;
 
@@ -9,12 +7,21 @@ extern volatile unsigned int I_SerialReady;
 extern volatile unsigned int rs485_timeout;
 extern volatile unsigned int rs485_reset_timeout;
 
+MODBUS_HANDLER_TX(Modbus_RS485_Tx)
+{
+  RS485_Write(data, size);
+
+  rs485_reset_timeout = 0;
+  I_SerialReady = 0;
+
+  return 0; // Retorna zero pois, se aguardarmos pela resposta, o ladder ficara bloqueado!
+}
+
 volatile unsigned char MODBUS_MASTER = 0;  // 0 = Slave, 1 = Master
 
 volatile int * MODBUS_RETURN_VAL = NULL;
 
-struct MODBUS_Device modbus_rtu_master;
-struct MODBUS_Device modbus_rtu_slave;
+struct MODBUS_Device modbus_rs485;
 struct MODBUS_Device modbus_tcp_slave;
 
 struct MODBUS_Handler ModbusHandlers[] =
@@ -34,29 +41,17 @@ struct MODBUS_Handler ModbusHandlers[] =
 
 void Modbus_Init(void)
 {
-	Modbus_RTU_Init(&modbus_rtu_master);
+	Modbus_RTU_Init(&modbus_rs485);
 
-	modbus_rtu_master.identification.Id                 = 0x01;
-	modbus_rtu_master.identification.VendorName         = "Tecnequip";
-	modbus_rtu_master.identification.ProductCode        = "POP7";
-	modbus_rtu_master.identification.MajorMinorRevision = "V1 Rev2";
+	modbus_rs485.identification.Id                 = 0x01;
+	modbus_rs485.identification.VendorName         = "Tecnequip";
+	modbus_rs485.identification.ProductCode        = "POP7";
+	modbus_rs485.identification.MajorMinorRevision = "V1 Rev2";
 
-	modbus_rtu_master.hl      = ModbusHandlers;
-	modbus_rtu_master.hl_size = ARRAY_SIZE(ModbusHandlers);
-	modbus_rtu_master.mode    = MODBUS_MODE_MASTER;
-	modbus_rtu_master.TX      = Modbus_RTU_Tx;
-
-	Modbus_RTU_Init(&modbus_rtu_slave);
-
-	modbus_rtu_slave.identification.Id                 = 0x01;
-	modbus_rtu_slave.identification.VendorName         = "Tecnequip";
-	modbus_rtu_slave.identification.ProductCode        = "POP7";
-	modbus_rtu_slave.identification.MajorMinorRevision = "V1 Rev2";
-
-	modbus_rtu_slave.hl      = ModbusHandlers;
-	modbus_rtu_slave.hl_size = ARRAY_SIZE(ModbusHandlers);
-	modbus_rtu_slave.mode    = MODBUS_MODE_SLAVE;
-	modbus_rtu_slave.TX      = Modbus_RTU_Tx;
+	modbus_rs485.hl      = ModbusHandlers;
+	modbus_rs485.hl_size = ARRAY_SIZE(ModbusHandlers);
+	modbus_rs485.mode    = MODBUS_MASTER ? MODBUS_MODE_MASTER : MODBUS_MODE_SLAVE;
+	modbus_rs485.TX      = Modbus_RS485_Tx;
 
 	Modbus_RTU_Init(&modbus_tcp_slave);
 
@@ -67,7 +62,7 @@ void Modbus_Init(void)
 
 	modbus_tcp_slave.hl      = ModbusHandlers;
 	modbus_tcp_slave.hl_size = ARRAY_SIZE(ModbusHandlers);
-	modbus_tcp_slave.mode    = MODBUS_MODE_SLAVE;
+	modbus_tcp_slave.mode    = MODBUS_MODE_TCP_SLAVE;
 	modbus_tcp_slave.TX      = Modbus_TCP_Tx;
 
 	memset((void*)MODBUS_REGISTER, 0, sizeof(MODBUS_REGISTER));
@@ -82,19 +77,12 @@ void Modbus_Send(unsigned char id,
 {
   uint8_t out[] = { 0, 0 };
 
-  struct MODBUS_Device * mbdev;
-
-  if (MODBUS_MASTER)
-    mbdev = &modbus_rtu_master;
-  else
-    mbdev = &modbus_rtu_slave;
-
   MODBUS_RETURN_VAL = value;
 
   union MODBUS_FCD_Data data;
   struct MODBUS_Reply rp;
 
-  mbdev->identification.Id = id;
+  modbus_rs485.identification.Id = id;
 
   /* Enviando mensagem pelo Modbus */
   switch(fc)
@@ -162,7 +150,7 @@ void Modbus_Send(unsigned char id,
 	return;
   }
 
-  rp = Modbus_RTU_Send(mbdev, fc, &data);
+  rp = Modbus_RTU_Send(&modbus_rs485, 0, fc, &data);
 
 }
 
@@ -179,7 +167,7 @@ unsigned int Modbus_Request(unsigned char * buffer, unsigned int sz)
 
   if (MODBUS_MASTER)
   {
-    r = Modbus_RTU_ReceiveReply(&modbus_rtu_master, Modbus_RTU_Validate(buffer, sz));
+    r = Modbus_RTU_ReceiveReply(&modbus_rs485, Modbus_RTU_Validate(buffer, sz, MODBUS_MODE_IS_TCP(modbus_rs485.mode)));
     if (r.ExceptionCode == MODBUS_EXCEPTION_NONE)
     {
       I_SerialReady = 1;
@@ -212,7 +200,7 @@ unsigned int Modbus_Request(unsigned char * buffer, unsigned int sz)
   }
   else
   {
-    if (Modbus_RTU_Receive(&modbus_rtu_slave, Modbus_RTU_Validate(buffer, sz)) == MODBUS_EXCEPTION_NONE)
+    if (Modbus_RTU_Receive(&modbus_rs485, Modbus_RTU_Validate(buffer, sz, MODBUS_MODE_IS_TCP(modbus_rs485.mode))) == MODBUS_EXCEPTION_NONE)
       I_SerialReady = 1;
   }
 

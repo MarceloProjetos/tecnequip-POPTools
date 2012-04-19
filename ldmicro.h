@@ -119,6 +119,9 @@ typedef SDWORD SWORD;
 #include "splash.h"
 #include "XMLWrapper.h"
 
+// Helpful macro to get number of elements in an array
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(*x))
+
 //-----------------------------------------------
 // Constants for the GUI. We have drop-down menus, a listview for the I/Os,
 // etc.
@@ -470,6 +473,7 @@ typedef struct ElemReadModbusTag {
 	int		id;
 	int		address;
 	bool	int32;
+	bool	retransmitir;
 	int		value;
 } ElemReadModbus;
 
@@ -478,6 +482,7 @@ typedef struct ElemWriteModbusTag {
 	int		id;
 	int		address;
 	bool	int32;
+	bool	retransmitir;
 	int		value;
 } ElemWriteModbus;
 
@@ -625,7 +630,7 @@ typedef struct McuIoInfoTag McuIoInfo;
 typedef struct PlcProgramSingleIoTag {
     char        name[MAX_NAME_LEN];
 #define IO_TYPE_PENDING         0x00000000
-#define IO_TYPE_ALL             0xFFFFFFFF
+#define IO_TYPE_ALL             0x7FFFFFFF
 
 #define IO_TYPE_DIG_INPUT        0x00000001
 #define IO_TYPE_DIG_OUTPUT       0x00000002
@@ -650,6 +655,7 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_WRITE_MODBUS_ETH 0x00100000
 #define IO_TYPE_READ_YASKAWA	 0x00200000
 #define IO_TYPE_WRITE_YASKAWA	 0x00400000
+#define IO_TYPE_INTERNAL_FLAG	 0x80000000
 
     unsigned int  type;
 #define NO_PIN_ASSIGNED         0
@@ -813,7 +819,7 @@ typedef struct McuIoInfoTag {
 //-----------------------------------------------
 // Function prototypes
 
-// ldmicro.cpp
+// poptools.cpp
 void ProgramChanged(void);
 void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     BOOL canSetOnly, BOOL canDelete, BOOL canInsertEnd, BOOL canInsertOther,
@@ -829,6 +835,31 @@ extern XMLWrapper XmlSettings;
 extern char CurrentSaveFile[MAX_PATH];
 extern char CurrentCompileFile[MAX_PATH];
 extern McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS];
+extern char *InternalFlags[]; // Internal flags available to the users.
+
+/*** ShowTaskDialog prototypes ***/
+
+// Full version
+int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
+	TASKDIALOG_BUTTON *pButtons, TASKDIALOG_BUTTON *pRadioButtons, PCWSTR pszVerificationText, PCWSTR pszExpandedInformation,
+	int *pnRadioButton, BOOL *pfVerificationFlagChecked);
+
+// MessageBox replacement
+int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons);
+
+// MessageBox replacement with CheckBox
+int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
+	PCWSTR pszVerificationText, BOOL *pfVerificationFlagChecked);
+
+// With custom buttons
+int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR *pszButtons);
+
+// With radio buttons
+int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
+	PCWSTR *pszRadioButtons, int *pnRadioButton);
+
+/*** End of ShowTaskDialog prototypes ***/
+
 // memory debugging, because I often get careless; ok() will check that the
 // heap used for all the program storage is not yet corrupt, and oops() if
 // it is
@@ -1022,9 +1053,7 @@ void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
 void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
-void ShowReadModbusDialog(char *name, int *id, int *address);
-void ShowWriteModbusDialog(char *name, int *id, int *address);
-void ShowModbusDialog(char *name, int *id, int *address, bool *set);
+void ShowModbusDialog(char *name, int *id, int *address, bool *set, bool *retransmitir);
 void ShowReadModbusEthDialog(char *name, int *id, int *address);
 void ShowWriteModbusEthDialog(char *name, int *id, int *address);
 void ShowSetPwmDialog(char *name, int *targetFreq);
@@ -1079,10 +1108,11 @@ void NiceFont(HWND h);
 void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str);
 void ProgramSuccessfulMessage(char *str);
-BOOL IsNumber(char *str);
+bool IsNumber(char *str);
 void LoadIOListToComboBox(HWND ComboBox, unsigned int mask);
 unsigned int GetTypeFromName(char *name);
-BOOL IsValidNameAndType(char *old_name, char *name, unsigned int new_type);
+bool IsInternalFlag(char *name);
+bool IsValidNumber(char *number);
 extern BOOL RunningInBatchMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
@@ -1090,6 +1120,17 @@ extern HWND OkButton;
 extern HWND CancelButton;
 extern BOOL DialogDone;
 extern BOOL DialogCancel;
+
+// Regras de validação de variáveis
+#define VALIDATE_IS_VAR				0x00000001
+#define VALIDATE_IS_NUMBER			0x00000002
+#define VALIDATE_IS_VAR_OR_NUMBER	0x00000004
+#define VALIDATE_DONT_ASK           0x00000008
+#define VALIDATE_TYPES_MUST_MATCH   0x00000010
+#define VALIDATE_ACCEPT_IO_PENDING  0x00000020
+
+bool IsValidNameAndType(char *old_name, char *name, unsigned int new_type);
+bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned int Rules, unsigned int new_type, int MinVal, int MaxVal);
 
 // lang.cpp
 char *_(char *in);

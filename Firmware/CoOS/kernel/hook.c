@@ -18,6 +18,7 @@
 #include <coocox.h>
 
 extern volatile unsigned int PLC_ERROR;
+extern volatile unsigned int PLC_LED_BLINK;
 
 /**
  *******************************************************************************
@@ -58,6 +59,7 @@ void CoStkOverflowHook(OS_TID taskID)
     for(; ;) 
     {
     	PLC_ERROR |= 1 << 28;
+    	PLC_LED_BLINK = taskID;
     }
 }
 

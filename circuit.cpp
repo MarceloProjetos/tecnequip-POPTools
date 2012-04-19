@@ -522,6 +522,7 @@ void AddReadModbus(void)
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.readModbus.name, "new");
+	t->d.readModbus.retransmitir = TRUE;
     AddLeaf(ELEM_READ_MODBUS, t);
 }
 void AddWriteModbus(void)
@@ -530,6 +531,7 @@ void AddWriteModbus(void)
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.writeModbus.name, "new");
+	t->d.writeModbus.retransmitir = TRUE;
     AddLeaf(ELEM_WRITE_MODBUS, t);
 }
 void AddReadModbusEth(void)

@@ -19,8 +19,10 @@
 U64     OSTickCnt = 0;                  /*!< Current system tick counter      */
 U64 	OSTimerCnt = 0;
 char 	OSTimerCPULed = 0;
+U64		ErrorLedCount = 0;
 
 extern volatile unsigned int PLC_ERROR;
+volatile unsigned int PLC_LED_BLINK;
 
 /**
  ******************************************************************************
@@ -77,13 +79,12 @@ void SysTick_Handler(void)
     	GPIO1->FIOPIN |= 0x1 << 22;
     	GPIO1->FIOPIN &= ~(((OSTimerCPULed & 0x1) << 22));
     	OSTimerCnt = 0;
-    }
 
-    // U17 - ERRO
-	if (PLC_ERROR)
-		GPIO1->FIOPIN &= ~(0x1 << 21);
-	else
-		GPIO1->FIOPIN |= (0x1 << 21);
+        // U17 - ERRO
+    	GPIO1->FIOPIN |= 0x1 << 21;
+    	if (PLC_ERROR && OSTimerCPULed && ((++ErrorLedCount)%(PLC_LED_BLINK+1)))
+    		GPIO1->FIOPIN &= ~(0x1 << 21);
+    }
 
 #if CFG_TASK_WAITTING_EN >0    
     if(DlyList != Co_NULL)             /* Have task in delay list?               */

@@ -360,24 +360,16 @@ void ShowTimerDialog(int which, int *delay, char *name)
 
     char delBuf[20];
     char nameBuf[20];
-    sprintf(delBuf, "%.3f", (*delay / 1000.0));
+    sprintf(delBuf, "%d", *delay / 1000);
     strcpy(nameBuf, name);
     char *dests[] = { nameBuf, delBuf };
 
     if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), (1 << 0), dests)) {
-		if(IsNumber(nameBuf)) {
-	        Error(_("Nome não pode ser número!"));
-		} else {
-			double del = atof(delBuf);
-	        if(del > 2140000) { // 2**31/1000, don't overflow signed int
-		        Error(_("Delay too long; maximum is 2**31 us."));
-			} else if(del <= 0) {
-				Error(_("Delay cannot be zero or negative."));
-	        } else {
-		        *delay = (int)(1000*del + 0.5);
+		if(IsValidNameAndType(name  , nameBuf, "Nome" , VALIDATE_IS_VAR   , GetTypeFromName(nameBuf), 0, 0) &&
+		   IsValidNameAndType(delBuf, delBuf , "Tempo", VALIDATE_IS_NUMBER, GetTypeFromName(delBuf ), 1, 2140000)) {
+		        *delay = 1000*atoi(delBuf);
 		        strncpy(name, nameBuf, 16);
 				name[16] = '\0';
-			}
 		}
     }
 }
@@ -401,16 +393,17 @@ void ShowCounterDialog(int which, int *maxV, char *name)
 	strcpy(name_tmp, name);
     char *dests[] = { name_tmp, maxS };
     ShowSimpleDialog(title, 2, labels, 0x2, 0x1, 0x1, 0x1, dests);
-	if(IsNumber(name_tmp)) {
-	} else {
-		strncpy(name, name_tmp, 16);
-		name[16] = '\0';
-		*maxV = atoi(maxS);
+	if(IsValidNameAndType(name, name_tmp, "Nome" , VALIDATE_IS_VAR   , GetTypeFromName(name_tmp), 0, 0) &&
+	   IsValidNameAndType(maxS, maxS    , "Valor", VALIDATE_IS_NUMBER, GetTypeFromName(maxS    ), 0, 0)) {
+			strncpy(name, name_tmp, 16);
+			name[16] = '\0';
+			*maxV = atoi(maxS);
 	}
 }
 
 void ShowCmpDialog(int which, char *op1, char *op2)
 {
+	char op1_tmp[MAX_NAME_LEN], op2_tmp[MAX_NAME_LEN];
     char *title;
     char *l2;
     switch(which) {
@@ -448,9 +441,18 @@ void ShowCmpDialog(int which, char *op1, char *op2)
             oops();
     }
     char *labels[] = { _("'Closed' if:"), l2 };
-    char *dests[] = { op1, op2 };
-    ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, 0x3, dests);
+    char *dests[] = { op1_tmp, op2_tmp };
 
+	strcpy(op1_tmp, op1);
+	strcpy(op2_tmp, op2);
+
+	ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, 0x3, dests);
+
+	if(IsValidNameAndType(op1, op1_tmp, NULL, VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op1_tmp), 0, 0) &&
+	   IsValidNameAndType(op2, op2_tmp, NULL, VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op2_tmp), 0, 0)) {
+		   strcpy(op1, op1_tmp);
+		   strcpy(op2, op2_tmp);
+	}
 }
 
 void ShowMoveDialog(char *dest, char *src)
@@ -463,9 +465,8 @@ void ShowMoveDialog(char *dest, char *src)
 	strcpy(dest_tmp, dest);
     ShowSimpleDialog(_("Move"), 2, labels, 0, 0x3, 0x3, 0x3, dests);
 
-	if(IsNumber(dest_tmp)) {
-        Error(_("Destino não pode ser número!"));
-	} else {
+	if(IsValidNameAndType(dest, dest_tmp, "Destino", VALIDATE_IS_VAR          , GetTypeFromName(dest_tmp), 0, 0) &&
+	   IsValidNameAndType(src , src_tmp , "Origem" , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(src_tmp ), 0, 0)) {
 		strcpy(src , src_tmp );
 		strcpy(dest, dest_tmp);
 	}
@@ -473,10 +474,18 @@ void ShowMoveDialog(char *dest, char *src)
 
 void ShowReadAdcDialog(char *name)
 {
+	char name_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Destination:") };
-    char *dests[] = { name };
-    ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
-	name[16] = '\0';
+    char *dests[] = { name_tmp };
+
+	strcpy(name_tmp, name);
+
+	ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
+
+	if(IsValidNameAndType(name, name_tmp, "Destino", VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
+		strcpy(name, name_tmp);
+		name[16] = '\0';
+	}
 }
 
 /*void ShowSetBitDialog(char *name)
@@ -488,29 +497,52 @@ void ShowReadAdcDialog(char *name)
 
 void ShowSetDADialog(char *name)
 {
-    //char val[10];
-    //sprintf(name, "%.2f", (float)(*name) / 10000.0);
+	char name_tmp[MAX_NAME_LEN];
 
 	char *labels[] = { _("Value:") };
-    char *dests[] = { name };
-    ShowSimpleDialog(_("Conversor Digital/Analogico (DA)"), 1, labels, 0x0, 0x1, 0x1, 0x1, dests);
+    char *dests[] = { name_tmp };
 
-	//*name = (int)(10000 * atof(name) + 0.5);
+	strcpy(name_tmp, name);
+
+	ShowSimpleDialog(_("Conversor Digital/Analogico (DA)"), 1, labels, 0x0, 0x1, 0x1, 0x1, dests);
+
+	if(IsValidNameAndType(name, name_tmp, "Valor", VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(name_tmp), 0, 0)) {
+		strcpy(name, name_tmp);
+		name[16] = '\0';
+	}
 }
 void ShowReadEncDialog(char *name)
 {
+	char name_tmp[MAX_NAME_LEN];
+
     char *labels[] = { _("Destination:") };
-    char *dests[] = { name };
-    ShowSimpleDialog(_("Read Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
-	name[15] = '\0';
+    char *dests[] = { name_tmp };
+
+	strcpy(name_tmp, name);
+
+	ShowSimpleDialog(_("Read Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
+
+	if(IsValidNameAndType(name, name_tmp, "Destino", VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
+		strcpy(name, name_tmp);
+		name[16] = '\0';
+	}
 }
 
 void ShowResetEncDialog(char *name)
 {
+	char name_tmp[MAX_NAME_LEN];
+
     char *labels[] = { _("Destination:") };
-    char *dests[] = { name };
-    ShowSimpleDialog(_("Reset Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
-	name[15] = '\0';
+    char *dests[] = { name_tmp };
+
+	strcpy(name_tmp, name);
+
+	ShowSimpleDialog(_("Reset Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
+
+	if(IsValidNameAndType(name, name_tmp, "Destino", VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
+		strcpy(name, name_tmp);
+		name[16] = '\0';
+	}
 }
 
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index)
@@ -534,14 +566,16 @@ void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, 
     char *dests[] = { name_temp, i, param, param_set, idx };
     ShowSimpleDialog(_("Le Parametro do Inversor da Nord"), 5, labels, 0x1E, 0x1, 0x1E, 0x1, dests);
 
-	if(IsNumber(name_temp)) {
-		Error(_("Obrigatório usar variável ao invés de número no campo 'Destino'"));
-	} else {
-		strcpy(name, name_temp);
-		*id = atoi(i);
-		*parameter = atoi(param);
-		*parameter_set = atoi(param_set);
-		*index = atoi(idx);
+	if(IsValidNameAndType(name     , name_temp, "Nome"            , VALIDATE_IS_VAR   , GetTypeFromName(name_temp), 0, 0) &&
+	   IsValidNameAndType(i        , i        , "ID"              , VALIDATE_IS_NUMBER, GetTypeFromName(i        ), 0, 0) &&
+	   IsValidNameAndType(param    , param    , "Parâmetro"       , VALIDATE_IS_NUMBER, GetTypeFromName(param    ), 0, 0) &&
+	   IsValidNameAndType(param_set, param_set, "Set de Parâmetro", VALIDATE_IS_NUMBER, GetTypeFromName(param_set), 0, 3) &&
+	   IsValidNameAndType(idx      , idx      , "Índice"          , VALIDATE_IS_NUMBER, GetTypeFromName(idx      ), 0, 0)) {
+			strcpy(name, name_temp);
+			*id = atoi(i);
+			*parameter = atoi(param);
+			*parameter_set = atoi(param_set);
+			*index = atoi(idx);
 	}
 }
 
@@ -566,38 +600,53 @@ void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set,
     char *dests[] = { name_temp, i, param, param_set, idx };
     ShowSimpleDialog(_("Escreve Parametro no Inversor da Nord"), 5, labels, 0x1E, 0x1, 0x1E, 0x1, dests);
 
-	if(IsNumber(name_temp)) {
-		Error(_("Obrigatório usar variável ao invés de número no campo 'Destino'"));
-	} else {
-		strcpy(name, name_temp);
-		*id = atoi(i);
-		*parameter = atoi(param);
-		*parameter_set = atoi(param_set);
-		*index = atoi(idx);
+	if(IsValidNameAndType(name     , name_temp, "Nome"            , VALIDATE_IS_VAR   , GetTypeFromName(name_temp), 0, 0) &&
+	   IsValidNameAndType(i        , i        , "ID"              , VALIDATE_IS_NUMBER, GetTypeFromName(i        ), 0, 0) &&
+	   IsValidNameAndType(param    , param    , "Parâmetro"       , VALIDATE_IS_NUMBER, GetTypeFromName(param    ), 0, 0) &&
+	   IsValidNameAndType(param_set, param_set, "Set de Parâmetro", VALIDATE_IS_NUMBER, GetTypeFromName(param_set), 0, 3) &&
+	   IsValidNameAndType(idx      , idx      , "Índice"          , VALIDATE_IS_NUMBER, GetTypeFromName(idx      ), 0, 0)) {
+			strcpy(name, name_temp);
+			*id = atoi(i);
+			*parameter = atoi(param);
+			*parameter_set = atoi(param_set);
+			*index = atoi(idx);
 	}
 }
 
 void ShowSetPwmDialog(char *name, int *targetFreq)
 {
-    char freq[100];
+    char freq[100], name_tmp[MAX_NAME_LEN];
     sprintf(freq, "%d", *targetFreq);
 
     char *labels[] = { _("Duty cycle var:"), _("Frequency (Hz):") };
-    char *dests[] = { name, freq };
-    ShowSimpleDialog(_("Set PWM Duty Cycle"), 2, labels, 0x2, 0x1, 0x1, 0x1, dests);
+    char *dests[] = { name_tmp, freq };
 
-    *targetFreq = atoi(freq);
+	strcpy(name_tmp, name);
+
+	ShowSimpleDialog(_("Set PWM Duty Cycle"), 2, labels, 0x2, 0x1, 0x1, 0x1, dests);
+
+	if(IsValidNameAndType(name, name_tmp, "Variável"  , VALIDATE_IS_VAR   , GetTypeFromName(name_tmp), 0,    0) &&
+	   IsValidNameAndType(freq, freq    , "Frequência", VALIDATE_IS_NUMBER, GetTypeFromName(freq    ), 1, 2000)) {
+		   strcpy(name, name_tmp);
+		    *targetFreq = atoi(freq);
+	}
 }
 
 void ShowUartDialog(int which, char *name)
 {
+	char name_tmp[MAX_NAME_LEN];
     char *labels[] = { (which == ELEM_UART_RECV) ? _("Destination:") :
         _("Source:") };
-    char *dests[] = { name };
+    char *dests[] = { name_tmp };
+
+	strcpy(name_tmp, name);
 
     ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") :
         _("Send to UART"), 1, labels, 0, 0x1, 0x1, 0x1, dests);
 
+	if(IsValidNameAndType(name, name_tmp, (which == ELEM_UART_RECV) ? "Destino" : "Origem", (which == ELEM_UART_RECV) ? VALIDATE_IS_VAR : VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(name_tmp), 0, 0)) {
+		strcpy(name, name_tmp);
+	}
 }
 
 void ShowMathDialog(int which, char *dest, char *op1, char *op2)
@@ -626,64 +675,91 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
 	strcpy(dest_tmp, dest);
 	ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, 0x7, dests);
 
-	if(IsNumber(dest_tmp)) {
-        Error(_("Destino não pode ser número!"));
-	} else {
-		strcpy(op1 , op1_tmp );
-		strcpy(op2 , op2_tmp );
-		strcpy(dest, dest_tmp);
+	if(IsValidNameAndType(dest, dest_tmp, "Destino", VALIDATE_IS_VAR          , GetTypeFromName(dest_tmp), 0, 0) &&
+	   IsValidNameAndType(op1 , op1_tmp , NULL     , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op1_tmp ), 0, 0) &&
+	   IsValidNameAndType(op2 , op2_tmp , NULL     , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op2_tmp ), 0, 0)) {
+			strcpy(op1 , op1_tmp );
+			strcpy(op2 , op2_tmp );
+			strcpy(dest, dest_tmp);
 	}
 }
 
 void ShowShiftRegisterDialog(char *name, int *stages)
 {
-    char stagesStr[20];
+    char stagesStr[20], name_tmp[MAX_NAME_LEN];
     sprintf(stagesStr, "%d", *stages);
 
     char *labels[] = { _("Name:"), _("Stages:") };
-    char *dests[] = { name, stagesStr };
-    ShowSimpleDialog(_("Shift Register"), 2, labels, 0x2, 0x1, 0x1, 0x1, dests);
+    char *dests[] = { name_tmp, stagesStr };
 
-    *stages = atoi(stagesStr);
+	strcpy(name_tmp, name);
 
-    if(*stages <= 0 || *stages >= 200) {
-        Error(_("Not a reasonable size for a shift register."));
-        *stages = 1;
-    }
+	ShowSimpleDialog(_("Shift Register"), 2, labels, 0x2, 0x1, 0x1, 0x1, dests);
+
+	if(IsValidNameAndType(name     , name_tmp , "Nome"    , VALIDATE_IS_VAR          , GetTypeFromName(name_tmp ), 0,   0) &&
+	   IsValidNameAndType(stagesStr, stagesStr, "Estágios", VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(stagesStr), 1, 200)) {
+		    *stages = atoi(stagesStr);
+			strcpy(name, name_tmp);
+	}
 }
 
 void ShowFormattedStringDialog(char *var, char *string)
 {
+	char var_tmp[MAX_NAME_LEN], string_tmp[MAX_LOOK_UP_TABLE_LEN];
     char *labels[] = { _("Variable:"), _("String:") };
-    char *dests[] = { var, string };
-    NoCheckingOnBox[0] = TRUE;
+    char *dests[] = { var_tmp, string_tmp };
+
+	strcpy(var_tmp   , var   );
+	strcpy(string_tmp, string);
+
+	NoCheckingOnBox[0] = TRUE;
     NoCheckingOnBox[1] = TRUE;
     ShowSimpleDialog(_("Formatted String Over UART"), 2, labels, 0x0,
         0x1, 0x3, 0x1, dests);
     NoCheckingOnBox[0] = FALSE;
     NoCheckingOnBox[1] = FALSE;
+
+	if(IsValidNameAndType(var, var_tmp , "Variável", VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(var_tmp ), 0, 0)) {
+			strcpy(var   , var_tmp   );
+			strcpy(string, string_tmp);
+	}
 }
 
 void ShowServoYaskawaDialog(char * id, char *var, char *string)
 {
+	char var_tmp[MAX_NAME_LEN], string_tmp[MAX_LOOK_UP_TABLE_LEN], id_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Id:"), _("Variable:"), _("String:") };
     char *dests[] = { id, var, string };
     NoCheckingOnBox[1] = TRUE;
     ShowSimpleDialog(_("Servo Yaskawa"), 3, labels, 0x1,
         0x2, 0x7, 0x2, dests);
 
-	/*while (*string)
-		*(string++) = toupper(*string);*/
+	strcpy(id_tmp    , id    );
+	strcpy(var_tmp   , var   );
+	strcpy(string_tmp, string);
 
 	NoCheckingOnBox[1] = FALSE;
+
+	if(IsValidNameAndType(var, var_tmp, "Variável", VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(var_tmp ), 0, 0) &&
+	   IsValidNameAndType(id , id_tmp , "ID"      , VALIDATE_IS_NUMBER       , GetTypeFromName(id_tmp  ), 0, 0)) {
+			strcpy(id    , id_tmp    );
+			strcpy(var   , var_tmp   );
+			strcpy(string, string_tmp);
+	}
 }
 
 void ShowSimulationVarSetDialog(char *name, char *val)
 {
-    char *labels[] = { _("Valor:") };
-    char *dests[] = { val };
+	char val_tmp[MAX_NAME_LEN];
+	char *labels[] = { _("Valor:") };
+    char *dests[] = { val_tmp };
 
+	strcpy(val_tmp, val);
 	ShowSimpleDialog(_("Novo Valor"), 1, labels, 0x1, 0x0, 0x1, 0, dests);
+
+	if(IsValidNameAndType(val, val_tmp, "Valor", VALIDATE_IS_NUMBER, GetTypeFromName(val_tmp), 0, 0)) {
+		strcpy(val, val_tmp);
+	}
 }
 
 void ShowPersistDialog(char *var)
@@ -695,9 +771,7 @@ void ShowPersistDialog(char *var)
 	strcpy(var_tmp, var);
     ShowSimpleDialog(_("Make Persistent"), 1, labels, 0, 1, 1, 1, dests);
 
-	if(IsNumber(var_tmp)) {
-        Error(_("Variável não pode ser número!"));
-	} else {
+	if(IsValidNameAndType(var, var_tmp, "Variável", VALIDATE_IS_VAR, GetTypeFromName(var_tmp), 0, 0)) {
 		strcpy(var, var_tmp);
 	}
 }

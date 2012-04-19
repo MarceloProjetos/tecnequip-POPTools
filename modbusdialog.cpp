@@ -47,6 +47,7 @@ static HWND ClearBitRadio;
 static HWND NameTextbox;
 static HWND AddressTextbox;
 static HWND IDTextbox;
+static HWND RetransmitCheckbox;
 
 static LONG_PTR PrevNameProc;
 
@@ -103,12 +104,12 @@ static void MakeControls(void)
 
     SetBitRadio = CreateWindowEx(0, WC_BUTTON, _("32 bits"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        16, 21, 100, 20, SetBitDialog, NULL, Instance, NULL);
+        16, 21, 65, 20, SetBitDialog, NULL, Instance, NULL);
     NiceFont(SetBitRadio);
 
     ClearBitRadio = CreateWindowEx(0, WC_BUTTON, _("16 bits"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        16, 41, 100, 20, SetBitDialog, NULL, Instance, NULL);
+        16, 41, 65, 20, SetBitDialog, NULL, Instance, NULL);
     NiceFont(ClearBitRadio);
 
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Variavel:"),
@@ -159,11 +160,16 @@ static void MakeControls(void)
         7, 3, 85, 65, SetBitDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
+    RetransmitCheckbox = CreateWindowEx(0, WC_BUTTON, _("Retransmitir"),
+        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
+        7, 70, 100, 40, SetBitDialog, NULL, Instance, NULL);
+    NiceFont(RetransmitCheckbox);
+
     //PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC, 
     //    (LONG_PTR)MyNameProc);
 }
 
-void ShowModbusDialog(char *name, int *id, int *address, bool *set)
+void ShowModbusDialog(char *name, int *id, int *address, bool *set, bool *retransmitir)
 {
 	char name_temp[MAX_NAME_LEN];
     SetBitDialog = CreateWindowClient(0, "LDmicroDialog",
@@ -182,6 +188,11 @@ void ShowModbusDialog(char *name, int *id, int *address, bool *set)
         SendMessage(SetBitRadio, BM_SETCHECK, BST_CHECKED, 0);
 	else
         SendMessage(ClearBitRadio, BM_SETCHECK, BST_CHECKED, 0);
+
+    if (*retransmitir)
+        SendMessage(RetransmitCheckbox, BM_SETCHECK, BST_CHECKED, 0);
+	else
+        SendMessage(RetransmitCheckbox, BM_SETCHECK, BST_UNCHECKED, 0);
 
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name));
 	SendMessage(IDTextbox, WM_SETTEXT, 0, (LPARAM)(i));
@@ -215,14 +226,17 @@ void ShowModbusDialog(char *name, int *id, int *address, bool *set)
 
     if(!DialogCancel) {
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_temp));
-		if(IsNumber(name_temp)) {
-			Error(_("Obrigatório usar variável ao invés de número no campo 'Variável'"));
-		} else {
+		if(IsValidNameAndType(name, name_temp, GetTypeFromName(name_temp))) {
 			strcpy(name, name_temp);
 	        if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
 		        *set = TRUE;
 			else
 				*set = FALSE;
+
+	        if(SendMessage(RetransmitCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED)
+		        *retransmitir = TRUE;
+			else
+				*retransmitir = FALSE;
 
 			SendMessage(IDTextbox, WM_GETTEXT, 16, (LPARAM)(i));
 			SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));

@@ -154,7 +154,7 @@ static void DeclareInt(FILE *f, char *str)
 static void DeclareBit(FILE *f, char *rawStr)
 {
     char *str = MapSym(rawStr);
-	if (!strncmp(str, "M", 1) || !_stricmp(str, "I_SerialReady")) {
+	if (!strncmp(str, "M", 1) || (!strncmp(str, "I_", 2) && IsInternalFlag(str+2))) {
 		return;
 	}
 
@@ -267,6 +267,7 @@ static void GenerateDeclarations(FILE *f)
                 break;
 
             case INT_END_IF:
+            case INT_ELSE_IF:
             case INT_ELSE:
             case INT_COMMENT:
             case INT_SIMULATE_NODE_STATE:
@@ -297,11 +298,14 @@ static void GenerateAnsiC(FILE *f)
     int indent = 1;
     for(i = 0; i < IntCodeLen; i++) {
 
+        if(IntCode[i].op == INT_ELSE_IF) indent--;
         if(IntCode[i].op == INT_END_IF) indent--;
         if(IntCode[i].op == INT_ELSE) indent--;
 
-        int j;
-        for(j = 0; j < indent; j++) fprintf(f, "    ");
+		if(!i || IntCode[i-1].op != INT_ELSE_IF) {
+	        int j;
+		    for(j = 0; j < indent; j++) fprintf(f, "    ");
+		}
 
 		char *str = MapSym(IntCode[i].name1);
 
@@ -420,6 +424,10 @@ static void GenerateAnsiC(FILE *f)
 
             case INT_ELSE:
                 fprintf(f, "} else {\n"); indent++;
+                break;
+
+            case INT_ELSE_IF:
+                fprintf(f, "} else ");
                 break;
 
             case INT_SIMULATE_NODE_STATE:
@@ -761,6 +769,7 @@ DWORD InvokeGCC(char* dest)
 
 DWORD CompileAnsiCToGCC(char *dest)
 {
+	unsigned int i;
     SeenVariablesCount = 0;
 
 	char szAppPath[MAX_PATH]		= "";
@@ -873,7 +882,9 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "extern volatile unsigned int 	GPIO_INPUT;\n");
 	//fprintf(f, "extern volatile int 			ENCODER1;\n");
 	fprintf(f, "extern RTC_Time 				RTC_Now;\n");
-	fprintf(f, "extern volatile unsigned int 	I_SerialReady;\n");
+	for(i=0; *InternalFlags[i]; i++) {
+		fprintf(f, "extern volatile unsigned int 	I_%s;\n", InternalFlags[i]);
+	}
 
 	fprintf(f, "\n");
 	fprintf(f, "extern struct ip_addr 			IP_ADDRESS;\n");
@@ -887,6 +898,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", Prog.dailysave);
 
 	fprintf(f, "\n");
+	fprintf(f, "extern unsigned long long		OSTickCnt;\n");
 	fprintf(f, "unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];\n");
 
 	//int j;
@@ -975,10 +987,14 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "/* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */\n");
 	fprintf(f, "void PLC_Cycle(void *pdata)\n");
 	fprintf(f, "{\n");
+	fprintf(f, "	unsigned long long start_tick, diff_tick;\n");
+	fprintf(f, "\n");
 	//fprintf(f, "    StatusType s;\n");
 	//fprintf(f, "\n");
 	fprintf(f, "	for (;;)\n");
 	fprintf(f, "	{\n");
+	fprintf(f, "		start_tick = OSTickCnt;\n");
+	fprintf(f, "\n");
 	fprintf(f, "		GPIO_INPUT = GPIO_Input();\n");
 	fprintf(f, "\n");
 	fprintf(f, "		RS232_Console();\n");
@@ -988,7 +1004,9 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "\n");
 	fprintf(f, "		GPIO_Output(GPIO_OUTPUT);\n");
 	fprintf(f, "\n");
-	fprintf(f, "		CoTickDelay(6);\n");
+	fprintf(f, "		diff_tick = 10 - (OSTickCnt - start_tick);\n");
+	fprintf(f, "		if(diff_tick <= 10)\n");
+	fprintf(f, "			CoTickDelay(diff_tick);\n");
 	/*fprintf(f, "		s = CoTickDelay(12);\n");
 	fprintf(f, "\n");
 	fprintf(f, "		if (s != E_OK)\n");

@@ -179,6 +179,10 @@ void ExtractNamesFromCircuit(int which, void *any)
                     AppendIo(l->d.contacts.name, IO_TYPE_DIG_OUTPUT, l->d.contacts.bit);
                     break;
 
+				case IO_TYPE_INTERNAL_FLAG:
+                    AppendIo(l->d.contacts.name, IO_TYPE_INTERNAL_FLAG, l->d.contacts.bit);
+                    break;
+
                 default:
                     oops();
                     break;
@@ -457,7 +461,8 @@ void UpdateTypesFromSeenPreviouslyList()
 	for(i=0; i<IoSeenPreviouslyCount; i++) {
 		if(IoSeenPreviously[i].type == IO_TYPE_INTERNAL_RELAY ||
 		   IoSeenPreviously[i].type == IO_TYPE_DIG_INPUT ||
-		   IoSeenPreviously[i].type == IO_TYPE_DIG_OUTPUT)
+		   IoSeenPreviously[i].type == IO_TYPE_DIG_OUTPUT ||
+		   IoSeenPreviously[i].type == IO_TYPE_INTERNAL_FLAG)
 				UpdateTypeInCircuit(IoSeenPreviously[i].name, IoSeenPreviously[i].type);
 	}
 }
@@ -853,6 +858,7 @@ void SaveIoListToFile(FILE *f)
     for(i = 0; i < Prog.io.count; i++) {
         if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT  ||
            Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
+		   Prog.io.assignment[i].type == IO_TYPE_INTERNAL_FLAG ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
            Prog.io.assignment[i].type == IO_TYPE_READ_ENC ||
            Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
