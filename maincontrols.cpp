@@ -91,7 +91,7 @@ void MakeMainWindowControls(void)
         LVS_REPORT | LVS_SHOWSELALWAYS | WS_TABSTOP |
         LVS_SINGLESEL | WS_CLIPSIBLINGS, 
         12, 25, 300, 300, MainWindow, NULL, Instance, NULL);
-    ListView_SetExtendedListViewStyle(IoList, LVS_EX_FULLROWSELECT);
+    ListView_SetExtendedListViewStyle(IoList, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES);
 
     int typeWidth = 85;
     int pinWidth = 100;
@@ -358,7 +358,7 @@ HMENU MakeMainWindowMenus(void)
 
 	RecentMenu = CreatePopupMenu();
 	PopulateRecentListMenu();
-	AppendMenu(FileMenu, MF_STRING | MF_POPUP, (UINT_PTR)RecentMenu, _("Recentes"));
+	AppendMenu(FileMenu, MF_STRING | MF_POPUP, (UINT_PTR)RecentMenu, _("Projetos Recentes"));
 
 	AppendMenu(FileMenu, MF_STRING,   MNU_SAVE,   _("&Save\tCtrl+S"));
     AppendMenu(FileMenu, MF_STRING,   MNU_SAVE_AS,_("Save &As..."));
@@ -508,9 +508,9 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(ComunicationMenu, MF_STRING, MNU_WRITE_SERVO_YASKAWA,
         _("Escrita NS-600 Yaskawa\tCtrl+K"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_SEND,
-        _("Insert Serial &Send"));
+        _("Insert &UART Send"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_UART_RECV,
-        _("Insert Serial &Receive"));
+        _("Insert &UART Receive"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_READ_USS,
         _("Leitura de Parametro do USS\tShift+U"));
     AppendMenu(ComunicationMenu, MF_STRING, MNU_INSERT_WRITE_USS,
@@ -568,8 +568,11 @@ HMENU MakeMainWindowMenus(void)
     compile = CreatePopupMenu();
     AppendMenu(compile, MF_STRING, MNU_COMPILE, _("&Compile\tF5"));
     AppendMenu(compile, MF_STRING, MNU_COMPILE_AS, _("Compile &As..."));
+	AppendMenu(compile, MF_SEPARATOR, 0, NULL);
     AppendMenu(compile, MF_STRING, MNU_PROGRAM, _("&Gravar\tF6"));
     //AppendMenu(compile, MF_STRING, MNU_PROGRAM_AS, _("Gravar &como..."));
+	AppendMenu(compile, MF_SEPARATOR, 0, NULL);
+    AppendMenu(compile, MF_STRING, MNU_DEBUG, _("&Depurar\tF7"));
 
     help = CreatePopupMenu();
     //AppendMenu(help, MF_STRING, MNU_MANUAL, _("&Manual...\tF1"));
@@ -587,7 +590,7 @@ HMENU MakeMainWindowMenus(void)
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)SimulateMenu,
         _("Si&mulate"));
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)compile, 
-        _("&Compile"));
+        _("&Ações"));
     AppendMenu(TopMenu, MF_STRING | MF_POPUP, (UINT_PTR)help, _("&Help"));
 
     return TopMenu;

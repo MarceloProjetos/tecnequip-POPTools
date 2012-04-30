@@ -843,7 +843,12 @@ BOOL LoadIoListFromFile(FILE *f, int version)
 			}
 		}
 
-        AppendIoSeenPreviously(name, type, pin, bit);
+		if(type == IO_TYPE_DIG_OUTPUT && (pin == 17 || pin == 18)) { // Leds - change to internal relay type.
+			pin  = 0;
+			type = IO_TYPE_INTERNAL_RELAY;
+		}
+
+		AppendIoSeenPreviously(name, type, pin, bit);
     }
     return FALSE;
 }
@@ -1119,18 +1124,9 @@ void ShowIoMapDialog(int item)
 		if ((Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT && i < 51) ||
 			(Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && i > 50))
 		{
-			if (i == 67)
-				sprintf(buf, "%3d LED ERRO", Prog.mcu->pinInfo[i].bit,
-					Prog.mcu->pinInfo[i].port,
-					Prog.mcu->pinInfo[i].pin);
-			else if (i == 68)
-				sprintf(buf, "%3d LED CPU", Prog.mcu->pinInfo[i].bit,
-					Prog.mcu->pinInfo[i].port,
-					Prog.mcu->pinInfo[i].pin);
-			else
-				sprintf(buf, "%3d %c%d", Prog.mcu->pinInfo[i].pin,
-					Prog.mcu->pinInfo[i].port,
-					Prog.mcu->pinInfo[i].bit);
+			sprintf(buf, "%3d %c%d", Prog.mcu->pinInfo[i].pin,
+				Prog.mcu->pinInfo[i].port,
+				Prog.mcu->pinInfo[i].bit);
 
 			SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
 			PinListItemCount++;

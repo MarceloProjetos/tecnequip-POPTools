@@ -450,6 +450,159 @@ void LoadIOListToComboBox(HWND ComboBox, unsigned int mask)
     }
 }
 
+#include <setupapi.h>
+
+#ifndef GUID_DEVINTERFACE_COMPORT
+DEFINE_GUID(GUID_DEVINTERFACE_COMPORT, 0x86E0D1E0L, 0x8089, 0x11D0, 0x9C, 0xE4, 0x08, 0x00, 0x3E, 0x30, 0x1F, 0x73);
+#endif
+  
+typedef HKEY (__stdcall SETUPDIOPENDEVREGKEY)(HDEVINFO, PSP_DEVINFO_DATA, DWORD, DWORD, DWORD, REGSAM);
+typedef BOOL (__stdcall SETUPDICLASSGUIDSFROMNAME)(LPCTSTR, LPGUID, DWORD, PDWORD);
+typedef BOOL (__stdcall SETUPDIDESTROYDEVICEINFOLIST)(HDEVINFO);
+typedef BOOL (__stdcall SETUPDIENUMDEVICEINFO)(HDEVINFO, DWORD, PSP_DEVINFO_DATA);
+typedef HDEVINFO (__stdcall SETUPDIGETCLASSDEVS)(LPGUID, LPCTSTR, HWND, DWORD);
+typedef BOOL (__stdcall SETUPDIGETDEVICEREGISTRYPROPERTY)(HDEVINFO, PSP_DEVINFO_DATA, DWORD, PDWORD, PBYTE, DWORD, PDWORD);
+
+int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto)
+{
+  //Get the various function pointers we require from setupapi.dll
+  HINSTANCE hSetupAPI = LoadLibrary(_T("SETUPAPI.DLL"));
+  if (hSetupAPI == NULL)
+    return FALSE;
+
+  SETUPDIOPENDEVREGKEY* lpfnLPSETUPDIOPENDEVREGKEY = reinterpret_cast<SETUPDIOPENDEVREGKEY*>(GetProcAddress(hSetupAPI, "SetupDiOpenDevRegKey"));
+  SETUPDIGETCLASSDEVS* lpfnSETUPDIGETCLASSDEVS = reinterpret_cast<SETUPDIGETCLASSDEVS*>(GetProcAddress(hSetupAPI, "SetupDiGetClassDevsA"));
+  SETUPDIGETDEVICEREGISTRYPROPERTY* lpfnSETUPDIGETDEVICEREGISTRYPROPERTY = reinterpret_cast<SETUPDIGETDEVICEREGISTRYPROPERTY*>(GetProcAddress(hSetupAPI, "SetupDiGetDeviceRegistryPropertyA"));
+  SETUPDIDESTROYDEVICEINFOLIST* lpfnSETUPDIDESTROYDEVICEINFOLIST = reinterpret_cast<SETUPDIDESTROYDEVICEINFOLIST*>(GetProcAddress(hSetupAPI, "SetupDiDestroyDeviceInfoList"));
+  SETUPDIENUMDEVICEINFO* lpfnSETUPDIENUMDEVICEINFO = reinterpret_cast<SETUPDIENUMDEVICEINFO*>(GetProcAddress(hSetupAPI, "SetupDiEnumDeviceInfo"));
+
+  if ((lpfnLPSETUPDIOPENDEVREGKEY == NULL) || (lpfnSETUPDIDESTROYDEVICEINFOLIST == NULL) ||
+      (lpfnSETUPDIENUMDEVICEINFO == NULL) || (lpfnSETUPDIGETCLASSDEVS == NULL) || (lpfnSETUPDIGETDEVICEREGISTRYPROPERTY == NULL))
+  {
+    //Unload the setup dll
+    FreeLibrary(hSetupAPI);
+
+    SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
+
+    return FALSE;
+  }
+  
+  //Now create a "device information set" which is required to enumerate all the ports
+  GUID guid = GUID_DEVINTERFACE_COMPORT;
+  HDEVINFO hDevInfoSet = lpfnSETUPDIGETCLASSDEVS(&guid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+  if (hDevInfoSet == INVALID_HANDLE_VALUE)
+  {
+		DWORD dwLastError = GetLastError();
+  
+    //Unload the setup dll
+    FreeLibrary(hSetupAPI);
+    
+    SetLastError(dwLastError);
+
+    return FALSE;
+  }
+
+  //Finally do the enumeration
+  BOOL bMoreItems = TRUE, iPortMatch = FALSE;
+  int nIndex = 0, nPort, iFoundCount = 0;
+  SP_DEVINFO_DATA devInfo;
+
+  if(ComboBox) {
+	ComboBox_ResetContent(ComboBox);
+	if(bHasAuto) SendMessage(ComboBox, CB_INSERTSTRING, iFoundCount++, (LPARAM)("<auto>"));
+  }
+
+  while (bMoreItems)
+  {
+    //Enumerate the current device
+    devInfo.cbSize = sizeof(SP_DEVINFO_DATA);
+    bMoreItems = lpfnSETUPDIENUMDEVICEINFO(hDevInfoSet, nIndex, &devInfo);
+    if (bMoreItems)
+    {
+      //Did we find a serial port for this device
+      BOOL bAdded = FALSE;
+
+      //Get the registry key which stores the ports settings
+      HKEY hDeviceKey = lpfnLPSETUPDIOPENDEVREGKEY(hDevInfoSet, &devInfo, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_QUERY_VALUE);
+      if (hDeviceKey)
+      {
+        //Read in the name of the port
+        TCHAR szPortName[256];
+        szPortName[0] = _T('\0');
+        DWORD dwSize = sizeof(szPortName);
+        DWORD dwType = 0;
+  	    if ((RegQueryValueEx(hDeviceKey, _T("PortName"), NULL, &dwType, reinterpret_cast<LPBYTE>(szPortName), &dwSize) == ERROR_SUCCESS) && (dwType == REG_SZ))
+        {
+          //If it looks like "COMX" then
+          //add it to the array which will be returned
+          size_t nLen = _tcslen(szPortName);
+          if (nLen > 3)
+          {
+            if ((_tcsnicmp(szPortName, _T("COM"), 3) == 0) && IsNumber(&(szPortName[3])))
+            {
+              //Work out the port number
+              nPort = _ttoi(&(szPortName[3]));
+              bAdded = TRUE;
+            }
+          }
+        }
+
+        //Close the key now that we are finished with it
+        RegCloseKey(hDeviceKey);
+      }
+
+      //If the port was a serial port, then also try to get its friendly name
+      if (bAdded)
+      {
+        TCHAR szFriendlyName[256], COMPort[256+10]; // 256+10 = Friendly name + "COMx - " string
+        szFriendlyName[0] = _T('\0');
+        DWORD dwSize = sizeof(szFriendlyName);
+        DWORD dwType = 0;
+        if (lpfnSETUPDIGETDEVICEREGISTRYPROPERTY(hDevInfoSet, &devInfo, SPDRP_DEVICEDESC, &dwType, reinterpret_cast<PBYTE>(szFriendlyName), dwSize, &dwSize) && (dwType == REG_SZ))
+        {
+			if(!strcmp(szFriendlyName, "Silicon Labs CP210x USB to UART Bridge")) {
+				if(!ComboBox) // Just searching for POP-7 device
+					break;
+
+				strcpy(szFriendlyName, "POP-7");
+			}
+			sprintf(COMPort, "COM%d - %s", nPort, szFriendlyName);
+        }
+        else
+        {
+			Error(COMPort, "COM%d", nPort);
+        }
+
+		if(ComboBox) {
+			SendMessage(ComboBox, CB_INSERTSTRING, iFoundCount, (LPARAM)(COMPort));
+
+			if(nPort == iDefaultPort) {
+				iPortMatch = TRUE;
+				SendMessage(ComboBox, CB_SETCURSEL, iFoundCount, 0);
+			}
+
+			iFoundCount++;
+		}
+      }
+    }
+
+    ++nIndex;
+  }
+
+  if((!iPortMatch || !iDefaultPort) && ComboBox) {
+	SendMessage(ComboBox, CB_SETCURSEL, iFoundCount ? 0 : -1, 0);
+  }
+
+  //Free up the "device information set" now that we are finished with it
+  lpfnSETUPDIDESTROYDEVICEINFOLIST(hDevInfoSet);
+
+  //Unload the setup dll
+  FreeLibrary(hSetupAPI);
+
+  //Return the success indicator or POP-7 port number
+  return !ComboBox ? nPort : TRUE;
+}
+
 unsigned int GetTypeFromName(char *name)
 {
 	int i;
@@ -497,7 +650,7 @@ bool IsValidVarName(char *name)
 
 	while(*name) {
 		// If char isn't letter nor '_' or is number in the first position, returns false
-		if(((toupper(*name) < 'A' || toupper(*name) > 'Z') && *name != '_') || (first && *name >= '0' && *name <= '9'))
+		if((toupper(*name) < 'A' || toupper(*name) > 'Z') && *name != '_' && !(!first && (*name >= '0' && *name <= '9')))
 			return false;
 
 		name++;

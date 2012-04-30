@@ -540,6 +540,11 @@ void Render()
 		ID2D1GeometrySink *pSink = NULL;
 
 		hr = pLineFillPathGeometry->Open(&pSink);
+		if(!SUCCEEDED(hr)) {
+			Error("Ocorreu um erro ao desenhar o gráfico do D/A.");
+			DiscardDeviceResources();
+			return;
+		}
 
 		pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
 
@@ -661,8 +666,7 @@ void Render()
 
 		hr = pRenderTarget->EndDraw();
 
-        if (hr == D2DERR_RECREATE_TARGET)
-            DiscardDeviceResources();
+		DiscardDeviceResources();
 	}
 }
 

@@ -46,6 +46,10 @@
 
 #pragma warning(disable : 4995)
 
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+#pragma comment(lib, "Ws2_32.lib")
+
 #include <commctrl.h>
 #pragma comment(lib, "comctl32.lib")
 
@@ -118,9 +122,7 @@ typedef SDWORD SWORD;
 #include "resource.h"
 #include "splash.h"
 #include "XMLWrapper.h"
-
-// Helpful macro to get number of elements in an array
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(*x))
+#include "modbus_master.h"
 
 //-----------------------------------------------
 // Constants for the GUI. We have drop-down menus, a listview for the I/Os,
@@ -219,6 +221,7 @@ typedef SDWORD SWORD;
 #define MNU_COMPILE_AS          0x71
 #define MNU_PROGRAM				0x72
 #define MNU_PROGRAM_AS			0x73
+#define MNU_DEBUG               0x74
 
 #define MNU_MANUAL              0x80
 #define MNU_ABOUT               0x81
@@ -673,7 +676,6 @@ typedef struct PlcProgramTag {
     int         cycleTime;
     int         mcuClock;
     int         baudRate;	// RS485 baudrate
-	int			comPort;  // programming com port
 	int			UART;
 	unsigned char ip[4];
 	unsigned char mask[4];
@@ -725,6 +727,9 @@ typedef struct SettingsTag {
 	char last_new_text[MAX_NAME_LEN];
 	// Recent List
 	char recent_list[MAX_RECENT_ITEMS][MAX_PATH];
+	// COM Port Settings
+	int COMPortFlash;
+	int COMPortDebug;
 } Settings;
 
 //-----------------------------------------------
@@ -1069,7 +1074,7 @@ void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
 // confdialog.cpp
-void ShowConfDialog(void);
+void ShowConfDialog(bool NetworkSection);
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
 // FARdialog.cpp
@@ -1110,6 +1115,7 @@ void CompileSuccessfulMessage(char *str);
 void ProgramSuccessfulMessage(char *str);
 bool IsNumber(char *str);
 void LoadIOListToComboBox(HWND ComboBox, unsigned int mask);
+int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto);
 unsigned int GetTypeFromName(char *name);
 bool IsInternalFlag(char *name);
 bool IsValidNumber(char *number);
@@ -1181,5 +1187,7 @@ void CompileInterpreted(char *outFile);
 
 BOOL FlashProgram(char * hexFile, int ComPort, long BaudRate);
 
+// debugdialog.cpp
+void ShowDebugDialog(void);
 
 #endif

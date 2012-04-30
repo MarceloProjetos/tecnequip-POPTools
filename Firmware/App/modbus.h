@@ -4,6 +4,7 @@
 #include "lpc_types.h"
 
 #include "rs485.h"
+#include "rs232.h"
 #include "modbus_rtu.h"
 #include "modbus_tcp.h"
 
@@ -22,6 +23,10 @@ unsigned int Modbus_WriteMultipleRegisters(struct MODBUS_Device *dev, union MODB
 unsigned int Modbus_MaskWriteRegister(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
 unsigned int Modbus_RWMultipleRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
 unsigned int Modbus_ReadExceptionStatus(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+
+unsigned int Modbus232_ReadHoldingRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+unsigned int Modbus232_WriteSingleRegister(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+unsigned int Modbus232_WriteMultipleRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
 
 /******************************************************************************
 * Prototipos de Funções

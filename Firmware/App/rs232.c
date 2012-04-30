@@ -72,6 +72,7 @@ unsigned int RS232_Read(char * buffer, unsigned int size)
 	return i;
 }
 
+#ifdef RS232_CONSOLE
 unsigned char RS232_CRC(char * buffer, unsigned int size)
 {
 	uint8_t crc = 0;
@@ -160,5 +161,30 @@ void RS232_Console(void)
 
 	}
 }
+#else
+#include "modbus.h"
+
+extern struct MODBUS_Device modbus_rs232;
+
+void RS232_Console(void)
+{
+	unsigned int sz;
+	static unsigned int rs232_timeout = 0;
+
+	sz = RS232_Read(rs232_rx_buffer + rs232_rx_index, sizeof(rs232_rx_buffer) - rs232_rx_index);
+	rs232_rx_index += sz;
+
+  if(rs232_rx_index) {
+    if(sz) {
+      rs232_timeout  = 0;
+    } else if(++rs232_timeout > 3) {
+      Modbus_RTU_Receive(&modbus_rs232, Modbus_RTU_Validate((unsigned char *)rs232_rx_buffer, rs232_rx_index, 0));
+
+      rs232_timeout  = 0;
+      rs232_rx_index = 0;
+    }
+  }
+}
+#endif // RS232_CONSOLE
 
 #endif

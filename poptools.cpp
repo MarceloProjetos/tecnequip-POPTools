@@ -334,18 +334,25 @@ static BOOL CompileProgram(BOOL compileAs)
 	// check if a valid path and write permission
 	if (compileAs || strlen(CurrentCompileFile) > 0)
 	{
-	    FILE *f = fopen(CurrentCompileFile, "w");
+		// We should to use "a" instead of "w" to avoid to overwrite the current file
+		FILE *f = fopen(CurrentCompileFile, "r");
 		if(!f)
 			CurrentCompileFile[0] = '\0';
-		else
+		else {
 			fclose(f);
+			fopen(CurrentCompileFile, "a");
+			if(!f)
+				CurrentCompileFile[0] = '\0';
+			else
+				fclose(f);
+		}
 	}
 
     if(compileAs || strlen(CurrentCompileFile)==0) 
 	{
         OPENFILENAME ofn;
 
-		if(strlen(CurrentSaveFile)) {
+		if(strlen(CurrentSaveFile) && !strlen(CurrentCompileFile)) {
 			strcpy(CurrentCompileFile, CurrentSaveFile);
 			ChangeFileExtension(CurrentCompileFile, "hex");
 		}
@@ -432,14 +439,21 @@ CompileProgramEnd:
 //-----------------------------------------------------------------------------
 static void WriteProgram(BOOL compileAs)
 {
+	unsigned int iCOMPort;
 	BOOL PreviousRunningInBatchMode = RunningInBatchMode;
+
+	if(!POPSettings.COMPortFlash) {
+		iCOMPort = LoadCOMPorts(0, 0, 0);
+	} else {
+		iCOMPort = POPSettings.COMPortFlash;
+	}
 
 	RunningInBatchMode = TRUE;
     if (CompileProgram(compileAs)) 
 	{
 		SetCursor(LoadCursor(NULL, IDC_WAIT));
 		RunningInBatchMode = PreviousRunningInBatchMode;
-		FlashProgram(CurrentCompileFile, Prog.comPort, 230400);
+		FlashProgram(CurrentCompileFile, iCOMPort, 230400);
 	} 
 	else 
 	{
@@ -911,7 +925,7 @@ cmp:
             break;
 
         case MNU_MCU_SETTINGS:
-            CHANGING_PROGRAM(ShowConfDialog());
+            CHANGING_PROGRAM(ShowConfDialog(false));
             break;
 
         case MNU_MCU_PREFERENCES:
@@ -954,6 +968,10 @@ cmp:
             if(CheckSaveUserCancels()) break;
             WriteProgram(TRUE);
             break;
+
+		case MNU_DEBUG:
+			ShowDebugDialog();
+			break;
 
         case MNU_MANUAL:
             ShowHelpDialog(FALSE);
@@ -1526,6 +1544,33 @@ static BOOL MakeWindowClass()
     return RegisterClassEx(&wc);
 }
 
+//-----------------------------------------------------------------------------
+// Create our window class; nothing exciting.
+//-----------------------------------------------------------------------------
+extern LRESULT CALLBACK DebugDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+static BOOL MakeDebugWindowClass()
+{
+    WNDCLASSEX wc;
+    memset(&wc, 0, sizeof(wc));
+    wc.cbSize = sizeof(wc);
+
+    wc.style            = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC |
+                          CS_DBLCLKS;
+    wc.lpfnWndProc      = (WNDPROC)DebugDialogProc;
+    wc.hInstance        = Instance;
+    wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
+    wc.lpszClassName    = "POPDebugDialog";
+    wc.lpszMenuName     = NULL;
+    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+    wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
+                            IMAGE_ICON, 32, 32, 0);
+    wc.hIconSm          = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
+                            IMAGE_ICON, 16, 16, 0);
+
+    return RegisterClassEx(&wc);
+}
+
 #define SETTINGS_FILE (L"POPTools\\settings.xml")
 
 void LoadSettings(void)
@@ -1546,9 +1591,11 @@ void LoadSettings(void)
 	if(!XmlSettings.Open(settings_file)) {
 		ShowTaskDialog(L"Erro ao carregar as preferências", L"Será utilizada a configuração padrão", TD_ERROR_ICON, TDCBF_OK_BUTTON);
 
-	POPSettings.ShowSimulationWarnings = TRUE;
+		POPSettings.ShowSimulationWarnings = TRUE;
 
-	return;
+		delete [] settings_file;
+
+		return;
 	}
 
 	XmlSettings.SelectElements(L"SimulationSettings", 0);
@@ -1583,11 +1630,38 @@ void LoadSettings(void)
 
 		XmlSettings.FreeElementList(pElementList);
 	}
+
+	XmlSettings.ClearActiveSelection();
+	XmlSettings.SelectElements(L"PortSettings", 0);
+	pElementList = XmlSettings.GetElementList(-1);
+
+	if(pElementList != NULL) {
+		pCurrentElementList = pElementList->children;
+
+		while(pCurrentElementList != NULL) {
+			if(!wcscmp(pCurrentElementList->element.name, L"COMPortFlash")) {
+				pStr = _com_util::ConvertBSTRToString(pCurrentElementList->element.value);
+				POPSettings.COMPortFlash = atoi(pStr);
+				delete pStr;
+			} else if(!wcscmp(pCurrentElementList->element.name, L"COMPortDebug")) {
+				pStr = _com_util::ConvertBSTRToString(pCurrentElementList->element.value);
+				POPSettings.COMPortDebug = atoi(pStr);
+				delete pStr;
+			}
+
+			pCurrentElementList = pCurrentElementList->next;
+		}
+
+		XmlSettings.FreeElementList(pElementList);
+	}
+
+	delete [] settings_file;
 }
 
 void SaveSettings(void)
 {
 	unsigned int i;
+	wchar_t COMPort[10];
 
 	XmlSettings.ClearActiveSelection();
 	XmlSettings.SelectElements(L"SimulationSettings", 0);
@@ -1604,6 +1678,18 @@ void SaveSettings(void)
 
 		XmlSettings.AddElement(0, -1, "RecentFile", POPSettings.recent_list[i]);
 	}
+
+	XmlSettings.ClearActiveSelection();
+	XmlSettings.SelectElements(L"PortSettings", 0);
+	XmlSettings.SelectElements(L"COMPortFlash", 0);
+	swprintf((wchar_t *)COMPort, 10, L"%d", POPSettings.COMPortFlash);
+	XmlSettings.ChangeElement(0, COMPort);
+
+	XmlSettings.ClearActiveSelection();
+	XmlSettings.SelectElements(L"PortSettings", 0);
+	XmlSettings.SelectElements(L"COMPortDebug", 0);
+	swprintf((wchar_t *)COMPort, 10, L"%d", POPSettings.COMPortDebug);
+	XmlSettings.ChangeElement(0, COMPort);
 
 	XmlSettings.Save(NULL);
 }
@@ -1653,6 +1739,9 @@ static void DiscardDeviceIndependentResources()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, INT nCmdShow)
 {
+	WSADATA wsaData;
+	int iResult;
+
 	Instance = hInstance;
 
     MainHeap = HeapCreate(0, 1024*64, 0);
@@ -1660,7 +1749,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LoadSettings();
 
     MakeWindowClass();
-    MakeDialogBoxClass();
+	MakeDebugWindowClass();
+	MakeDialogBoxClass();
     HMENU top = MakeMainWindowMenus();
 
     MainWindow = CreateWindowEx(0, "LDmicro", "",
@@ -1677,6 +1767,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     MakeMainWindowControls();
     MainWindowResized();
+
+	// Initialize Winsock
+	iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+	if (iResult != 0) {
+		printf("WSAStartup failed: %d\n", iResult);
+		return 1;
+	}
 
     NewProgram();
     strcpy(CurrentSaveFile, "");
@@ -1742,7 +1839,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     RefreshScrollbars();
     UpdateMainWindowTitleBar();
 
-    MSG msg;
+	// Initialize ModBUS protocol and devices
+	Init_MBDev();
+
+	MSG msg;
     DWORD ret;
     while(ret = GetMessage(&msg, NULL, 0, 0)) {
         if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
@@ -1767,6 +1867,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     FreezeDWORD(IoListHeight);
 
 	SaveSettings();
+
+	WSACleanup();
 
 	return 0;
 }

@@ -41,7 +41,6 @@ static HWND CycleTextbox;
 static HWND BaudTextbox;
 //static HWND PLCCombobox;
 static HWND BaudRateCombobox;
-static HWND ComPortCombobox;
 static HWND ParityCombobox;
 static HWND SNTPCombobox;
 static HWND GMTCombobox;
@@ -62,13 +61,8 @@ static LONG_PTR PrevConfDialogProc;
 static LONG_PTR PrevCrystalProc;
 static LONG_PTR PrevCycleProc;
 static LONG_PTR PrevBaudProc;
-static LONG_PTR PrevComPortProc;
 
 //const LPCTSTR ComboboxPLCItens[] = { _("POP7"), _("POP9") };
-
-const LPCTSTR ComboboxComPortItens[] = { _("COM1"), _("COM2"), _("COM3"), _("COM4"), _("COM5"), _("COM6"), _("COM7"), 
-						_("COM8"), _("COM9"), _("COM10"), _("COM11"), _("COM12"), _("COM13"), _("COM14"), _("COM15"), _("COM16"),
-						_("COM17"), _("COM18"), _("COM19"), _("COM20"), _("COM21"), _("COM22") };
 
 const LPCTSTR ComboboxGMTItens[] = { _("(GMT-12:00) Linha de Data Internacional Oeste"), _("(GMT-11:00) Ilhas Midway,Samoa"),
 								_("(GMT-10:00) Hawaí"), _("(GMT-09:00) Alasca"),
@@ -115,8 +109,6 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
         t = PrevCycleProc;
     else if(hwnd == BaudTextbox)
         t = PrevBaudProc;
-    else if(hwnd ==ComPortCombobox)
-        t = PrevComPortProc;
     else
         oops();
 
@@ -153,7 +145,7 @@ static LRESULT CALLBACK ConfDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
             } else if(h == CancelButton && wParam == BN_CLICKED) {
                 DialogDone = TRUE;
                 DialogCancel = TRUE;
-            }
+			}
             break;
 			}
 
@@ -242,16 +234,6 @@ static void MakeControls(void)
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
         205, 120, 155, 100, TabChild[0], NULL, Instance, NULL);
     NiceFont(ParityCombobox);
-
-    HWND textLabel4 = CreateWindowEx(0, WC_STATIC, _("Porta Gravação:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 150, 145, 21, TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel4);
-
-	ComPortCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
-        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        205, 150, 155, 100, TabChild[0], NULL, Instance, NULL);
-    NiceFont(ComPortCombobox);
 
 	HWND textLabel5 = CreateWindowEx(0, WC_STATIC, _("Endereço IP:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -385,7 +367,7 @@ static void MakeControls(void)
 	OnTabChange();
 }
 
-void ShowConfDialog(void)
+void ShowConfDialog(bool NetworkSection)
 {
 	unsigned int i, ipaddress, ipmask, ipgw, ipdns;
     // The window's height will be resized later, to fit the explanation text.
@@ -397,6 +379,10 @@ void ShowConfDialog(void)
         (LONG_PTR)ConfDialogProc);
 
     MakeControls();
+	if(NetworkSection) {
+		TabCtrl_SetCurSel(TabCtrl, 1);
+		OnTabChange();
+	}
 
     char buf[16];
 /*    sprintf(buf, "%.1f", (Prog.cycleTime / 1000.0));
@@ -412,12 +398,6 @@ void ShowConfDialog(void)
 
 	/*SendMessage(PLCCombobox, CB_SETCURSEL, 0, 0);
 	SendMessage(PLCCombobox, CB_SETDROPPEDWIDTH, 100, 0);*/
-
-	for (i = 0; i < sizeof(ComboboxComPortItens) / sizeof(ComboboxComPortItens[0]); i++)
-		SendMessage(ComPortCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxComPortItens[i]));
-
-	SendMessage(ComPortCombobox, CB_SETCURSEL, Prog.comPort ? Prog.comPort - 1 : 0, 0);
-	SendMessage(ComPortCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
 	for (i = 0; i < sizeof(ComboboxParityItens) / sizeof(ComboboxParityItens[0]); i++)
 		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxParityItens[i]));
@@ -540,7 +520,6 @@ void ShowConfDialog(void)
             (LPARAM)(buf));
         Prog.baudRate = atoi(buf);
 
-		Prog.comPort = SendMessage(ComPortCombobox, CB_GETCURSEL, 0, 0) + 1;
 		Prog.UART = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
 
 		SendMessage(SNTPCombobox, WM_GETTEXT, (WPARAM)sizeof(Prog.sntp),

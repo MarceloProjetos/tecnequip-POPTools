@@ -1328,6 +1328,8 @@ void ShowUartSimulationWindow(void)
         TerminalX, TerminalY, TerminalW, TerminalH,
         MainWindow, NULL, Instance, NULL);
 
+	ListView_SetExtendedListViewStyle(UartSimulationWindow, LVS_EX_DOUBLEBUFFER);
+
     UartSimulationTextControl = CreateWindowEx(0, WC_EDIT, "", WS_CHILD |
         WS_CLIPSIBLINGS | WS_VISIBLE | ES_AUTOVSCROLL | ES_MULTILINE |
         WS_VSCROLL, 0, 0, TerminalW, TerminalH, UartSimulationWindow, NULL,

@@ -6,4 +6,8 @@
 	<SimulationSettings>
 		<ShowWarnings>1</ShowWarnings>
 	</SimulationSettings>
+  <PortSettings>
+    <COMPortFlash>0</COMPortFlash>
+    <COMPortDebug>0</COMPortDebug>
+  </PortSettings>
 </POPSettings>

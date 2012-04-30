@@ -78,7 +78,7 @@ static LRESULT CALLBACK FARDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	            } else if(h == ReplaceAllButton) {
 					if(IsValidNameAndType(search_text, new_text, "Substituir por", validate_mode | VALIDATE_DONT_ASK | VALIDATE_TYPES_MUST_MATCH | VALIDATE_ACCEPT_IO_PENDING, GetTypeFromName(search_text), 0, 0)) {
 			            matches = FindAndReplace(search_text, new_text, FAR_REPLACE_ALL);
-						swprintf(texto, ARRAY_SIZE(texto), L"Encontrada(s) %d ocorrência(s)", matches);
+						swprintf(texto, sizeof(texto)/sizeof(*texto), L"Encontrada(s) %d ocorrência(s)", matches);
 						ShowTaskDialog(texto, NULL, TD_INFORMATION_ICON, TDCBF_OK_BUTTON);
 					}
 				}

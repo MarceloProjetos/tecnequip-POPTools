@@ -520,10 +520,10 @@ static void GenerateAnsiC(FILE *f)
             case INT_SET_PWM:
 				break;
             case INT_UART_RECV:
-				fprintf(f, "%s = RS232_Read((unsigned char *)&%s, 1);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
+				fprintf(f, "%s = RS485_Read((unsigned char *)&%s, 1);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
 				break;
             case INT_UART_SEND:
-				fprintf(f, "%s = RS232_Write((unsigned char *)&%s, 1);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
+				fprintf(f, "%s = RS485_Write((unsigned char *)&%s, 1);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
                 break;
 
             default:

@@ -375,7 +375,7 @@ BOOL LoadProjectFromFile(char *filename)
     if(!f) return FALSE;
 
     char line[512];
-    int version, crystal, cycle, baud, comPort, UART, ip[4], mask[4], gw[4], dns[4], x4;
+    int version, crystal, cycle, baud, UART, ip[4], mask[4], gw[4], dns[4], x4;
 	char sntp[126];
 
 	version = 0;
@@ -414,8 +414,8 @@ BOOL LoadProjectFromFile(char *filename)
             Prog.baudRate = baud;
         } else if(sscanf(line, "PARITY=%d", &UART)) {
 			Prog.UART = UART;
-        } else if(sscanf(line, "COM=%d", &comPort)) {
-            Prog.comPort = comPort;
+//        } else if(sscanf(line, "COM=%d", &comPort)) {
+//            Prog.comPort = comPort;
         } else if(sscanf(line, "IP=%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3])) {
             Prog.ip[0] = ip[0];
             Prog.ip[1] = ip[1];
@@ -827,7 +827,7 @@ BOOL SaveProjectToFile(char *filename)
     fprintf(f, "CRYSTAL=%d\n", Prog.mcuClock);
     fprintf(f, "BAUD=%d\n", Prog.baudRate);
 	fprintf(f, "PARITY=%d\n", Prog.UART);
-	fprintf(f, "COM=%d\n", Prog.comPort);
+	fprintf(f, "COM=%d\n", POPSettings.COMPortFlash ? POPSettings.COMPortFlash - 1 : 0);
     fprintf(f, "IP=%d.%d.%d.%d\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
     fprintf(f, "MASK=%d.%d.%d.%d\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
     fprintf(f, "GW=%d.%d.%d.%d\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);

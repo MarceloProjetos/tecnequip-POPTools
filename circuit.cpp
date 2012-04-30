@@ -823,7 +823,6 @@ void FreeEntireProgram(void)
     Prog.mcuClock = 100000000;
     Prog.baudRate = 9600;
 	Prog.UART = 0;
-	Prog.comPort = 1;
     Prog.io.count = 0;
     Prog.mcu = NULL;
 

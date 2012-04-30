@@ -132,6 +132,12 @@
     <ClCompile Include="Firmware\App\modbus_rtu.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="debugdialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="modbus_master.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -168,6 +174,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Firmware\App\modbus_rtu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="modbus_master.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -210,10 +219,10 @@
     <None Include="bin\src\ld.h">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="bin\popsettings.xml">
+    <None Include="poptools.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="poptools.ico">
+    <None Include="bin\settings.xml">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

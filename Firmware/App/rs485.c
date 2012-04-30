@@ -179,12 +179,12 @@ void RS485_Handler (void)
 	sz = RS485_Read(rs485_rx_buffer + rs485_rx_index, sizeof(rs485_rx_buffer) - rs485_rx_index);
 	rs485_rx_index += sz;
 
-	if (rs485_timeout > 3)
-	{
-		rs485_timeout = 0;
+	if(rs485_rx_index) {
+		if(sz) {
+			rs485_timeout  = 0;
+		} else if(++rs485_timeout > 3) {
+			rs485_timeout = 0;
 
-		if (rs485_rx_index)
-		{
 			if (WAITING_FOR_USS == 1) // uss
 			{
 				USS_Ready((PPO1*)rs485_rx_buffer, rs485_rx_index);

@@ -83,7 +83,7 @@ static void MakeControls(void)
         16, 41, 100, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(SourceInputPinRadio);
 
-    SourceOutputPinRadio = CreateWindowEx(0, WC_BUTTON, _("Output pin"),
+    SourceOutputPinRadio = CreateWindowEx(0, WC_BUTTON, _("Pin on MCU"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         16, 61, 100, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(SourceOutputPinRadio);

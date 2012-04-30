@@ -14,19 +14,6 @@
 
 static unsigned long totalWrite = 0;
 
-BYTE CheckSum(BYTE * buffer, int size)
-{
-	BYTE chk = 0;
-	int i = 0;
-
-	while(i < size)
-	{
-		chk ^= *(buffer + i++);
-	}
-
-	return chk;
-}
-
 void ShowError(LPTSTR lpszFunction) 
 { 
     // Retrieve the system error message for the last-error code
@@ -299,85 +286,18 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 
 	Sleep(5000);
 
-	TCHAR lpszCommPort[10];
+	struct MODBUS_Reply reply;
 
-	StringCchPrintf(lpszCommPort, sizeof(lpszCommPort) / sizeof(TCHAR), "COM%d", ComPort);
+	memset(&reply, 0, sizeof(reply));
+	reply.ExceptionCode = MODBUS_EXCEPTION_SLAVE_DEVICE_FAILURE;
 
-	HANDLE hCommPort = ::CreateFile( lpszCommPort,
-		   GENERIC_READ|GENERIC_WRITE,  // access ( read and write)
-		   0,                           // (share) 0:cannot share the
-										// COM port
-		   0,                           // security  (None)
-		   OPEN_EXISTING,               // creation : open_existing
-		   NULL,        // we want overlapped operation
-		   0                            // no templates file for
-										// COM port...
-		   );
+	if(OpenCOMPort(POPSettings.COMPortFlash, 115200, 8, NOPARITY, ONESTOPBIT)) {
+		int trycount = 0;
+		BYTE cWriteBuffer[16];
+		MODBUS_FCD_Data mbdata1, mbdata2;
 
-	DCB dcb = {0};
-	dcb.DCBlength = sizeof(DCB);
-
-	if (!GetCommState(hCommPort,&dcb))
-	{
-		CloseHandle(hCommPort);
-		ProgramSuccessfulMessage("Falha ao obter o status da porta de comunicação serial !");
-		return FALSE;
-	}
-
-	dcb.BaudRate  = 115200;
-	dcb.ByteSize  = 8; // 8 Bits
-	dcb.Parity    = 0; // None
-	dcb.StopBits  = ONESTOPBIT;
-	dcb.fDtrControl = DTR_CONTROL_DISABLE;
-	dcb.fRtsControl = DTR_CONTROL_DISABLE;
-
-	if (!SetCommState(hCommPort, &dcb))
-	{
-		CloseHandle(hCommPort);
-		ProgramSuccessfulMessage("Falha ao configurar a porta serial !");
-		return FALSE;
-	}
-
-	DWORD dwFunction;
-
-	dwFunction = CLRRTS; // SETRTS;
-	EscapeCommFunction(hCommPort, dwFunction);
-
-	dwFunction = CLRDTR; // SETDTR;
-	EscapeCommFunction(hCommPort, dwFunction);
-
-	COMMTIMEOUTS comTimeOut;                   
-
-	comTimeOut.ReadIntervalTimeout = 5;
-	comTimeOut.ReadTotalTimeoutMultiplier = 3;
-	comTimeOut.ReadTotalTimeoutConstant = 2;
-	comTimeOut.WriteTotalTimeoutMultiplier = 3;
-	comTimeOut.WriteTotalTimeoutConstant = 2;
-
-	if (!SetCommTimeouts(hCommPort, &comTimeOut))
-	{
-		CloseHandle(hCommPort);
-		ProgramSuccessfulMessage("Falha ao configurar o timeout da porta serial !");
-		return FALSE;
-	}
-
-	BYTE cWriteBuffer[11];
-	BYTE cReadBuffer[11];
-	DWORD writenBytes, readedBytes = 0;
-	int trycount = 0;
-
-	time_t rawtime;
-	struct tm * t;
-
-	while (readedBytes < sizeof(cReadBuffer) && trycount < 10)
-	{
-		readedBytes = 0;
-		writenBytes = 0;
-
-		PurgeComm(hCommPort, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXABORT | PURGE_TXCLEAR);
-
-		memset(cWriteBuffer, 0, sizeof(cWriteBuffer));
-		memset(cReadBuffer, 0, sizeof(cReadBuffer));
+		time_t rawtime;
+		struct tm * t;
 
 		time ( &rawtime );
 		t = localtime ( &rawtime );
@@ -386,86 +306,48 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 		t->tm_mon++;
 		t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
 
+		memset(cWriteBuffer, 0, sizeof(cWriteBuffer));
+
 		memcpy(&cWriteBuffer[0], &t->tm_mday, 1);
-		memcpy(&cWriteBuffer[1], &t->tm_mon, 1);
+		memcpy(&cWriteBuffer[1], &t->tm_mon , 1);
 		memcpy(&cWriteBuffer[2], &t->tm_year, 2);
 		memcpy(&cWriteBuffer[4], &t->tm_hour, 1);
-		memcpy(&cWriteBuffer[5], &t->tm_min, 1);
-		cWriteBuffer[6] = 0; //memcpy(&cWriteBuffer[6], &t->tm_sec, 1);
+		memcpy(&cWriteBuffer[5], &t->tm_min , 1);
+		memcpy(&cWriteBuffer[6], &t->tm_sec , 1);
 		memcpy(&cWriteBuffer[7], &t->tm_wday, 1);
 		memcpy(&cWriteBuffer[8], &t->tm_yday, 2);
 
-		WORD checksum = 0;
-		checksum = CheckSum(cWriteBuffer, sizeof(cWriteBuffer) - 1);
+		mbdata1.write_multiple_registers.quant = 3;
+		mbdata1.write_multiple_registers.size  = mbdata1.write_multiple_registers.quant*2;
+		mbdata1.write_multiple_registers.start = 1;
+		mbdata1.write_multiple_registers.val   = cWriteBuffer;
 
-		cWriteBuffer[sizeof(cWriteBuffer) - 1] = (BYTE)checksum;
+		mbdata2.write_multiple_registers.quant = 2;
+		mbdata2.write_multiple_registers.size  = mbdata2.write_multiple_registers.quant*2;
+		mbdata2.write_multiple_registers.start = 4;
+		mbdata2.write_multiple_registers.val   = cWriteBuffer+6;
 
-		if (WriteFile(hCommPort,
-						cWriteBuffer,
-						sizeof(cWriteBuffer),
-						&writenBytes,NULL) == 0)
-
-		{
-			if (GetLastError() != ERROR_IO_PENDING) 
-			{
-				//CloseHandle(hCommPort);
-				//ProgramSuccessfulMessage("Falha ao escrever na porta serial !");
-				//ShowError("Write");
-				//return FALSE;
-				MessageBox(NULL, "Falha ao escrever na porta serial do CLP !", "Atualizando o RTC...", MB_OK);
-				break;
-			}
-		}
-
-		if (writenBytes)
-		{
-			Sleep(500);
-
-			if (ReadFile(hCommPort,
-						cReadBuffer,
-						sizeof(cReadBuffer),
-						&readedBytes,
-						NULL) == 0)
-
-			{
-				if (GetLastError() != ERROR_IO_PENDING) 
-				{
-					//CloseHandle(hCommPort);
-					//ProgramSuccessfulMessage("Falha ao ler a porta serial !");
-					//ShowError("Read");
-					//return FALSE;
-					MessageBox(NULL, "Falha ao ler da porta serial do CLP !", "Atualizando o RTC...", MB_OK);
+		do {
+			reply = Modbus_RTU_Send(&MBDev_Serial, 0, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, &mbdata1);
+			if(reply.ExceptionCode == MODBUS_EXCEPTION_NONE) {
+				reply = Modbus_RTU_Send(&MBDev_Serial, 0, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, &mbdata2);
+				if(reply.ExceptionCode == MODBUS_EXCEPTION_NONE) {
 					break;
 				}
 			}
-		}
 
-		trycount++;
-		if (readedBytes == sizeof(cReadBuffer))
-			break;
+			Sleep(1000);
 
-		Sleep(1000);
-
-		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Atualizando o relógio RTC da POP...[%d]", trycount);
-		StatusBarSetText(0, text);
+			trycount++;
+			StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Atualizando o relógio RTC da POP...[%d]", trycount);
+			StatusBarSetText(0, text);
+		} while(trycount < 10);
 	}
 
-	if (readedBytes == 0)
+	if (reply.ExceptionCode != MODBUS_EXCEPTION_NONE)
 		MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nNão foi possível verificar se a data/hora foi atualizada corretamente por que a leitura do RTC retornou 0 bytes !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
-	else if (memcmp(cWriteBuffer, cReadBuffer, sizeof(cWriteBuffer)) != 0)
-	{
-		//CloseHandle(hCommPort);
-		//ProgramSuccessfulMessage("Falha ao ler a porta serial !");
-		//ShowError("CRC");
-		
-		if (readedBytes == sizeof(cReadBuffer))
-			MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nA data/hora lida do RTC é diferente da data/hora escrita !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
-		else if (readedBytes)
-			MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nNão foi possível verificar se a data/hora foi atualizada corretamente por que a leitura do RTC retornou dados inválidos !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
-		//return FALSE;
-	}
 
-	CloseHandle(hCommPort);
+	CloseCOMPort();
 
 	// tell user we are done
 	StatusBarSetText(0, "Gravação concluída com sucesso");

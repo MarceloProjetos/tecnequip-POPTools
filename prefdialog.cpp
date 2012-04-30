@@ -30,8 +30,11 @@
 
 static HWND PrefDialog;
 
-static HWND ShowWarnings;
+static HWND ShowWarningsYes;
+static HWND ShowWarningsNo;
 static HWND ClearRecentList;
+static HWND ComPortFlashCombobox;
+static HWND ComPortDebugCombobox;
 
 static LONG_PTR PrevPrefDialogProc;
 
@@ -48,6 +51,10 @@ static LRESULT CALLBACK PrefDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				memset(POPSettings.recent_list, 0, sizeof(POPSettings.recent_list));
 				PopulateRecentListMenu();
 				break;
+			} else if(h == ComPortFlashCombobox && HIWORD(wParam) == CBN_DROPDOWN) {
+				LoadCOMPorts(ComPortFlashCombobox, POPSettings.COMPortFlash, true);
+			} else if(h == ComPortDebugCombobox && HIWORD(wParam) == CBN_DROPDOWN) {
+				LoadCOMPorts(ComPortDebugCombobox, POPSettings.COMPortDebug, false);
 			}
 		}
 	}
@@ -57,24 +64,64 @@ static LRESULT CALLBACK PrefDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 
 static void MakeControls(void)
 {
-    ShowWarnings = CreateWindowEx(0, WC_BUTTON, _("Sempre exibir avisos na simulação"),
-        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        10, 10, 230, 20, PrefDialog, NULL, Instance, NULL);
-    NiceFont(ShowWarnings);
+    HWND textlabel = CreateWindowEx(0, WC_STATIC, _("Ao cancelar:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 25, 110, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(textlabel);
 
-    ClearRecentList = CreateWindowEx(0, WC_BUTTON, _("Limpar Recentes"),
+    ShowWarningsYes = CreateWindowEx(0, WC_BUTTON, _("Sim"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        145, 25, 40, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(ShowWarningsYes);
+
+    ShowWarningsNo = CreateWindowEx(0, WC_BUTTON, _("Não"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        210, 25, 40, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(ShowWarningsNo);
+
+    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Avisos durante a simulação"),
+        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
+        10, 5, 270, 50, PrefDialog, NULL, Instance, NULL);
+    NiceFont(grouper);
+
+    HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("Porta Gravação:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 60, 110, 21, PrefDialog, NULL, Instance, NULL);
+    NiceFont(textLabel1);
+
+	ComPortFlashCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        125, 60, 155, 100, PrefDialog, NULL, Instance, NULL);
+    NiceFont(ComPortFlashCombobox);
+
+    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Porta Depuração:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 90, 110, 21, PrefDialog, NULL, Instance, NULL);
+    NiceFont(textLabel2);
+
+	ComPortDebugCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        125, 90, 155, 100, PrefDialog, NULL, Instance, NULL);
+    NiceFont(ComPortDebugCombobox);
+
+    HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Projetos Recentes:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 125, 110, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(textLabel3);
+
+	ClearRecentList = CreateWindowEx(0, WC_BUTTON, _("Limpar!"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        65, 40, 120, 23, PrefDialog, NULL, Instance, NULL); 
+        125, 120, 155, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(ClearRecentList);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        250, 10, 70, 23, PrefDialog, NULL, Instance, NULL); 
+        290, 10, 70, 67, PrefDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        250, 40, 70, 23, PrefDialog, NULL, Instance, NULL); 
+        290, 83, 70, 67, PrefDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 }
 
@@ -82,15 +129,23 @@ void ShowPrefDialog(void)
 {
 	PrefDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Preferências"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 330, 73, MainWindow, NULL, Instance, NULL);
+        100, 100, 370, 160, MainWindow, NULL, Instance, NULL);
 
 	PrevPrefDialogProc = SetWindowLongPtr(PrefDialog, GWLP_WNDPROC, (LONG_PTR)PrefDialogProc);
 
     MakeControls();
 
+	LoadCOMPorts(ComPortFlashCombobox, POPSettings.COMPortFlash, true);
+	SendMessage (ComPortFlashCombobox, CB_SETDROPPEDWIDTH, 300, 0);
+
+	LoadCOMPorts(ComPortDebugCombobox, POPSettings.COMPortDebug, false);
+	SendMessage (ComPortDebugCombobox, CB_SETDROPPEDWIDTH, 300, 0);
+
 	if(POPSettings.ShowSimulationWarnings) {
-        SendMessage(ShowWarnings, BM_SETCHECK, BST_CHECKED, 0);
-    }
+        SendMessage(ShowWarningsYes, BM_SETCHECK, BST_CHECKED, 0);
+    } else {
+        SendMessage(ShowWarningsNo , BM_SETCHECK, BST_CHECKED, 0);
+	}
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(PrefDialog, TRUE);
@@ -117,11 +172,19 @@ void ShowPrefDialog(void)
     }
 
     if(!DialogCancel) {
-			if(SendMessage(ShowWarnings, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-				POPSettings.ShowSimulationWarnings = TRUE;
-			} else {
-				POPSettings.ShowSimulationWarnings = FALSE;
-	        }
+		char buf[16];
+
+        SendMessage(ComPortFlashCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		POPSettings.COMPortFlash = atoi(&buf[3]);
+
+        SendMessage(ComPortDebugCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		POPSettings.COMPortDebug = atoi(&buf[3]);
+
+		if(SendMessage(ShowWarningsYes, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+			POPSettings.ShowSimulationWarnings = TRUE;
+		} else {
+			POPSettings.ShowSimulationWarnings = FALSE;
+	    }
     }
 
     EnableWindow(MainWindow, TRUE);

@@ -141,12 +141,18 @@ long XMLWrapper::SelectElements(BSTR bstrName, long index)
 	} else {
 		CHK_HR(pXMLActiveSelection->get_item   (index   , &pXMLNode));
 		SAFE_RELEASE(pXMLActiveSelection);
+		XML_OK();
+		if(pXMLNode == NULL) {
+			goto CleanUp;
+		}
 		CHK_HR(pXMLNode           ->selectNodes(bstrName, &pXMLActiveSelection));
 		SAFE_RELEASE(pXMLNode);
+		XML_OK();
 	}
 
     // Retrieve total number of nodes in the list.
     CHK_HR(pXMLActiveSelection->get_length(&lCount));
+	XML_OK();
 
 	return lCount;
 
