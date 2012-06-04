@@ -499,7 +499,7 @@ void ShowSetDADialog(char *name)
 {
 	char name_tmp[MAX_NAME_LEN];
 
-	char *labels[] = { _("Value:") };
+	char *labels[] = { _("Source:") };
     char *dests[] = { name_tmp };
 
 	strcpy(name_tmp, name);
@@ -706,7 +706,7 @@ void ShowShiftRegisterDialog(char *name, int *stages)
 void ShowFormattedStringDialog(char *var, char *string)
 {
 	char var_tmp[MAX_NAME_LEN], string_tmp[MAX_LOOK_UP_TABLE_LEN];
-    char *labels[] = { _("Variable:"), _("String:") };
+    char *labels[] = { _("Destination:"), _("String:") };
     char *dests[] = { var_tmp, string_tmp };
 
 	strcpy(var_tmp   , var   );
@@ -729,19 +729,20 @@ void ShowServoYaskawaDialog(char * id, char *var, char *string)
 {
 	char var_tmp[MAX_NAME_LEN], string_tmp[MAX_LOOK_UP_TABLE_LEN], id_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Id:"), _("Variable:"), _("String:") };
-    char *dests[] = { id, var, string };
+    char *dests[] = { id_tmp, var_tmp, string_tmp };
     NoCheckingOnBox[1] = TRUE;
-    ShowSimpleDialog(_("Servo Yaskawa"), 3, labels, 0x1,
-        0x2, 0x7, 0x2, dests);
 
 	strcpy(id_tmp    , id    );
 	strcpy(var_tmp   , var   );
 	strcpy(string_tmp, string);
 
+    ShowSimpleDialog(_("Servo Yaskawa"), 3, labels, 0x1,
+        0x2, 0x7, 0x2, dests);
+
 	NoCheckingOnBox[1] = FALSE;
 
-	if(IsValidNameAndType(var, var_tmp, "Variável", VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(var_tmp ), 0, 0) &&
-	   IsValidNameAndType(id , id_tmp , "ID"      , VALIDATE_IS_NUMBER       , GetTypeFromName(id_tmp  ), 0, 0)) {
+	if(IsValidNameAndType(var, var_tmp, "Variável", VALIDATE_IS_VAR   , GetTypeFromName(var_tmp ), 0, 0) &&
+	   IsValidNameAndType(id , id_tmp , "ID"      , VALIDATE_IS_NUMBER, GetTypeFromName(id_tmp  ), 0, 0)) {
 			strcpy(id    , id_tmp    );
 			strcpy(var   , var_tmp   );
 			strcpy(string, string_tmp);

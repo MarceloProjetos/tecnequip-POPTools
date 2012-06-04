@@ -36,6 +36,10 @@ int                 ScrollWidth;
 int                 ScrollHeight;
 BOOL                NeedHoriz;
 
+// Window where to draw schematic
+HWND                DrawWindow;
+static LONG_PTR     PrevDrawWindowProc;
+
 // status bar at the bottom of the screen, to display settings
 static HWND         StatusBar;
 
@@ -69,6 +73,17 @@ static BOOL         RealTimeSimulationRunning;
 void StatusBarSetText(int bar, char * text)
 {
 	SendMessage(StatusBar, SB_SETTEXT, bar, (LPARAM)text);
+}
+
+static LRESULT CALLBACK DrawWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) {
+		case WM_PAINT:
+			SendMessage(MainWindow, WM_PAINT, 0, 0);
+			break;
+	}
+
+	return CallWindowProc((WNDPROC)PrevDrawWindowProc, hwnd, msg, wParam, lParam);
 }
 
 //-----------------------------------------------------------------------------
@@ -115,7 +130,12 @@ void MakeMainWindowControls(void)
     GetWindowRect(VertScrollBar, &scroll);
     ScrollWidth = scroll.right - scroll.left;
 
-    StatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
+    DrawWindow = CreateWindowEx(0, WC_STATIC, "", WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
+		0, 0, 1, 1, MainWindow, NULL, Instance, NULL);
+	PrevDrawWindowProc = SetWindowLongPtr(DrawWindow, GWLP_WNDPROC, (LONG_PTR)DrawWindowProc);
+	RefreshDrawWindow();
+
+	StatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
         "POPTools iniciado", MainWindow, 0);
     int edges[] = { 250, 370, -1 };
     SendMessage(StatusBar, SB_SETPARTS, 3, (LPARAM)edges);
@@ -619,11 +639,11 @@ void RefreshScrollbars(void)
     } else {
         ShowWindow(HorizScrollBar, SW_HIDE);
     }
-    MoveWindow(VertScrollBar, main.right - ScrollWidth - 2, 1, ScrollWidth,
-        NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3), TRUE);
+    MoveWindow(VertScrollBar, main.right - ScrollWidth - 2, RibbonHeight + 1, ScrollWidth,
+        NeedHoriz ? (IoListTop - ScrollHeight - RibbonHeight - 4) : (IoListTop - RibbonHeight - 3), TRUE);
 
-    MoveWindow(VertScrollBar, main.right - ScrollWidth - 2, 1, ScrollWidth,
-        NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3), TRUE);
+//    MoveWindow(VertScrollBar, main.right - ScrollWidth - 2, 1, ScrollWidth,
+//        NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3), TRUE);
 
     InvalidateRect(MainWindow, NULL, FALSE);
 }
@@ -824,6 +844,18 @@ void GenerateIoListDontLoseSelection(void)
 }
 
 //-----------------------------------------------------------------------------
+// Called when we have to update position / dimension of the draw window. Adjust the size of the
+// draw window to fit inside available main window area.
+//-----------------------------------------------------------------------------
+void RefreshDrawWindow()
+{
+    RECT main;
+    GetClientRect(MainWindow, &main);
+
+    MoveWindow(DrawWindow, 0, RibbonHeight, main.right, IoListTop - RibbonHeight, TRUE);
+}
+
+//-----------------------------------------------------------------------------
 // Called when the main window has been resized. Adjust the size of the
 // status bar and the listview to reflect the new window size.
 //-----------------------------------------------------------------------------
@@ -863,6 +895,7 @@ void MainWindowResized(void)
 		MoveWindow(IoList, 0, IoListTop, main.right, IoListHeight, TRUE);
 
     RefreshScrollbars();
+	RefreshDrawWindow();
 
     InvalidateRect(MainWindow, NULL, FALSE);
 }
@@ -875,7 +908,10 @@ void ToggleSimulationMode(void)
 {
     InSimulationMode = !InSimulationMode;
 
+	SetApplicationMode();
+
     if(InSimulationMode) {
+#ifdef POPTOOLS_DISABLE_RIBBON
         EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
         EnableMenuItem(SimulateMenu, MNU_SINGLE_CYCLE, MF_ENABLED);
 
@@ -891,6 +927,14 @@ void ToggleSimulationMode(void)
         EnableMenuItem(TopMenu, 5, MF_GRAYED | MF_BYPOSITION);
     
         CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_CHECKED);
+#else
+		RibbonSetCmdState(cmdFileSave             , FALSE);
+		RibbonSetCmdState(cmdUndo                 , FALSE);
+		RibbonSetCmdState(cmdRedo                 , FALSE);
+		RibbonSetCmdState(cmdSimulationStop       , FALSE);
+		RibbonSetCmdState(cmdSimulationStart      , TRUE );
+		RibbonSetCmdState(cmdSimulationSingleCycle, TRUE );
+#endif
 
         // Recheck InSimulationMode, because there could have been a compile
         // error, which would have kicked us out of simulation mode.
@@ -904,6 +948,7 @@ void ToggleSimulationMode(void)
         RealTimeSimulationRunning = FALSE;
         KillTimer(MainWindow, TIMER_SIMULATE);
 
+#ifdef POPTOOLS_DISABLE_RIBBON
         EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_GRAYED);
         EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_GRAYED);
         EnableMenuItem(SimulateMenu, MNU_SINGLE_CYCLE, MF_GRAYED);
@@ -920,6 +965,11 @@ void ToggleSimulationMode(void)
         EnableMenuItem(TopMenu, 5, MF_ENABLED | MF_BYPOSITION);
 
         CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_UNCHECKED);
+#else
+		RibbonSetCmdState(cmdFileSave, TRUE);
+		RibbonSetCmdState(cmdUndo    , TRUE);
+		RibbonSetCmdState(cmdRedo    , TRUE);
+#endif
 
         if(UartFunctionUsed()) {
             DestroyUartSimulationWindow();
@@ -941,8 +991,14 @@ void StartSimulation(void)
 {
     RealTimeSimulationRunning = TRUE;
 
+#ifdef POPTOOLS_DISABLE_RIBBON
     EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_GRAYED);
     EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_ENABLED);
+#else
+	RibbonSetCmdState(cmdSimulationStop       , TRUE );
+	RibbonSetCmdState(cmdSimulationStart      , FALSE);
+	RibbonSetCmdState(cmdSimulationSingleCycle, FALSE);
+#endif
     StartSimulationTimer();
 
     UpdateMainWindowTitleBar();
@@ -956,8 +1012,14 @@ void StopSimulation(void)
 {
     RealTimeSimulationRunning = FALSE;
 
+#ifdef POPTOOLS_DISABLE_RIBBON
     EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
     EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_GRAYED);
+#else
+	RibbonSetCmdState(cmdSimulationStop       , FALSE);
+	RibbonSetCmdState(cmdSimulationStart      , TRUE );
+	RibbonSetCmdState(cmdSimulationSingleCycle, TRUE );
+#endif
     KillTimer(MainWindow, TIMER_SIMULATE);
 
     UpdateMainWindowTitleBar();

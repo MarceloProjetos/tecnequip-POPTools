@@ -341,6 +341,4 @@ void PLC_Run(void);
 void PLC_Cycle(void *pdata);
 void PLC_Init(void);
 
-#define PLC_CYCLE_THREAD_STACKSIZE		  512   // defined in lwipopts.h
-
 #endif

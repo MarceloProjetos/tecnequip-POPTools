@@ -84,7 +84,7 @@ static LRESULT CALLBACK FARDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				}
 
 				if(matches)
-					PaintWindow();
+			        InvalidateRect(MainWindow, NULL, FALSE);
 
 				break;
 			}

@@ -919,6 +919,7 @@ cmp:
 		{
             char buf[256];
 
+			char mday[10];
 			char month[10];
 			char year[10];
 
@@ -927,11 +928,20 @@ cmp:
 
             ElemRTC *t = &leaf->d.rtc;
 			
+			if (t->mday)
+				sprintf(mday, "%d", t->mday);
+			else
+				sprintf(mday, "%c", '*');
+
 			if (t->month)
-				sprintf(month, "/%d", t->month);
+				sprintf(month, "%d", t->month);
+			else
+				sprintf(month, "%c", '*');
 
 			if (t->year)
-				sprintf(year, "/%02d", t->year);			
+				sprintf(year, "%02d", t->year);			
+			else
+				sprintf(year, "%c", '*');
 
             if(t->wday & (1 << 7)) 
 			{
@@ -945,7 +955,7 @@ cmp:
 					(t->wday & 64) ? "S" : "_",
 					t->hour, t->minute, t->second);
             } else {
-				sprintf(buf, "[%d%s%s %02d:%02d:%02d]", t->mday, month, year, t->hour, t->minute, t->second);
+				sprintf(buf, "[%s/%s/%s %02d:%02d:%02d]", mday, month, year, t->hour, t->minute, t->second);
             } 
 
             CenterWithSpaces(*cx, *cy, "RTC", poweredAfter, TRUE);

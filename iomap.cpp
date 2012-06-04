@@ -247,7 +247,7 @@ void ExtractNamesFromCircuit(int which, void *any)
             break;
 
 		case ELEM_WRITE_SERVO_YASKAWA:
-            if(strlen(l->d.servoYaskawa.var) > 0) {
+            if(strlen(l->d.servoYaskawa.var) > 0 && !IsNumber(l->d.servoYaskawa.var)) {
                 AppendIo(l->d.servoYaskawa.var, IO_TYPE_WRITE_YASKAWA, 0);
             }
             break;
@@ -326,7 +326,8 @@ void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_PIECEWISE_LINEAR:
-            AppendIo(l->d.piecewiseLinear.dest, IO_TYPE_GENERAL, 0);
+            AppendIo(l->d.piecewiseLinear.dest , IO_TYPE_GENERAL, 0);
+			AppendIo(l->d.piecewiseLinear.index, IO_TYPE_GENERAL, 0);
             break;
 
         case ELEM_EQU:

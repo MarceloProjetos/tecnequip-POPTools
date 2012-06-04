@@ -299,7 +299,9 @@ void 			DAC_StartDown(unsigned char linear, unsigned char gaint, unsigned char g
 /* ADC                                                                     */
 /***************************************************************************/
 #ifndef __ADC_H__
-extern unsigned int ADC_Read(unsigned int a);
+extern unsigned int ADC_Read   (unsigned int a);
+extern void         ADC_Update (void);
+extern void         ADC_SetMask(unsigned int ad_mask);
 #endif
 
 /***************************************************************************/
@@ -340,7 +342,5 @@ extern void ENC_Reset(void);
 void PLC_Run(void);
 void PLC_Cycle(void *pdata);
 void PLC_Init(void);
-
-#define PLC_CYCLE_THREAD_STACKSIZE		  512   // defined in lwipopts.h
 
 #endif

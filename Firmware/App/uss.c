@@ -10,7 +10,6 @@ extern volatile unsigned int I_SerialReady;
 extern volatile unsigned int I_USSReady;
 
 extern unsigned char rs485_rx_buffer[SERIAL_BUFFER_SIZE];
-extern unsigned char rs485_tx_buffer[SERIAL_BUFFER_SIZE];
 
 extern unsigned int rs485_rx_index;
 extern unsigned int rs485_tx_index;

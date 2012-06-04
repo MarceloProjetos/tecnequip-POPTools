@@ -1215,7 +1215,7 @@ static LangTable LangPtTable[] = {
     { "Duty cycle var:", "Var Duty cycle:" },
     { "Frequency (Hz):", "Frequencia (Hz):" },
     { "Set PWM Duty Cycle", "Acionar PWM Duty Cycle" },
-    { "Source:", "Fonte:" },
+    { "Source:", "Origem:" },
     { "Receive from UART", "Recebe da UART" },
     { "Send to UART", "Envia para UART" },
     { "Add", "Somar" },

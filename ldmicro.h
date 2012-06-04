@@ -119,10 +119,14 @@ typedef SDWORD SWORD;
 #define DA_VOLTAGE			10000.0f	// voltagem DA em mV (-10V +10V)
 #define DA_CYCLE_INTERVAL	10			// miliseconds
 
+// Activating the next line will disable Ribbon in Main Window.
+//#define POPTOOLS_DISABLE_RIBBON
+
 #include "resource.h"
 #include "splash.h"
 #include "XMLWrapper.h"
 #include "modbus_master.h"
+#include "MainRibbon.h"
 
 //-----------------------------------------------
 // Constants for the GUI. We have drop-down menus, a listview for the I/Os,
@@ -825,6 +829,7 @@ typedef struct McuIoInfoTag {
 // Function prototypes
 
 // poptools.cpp
+void ProcessMenu(int code);
 void ProgramChanged(void);
 void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     BOOL canSetOnly, BOOL canDelete, BOOL canInsertEnd, BOOL canInsertOther,
@@ -885,10 +890,12 @@ void StartSimulation(void);
 void UpdateMainWindowTitleBar(void);
 void StatusBarSetText(int bar, char * text);
 void PopulateRecentListMenu(void);
+void RefreshDrawWindow();
 extern int ScrollWidth;
 extern int ScrollHeight;
 extern BOOL NeedHoriz;
 extern HWND IoList;
+extern HWND DrawWindow;
 extern int IoListTop;
 extern int IoListHeight;
 extern HWND UartSimulationWindow;
@@ -1141,6 +1148,14 @@ bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned in
 // lang.cpp
 char *_(char *in);
 
+// Ribbon.cpp
+extern unsigned int RibbonHeight;
+
+extern HRESULT InitRibbon        (HWND hWindowFrame);
+extern HRESULT RibbonSetCmdState (UINT uCmdID, BOOL bEnabled);
+extern void    DestroyRibbon     (void);
+extern void    SetApplicationMode(void);
+
 // simulate.cpp
 void SimulateOneCycle(BOOL forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
@@ -1179,7 +1194,6 @@ void IntDumpListing(char *outFile);
 BOOL GenerateIntermediateCode(void);
 // ansic.cpp
 void GenerateDeclarations(FILE *f);
-void GenerateAnsiC(FILE *f);
 void CompileAnsiC(char *outFile);
 DWORD CompileAnsiCToGCC(char *outFile);
 // interpreted.c

@@ -843,6 +843,8 @@ void MoveCursorMouseClick(int x, int y)
 
     y += FONT_HEIGHT/2;
 
+	y -= RibbonHeight;
+
     int gx0 = (x - X_PADDING)/(POS_WIDTH*FONT_WIDTH);
     int gy0 = (y - Y_PADDING)/(POS_HEIGHT*FONT_HEIGHT);
 

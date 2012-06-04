@@ -205,7 +205,7 @@ void Default_Reset_Handler(void)
   */
 #pragma weak Reset_Handler = Default_Reset_Handler
 #pragma weak NMI_Handler = Default_Handler
-#pragma weak HardFault_Handler = Default_Handler
+#pragma weak HardFault_Handler = Default_HandlerHF
 #pragma weak MemManage_Handler = Default_Handler
 #pragma weak BusFault_Handler = Default_Handler
 #pragma weak UsageFault_Handler = Default_Handler
@@ -258,6 +258,20 @@ extern volatile unsigned int PLC_ERROR;
   * @param  None
   * @retval None  
   */
+static void Default_HandlerHF(void)
+{
+	unsigned int mmfar = *(unsigned int *)(0xE000ED34);
+	unsigned int bfar  = *(unsigned int *)(0xE000ED38);
+	unsigned int hfsr  = *(unsigned int *)(0xE000ED2C);
+	unsigned int shcsr = *(unsigned int *)(0xE000ED24);
+	unsigned int cfsr  = *(unsigned int *)(0xE000ED28);
+
+	while (1)
+	{
+//		PLC_ERROR |= 1 << 29;
+	}
+}
+
 static void Default_Handler(void) 
 {
 

@@ -242,7 +242,7 @@
 #define DAC_CYCLE_THREAD_PRIO  		      LWIP_START_PRIO + 5
 
 #define PLC_CYCLE_THREAD_NAME            "plc_thread"
-//#define PLC_CYCLE_THREAD_STACKSIZE		  256	//defined in ld.h
+#define PLC_CYCLE_THREAD_STACKSIZE		  512
 #define PLC_CYCLE_THREAD_PRIO  		      LWIP_START_PRIO + 10
 
 #define DEFAULT_THREAD_NAME               "lwip_thread"
@@ -262,7 +262,7 @@
 #define HTTP_THREAD_PRIO  				  CFG_LOWEST_PRIO - 10
 
 #define SNTP_THREAD_NAME                  "sntp_thread"
-#define SNTP_THREAD_STACKSIZE             64
+#define SNTP_THREAD_STACKSIZE             256
 #define SNTP_THREAD_PRIO                  CFG_LOWEST_PRIO - 5
 
 //#define TCPIP_MBOX_SIZE                 0
@@ -282,7 +282,8 @@
 // ---------- Sequential layer options ----------
 //
 //*****************************************************************************
-//#define LWIP_TCPIP_CORE_LOCKING         0
+#define LWIP_TCPIP_CORE_LOCKING         0			// default is 0
+//#define LWIP_TCPIP_CORE_LOCKING_INPUT   1
 #define LWIP_NETCONN                    1           // default is 1
 
 //*****************************************************************************
@@ -294,7 +295,7 @@
 //#define LWIP_COMPAT_SOCKETS             1
 //#define LWIP_POSIX_SOCKETS_IO_NAMES     1
 //#define LWIP_TCP_KEEPALIVE              0
-//#define LWIP_SO_RCVTIMEO                0
+#define LWIP_SO_RCVTIMEO                  0			// default is 0
 //#define LWIP_SO_RCVBUF                  0
 //#define SO_REUSE                        0
 

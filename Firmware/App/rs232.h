@@ -6,7 +6,7 @@
 void RS232_Init();
 unsigned int RS232_Write(char * buffer, unsigned int size);
 unsigned int RS232_Read(char * buffer, unsigned int size);
-void RS232_Console(void);
+void RS232_Console(unsigned int cycle);
 unsigned char RS232_CRC(char * buffer, unsigned int size);
 
 #endif

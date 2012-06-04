@@ -95,11 +95,11 @@ void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
         c.height = IoListTop - c.top - 3;
     }
 
-    Hdc = GetDC(MainWindow);
+    Hdc = GetDC(DrawWindow);
     SelectObject(Hdc, GetStockObject(WHITE_BRUSH));
     PatBlt(Hdc, c.left, c.top, c.width, c.height, PATINVERT);
     CursorDrawn = !CursorDrawn;
-    ReleaseDC(MainWindow, Hdc);
+    ReleaseDC(DrawWindow, Hdc);
 }
 
 //-----------------------------------------------------------------------------
@@ -110,7 +110,7 @@ static void DrawCharsToScreen(int cx, int cy, char *str)
 {
     cy -= ScrollYOffset*POS_HEIGHT;
     if(cy < -2) return;
-    if(cy*FONT_HEIGHT + Y_PADDING > IoListTop) return;
+    if(cy*FONT_HEIGHT + Y_PADDING + (int)RibbonHeight > IoListTop) return;
 
     COLORREF prev;
     BOOL firstTime = TRUE;
@@ -231,8 +231,11 @@ int ScreenRowsAvailable(void)
     } else {
         adj = 18;
     }
-    return (IoListTop - Y_PADDING - adj) / (POS_HEIGHT*FONT_HEIGHT);
+    return (IoListTop - Y_PADDING - adj - RibbonHeight) / (POS_HEIGHT*FONT_HEIGHT);
 }
+
+HRESULT InitRibbon(HWND hWindowFrame);
+HRESULT UpdateRibbonHeight(void);
 
 //-----------------------------------------------------------------------------
 // Paint the ladder logic program to the screen. Also figure out where the
@@ -241,6 +244,7 @@ int ScreenRowsAvailable(void)
 //-----------------------------------------------------------------------------
 void PaintWindow(void)
 {
+	static bool first = true;
     static HBITMAP BackBitmap;
     static HDC BackDc;
     static int BitmapWidth;
@@ -248,11 +252,17 @@ void PaintWindow(void)
     ok();
 
     RECT r;
-    GetClientRect(MainWindow, &r);
+    GetClientRect(DrawWindow, &r);
     int bw = r.right;
     int bh = IoListTop;
 
-    HDC paintDc;
+	// Update Ribbon Height
+	if(!RibbonHeight || first) {
+		first = false;
+		UpdateRibbonHeight();
+	}
+
+	HDC paintDc;
     if(!BackDc) {
         HWND desktop = GetDesktopWindow();
         RECT dk;

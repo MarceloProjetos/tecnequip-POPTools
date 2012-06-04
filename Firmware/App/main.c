@@ -1,6 +1,6 @@
 
 #include "system_lpc17xx.h"
-#include "coos.h"
+#include <coocox.h>
 
 #include "net.h"
 #include "rtc.h"
@@ -13,8 +13,6 @@
 #include "dac.h"
 #include "qei.h"
 #include "ld.h"
-
-extern OS_STK PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 
 void Devices_Init(void)
 {
@@ -54,6 +52,46 @@ void Hardware_Init(void)
 //   6    -  15  - PLC_Cycle
 //   7    -  10  - DAC_StartUp/DAC_StartDown task
 
+unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
+
+extern void PLC_Run   (void);
+extern void PLC_Init  (void);
+extern void ADC_Update(void);
+
+extern volatile unsigned int 	GPIO_OUTPUT;
+extern volatile unsigned int 	GPIO_INPUT;
+
+volatile unsigned int 			PLC_ERROR = 0;
+
+#define CYCLE_TIME 10
+
+/* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
+void PLC_Cycle(void *pdata)
+{
+	U64 end_tick, cycle = CoGetOSTime()/CYCLE_TIME;
+
+	for (;;)
+	{
+		end_tick = (cycle+1)*CYCLE_TIME;
+
+		ADC_Update();
+		GPIO_INPUT = GPIO_Input();
+
+		PLC_Run();
+
+		GPIO_Output(GPIO_OUTPUT);
+
+		do{
+			RS232_Console(cycle);
+			RS485_Handler(cycle);
+
+			CoTickDelay(1);
+		} while(CoGetOSTime() < end_tick);
+
+		cycle++;
+	}
+}
+
 int main()
 {
 	Hardware_Init();
@@ -69,8 +107,8 @@ int main()
 	Net_Init();
 
 // Workaround... Por algum motivo, se mestre e escravo sobem sincronizados ocorre erro de comunicação!
-	if(MODBUS_MASTER)
-		CoTickDelay(250); // Atrasa em 250 ms a inicialização do mestre
+//	if(MODBUS_MASTER)
+//		CoTickDelay(250); // Atrasa em 250 ms a inicialização do mestre
 
 	CoCreateTask(PLC_Cycle, 0,
 			  PLC_CYCLE_THREAD_PRIO,

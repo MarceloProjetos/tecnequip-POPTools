@@ -504,7 +504,7 @@ int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto)
 
   //Finally do the enumeration
   BOOL bMoreItems = TRUE, iPortMatch = FALSE;
-  int nIndex = 0, nPort, iFoundCount = 0;
+  int nIndex = 0, nPort = 0, iFoundCount = 0;
   SP_DEVINFO_DATA devInfo;
 
   if(ComboBox) {

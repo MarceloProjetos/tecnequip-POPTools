@@ -292,11 +292,14 @@ static void GenerateDeclarations(FILE *f)
 //-----------------------------------------------------------------------------
 // Actually generate the C source for the program.
 //-----------------------------------------------------------------------------
-static void GenerateAnsiC(FILE *f)
+static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 {
     int i;
     int indent = 1;
-    for(i = 0; i < IntCodeLen; i++) {
+
+	ad_mask = 0;
+	
+	for(i = 0; i < IntCodeLen; i++) {
 
         if(IntCode[i].op == INT_ELSE_IF) indent--;
         if(IntCode[i].op == INT_END_IF) indent--;
@@ -449,6 +452,7 @@ static void GenerateAnsiC(FILE *f)
             case INT_EEPROM_WRITE:
 				break;
             case INT_READ_ADC:
+				ad_mask |= 1 << (atoi(MapSym(IntCode[i].name1)+1) - 1);
 				fprintf(f, "%s = ADC_Read(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1) + 1));
 				break;
             case INT_SET_DA:
@@ -471,7 +475,8 @@ static void GenerateAnsiC(FILE *f)
 					fprintf(f, "(%d & (1 << RTC_Now.Wday)) && ", IntCode[i].literal);
 				else
 				{
-					fprintf(f, "RTC_Now.Mday == %s && ", IntCode[i].name2);
+					if (strcmp(IntCode[i].name2, "0") != 0)
+						fprintf(f, "RTC_Now.Mday == %s && ", IntCode[i].name2);
 					if (strcmp(IntCode[i].name3, "0") != 0)
 						fprintf(f, "RTC_Now.Mon == %s && ", IntCode[i].name3);
 					if (strcmp(IntCode[i].name4, "0") != 0)
@@ -769,7 +774,7 @@ DWORD InvokeGCC(char* dest)
 
 DWORD CompileAnsiCToGCC(char *dest)
 {
-	unsigned int i;
+	unsigned int i, ad_mask;
     SeenVariablesCount = 0;
 
 	char szAppPath[MAX_PATH]		= "";
@@ -871,15 +876,12 @@ DWORD CompileAnsiCToGCC(char *dest)
 
 	fprintf(f, "\n");
 	//fprintf(f, "const volatile unsigned int 	CYCLE_TIME = %d;\n", Prog.cycleTime / 1000);
-	fprintf(f, "volatile unsigned int 			PLC_ERROR = 0;\n");
 	//fprintf(f, "const volatile unsigned int		TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n", Prog.cycleTime / 1000);
 	
 	fprintf(f, "\n");
 	fprintf(f, "extern volatile unsigned char 	MODBUS_MASTER; // 0 = Slave, 1 = Master\n");
 	fprintf(f, "extern volatile int 			MODBUS_REGISTER[32];\n");
 	fprintf(f, "extern struct 					MB_Device modbus_master;\n");
-	fprintf(f, "extern volatile unsigned int 	GPIO_OUTPUT;\n");
-	fprintf(f, "extern volatile unsigned int 	GPIO_INPUT;\n");
 	//fprintf(f, "extern volatile int 			ENCODER1;\n");
 	fprintf(f, "extern RTC_Time 				RTC_Now;\n");
 	for(i=0; *InternalFlags[i]; i++) {
@@ -896,10 +898,6 @@ DWORD CompileAnsiCToGCC(char *dest)
 	fprintf(f, "char 							SNTP_SERVER_ADDRESS[] = \"%s\";\n", Prog.sntp);
 	fprintf(f, "int								SNTP_GMT = %d;\n", Prog.gmt > 12 ? Prog.gmt - 12 : Prog.gmt - 12);
 	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", Prog.dailysave);
-
-	fprintf(f, "\n");
-	fprintf(f, "extern unsigned long long		OSTickCnt;\n");
-	fprintf(f, "unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];\n");
 
 	//int j;
 
@@ -979,44 +977,12 @@ DWORD CompileAnsiCToGCC(char *dest)
 
     fprintf(f,"void PLC_Run(void)\n{\n");
 
-    GenerateAnsiC(f);
+    GenerateAnsiC(f, ad_mask);
 
     fprintf(f, "}\n");
 
 	fprintf(f, "\n");
-	fprintf(f, "/* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */\n");
-	fprintf(f, "void PLC_Cycle(void *pdata)\n");
-	fprintf(f, "{\n");
-	fprintf(f, "	unsigned long long start_tick, diff_tick;\n");
-	fprintf(f, "\n");
-	//fprintf(f, "    StatusType s;\n");
-	//fprintf(f, "\n");
-	fprintf(f, "	for (;;)\n");
-	fprintf(f, "	{\n");
-	fprintf(f, "		start_tick = OSTickCnt;\n");
-	fprintf(f, "\n");
-	fprintf(f, "		GPIO_INPUT = GPIO_Input();\n");
-	fprintf(f, "\n");
-	fprintf(f, "		RS232_Console();\n");
-	fprintf(f, "		RS485_Handler();\n");
-	fprintf(f, "\n");
-	fprintf(f, "		PLC_Run();\n");
-	fprintf(f, "\n");
-	fprintf(f, "		GPIO_Output(GPIO_OUTPUT);\n");
-	fprintf(f, "\n");
-	fprintf(f, "		diff_tick = 10 - (OSTickCnt - start_tick);\n");
-	fprintf(f, "		if(diff_tick <= 10)\n");
-	fprintf(f, "			CoTickDelay(diff_tick);\n");
-	/*fprintf(f, "		s = CoTickDelay(12);\n");
-	fprintf(f, "\n");
-	fprintf(f, "		if (s != E_OK)\n");
-	fprintf(f, "			PLC_ERROR |= 1 << 20;\n");
-	fprintf(f, "		else\n");
-	fprintf(f, "			PLC_ERROR &= ~(1 << 20);\n");
-	fprintf(f, "\n");*/
-	fprintf(f, "	}\n");
-	fprintf(f, "}\n");
-	fprintf(f, "\n");
+
 	fprintf(f, "void PLC_Init(void)\n");
 	fprintf(f, "{\n");
 	fprintf(f, "	I_SerialReady = 1;\n");
@@ -1034,6 +1000,8 @@ DWORD CompileAnsiCToGCC(char *dest)
 	} else {
 		fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_2X;\n");
 	}
+
+	fprintf(f, "    ADC_SetMask(%d);\n", ad_mask);
 	fprintf(f, "}\n");
 	
 	fclose(f);

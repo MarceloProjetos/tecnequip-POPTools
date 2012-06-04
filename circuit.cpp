@@ -286,7 +286,7 @@ void AddRTC(int which)
 
     ElemLeaf *l = AllocLeaf();
 	l->d.rtc.wday = 255;
-	l->d.rtc.mday = t->tm_mday;
+	l->d.rtc.mday = 0;
 	l->d.rtc.month = 0;
 	l->d.rtc.year = 0;
 	l->d.rtc.hour = t->tm_hour;

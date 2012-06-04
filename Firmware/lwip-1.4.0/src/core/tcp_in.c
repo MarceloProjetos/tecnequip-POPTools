@@ -852,7 +852,7 @@ tcp_receive(struct tcp_pcb *pcb)
   s16_t m;
   u32_t right_wnd_edge;
   u16_t new_tot_len;
-  int found_dupack = 0;
+  int found_dupack = 0, pbuf_count;
 
   if (flags & TCP_ACK) {
     right_wnd_edge = pcb->snd_wnd + pcb->snd_wl2;
@@ -1001,7 +1001,13 @@ tcp_receive(struct tcp_pcb *pcb)
           pcb->acked--;
         }
 
-        pcb->snd_queuelen -= pbuf_clen(next->p);
+        pbuf_count = pbuf_clen(next->p);
+        if(pbuf_count > pcb->snd_queuelen) {
+        	pcb->snd_queuelen = 0;
+        } else {
+        	pcb->snd_queuelen -= pbuf_count;
+        }
+
         tcp_seg_free(next);
 
         LWIP_DEBUGF(TCP_QLEN_DEBUG, ("%"U16_F" (after freeing unacked)\n", (u16_t)pcb->snd_queuelen));

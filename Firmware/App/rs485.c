@@ -25,7 +25,6 @@ volatile unsigned int rs485_timeout = 0;
 volatile unsigned int rs485_reset_timeout = 0;
 
 unsigned char rs485_rx_buffer[SERIAL_BUFFER_SIZE];
-unsigned char rs485_tx_buffer[SERIAL_BUFFER_SIZE];
 
 unsigned int rs485_rx_index = 0;
 unsigned int rs485_tx_index = 0;
@@ -169,22 +168,18 @@ void RS485_Config(int baudrate, int bits, int parity, int stopbit)
 	UART3->LCR &= ~(1 << 7); // Disable DLAB
 }
 
-void RS485_Handler (void)
+void RS485_Handler (unsigned int cycle)
 {
 	unsigned int sz;
 	static unsigned int retries = 0;
-
-	rs485_timeout++;
 
 	sz = RS485_Read(rs485_rx_buffer + rs485_rx_index, sizeof(rs485_rx_buffer) - rs485_rx_index);
 	rs485_rx_index += sz;
 
 	if(rs485_rx_index) {
 		if(sz) {
-			rs485_timeout  = 0;
-		} else if(++rs485_timeout > 3) {
-			rs485_timeout = 0;
-
+			rs485_timeout  = cycle + 3;
+		} else if(cycle >= rs485_timeout) {
 			if (WAITING_FOR_USS == 1) // uss
 			{
 				USS_Ready((PPO1*)rs485_rx_buffer, rs485_rx_index);
@@ -209,22 +204,20 @@ void RS485_Handler (void)
     retries = 0;
     I_SerialTimeout = 0;
     I_SerialAborted = 0;
-    rs485_reset_timeout = 0;
+    rs485_reset_timeout = cycle + 50;
   } else {
-    rs485_reset_timeout++;
-    if(rs485_reset_timeout > 50 && !I_SerialTimeout && retries++ < MAX_RETRIES) {
+    if(cycle >= rs485_reset_timeout && !I_SerialTimeout && retries++ < MAX_RETRIES) {
       I_SerialTimeout = 1;
-	  rs485_reset_timeout = 0;
-    } else if (rs485_reset_timeout > 50 && I_SerialTimeout) {
+	  rs485_reset_timeout = cycle + 50;
+    } else if (cycle >= rs485_reset_timeout && I_SerialTimeout) {
     	I_SerialAborted = 1;
-    } else if (rs485_reset_timeout > 300) {
+    } else if (cycle >= (rs485_reset_timeout + 2500)) {
       retries = 0;
       I_SerialReady = 1;
       I_SerialTimeout = 0;
       I_SerialAborted = 0;
 	  WAITING_FOR_USS = 0;
 	  //WAITING_FOR_YASKAWA = 0;
-	  rs485_reset_timeout = 0;
     }
   }
 

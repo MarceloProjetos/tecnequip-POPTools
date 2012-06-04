@@ -38,6 +38,9 @@ HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
 
+#include <atlbase.h>
+CComModule _Module;
+
 ID2D1Factory*		pD2DFactory;
 IDWriteFactory*		pWriteFactory;
 IWICImagingFactory *	pWICFactory;
@@ -444,6 +447,10 @@ static void WriteProgram(BOOL compileAs)
 
 	if(!POPSettings.COMPortFlash) {
 		iCOMPort = LoadCOMPorts(0, 0, 0);
+		if(!iCOMPort) {
+			Error("POP-7 não encontrada!");
+			return;
+		}
 	} else {
 		iCOMPort = POPSettings.COMPortFlash;
 	}
@@ -458,10 +465,13 @@ static void WriteProgram(BOOL compileAs)
 	else 
 	{
 		SetCursor(LoadCursor(NULL, IDC_ARROW));
-		StatusBarSetText(0, "Erro na compilacao !!!");
 		RunningInBatchMode = PreviousRunningInBatchMode;
 
-		CompileSuccessfulMessage("Erro na compilacao !!! ");
+		StatusBarSetText(0, "Erro na compilacao !!!");
+
+		if(strlen(CurrentCompileFile))
+			CompileProgram(false);
+//		CompileSuccessfulMessage("Erro na compilacao !!! ");
 	}
 
 	RunningInBatchMode = PreviousRunningInBatchMode;
@@ -603,7 +613,7 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
 //-----------------------------------------------------------------------------
 // Handle a selection from the menu bar of the main window.
 //-----------------------------------------------------------------------------
-static void ProcessMenu(int code)
+void ProcessMenu(int code)
 {
 	unsigned int recent_index;
 
@@ -1011,12 +1021,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case WM_PAINT: {
             PAINTSTRUCT ps;
-            Hdc = BeginPaint(hwnd, &ps);
+		    InvalidateRect(DrawWindow, NULL, FALSE);
+            Hdc = BeginPaint(DrawWindow, &ps);
 
             // This draws the schematic.
             PaintWindow();
 
-            RECT r;
+			RECT r;
             // Fill around the scroll bars
             if(NeedHoriz) {
                 r.top = IoListTop - ScrollHeight - 2;
@@ -1028,18 +1039,22 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             FillRect(Hdc, &r, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
 
             // Draw the splitter thing to grab to resize the I/O listview.
-            GetClientRect(MainWindow, &r);
-            r.top = IoListTop - 2;
-            r.bottom = IoListTop;
+            GetClientRect(DrawWindow, &r);
+            r.top = IoListTop - 2 - RibbonHeight;
+            r.bottom = IoListTop - RibbonHeight;
             FillRect(Hdc, &r, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
-            r.top = IoListTop - 2;
-            r.bottom = IoListTop - 1;
+            r.top = IoListTop - 2 - RibbonHeight;
+            r.bottom = IoListTop - 1 - RibbonHeight;
             FillRect(Hdc, &r, (HBRUSH)GetStockObject(WHITE_BRUSH));
-            r.top = IoListTop;
-            r.bottom = IoListTop + 1;
+            r.top = IoListTop - RibbonHeight;
+            r.bottom = IoListTop + 1 - RibbonHeight;
             FillRect(Hdc, &r, (HBRUSH)GetStockObject(DKGRAY_BRUSH));
 
-            EndPaint(hwnd, &ps);
+            EndPaint(DrawWindow, &ps);
+
+			Hdc = BeginPaint(hwnd, &ps);
+
+            EndPaint(DrawWindow, &ps);
             return 1;
         }
 
@@ -1430,7 +1445,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case WM_LBUTTONDBLCLK: {
             int x = LOWORD(lParam);
-            int y = HIWORD(lParam);
+            int y = HIWORD(lParam) - RibbonHeight;
             if(InSimulationMode) {
                 EditElementMouseDoubleclick(x, y);
             } else {
@@ -1506,6 +1521,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_CLOSE:
+			if(InSimulationMode) {
+				ProcessMenu(MNU_SIMULATION_MODE);
+				break;
+			}
         case WM_DESTROY:
             if(CheckSaveUserCancels()) break;
 
@@ -1621,10 +1640,14 @@ void LoadSettings(void)
 	pElementList = XmlSettings.GetElementList(-1);
 
 	if(pElementList != NULL) {
+		char *szFile;
+
 		pCurrentElementList = pElementList->children;
 
 		for(i=0; pCurrentElementList != NULL && pCurrentElementList->element.value != NULL && i<MAX_RECENT_ITEMS; i++) {
-			strcpy(POPSettings.recent_list[i], _com_util::ConvertBSTRToString(pCurrentElementList->element.value));
+			szFile = _com_util::ConvertBSTRToString(pCurrentElementList->element.value);
+			strcpy(POPSettings.recent_list[i], szFile);
+			delete [] szFile;
 			pCurrentElementList = pCurrentElementList->next;
 		}
 
@@ -1751,11 +1774,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     MakeWindowClass();
 	MakeDebugWindowClass();
 	MakeDialogBoxClass();
-    HMENU top = MakeMainWindowMenus();
+
+	HMENU top = NULL;
+#ifdef POPTOOLS_DISABLE_RIBBON	
+	top = MakeMainWindowMenus();
+#endif
 
     MainWindow = CreateWindowEx(0, "LDmicro", "",
         WS_OVERLAPPED | WS_THICKFRAME | WS_CLIPCHILDREN | WS_MAXIMIZEBOX |
-        WS_MINIMIZEBOX | WS_SYSMENU | WS_SIZEBOX,
+        WS_MINIMIZEBOX | WS_SYSMENU,
         10, 10, 800, 600, NULL, top, Instance, NULL);
     ThawWindowPos(MainWindow);
     IoListHeight = 100;
@@ -1775,7 +1802,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return 1;
 	}
 
-    NewProgram();
+#ifndef POPTOOLS_DISABLE_RIBBON	
+	InitRibbon(MainWindow);
+#endif
+
+	NewProgram();
     strcpy(CurrentSaveFile, "");
 
     // Check if we're running in non-interactive mode; in that case we should
@@ -1869,6 +1900,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SaveSettings();
 
 	WSACleanup();
+
+#ifndef POPTOOLS_DISABLE_RIBBON	
+	DestroyRibbon();
+#endif
 
 	return 0;
 }

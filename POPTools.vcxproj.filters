@@ -138,6 +138,9 @@
     <ClCompile Include="modbus_master.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Ribbon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -187,6 +190,9 @@
     <ResourceCompile Include="version.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="MainRibbon.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="splash.bmp">
@@ -225,8 +231,16 @@
     <None Include="bin\settings.xml">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="poptools32.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="ldmicro.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="MainRibbon.xml">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

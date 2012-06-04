@@ -728,9 +728,10 @@ tcp_enqueue_flags(struct tcp_pcb *pcb, u8_t flags)
   if ((pcb->snd_queuelen >= TCP_SND_QUEUELEN) || (pcb->snd_queuelen > TCP_SNDQUEUELEN_OVERFLOW)) {
     LWIP_DEBUGF(TCP_OUTPUT_DEBUG | 3, ("tcp_enqueue_flags: too long queue %"U16_F" (max %"U16_F")\n",
                                        pcb->snd_queuelen, TCP_SND_QUEUELEN));
-    TCP_STATS_INC(tcp.memerr);
-    pcb->flags |= TF_NAGLEMEMERR;
-    return ERR_MEM;
+    pcb->snd_queuelen = 0;
+//    TCP_STATS_INC(tcp.memerr);
+//    pcb->flags |= TF_NAGLEMEMERR;
+//    return ERR_MEM;
   }
 
   if (flags & TCP_SYN) {

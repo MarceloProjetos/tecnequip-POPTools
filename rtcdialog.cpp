@@ -49,15 +49,13 @@ static HWND YearCombobox;
 
 static LONG_PTR PrevNameProc;
 
-const LPCTSTR MDayItens[] = { _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
+const LPCTSTR MDayItens[] = { _("Todos"), _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
 									_("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
 									_("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"), 
 									_("31")};
 
 const LPCTSTR MonthItens[] = { _("Todos"), _("Jan"), _("Fev"), _("Mar"), _("Abr"), _("Mai"), _("Jun"), _("Jul"), _("Ago"), _("Set"), _("Out"), 
 									_("Nov"), _("Dez")};
-
-const LPCTSTR YearItens[] = { _("Todos"), _("2011"), _("2012"), _("2013"), _("2014"), _("2015"), _("2016"), _("2017"), _("2018"), _("2019"), _("2020")};
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
@@ -214,6 +212,15 @@ static void MakeControls(void)
 
 void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * month, unsigned int * year, unsigned char * hour, unsigned char * minute, unsigned char * second)
 {
+	time_t now;
+	struct tm *t;
+	char buf[10];
+	unsigned int y;
+
+	now = time(NULL);
+	t = localtime(&now);
+	y = t->tm_year + 1900;
+
     RTCDialog = CreateWindowClient(0, "LDmicroDialog",
         _("RTC"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 300, 170, MainWindow, NULL, Instance, NULL);
@@ -228,12 +235,15 @@ void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * m
 	for (i = 0; i < sizeof(MonthItens) / sizeof(MonthItens[0]); i++)
 		SendMessage(MonthCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)MonthItens[i]));
 
-	for (i = 0; i < sizeof(YearItens) / sizeof(YearItens[0]); i++)
-		SendMessage(YearCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)YearItens[i]));
+	SendMessage(YearCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)_("Todos")));
+	for (i = 0; i < 10; i++) {
+		sprintf(buf, "%d", y+i);
+		SendMessage(YearCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)buf));
+	}
 
-	SendMessage(MDayCombobox, CB_SETCURSEL, *mday - 1, 0);
+	SendMessage(MDayCombobox, CB_SETCURSEL, *mday, 0);
 	SendMessage(MonthCombobox, CB_SETCURSEL, *month, 0);
-	SendMessage(YearCombobox, CB_SETCURSEL, *year > 0 ? *year - 2010 : 0, 0);
+	SendMessage(YearCombobox, CB_SETCURSEL, (*year >= y) ? *year - y + 1 : 0, 0);
 
     if (*wday & (1 << 7))
         SendMessage(WDayRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -334,17 +344,11 @@ void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * m
 
 		int y, m ,d;
 
-		d = SendMessage(MDayCombobox, CB_GETCURSEL, (WPARAM)0,
-			(LPARAM)0) + 1;
+		d = SendMessage(MDayCombobox , CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+		m = SendMessage(MonthCombobox, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
 
-		m = SendMessage(MonthCombobox, CB_GETCURSEL, (WPARAM)0,
-			(LPARAM)0);
-
-		y = SendMessage(YearCombobox, CB_GETCURSEL, (WPARAM)0,
-			(LPARAM)0);
-
-		if (y > 0)
-			y += 2010;
+		ComboBox_GetLBText(YearCombobox, ComboBox_GetCurSel(YearCombobox), buf);
+		y = atoi(buf);
 
 		if (atoi(chour) > 23)
 			Error(_("Hora invalida, deve estar entre 0 e 23."));
@@ -358,12 +362,17 @@ void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * m
 
 			if(SendMessage(MDayRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
 			{
+				int MaxDays[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
 				/*
 				d = atoi(cday);
 				m = atoi(cmonth);
 				y = atoi(cyear);
 				*/
-				if (d > 30 && m == 2)
+				if(!y || (!(y%4) && (!(y%400) || (y%100)))) // Se qualquer ano ou bissexto (divisivel por 4 e nao for por 100 ou for por 400)
+					MaxDays[1]++; // Fevereiro pode ter 29 dias
+
+				if (m && d > MaxDays[m-1])
 				{
 					Error(_("Data inválida."));
 					valid = false;

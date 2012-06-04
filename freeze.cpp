@@ -102,8 +102,8 @@ void ThawWindowPosF(HWND hwnd, char *subKey, char *name)
     l = sizeof(DWORD);
     if(RegQueryValueEx(sub, keyName, NULL, NULL, (BYTE *)&v, &l) != ERROR_SUCCESS)
         return;
-    if(v)
-        ShowWindow(hwnd, SW_MAXIMIZE);
+//    if(v)
+//        ShowWindow(hwnd, SW_MAXIMIZE);
 
     RECT dr;
     GetWindowRect(GetDesktopWindow(), &dr);

@@ -1,12 +1,17 @@
 #include <string.h>
 #include "lpc17xx.h"
 
+#define AD_BUFFER_SIZE 9
+#define AD_MINMAX_SIZE (AD_BUFFER_SIZE/3)
+
+static unsigned int admax[AD_MINMAX_SIZE], admin[AD_MINMAX_SIZE];
+
 typedef struct ad_type
 {
-  unsigned int m[50];
+  unsigned int m[AD_BUFFER_SIZE];
 } ads;
 
-struct ad_type ad[5];
+struct ad_type ad[6];
 
 typedef struct ads_fator
 {
@@ -15,10 +20,15 @@ typedef struct ads_fator
 } ad_fator;
 
 //-------------------------------   0V  --- 250mV ---  500mV --- 750mV ------- 1V ------ 1,25V ------ 1,5V ----- 2V ------- 3V ------- 4V -------- 5V ------ 6V ------- 7V ------ 8V ------- 9V -------- 10v ---
-struct ads_fator ad0fator[16] = { {7, 0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
-struct ads_fator ad1fator[16] = { {7, 0}, {37, 68}, {59, 88}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
-struct ads_fator ad2fator[16] = { {7, 0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
-struct ads_fator ad3fator[16] = { {7, 0}, {37, 68}, {59, 83}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108} };
+struct ads_fator adfator[][17] = {
+							     { {7,  0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108}, {0, 108} },
+							     { {7,  0}, {37, 68}, {59, 88}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108}, {0, 108} },
+							     { {7,  0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108}, {0, 108} },
+							     { {7,  0}, {37, 68}, {59, 83}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108}, {0, 108} },
+							     { {0, 48} },
+							     { {0, 48} },
+};
+
 /******************************************************************************
 * ADC Read
 ******************************************************************************/
@@ -38,176 +48,117 @@ void ADC_Init(void)
 
 }
 
+unsigned int ADC_Mask = 0;
+
+void ADC_SetMask(unsigned int ad_mask)
+{
+	ADC_Mask = ad_mask;
+}
+
+void ADC_Update(void)
+{
+  unsigned int i, a, val;
+
+  for(a=0; ADC_Mask>>a; a++) {
+	  if((ADC_Mask>>a) && 1) {
+		  switch (a)
+		  {
+		  case 0:
+		    val = ADC->ADDR5;
+		    break;
+		  case 1:
+		    val = ADC->ADDR2;
+		    break;
+		  case 2:
+		    val = ADC->ADDR1;
+		    break;
+		  case 3:
+		    val = ADC->ADDR0;
+		    break;
+		  case 4:  // AD CPU
+		    val = ADC->ADDR3;
+		    break;
+		  case 5:  // SENSOR DE TEMPERATURA
+		    val = ADC->ADDR4;
+		  }
+
+		  if (val & 0x80000000)
+		  {
+		    val = 0xFFF & (val >> 4);
+
+		    val = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
+
+		    for (i = 0; ; i++) // Sai quando encontrar item
+			  {
+		    	// Se tensao = 0, este é o último item. Devemos usá-lo de qualquer forma
+				  if (adfator[a][i].tensao ? val < adfator[a][i+1].tensao : 1)
+				  {
+					  val *= adfator[a][i].fator;
+					  val /= 100;
+					  break;
+				  }
+			  }
+
+		    for (i = 0; i < AD_BUFFER_SIZE - 1; i++)
+		      ad[a].m[i] = ad[a].m[i + 1];
+
+		    ad[a].m[i] = val;
+		  }
+	  }
+  }
+}
+
 unsigned int ADC_Read(unsigned int a)
 {
-  unsigned int max = 0;
-  unsigned int min = 0;
-  unsigned int soma = 0;
-  unsigned int i = 0;
-  unsigned int z = 0;
-
-  unsigned int val = 0;
-  unsigned int tensao = 0;
-  unsigned char set = 0;
+  unsigned int i, idx, z, soma;
 
   if (a < 1 || a > 6) return 0;
 
-  a -= 1;
-
-  switch (a)
-  {
-  case 0:
-    if (ADC->ADDR5 & 0x7FFFFFFF)
-    {
-      val = 0x7FFF & (ADC->ADDR5 >> 4);
-      set = 1;
-
-	  tensao = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
-
-	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
-	  {
-		  if (tensao < ad0fator[i].tensao)
-		  {
-			  tensao *= ad0fator[i - 1].fator;
-			  tensao /= 100;
-			  break;
-		  }
-	  }
-
-	  val = tensao;
-    }
-    break;
-  case 1:
-    if (ADC->ADDR2 & 0x7FFFFFFF)
-    {
-      val = 0xFFF & (ADC->ADDR2 >> 4);
-      set = 1;
-
-	  tensao = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
-
-	  for (i = 1; i < ARRAY_SIZEOF(ad1fator); i++)
-	  {
-		  if (tensao < ad1fator[i].tensao)
-		  {
-			  tensao *= ad1fator[i - 1].fator;
-			  tensao /= 100;
-			  break;
-		  }
-	  }
-
-	  val = tensao;
-    }
-    break;
-  case 2:
-    if (ADC->ADDR1 & 0x7FFFFFFF)
-    {
-      val = 0x7FFF & (ADC->ADDR1 >> 4);
-      set = 1;
-
-	  tensao = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
-
-	  for (i = 1; i < ARRAY_SIZEOF(ad2fator); i++)
-	  {
-		  if (tensao < ad2fator[i].tensao)
-		  {
-			  tensao *= ad2fator[i - 1].fator;
-			  tensao /= 100;
-			  break;
-		  }
-	  }
-
-	  val = tensao;
-	}
-    break;
-  case 3:
-    if (ADC->ADDR0 & 0x7FFFFFFF)
-    {
-      val = 0x7FFF & (ADC->ADDR0 >> 4);
-      set = 1;
-
-	  tensao = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
-
-	  for (i = 1; i < ARRAY_SIZEOF(ad3fator); i++)
-	  {
-		  if (tensao < ad3fator[i].tensao)
-		  {
-			  tensao *= ad3fator[i - 1].fator;
-			  tensao /= 100;
-			  break;
-		  }
-	  }
-
-	  val = tensao;
-	}
-    break;
-  case 4:  // AD CPU
-    if (ADC->ADDR4 & 0x7FFFFFFF)
-    {
-      val = 0x7FFF & (ADC->ADDR4 >> 4);
-      set = 1;
-
-	  tensao = (val * 1000) / 4096; // 2 casas decimais, ex: 2,05V
-
-	  tensao *= 48;	// fator de correção
-  	  tensao /= 100;
-
-	  val = tensao;
-    }
-    break;
-  case 5:  // SENSOR DE TEMPERATURA
-    if (ADC->ADDR5 & 0x7FFFFFFF)
-    {
-      val = 0x7FFF & (ADC->ADDR5 >> 4);
-      set = 1;
-
-	  tensao = (val * 1000) / 4096; // 2 casas decimais, ex: 2,05V
-
-	  tensao *= 48;	// fator de correção
-  	  tensao /= 100;
-
-	  val = tensao;
-    }
-    break;
-  }
+  a--; // A/D starts from zero
 
   soma = 0;
-  z = 0;
-
-  if (set == 1)
-  {
-    for (i = 0; i < ARRAY_SIZEOF(ad[a].m) - 1; i++)
-      ad[a].m[i] = ad[a].m[i + 1];
-
-    ad[a].m[ARRAY_SIZEOF(ad[0].m) - 1] = val;
-
-    for (i = 0; i < ARRAY_SIZEOF(ad[a].m); i++)
-      if (ad[a].m[max] < ad[a].m[i])
-        max = i;
-
-    for (i = 0; i < ARRAY_SIZEOF(ad[a].m); i++)
-      if (ad[a].m[min] > ad[a].m[i])
-        min = i;
-
-	if (min == max)
-	{
-		soma = min;
-		z = 1;
-	}
-	else
-	{
-		for (i = 0; i < ARRAY_SIZEOF(ad[a].m); i++)
-		{
-		  if (i != min && i != max)
-		  {
-			  if (ad[a].m[i])
-			  {
-				soma += ad[a].m[i];
-				z++;
-			  }
-		  }
-		}
-	}
+  for(z=0; z<AD_MINMAX_SIZE; z++) {
+	  admax[z] =                0;
+	  admin[z] = (unsigned int)-1; // Garante que min tem o maior valor possível
   }
 
-  return z > 0 ? (unsigned int)(soma / z) : 0;
+  for (i = 0; i < AD_BUFFER_SIZE; i++) {
+    soma += ad[a].m[i];
+
+    // Busca na lista admax se o item atual deve entrar na lista
+    for(z=0; z<AD_MINMAX_SIZE; z++) {
+      if (admax[z] < ad[a].m[i]) {
+        // Encontrou um elemento para ser adicionado.
+        // Procura a partir deste ponto pelo menor item da lista
+        // pois ele não deve mais fazer parte dela
+        for(idx=z+1; idx<AD_MINMAX_SIZE; idx++) {
+        	if(admax[idx] < admax[z])
+        		z = idx;
+        }
+        admax[z] = ad[a].m[i];
+        break;
+      }
+    }
+
+    // Busca na lista admin se o item atual deve entrar na lista
+    for(z=0; z<AD_MINMAX_SIZE; z++) {
+      if (admin[z] > ad[a].m[i]) {
+        // Encontrou um elemento para ser adicionado.
+        // Procura a partir deste ponto pelo maior item da lista
+        // pois ele não deve mais fazer parte dela
+        for(idx=z+1; idx<AD_MINMAX_SIZE; idx++) {
+          if(admin[idx] > admin[z])
+        	z = idx;
+        }
+        admin[z] = ad[a].m[i];
+        break;
+      }
+    }
+  }
+
+  for(z=0; z<AD_MINMAX_SIZE; z++) {
+	  soma -= admax[z] + admin[z];
+  }
+
+  return soma / (AD_BUFFER_SIZE - 2*AD_MINMAX_SIZE);
 }

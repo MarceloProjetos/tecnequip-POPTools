@@ -1,7 +1,7 @@
 // Variaveis PLC
 volatile unsigned char I_mcr = 0;
 volatile unsigned char I_rung_top = 0;
-volatile unsigned char GPIO_OUTPUT_PORT18 = 0;
+volatile unsigned char U_YLedUser = 0;
 volatile int U_TEsperaLedON = 0;
 volatile unsigned char I_TEsperaLedOFF_antiglitch = 0;
 volatile int U_TEsperaLedOFF = 0;
@@ -34,7 +34,7 @@ volatile unsigned char I_parOut_0004 = 0;
 volatile unsigned char I_parThis_0004 = 0;
 volatile unsigned char U_RMaqCfgInvErro = 0;
 volatile unsigned char U_RMaqCfgSrvErro = 0;
-volatile unsigned char GPIO_OUTPUT_PORT17 = 0;
+volatile unsigned char U_YLedErro = 0;
 volatile unsigned char U_RMaqCfgInvOK = 0;
 volatile unsigned char U_RMaqCfgSrvOK = 0;
 volatile unsigned char U_RMaqConfigOK = 0;
@@ -825,7 +825,7 @@ void PLC_Run(void)
     I_rung_top = I_mcr;
 
     /* start series [ */
-    if (GPIO_OUTPUT_PORT18) {  // YLedUser
+    if (U_YLedUser) {  // YLedUser
         I_rung_top = 0;
     }
 
@@ -851,7 +851,7 @@ void PLC_Run(void)
         U_TEsperaLedOFF = 0;
     }
 
-    GPIO_OUTPUT_PORT18 = I_rung_top;
+    U_YLedUser = I_rung_top;
 
     /* ] finish series */
 
@@ -1084,7 +1084,7 @@ void PLC_Run(void)
     }
     I_rung_top = I_parOut_0004;
     /* ] finish parallel */
-    GPIO_OUTPUT_PORT17 = I_rung_top;
+    U_YLedErro = I_rung_top;
 
     /* ] finish series */
 
@@ -1240,7 +1240,7 @@ void PLC_Run(void)
     /* start series [ */
     if (I_rung_top) {  // $rung_top
         I_scratch2 = 4;
-        U_MaqPosAtual = U_MaqPosAtual / I_scratch2;
+        if(I_scratch2) U_MaqPosAtual = U_MaqPosAtual / I_scratch2;
     }
 
     /* ] finish series */
@@ -1256,7 +1256,7 @@ void PLC_Run(void)
     }
 
     if (I_rung_top) {  // $rung_top
-        U_MaqPosAtual = U_MaqPosAtual / MODBUS_REGISTER[21];
+        if(MODBUS_REGISTER[21]) U_MaqPosAtual = U_MaqPosAtual / MODBUS_REGISTER[21];
     }
 
     /* ] finish series */
@@ -1277,7 +1277,7 @@ void PLC_Run(void)
     /* start series [ */
     if (I_rung_top) {  // $rung_top
         I_scratch2 = 1000;
-        U_MaqPosAtual = U_MaqPosAtual / I_scratch2;
+        if(I_scratch2) U_MaqPosAtual = U_MaqPosAtual / I_scratch2;
     }
 
     /* ] finish series */
@@ -1392,7 +1392,7 @@ void PLC_Run(void)
     /* start series [ */
     if (I_rung_top) {  // $rung_top
         I_scratch2 = 10;
-        MODBUS_REGISTER[4] = U_MaqPosAtual / I_scratch2;
+        if(I_scratch2) MODBUS_REGISTER[4] = U_MaqPosAtual / I_scratch2;
     }
 
     /* ] finish series */
@@ -3720,11 +3720,17 @@ void PLC_Run(void)
         if (!I_oneShot_0016) {  // $oneShot_0016
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0016 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0035 = 0;
             }
         }
     } else {
+        if (I_oneShot_0015) {  // $oneShot_0015
+            I_SerialReady = 1;
+        }
         I_oneShot_0015 = I_parThis_0035;
     }
 
@@ -3748,11 +3754,17 @@ void PLC_Run(void)
         if (!I_oneShot_0018) {  // $oneShot_0018
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0018 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0035 = 0;
             }
         }
     } else {
+        if (I_oneShot_0017) {  // $oneShot_0017
+            I_SerialReady = 1;
+        }
         I_oneShot_0017 = I_parThis_0035;
     }
 
@@ -3851,11 +3863,17 @@ void PLC_Run(void)
         if (!I_oneShot_001b) {  // $oneShot_001b
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_001b = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0037 = 0;
             }
         }
     } else {
+        if (I_oneShot_001a) {  // $oneShot_001a
+            I_SerialReady = 1;
+        }
         I_oneShot_001a = I_parThis_0037;
     }
 
@@ -3879,11 +3897,17 @@ void PLC_Run(void)
         if (!I_oneShot_001d) {  // $oneShot_001d
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_001d = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0037 = 0;
             }
         }
     } else {
+        if (I_oneShot_001c) {  // $oneShot_001c
+            I_SerialReady = 1;
+        }
         I_oneShot_001c = I_parThis_0037;
     }
 
@@ -3986,11 +4010,17 @@ void PLC_Run(void)
         if (!I_oneShot_0020) {  // $oneShot_0020
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0020 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0039 = 0;
             }
         }
     } else {
+        if (I_oneShot_001f) {  // $oneShot_001f
+            I_SerialReady = 1;
+        }
         I_oneShot_001f = I_parThis_0039;
     }
 
@@ -4014,11 +4044,17 @@ void PLC_Run(void)
         if (!I_oneShot_0022) {  // $oneShot_0022
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0022 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0039 = 0;
             }
         }
     } else {
+        if (I_oneShot_0021) {  // $oneShot_0021
+            I_SerialReady = 1;
+        }
         I_oneShot_0021 = I_parThis_0039;
     }
 
@@ -4127,7 +4163,7 @@ void PLC_Run(void)
     I_parThis_003c = I_parThis_003b;
     if (I_parThis_003c) {  // $parThis_003c
         I_scratch2 = 1000;
-        U_VSrvPosMesa = U_VSrvPosMesa / I_scratch2;
+        if(I_scratch2) U_VSrvPosMesa = U_VSrvPosMesa / I_scratch2;
     }
 
     if (I_parThis_003c) {  // $parThis_003c
@@ -4337,11 +4373,17 @@ void PLC_Run(void)
         if (!I_oneShot_0024) {  // $oneShot_0024
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0024 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15036, 2, &U_SrvPosMesa);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0040 = 0;
             }
         }
     } else {
+        if (I_oneShot_0023) {  // $oneShot_0023
+            I_SerialReady = 1;
+        }
         I_oneShot_0023 = I_parThis_0040;
     }
 
@@ -4357,11 +4399,17 @@ void PLC_Run(void)
         if (!I_oneShot_0026) {  // $oneShot_0026
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0026 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0040 = 0;
             }
         }
     } else {
+        if (I_oneShot_0025) {  // $oneShot_0025
+            I_SerialReady = 1;
+        }
         I_oneShot_0025 = I_parThis_0040;
     }
 
@@ -4385,11 +4433,17 @@ void PLC_Run(void)
         if (!I_oneShot_0028) {  // $oneShot_0028
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0028 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0040 = 0;
             }
         }
     } else {
+        if (I_oneShot_0027) {  // $oneShot_0027
+            I_SerialReady = 1;
+        }
         I_oneShot_0027 = I_parThis_0040;
     }
 
@@ -4460,11 +4514,17 @@ void PLC_Run(void)
         if (!I_oneShot_002a) {  // $oneShot_002a
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_002a = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_rung_top = 0;
             }
         }
     } else {
+        if (I_oneShot_0029) {  // $oneShot_0029
+            I_SerialReady = 1;
+        }
         I_oneShot_0029 = I_rung_top;
     }
 
@@ -4808,7 +4868,7 @@ void PLC_Run(void)
     }
 
     if (I_parThis_0046) {  // $parThis_0046
-        MODBUS_REGISTER[27] = MODBUS_REGISTER[27] / U_CalcCorrPosDif;
+        if(U_CalcCorrPosDif) MODBUS_REGISTER[27] = MODBUS_REGISTER[27] / U_CalcCorrPosDif;
     }
 
     /* ] finish series */
@@ -5392,11 +5452,17 @@ void PLC_Run(void)
         if (!I_oneShot_0036) {  // $oneShot_0036
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0036 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15044, 2, &U_CalcRelPerfIni);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_004f = 0;
             }
         }
     } else {
+        if (I_oneShot_0035) {  // $oneShot_0035
+            I_SerialReady = 1;
+        }
         I_oneShot_0035 = I_parThis_004f;
     }
 
@@ -5597,11 +5663,17 @@ void PLC_Run(void)
         if (!I_oneShot_003a) {  // $oneShot_003a
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_003a = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15044, 2, &U_CalcRelPerfFim);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0055 = 0;
             }
         }
     } else {
+        if (I_oneShot_0039) {  // $oneShot_0039
+            I_SerialReady = 1;
+        }
         I_oneShot_0039 = I_parThis_0055;
     }
 
@@ -5656,7 +5728,7 @@ void PLC_Run(void)
     }
 
     if (I_parThis_0056) {  // $parThis_0056
-        U_CalcRelPerfFtr = U_CalcRelMesaDif / U_CalcRelPerfDif;
+        if(U_CalcRelPerfDif) U_CalcRelPerfFtr = U_CalcRelMesaDif / U_CalcRelPerfDif;
     }
 
     /* ] finish series */
@@ -5732,11 +5804,17 @@ void PLC_Run(void)
         if (!I_oneShot_003c) {  // $oneShot_003c
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_003c = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15046, 2, &U_CalcRelSrvIni);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0057 = 0;
             }
         }
     } else {
+        if (I_oneShot_003b) {  // $oneShot_003b
+            I_SerialReady = 1;
+        }
         I_oneShot_003b = I_parThis_0057;
     }
 
@@ -5815,11 +5893,17 @@ void PLC_Run(void)
         if (!I_oneShot_003e) {  // $oneShot_003e
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_003e = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15046, 2, &U_CalcRelSrvFim);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0059 = 0;
             }
         }
     } else {
+        if (I_oneShot_003d) {  // $oneShot_003d
+            I_SerialReady = 1;
+        }
         I_oneShot_003d = I_parThis_0059;
     }
 
@@ -5874,7 +5958,7 @@ void PLC_Run(void)
     }
 
     if (I_parThis_005a) {  // $parThis_005a
-        U_CalcRelSrvFtr = U_CalcRelMesaDif / U_CalcRelSrvDif;
+        if(U_CalcRelSrvDif) U_CalcRelSrvFtr = U_CalcRelMesaDif / U_CalcRelSrvDif;
     }
 
     /* ] finish series */
@@ -6754,11 +6838,17 @@ void PLC_Run(void)
         if (!I_oneShot_0049) {  // $oneShot_0049
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0049 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15048, 2, &U_SrvMesaCurso);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0063 = 0;
             }
         }
     } else {
+        if (I_oneShot_0048) {  // $oneShot_0048
+            I_SerialReady = 1;
+        }
         I_oneShot_0048 = I_parThis_0063;
     }
 
@@ -6774,11 +6864,17 @@ void PLC_Run(void)
         if (!I_oneShot_004b) {  // $oneShot_004b
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_004b = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15034, 2, &U_SrvVelJog);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0063 = 0;
             }
         }
     } else {
+        if (I_oneShot_004a) {  // $oneShot_004a
+            I_SerialReady = 1;
+        }
         I_oneShot_004a = I_parThis_0063;
     }
 
@@ -6794,11 +6890,17 @@ void PLC_Run(void)
         if (!I_oneShot_004d) {  // $oneShot_004d
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_004d = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15032, 2, &U_SrvVelPos);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0063 = 0;
             }
         }
     } else {
+        if (I_oneShot_004c) {  // $oneShot_004c
+            I_SerialReady = 1;
+        }
         I_oneShot_004c = I_parThis_0063;
     }
 
@@ -6931,11 +7033,17 @@ void PLC_Run(void)
         if (!I_oneShot_004f) {  // $oneShot_004f
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_004f = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0065 = 0;
             }
         }
     } else {
+        if (I_oneShot_004e) {  // $oneShot_004e
+            I_SerialReady = 1;
+        }
         I_oneShot_004e = I_parThis_0065;
     }
 
@@ -6955,11 +7063,17 @@ void PLC_Run(void)
         if (!I_oneShot_0051) {  // $oneShot_0051
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0051 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0065 = 0;
             }
         }
     } else {
+        if (I_oneShot_0050) {  // $oneShot_0050
+            I_SerialReady = 1;
+        }
         I_oneShot_0050 = I_parThis_0065;
     }
 
@@ -7035,11 +7149,17 @@ void PLC_Run(void)
         if (!I_oneShot_0053) {  // $oneShot_0053
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0053 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0066 = 0;
             }
         }
     } else {
+        if (I_oneShot_0052) {  // $oneShot_0052
+            I_SerialReady = 1;
+        }
         I_oneShot_0052 = I_parThis_0066;
     }
 
@@ -7059,11 +7179,17 @@ void PLC_Run(void)
         if (!I_oneShot_0055) {  // $oneShot_0055
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0055 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0066 = 0;
             }
         }
     } else {
+        if (I_oneShot_0054) {  // $oneShot_0054
+            I_SerialReady = 1;
+        }
         I_oneShot_0054 = I_parThis_0066;
     }
 
@@ -7131,11 +7257,17 @@ void PLC_Run(void)
         if (!I_oneShot_0057) {  // $oneShot_0057
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0057 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15000, 1, &U_SrvRegFlags);
+                I_SerialTimeout = 0;
             } else {
                 I_rung_top = 0;
             }
         }
     } else {
+        if (I_oneShot_0056) {  // $oneShot_0056
+            I_SerialReady = 1;
+        }
         I_oneShot_0056 = I_rung_top;
     }
 
@@ -7151,11 +7283,17 @@ void PLC_Run(void)
         if (!I_oneShot_0059) {  // $oneShot_0059
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0059 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15031, 1, &U_SrvRegStatus);
+                I_SerialTimeout = 0;
             } else {
                 I_rung_top = 0;
             }
         }
     } else {
+        if (I_oneShot_0058) {  // $oneShot_0058
+            I_SerialReady = 1;
+        }
         I_oneShot_0058 = I_rung_top;
     }
 
@@ -7325,11 +7463,17 @@ void PLC_Run(void)
         if (!I_oneShot_005c) {  // $oneShot_005c
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_005c = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_006c = 0;
             }
         }
     } else {
+        if (I_oneShot_005b) {  // $oneShot_005b
+            I_SerialReady = 1;
+        }
         I_oneShot_005b = I_parThis_006c;
     }
 
@@ -7349,11 +7493,17 @@ void PLC_Run(void)
         if (!I_oneShot_005e) {  // $oneShot_005e
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_005e = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_006c = 0;
             }
         }
     } else {
+        if (I_oneShot_005d) {  // $oneShot_005d
+            I_SerialReady = 1;
+        }
         I_oneShot_005d = I_parThis_006c;
     }
 
@@ -8028,11 +8178,17 @@ void PLC_Run(void)
         if (!I_oneShot_0068) {  // $oneShot_0068
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0068 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0076 = 0;
             }
         }
     } else {
+        if (I_oneShot_0067) {  // $oneShot_0067
+            I_SerialReady = 1;
+        }
         I_oneShot_0067 = I_parThis_0076;
     }
 
@@ -8052,11 +8208,17 @@ void PLC_Run(void)
         if (!I_oneShot_006a) {  // $oneShot_006a
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_006a = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0076 = 0;
             }
         }
     } else {
+        if (I_oneShot_0069) {  // $oneShot_0069
+            I_SerialReady = 1;
+        }
         I_oneShot_0069 = I_parThis_0076;
     }
 
@@ -8215,11 +8377,17 @@ void PLC_Run(void)
         if (!I_oneShot_006e) {  // $oneShot_006e
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_006e = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0079 = 0;
             }
         }
     } else {
+        if (I_oneShot_006d) {  // $oneShot_006d
+            I_SerialReady = 1;
+        }
         I_oneShot_006d = I_parThis_0079;
     }
 
@@ -8239,11 +8407,17 @@ void PLC_Run(void)
         if (!I_oneShot_0070) {  // $oneShot_0070
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0070 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0079 = 0;
             }
         }
     } else {
+        if (I_oneShot_006f) {  // $oneShot_006f
+            I_SerialReady = 1;
+        }
         I_oneShot_006f = I_parThis_0079;
     }
 
@@ -8346,11 +8520,17 @@ void PLC_Run(void)
         if (!I_oneShot_0073) {  // $oneShot_0073
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0073 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_007b = 0;
             }
         }
     } else {
+        if (I_oneShot_0072) {  // $oneShot_0072
+            I_SerialReady = 1;
+        }
         I_oneShot_0072 = I_parThis_007b;
     }
 
@@ -8370,11 +8550,17 @@ void PLC_Run(void)
         if (!I_oneShot_0075) {  // $oneShot_0075
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_0075 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_007b = 0;
             }
         }
     } else {
+        if (I_oneShot_0074) {  // $oneShot_0074
+            I_SerialReady = 1;
+        }
         I_oneShot_0074 = I_parThis_007b;
     }
 
@@ -9986,11 +10172,17 @@ void PLC_Run(void)
         if (!I_oneShot_009d) {  // $oneShot_009d
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_009d = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0096 = 0;
             }
         }
     } else {
+        if (I_oneShot_009c) {  // $oneShot_009c
+            I_SerialReady = 1;
+        }
         I_oneShot_009c = I_parThis_0096;
     }
 
@@ -10010,11 +10202,17 @@ void PLC_Run(void)
         if (!I_oneShot_009f) {  // $oneShot_009f
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_009f = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 15030, 1, &U_SrvRegConfig);
+                I_SerialTimeout = 0;
             } else {
                 I_parThis_0096 = 0;
             }
         }
     } else {
+        if (I_oneShot_009e) {  // $oneShot_009e
+            I_SerialReady = 1;
+        }
         I_oneShot_009e = I_parThis_0096;
     }
 
@@ -10047,7 +10245,7 @@ void PLC_Run(void)
     /* start series [ */
     if (I_rung_top) {  // $rung_top
         I_scratch2 = 4;
-        U_ProxFimCurso = U_ProxFimCurso / I_scratch2;
+        if(I_scratch2) U_ProxFimCurso = U_ProxFimCurso / I_scratch2;
     }
 
     /* ] finish series */
@@ -11592,11 +11790,17 @@ void PLC_Run(void)
         if (!I_oneShot_00b1) {  // $oneShot_00b1
             if (I_SerialReady) {  // $SerialReady
                 I_oneShot_00b1 = 1;
+            } else if (I_SerialTimeout) {  // $SerialTimeout
+                Modbus_Send(3, MODBUS_FC_READ_HOLDING_REGISTERS, 15031, 1, &U_SrvRegStatus);
+                I_SerialTimeout = 0;
             } else {
                 I_rung_top = 0;
             }
         }
     } else {
+        if (I_oneShot_00b0) {  // $oneShot_00b0
+            I_SerialReady = 1;
+        }
         I_oneShot_00b0 = I_rung_top;
     }
 
@@ -12657,7 +12861,7 @@ void PLC_Run(void)
     /* start series [ */
     if (I_rung_top) {  // $rung_top
         I_scratch2 = 100;
-        U_SrvVelPos = U_SrvVelPos / I_scratch2;
+        if(I_scratch2) U_SrvVelPos = U_SrvVelPos / I_scratch2;
     }
 
     /* ] finish series */
@@ -12679,7 +12883,7 @@ void PLC_Run(void)
     /* start series [ */
     if (I_rung_top) {  // $rung_top
         I_scratch2 = 100;
-        U_SrvVelJog = U_SrvVelJog / I_scratch2;
+        if(I_scratch2) U_SrvVelJog = U_SrvVelJog / I_scratch2;
     }
 
     /* ] finish series */
@@ -12716,7 +12920,7 @@ void PLC_Run(void)
     /* start series [ */
     if (I_rung_top) {  // $rung_top
         I_scratch2 = 10;
-        U_WInvAutoVel = U_WInvAutoVel / I_scratch2;
+        if(I_scratch2) U_WInvAutoVel = U_WInvAutoVel / I_scratch2;
     }
 
     /* ] finish series */
@@ -12738,7 +12942,7 @@ void PLC_Run(void)
     /* start series [ */
     if (I_rung_top) {  // $rung_top
         I_scratch2 = 10;
-        U_WInvManVel = U_WInvManVel / I_scratch2;
+        if(I_scratch2) U_WInvManVel = U_WInvManVel / I_scratch2;
     }
 
     /* ] finish series */
@@ -12760,7 +12964,7 @@ void PLC_Run(void)
     /* start series [ */
     if (I_rung_top) {  // $rung_top
         I_scratch2 = 10;
-        U_WInvMaxSyncVel = U_WInvMaxSyncVel / I_scratch2;
+        if(I_scratch2) U_WInvMaxSyncVel = U_WInvMaxSyncVel / I_scratch2;
     }
 
     /* ] finish series */
@@ -12805,4 +13009,3 @@ void PLC_Run(void)
 
     /* ] finish series */
 }
-

@@ -78,8 +78,10 @@ MODBUS_HANDLER_TX(Modbus_TCP_Tx)
 	iResult = recv(ConnectSocket, (char *)data, MODBUS_BUFFER_SIZE, 0);
 	if (iResult == 0)
 		Error("Connection closed");
-	else if(iResult < 0)
+	else if(iResult < 0) {
+		iResult = 0;
 		Error("recv failed: %d", WSAGetLastError());
+	}
 
 	// cleanup
 	closesocket(ConnectSocket);
@@ -97,7 +99,7 @@ bool OpenCOMPort(unsigned int iPort, DWORD dwBaudRate, BYTE bByteSize, BYTE bPar
 		iPort = LoadCOMPorts(0, 0, 0);
 	}
 
-	StringCchPrintf(lpszCommPort, sizeof(lpszCommPort) / sizeof(TCHAR), "COM%d", iPort);
+	StringCchPrintf(lpszCommPort, sizeof(lpszCommPort) / sizeof(TCHAR), "//./COM%d", iPort);
 
 	hCommPort = ::CreateFile( lpszCommPort,
 		   GENERIC_READ|GENERIC_WRITE,  // access ( read and write)
@@ -115,7 +117,7 @@ bool OpenCOMPort(unsigned int iPort, DWORD dwBaudRate, BYTE bByteSize, BYTE bPar
 
 	if (!GetCommState(hCommPort,&dcb))
 	{
-		CloseHandle(hCommPort);
+		CloseCOMPort();
 		return false;
 	}
 
@@ -128,7 +130,7 @@ bool OpenCOMPort(unsigned int iPort, DWORD dwBaudRate, BYTE bByteSize, BYTE bPar
 
 	if (!SetCommState(hCommPort, &dcb))
 	{
-		CloseHandle(hCommPort);
+		CloseCOMPort();
 		return false;
 	}
 
@@ -150,7 +152,7 @@ bool OpenCOMPort(unsigned int iPort, DWORD dwBaudRate, BYTE bByteSize, BYTE bPar
 
 	if (!SetCommTimeouts(hCommPort, &comTimeOut))
 	{
-		CloseHandle(hCommPort);
+		CloseCOMPort();
 		return false;
 	}
 
@@ -159,8 +161,10 @@ bool OpenCOMPort(unsigned int iPort, DWORD dwBaudRate, BYTE bByteSize, BYTE bPar
 
 void CloseCOMPort(void)
 {
-	if(hCommPort != NULL)
+	if(hCommPort != NULL) {
 		CloseHandle(hCommPort);
+		hCommPort = NULL;
+	}
 }
 
 MODBUS_HANDLER_TX(Modbus_Serial_Tx)

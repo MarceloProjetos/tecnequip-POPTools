@@ -166,7 +166,7 @@ void RS232_Console(void)
 
 extern struct MODBUS_Device modbus_rs232;
 
-void RS232_Console(void)
+void RS232_Console(unsigned int cycle)
 {
 	unsigned int sz;
 	static unsigned int rs232_timeout = 0;
@@ -176,11 +176,10 @@ void RS232_Console(void)
 
   if(rs232_rx_index) {
     if(sz) {
-      rs232_timeout  = 0;
-    } else if(++rs232_timeout > 3) {
+      rs232_timeout  = cycle + 3;
+    } else if(cycle >= rs232_timeout) {
       Modbus_RTU_Receive(&modbus_rs232, Modbus_RTU_Validate((unsigned char *)rs232_rx_buffer, rs232_rx_index, 0));
 
-      rs232_timeout  = 0;
       rs232_rx_index = 0;
     }
   }

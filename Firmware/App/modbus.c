@@ -63,7 +63,7 @@ void Modbus_Init(void)
 {
 	Modbus_RTU_Init(&modbus_rs485);
 
-	modbus_rs485.identification.Id                 = 0x01;
+	modbus_rs485.identification.Id                 = 0x00;
 	modbus_rs485.identification.VendorName         = "Tecnequip";
 	modbus_rs485.identification.ProductCode        = "POP7";
 	modbus_rs485.identification.MajorMinorRevision = "V1 Rev2";
@@ -87,7 +87,7 @@ void Modbus_Init(void)
 
 	Modbus_RTU_Init(&modbus_tcp_slave);
 
-	modbus_tcp_slave.identification.Id                 = 0x01;
+	modbus_tcp_slave.identification.Id                 = 0x00;
 	modbus_tcp_slave.identification.VendorName         = "Tecnequip";
 	modbus_tcp_slave.identification.ProductCode        = "POP7";
 	modbus_tcp_slave.identification.MajorMinorRevision = "V1 Rev2";
