@@ -177,7 +177,7 @@
              Id         = "30202">
       <Command.TooltipDescription>Obter outras formas para inserir uma linha</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InsertLineHH.bmp"/>
       </Command.LargeImages>
     </Command>
 
@@ -189,7 +189,7 @@
       <Command.TooltipTitle      >Inserir Antes (Shift+INS)</Command.TooltipTitle>
       <Command.TooltipDescription>Insere uma linha vazia antes da linha atualmente selecionada.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InsertLineBeforeHH.bmp"/>
       </Command.LargeImages>
     </Command>
 
@@ -201,7 +201,7 @@
       <Command.TooltipTitle      >Inserir Após (INS)</Command.TooltipTitle>
       <Command.TooltipDescription>Insere uma linha vazia após a linha atualmente selecionada.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InsertLineAfterHH.bmp"/>
       </Command.LargeImages>
     </Command>
 
@@ -251,7 +251,7 @@
       <Command.TooltipTitle      >Excluir (DEL)</Command.TooltipTitle>
       <Command.TooltipDescription>Exclui o comando atualmente selecionado</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/DeleteInstrHH.bmp"/>
       </Command.LargeImages>
     </Command>
 
@@ -263,7 +263,7 @@
       <Command.TooltipTitle      >Localizar e Substituir (F3)</Command.TooltipTitle>
       <Command.TooltipDescription>Abrir a janela de busca.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/FindDialogHH.bmp"/>
       </Command.LargeImages>
     </Command>
 
@@ -285,7 +285,7 @@
       <Command.TooltipTitle      >Localizar Próxima</Command.TooltipTitle>
       <Command.TooltipDescription>Procura pelo texto informado na caixa de busca a partir do objeto atualmente selecionado.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/FindHH.bmp"/>
       </Command.LargeImages>
     </Command>
 
@@ -352,7 +352,7 @@
       <Command.TooltipTitle      >Projeto</Command.TooltipTitle>
       <Command.TooltipDescription>Abrir a janela de configurações do projeto atual.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/ConfigHH.bmp"/>
       </Command.LargeImages>
     </Command>
 
@@ -363,7 +363,7 @@
       <Command.TooltipTitle      >Preferências</Command.TooltipTitle>
       <Command.TooltipDescription>Abrir a janela para configuração do programa POPTools como porta serial para gravação, desativar avisos, etc.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/SettingsHH.bmp"/>
       </Command.LargeImages>
     </Command>
 
@@ -966,8 +966,11 @@
       <Command.TooltipTitle      >Modo de Simulação (Ctrl+M)</Command.TooltipTitle>
       <Command.TooltipDescription>Entrar no modo de simulação do Diagrama Ladder.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/SimulationHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/SimulationHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "SimulationStart"
@@ -1058,7 +1061,7 @@
       <Command.TooltipTitle      >Depurar</Command.TooltipTitle>
       <Command.TooltipDescription>Abrir janela de depuração da POP-7, onde é possível ler e alterar seus registradores.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/DebugHH.bmp"/>
       </Command.LargeImages>
     </Command>
   </Application.Commands>
@@ -1224,6 +1227,9 @@
                 <Scale Group ="GroupCommModBUS" Size="Large"  />
                 <Scale Group ="GroupCommOthers" Size="Large"  />
               </ScalingPolicy.IdealSizes>
+              <Scale Group ="GroupCommOthers" Size="Medium"  />
+              <Scale Group ="GroupCommOthers" Size="Small"  />
+              <Scale Group ="GroupCommOthers" Size="Popup"  />
             </ScalingPolicy>
           </Tab.ScalingPolicy>
           <Group CommandName="GroupAnalog" SizeDefinition="TwoButtons">

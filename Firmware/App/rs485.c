@@ -182,7 +182,7 @@ void RS485_Handler (unsigned int cycle)
 		} else if(cycle >= rs485_timeout) {
 			if (WAITING_FOR_USS == 1) // uss
 			{
-				USS_Ready((PPO1*)rs485_rx_buffer, rs485_rx_index);
+				USS_Ready(rs485_rx_buffer, rs485_rx_index);
 				rs485_rx_index = 0;
 				WAITING_FOR_USS = 0;
 			}
@@ -194,12 +194,6 @@ void RS485_Handler (unsigned int cycle)
 		}
 	}
 
- // if (!I_SerialReady && serial_rx_index)
- // {
- //   uss_ready((PPO1*)serial_rx_buffer, serial_rx_index);
- //   serial_rx_index = 0;
- // }
-
   if(I_SerialReady) {
     retries = 0;
     I_SerialTimeout = 0;
@@ -209,9 +203,9 @@ void RS485_Handler (unsigned int cycle)
     if(cycle >= rs485_reset_timeout && !I_SerialTimeout && retries++ < MAX_RETRIES) {
       I_SerialTimeout = 1;
 	  rs485_reset_timeout = cycle + 50;
-    } else if (cycle >= rs485_reset_timeout && I_SerialTimeout) {
+    } else if (cycle >= rs485_reset_timeout && I_SerialTimeout && !I_SerialAborted) {
     	I_SerialAborted = 1;
-    } else if (cycle >= (rs485_reset_timeout + 2500)) {
+    } else if (cycle >= (rs485_reset_timeout + 250)) {
       retries = 0;
       I_SerialReady = 1;
       I_SerialTimeout = 0;

@@ -1067,7 +1067,7 @@ void ShowIoMapDialog(int item)
 		{
             if(j == item) continue;
             if(Prog.io.assignment[j].pin == Prog.mcu->pinInfo[i].pin && Prog.io.assignment[j].type == Prog.io.assignment[item].type && 
-				!((Prog.io.assignment[j].type == IO_TYPE_DIG_INPUT && i > 18) || (Prog.io.assignment[j].type == IO_TYPE_DIG_OUTPUT && i > 68)) )
+				!((Prog.io.assignment[j].type == IO_TYPE_DIG_INPUT && i > 18) || (Prog.io.assignment[j].type == IO_TYPE_DIG_OUTPUT && i > 66)) )
 			{
                 goto cant_use_this_io;
             }

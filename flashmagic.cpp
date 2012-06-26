@@ -125,6 +125,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	options.usinginterface = 0;
 	options.interfacetype  = FM_INTERFACETYPE_NONE;
 
+	totalWrite = 0;
+
 	// connect to the device on the specified com port using the specified baud rate
 	presults = fm_connect(&options, sizeof(options));
 	if (presults->result != FM_OK)

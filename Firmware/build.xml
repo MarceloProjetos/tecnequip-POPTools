@@ -81,6 +81,7 @@
       <compilerarg value="-fdata-sections"/>
       
       <compilerarg value="-O0"/>
+      
       <compilerarg value="-g"/>
     <linkerarg value="-nostartfiles"/>
       <linkerarg value="-Map=${project.name}.map"/>

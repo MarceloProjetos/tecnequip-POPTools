@@ -106,10 +106,6 @@ int main()
 
 	Net_Init();
 
-// Workaround... Por algum motivo, se mestre e escravo sobem sincronizados ocorre erro de comunicação!
-//	if(MODBUS_MASTER)
-//		CoTickDelay(250); // Atrasa em 250 ms a inicialização do mestre
-
 	CoCreateTask(PLC_Cycle, 0,
 			  PLC_CYCLE_THREAD_PRIO,
 			  &PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE-1],

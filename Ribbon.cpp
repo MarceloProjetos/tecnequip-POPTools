@@ -389,6 +389,7 @@ public:
 			EXEC_OPCODE(cmdFileOpen               , MNU_OPEN                   );
 			EXEC_OPCODE(cmdFileSave               , MNU_SAVE                   );
 			EXEC_OPCODE(cmdFileSaveAsLadder       , MNU_SAVE_AS                );
+			EXEC_OPCODE(cmdFileSaveAsC            , MNU_SAVE_AS_C              );
 			EXEC_OPCODE(cmdFileSaveAsText         , MNU_EXPORT                 );
 			EXEC_OPCODE(cmdAbout                  , MNU_ABOUT                  );
 			EXEC_OPCODE(cmdExit                   , MNU_EXIT                   );
@@ -449,6 +450,7 @@ public:
 			EXEC_OPCODE(cmdInstrWriteDA           , MNU_INSERT_SET_DA          );
 
 			EXEC_OPCODE(cmdInstrPWM               , MNU_INSERT_SET_PWM         );
+			EXEC_OPCODE(cmdInstrRampDA            , MNU_INSERT_MULTISET_DA     );
 			EXEC_OPCODE(cmdInstrReadEnc           , MNU_INSERT_READ_ENC        );
 			EXEC_OPCODE(cmdInstrResetEnc          , MNU_INSERT_RESET_ENC       );
 

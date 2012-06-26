@@ -52,7 +52,7 @@ void PLC_Run(void)
     
     /* start series [ */
     if (I_rung_top) {  // $rung_top
-        A3 = ADC_Read(3);
+        A3 = ADC_Read(6);
     }
     
     /* ] finish series */

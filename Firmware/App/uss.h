@@ -17,8 +17,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-//#include <core/core.h>
-//#include <dev/rs485.h>
 
 #define HTONS(n) (unsigned short int)((((unsigned short int) (n)) << 8) | (((unsigned short int) (n)) >> 8))
 
@@ -32,7 +30,7 @@ extern unsigned int RS485_Write(unsigned char * buffer, unsigned int size);
 // Inicio das estruturas de dados. Ajusta o alinhamento para 1 byte
 // Nao é suportado na plataforma ARM, utilizar -fpack-struct=1 nos param gcc
 //----------------------------------------------------------------------------
-#pragma pack(push, 1)
+//#pragma pack(push, 1)
 
 ///////////////////////////////////////////////////////////////////////////////
 /// \b Abreviations
@@ -359,112 +357,41 @@ typedef short int PWEL;
 //---------------------------------------------------------------------------*/
 
 //------------------------- PPO Message Type ----------------------------------
-#define PPO0_TYPE 0  /** PPO0 message type */
 #define PPO1_TYPE 1  /** PPO1 message type */
-#define PPO2_TYPE 2  /** PPO2 message type */
-#define PPO3_TYPE 3  /** PPO3 message type */
-#define PPO4_TYPE 4  /** PPO4 message type */
 
 //------------------------- STX Start Character -------------------------------
 #define PPO_STX 0x02
 
 //------------------------- PPO LGE Message Size ------------------------------
-#define PPO0_LGE 12
 #define PPO1_LGE 14
-#define PPO2_LGE 18
-#define PPO3_LGE 6
-#define PPO4_LGE 10
-
-#define PPO0_SIZE PPO0_LGE
 #define PPO1_SIZE PPO1_LGE
-#define PPO2_SIZE PPO2_LGE
-#define PPO3_SIZE PPO3_LGE
-#define PPO4_SIZE PPO4_LGE
 
-typedef struct
-{
-  STX stx;   /** (Start of text): ASCII character : 02 hex */
-  LGE lge;   /** (Length of telegram): contains the telegram length. */
-  ADR adr;   /** (Address byte): contains the slave address and other information.*/
-  PKE pke;   /** Parameter label */
-  IND ind;   /** Subindex */
-  PWEH pwe; /** Parameter value 1 */
-  STW stw;   /** Control word */
-  SW1 sw1;   /** Setpoint no. 1 */
-  BCC bcc;   /** Block Checksum Character */
-} PPO0;
+// Devido a problemas de alinhamento, refazendo estrutura utilizando um buffer char simples
+// e com funções de macro para carregar os valores na posição correta do buffer
+typedef unsigned char PPO1[PPO1_SIZE+2]; // Comprimento da mensagem + STX + LGE
 
-typedef struct
-{
-  STX stx;   /** (Start of text): ASCII character : 02 hex */
-  LGE lge;   /** (Length of telegram): contains the telegram length. */
-  ADR adr;   /** (Address byte): contains the slave address and other information.*/
-  PKE pke;   /** Parameter label */
-  IND ind;   /** Subindex */
-  PWEH pweh; /** Parameter value High */
-  PWEL pwel; /** Parameter value Low */
-  STW stw;   /** Control word */
-  SW1 sw1;   /** Setpoint no. 1 */
-  BCC bcc;   /** Block Checksum Character */
-} PPO1;
+#define USS_PPO_INIT(bf,lge)                 do { memset((void *)bf, 0, sizeof(bf)); bf[0] = PPO_STX; bf[1] = lge; } while(0)
+#define USS_PPO_SET_ADR(bf,multi,bc,address) do { bf[ 2] = (multi<<6) | (bc<<5) | address; } while(0)
 
-typedef struct
-{
-  STX stx;   /** (Start of text): ASCII character : 02 hex */
-  LGE lge;   /** (Length of telegram): contains the telegram length. */
-  ADR adr;   /** (Address byte): contains the slave address and other information.*/
-  PKE pke;   /** Parameter label */
-  IND ind;   /** Subindex */
-  PWEH pweh; /** Parameter value 1 */
-  PWEL pwel; /** Parameter value 1 */
-  STW stw;   /** Control word */
-  SW1 sw1;   /** Setpoint no. 1 */
-  SW3 sw3;   /** Setpoint no. 3 */
-  SW2 sw2;   /** Setpoint no. 2 */
-  BCC bcc;   /** Block Checksum Character */
-} PPO2;
+#define USS_PPO1_SET_PKE(bf,pke)             do { bf[ 3] = pke>>8; bf[4] = pke&0xff; } while(0)
+#define USS_PPO1_SET_IND(bf,par,idx)         do { bf[ 6] = ((idx)<<2) | (par); } while(0)
+#define USS_PPO1_SET_PWEH(bf,pewh)           do { bf[ 7] = pewh>>8; bf[ 8] = pewh&0xff; } while(0)
+#define USS_PPO1_SET_PWEL(bf,pewl)           do { bf[ 9] = pewl>>8; bf[10] = pewl&0xff; } while(0)
+#define USS_PPO1_SET_STW(bf,pewl)            do { bf[11] = pewl>>8; bf[12] = pewl&0xff; } while(0)
+#define USS_PPO1_SET_SW1(bf,pewl)            do { bf[13] = pewl>>8; bf[14] = pewl&0xff; } while(0)
 
-typedef struct
-{
-  STX stx;   /** (Start of text): ASCII character : 02 hex */
-  LGE lge;   /** (Length of telegram): contains the telegram length. */
-  ADR adr;   /** (Address byte): contains the slave address and other information.*/
-  STW stw;   /** Control word */
-  SW1 sw1;   /** Setpoint no. 1 */
-  BCC bcc;   /** Block Checksum Character */
-} PPO3;
-
-typedef struct
-{
-  STX stx;   /** (Start of text): ASCII character : 02 hex */
-  LGE lge;   /** (Length of telegram): contains the telegram length. */
-  ADR adr;   /** (Address byte): contains the slave address and other information.*/
-  STW stw;   /** Control word */
-  SW1 sw1;   /** Setpoint no. 1 */
-  SW3 sw3;   /** Setpoint no. 3 */
-  SW2 sw2;   /** Setpoint no. 2 */
-  BCC bcc;   /** Block Checksum Character */
-} PPO4;
+#define USS_PPO1_GET_PKE(bf)     (((unsigned int)(bf[ 3])<<8) | bf[ 4])
+#define USS_PPO1_GET_IND_PAR(bf) (bf[ 6] & 0x03)
+#define USS_PPO1_GET_IND_IDX(bf) (bf[ 6] >> 2)
+#define USS_PPO1_GET_PWEH(bf)    (((unsigned int)(bf[ 7])<<8) | bf[ 8])
+#define USS_PPO1_GET_PWEL(bf)    (((unsigned int)(bf[ 9])<<8) | bf[10])
+#define USS_PPO1_GET_STW(bf)     (((unsigned int)(bf[11])<<8) | bf[12])
+#define USS_PPO1_GET_SW1(bf)     (((unsigned int)(bf[13])<<8) | bf[14])
 
 /** ---------------------------------------------------------------------------
 /// Fim das estruturas de dados. Retorna o alinhamento original
 //---------------------------------------------------------------------------*/
-#pragma pack(pop)
-
-/// Função: USS_PPO0
-/// \param PKE
-/// \param IND
-/// \param PWEH
-/// \param STW
-/// \param SW1
-/// \return * PPO0 - Ponteiro para PPO0
-/// , 0 (NULL) em caso de erro
-/// \brief
-/// Esta função retorna um telegrama do tipo PPO0 pronto para ser enviado
-/// pelo meio fisico (UART, CAN, etc)
-//---------------------------------------------------------------------------*/
-//PPO0 USS_PPO0(ADR adr, PKE pke, IND ind, PWEH pwe, STW stw, SW1 sw1);
-PPO0 USS_PPO0(unsigned char adr, unsigned short int pke, unsigned short int ind, unsigned short int pwe, unsigned short int stw, unsigned short int sw1);
+//#pragma pack(pop)
 
 /**----------------------------------------------------------------------------
 /// Função: USS_PPO1
@@ -481,79 +408,9 @@ PPO0 USS_PPO0(unsigned char adr, unsigned short int pke, unsigned short int ind,
 /// pelo meio fisico (UART, CAN, etc)
 //---------------------------------------------------------------------------*/
 //PPO1 USS_PPO1(ADR adr, PKE pke, IND ind, PWEH pweh, PWEL pwel, STW stw, SW1 sw1);
-PPO1 USS_PPO1(unsigned char adr, unsigned short int pke, unsigned short int ind, unsigned short int pweh, unsigned short int pwel, unsigned short int stw, unsigned short int sw1);
-
-/**----------------------------------------------------------------------------
-/// Função: USS_PPO2
-/// \param PKE
-/// \param IND
-/// \param PWEH
-/// \param PWEL
-/// \param STW
-/// \param SW1
-/// \param SW3
-/// \param SW2
-/// \return * PPO2 - Ponteiro para PPO2
-/// , 0 (NULL) em caso de erro
-/// \brief
-/// Esta função retorna um telegrama do tipo PPO2 pronto para ser enviado
-/// pelo meio fisico (UART, CAN, etc)
-//---------------------------------------------------------------------------*/
-//PPO2 USS_PPO2(ADR adr, PKE pke, IND ind, PWEH pweh, PWEL pwel, STW stw, SW1 sw1, SW3 sw3, SW2 sw2);
-PPO2 USS_PPO2(unsigned char adr, unsigned short int pke, unsigned short int ind, unsigned short int pweh, unsigned short int pwel, unsigned short int stw, unsigned short int sw1, unsigned short int sw3, unsigned short int sw2);
-
-/**----------------------------------------------------------------------------
-/// Função: USS_PPO3
-/// \param PKE
-/// \param IND
-/// \param PWEH
-/// \param PWEL
-/// \param STW
-/// \param SW1
-/// \param SW3
-/// \param SW2
-/// \return * PPO3 - Ponteiro para PPO3
-/// , 0 (NULL) em caso de erro
-/// \brief
-/// Esta função retorna um telegrama do tipo PPO3 pronto para ser enviado
-/// pelo meio fisico (UART, CAN, etc)
-//---------------------------------------------------------------------------*/
-//PPO3 USS_PPO3(ADR adr, STW stw, SW1 sw1);
-PPO3 USS_PPO3(unsigned char adr, unsigned short int stw, unsigned short int sw1);
-
-/**----------------------------------------------------------------------------
-/// Função: USS_PPO4
-/// \param STW
-/// \param SW1
-/// \param SW3
-/// \param SW2
-/// \return * PPO4 - Ponteiro para PPO4
-/// , 0 (NULL) em caso de erro
-/// \brief
-/// Esta função retorna um telegrama do tipo PPO4 pronto para ser enviado
-/// pelo meio fisico (UART, CAN, etc)
-//---------------------------------------------------------------------------*/
-//PPO4 USS_PPO4(ADR adr, STW stw, SW1 sw1, SW3 sw3, SW2 sw2);
-PPO4 USS_PPO4(unsigned char adr, unsigned short int stw, unsigned short int sw1, unsigned short int sw3, unsigned short int sw2);
+void USS_PPO1(PPO1 *ppo, unsigned char adr, unsigned short int pke, unsigned short int ind, unsigned short int pweh, unsigned short int pwel, unsigned short int stw, unsigned short int sw1);
 
 //---------------- Funções com nivel de abstração mais alto -------------------
-
-/**----------------------------------------------------------------------------
-/// Função: USS_set_control_bits
-/// \param control_bits
-/// \return unsigned char 0 = ok
-/// \brief
-/// Esta função configura os bits de controle do inversor
-//---------------------------------------------------------------------------*/
-unsigned char USS_Set_Control_Bits(ADR adr, unsigned int control_bits);
-
-/**----------------------------------------------------------------------------
-/// Função: USS_get_status_bits
-/// \return unsigned char 0 = ok
-/// \brief
-/// Esta função retorna o status atual do inversor
-//---------------------------------------------------------------------------*/
-unsigned short int USS_Get_Status_Bits(void);
 
 /**----------------------------------------------------------------------------
 /// Função: USS_get_param
@@ -584,8 +441,8 @@ unsigned char USS_Set_Param(unsigned char addr, unsigned short int param, unsign
 /// do meio fisico (UART, CAN, etc) o tamanho total em bytes a ser transmitido
 //---------------------------------------------------------------------------*/
 void USS_Set_BCC(unsigned char * ppo);
-unsigned char USS_Check_CRC(unsigned char * ppo);
-unsigned char USS_Ready(PPO1 * r, unsigned int sz);
+unsigned char USS_Check_CRC(unsigned char * ppo, unsigned int size);
+unsigned char USS_Ready(unsigned char * r, unsigned int sz);
 
 /**----------------------------------------------------------------------------
 /// Função: USS_clean_ppo
@@ -596,51 +453,5 @@ unsigned char USS_Ready(PPO1 * r, unsigned int sz);
 /// lixo o calculo do checksum (BCC) vai dar errado
 //---------------------------------------------------------------------------*/
 void USS_Clean_PPO(unsigned char * ppo, unsigned int size);
-
-/** ---------------------------------------------------------------------------
-/// Exemplos de uso
-//-----------------------------------------------------------------------------
-/// \brief
-/// Alguns dos exemplos de telegramas do manual do USS.
-/// Alguns exemplos possuem erros no calculo de checksum, campo BCC.
-//---------------------------------------------------------------------------*/
-
-/// LGE 0X0E
-//volatile PPO1 ppo1_1 = USS_PPO1(0x03, 0x2066, 0x0001, 0x0000, 0x03E8, 0x0000, 0x0000);  /// BCC = 0x80, Correto 0xA3
-
-//volatile PPO1 ppo1_2 = USS_PPO1(0x03, 0x1066, 0x0001, 0x0000, 0x03E8, 0x0931, 0x0000);  /// BCC = 0x88, correto 0xAB
-
-/// LGE 0x0C
-//volatile PPO0 ppo0_1 = USS_PPO0(0x00, 0x0000, 0x0000, 0x0000, 0x0B70, 0x0000);  /// BCC = 75
-
-//volatile PPO0 ppo0_2 = USS_PPO0(0x00, 0x0000, 0x0000, 0x0000, 0x047E, 0x0000);  /// BCC = 74
-
-//volatile PPO0 ppo0_3 = USS_PPO0(0x00, 0x0000, 0x0000, 0x0000, 0x0B31, 0x0000);  /// BCC = 34
-
-//volatile PPO0 ppo0_4 = USS_PPO0(0x0A, 0x0000, 0x0000, 0x0000, 0x0B31, 0x0000);  /// BCC = 37, Correto 0x3E
-
-//volatile PPO0 ppo0_5 = USS_PPO0(0x0A, 0x0000, 0x0000, 0x0000, 0x047F, 0x2000);  /// BCC = 5F
-
-//volatile PPO0 ppo0_6 = USS_PPO0(0x0A, 0x0000, 0x0000, 0x0000, 0x0F37, 0x2000);  /// BCC = 1C
-
-//volatile PPO0 ppo0_7 = USS_PPO0(0x03, 0x1066, 0x0001, 0x0000, 0x0000, 0x0000);  /// BCC = 7A
-
-//volatile PPO0 ppo0_8 = USS_PPO0(0x03, 0x1066, 0x0001, 0x03E8, 0x0B31, 0x2000);  /// BCC = A8, Correto 0x8B
-
-//uart_open((unsigned char)nordac700E, 0, 0, 0);
-
-//uart_send(nordac700E, (unsigned char*)&ppo1_1, PPO1_SIZE);
-//uart_send(nordac700E, (unsigned char*)&ppo1_2, PPO1_SIZE);
-
-//uart_send(nordac700E, (unsigned char*)&ppo0_1, PPO0_SIZE);
-//uart_send(nordac700E, (unsigned char*)&ppo0_2, PPO0_SIZE);
-//uart_send(nordac700E, (unsigned char*)&ppo0_3, PPO0_SIZE);
-//uart_send(nordac700E, (unsigned char*)&ppo0_4, PPO0_SIZE);
-//uart_send(nordac700E, (unsigned char*)&ppo0_5, PPO0_SIZE);
-//uart_send(nordac700E, (unsigned char*)&ppo0_6, PPO0_SIZE);
-//uart_send(nordac700E, (unsigned char*)&ppo0_7, PPO0_SIZE);
-//uart_send(nordac700E, (unsigned char*)&ppo0_8, PPO0_SIZE);
-
-/* @} */
 
 #endif

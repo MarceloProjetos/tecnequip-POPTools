@@ -59,12 +59,12 @@ char CurrentSaveFile[MAX_PATH];
 BOOL ProgramChangedNotSaved = FALSE;
 
 #define HEX_PATTERN  "Intel Hex Files (*.hex)\0*.hex\0All files\0*\0\0"
-#define C_PATTERN "C Source Files (*.c)\0*.c\0All Files\0*\0\0"
+#define C_PATTERN    "Linguagem C (*.c)\0*.c\0Todos os Arquivos\0*\0\0"
 #define INTERPRETED_PATTERN \
     "Interpretable Byte Code Files (*.int)\0*.int\0All Files\0*\0\0"
 char CurrentCompileFile[MAX_PATH];
 
-#define TXT_PATTERN  "Text Files (*.txt)\0*.txt\0All files\0*\0\0"
+#define TXT_PATTERN  "Arquivos de Texto (*.txt)\0*.txt\0Todos os Arquivos\0*\0\0"
 
 // Internal flags available to the users.
 char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "" };
@@ -295,6 +295,35 @@ static void ExportDialog(void)
 }
 
 //-----------------------------------------------------------------------------
+// Get a filename with a common dialog box and then export the program as
+// an ASCII art drawing.
+//-----------------------------------------------------------------------------
+static void SaveAsAnsiC(void)
+{
+    char exportFile[MAX_PATH];
+    OPENFILENAME ofn;
+
+    exportFile[0] = '\0';
+
+    memset(&ofn, 0, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hInstance = Instance;
+    ofn.lpstrFilter = C_PATTERN;
+    ofn.lpstrFile = exportFile;
+	ofn.lpstrDefExt = "c";
+    ofn.lpstrTitle = _("Salvar como linguagem C");
+    ofn.nMaxFile = sizeof(exportFile);
+	ofn.hwndOwner = MainWindow;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+
+    if(!GetSaveFileName(&ofn))
+        return;
+
+    if(GenerateIntermediateCode() && GenerateCFile(exportFile))
+		MessageBox(MainWindow, "Arquivo gerado com sucesso!", "Sucesso", MB_OK);
+}
+
+//-----------------------------------------------------------------------------
 // If we already have a filename, save the program to that. Otherwise same
 // as Save As. Returns TRUE if it worked, else returns FALSE.
 //-----------------------------------------------------------------------------
@@ -389,9 +418,6 @@ static BOOL CompileProgram(BOOL compileAs)
 
 		ChangeFileExtension(CurrentCompileFile, "hex");
 		}
-
-        // hex output filename is stored in the .ld file
-        ProgramChangedNotSaved = TRUE;
     }
 
     if(!GenerateIntermediateCode()) goto CompileProgramEnd;
@@ -675,6 +701,10 @@ void ProcessMenu(int code)
             SaveAsDialog();
             UpdateMainWindowTitleBar();
             break;
+
+		case MNU_SAVE_AS_C:
+			SaveAsAnsiC();
+			break;
 
         case MNU_EXPORT:
             ExportDialog();

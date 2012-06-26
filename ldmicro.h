@@ -138,6 +138,7 @@ typedef SDWORD SWORD;
 #define MNU_OPEN                0x02
 #define MNU_SAVE                0x03
 #define MNU_SAVE_AS             0x04
+#define MNU_SAVE_AS_C           0x08
 #define MNU_EXPORT              0x05
 #define MNU_EXIT                0x06
 #define MNU_RECENT_CLEAR        0x07
@@ -1192,10 +1193,11 @@ extern jmp_buf CompileErrorBuf;
 // intcode.cpp
 void IntDumpListing(char *outFile);
 BOOL GenerateIntermediateCode(void);
-// ansic.cpp
+// gcc.cpp
 void GenerateDeclarations(FILE *f);
 void CompileAnsiC(char *outFile);
 DWORD CompileAnsiCToGCC(char *outFile);
+DWORD GenerateCFile(char *filename);
 // interpreted.c
 void CompileInterpreted(char *outFile);
 

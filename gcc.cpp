@@ -772,82 +772,27 @@ DWORD InvokeGCC(char* dest)
 	return exitCode;
 }
 
-DWORD CompileAnsiCToGCC(char *dest)
+DWORD GenerateCFile(char *filename)
 {
 	unsigned int i, ad_mask;
-    SeenVariablesCount = 0;
 
-	char szAppPath[MAX_PATH]		= "";
-	char szTempPath[MAX_PATH]		= "";
-	char szAppHeader[MAX_PATH]		= "";
-	char szAppSourceFile[MAX_PATH]	= "";
-
-	MODBUS_MASTER = 0;
-
-	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
-
-	GetTempPath(sizeof(szTempPath), szTempPath);
-
-	strcat(szTempPath, "POPTools\\");
-	if (!CreateDirectory(szTempPath, NULL))
-	{
-		DWORD err = GetLastError();	
-		if (err != ERROR_ALREADY_EXISTS)
-		{
-			LPTSTR s;
-			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-				FORMAT_MESSAGE_FROM_SYSTEM,
-				NULL,
-				err,
-				0,
-				(LPTSTR)&s,
-				0,
-				NULL);
-			return err;
-		}
-	}
-
-
-	// Extract directory
-	//strncpy(szAppHeader, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
-	//szAppHeader[strlen(szAppHeader)] = '\0';
-	//strcat(szAppHeader, "\\ld.h");
-
-	/*FILE *h = fopen(szAppHeader, "w");
-    if(!h) {
-        Error(_("Couldn't open file '%s'"), szAppHeader);
-        return 1;
-    }*/
-
-	//fprintf(h, "/*=========================================================================*/\n");
-	//fprintf(h, "/*  DEFINE: All code exported                                              */\n");
-	//fprintf(h, "/*=========================================================================*/\n\n");
-
-	/*fprintf(h, "#ifndef LD_H_\n");
-	fprintf(h, "#define LD_H_\n\n");
-
-	fprintf(h, "#endif\n\n");
-
-	fclose(h);*/
-
-	strncpy(szAppSourceFile, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
-	szAppSourceFile[strlen(szAppSourceFile)] = '\0';
-	strcat(szAppSourceFile, "\\ld.c");
-
-    FILE *f = fopen(szAppSourceFile, "w");
+	FILE *f = fopen(filename, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), szAppSourceFile);
-        return 1;
+        Error(_("Couldn't open file '%s'"), filename);
+        return 0;
     }
 
     if(setjmp(CompileErrorBuf) != 0) {
         fclose(f);
-        return 1;
+        return 0;
     }
 
     // Set up the TRISx registers (direction). 1 means tri-stated (input).
     BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
     BuildDirectionRegisters(isInput, isOutput);
+
+    SeenVariablesCount = 0;
+	MODBUS_MASTER      = 0;
 
 	fprintf(f, "/*****************************************************************************\n");
 	fprintf(f, " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n");
@@ -1003,10 +948,50 @@ DWORD CompileAnsiCToGCC(char *dest)
 
 	fprintf(f, "    ADC_SetMask(%d);\n", ad_mask);
 	fprintf(f, "}\n");
-	
+
 	fclose(f);
 
-    char str[MAX_PATH+500];
+	return 1;
+}
+
+DWORD CompileAnsiCToGCC(char *dest)
+{
+	char szAppPath[MAX_PATH]		= "";
+	char szTempPath[MAX_PATH]		= "";
+	char szAppHeader[MAX_PATH]		= "";
+	char szAppSourceFile[MAX_PATH]	= "";
+
+	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
+
+	GetTempPath(sizeof(szTempPath), szTempPath);
+
+	strcat(szTempPath, "POPTools\\");
+	if (!CreateDirectory(szTempPath, NULL))
+	{
+		DWORD err = GetLastError();	
+		if (err != ERROR_ALREADY_EXISTS)
+		{
+			LPTSTR s;
+			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+				FORMAT_MESSAGE_FROM_SYSTEM,
+				NULL,
+				err,
+				0,
+				(LPTSTR)&s,
+				0,
+				NULL);
+			return err;
+		}
+	}
+
+	strncpy(szAppSourceFile, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
+	szAppSourceFile[strlen(szAppSourceFile)] = '\0';
+	strcat(szAppSourceFile, "\\ld.c");
+
+	if(!GenerateCFile(szAppSourceFile))
+		return 1;
+	
+	char str[MAX_PATH+500];
 	DWORD err = 0;
 
 	StatusBarSetText(0, "Compilando... aguarde !");

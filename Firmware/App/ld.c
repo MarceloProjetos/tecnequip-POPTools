@@ -9,6 +9,8 @@ extern volatile int 			MODBUS_REGISTER[32];
 extern struct MB_Device 		modbus_master;
 extern RTC_Time 				RTC_Now;
 extern volatile unsigned int 	I_SerialReady;
+extern volatile unsigned int 	I_SerialTimeout;
+extern volatile unsigned int 	I_SerialAborted;
 
 extern struct ip_addr 			IP_ADDRESS;
 extern struct ip_addr 			IP_NETMASK;
@@ -22,16 +24,20 @@ char 							SNTP_SERVER_ADDRESS[] = "192.168.0.5";
 int								SNTP_GMT = -3;
 int								SNTP_DAILY_SAVE = 0;
 
-#define PLC_APLANPP
+#define PLC_USS
 
 #if defined(PLC_NULL)
 #include "POPTools/PLC_NULL.h"
+#elif defined(PLC_TESTE)
+#include "POPTools/PLC_TESTE.h"
 #elif defined(PLC_ERR_LED)
 #include "POPTools/PLC_ERR_LED.h"
 #elif defined(PLC_RTC_BUG)
 #include "POPTools/PLC_RTC_BUG.h"
 #elif defined(PLC_RS485)
 #include "POPTools/PLC_RS485.h"
+#elif defined(PLC_USS)
+#include "POPTools/PLC_USS.h"
 #elif defined(PLC_TESTE_RS485)
 #include "POPTools/PLC_TESTE_RS485.h"
 #elif defined(PLC_NS600)
@@ -85,10 +91,10 @@ void PLC_Init(void)
 	I_SerialReady = 1;
 	MODBUS_MASTER = 0;
 
-	RS485_Config(19200, 7, 2, 1);
+	RS485_Config(19200, 8, 2, 1);
 	//RS485_Config(9600, 8, 0, 1);
 
-	IP4_ADDR(&IP_ADDRESS, 192,168,2,235);
+	IP4_ADDR(&IP_ADDRESS, 192,168,2,254);
 	IP4_ADDR(&IP_NETMASK, 255,255,255,0);
 	IP4_ADDR(&IP_GATEWAY, 192,168,0,10);
 	IP4_ADDR(&IP_DNS, 192,168,0,10);

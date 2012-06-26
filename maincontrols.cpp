@@ -868,6 +868,9 @@ void MainWindowResized(void)
     GetWindowRect(StatusBar, &status);
     int statusHeight = status.bottom - status.top;
 
+	if(!main.bottom && !main.top) // Window height = 0, window minimized. Does nothing!
+		return;
+
     MoveWindow(StatusBar, 0, main.bottom - statusHeight, main.right,
         statusHeight, TRUE);
 

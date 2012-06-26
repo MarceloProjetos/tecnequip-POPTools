@@ -5,14 +5,11 @@ extern volatile unsigned int GPIO_OUTPUT;
 extern volatile unsigned int GPIO_INPUT;
 
 extern volatile unsigned int I_SerialReady;
-extern volatile unsigned int rs485_timeout;
-extern volatile unsigned int rs485_reset_timeout;
 
 MODBUS_HANDLER_TX(Modbus_RS485_Tx)
 {
   RS485_Write(data, size);
 
-  rs485_reset_timeout = 0;
   I_SerialReady = 0;
 
   return 0; // Retorna zero pois, se aguardarmos pela resposta, o ladder ficara bloqueado!
@@ -290,7 +287,7 @@ unsigned int Modbus_ReadHoldingRegisters(struct MODBUS_Device *dev, union MODBUS
 
   int i, x;
 
-  if (data->read_holding_registers.start + data->read_holding_registers.quant >= 32)
+  if (data->read_holding_registers.start + data->read_holding_registers.quant - 1 >= 32)
 	  return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
   else
   {

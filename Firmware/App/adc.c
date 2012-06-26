@@ -26,7 +26,7 @@ struct ads_fator adfator[][17] = {
 							     { {7,  0}, {37, 68}, {59, 85}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108}, {0, 108} },
 							     { {7,  0}, {37, 68}, {59, 83}, {81, 93}, {104, 96}, {126, 99}, {149, 101}, {196, 102}, {293, 102}, {383, 104}, {477, 105}, {571, 105}, {658, 106}, {758, 106}, {849, 106}, {926, 108}, {0, 108} },
 							     { {0, 48} },
-							     { {0, 48} },
+							     { {0, 100} },
 };
 
 /******************************************************************************
@@ -40,8 +40,8 @@ void ADC_Init(void)
 	SC->PCONP |= 1 << 12;         // ADC
 	PINCON->PINSEL1 &= ~((0x3 << 14) | (0x3 << 16) | (0x3 << 18) | (0x3 << 20)); // AD0.0, AD0.1, AD0.2, AD0.3(REF)
 	PINCON->PINSEL1 |= (0x1 << 14) | (0x1 << 16) | (0x1 << 18) | (0x1 << 20);
-	PINCON->PINSEL3 |= 0x3 << 30; // AD0.5
-	ADC->ADCR = 0x2F | (0x18 << 8) | (1 << 16) | (1 << 21); // Enable AD0:1:2:3:5, 1Mhz, BURST ON, PDN Enable
+	PINCON->PINSEL3 |= (0x3 << 28) | (0x3 << 30); // AD0.4, AD0.5
+	ADC->ADCR = 0x3F | (0x18 << 8) | (1 << 16) | (1 << 21); // Enable AD0:1:2:3:4:5, 1Mhz, BURST ON, PDN Enable
 
 	// Reset AD´s
 	memset(ad, 0, sizeof(ad));
@@ -86,7 +86,11 @@ void ADC_Update(void)
 		  {
 		    val = 0xFFF & (val >> 4);
 
-		    val = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
+		    if(a == 5) { // Sensor de Temperatura
+              val = (val * 3300) / 4096;	// 2 casas decimais, ex: 1,04V
+		    } else {
+              val = (val * 1000) / 4096;	// 2 casas decimais, ex: 1,04V
+		    }
 
 		    for (i = 0; ; i++) // Sai quando encontrar item
 			  {
@@ -108,8 +112,21 @@ void ADC_Update(void)
   }
 }
 
-unsigned int ADC_Read(unsigned int a)
+// Definições para a conversão do A/D do sensor de temperatura
+#define AD_TEMP_RANGE_HIGH (3277)
+#define AD_TEMP_RANGE_MID  (1938)
+#define AD_TEMP_RANGE_LOW  ( 538)
+
+#define AD_TEMP_GAP_HIGH   (AD_TEMP_RANGE_HIGH - AD_TEMP_RANGE_MID)
+#define AD_TEMP_GAP_LOW    (AD_TEMP_RANGE_MID  - AD_TEMP_RANGE_LOW)
+
+#define AD_TEMP_HIGHEST    (- 50)
+#define AD_TEMP_MID        (+ 50)
+#define AD_TEMP_LOWEST     (+150)
+
+int ADC_Read(unsigned int a)
 {
+  int val_ad;
   unsigned int i, idx, z, soma;
 
   if (a < 1 || a > 6) return 0;
@@ -160,5 +177,24 @@ unsigned int ADC_Read(unsigned int a)
 	  soma -= admax[z] + admin[z];
   }
 
-  return soma / (AD_BUFFER_SIZE - 2*AD_MINMAX_SIZE);
+  val_ad = soma / (AD_BUFFER_SIZE - 2*AD_MINMAX_SIZE);
+
+  // Checa se alguma conversão adicional deve ser realizada no valor a ser retornado
+  switch(a) {
+    case 5: { // SENSOR DE TEMPERATURA
+      if(val_ad >= AD_TEMP_RANGE_HIGH) {
+    	val_ad = AD_TEMP_HIGHEST;
+      } else if(val_ad > AD_TEMP_RANGE_MID) {
+        val_ad = AD_TEMP_HIGHEST + ((AD_TEMP_MID    - AD_TEMP_HIGHEST)*(AD_TEMP_RANGE_HIGH - val_ad))/AD_TEMP_GAP_HIGH;
+      } else if(val_ad == AD_TEMP_RANGE_MID) {
+    	val_ad = AD_TEMP_MID;
+	  } else if(val_ad > AD_TEMP_RANGE_LOW) {
+	    val_ad = AD_TEMP_MID     + ((AD_TEMP_LOWEST - AD_TEMP_MID    )*(AD_TEMP_RANGE_MID  - val_ad))/AD_TEMP_GAP_LOW;
+	  } else {
+		val_ad = AD_TEMP_LOWEST;
+	  }
+    }
+  }
+
+  return val_ad;
 }
