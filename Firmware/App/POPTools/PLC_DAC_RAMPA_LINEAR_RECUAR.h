@@ -21,7 +21,7 @@ void PLC_Run(void)
     }
 
     if (I_rung_top) {  // $rung_top
-        if (U_TON < 49) {
+        if (U_TON < 74) {
             U_TON++;
             I_rung_top = 0;
         }
@@ -30,11 +30,11 @@ void PLC_Run(void)
     }
 
     if (!I_TOFF_antiglitch) {  // $TOFF_antiglitch
-        U_TOFF = 49;
+        U_TOFF = 74;
     }
     I_TOFF_antiglitch = 1;
     if (!I_rung_top) {  // $rung_top
-        if (U_TOFF < 49) {
+        if (U_TOFF < 74) {
             U_TOFF++;
             I_rung_top = 1;
         }
@@ -57,7 +57,7 @@ void PLC_Run(void)
     if (I_rung_top) {  // $rung_top
         if (!I_oneShot_0000) {  // $oneShot_0000
             I_oneShot_0000 = I_rung_top;
-            DAC_StartUp(1, 600, -2048);
+            DAC_Start(1, 1, 40, 15, 600, -2048);
         }
     } else {
         I_oneShot_0000 = I_rung_top;
@@ -76,7 +76,7 @@ void PLC_Run(void)
     if (I_rung_top) {  // $rung_top
         if (!I_oneShot_0001) {  // $oneShot_0001
             I_oneShot_0001 = I_rung_top;
-            DAC_StartDown(1, 40, 15, 600, -2048);
+            DAC_Start(0, 1, 40, 15, 600, -2048);
         }
     } else {
         I_oneShot_0001 = I_rung_top;

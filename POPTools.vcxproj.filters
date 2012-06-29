@@ -57,9 +57,6 @@
     <ClCompile Include="interpreted.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="iolist.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="lang.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

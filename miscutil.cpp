@@ -384,12 +384,16 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
     }
         
     int type = io->type;
-    if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT
+    if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT || type == IO_TYPE_GENERAL
         || type == IO_TYPE_READ_ADC || type == IO_TYPE_READ_ENC || type == IO_TYPE_RESET_ENC)
     {
         int pin = io->pin;
         if(pin == NO_PIN_ASSIGNED) {
-            strcpy(dest, _("(not assigned)"));
+			if(type == IO_TYPE_GENERAL) {
+		        strcpy(dest, "");
+			} else {
+	            strcpy(dest, _("(not assigned)"));
+			}
         } else {
             sprintf(dest, "%d", pin);
         }

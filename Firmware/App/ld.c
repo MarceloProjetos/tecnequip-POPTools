@@ -24,7 +24,7 @@ char 							SNTP_SERVER_ADDRESS[] = "192.168.0.5";
 int								SNTP_GMT = -3;
 int								SNTP_DAILY_SAVE = 0;
 
-#define PLC_USS
+#define PLC_DAC_RAMPA_LINEAR_RECUAR
 
 #if defined(PLC_NULL)
 #include "POPTools/PLC_NULL.h"

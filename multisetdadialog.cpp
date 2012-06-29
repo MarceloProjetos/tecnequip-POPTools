@@ -69,15 +69,6 @@ static vector<D2D1_POINT_2F>	DAPoints;
 
 const LPCTSTR ResollTypeItens[] = { _("Resolução DA (12 bits)[2047 ~ -2048]"), _("Resolução DA (mV)[10000 ~ -10000]"), _("Resolução DA (%)[0 ~ 100]") };
 
-#define MAX_IO_SEEN_PREVIOUSLY 512
-extern struct {
-    char    name[MAX_NAME_LEN];
-    int     type;
-    int     pin;
-	int		bit;
-} IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
-extern int IoSeenPreviouslyCount;
-
 void CalcLinearUp(int calc_time, int calc_initval)
 {
 	int tm = 0;
@@ -196,6 +187,41 @@ void CalcGainDown(int calc_time, int calc_initval, int calc_gainx, int calc_gain
 		gains[i] = ((tm * ga) + gb); // y = a.x + b
 	}
 
+}
+
+void CalcGainUp(int calc_time, int calc_initval, int calc_gainx, int calc_gainy = 5)
+{
+	int tm = 0;
+	int i = 0;
+
+	if (calc_initval > DA_RESOLUTION || 
+		calc_initval < (DA_RESOLUTION * -1))
+		return;
+
+	memset(gains, 0, sizeof(gains));
+
+	int VarDA;
+
+	int DeltaXGanho  = (calc_time    * calc_gainx) / 100;
+	int DeltaYGanho  = (calc_initval * calc_gainy) / 100;
+
+	int DeltaXLinear = calc_time    - 2*DeltaXGanho;
+	int DeltaYLinear = calc_initval - 2*DeltaYGanho;
+
+	for (tm=0; tm < calc_time; tm+=DA_CYCLE_INTERVAL)
+	{
+		i = tm/DA_CYCLE_INTERVAL;
+
+		if (tm < DeltaXGanho) {
+			VarDA = (DeltaYGanho * tm) / DeltaXGanho;
+		} else if(tm < (calc_time - DeltaXGanho)) {
+			VarDA = DeltaYGanho + (DeltaYLinear * (tm - DeltaXGanho)) / DeltaXLinear;
+		} else {
+			VarDA = calc_initval - (DeltaYGanho * (calc_time - tm)) / DeltaXGanho;
+		}
+
+		gains[i] = VarDA+2048;
+	}
 }
 
 void CalcCurveUp(int calc_time, int calc_initval)
@@ -555,7 +581,7 @@ void Render()
 		float p;
 		for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
 		{
-			p = current.linear && !current.speedup ? gains[i] : points[i];
+			p = current.linear ? gains[i] : points[i];
 			pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current.speedup ? (initval < 0 ? p : p - DA_RESOLUTION) : (initval < 0 ? p + DA_RESOLUTION : p))));
 		}
 
@@ -596,7 +622,7 @@ void Render()
 
 				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
 										D2D1::Point2F(intervalX * i, initval < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
-										pLineBrush, current.linear & !current.speedup ? 2.0f : 4.0f, current.linear & !current.speedup ? pDashStrokeStyle : pLineStrokeStyle);
+										pLineBrush, current.linear ? 2.0f : 4.0f, current.linear ? pDashStrokeStyle : pLineStrokeStyle);
 			}
 			else
 			{
@@ -605,7 +631,7 @@ void Render()
 
 				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
 										D2D1::Point2F(intervalX * i, initval < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
-										pLineBrush, current.linear & !current.speedup ? 2.0f : 4.0f, current.linear & !current.speedup ? pDashStrokeStyle : pLineStrokeStyle);
+										pLineBrush, current.linear ? 2.0f : 4.0f, current.linear ? pDashStrokeStyle : pLineStrokeStyle);
 			}
 
 		}
@@ -616,7 +642,7 @@ void Render()
 
 			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
 									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? abs(initval * scaleY) : size.height - (initval * scaleY) - (MARGIN * 2)), 
-									pLineBrush, current.linear & !current.speedup ? 2.0f : 4.0f, current.linear & !current.speedup ? pDashStrokeStyle : pLineStrokeStyle);
+									pLineBrush, current.linear ? 2.0f : 4.0f, current.linear ? pDashStrokeStyle : pLineStrokeStyle);
 		}
 		else
 		{
@@ -624,7 +650,7 @@ void Render()
 
 			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ?  abs(point1) : size.height - point1 - (MARGIN * 2)),
 									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? 0.0f : size.height - (MARGIN * 2)), 
-									pLineBrush, current.linear & !current.speedup ? 2.0f : 4.0f, current.linear & !current.speedup ? pDashStrokeStyle : pLineStrokeStyle);
+									pLineBrush, current.linear ? 2.0f : 4.0f, current.linear ? pDashStrokeStyle : pLineStrokeStyle);
 		}
 
 		if (current.linear)
@@ -632,36 +658,35 @@ void Render()
 
 			for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
 			{
-				if (!current.speedup)
-				{
+				if (current.speedup) {
+					point1 = (gains[i - 1] - DA_RESOLUTION) * scaleY;
+					point2 = (gains[i    ] - DA_RESOLUTION) * scaleY;
+				} else {
 					point1 = gains[i - 1] * scaleY;
 					point2 = gains[i] * scaleY;
-					
+				}
+
 					pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
 											D2D1::Point2F(intervalX * i, initval < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
 											i > gain_idx ? pGainBrush : pLineBrush, 4.0f, pLineStrokeStyle);
-				}
-
 			}
 
-			if (!current.speedup)
-			{
+			if (current.speedup) {
+				point1 = (gains[i - 1] - DA_RESOLUTION) * scaleY;
+				point2 = initval * scaleY;
+			} else {
 				point1 = gains[i - 1] * scaleY;
-
-				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ?  abs(point1) : size.height - point1 - (MARGIN * 2)),
-										D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? 0.0f : size.height - (MARGIN * 2)), 
-										pGainBrush, 4.0f, pLineStrokeStyle);
-
-				if (current.type == 1)  // (mV)
-					point1 = (current.initval < 0 ? (DA_RESOLUTION * (abs(current.initval) / DA_VOLTAGE)) / 2 : DA_RESOLUTION - ((DA_RESOLUTION * (abs(current.initval) / DA_VOLTAGE)) / 2)) * scaleY;
-				else if (current.type == 2) // (%)
-					point1 = (current.initval < 0 ? (DA_RESOLUTION * (abs(current.initval) / 100.0f)) / 2 : DA_RESOLUTION - ((DA_RESOLUTION * (abs(current.initval) / 100.0f)) / 2)) * scaleY;
-				else // DA 
-					point1 = (current.initval < 0 ? abs(current.initval) / 2 : DA_RESOLUTION - (abs(current.initval) / 2)) * scaleY;
-
-				pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F((current.time / 2) * scaleX, point1), 4.0f, 4.0f),
-										pLineBrush);
+				point2 = 0;
 			}
+
+			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ?  abs(point1) : size.height - point1 - (MARGIN * 2)),
+									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
+									pGainBrush, 4.0f, pLineStrokeStyle);
+
+			// Draws the junction circle
+			point1 = (initval < 0 ? -initval / 2 : DA_RESOLUTION - (initval / 2)) * scaleY;
+			pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F((current.time / 2) * scaleX, point1), 4.0f, 4.0f),
+									pLineBrush);
 		}
 
 		hr = pRenderTarget->EndDraw();
@@ -669,6 +694,7 @@ void Render()
 		DiscardDeviceResources();
 	}
 }
+
 
 void UpdateWindow(void)
 {
@@ -783,10 +809,10 @@ void UpdateWindow(void)
 
 	if (current.linear)
 	{
-		if (current.speedup)
+		if (current.speedup) {
 			CalcLinearUp(time, initval);
-		else
-		{
+			CalcGainUp  (time, initval, gaint, gainr);
+		} else {
 			CalcLinearDown(time, initval);
 			CalcGainDown(time, initval, gaint, gainr);
 		}

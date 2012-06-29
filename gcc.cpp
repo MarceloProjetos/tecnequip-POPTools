@@ -95,6 +95,11 @@ static char *MapSym(char *str)
 				sprintf(ret, "A%d", pin);
 				return ret;
 			} 
+			if (Prog.io.assignment[i].type == IO_TYPE_GENERAL && Prog.io.assignment[i].pin) 
+			{
+				sprintf(ret, "MODBUS_REGISTER[%d]", Prog.io.assignment[i].pin - 20);
+				return ret;
+			} 
 			/*if (Prog.io.assignment[i].type == IO_TYPE_READ_ENC || Prog.io.assignment[i].type == IO_TYPE_RESET_ENC) 
 			{
 				sprintf(ret, "ENC%d", pin);
@@ -459,10 +464,7 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				fprintf(f, "DAC_Write(%s);\n", MapSym(IntCode[i].name1));
 				break;
 			case INT_MULTISET_DA:
-				if (IntCode[i].bit)
-					fprintf(f, "DAC_StartUp(%d, %s, %s);\n", IntCode[i].literal, IntCode[i].name1, IntCode[i].name2);
-				else
-					fprintf(f, "DAC_StartDown(%d, %s, %s, %s, %s);\n", IntCode[i].literal, IntCode[i].name3, IntCode[i].name4, IntCode[i].name1, IntCode[i].name2);
+				fprintf(f, "DAC_Start(%d, %d, %s, %s, %s, %s);\n", IntCode[i].bit, IntCode[i].literal, IntCode[i].name3, IntCode[i].name4, IntCode[i].name1, IntCode[i].name2);
 				break;
 			case INT_CHECK_RTC:
 				fprintf(f, "RTC_Now = RTC_GetTime();\n");

@@ -28,8 +28,7 @@ extern volatile unsigned char I2CMasterBuffer[BUFSIZE];
 extern volatile unsigned int I2CCmd, I2CMasterState;
 extern volatile unsigned int I2CReadLength, I2CWriteLength;
 
-OS_STK	DACCycleStackUp[DAC_CYCLE_THREAD_STACKSIZE];
-OS_STK	DACCycleStackDown[DAC_CYCLE_THREAD_STACKSIZE];
+OS_STK	DACCycleStack[DAC_CYCLE_THREAD_STACKSIZE];
 
 OS_MutexID		DAC_Mutex;
 unsigned int 	DAC_Value = 0;
@@ -40,6 +39,11 @@ void DAC_Init(void)
   if ( I2C_InitFast( (unsigned int)I2CMASTER ) == FALSE )  /* initialize I2c */
     return;
 
+  DAC_Mutex = CoCreateMutex();
+
+  // Inicializa o D/A para estar em zero volts ao inves de -10V
+  DAC_Write(DAC_RESOLUTION);
+
   // Configure XTR300 I/Os
   PINCON->PINSEL3 &= ~0x00FC0000;  /* set PIO1.25  -  PIO1.27 to GPIO */
   PINCON->PINSEL7 &= ~0x003C0000;  /* set PIO3.25 and PIO3.26 to GPIO */
@@ -49,9 +53,6 @@ void DAC_Init(void)
 
   GPIO3->FIODIR   |=  0x02000000;  /* set PIO3.25 to output */
   GPIO3->FIOSET   |=  0x02000000;  /* set PIO3.25 to high */
-
-  DAC_Mutex = CoCreateMutex();
-
 }
 
 void DAC_Write(unsigned int val)
@@ -77,10 +78,10 @@ unsigned int DAC_Read(void)
 {
   return DAC_Value;
 }
-unsigned int DAC_CalcLinearUp(int time, int value, int i)
-{
-	int tm = 0;
 
+#ifdef RAMP_USING_FLOAT
+unsigned int DAC_CalcLinearUp(int time, int value, int tm)
+{
 	if (value > DAC_RESOLUTION ||
 			value < (DAC_RESOLUTION * -1))
 		return 0;
@@ -91,7 +92,6 @@ unsigned int DAC_CalcLinearUp(int time, int value, int i)
 	float a = d / t; // coeficiente angular
 	float l = 0.0f; // coeficiente linear
 
-	tm = i * DAC_CYCLE_INTERVAL;
 	if (tm < time)
 	{
 		return DAC_RESOLUTION + ((tm * a) + l); // y = a.x + b
@@ -100,10 +100,8 @@ unsigned int DAC_CalcLinearUp(int time, int value, int i)
 	return DAC_RESOLUTION;
 }
 
-unsigned int DAC_CalcLinearDown(int time, int value, int i)
+unsigned int DAC_CalcLinearDown(int time, int value, int tm)
 {
-	int tm = 0;
-
 	if (value > DAC_RESOLUTION ||
 		value < (DAC_RESOLUTION * -1))
 		return 0;
@@ -114,7 +112,6 @@ unsigned int DAC_CalcLinearDown(int time, int value, int i)
 	float a = d / t; // abs(d) / t; // coeficiente angular
 	float l = (float)(value); // coeficiente linear
 
-	tm = i * DAC_CYCLE_INTERVAL;
 	if (tm < time)
 	{
 		if (d < 0)
@@ -130,70 +127,79 @@ unsigned int DAC_CalcLinearDown(int time, int value, int i)
 	return 0;
 }
 
-unsigned int DAC_CalcGainDown(int calc_time, int calc_initval, unsigned char calc_gaint, unsigned char calc_gainr, int i)
+unsigned int DAC_CalcGainDown(int calc_time, int calc_initval, unsigned char calc_gaint, unsigned char calc_gainr, int tm)
 {
-	int tm = 0;
-	//int i = 0;
-
 	if (calc_initval > DAC_RESOLUTION - 1 ||
 		calc_initval < (DAC_RESOLUTION * -1))
 		return 0;
 
-	float gx = (float)(calc_gaint);
-	float gy = (float)(calc_gainr);
 	float t = (float)(calc_time);
 	float d = (float)(calc_initval);
 
 	// calcula os pontos da linha da curva de ganho proporcional
-	float gd = d * (gy / 100.0f);	// % altura (y) da curva de ganho
-	float gt = t * (gx / 100.0f);	// % largura (x) do tempo
-	float gdeltay = (d - gd) - d;	// DeltaY = (Yb - Ya)
-	float gdeltax = gt;				// DeltaX = (Xb - Xa)
-	float ga = gdeltay / gdeltax;	// coeficiente angular (a = DeltaY / DeltaX)
-	float gb = d;					// coeficiente linear (b = y - ax)
+	float gd = d * ((float)(calc_gainr) / 100.0f);	// % altura (y) da curva de ganho
+	float gt = t * ((float)(calc_gaint) / 100.0f);	// % largura (x) do tempo
+	float ga;	// coeficiente angular (a = DeltaY / DeltaX)
+	float gb;					// coeficiente linear (b = y - ax)
 
-	//for (i = 0; i < gt / DA_CYCLE_INTERVAL; i++)
-	if (i < gt / DAC_CYCLE_INTERVAL)
-	{
-		tm = i * DAC_CYCLE_INTERVAL;
-		return ((tm * ga) + gb) + 2048; // y = a.x + b
+	if (tm < gt) {
+		ga = - gd/gt;	// coeficiente angular (a = DeltaY / DeltaX)
+		gb = d;					// coeficiente linear (b = y - ax)
+	} else if(tm < (t - gt)) {
+		// calcula os pontos da linha de aceleração/desaceleração
+		ga = (2*gd - d) / (t - 2*gt);											// coeficiente angular (a = DeltaY / DeltaX)
+		gb = (d - gd) - (ga * gt);													// coeficiente linear (b = y - ax)
+	} else {
+		// calcula os pontos da linha da curva de ganho
+		ga = - gd/gt;			// coeficiente angular (a = DeltaY / DeltaX)
+		gb = gd - (ga * (t - gt));		// coeficiente linear (b = y - ax)
 	}
 
-	// calcula os pontos da linha de aceleração/desaceleração
-	float deltax = (t * (1.0f - (gx / 100.0f))) - (t * (gx / 100.0f));	// DeltaY = (Yb - Ya)
-	float deltay = gd - (d - gd);										// DeltaX = (Xb - Xa)
-	float a = deltay / deltax;											// coeficiente angular (a = DeltaY / DeltaX)
-	float y = (d - gd);													// um ponto qualquer no eixo y
-	float ax = (a * (t * (gx / 100.0f)));								// a * x
-	float b = y - ax;													// coeficiente linear (b = y - ax)
-
-	//for (; i < (t - gt) / DA_CYCLE_INTERVAL; i++)
-	if (i < (t - gt) / DAC_CYCLE_INTERVAL)
-	{
-		tm = i * DAC_CYCLE_INTERVAL;
-
-		return ((tm * a) + b) + 2048; // y = a.x + b
-	}
-
-	// calcula os pontos da linha da curva de ganho
-	gdeltay = gd;					// DeltaY = (Yb - Ya)
-	gdeltax = (t - gt) - t;			// DeltaX = (Xb - Xa)
-	ga = gdeltay / gdeltax;			// coeficiente angular (a = DeltaY / DeltaX)
-	gb = gd - (ga * (t - gt));		// coeficiente linear (b = y - ax)
-
-	//for (; i < t / DA_CYCLE_INTERVAL; i++)
-	//{
-		tm = i * DAC_CYCLE_INTERVAL;
-		return ((tm * ga) + gb) + 2048; // y = a.x + b
-	//}
+	return ((tm * ga) + gb) + 2048; // y = a.x + b
 }
 
-unsigned int DAC_CalcCurveUp(int time, int value, int i)
+
+unsigned int DAC_CalcGainUp(int calc_time, int calc_initval, unsigned char calc_gaint, unsigned char calc_gainr, int tm)
 {
-	int tm = 0;
+	return DAC_CalcLinearUp(calc_time, calc_initval, tm);
+}
+#else
+unsigned int DAC_CalcGain(unsigned char up, int calc_time, int calc_initval, unsigned char calc_gaint, unsigned char calc_gainr, int tm)
+{
+	if (calc_initval > DAC_RESOLUTION - 1 ||
+		calc_initval < (DAC_RESOLUTION * -1))
+		return 0;
+
+	int VarDA;
+
+	int DeltaXGanho  = (calc_time    * calc_gaint) / 100;
+	int DeltaYGanho  = (calc_initval * calc_gainr) / 100;
+
+	int DeltaXLinear = calc_time    - 2*DeltaXGanho;
+	int DeltaYLinear = calc_initval - 2*DeltaYGanho;
+
+	if (tm < DeltaXGanho) {
+		VarDA = (DeltaYGanho * tm) / DeltaXGanho;
+	} else if(tm < (calc_time - DeltaXGanho)) {
+		VarDA = DeltaYGanho + (DeltaYLinear * (tm - DeltaXGanho)) / DeltaXLinear;
+	} else {
+		VarDA = calc_initval - (DeltaYGanho * (calc_time - tm)) / DeltaXGanho;
+	}
+
+	if(up)
+		return                VarDA + DAC_RESOLUTION;
+	else
+		return calc_initval - VarDA + DAC_RESOLUTION;
+}
+
+#define DAC_CalcGainUp(calc_time,calc_initval,calc_gaint,calc_gainr,tm)   DAC_CalcGain(1,calc_time,calc_initval,calc_gaint,calc_gainr,tm)
+#define DAC_CalcGainDown(calc_time,calc_initval,calc_gaint,calc_gainr,tm) DAC_CalcGain(0,calc_time,calc_initval,calc_gaint,calc_gainr,tm)
+#endif
+
+unsigned int DAC_CalcCurveUp(int time, int value, int tm)
+{
 	float factor = 0;
 
-	tm = i * DAC_CYCLE_INTERVAL;
 	if (tm < time)
 	{
 		if (tm < time / 2)
@@ -214,12 +220,10 @@ unsigned int DAC_CalcCurveUp(int time, int value, int i)
 	return DAC_RESOLUTION + (value * 2 * factor) / 1000.0f;
 }
 
-unsigned int DAC_CalcCurveDown(int time, int value, int i)
+unsigned int DAC_CalcCurveDown(int time, int value, int tm)
 {
-	int tm = 0;
 	float factor = 0;
 
-	tm = i * DAC_CYCLE_INTERVAL;
 	if (tm < time)
 	{
 		if (tm < time / 2)
@@ -240,18 +244,16 @@ unsigned int DAC_CalcCurveDown(int time, int value, int i)
 	return DAC_RESOLUTION + (value * 2 * factor) / 1000.0f;
 }
 
-void DAC_CycleUp(void * pdata)
+void DAC_Cycle(void * pdata)
 {
 	unsigned int i;
-	int count;
 
-	unsigned char 	linear = 0;
-	unsigned int 	time = 0;
-	int 			value = 0;
-
-	linear = ((DA_Set*)pdata)->linear;
-	time = ((DA_Set*)pdata)->time;
-	value = ((DA_Set*)pdata)->value;
+	unsigned char 	up     = ((DA_Set*)pdata)->up;
+	unsigned char 	linear = ((DA_Set*)pdata)->linear;
+	unsigned char	gaint  = ((DA_Set*)pdata)->gaint;
+	unsigned char	gainr  = ((DA_Set*)pdata)->gainr;
+	unsigned int 	time   = ((DA_Set*)pdata)->time;
+	int 			value  = ((DA_Set*)pdata)->value;
 
 	if (time < DAC_CYCLE_INTERVAL * 3 || time > 10000)
 		CoExitTask();
@@ -259,86 +261,44 @@ void DAC_CycleUp(void * pdata)
 	if (value < -2048 || value > 2047)
 		CoExitTask();
 
-	count = (unsigned int)(time / DAC_CYCLE_INTERVAL);
-
-	for (i = 0; i < count; i++)
+	for (i = 0; i < time; i+=DAC_CYCLE_INTERVAL)
 	{
-		if (linear)
-			DAC_Write(DAC_CalcLinearUp(time, value, i));
-		else
-			DAC_Write(DAC_CalcCurveUp(time, value, i));
+		if(up) {
+			if (linear)
+				DAC_Write(DAC_CalcGainUp(time, value, gaint, gainr, i));
+			else
+				DAC_Write(DAC_CalcCurveUp(time, value, i));
+		} else {
+			if (linear)
+				DAC_Write(DAC_CalcGainDown(time, value, gaint, gainr, i));
+			else
+				DAC_Write(DAC_CalcCurveDown(time, value, i));
+		}
 
 		CoTickDelay(DAC_CYCLE_INTERVAL);
 	}
 
-	CoExitTask();
-}
-
-void DAC_CycleDown(void * pdata)
-{
-	unsigned int i;
-	int count;
-
-	unsigned char 	linear = 0;
-	unsigned char	gaint = 0;
-	unsigned char	gainr = 0;
-	unsigned int 	time = 0;
-	int 			value = 0;
-
-	linear = ((DA_Set*)pdata)->linear;
-	gaint = ((DA_Set*)pdata)->gaint;
-	gainr = ((DA_Set*)pdata)->gainr;
-	time = ((DA_Set*)pdata)->time;
-	value = ((DA_Set*)pdata)->value;
-
-	if (time < DAC_CYCLE_INTERVAL * 3 || time > 10000)
-		CoExitTask();
-
-	if (value < -2048 || value > 2047)
-		CoExitTask();
-
-	count = (unsigned int)(time / DAC_CYCLE_INTERVAL);
-
-	for (i = 0; i < count; i++)
-	{
-		if (linear)
-			DAC_Write(DAC_CalcGainDown(time, value, gaint, gainr, i));
-		else
-			DAC_Write(DAC_CalcCurveDown(time, value, i));
-
-		CoTickDelay(DAC_CYCLE_INTERVAL);
-	}
+	DAC_Write((up ? value : 0) + DAC_RESOLUTION);
 
 	CoExitTask();
 }
 
-void DAC_StartUp(unsigned char linear, int time, int value)
+void DAC_Start(unsigned char up, unsigned char linear, unsigned char gaint, unsigned char gainr, int time, int value)
 {
 	DA_Set da;
 
+	da.up     = up;
 	da.linear = linear;
-	da.time = time;
-	da.value = value;
 
-	CoCreateTask(DAC_CycleUp, &da,
+	da.gaint  = gaint;
+	da.gainr  = gainr;
+
+	da.time   = time;
+	da.value  = value;
+
+	CoCreateTask(DAC_Cycle, &da,
 				  DAC_CYCLE_THREAD_PRIO,
-				  &DACCycleStackUp[DAC_CYCLE_THREAD_STACKSIZE-1],
-				  DAC_CYCLE_THREAD_STACKSIZE);
-}
-
-void DAC_StartDown(unsigned char linear, unsigned char gaint, unsigned char gainr, int time, int value)
-{
-	DA_Set da;
-
-	da.linear = linear;
-	da.gaint = gaint;
-	da.gainr = gainr;
-	da.time = time;
-	da.value = value;
-
-	CoCreateTask(DAC_CycleDown, &da,
-				  DAC_CYCLE_THREAD_PRIO,
-				  &DACCycleStackDown[DAC_CYCLE_THREAD_STACKSIZE-1],
+				  &DACCycleStack[DAC_CYCLE_THREAD_STACKSIZE-1],
 				  DAC_CYCLE_THREAD_STACKSIZE);
 }
 
