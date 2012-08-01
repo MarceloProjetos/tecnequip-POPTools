@@ -136,6 +136,7 @@
     <ClCompile Include="FARdialog.cpp" />
     <ClCompile Include="prefdialog.cpp" />
     <ClCompile Include="debugdialog.cpp" />
+    <ClCompile Include="setdadialog.cpp" />
     <ClCompile Include="simpledialog.cpp" />
     <ClCompile Include="simulate.cpp" />
     <ClCompile Include="splash.cpp" />

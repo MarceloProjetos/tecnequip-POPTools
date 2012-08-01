@@ -845,7 +845,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 
             case ELEM_SET_DA:
                 Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_SET_DA, l->d.setDA.name);
+                Op(INT_SET_DA, l->d.setDA.name, l->d.setDA.mode);
                 Op(INT_END_IF);
                 break;
 

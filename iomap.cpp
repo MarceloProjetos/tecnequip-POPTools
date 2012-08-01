@@ -281,7 +281,8 @@ void ExtractNamesFromCircuit(int which, void *any)
             break;
 
         case ELEM_SET_DA:
-            AppendIo(l->d.setDA.name, IO_TYPE_SET_DA, 0);
+			if(!IsNumber(l->d.setDA.name))
+	            AppendIo(l->d.setDA.name, IO_TYPE_SET_DA, 0);
             break;
 
         case ELEM_READ_ENC:

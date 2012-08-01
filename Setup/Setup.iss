@@ -40,6 +40,7 @@ Name: "installusbdriver"; Description: "Instalar Driver USB"; GroupDescription: 
 
 [Files]
 Source: "..\bin\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Help\Ajuda.chm"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Setup\EULA.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\settings.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\settings.xml"; DestDir: "{localappdata}\POPTools"; Flags: ignoreversion
@@ -67,6 +68,7 @@ Source: "..\Setup\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; DestDir: "{app}"; Flags: 
 
 [Icons]
 Name: "{group}\POPTools"; Filename: "{app}\POPTools.exe"
+Name: "{group}\Manual do Usuario"; Filename: "{app}\Ajuda.chm"
 Name: "{group}\Licença de Uso"; Filename: "{app}\EULA.TXT"
 Name: "{commondesktop}\POPTools"; Filename: "{app}\POPTools.exe"; Tasks: desktopicon
 

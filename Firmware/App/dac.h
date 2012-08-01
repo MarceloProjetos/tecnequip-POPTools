@@ -13,6 +13,7 @@
 
 #define 		DAC_CYCLE_INTERVAL	2
 #define 		DAC_RESOLUTION		(4096 / 2)
+#define         DAC_VOLTAGE         10000
 
 void			DAC_Init (void);
 unsigned int	DAC_Read (void);

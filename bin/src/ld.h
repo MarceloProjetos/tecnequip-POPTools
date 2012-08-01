@@ -68,6 +68,8 @@ extern void RS232_Console(void);
 /* Modbus  RTU                                                             */
 /***************************************************************************/
 #ifndef __MODBUS_TCP_H__
+void ModBUS_SetID(unsigned int id);
+
 void Modbus_TCP_Send(unsigned char id,
                   int fc,
                   unsigned short int address,
@@ -291,8 +293,8 @@ unsigned char  CoTimeDelay(unsigned char hour,unsigned char minute,unsigned char
 #ifndef __DAC_H
 extern unsigned int DAC_Read (void);
 void			DAC_Write(unsigned int val);
-void 			DAC_StartUp(unsigned char linear, int time, int value);
-void 			DAC_StartDown(unsigned char linear, unsigned char gaint, unsigned char gainr, int time, int value);
+unsigned int    DAC_Conv(int val, unsigned int mode);
+void            DAC_Start(unsigned char up, unsigned char linear, unsigned char gaint, unsigned char gainr, int time, int value);
 #endif
 
 /***************************************************************************/

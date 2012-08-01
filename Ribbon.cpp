@@ -484,6 +484,8 @@ public:
 
 			EXEC_OPCODE(cmdDebug                  , MNU_DEBUG                  );
 
+			EXEC_OPCODE(cmdUserManual             , MNU_MANUAL                 );
+
 /*
 			case cmdMyChoice:
                 PROPVARIANT var, varNew;

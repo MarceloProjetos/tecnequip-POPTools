@@ -23,10 +23,11 @@
     <Command Name="GroupLine"       Symbol="cmdGroupLine"       Id="30006" LabelTitle="Linhas"              />
     <Command Name="GroupFind"       Symbol="cmdGroupFind"       Id="30007" LabelTitle="Busca"                >
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/GroupFindHH.bmp"/>
       </Command.LargeImages>
     </Command>
     <Command Name="GroupConfig"     Symbol="cmdGroupConfig"     Id="30008" LabelTitle="Configurações"   />
+    <Command Name="GroupHelp"       Symbol="cmdGroupHelp"       Id="30028" LabelTitle="Ajuda"           />
     <Command Name="GroupIO"         Symbol="cmdGroupIO"         Id="30009" LabelTitle="I/O"             />
     <Command Name="GroupTimer"      Symbol="cmdGroupTimer"      Id="30010" LabelTitle="Temporizadores"  />
     <Command Name="GroupCounter"    Symbol="cmdGroupCounter"    Id="30011" LabelTitle="Contadores"      />
@@ -40,13 +41,19 @@
     <Command Name="GroupCommOthers" Symbol="cmdGroupCommOthers" Id="30018" LabelTitle="RS-485 - Outros" />
     <Command Name="DropDownIO"      Symbol="cmdDropDownIO"      Id="30020" LabelTitle="Mais I/O"         >
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/DropDownIOHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/DropDownIOHS.bmp"/>
+      </Command.SmallImages>
     </Command>
     <Command Name="DropDownMath"    Symbol="cmdDropDownMath"    Id="30021" LabelTitle="Tabelas"          >
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/DropDownMathHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/DropDownMathHS.bmp"/>
+      </Command.SmallImages>
     </Command>
     <Command Name="GroupSimulation" Symbol="cmdGroupSimulation" Id="30023" LabelTitle="Simulação"       />
     <Command Name="GroupSimulExit"  Symbol="cmdGroupSimulExit"  Id="30025"                              />
@@ -59,7 +66,7 @@
              Id         = "30100"
              LabelTitle = "Novo">
       <Command.TooltipTitle      >Novo (Ctrl+N)</Command.TooltipTitle>
-      <Command.TooltipDescription>Criar um novo Diagama Ladder.</Command.TooltipDescription>
+      <Command.TooltipDescription>Criar um novo Diagrama Ladder.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/FileNewHH.bmp"/>
       </Command.LargeImages>
@@ -74,6 +81,9 @@
       <Command.LargeImages>
         <Image Source="imgs/FileOpenHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/FileOpenHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name       = "FileSave"
@@ -179,6 +189,9 @@
       <Command.LargeImages>
         <Image Source="imgs/InsertLineHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InsertLineHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name       = "InsertLineBefore"
@@ -191,6 +204,9 @@
       <Command.LargeImages>
         <Image Source="imgs/InsertLineBeforeHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InsertLineBeforeHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name       = "InsertLineAfter"
@@ -203,6 +219,9 @@
       <Command.LargeImages>
         <Image Source="imgs/InsertLineAfterHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InsertLineAfterHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name       = "DeleteLine"
@@ -212,8 +231,11 @@
       <Command.TooltipTitle      >Excluir (Shift+DEL)</Command.TooltipTitle>
       <Command.TooltipDescription>Exclui a linha atualmente selecionada</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/DeleteLineHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/DeleteLineHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name       = "MoveLineUp"
@@ -253,6 +275,9 @@
       <Command.LargeImages>
         <Image Source="imgs/DeleteInstrHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/DeleteInstrHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <!-- Comandos para busca -->
@@ -265,6 +290,9 @@
       <Command.LargeImages>
         <Image Source="imgs/FindDialogHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/FindDialogHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name       = "FindFirst"
@@ -274,8 +302,11 @@
       <Command.TooltipTitle      >Localizar do Início</Command.TooltipTitle>
       <Command.TooltipDescription>Procura pelo texto informado na caixa de busca a partir do início do Diagrama Ladder.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/FindFirstHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/FindFirstHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name       = "Find"
@@ -287,6 +318,9 @@
       <Command.LargeImages>
         <Image Source="imgs/FindHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/FindHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name       = "Change"
@@ -296,8 +330,11 @@
       <Command.TooltipTitle      >Substituir</Command.TooltipTitle>
       <Command.TooltipDescription>Substitui o texto informado na caixa de busca pelo novo texto.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/ChangeHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/ChangeHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name       = "ChangeAll"
@@ -307,8 +344,11 @@
       <Command.TooltipTitle      >Substituir</Command.TooltipTitle>
       <Command.TooltipDescription>Substitui o texto informado na caixa de busca pelo novo texto.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/ChangeAllHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/ChangeAllHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name       = "FindText"
@@ -318,8 +358,11 @@
       <Command.TooltipTitle      >Texto</Command.TooltipTitle>
       <Command.TooltipDescription>Define o texto a ser localizado.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/FindTextHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/FindTextHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "FindNewText"
@@ -329,8 +372,11 @@
       <Command.TooltipTitle      >Novo Texto</Command.TooltipTitle>
       <Command.TooltipDescription>Define o novo texto, utilizado em substituições.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/FindNewTextHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/FindNewTextHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "FindWrap"
@@ -340,8 +386,11 @@
       <Command.TooltipTitle      >Continuar do Início</Command.TooltipTitle>
       <Command.TooltipDescription>Define se a busca deve ser reiniciada do início do Diagrama Ladder quando não encontrar resultados a partir da posição atual.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/FindWrapHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/FindWrapHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <!-- Comandos de configuração -->
@@ -354,6 +403,9 @@
       <Command.LargeImages>
         <Image Source="imgs/ConfigHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/ConfigHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "Settings"
@@ -365,6 +417,39 @@
       <Command.LargeImages>
         <Image Source="imgs/SettingsHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/SettingsHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+
+    <!-- Comandos de ajuda -->
+    <Command Name         = "UserManual"
+               Symbol     = "cmdUserManual"
+               Id         = "30410"
+               LabelTitle = "Manual">
+      <Command.TooltipTitle      >Manual do Usuário</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir o Manual do Usuário, contendo a ajuda para todo o programa.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/UserManualHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/UserManualHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name         = "Examples"
+               Symbol     = "cmdExamples"
+               Id         = "30411"
+               LabelTitle = "Exemplos">
+      <Command.TooltipTitle      >Exemplos</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir a lista de lógicas de exemplo.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/ExamplesHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/ExamplesHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <!-- Comandos para inserir instruções ao Diagrama Ladder -->
@@ -386,8 +471,11 @@
       <Command.TooltipTitle      >Contato (C)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir um contato na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrContactHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrContactHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrOneShotRising"
@@ -397,8 +485,11 @@
       <Command.TooltipTitle      >Borda de Subida (/)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir detecção de borda de subida na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrOneShotRisingHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrOneShotRisingHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrOneShotFalling"
@@ -408,8 +499,11 @@
       <Command.TooltipTitle      >Borda de Descida (\)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir detecção de borda de descida na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrOneShotFallingHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrOneShotFallingHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrTimerON"
@@ -419,8 +513,11 @@
       <Command.TooltipTitle      >Atraso para ligar (O)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir temporizador com atraso para ligar na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrTimerONHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrTimerONHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrTimerOFF"
@@ -430,8 +527,11 @@
       <Command.TooltipTitle      >Atraso para Desligar (F)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir temporizador com atraso para desligar na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrTimerOFFHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrTimerOFFHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrTimerONRet"
@@ -441,8 +541,11 @@
       <Command.TooltipTitle      >Atraso Retentivo para Ligar (T)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir temporizador retentivo com atraso para ligar na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrTimerONRetHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrTimerONRetHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrSchedule"
@@ -452,8 +555,11 @@
       <Command.TooltipTitle      >Agendador de Tarefa</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir tarefa agendada na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrScheduleHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrScheduleHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrTimerReset"
@@ -463,8 +569,11 @@
       <Command.TooltipTitle      >Zerar (E)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir zerar timer retentivo na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrTimerResetHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrTimerResetHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCounterInc"
@@ -474,8 +583,11 @@
       <Command.TooltipTitle      >Incremental (I)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir contador incremental na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCounterIncHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCounterIncHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCounterDec"
@@ -485,8 +597,11 @@
       <Command.TooltipTitle      >Decremental (D)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir contador decremental na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCounterDecHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCounterDecHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCounterCirc"
@@ -496,8 +611,11 @@
       <Command.TooltipTitle      >Circular (Shift+C)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir contador circular na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCounterCircHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCounterCircHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCounterReset"
@@ -507,8 +625,11 @@
       <Command.TooltipTitle      >Zerar (E)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir zerar contador na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCounterResetHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCounterResetHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCircuitOpen"
@@ -519,8 +640,11 @@
       <Command.TooltipTitle      >Circuito Aberto</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir circuito aberto na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCircuitOpenHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCircuitOpenHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCircuitClosed"
@@ -531,8 +655,11 @@
       <Command.TooltipTitle      >Circuito Fechado</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir circuito fechado na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCircuitClosedHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCircuitClosedHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrMasterRelayControl"
@@ -543,8 +670,11 @@
       <Command.TooltipTitle      >Chave Geral</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir chave geral na posição do cursor. Utilizado para desativar o barramento abaixo desta instrução.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrMasterRelayControlHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMasterRelayControlHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrSetBit"
@@ -554,8 +684,11 @@
       <Command.TooltipTitle      >Liga / Desliga Bit (B)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir liga/desliga bit na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrSetBitHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrSetBitHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCheckBit"
@@ -565,8 +698,11 @@
       <Command.TooltipTitle      >Checar Bit (Shift+B)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir checar bit na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCheckBitHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCheckBitHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCoil"
@@ -576,8 +712,11 @@
       <Command.TooltipTitle      >Bobina (L)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir bobina na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCoilHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCoilHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrMov"
@@ -587,8 +726,11 @@
       <Command.TooltipTitle      >Mover Valor (M)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir mover valor na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrMovHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMovHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCondEqual"
@@ -598,8 +740,11 @@
       <Command.TooltipTitle      >Igual (=)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir condicional igual na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCondEqualHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondEqualHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCondNotEqual"
@@ -609,8 +754,11 @@
       <Command.TooltipTitle      >Diferente (!)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir condicional diferente na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCondNotEqualHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondNotEqualHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCondGreater"
@@ -620,8 +768,11 @@
       <Command.TooltipTitle      >Maior (&gt;)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir condicional maior na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCondGreaterHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondGreaterHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCondGreaterEqual"
@@ -631,8 +782,11 @@
       <Command.TooltipTitle      >Maior ou Igual (.)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir condicional maior ou igual na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCondGreaterEqualHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondGreaterEqualHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCondLesser"
@@ -642,8 +796,11 @@
       <Command.TooltipTitle      >Menor (&lt;)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir condicional menor na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCondLesserHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondLesserHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrCondLesserEqual"
@@ -653,19 +810,25 @@
       <Command.TooltipTitle      >Menor ou Igual (,)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir condicional menor ou igual na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrCondLesserEqualHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondLesserEqualHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrMathAdd"
                Symbol     = "cmdInstrMathAdd"
                Id         = "30525"
-               LabelTitle = "Adicionar">
-      <Command.TooltipTitle      >Adicionar (+)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir instrução matemática adicionar na posição do cursor.</Command.TooltipDescription>
+               LabelTitle = "Somar">
+      <Command.TooltipTitle      >Somar (+)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir instrução matemática somar na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrMathAddHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathAddHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrMathSub"
@@ -675,8 +838,11 @@
       <Command.TooltipTitle      >Subtrair (-)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir instrução matemática subtrair na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrMathSubHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathSubHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrMathMult"
@@ -686,8 +852,11 @@
       <Command.TooltipTitle      >Multiplicar (*)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir instrução matemática multiplicar na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrMathMultHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathMultHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrMathDivide"
@@ -697,8 +866,11 @@
       <Command.TooltipTitle      >Dividir (Shift+/)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir instrução matemática dividir na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrMathDivideHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathDivideHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrShiftRegister"
@@ -709,8 +881,11 @@
       <Command.TooltipTitle      >Tabela de Troca</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir tabela de troca na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrShiftRegisterHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrShiftRegisterHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrLookUpTable"
@@ -721,8 +896,11 @@
       <Command.TooltipTitle      >Tabela de Busca</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir tabela de busca na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrLookUpTableHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrLookUpTableHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrPieceWiseLinear"
@@ -733,8 +911,11 @@
       <Command.TooltipTitle      >Linearização por Segmentos</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir linearização por segmentos na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrPieceWiseLinearHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrPieceWiseLinearHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrReadAD"
@@ -744,8 +925,11 @@
       <Command.TooltipTitle      >Leitura de A/D (Ctrl+A)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura de A/D na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrReadADHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadADHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrPWM"
@@ -755,8 +939,11 @@
       <Command.TooltipTitle      >Saída PWM (W)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir saída PWM na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrPWMHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrPWMHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrWriteDA"
@@ -766,8 +953,11 @@
       <Command.TooltipTitle      >Escrita no D/A (Ctrl+D)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita no D/A na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrWriteDAHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteDAHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrReadEnc"
@@ -777,8 +967,11 @@
       <Command.TooltipTitle      >Leitura de Encoder (Q)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura de encoder na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrReadEncHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadEncHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrResetEnc"
@@ -788,8 +981,11 @@
       <Command.TooltipTitle      >Reset de Encoder (Ctrl+Q)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir reset de encoder na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrResetEncHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrResetEncHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrRampDA"
@@ -799,8 +995,11 @@
       <Command.TooltipTitle      >Rampa de Aceleração/Desaceleração (Ctrl+R)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir rampa de aceleração/desaceleração na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrRampDAHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrRampDAHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrReadFormatString"
@@ -811,8 +1010,11 @@
       <Command.TooltipTitle      >Ler String Formatada</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir ler string formatada na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrReadFormatStringHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadFormatStringHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrWriteFormatString"
@@ -823,8 +1025,11 @@
       <Command.TooltipTitle      >Escrever String Formatada</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrever string formatada na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrWriteFormatStringHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteFormatStringHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrReadNS600"
@@ -835,8 +1040,11 @@
       <Command.TooltipTitle      >Leitura de NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura de NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrReadNS600HH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadNS600HS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrWriteNS600"
@@ -847,8 +1055,11 @@
       <Command.TooltipTitle      >Escrita no NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita no NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrWriteNS600HH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteNS600HS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrWriteChar"
@@ -859,8 +1070,11 @@
       <Command.TooltipTitle      >Escrita de Caracter</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita de caracter na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrWriteCharHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteCharHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrReadChar"
@@ -871,8 +1085,11 @@
       <Command.TooltipTitle      >Leitura de Caracter</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura de caracter na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrReadCharHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadCharHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrReadUSS"
@@ -883,8 +1100,11 @@
       <Command.TooltipTitle      >Leitura USS (Shift+U)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura uss na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrReadUSSHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadUSSHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrWriteUSS"
@@ -895,8 +1115,11 @@
       <Command.TooltipTitle      >Escrita USS (Ctrl+U)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita uss na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrWriteUSSHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteUSSHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrReadModBUS485"
@@ -907,8 +1130,11 @@
       <Command.TooltipTitle      >Ler Registrador ModBUS RS-485 (Shift+4)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir ler registrador modbus rs-485 na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrReadModBUS485HH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadModBUS485HS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrWriteModBUS485"
@@ -919,8 +1145,11 @@
       <Command.TooltipTitle      >Escrever Registrador RS-485 (Ctrl+4)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrever registrador modbus rs-485 na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrWriteModBUS485HH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteModBUS485HS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrReadModBUSEth"
@@ -931,8 +1160,11 @@
       <Command.TooltipTitle      >Ler Registrador Ethernet (Shift+X)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir ler registrador modbus ethernet na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrReadModBUSEthHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadModBUSEthHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrWriteModBUSEth"
@@ -943,8 +1175,11 @@
       <Command.TooltipTitle      >Escrever Registrador Ethernet (Ctrl+X)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrever registrador modbus ethernet na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrWriteModBUSEthHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteModBUSEthHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "InstrPersist"
@@ -954,8 +1189,11 @@
       <Command.TooltipTitle      >Persistente</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir persistente na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/InstrPersistHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrPersistHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <!-- Definição de comandos relacionados à simulação -->
@@ -980,8 +1218,11 @@
       <Command.TooltipTitle      >Iniciar (Ctrl+R)</Command.TooltipTitle>
       <Command.TooltipDescription>Iniciar a simulação em tempo real do Diagrama Ladder.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/SimulationStartHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/SimulationStartHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "SimulationStop"
@@ -991,8 +1232,11 @@
       <Command.TooltipTitle      >Parar (Ctrl+H)</Command.TooltipTitle>
       <Command.TooltipDescription>Interromper a simulação em tempo real do Diagrama Ladder.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/SimulationStopHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/SimulationStopHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "SimulationSingleCycle"
@@ -1002,8 +1246,11 @@
       <Command.TooltipTitle      >Simples Ciclo (Espaço)</Command.TooltipTitle>
       <Command.TooltipDescription>Executar um único ciclo.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/SimulationSingleCycleHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/SimulationSingleCycleHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "SimulationExit"
@@ -1026,8 +1273,11 @@
       <Command.TooltipTitle      >Compilar (F5)</Command.TooltipTitle>
       <Command.TooltipDescription>Gerar arquivo .hex para gravação na POP-7 a patir do Diagrama Ladder.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/CompileHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/CompileHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "CompileAs"
@@ -1038,8 +1288,11 @@
       <Command.TooltipTitle      >Compilar como...</Command.TooltipTitle>
       <Command.TooltipDescription>Selecionar destino e gerar arquivo .hex para gravação na POP-7 a patir do Diagrama Ladder.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/CompileAsHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/CompileAsHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <Command Name         = "CompileAndProgram"
@@ -1049,8 +1302,11 @@
       <Command.TooltipTitle      >Compilar e Gravar (F6)</Command.TooltipTitle>
       <Command.TooltipDescription>Gerar arquivo .hex e gravá-lo na POP-7 a partir do Diagrama Ladder.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/Button_Image.bmp"/>
+        <Image Source="imgs/CompileAndProgramHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/CompileAndProgramHS.bmp"/>
+      </Command.SmallImages>
     </Command>
 
     <!-- Definição de comandos relacionados à depuração -->
@@ -1063,6 +1319,9 @@
       <Command.LargeImages>
         <Image Source="imgs/DebugHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/DebugHS.bmp"/>
+      </Command.SmallImages>
     </Command>
   </Application.Commands>
 
@@ -1103,7 +1362,18 @@
             <Button CommandName="FindDialog"/>
             <Button CommandName="Find"/>
           </Group>
-          <Group CommandName="GroupLine" SizeDefinition="ThreeButtons-OneBigAndTwoSmall">
+          <Group CommandName="GroupLine" SizeDefinition="FourButtons">
+            <SplitButton CommandName="InsertLine">
+              <SplitButton.ButtonItem>
+                <Button CommandName="InsertLineAfter"/>
+              </SplitButton.ButtonItem>
+              <SplitButton.MenuGroups>
+                <MenuGroup Class="MajorItems">
+                  <Button CommandName="InsertLineAfter"/>
+                  <Button CommandName="InsertLineBefore"/>
+                </MenuGroup>
+              </SplitButton.MenuGroups>
+            </SplitButton>
             <Button CommandName="DeleteLine"/>
             <Button CommandName="MoveLineUp"/>
             <Button CommandName="MoveLineDown"/>
@@ -1130,12 +1400,16 @@
           <Group CommandName="GroupSimulation" SizeDefinition="OneButton">
             <Button CommandName="Simulation"/>
           </Group>
+          <Group CommandName="GroupHelp" SizeDefinition="ThreeButtons">
+            <Button CommandName="UserManual"/>
+            <Button CommandName="Examples"/>
+            <Button CommandName="About"/>
+          </Group>
         </Tab>
         <Tab CommandName="TabInstrLogic">
           <Tab.ScalingPolicy>
             <ScalingPolicy>
               <ScalingPolicy.IdealSizes>
-                <Scale Group ="GroupLine"    Size="Large"  />
                 <Scale Group ="GroupIO"      Size="Medium" />
                 <Scale Group ="GroupTimer"   Size="Medium" />
                 <Scale Group ="GroupCounter" Size="Medium" />
@@ -1147,19 +1421,6 @@
               <Scale Group ="GroupCond"    Size="Small" />
             </ScalingPolicy>
           </Tab.ScalingPolicy>
-          <Group CommandName="GroupLine" SizeDefinition="OneButton">
-            <SplitButton CommandName="InsertLine">
-              <SplitButton.ButtonItem>
-                <Button CommandName="InsertLineAfter"/>
-              </SplitButton.ButtonItem>
-              <SplitButton.MenuGroups>
-                <MenuGroup Class="MajorItems">
-                  <Button CommandName="InsertLineAfter"/>
-                  <Button CommandName="InsertLineBefore"/>
-                </MenuGroup>
-              </SplitButton.MenuGroups>
-            </SplitButton>
-          </Group>
           <Group CommandName="GroupIO" SizeDefinition="FiveButtons">
             <Button CommandName="InstrContact"/>
             <Button CommandName="InstrCoil"/>

@@ -55,6 +55,38 @@ void DAC_Init(void)
   GPIO3->FIOSET   |=  0x02000000;  /* set PIO3.25 to high */
 }
 
+#define DAC_MODE_RAW 0
+#define DAC_MODE_MV  1
+#define DAC_MODE_PCT 2
+extern int MODBUS_REGISTER[32];
+unsigned int DAC_Conv(int val, unsigned int mode)
+{
+	int ret;
+	switch(mode) {
+	case DAC_MODE_RAW:
+		ret = val + DAC_RESOLUTION;
+		break;
+
+	case DAC_MODE_MV:
+		ret = ((val * DAC_RESOLUTION) / DAC_VOLTAGE) + DAC_RESOLUTION;
+		break;
+
+	case DAC_MODE_PCT:
+		ret = ((val * DAC_RESOLUTION) / 100) + DAC_RESOLUTION;
+		break;
+
+	default:
+		ret = DAC_RESOLUTION;
+	}
+
+	if(ret < 0)
+		ret = 0;
+	else if (ret >= 2*DAC_RESOLUTION)
+		ret = 2*DAC_RESOLUTION - 1;
+
+	return (unsigned int)ret;
+}
+
 void DAC_Write(unsigned int val)
 {
 	// Checa estouro do D/A

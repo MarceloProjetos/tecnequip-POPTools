@@ -418,8 +418,11 @@ void AddSetDA(void)
     if(!CanInsertEnd) return;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.setDA.name, "new");
-    AddLeaf(ELEM_SET_DA, t);
+
+	strcpy(t->d.setDA.name, "new");
+	t->d.setDA.mode = ELEM_SET_DA_MODE_RAW;
+
+	AddLeaf(ELEM_SET_DA, t);
 }
 void AddReadAdc(void)
 {
@@ -823,6 +826,7 @@ void FreeEntireProgram(void)
     Prog.mcuClock = 100000000;
     Prog.baudRate = 9600;
 	Prog.UART = 0;
+	Prog.ModBUSID = 0;
     Prog.io.count = 0;
     Prog.mcu = NULL;
 

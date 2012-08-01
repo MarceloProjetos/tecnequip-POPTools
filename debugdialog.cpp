@@ -547,7 +547,8 @@ static void MakeControls(void)
     NiceFont(RetransmitCheckbox);
 
     CommList = CreateWindowEx(WS_EX_STATICEDGE, WC_LISTVIEW, "",
-        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SINGLESEL,
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE |
+		LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SINGLESEL,
         17, 120, 630, 240, DebugDialog, NULL, Instance, NULL);
     ListView_SetExtendedListViewStyle(CommList, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES);
     FixedFont(CommList);
@@ -574,6 +575,10 @@ static void MakeControls(void)
     LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_FC   , 100, "Função");
     LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_REG  , 100, "Registrador");
     LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_VALUE, 100, "Valor");
+
+	ListView_SetBkColor     (CommList, RGB(0x00,0x00,0x00));
+	ListView_SetTextBkColor (CommList, RGB(0x00,0x00,0x00));
+	ListView_SetTextColor   (CommList, RGB(0x00,0xFF,0xFF));
 }
 
 void ShowDebugDialog(void)

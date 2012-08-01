@@ -516,6 +516,48 @@ BOOL MoveCursorTopLeft(void)
     return FALSE;
 }
 
+#define DM_INSIDE_BOUNDS(x,y) ((x >= 0 && x < DISPLAY_MATRIX_X_SIZE) && (y >= 0 && y < DISPLAY_MATRIX_Y_SIZE))
+
+ElemLeaf * FindSelectable(int *x, int *y, int Direction, ElemLeaf *Discard)
+{
+	int OffsetX = 0, OffsetY = 0;
+	switch(Direction) {
+	case SELECTED_LEFT:
+		OffsetX = -1;
+		OffsetY =  0;
+		break;
+
+	case SELECTED_RIGHT:
+		OffsetX = +1;
+		OffsetY =  0;
+		break;
+
+	case SELECTED_ABOVE:
+		OffsetX =  0;
+		OffsetY = -1;
+		break;
+
+	case SELECTED_BELOW:
+		OffsetX =  0;
+		OffsetY = +1;
+		break;
+	}
+
+	while(DM_INSIDE_BOUNDS(*x, *y) && (!VALID_LEAF(DisplayMatrix[*x][*y]) || DisplayMatrix[*x][*y] == Discard)) {
+		*x += OffsetX;
+		*y += OffsetY;
+	}
+
+	if(DM_INSIDE_BOUNDS(*x, *y)) {
+		return DisplayMatrix[*x][*y];
+	} else {
+		return NULL;
+	}
+}
+
+#define SEL_DIR_HOR(SelectState) (SelectState == SELECTED_LEFT  || SelectState == SELECTED_RIGHT)
+#define SEL_DIR_VER(SelectState) (SelectState == SELECTED_ABOVE || SelectState == SELECTED_BELOW)
+
 //-----------------------------------------------------------------------------
 // Move the cursor in response to a keyboard command (arrow keys). Basically
 // we move the cursor within the currently selected element until we hit
@@ -524,108 +566,141 @@ BOOL MoveCursorTopLeft(void)
 //-----------------------------------------------------------------------------
 void MoveCursorKeyboard(int keyCode)
 {
-    if(!Selected || Selected->selectedState == SELECTED_NONE) {
+	int i, j, *ij, SelectNewState = SELECTED_NONE, SelectState = SELECTED_NONE, SelectOffset = 0;
+	int GoToTop = 0, GoToEdge = 0, SelectX = -1, SelectY = -1;
+
+	if(!Selected || Selected->selectedState == SELECTED_NONE) {
         MoveCursorTopLeft();
         return;
     }
 
     switch(keyCode) {
-        case VK_LEFT: {
-            if(!Selected || Selected->selectedState == SELECTED_NONE) {
-                break;
-            }
-            if(Selected->selectedState != SELECTED_LEFT) {
-                SelectElement(-1, -1, SELECTED_LEFT);
-                break;
-            }
-            if(SelectedWhich == ELEM_COMMENT) break;
-            int i, j;
-            if(FindSelected(&i, &j)) {
-                i--;
-                while(i >= 0 && (!VALID_LEAF(DisplayMatrix[i][j]) || 
-                    (DisplayMatrix[i][j] == Selected)))
-                {
-                    i--;
-                }
-                if(i >= 0) {
-                    SelectElement(i, j, SELECTED_RIGHT);
-                }
-            }
+		case VK_HOME:
+			if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+				i = 0;
+				j = 0;
+				FindSelectable(&i, &j, SELECTED_RIGHT, NULL);
+				SelectElement(i, j, SELECTED_LEFT);
+				return;
+			}
+
+			GoToEdge = 1;
+        case VK_LEFT:
+			ij = &i;
+			SelectState    = SELECTED_LEFT;
+			SelectNewState = SELECTED_RIGHT;
+			SelectOffset = -1;
             break;
-        }
-        case VK_RIGHT: {
-            if(!Selected || Selected->selectedState == SELECTED_NONE) {
-                break;
-            }
-            if(Selected->selectedState != SELECTED_RIGHT) {
-                SelectElement(-1, -1, SELECTED_RIGHT);
-                break;
-            }
-            if(SelectedWhich == ELEM_COMMENT) break;
-            int i, j;
-            if(FindSelected(&i, &j)) {
-                i++;
-                while(i < DISPLAY_MATRIX_X_SIZE && 
-                    !VALID_LEAF(DisplayMatrix[i][j]))
-                {
-                    i++;
-                }
-                if(i != DISPLAY_MATRIX_X_SIZE) {
-                    SelectElement(i, j, SELECTED_LEFT);
-                }
-            }
+
+		case VK_END:
+			if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+				j = DISPLAY_MATRIX_Y_SIZE - 1;
+				while(DisplayMatrix[0][j] == NULL)
+					j--;
+
+				i = DISPLAY_MATRIX_X_SIZE - 1;
+				FindSelectable(&i, &j, SELECTED_LEFT , NULL);
+
+				SelectElement(i, j, SELECTED_LEFT);
+				return;
+			}
+
+			GoToEdge = 1;
+		case VK_RIGHT:
+			ij = &i;
+			SelectState    = SELECTED_RIGHT;
+			SelectNewState = SELECTED_LEFT;
+			SelectOffset = +1;
             break;
-        }
-        case VK_UP: {
-            if(!Selected || Selected->selectedState == SELECTED_NONE) {
-                break;
-            }
-            if(Selected->selectedState != SELECTED_ABOVE &&
-                SelectedWhich != ELEM_PLACEHOLDER)
-            {
-                SelectElement(-1, -1, SELECTED_ABOVE);
-                break;
-            }
-            int i, j;
-            if(FindSelected(&i, &j)) {
-                j--;
-                while(j >= 0 && !VALID_LEAF(DisplayMatrix[i][j]))
-                    j--;
-                if(j >= 0) {
-                    SelectElement(i, j, SELECTED_BELOW);
-                }
-            }
+
+        case VK_UP:
+			ij = &j;
+			SelectState    = SELECTED_ABOVE;
+			SelectNewState = SELECTED_BELOW;
+			SelectOffset = -1;
             break;
-        }
-        case VK_DOWN: {
-            if(!Selected || Selected->selectedState == SELECTED_NONE) {
-                break;
-            }
-            if(Selected->selectedState != SELECTED_BELOW &&
-                SelectedWhich != ELEM_PLACEHOLDER)
-            {
-                SelectElement(-1, -1, SELECTED_BELOW);
-                break;
-            }
-            int i, j;
-            if(FindSelected(&i, &j)) {
-                j++;
-                while(j < DISPLAY_MATRIX_Y_SIZE && 
-                    !VALID_LEAF(DisplayMatrix[i][j]))
-                {
-                    j++;
-                }
-                if(j != DISPLAY_MATRIX_Y_SIZE) {
-                    SelectElement(i, j, SELECTED_ABOVE);
-                } else if(ScrollYOffsetMax - ScrollYOffset < 3) {
-                    // special case: scroll the end marker into view
-                    ScrollYOffset = ScrollYOffsetMax;
-                    RefreshScrollbars();
-                }
-            }
+
+        case VK_DOWN:
+			ij = &j;
+			SelectState    = SELECTED_BELOW;
+			SelectNewState = SELECTED_ABOVE;
+			SelectOffset = +1;
             break;
-        }
-    }
+
+		default:
+			return;
+	}
+
+	if(Selected->selectedState != SelectState && !GoToEdge &&
+		SelectedWhich != ELEM_PLACEHOLDER) {
+		SelectElement(-1, -1, SelectState);
+		return;
+	}
+
+	if(FindSelected(&i, &j)) {
+		*ij += SelectOffset;
+
+		while(DM_INSIDE_BOUNDS(i, j)) {
+			// First situation: we are at a null position when searching on X axis. This means we have reached the end of a parallel circuit.
+			// We should to go up and continue trying the normal sequence.
+			if(DisplayMatrix[i][j] == NULL && SEL_DIR_HOR(SelectState)) {
+				while(DM_INSIDE_BOUNDS(i, j) && DisplayMatrix[i][j] == NULL)
+					j--;
+				*ij -= SelectOffset;
+			// Second situation: we are at a comment element and searching on Y axis.
+			// We should to search for any element on lines below or above instead to look just the last one.
+			} else if(SelectedWhich == ELEM_COMMENT && SEL_DIR_VER(SelectState)) {
+				int x, y;
+
+				x = DISPLAY_MATRIX_X_SIZE - 1;
+				y = j;
+
+				if(FindSelectable(&x, &y, SELECTED_LEFT , NULL) != NULL) {
+					SelectX = x;
+					SelectY = y;
+					break;
+				}
+			// Third situation: we have found a new element. We will use it.
+			} else if(VALID_LEAF(DisplayMatrix[i][j]) && DisplayMatrix[i][j] != Selected) {
+				SelectX = i;
+				SelectY = j;
+				if(!GoToEdge)
+					break;
+			// Fourth situation: we was not able to find a new element and we are searching on Y axis.
+			// We should to search for elements on X axis too!
+			} else if(!VALID_LEAF(DisplayMatrix[i][j]) && SEL_DIR_VER(SelectState)) {
+				int x, y;
+				// We will search for elements on X axis. The found element should to be up to 5 positions to left or right
+				// First we search to LEFT
+				x = i;
+				y = j;
+				if(FindSelectable(&x, &y, SELECTED_LEFT , NULL) != NULL && abs(x-i)<5) {
+					SelectX = x;
+					SelectY = y;
+					break;
+				} else {
+					// Then we search to RIGHT
+					x = i;
+					y = j;
+					if(FindSelectable(&x, &y, SELECTED_RIGHT, NULL) != NULL && abs(x-i)<5) {
+						SelectX = x;
+						SelectY = y;
+						break;
+					}
+				}
+			}
+
+			*ij += SelectOffset;
+		}
+
+		if(SelectX >= 0 && SelectY >= 0) {
+			SelectElement(SelectX, SelectY, GoToEdge ? SelectState : SelectNewState);
+		} else if(SelectState == SELECTED_BELOW && (ScrollYOffsetMax - ScrollYOffset < 3)) {
+			// special case: scroll the end marker into view
+			ScrollYOffset = ScrollYOffsetMax;
+			RefreshScrollbars();
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -716,7 +791,7 @@ void EditSelectedElement(void)
             break;
 
         case ELEM_SET_DA:
-            ShowSetDADialog(Selected->d.setDA.name);
+			ShowSetDADialog(Selected->d.setDA.name, &Selected->d.setDA.mode);
             break;
 
         case ELEM_READ_ENC:

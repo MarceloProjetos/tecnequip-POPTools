@@ -455,8 +455,24 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
         }
         case ELEM_SET_DA: {
+			char name[50];
             ElemSetDA *r = &leaf->d.setDA;
-            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+
+			switch(r->mode) {
+			case ELEM_SET_DA_MODE_RAW:
+				strcpy(name, r->name);
+				break;
+
+			case ELEM_SET_DA_MODE_MV:
+				sprintf(name, "%s mV", r->name);
+				break;
+
+			case ELEM_SET_DA_MODE_PCT:
+				sprintf(name, "%s %%", r->name);
+				break;
+			}
+
+			CenterWithSpaces(*cx, *cy, name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, "{SET DA}", poweredBefore,
                 poweredAfter);
             break;

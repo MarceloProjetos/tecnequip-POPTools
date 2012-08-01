@@ -138,6 +138,9 @@
     <ClCompile Include="Ribbon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="setdadialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">

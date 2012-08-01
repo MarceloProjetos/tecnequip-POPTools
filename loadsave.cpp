@@ -138,7 +138,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
         *which = ELEM_LES;
     } else if(sscanf(line, "READ_ADC %s", l->d.readAdc.name)==1) {
         *which = ELEM_READ_ADC;
+    } else if(sscanf(line, "SET_DA %s %d", l->d.setDA.name, &l->d.setDA.mode)==2) {
+        *which = ELEM_SET_DA;
     } else if(sscanf(line, "SET_DA %s", l->d.setDA.name)==1) {
+		l->d.setDA.mode = ELEM_SET_DA_MODE_RAW;
         *which = ELEM_SET_DA;
 	} else if(sscanf(line, "MULTISET_DA %s %s %d %d %d %d %d %d %d", l->d.multisetDA.name, l->d.multisetDA.name1, &l->d.multisetDA.linear, 
 		&l->d.multisetDA.speedup, &l->d.multisetDA.forward, &l->d.multisetDA.time, &l->d.multisetDA.initval, &l->d.multisetDA.gaint, &l->d.multisetDA.gainr)==9) {
@@ -375,7 +378,7 @@ BOOL LoadProjectFromFile(char *filename)
     if(!f) return FALSE;
 
     char line[512];
-    int version, crystal, cycle, baud, UART, ip[4], mask[4], gw[4], dns[4], x4;
+    int version, crystal, cycle, baud, UART, ip[4], mask[4], gw[4], dns[4], x4, ModBUSID;
 	char sntp[126];
 
 	version = 0;
@@ -414,6 +417,8 @@ BOOL LoadProjectFromFile(char *filename)
             Prog.baudRate = baud;
         } else if(sscanf(line, "PARITY=%d", &UART)) {
 			Prog.UART = UART;
+        } else if(sscanf(line, "MODBUSID=%d", &ModBUSID)) {
+			Prog.ModBUSID = ModBUSID;
 //        } else if(sscanf(line, "COM=%d", &comPort)) {
 //            Prog.comPort = comPort;
         } else if(sscanf(line, "IP=%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3])) {
@@ -641,7 +646,7 @@ cmp:
             break;
 
         case ELEM_SET_DA:
-			fprintf(f, "SET_DA %s\n", l->d.setDA.name);
+			fprintf(f, "SET_DA %s %d\n", l->d.setDA.name, l->d.setDA.mode);
             break;
 
         case ELEM_READ_ENC:
@@ -827,6 +832,7 @@ BOOL SaveProjectToFile(char *filename)
     fprintf(f, "CRYSTAL=%d\n", Prog.mcuClock);
     fprintf(f, "BAUD=%d\n", Prog.baudRate);
 	fprintf(f, "PARITY=%d\n", Prog.UART);
+	fprintf(f, "MODBUSID=%d\n", Prog.ModBUSID);
 	fprintf(f, "COM=%d\n", POPSettings.COMPortFlash ? POPSettings.COMPortFlash - 1 : 0);
     fprintf(f, "IP=%d.%d.%d.%d\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
     fprintf(f, "MASK=%d.%d.%d.%d\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);

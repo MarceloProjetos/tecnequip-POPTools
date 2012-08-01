@@ -29,7 +29,6 @@
 #include <commdlg.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "ldmicro.h"
 #include "freeze.h"
 #include "mcutable.h"
@@ -571,6 +570,7 @@ static void OpenDialog(char *filename)
     if(!LoadProjectFromFile(tempSaveFile)) {
         Error(_("Couldn't open '%s'."), tempSaveFile);
         CurrentSaveFile[0] = '\0';
+		NewProgram();
     } else {
         ProgramChangedNotSaved = FALSE;
         strcpy(CurrentSaveFile, tempSaveFile);
@@ -636,6 +636,7 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(MouseHookHandle, code, wParam, lParam);
 }
 
+void OpenCHM(void);
 //-----------------------------------------------------------------------------
 // Handle a selection from the menu bar of the main window.
 //-----------------------------------------------------------------------------
@@ -1014,7 +1015,8 @@ cmp:
 			break;
 
         case MNU_MANUAL:
-            ShowHelpDialog(FALSE);
+			OpenCHM();
+//            ShowHelpDialog(FALSE);
             break;
 
         case MNU_ABOUT:
@@ -1196,6 +1198,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
+                case VK_HOME:
+                case VK_END:
                 case VK_RIGHT:
                 case VK_LEFT:
                     MoveCursorKeyboard(wParam);

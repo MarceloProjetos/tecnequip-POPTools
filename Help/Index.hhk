@@ -1,0 +1,362 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Precision Helper 2.0.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+    <OBJECT type="text/site properties">
+      <param name="FrameName" value="right">
+    </OBJECT>
+    <UL>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Welcome">
+          <param name="Local" value="topics\default.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Novo">
+          <param name="Local" value="topics\FileNew.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Abrir">
+          <param name="Local" value="topics\FileOpen.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Salvar">
+          <param name="Local" value="topics\FileSave.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Salvar como">
+          <param name="Local" value="topics\FileSaveAs.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Salvar como Diagrama Ladder">
+          <param name="Local" value="topics\FileSaveAsLadder.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Salvar como arquivo C">
+          <param name="Local" value="topics\FileSaveAsC.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Salvar como arquivo texto">
+          <param name="Local" value="topics\FileSaveAsText.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Sobre">
+          <param name="Local" value="topics\About.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Sair">
+          <param name="Local" value="topics\Exit.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Desfazer">
+          <param name="Local" value="topics\Undo.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Refazer">
+          <param name="Local" value="topics\Redo.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Excluir">
+          <param name="Local" value="topics\DeleteInstr.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Localizar e Substituir">
+          <param name="Local" value="topics\FindDialog.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Localizar Próxima">
+          <param name="Local" value="topics\Find.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Linhas">
+          <param name="Local" value="topics\InsertLine.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Inserir Linha Após">
+          <param name="Local" value="topics\InsertLineAfter.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Inserir Linha Antes">
+          <param name="Local" value="topics\InsertLineBefore.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Excluir Linha">
+          <param name="Local" value="topics\DeleteLine.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Mover Linha Acima">
+          <param name="Local" value="topics\MoveLineUp.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Mover Abaixo">
+          <param name="Local" value="topics\MoveLineDown.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Configurações do Projeto">
+          <param name="Local" value="topics\Config.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Preferências">
+          <param name="Local" value="topics\Settings.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Compilar">
+          <param name="Local" value="topics\Compile.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Compilar como">
+          <param name="Local" value="topics\CompileAs.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Compilar e Gravar">
+          <param name="Local" value="topics\CompileAndProgram.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Depurar">
+          <param name="Local" value="topics\Debug.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Modo de Simulação">
+          <param name="Local" value="topics\Simulation.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Manual do Usuário">
+          <param name="Local" value="topics\UserManual.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Exemplos">
+          <param name="Local" value="topics\Examples.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Contato">
+          <param name="Local" value="topics\InstrContact.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Bobina">
+          <param name="Local" value="topics\InstrCoil.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Borda de Subida">
+          <param name="Local" value="topics\InstrOneShotRising.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Borda de Descida">
+          <param name="Local" value="topics\InstrOneShotFalling.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Chave Geral">
+          <param name="Local" value="topics\InstrMasterRelayControl.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Circuito Aberto">
+          <param name="Local" value="topics\InstrCircuitOpen.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Circuito Fechado">
+          <param name="Local" value="topics\InstrCircuitClosed.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Atraso para Ligar">
+          <param name="Local" value="topics\InstrTimerON.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Atraso para Desligar">
+          <param name="Local" value="topics\InstrTimerOFF.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Atraso Retentivo para Ligar">
+          <param name="Local" value="topics\InstrTimerONRet.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Agendador de Tarefa">
+          <param name="Local" value="topics\InstrSchedule.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Zerar Temporizador">
+          <param name="Local" value="topics\InstrTimerReset.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Contador Incremental">
+          <param name="Local" value="topics\InstrCounterInc.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Contador Decremental">
+          <param name="Local" value="topics\InstrCounterDec.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Contador Circular">
+          <param name="Local" value="topics\InstrCounterCirc.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Zerar Contador">
+          <param name="Local" value="topics\InstrCounterReset.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Mover Valor">
+          <param name="Local" value="topics\InstrMov.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Liga / Desliga Bit">
+          <param name="Local" value="topics\InstrSetBit.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Checar Bit">
+          <param name="Local" value="topics\InstrCheckBit.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Persistente">
+          <param name="Local" value="topics\InstrPersist.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Igual">
+          <param name="Local" value="topics\InstrCondEqual.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Diferente">
+          <param name="Local" value="topics\InstrCondNotEqual.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Maior">
+          <param name="Local" value="topics\InstrCondGreater.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Maior ou Igual">
+          <param name="Local" value="topics\InstrCondGreaterEqual.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Menor">
+          <param name="Local" value="topics\InstrCondLesser.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Menor ou Igual">
+          <param name="Local" value="topics\InstrCondLesserEqual.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Somar">
+          <param name="Local" value="topics\InstrMathAdd.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Subtrair">
+          <param name="Local" value="topics\InstrMathSub.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Multiplicar">
+          <param name="Local" value="topics\InstrMathMult.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Dividir">
+          <param name="Local" value="topics\InstrMathDivide.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Tabela de Troca">
+          <param name="Local" value="topics\InstrShiftRegister.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Tabela de Busca">
+          <param name="Local" value="topics\InstrLookUpTable.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Linearização por Segmentos">
+          <param name="Local" value="topics\InstrPieceWiseLinear.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Comentário">
+          <param name="Local" value="topics\InstrComment.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Leitura de A/D">
+          <param name="Local" value="topics\InstrReadAD.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Escrita no D/A">
+          <param name="Local" value="topics\InstrWriteDA.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Saída PWM">
+          <param name="Local" value="topics\InstrPWM.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Rampa de Aceleração/Desaceleração">
+          <param name="Local" value="topics\InstrRampDA.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Leitura de Encoder">
+          <param name="Local" value="topics\InstrReadEnc.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Reset de Encoder">
+          <param name="Local" value="topics\InstrResetEnc.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Ler Registrador ModBUS na RS-485">
+          <param name="Local" value="topics\InstrReadModBUS485.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Escrever Registrador ModBUS na RS-485">
+          <param name="Local" value="topics\InstrWriteModBUS485.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Ler Registrador ModBUS pela Ethernet">
+          <param name="Local" value="topics\InstrReadModBUSEth.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Ler Registrador ModBUS pela Ethernet">
+          <param name="Local" value="topics\InstrWriteModBUSEth.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Ler String Formatada">
+          <param name="Local" value="topics\InstrReadFormatString.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Escrever String Formatada">
+          <param name="Local" value="topics\InstrWriteFormatString.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Leitura de Caracter">
+          <param name="Local" value="topics\InstrReadChar.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Escrita de Caracter">
+          <param name="Local" value="topics\InstrWriteChar.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Leitura de NS-600 Yaskawa">
+          <param name="Local" value="topics\InstrReadNS600.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Escrita no NS-600 Yaskawa">
+          <param name="Local" value="topics\InstrWriteNS600.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Leitura USS">
+          <param name="Local" value="topics\InstrReadUSS.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Escrita USS">
+          <param name="Local" value="topics\InstrWriteUSS.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Iniciar">
+          <param name="Local" value="topics\SimulationStart.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Parar">
+          <param name="Local" value="topics\SimulationStop.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Simples Ciclo">
+          <param name="Local" value="topics\SimulationSingleCycle.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Sair da Simulação">
+          <param name="Local" value="topics\SimulationExit.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Licença">
+          <param name="Local" value="topics\License.htm">
+        </OBJECT>
+    </UL>
+</BODY>
+</HTML>

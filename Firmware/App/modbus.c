@@ -6,6 +6,14 @@ extern volatile unsigned int GPIO_INPUT;
 
 extern volatile unsigned int I_SerialReady;
 
+// Declaracao do ID do ModBUS e funcao para configura-lo
+static unsigned int ModBUSID = 0;
+
+void ModBUS_SetID(unsigned int id)
+{
+	ModBUSID = id;
+}
+
 MODBUS_HANDLER_TX(Modbus_RS485_Tx)
 {
   RS485_Write(data, size);
@@ -60,7 +68,7 @@ void Modbus_Init(void)
 {
 	Modbus_RTU_Init(&modbus_rs485);
 
-	modbus_rs485.identification.Id                 = 0x00;
+	modbus_rs485.identification.Id                 = ModBUSID;
 	modbus_rs485.identification.VendorName         = "Tecnequip";
 	modbus_rs485.identification.ProductCode        = "POP7";
 	modbus_rs485.identification.MajorMinorRevision = "V1 Rev2";
@@ -84,7 +92,7 @@ void Modbus_Init(void)
 
 	Modbus_RTU_Init(&modbus_tcp_slave);
 
-	modbus_tcp_slave.identification.Id                 = 0x00;
+	modbus_tcp_slave.identification.Id                 = ModBUSID;
 	modbus_tcp_slave.identification.VendorName         = "Tecnequip";
 	modbus_tcp_slave.identification.ProductCode        = "POP7";
 	modbus_tcp_slave.identification.MajorMinorRevision = "V1 Rev2";

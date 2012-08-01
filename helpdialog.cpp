@@ -286,3 +286,15 @@ void ShowHelpDialog(BOOL about)
     SetWindowPos(HelpDialog[a], HWND_TOP, r.left, r.top, r.right - r.left, 
         r.bottom - r.top, 0);
 }
+
+void OpenCHM(void)
+{
+	char szAppPath[MAX_PATH] = "";
+	char szHelpFile[MAX_PATH] = "";
+
+	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
+	strncpy(szHelpFile, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
+	strcat(szHelpFile, "\\Ajuda.chm");
+
+	ShellExecute(0,"open",szHelpFile,NULL,NULL,SW_SHOW);
+}

@@ -461,7 +461,7 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				fprintf(f, "%s = ADC_Read(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1) + 1));
 				break;
             case INT_SET_DA:
-				fprintf(f, "DAC_Write(%s);\n", MapSym(IntCode[i].name1));
+				fprintf(f, "DAC_Write(DAC_Conv(%s, %d));\n", IsNumber(IntCode[i].name1) ? IntCode[i].name1 : MapSym(IntCode[i].name1), IntCode[i].literal);
 				break;
 			case INT_MULTISET_DA:
 				fprintf(f, "DAC_Start(%d, %d, %s, %s, %s, %s);\n", IntCode[i].bit, IntCode[i].literal, IntCode[i].name3, IntCode[i].name4, IntCode[i].name1, IntCode[i].name2);
@@ -934,6 +934,7 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "{\n");
 	fprintf(f, "	I_SerialReady = 1;\n");
 	fprintf(f, "	MODBUS_MASTER = %d;\n", MODBUS_MASTER);
+	fprintf(f, "	ModBUS_SetID(%d);\n", Prog.ModBUSID);
 	fprintf(f, "\n");
 	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", Prog.baudRate, serial.bits, serial.parity, serial.stopbit);
 	fprintf(f, "\n");

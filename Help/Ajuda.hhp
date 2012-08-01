@@ -1,0 +1,36 @@
+[OPTIONS]
+Title=Ajuda
+Compiled file=Ajuda.chm
+Error log file=
+Default topic=topics\default.htm
+Language=0x0409 Inglês (Estados Unidos)
+Full text search stop list file=
+Contents file=Contents.hhc
+Index file=Index.hhk
+Binary TOC=No
+Auto index=No
+Binary Index=Yes
+Create CHI file=No
+Full-text search=Yes
+Display compile progress=Yes
+Display compile notes=Yes
+Default window=main
+Enhanced decompilation=Yes
+Flat=No
+Compatibility=1.1 or later
+Default Font=Tahoma,8,1
+
+[WINDOWS]
+main="","Contents.hhc","Index.hhk","topics\default.htm","topics\default.htm",,,,,0x00063520,264,0x0010304E,[25,25,756,515],,,,0,0,0,0
+
+[FILES]
+css\styles_standard.css
+img\bottom_line.gif
+img\icon.jpg
+img\topicbar.gif
+img\topicbar_left.gif
+img\WelcomeLogo.jpg
+img\WelcomePicture.jpg
+topics\Topic1.htm
+topics\Default.htm
+

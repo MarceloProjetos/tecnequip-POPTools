@@ -220,7 +220,7 @@ void CalcGainUp(int calc_time, int calc_initval, int calc_gainx, int calc_gainy 
 			VarDA = calc_initval - (DeltaYGanho * (calc_time - tm)) / DeltaXGanho;
 		}
 
-		gains[i] = VarDA+2048;
+		gains[i] = (float)(VarDA+2048);
 	}
 }
 

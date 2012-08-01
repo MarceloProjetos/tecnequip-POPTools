@@ -39,7 +39,7 @@ static HWND TabCtrl;
 static HWND CrystalTextbox;
 static HWND CycleTextbox;
 static HWND BaudTextbox;
-//static HWND PLCCombobox;
+static HWND ModBUSIDTextbox;
 static HWND BaudRateCombobox;
 static HWND ParityCombobox;
 static HWND SNTPCombobox;
@@ -235,6 +235,16 @@ static void MakeControls(void)
         205, 120, 155, 100, TabChild[0], NULL, Instance, NULL);
     NiceFont(ParityCombobox);
 
+    HWND textLabel4 = CreateWindowEx(0, WC_STATIC, _("ModBUS ID:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        55, 150, 145, 21, TabChild[0], NULL, Instance, NULL);
+    NiceFont(textLabel4);
+
+    ModBUSIDTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        205, 150, 155, 21, TabChild[0], NULL, Instance, NULL);
+    NiceFont(ModBUSIDTextbox);
+
 	HWND textLabel5 = CreateWindowEx(0, WC_STATIC, _("Endereço IP:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         55, 90, 145, 21, TabChild[1], NULL, Instance, NULL);
@@ -413,6 +423,9 @@ void ShowConfDialog(bool NetworkSection)
 			SendMessage(BaudRateCombobox, CB_SETCURSEL, i, 0);
 	}
 
+	sprintf(buf, "%d", Prog.ModBUSID);
+	SendMessage(ModBUSIDTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+
 	for (i = 0; i < sizeof(ComboboxSNTPItens) / sizeof(ComboboxSNTPItens[0]); i++)
 		SendMessage(SNTPCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxSNTPItens[i]));
 	SendMessage(SNTPCombobox, WM_SETTEXT, 0, (LPARAM)Prog.sntp);
@@ -521,6 +534,11 @@ void ShowConfDialog(bool NetworkSection)
         Prog.baudRate = atoi(buf);
 
 		Prog.UART = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
+
+        SendMessage(ModBUSIDTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		Prog.ModBUSID = atoi(buf);
+		if(Prog.ModBUSID < 0)
+			Prog.ModBUSID = 0;
 
 		SendMessage(SNTPCombobox, WM_GETTEXT, (WPARAM)sizeof(Prog.sntp),
             (LPARAM)(Prog.sntp));

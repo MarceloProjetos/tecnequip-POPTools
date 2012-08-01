@@ -488,29 +488,6 @@ void ShowReadAdcDialog(char *name)
 	}
 }
 
-/*void ShowSetBitDialog(char *name)
-{
-    char *labels[] = { _("Destination:") };
-    char *dests[] = { name };
-    ShowSimpleDialog(_("Set/Reset Bit"), 1, labels, 0, 0x1, 0x1, dests);
-}*/
-
-void ShowSetDADialog(char *name)
-{
-	char name_tmp[MAX_NAME_LEN];
-
-	char *labels[] = { _("Source:") };
-    char *dests[] = { name_tmp };
-
-	strcpy(name_tmp, name);
-
-	ShowSimpleDialog(_("Conversor Digital/Analogico (DA)"), 1, labels, 0x0, 0x1, 0x1, 0x1, dests);
-
-	if(IsValidNameAndType(name, name_tmp, "Valor", VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(name_tmp), 0, 0)) {
-		strcpy(name, name_tmp);
-		name[16] = '\0';
-	}
-}
 void ShowReadEncDialog(char *name)
 {
 	char name_tmp[MAX_NAME_LEN];

@@ -28,6 +28,7 @@
 #include <windowsx.h>
 #include <comutil.h>
 #include <ShlObj.h>
+#include <ShellAPI.h>
 #include <tchar.h>
 #include <wchar.h>
 #include <math.h>
@@ -434,9 +435,14 @@ typedef struct ElemReadAdcTag {
     char    name[MAX_NAME_LEN];
 } ElemReadAdc;
 
+#define ELEM_SET_DA_MODE_RAW 0
+#define ELEM_SET_DA_MODE_MV  1
+#define ELEM_SET_DA_MODE_PCT 2
+
 typedef struct ElemSetDATag {
     char    name[MAX_NAME_LEN];
 	int		value;
+	int		mode;
 } ElemSetDA;
 
 typedef struct ElemReadEncTag {
@@ -682,6 +688,7 @@ typedef struct PlcProgramTag {
     int         mcuClock;
     int         baudRate;	// RS485 baudrate
 	int			UART;
+	int			ModBUSID;
 	unsigned char ip[4];
 	unsigned char mask[4];
 	unsigned char gw[4];
@@ -1061,7 +1068,7 @@ void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);
 void ShowSetBitDialog(char *name, int * set, int * bit);
 void ShowCheckBitDialog(char *name, int * set, int * bit);
-void ShowSetDADialog(char *name);
+void ShowSetDADialog(char *name, int *mode);
 void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
