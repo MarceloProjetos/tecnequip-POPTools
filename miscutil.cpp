@@ -356,15 +356,15 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_RESET_ENC:         return _("reset encoder"); 
         case IO_TYPE_READ_USS:         return _("read USS"); 
         case IO_TYPE_WRITE_USS:         return _("write USS"); 
-		case IO_TYPE_SET_DA:			return _("set DA"); 
+		case IO_TYPE_SET_DA:			return _("Set D/A"); 
 		case IO_TYPE_READ_MODBUS:       return _("leitura modbus"); 
 		case IO_TYPE_WRITE_MODBUS:      return _("escrita modbus"); 
 		case IO_TYPE_READ_MODBUS_ETH:   return _("leitura modbus eth"); 
 		case IO_TYPE_WRITE_MODBUS_ETH:  return _("escrita modbus eth"); 
 		case IO_TYPE_READ_YASKAWA:		return _("leitura NS600"); 
 		case IO_TYPE_WRITE_YASKAWA:		return _("escrita NS600"); 
-		case IO_TYPE_INTERNAL_FLAG:		return _("flag interna"); 
-        default:                        return _("");
+		case IO_TYPE_INTERNAL_FLAG:		return _("Flag Interna"); 
+        default:                        return "";
     }
 }
 
@@ -668,15 +668,13 @@ bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned in
 {
 	int val;
 	bool ret = FALSE;
-	char msg[MAX_NAME_LEN+50];
 	unsigned int current_type = GetTypeFromName(name);
 	bool name_is_internal_flag = IsInternalFlag(name);
 	bool name_is_number = IsNumber(name);
 
 	// Check for Internal Flags restrictions
 	if(new_type != IO_TYPE_INTERNAL_FLAG && name_is_internal_flag) {
-		sprintf(msg, "Nome '%s' reservado para uso interno, favor escolher outro nome.", name);
-		Error(_(msg));
+		Error(_("Nome '%s' reservado para uso interno, favor escolher outro nome."), name);
 		return FALSE;
 	} else  if(new_type == IO_TYPE_INTERNAL_FLAG && !name_is_internal_flag) {
 		Error(_("Nome Inválido! Para o tipo 'Flag Interna' é obrigatório selecionar um item da lista."));
@@ -685,20 +683,16 @@ bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned in
 
 	// Check for Variable and Number restrictions
 	if(!name_is_number && !IsValidVarName(name)) {
-		sprintf(msg, "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não inicar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", FieldName ? FieldName : "Nome", name);
-		Error(_(msg));
+		Error(_("%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não inicar com número\nNúmero: Apenas números, podendo iniciar por - (menos)"), FieldName ? FieldName : "Nome", name);
 		return FALSE;
 	} else if((Rules & VALIDATE_IS_VAR) && name_is_number) {
-		sprintf(msg, "'%s' não pode ser número!", FieldName ? FieldName : name);
-		Error(_(msg));
+		Error(_("'%s' não pode ser número!"), FieldName ? FieldName : name);
 		return FALSE;
 	} else if((Rules & VALIDATE_IS_NUMBER) && !name_is_number) {
-		sprintf(msg, "'%s' deve ser número!", FieldName ? FieldName : name);
-		Error(_(msg));
+		Error(_("'%s' deve ser número!"), FieldName ? FieldName : name);
 		return FALSE;
 	} else if(name_is_number && !IsValidNumber(name)) {
-		sprintf(msg, "Número '%s' inválido!", name);
-		Error(_(msg));
+		Error(_("Número '%s' inválido!"), name);
 		return FALSE;
 	}
 
@@ -706,8 +700,7 @@ bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned in
 	if((MinVal || MaxVal) && (Rules & (VALIDATE_IS_NUMBER | VALIDATE_IS_VAR_OR_NUMBER)) && name_is_number) {
 		val = atoi(name);
 		if(val < MinVal || val > MaxVal) {
-			sprintf(msg, "'%s' fora dos limites! Deve estar entre %d e %d.", FieldName ? FieldName : name, MinVal, MaxVal);
-			Error(_(msg));
+			Error(_("'%s' fora dos limites! Deve estar entre %d e %d."), FieldName ? FieldName : name, MinVal, MaxVal);
 			return FALSE;
 		}
 	}
@@ -729,26 +722,26 @@ bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned in
 			// name changed, check for type changes
 			} else if(new_type == IO_TYPE_INTERNAL_RELAY && current_type == IO_TYPE_DIG_OUTPUT) { // changing existent output to internal relay, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					Error("Valor inválido! Conflito de tipos: Rele Interno <-> Saída");
-				} else if(MessageBox(MainWindow, _("Já existe uma Saída com este nome. Alterar para Rele Interno?"), "Confirmar alteração de Saída para Rele Interno", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+					Error(_("Valor inválido! Conflito de tipos: Rele Interno <-> Saída"));
+				} else if(MessageBox(MainWindow, _("Já existe uma Saída com este nome. Alterar para Rele Interno?"), _("Confirmar alteração de Saída para Rele Interno"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
 					ret = TRUE;
 				}
 			} else if(new_type == IO_TYPE_DIG_OUTPUT && current_type == IO_TYPE_INTERNAL_RELAY) { // changing existent output to internal relay, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					Error("Valor inválido! Conflito de tipos: Rele Interno <-> Saída");
-				} else if(MessageBox(MainWindow, _("Já existe um Rele Interno com este nome. Alterar para Saída?"), "Confirmar alteração de Rele Interno para Saída", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+					Error(_("Valor inválido! Conflito de tipos: Rele Interno <-> Saída"));
+				} else if(MessageBox(MainWindow, _("Já existe um Rele Interno com este nome. Alterar para Saída?"), _("Confirmar alteração de Rele Interno para Saída"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
 					ret = TRUE;
 				}
 			} else if(new_type == IO_TYPE_DIG_OUTPUT && current_type == IO_TYPE_DIG_INPUT) { // changing existent input to output, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					Error("Valor inválido! Conflito de tipos: Entrada <-> Saída");
-				} else if(MessageBox(MainWindow, _("Já existe uma Entrada com este nome. Alterar para Saída?"), "Confirmar alteração de Entrada para Saída", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+					Error(_("Valor inválido! Conflito de tipos: Entrada <-> Saída"));
+				} else if(MessageBox(MainWindow, _("Já existe uma Entrada com este nome. Alterar para Saída?"), _("Confirmar alteração de Entrada para Saída"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
 					ret = TRUE;
 				}
 			} else if(new_type == IO_TYPE_INTERNAL_RELAY && current_type == IO_TYPE_DIG_INPUT) { // changing existent input to internal relay, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					Error("Valor inválido! Conflito de tipos: Rele Interno <-> Entrada");
-				} else if(MessageBox(MainWindow, _("Já existe uma Entrada com este nome. Alterar para Relé Interno?"), "Confirmar alteração de Entrada para Relé Interno", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+					Error(_("Valor inválido! Conflito de tipos: Rele Interno <-> Entrada"));
+				} else if(MessageBox(MainWindow, _("Já existe uma Entrada com este nome. Alterar para Relé Interno?"), _("Confirmar alteração de Entrada para Relé Interno"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
 					ret = TRUE;
 				}
 			} else { // no wrong conditions, ok!
@@ -773,4 +766,67 @@ bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned in
 bool IsValidNameAndType(char *old_name, char *name, unsigned int new_type)
 {
 	return IsValidNameAndType(old_name, name, NULL, VALIDATE_IS_VAR, new_type, 0, 0);
+}
+
+#define KEY_CONTROL_A  1
+#define KEY_CONTROL_C  3
+#define KEY_CONTROL_V 22
+#define KEY_CONTROL_X 24
+
+int iscontrol(WPARAM wParam)
+{
+	switch(wParam) {
+		case KEY_CONTROL_A:
+		case KEY_CONTROL_C:
+		case KEY_CONTROL_V:
+		case KEY_CONTROL_X:
+		return 1;
+	}
+
+	return 0;
+}
+
+void ChangeFileExtension(char *name, char *ext)
+{
+	unsigned int pos;
+
+	pos = strlen(name) - 1;
+	while(name[pos] != '.' && pos) pos--;
+	if(pos) {
+		name[pos] = 0;
+	}
+
+	sprintf(name, "%s.%s", name, ext);
+}
+
+char *GetPinADC(char *name)
+{
+	int i;
+	for(i=0; i < Prog.io.count; i++) {
+		if(!strcmp(name, Prog.io.assignment[i].name))
+			break;
+	}
+
+	switch(Prog.io.assignment[i].pin) {
+	case 1:
+		return "AD1";
+		break;
+	case 2:
+		return "AD2";
+		break;
+	case 3:
+		return "AD3";
+		break;
+	case 4:
+		return "AD4";
+		break;
+	case 5:
+		return "AD5";
+		break;
+	case 6:
+		return "TEMP";
+		break;
+	}
+
+	return "?";
 }

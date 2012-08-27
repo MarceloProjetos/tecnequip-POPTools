@@ -54,7 +54,7 @@ MODBUS_HANDLER_TX(Modbus_TCP_Tx)
 	freeaddrinfo(result);
 
 	if (ConnectSocket == INVALID_SOCKET) {
-		Error("Unable to connect to server!");
+		Error(_("Unable to connect to server!"));
 		return 0;
 	}
 
@@ -77,7 +77,7 @@ MODBUS_HANDLER_TX(Modbus_TCP_Tx)
 
 	iResult = recv(ConnectSocket, (char *)data, MODBUS_BUFFER_SIZE, 0);
 	if (iResult == 0)
-		Error("Connection closed");
+		Error(_("Connection closed"));
 	else if(iResult < 0) {
 		iResult = 0;
 		Error("recv failed: %d", WSAGetLastError());

@@ -62,7 +62,7 @@ static void MakeControls(void)
         62, 16, 115, 321, ResetDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-	LoadIOListToComboBox(NameTextbox, IO_TYPE_TOF | IO_TYPE_TON | IO_TYPE_COUNTER);
+	LoadIOListToComboBox(NameTextbox, IO_TYPE_TOF | IO_TYPE_TON | IO_TYPE_RTO | IO_TYPE_COUNTER);
 	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
@@ -119,7 +119,7 @@ void ShowResetDialog(char *name)
 
     if(!DialogCancel) {
 		SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_tmp));
-		if(IsValidNameAndType(name, name_tmp, "Destino", VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
+		if(IsValidNameAndType(name, name_tmp, _("Destino"), VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
 	        strcpy(name, name_tmp);
 		}
     }

@@ -145,7 +145,7 @@ void ShowSetDADialog(char *name, int *mode)
 			max = +100;
 		}
 
-		if(IsValidNameAndType(name, name_tmp, "Origem", VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(name_tmp), min, max)) {
+		if(IsValidNameAndType(name, name_tmp, _("Origem"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(name_tmp), min, max)) {
 			strcpy(name, name_tmp);
 			name[16] = '\0';
 

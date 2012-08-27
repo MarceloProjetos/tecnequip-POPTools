@@ -75,10 +75,10 @@ static HWND EncoderSliderTrackbar;
 static BOOL EncoderSliderDone;
 static BOOL EncoderSliderCancel;*/
 
-const LPCTSTR ComboboxBitItens[] = { _("0"), _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
-									_("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
-									_("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"), 
-									_("31")/*, _("32")*/};
+const LPCTSTR ComboboxBitItens[] = { "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9", "10",
+									"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", 
+									"21", "22", "23", "24", "25", "26", "27", "28", "29", "30", 
+									"31"/*, "32"*/};
 
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
@@ -115,7 +115,7 @@ static void AppendIo(char *name, int type, unsigned char bit)
 //-----------------------------------------------------------------------------
 static void AppendIoSeenPreviously(char *name, int type, int pin, int bit)
 {
-    if(_stricmp(name+1, "new")==0) return;
+    if(_stricmp(name, _("new"))==0) return;
 
     int i;
     for(i = 0; i < IoSeenPreviouslyCount; i++) {
@@ -289,10 +289,6 @@ void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.readEnc.name, IO_TYPE_READ_ENC, 0);
             break;
 
-        case ELEM_RESET_ENC:
-            AppendIo(l->d.resetEnc.name, IO_TYPE_RESET_ENC, 0);
-            break;
-
         case ELEM_READ_USS:
             AppendIo(l->d.readUSS.name, IO_TYPE_READ_USS, 0);
             break;
@@ -353,6 +349,7 @@ void ExtractNamesFromCircuit(int which, void *any)
 			AppendIo(l->d.persist.var, IO_TYPE_GENERAL, 0);
 
 		case ELEM_RTC:
+        case ELEM_RESET_ENC:
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_SHORT:
@@ -1018,11 +1015,11 @@ void ShowIoMapDialog(int item)
     }
 
 	if(Prog.io.assignment[item].type == IO_TYPE_READ_ENC && Prog.mcu->encCount == 0) {
-        Error(_("ENCODER not supported for this micro."));
+        Error(_("No Encoder or Encoder not supported for selected micro."));
         return;
     }
 
-    if(_stricmp(Prog.io.assignment[item].name+1, "new")==0) {
+    if(_stricmp(Prog.io.assignment[item].name, _("new"))==0) {
         Error(_("Rename I/O from default name ('%s') before assigning "
             "MCU pin."), Prog.io.assignment[item].name);
         return;
@@ -1081,6 +1078,7 @@ void ShowIoMapDialog(int item)
         if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
             for(j = 0; j < Prog.mcu->adcCount; j++) 
 			{
+				if (j == 4) continue;
                 //if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) 
 				//{
 				if (j == Prog.mcu->adcCount - 1)
@@ -1477,7 +1475,7 @@ void ShowAnalogSliderPopup(char *name)
     }
     if(top < 0) top = 0;
     
-    AnalogSliderMain = CreateWindowClient(0, "LDmicroAnalogSlider", "I/O Pin",
+    AnalogSliderMain = CreateWindowClient(0, "LDmicroAnalogSlider", _("I/O Pin"),
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
         left, top, 30, 100, MainWindow, NULL, Instance, NULL);
 
@@ -1602,7 +1600,7 @@ void ShowEncoderSliderPopup(char *name)
     }
     if(top < 0) top = 0;
 
-    EncoderSliderMain = CreateWindowClient(0, "LDmicroEncoderSlider", "I/O Pin",
+    EncoderSliderMain = CreateWindowClient(0, "LDmicroEncoderSlider", _("I/O Pin"),
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
         left, top, 30, 100, MainWindow, NULL, Instance, NULL);
 

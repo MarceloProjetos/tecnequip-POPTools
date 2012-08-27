@@ -179,6 +179,24 @@ void UndoRemember(void)
 }
 
 //-----------------------------------------------------------------------------
+// Discard previous state. It is useful when we had saved previous state but
+//  no changes was made in Prog.
+//-----------------------------------------------------------------------------
+void UndoForget(void)
+{
+	ProgramStack *ps = &(Undo.undo);
+    int a = (ps->write - 1);
+    if(a < 0) a += MAX_LEVELS_UNDO;
+    ps->write = a;
+    (ps->count)--;
+
+    int i;
+    for(i = 0; i < ps->prog[ps->write].numRungs; i++) {
+        FreeCircuit(ELEM_SERIES_SUBCKT, ps->prog[ps->write].rungs[i]);
+    }
+}
+
+//-----------------------------------------------------------------------------
 // Pop the undo history one level, or do nothing if we're out of levels of
 // undo. This means that we push the current program on the redo stack, and
 // pop the undo stack onto the current program.

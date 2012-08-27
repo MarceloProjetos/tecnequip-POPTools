@@ -74,5 +74,8 @@ char *_(char *in)
         }
     }
 
-    return in;
+#ifdef _DEBUG
+//	Error("No match found: '%s'", in);
+#endif
+	return in;
 }

@@ -545,17 +545,17 @@ void ExportDrawingAsText(char *file)
         return;
     }
 
-    fprintf(f, "POPTools - Texto exportado\n");
+    fprintf(f, _("POPTools - Texto exportado\n"));
 
     if(Prog.mcu) {
-        fprintf(f, "Para '%s', cristal de %.6f MHz, tempo de ciclo de %.1f ms\n\n",
+        fprintf(f, _("Para '%s', cristal de %.6f MHz, tempo de ciclo de %.1f ms\n\n"),
             Prog.mcu->mcuName, Prog.mcuClock/1e6, Prog.cycleTime/1e3);
     } else {
-        fprintf(f, "no MCU assigned, %.6f MHz crystal, %.1f ms cycle time\n\n",
+        fprintf(f, _("no MCU assigned, %.6f MHz crystal, %.1f ms cycle time\n\n"),
             Prog.mcuClock/1e6, Prog.cycleTime/1e3);
     }
 
-    fprintf(f, "\nDiagrama Ladder:\n\n");
+    fprintf(f, _("\nDiagrama Ladder:\n\n"));
 
     for(i = 0; i < totalHeight; i++) {
         ExportBuffer[i][4] = '|';

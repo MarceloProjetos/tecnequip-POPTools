@@ -39,6 +39,8 @@ static HWND ReplaceAllButton;
 static LONG_PTR PrevFARDialogProc;
 static LONG_PTR PrevNameProc;
 
+static bool changed;
+
 //-----------------------------------------------------------------------------
 // Window proc for the dialog boxes. This Ok/Cancel stuff is common to a lot
 // of places, and there are no other callbacks from the children.
@@ -67,19 +69,30 @@ static LRESULT CALLBACK FARDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 							Error(_("Nao encontrado!"));
 					}
 			    } else if(h == ReplaceButton) {
-					if(IsValidNameAndType(search_text, new_text, "Substituir por", validate_mode | VALIDATE_DONT_ASK | VALIDATE_TYPES_MUST_MATCH | VALIDATE_ACCEPT_IO_PENDING, GetTypeFromName(search_text), 0, 0)) {
+					if(IsValidNameAndType(search_text, new_text, _("Substituir por"), validate_mode | VALIDATE_DONT_ASK | VALIDATE_TYPES_MUST_MATCH | VALIDATE_ACCEPT_IO_PENDING, GetTypeFromName(search_text), 0, 0)) {
 			            matches = FindAndReplace(search_text, new_text, FAR_REPLACE_NEXT);
 			            if(!matches) {
 							matches = FindAndReplace(search_text, new_text, FAR_REPLACE_FIRST);
-							if(!matches)
+							if(!matches) {
 								Error(_("Nao encontrado!"));
+							} else {
+								changed = true;
+							}
+						} else {
+							changed = true;
 						}
 					}
 	            } else if(h == ReplaceAllButton) {
-					if(IsValidNameAndType(search_text, new_text, "Substituir por", validate_mode | VALIDATE_DONT_ASK | VALIDATE_TYPES_MUST_MATCH | VALIDATE_ACCEPT_IO_PENDING, GetTypeFromName(search_text), 0, 0)) {
+					if(IsValidNameAndType(search_text, new_text, _("Substituir por"), validate_mode | VALIDATE_DONT_ASK | VALIDATE_TYPES_MUST_MATCH | VALIDATE_ACCEPT_IO_PENDING, GetTypeFromName(search_text), 0, 0)) {
 			            matches = FindAndReplace(search_text, new_text, FAR_REPLACE_ALL);
-						swprintf(texto, sizeof(texto)/sizeof(*texto), L"Encontrada(s) %d ocorrência(s)", matches);
-						ShowTaskDialog(texto, NULL, TD_INFORMATION_ICON, TDCBF_OK_BUTTON);
+						// TODO: Internacionalizar
+						if(matches) {
+							swprintf(texto, sizeof(texto)/sizeof(*texto), L"Encontrada(s) %d ocorrência(s)", matches);
+							ShowTaskDialog(texto, NULL, TD_INFORMATION_ICON, TDCBF_OK_BUTTON);
+							changed = true;
+						} else {
+							Error(_("Nao encontrado!"));
+						}
 					}
 				}
 
@@ -143,8 +156,10 @@ static void MakeControls(void)
     NiceFont(ReplaceAllButton);
 }
 
-void ShowFARDialog()
+bool ShowFARDialog()
 {
+	changed = false;
+
     FARDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Localizar e Substituir"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 296, 135, MainWindow, NULL, Instance, NULL);
@@ -178,5 +193,5 @@ void ShowFARDialog()
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(FARDialog);
-    return;
+    return changed;
 }

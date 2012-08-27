@@ -46,6 +46,311 @@ ElemSubcktParallel *AllocSubcktParallel(void)
     return (ElemSubcktParallel *)CheckMalloc(sizeof(ElemSubcktParallel));
 }
 
+static BOOL CollapseUnnecessarySubckts(int which, void *any);
+
+// The following element holds the start point where a parallel subcircuit should be inserted.
+ElemLeaf *ParallelStart;
+
+#define SUBCKT_STATUS_NOTFOUND 0
+#define SUBCKT_STATUS_FIRST    1
+#define SUBCKT_STATUS_INSIDE   2
+#define SUBCKT_STATUS_LAST     3
+
+struct InsertionPoint {
+	int                 point;
+	void               *elem;
+	ElemSubcktSeries   *series;
+	ElemSubcktParallel *parallel;
+};
+
+int ElemInSubcktSeries(int which, void *any, InsertionPoint *point)
+{
+	int i, status = SUBCKT_STATUS_NOTFOUND;
+
+    switch(which) {
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            for(i = 0; i < s->count; i++) {
+                if(s->contents[i].d.any == point->elem) {
+					point->point  = i;
+					point->series = s;
+                    break;
+                }
+                if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
+                    status = ElemInSubcktSeries(ELEM_PARALLEL_SUBCKT, s->contents[i].d.any, point);
+					if(status != SUBCKT_STATUS_NOTFOUND) {
+						if(point->series == NULL) {
+							point->point  = i;
+							point->series = s;
+						}
+						break;
+					}
+                }
+            }
+			if(point->series != NULL && status != SUBCKT_STATUS_INSIDE) {
+				if(!i && (status != SUBCKT_STATUS_LAST) &&
+					(point->elem != Selected ? 1 : Selected->selectedState == SELECTED_LEFT)) {
+					status = SUBCKT_STATUS_FIRST;
+				} else if(i == s->count - 1 && (status != SUBCKT_STATUS_FIRST) &&
+					(point->elem != Selected ? 1 : Selected->selectedState == SELECTED_RIGHT)) {
+					status = SUBCKT_STATUS_LAST;
+				} else {
+					status = SUBCKT_STATUS_INSIDE;
+				}
+			}
+            break;
+		}
+
+		case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+			for(i=0; i < p->count; i++) {
+				if(p->contents[i].d.any == point->elem) {
+					status = SUBCKT_STATUS_FIRST;
+                    break;
+				}
+				if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
+                    status = ElemInSubcktSeries(ELEM_SERIES_SUBCKT, p->contents[i].d.any, point);
+					if(point->series != NULL) {
+	                    break;
+					}
+				}
+			}
+			if(i == p->count) break;
+			if(status != SUBCKT_STATUS_INSIDE) {
+				point->series   = NULL;
+				point->parallel = p;
+			} else if(point->parallel == NULL) {
+				point->parallel = p;
+			}
+			break;
+		}
+	}
+
+	return status;
+}
+
+int SearchMatch(ElemSubcktSeries *series, int which, void *any, int direction)
+{
+	if(which != ELEM_PARALLEL_SUBCKT) return SUBCKT_STATUS_NOTFOUND;
+
+	int i, status = SUBCKT_STATUS_NOTFOUND;
+	ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+
+	for(i=0; i < p->count; i++) {
+		if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
+			int index = (direction == SUBCKT_STATUS_FIRST ? 0 : p->contents[i].d.series->count-1);
+			int newWhich = p->contents[i].d.series->contents[index].which;
+			void *newAny = p->contents[i].d.series->contents[index].d.any;
+
+			if(series == p->contents[i].d.series) {
+				series = p->contents[i].d.series;
+				status = SUBCKT_STATUS_INSIDE;
+			} else if(newWhich == ELEM_PARALLEL_SUBCKT) {
+				status = SearchMatch(series, newWhich, newAny, direction);
+			}
+
+			if(status == SUBCKT_STATUS_INSIDE) break;
+		}
+	}
+
+	return status;
+}
+
+int RemoveParallelStart(int which, void *any)
+{
+	int i, ret = SUBCKT_STATUS_NOTFOUND;
+	if(ParallelStart != NULL) {
+		if(any == NULL) {
+			InsertionPoint Point = { 0, ParallelStart, NULL, NULL };
+			for(i=0; i < Prog.numRungs; i++) {
+				if(ElemInSubcktSeries(ELEM_SERIES_SUBCKT, Prog.rungs[i], &Point) != SUBCKT_STATUS_NOTFOUND) {
+					any = Prog.rungs[i];
+					which = ELEM_SERIES_SUBCKT;
+					break;
+				}
+			}
+		}
+		if(any == NULL) {
+			CheckFree(ParallelStart);
+			ParallelStart = NULL;
+		} else {
+			switch(which) {
+				case ELEM_SERIES_SUBCKT: {
+					ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+					for(i = 0; i < s->count; i++) {
+						// ParallelStart will be always an element inside a Parallel subcircuit.
+						if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
+							ret = RemoveParallelStart(ELEM_PARALLEL_SUBCKT, s->contents[i].d.any);
+							if(ret != SUBCKT_STATUS_NOTFOUND)
+								break;
+						}
+					}
+					break;
+				}
+				case ELEM_PARALLEL_SUBCKT: {
+					ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+					for(i = 0; i < p->count; i++) {
+						if(p->contents[i].d.any == ParallelStart) {
+							CheckFree(ParallelStart);
+							memmove(&p->contents[i], &p->contents[i+1],
+								(p->count - i - 1)*sizeof(p->contents[0]));
+							(p->count)--;
+							ParallelStart = NULL;
+							ret = SUBCKT_STATUS_INSIDE;
+							break;
+						} else if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
+							ret = RemoveParallelStart(ELEM_SERIES_SUBCKT, p->contents[i].d.any);
+							if(ret != SUBCKT_STATUS_NOTFOUND)
+								break;
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+	return ret;
+}
+
+// Tries to insert a parallel subcircuit between ParallelStart and currently selected object
+void InsertParallel(int newWhich, ElemLeaf *newElem)
+{
+	int i, CurrentRung, UseCurrentParallel = 1;
+	InsertionPoint StartPoint = { 0, ParallelStart, NULL, NULL}, EndPoint = { 0, Selected, NULL, NULL};
+
+	// First we should to remove last saved state because UndoRemember was called before to add this new elemment.
+	// We don't want user going back to this state (with parallel start)!
+	UndoForget();
+
+	// Phase 1: check if ParallelStart and currently selected object are in the same subcircuit.
+	for(i=0; i < Prog.numRungs; i++) {
+		ElemInSubcktSeries(ELEM_SERIES_SUBCKT, Prog.rungs[i], &StartPoint);
+		if(StartPoint.series != NULL) {
+			// Start found, now we will search for End in the same subcircuit.
+			ElemInSubcktSeries(ELEM_SERIES_SUBCKT, StartPoint.series, &EndPoint);
+			if(EndPoint.series == NULL) { // End not found. Maybe start and end are swapped?
+				ElemInSubcktSeries(ELEM_SERIES_SUBCKT, Prog.rungs[i], &EndPoint);
+				if(EndPoint.series) { // End found in the same rung. Now we search for start in the same subcircuit
+					StartPoint.point    = 0;
+					StartPoint.series   = NULL;
+					StartPoint.parallel = NULL;
+					ElemInSubcktSeries(ELEM_SERIES_SUBCKT, EndPoint.series, &StartPoint);
+				}
+			}
+			break;
+		}
+	}
+
+	CurrentRung = i;
+
+	// Phase 2: check if we can make a parallel between two selected points.
+	if(StartPoint.series && EndPoint.series && StartPoint.series != EndPoint.series) {
+		UseCurrentParallel = 0;
+		if(StartPoint.parallel == EndPoint.parallel) {
+			StartPoint.point  = 0;
+			StartPoint.series = EndPoint.series;
+		} else if(EndPoint.parallel && EndPoint.parallel->count == 2 &&
+			EndPoint.parallel->contents[1].which == ELEM_PLACEHOLDER) { // Special condition
+			StartPoint.point  = 0;
+			StartPoint.series = EndPoint.series;
+		} else {
+			int PreviousWhich, NextWhich;
+			void *Previous = NULL, *Next = NULL;
+
+			if(Selected->selectedState == SELECTED_RIGHT) {
+				// Next
+				if(EndPoint.series->contents[EndPoint.point].d.any == EndPoint.elem && EndPoint.point < (EndPoint.series->count-1)) {
+					Next      = EndPoint.series->contents[EndPoint.point+1].d.any;
+					NextWhich = EndPoint.series->contents[EndPoint.point+1].which;
+				} else if(EndPoint.series->contents[EndPoint.point].which == ELEM_PARALLEL_SUBCKT) {
+					while(EndPoint.series->contents[EndPoint.series->count-1].d.any == EndPoint.parallel) {
+						EndPoint.elem     = EndPoint.parallel;
+						EndPoint.series   = NULL;
+						EndPoint.parallel = NULL;
+						ElemInSubcktSeries(ELEM_SERIES_SUBCKT, Prog.rungs[CurrentRung], &EndPoint);
+					}
+					Previous      = EndPoint.series->contents[EndPoint.point].d.any;
+					PreviousWhich = ELEM_PARALLEL_SUBCKT;
+				}
+			} else if(Selected->selectedState == SELECTED_LEFT) {
+				// Next
+				if(EndPoint.series->contents[EndPoint.point].which == ELEM_PARALLEL_SUBCKT) {
+					Next      = EndPoint.series->contents[EndPoint.point].d.any;
+					NextWhich = EndPoint.series->contents[EndPoint.point].which;
+				}
+				// Previous
+				if(EndPoint.point) {
+					Previous      = EndPoint.series->contents[EndPoint.point-1].d.any;
+					PreviousWhich = EndPoint.series->contents[EndPoint.point-1].which;
+				}
+			}
+
+			if(Next && SearchMatch(StartPoint.series, NextWhich, Next, SUBCKT_STATUS_FIRST)) {
+				if(Selected->selectedState == SELECTED_RIGHT && StartPoint.point) {
+					StartPoint.point--;
+				}
+				EndPoint.point  = 0;
+				EndPoint.series = StartPoint.series;
+			} else if(Previous && SearchMatch(StartPoint.series, PreviousWhich, Previous, SUBCKT_STATUS_LAST)) {
+				if(Selected->selectedState == SELECTED_RIGHT) {
+					EndPoint.point    = StartPoint.series->count-1;
+				} else {
+					EndPoint.point  = StartPoint.series->count;
+				}
+				EndPoint.series = StartPoint.series;
+			}
+		}
+	}
+
+	// Phase 3: creates a series subcircuit containing all elements between start and end points.
+	if(StartPoint.series && StartPoint.series == EndPoint.series) {
+		if(StartPoint.point > EndPoint.point) {
+			i = StartPoint.point;
+			StartPoint.point = EndPoint.point;
+			EndPoint.point = i;
+		}
+		if(!UseCurrentParallel || StartPoint.point != EndPoint.point) {
+			if(Selected->selectedState == SELECTED_LEFT && EndPoint.point)
+				EndPoint.point--;
+			ElemSubcktSeries *s = AllocSubcktSeries();
+			s->count = EndPoint.point - StartPoint.point + 1;
+			memmove(s->contents, &StartPoint.series->contents[StartPoint.point], (s->count)*sizeof(s->contents[0]));
+			memmove(&StartPoint.series->contents[StartPoint.point+1], &StartPoint.series->contents[StartPoint.point+s->count],
+				(StartPoint.series->count - StartPoint.point - s->count)*sizeof(s->contents[0]));
+			StartPoint.series->count -= s->count-1;
+
+			// Phase 4: creates a new parallel subcircuit which will hold the previously created series
+			//          subcircuit and the new element.
+			ElemSubcktParallel *p = AllocSubcktParallel();
+			p->count = 2;
+
+			p->contents[0].which = ELEM_SERIES_SUBCKT;
+			p->contents[0].d.series = s;
+			p->contents[1].which = newWhich;
+			p->contents[1].d.leaf = newElem;
+
+			StartPoint.series->contents[StartPoint.point].which = ELEM_PARALLEL_SUBCKT;
+			StartPoint.series->contents[StartPoint.point].d.parallel = p;
+		} else {
+            if(StartPoint.parallel->count >= (MAX_ELEMENTS_IN_SUBCKT-1)) {
+                Error(_("Too many elements in subcircuit!"));
+				CheckFree(newElem);
+            } else {
+				StartPoint.parallel->contents[StartPoint.parallel->count].which = newWhich;
+				StartPoint.parallel->contents[StartPoint.parallel->count].d.leaf = newElem;
+				StartPoint.parallel->count++;
+			}
+		}
+	} else {
+		Error(_("Impossível criar paralelo entre os pontos selecionados!"));
+		CheckFree(newElem);
+	}
+
+	// Phase 5: free ParallelStart and collapse.
+	RemoveParallelStart(ELEM_SERIES_SUBCKT, Prog.rungs[CurrentRung]);
+	while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[CurrentRung]));
+}
+
 //-----------------------------------------------------------------------------
 // Routine that does the actual work of adding a leaf element to the left/
 // right of or above/below the selected element. If we are adding left/right
@@ -77,6 +382,10 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 }
             }
             if(i == s->count) break;
+			if(ParallelStart != NULL) {
+				InsertParallel(newWhich, newElem);
+				return TRUE;
+			}
             if(s->contents[i].which == ELEM_PLACEHOLDER) {
                 // Special case--placeholders are replaced. They only appear
                 // in the empty series subcircuit that I generate for them,
@@ -150,6 +459,10 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 }
             }
             if(i == p->count) break;
+			if(ParallelStart != NULL) {
+				InsertParallel(newWhich, newElem);
+				return TRUE;
+			}
             if(p->count >= (MAX_ELEMENTS_IN_SUBCKT-1)) {
                 Error(_("Too many elements in subcircuit!"));
                 return TRUE;
@@ -221,37 +534,165 @@ static BOOL AddLeaf(int newWhich, ElemLeaf *newElem)
     return FALSE;
 }
 
+bool CanInsert(int which)
+{
+    if(!Selected || Selected->selectedState == SELECTED_NONE) return false;
+
+	switch(which) {
+	case ELEM_COMMENT:
+	    if(CanInsertComment) return true;
+		break;
+
+	case ELEM_PLACEHOLDER:
+		if(ParallelStart != NULL || SelectedWhich == ELEM_PLACEHOLDER) {
+			break;
+		}
+		if(Selected->selectedState != SELECTED_BELOW) {
+			Selected->selectedState = SELECTED_BELOW;
+		}
+	case ELEM_CONTACTS:
+	case ELEM_EQU:
+	case ELEM_NEQ:
+	case ELEM_GRT:
+	case ELEM_GEQ:
+	case ELEM_LES:
+	case ELEM_LEQ:
+	case ELEM_OPEN:
+	case ELEM_SHORT:
+	case ELEM_ONE_SHOT_RISING:
+	case ELEM_ONE_SHOT_FALLING:
+	case ELEM_CTU:
+	case ELEM_CTD:
+	case ELEM_RTO:
+	case ELEM_TON:
+	case ELEM_TOF:
+	case ELEM_RTC:
+	case ELEM_READ_FORMATTED_STRING:
+	case ELEM_WRITE_FORMATTED_STRING:
+	case ELEM_FORMATTED_STRING:
+	case ELEM_READ_SERVO_YASKAWA:
+	case ELEM_WRITE_SERVO_YASKAWA:
+	case ELEM_SET_BIT:
+	case ELEM_CHECK_BIT:
+	case ELEM_READ_USS:
+	case ELEM_WRITE_USS:
+	case ELEM_READ_MODBUS:
+	case ELEM_WRITE_MODBUS:
+	case ELEM_READ_MODBUS_ETH:
+	case ELEM_WRITE_MODBUS_ETH:
+	case ELEM_UART_RECV:
+	case ELEM_UART_SEND:
+	    if(CanInsertOther) return true;
+		break;
+
+	case ELEM_CTC:
+	case ELEM_RES:
+	case ELEM_READ_ADC:
+	case ELEM_SET_DA:
+	case ELEM_READ_ENC:
+	case ELEM_MULTISET_DA :
+	case ELEM_RESET_ENC:
+	case ELEM_SET_PWM:
+	case ELEM_PERSIST:
+	case ELEM_MOVE: 
+	case ELEM_MASTER_RELAY:
+	case ELEM_SHIFT_REGISTER:
+	case ELEM_PIECEWISE_LINEAR:
+	case ELEM_LOOK_UP_TABLE:
+	case ELEM_COIL:
+	case ELEM_DIV:
+	case ELEM_MUL:
+	case ELEM_SUB:
+	case ELEM_ADD:
+	    if(CanInsertEnd) return true;
+		break;
+
+	default:
+		oops();
+		break;
+	}
+
+	return false;
+}
+
+// Saved leaf
+int SavedWhich = 0;
+ElemLeaf *SavedLeaf = NULL;
+
+// Copy currently selected item to memory
+void CopyLeaf(ElemLeaf *leaf, int which)
+{
+    if(!leaf || leaf->selectedState == SELECTED_NONE) return;
+
+	if(which != ELEM_PLACEHOLDER) {
+		SavedWhich = which;
+		SavedLeaf = AllocLeaf();
+		memcpy(SavedLeaf, leaf, sizeof(ElemLeaf));
+	}
+}
+
+// Paste a previously saved leaf, adding it to cursor's position
+bool PasteLeaf(void)
+{
+	ElemLeaf *PasteLeaf;
+
+	if(SavedLeaf != NULL && CanInsert(SavedWhich)) {
+		PasteLeaf = SavedLeaf;
+		CopyLeaf(SavedLeaf, SavedWhich);
+	    AddLeaf(SavedWhich, PasteLeaf);
+		return true;
+	}
+
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // Routines to allocate memory for a new circuit element (contact, coil, etc.)
 // and insert it into the current program with AddLeaf. Fill in some default
 // parameters, name etc. when we create the leaf; user can change them later.
 //-----------------------------------------------------------------------------
-void AddComment(char *str)
+bool AddParallelStart(void)
 {
-    if(!CanInsertComment) return;
+	ElemLeaf *elem;
+
+	if(!CanInsert(ELEM_PLACEHOLDER)) return false;
+
+	elem = AllocLeaf();
+	AddLeaf(ELEM_PLACEHOLDER, elem);
+	ParallelStart = elem;
+
+	return true;
+}
+bool AddComment(char *str)
+{
+    if(!CanInsert(ELEM_COMMENT)) return false;
 
     ElemLeaf *c = AllocLeaf();
     strcpy(c->d.comment.str, str);
 
     AddLeaf(ELEM_COMMENT, c);
+
+	return true;
 }
-void AddContact(void)
+bool AddContact(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_CONTACTS)) return false;
 
     ElemLeaf *c = AllocLeaf();
-    strcpy(c->d.contacts.name, "Xnew");
+    strcpy(c->d.contacts.name, _("in"));
     c->d.contacts.negated = FALSE;
 	c->d.contacts.type = IO_TYPE_DIG_INPUT;
 
     AddLeaf(ELEM_CONTACTS, c);
+
+	return true;
 }
-void AddCoil(void)
+bool AddCoil(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_COIL)) return false;
 
     ElemLeaf *c = AllocLeaf();
-    strcpy(c->d.coil.name, "Ynew");
+    strcpy(c->d.coil.name, _("out"));
     c->d.coil.negated = FALSE;
     c->d.coil.setOnly = FALSE;
     c->d.coil.resetOnly = FALSE;
@@ -259,20 +700,24 @@ void AddCoil(void)
 	c->d.coil.type = IO_TYPE_DIG_OUTPUT;
 
     AddLeaf(ELEM_COIL, c);
+
+	return true;
 }
-void AddTimer(int which)
+bool AddTimer(int which)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(which)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.timer.name, "new");
+    strcpy(t->d.timer.name, _("new"));
     t->d.timer.delay = 100000;
 
     AddLeaf(which, t);
+
+	return true;
 }
-void AddRTC(int which)
+bool AddRTC(int which)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(which)) return false;
 
 	time_t rawtime;
 	struct tm * t;
@@ -294,163 +739,174 @@ void AddRTC(int which)
 	l->d.rtc.second = t->tm_sec;
 
     AddLeaf(which, l);
+
+	return true;
 }
-void AddEmpty(int which)
+bool AddEmpty(int which)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(which)) return false;
 
     ElemLeaf *t = AllocLeaf();
     AddLeaf(which, t);
+
+	return true;
 }
-void AddReset(void)
+bool AddReset(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_RES)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.reset.name, "new");
+    strcpy(t->d.reset.name, _("new"));
     AddLeaf(ELEM_RES, t);
+
+	return true;
 }
-void AddMasterRelay(void)
+bool AddMasterRelay(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_MASTER_RELAY)) return false;
 
     ElemLeaf *t = AllocLeaf();
     AddLeaf(ELEM_MASTER_RELAY, t);
+
+	return true;
 }
-void AddSetBit(void)
+bool AddSetBit(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_SET_BIT)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.setBit.name, "new");
+    strcpy(t->d.setBit.name, _("new"));
     AddLeaf(ELEM_SET_BIT, t);
+
+	return true;
 }
-void AddCheckBit(void)
+bool AddCheckBit(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_CHECK_BIT)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.checkBit.name, "new");
+    strcpy(t->d.checkBit.name, _("new"));
     AddLeaf(ELEM_CHECK_BIT, t);
+
+	return true;
 }
-void AddShiftRegister(void)
+bool AddShiftRegister(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_SHIFT_REGISTER)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.shiftRegister.name, "reg");
+    strcpy(t->d.shiftRegister.name, _("reg"));
     t->d.shiftRegister.stages = 7;
     AddLeaf(ELEM_SHIFT_REGISTER, t);
+
+	return true;
 }
-void AddFormattedString(void)
+bool AddLookUpTable(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_LOOK_UP_TABLE)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.fmtdStr.var, "var");
-    strcpy(t->d.fmtdStr.string, "value: \\3\\r\\n");
-    AddLeaf(ELEM_FORMATTED_STRING, t);
-}
-void AddLookUpTable(void)
-{
-    if(!CanInsertEnd) return;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.lookUpTable.dest, "dest");
-    strcpy(t->d.lookUpTable.index, "index");
+    strcpy(t->d.lookUpTable.dest, _("dest"));
+    strcpy(t->d.lookUpTable.index, _("index"));
     t->d.lookUpTable.count = 0;
     t->d.lookUpTable.editAsString = 0;
     AddLeaf(ELEM_LOOK_UP_TABLE, t);
+
+	return true;
 }
-void AddPiecewiseLinear(void)
+bool AddPiecewiseLinear(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_PIECEWISE_LINEAR)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.piecewiseLinear.dest, "yvar");
-    strcpy(t->d.piecewiseLinear.index, "xvar");
+    strcpy(t->d.piecewiseLinear.dest, _("yvar"));
+    strcpy(t->d.piecewiseLinear.index, _("xvar"));
     t->d.piecewiseLinear.count = 0;
     AddLeaf(ELEM_PIECEWISE_LINEAR, t);
+
+	return true;
 }
-void AddMove(void)
+bool AddMove(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_MOVE)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.move.dest, "dest");
-    strcpy(t->d.move.src, "src");
+    strcpy(t->d.move.dest, _("dest"));
+    strcpy(t->d.move.src, _("src"));
     AddLeaf(ELEM_MOVE, t);
+
+	return true;
 }
-void AddMath(int which)
+bool AddMath(int which)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(which)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.math.dest, "dest");
-    strcpy(t->d.math.op1, "src");
+    strcpy(t->d.math.dest, _("dest"));
+    strcpy(t->d.math.op1, _("src"));
     strcpy(t->d.math.op2, "1");
     AddLeaf(which, t);
+
+	return true;
 }
-void AddCmp(int which)
+bool AddCmp(int which)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(which)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.cmp.op1, "var");
+    strcpy(t->d.cmp.op1, _("var"));
     strcpy(t->d.cmp.op2, "1");
     AddLeaf(which, t);
+
+	return true;
 }
-void AddCounter(int which)
+bool AddCounter(int which)
 {
-    if(which == ELEM_CTC) {    
-        if(!CanInsertEnd) return;
-    } else {
-        if(!CanInsertOther) return;
-    }
+    if(!CanInsert(which)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.counter.name, "new");
+    strcpy(t->d.counter.name, _("new"));
     t->d.counter.max = 0;
     AddLeaf(which, t);
+
+	return true;
 }
-void AddSetDA(void)
+bool AddSetDA(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_SET_DA)) return false;
 
     ElemLeaf *t = AllocLeaf();
 
-	strcpy(t->d.setDA.name, "new");
+	strcpy(t->d.setDA.name, _("new"));
 	t->d.setDA.mode = ELEM_SET_DA_MODE_RAW;
 
 	AddLeaf(ELEM_SET_DA, t);
+
+	return true;
 }
-void AddReadAdc(void)
+bool AddReadAdc(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_READ_ADC)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readAdc.name, "new");
+    strcpy(t->d.readAdc.name, _("new"));
     AddLeaf(ELEM_READ_ADC, t);
+
+	return true;
 }
-void AddReadEnc(void)
+bool AddReadEnc(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsertEnd) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readEnc.name, "new");
+    strcpy(t->d.readEnc.name, _("new"));
     AddLeaf(ELEM_READ_ENC, t);
-}
-void AddResetEnc(void)
-{
-    if(!CanInsertEnd) return;
 
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.resetEnc.name, "new");
-    AddLeaf(ELEM_RESET_ENC, t);
+	return true;
 }
-void AddMultisetDA(void)
+bool AddMultisetDA(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_MULTISET_DA)) return false;
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.multisetDA.name, "600");
@@ -464,119 +920,147 @@ void AddMultisetDA(void)
 	t->d.multisetDA.speedup = 0; // ' aceleração, 0 desaceleração
 	
     AddLeaf(ELEM_MULTISET_DA, t);
+
+	return true;
 }
-void AddReadFormatString(void)
+bool AddReadFormatString(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_READ_FORMATTED_STRING)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.fmtdStr.var, "var");
-    strcpy(t->d.fmtdStr.string, "value: %d\\r\\n");
+    strcpy(t->d.fmtdStr.var, _("var"));
+    strcpy(t->d.fmtdStr.string, _("value: %d\\r\\n"));
     AddLeaf(ELEM_READ_FORMATTED_STRING, t);
+
+	return true;
 }
-void AddWriteFormatString(void)
+bool AddWriteFormatString(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_WRITE_FORMATTED_STRING)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.fmtdStr.var, "var");
-    strcpy(t->d.fmtdStr.string, "value: %d\\r\\n");
+    strcpy(t->d.fmtdStr.var, _("var"));
+    strcpy(t->d.fmtdStr.string, _("value: %d\\r\\n"));
     AddLeaf(ELEM_WRITE_FORMATTED_STRING, t);
+
+	return true;
 }
-void AddReadServoYaskawa(void)
+bool AddReadServoYaskawa(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_READ_SERVO_YASKAWA)) return false;
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.servoYaskawa.id, "0");
-    strcpy(t->d.servoYaskawa.var, "var");
-    strcpy(t->d.servoYaskawa.string, "value: %d");
+    strcpy(t->d.servoYaskawa.var, _("var"));
+    strcpy(t->d.servoYaskawa.string, _("0ZSET%d"));
     AddLeaf(ELEM_READ_SERVO_YASKAWA, t);
+
+	return true;
 }
-void AddWriteServoYaskawa(void)
+bool AddWriteServoYaskawa(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_WRITE_SERVO_YASKAWA)) return false;
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.servoYaskawa.id, "0");
-    strcpy(t->d.servoYaskawa.var, "var");
-    strcpy(t->d.servoYaskawa.string, "value: %d");
+    strcpy(t->d.servoYaskawa.var, _("var"));
+    strcpy(t->d.servoYaskawa.string, _("value: %d"));
     AddLeaf(ELEM_WRITE_SERVO_YASKAWA, t);
+
+	return true;
 }
-void AddReadUSS(void)
+bool AddReadUSS(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_READ_USS)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readUSS.name, "new");
+    strcpy(t->d.readUSS.name, _("new"));
     AddLeaf(ELEM_READ_USS, t);
+
+	return true;
 }
-void AddWriteUSS(void)
+bool AddWriteUSS(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_WRITE_USS)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.writeUSS.name, "new");
+    strcpy(t->d.writeUSS.name, _("new"));
     AddLeaf(ELEM_WRITE_USS, t);
+
+	return true;
 }
-void AddReadModbus(void)
+bool AddReadModbus(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_READ_MODBUS)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readModbus.name, "new");
+    strcpy(t->d.readModbus.name, _("new"));
 	t->d.readModbus.retransmitir = TRUE;
     AddLeaf(ELEM_READ_MODBUS, t);
+
+	return true;
 }
-void AddWriteModbus(void)
+bool AddWriteModbus(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_WRITE_MODBUS)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.writeModbus.name, "new");
+    strcpy(t->d.writeModbus.name, _("new"));
 	t->d.writeModbus.retransmitir = TRUE;
     AddLeaf(ELEM_WRITE_MODBUS, t);
+
+	return true;
 }
-void AddReadModbusEth(void)
+bool AddReadModbusEth(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_READ_MODBUS_ETH)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readModbusEth.name, "new");
+    strcpy(t->d.readModbusEth.name, _("new"));
     AddLeaf(ELEM_READ_MODBUS_ETH, t);
+
+	return true;
 }
-void AddWriteModbusEth(void)
+bool AddWriteModbusEth(void)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(ELEM_WRITE_MODBUS_ETH)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.writeModbusEth.name, "new");
+    strcpy(t->d.writeModbusEth.name, _("new"));
     AddLeaf(ELEM_WRITE_MODBUS_ETH, t);
+
+	return true;
 }
-void AddSetPwm(void)
+bool AddSetPwm(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_SET_PWM)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.setPwm.name, "duty_cycle");
+    strcpy(t->d.setPwm.name, _("duty_cycle"));
     t->d.setPwm.targetFreq = 1000;
     AddLeaf(ELEM_SET_PWM, t);
+
+	return true;
 }
-void AddUart(int which)
+bool AddUart(int which)
 {
-    if(!CanInsertOther) return;
+    if(!CanInsert(which)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.uart.name, "char");
+    strcpy(t->d.uart.name, _("char"));
     AddLeaf(which, t);
+
+	return true;
 }
-void AddPersist(void)
+bool AddPersist(void)
 {
-    if(!CanInsertEnd) return;
+    if(!CanInsert(ELEM_PERSIST)) return false;
 
     ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.persist.var, "saved");
+    strcpy(t->d.persist.var, _("saved"));
     AddLeaf(ELEM_PERSIST, t);
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -596,6 +1080,8 @@ static BOOL CollapseUnnecessarySubckts(int which, void *any)
         case ELEM_SERIES_SUBCKT: {
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             int i;
+			if(s == NULL)
+				break;
             for(i = 0; i < s->count; i++) {
                 if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
                     ElemSubcktParallel *p = s->contents[i].d.parallel;
@@ -740,11 +1226,11 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
 // Delete the selected item from the program. Just call
 // DeleteSelectedFromSubckt on every rung till we find it.
 //-----------------------------------------------------------------------------
-void DeleteSelectedFromProgram(void)
+bool DeleteSelectedFromProgram(void)
 {
-    if(!Selected || Selected->selectedState == SELECTED_NONE) return;
+    if(!Selected || Selected->selectedState == SELECTED_NONE) return false;
     int i = RungContainingSelected();
-    if(i < 0) return;
+    if(i < 0) return false;
 
     if(Prog.rungs[i]->count == 1 && 
         Prog.rungs[i]->contents[0].which != ELEM_PARALLEL_SUBCKT)
@@ -753,7 +1239,7 @@ void DeleteSelectedFromProgram(void)
         SelectedWhich = ELEM_PLACEHOLDER;
         Selected->selectedState = SELECTED_LEFT;
         WhatCanWeDoFromCursorAndTopology();
-        return;
+        return true;
     }
 
     int gx, gy;
@@ -767,8 +1253,10 @@ void DeleteSelectedFromProgram(void)
             ;
         WhatCanWeDoFromCursorAndTopology();
         MoveCursorNear(gx, gy);
-        return;
+        return true;
     }
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -866,6 +1354,8 @@ void FreeEntireProgram(void)
 	Prog.factor = 0;
 	Prog.x4 = 1;
 
+	Prog.canSave = TRUE;
+
 	for(i = 0; i < MAX_IO; i++)
 	{
 		memset(Prog.io.assignment[i].name, 0, sizeof(Prog.io.assignment[i].name));
@@ -943,11 +1433,11 @@ int RungContainingSelected(void)
 //-----------------------------------------------------------------------------
 // Delete the rung that contains the cursor.
 //-----------------------------------------------------------------------------
-void DeleteSelectedRung(void)
+bool DeleteSelectedRung(void)
 {
     if(Prog.numRungs == 1) {
         Error(_("Cannot delete rung; program must have at least one rung."));
-        return;
+        return false;
     }
 
     int gx, gy;
@@ -955,7 +1445,7 @@ void DeleteSelectedRung(void)
     foundCursor = FindSelected(&gx, &gy);
 
     int i = RungContainingSelected();
-    if(i < 0) return;
+    if(i < 0) return false;
 
     FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
     Prog.numRungs--;
@@ -965,6 +1455,8 @@ void DeleteSelectedRung(void)
     if(foundCursor) MoveCursorNear(gx, gy);
 
     WhatCanWeDoFromCursorAndTopology();
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -986,15 +1478,15 @@ static ElemSubcktSeries *AllocEmptyRung(void)
 //-----------------------------------------------------------------------------
 // Insert a rung either before or after the rung that contains the cursor.
 //-----------------------------------------------------------------------------
-void InsertRung(BOOL afterCursor)
+bool InsertRung(BOOL afterCursor)
 {
     if(Prog.numRungs >= (MAX_RUNGS - 1)) {
         Error(_("Too many rungs!"));
-        return;
+        return false;
     }
     
     int i = RungContainingSelected();
-    if(i < 0) return;
+    if(i < 0) return false;
 
     if(afterCursor) i++;
     memmove(&Prog.rungs[i+1], &Prog.rungs[i],
@@ -1009,40 +1501,37 @@ void InsertRung(BOOL afterCursor)
 	(Prog.numRungs)++;
 
     WhatCanWeDoFromCursorAndTopology();
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-// Swap the row containing the selected element with the one under it, or do
-// nothing if the rung is the last in the program.
+// When up is false: Swap the row containing the selected element with the one
+// under it, or do nothing if the rung is the last in the program.
 //-----------------------------------------------------------------------------
-void PushRungDown(void)
+//-----------------------------------------------------------------------------
+// When up is true: Swap the row containing the selected element with the one
+// above it, or do nothing if the rung is the first in the program.
+//-----------------------------------------------------------------------------
+bool PushRung(bool up)
 {
-    int i = RungContainingSelected();
-    if(i == (Prog.numRungs-1)) return;
+    int offset, i = RungContainingSelected();
+    if(up ? i==0 : i == (Prog.numRungs-1)) return false;
+
+	if(up) {
+		offset = -1;
+	} else {
+		offset = +1;
+	}
 
     ElemSubcktSeries *temp = Prog.rungs[i];
-    Prog.rungs[i] = Prog.rungs[i+1];
-    Prog.rungs[i+1] = temp;
+    Prog.rungs[i] = Prog.rungs[i+offset];
+    Prog.rungs[i+offset] = temp;
 
     WhatCanWeDoFromCursorAndTopology();
     ScrollSelectedIntoViewAfterNextPaint = TRUE;
-}
 
-//-----------------------------------------------------------------------------
-// Swap the row containing the selected element with the one above it, or do
-// nothing if the rung is the last in the program.
-//-----------------------------------------------------------------------------
-void PushRungUp(void)
-{
-    int i = RungContainingSelected();
-    if(i == 0) return;
-
-    ElemSubcktSeries *temp = Prog.rungs[i];
-    Prog.rungs[i] = Prog.rungs[i-1];
-    Prog.rungs[i-1] = temp;
-
-    WhatCanWeDoFromCursorAndTopology();
-    ScrollSelectedIntoViewAfterNextPaint = TRUE;
+	return true;
 }
 
 //-----------------------------------------------------------------------------

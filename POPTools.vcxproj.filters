@@ -141,6 +141,9 @@
     <ClCompile Include="setdadialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PropertySet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -180,6 +183,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="modbus_master.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertySet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -239,7 +245,13 @@
     <Manifest Include="ldmicro.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="MainRibbon.xml">
+    <CustomBuild Include="MainRibbonPTBR.xml">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MainRibbonES.xml">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MainRibbonEN.xml">
       <Filter>Resource Files</Filter>
     </CustomBuild>
   </ItemGroup>

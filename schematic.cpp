@@ -197,10 +197,6 @@ unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
 					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.readEnc.name);
 					break;
 
-				case ELEM_RESET_ENC:
-					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.resetEnc.name);
-					break;
-
 				case ELEM_READ_USS:
 					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.readUSS.name);
 					break;
@@ -391,9 +387,7 @@ void WhatCanWeDoFromCursorAndTopology(void)
          SelectedWhich == ELEM_PERSIST ||
          SelectedWhich == ELEM_MOVE))
     {
-        if(SelectedWhich == ELEM_COIL ||
-           SelectedWhich == ELEM_READ_USS ||
-           SelectedWhich == ELEM_WRITE_USS) {
+        if(SelectedWhich == ELEM_COIL) {
             canNegate = TRUE;
             canNormal = TRUE;
             canResetOnly = TRUE;
@@ -463,7 +457,9 @@ void ForgetFromGrid(void *p)
 //-----------------------------------------------------------------------------
 void ForgetEverything(void)
 {
-    memset(DisplayMatrix, 0, sizeof(DisplayMatrix));
+	RemoveParallelStart(0, NULL);
+
+	memset(DisplayMatrix, 0, sizeof(DisplayMatrix));
     memset(DisplayMatrixWhich, 0, sizeof(DisplayMatrixWhich));
 
 	int i;
@@ -564,7 +560,7 @@ ElemLeaf * FindSelectable(int *x, int *y, int Direction, ElemLeaf *Discard)
 // the edge (e.g. left edge for VK_LEFT), and then we see if we can select
 // a new item that would let us keep going.
 //-----------------------------------------------------------------------------
-void MoveCursorKeyboard(int keyCode)
+void MoveCursorKeyboard(int keyCode, BOOL shiftPressed)
 {
 	int i, j, *ij, SelectNewState = SELECTED_NONE, SelectState = SELECTED_NONE, SelectOffset = 0;
 	int GoToTop = 0, GoToEdge = 0, SelectX = -1, SelectY = -1;
@@ -576,7 +572,7 @@ void MoveCursorKeyboard(int keyCode)
 
     switch(keyCode) {
 		case VK_HOME:
-			if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+			if(shiftPressed) {
 				i = 0;
 				j = 0;
 				FindSelectable(&i, &j, SELECTED_RIGHT, NULL);
@@ -593,7 +589,7 @@ void MoveCursorKeyboard(int keyCode)
             break;
 
 		case VK_END:
-			if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+			if(shiftPressed) {
 				j = DISPLAY_MATRIX_Y_SIZE - 1;
 				while(DisplayMatrix[0][j] == NULL)
 					j--;
@@ -707,9 +703,9 @@ void MoveCursorKeyboard(int keyCode)
 // Edit the selected element. Pop up the appropriate modal dialog box to do
 // this.
 //-----------------------------------------------------------------------------
-void EditSelectedElement(void)
+bool EditSelectedElement(void)
 {
-    if(!Selected || Selected->selectedState == SELECTED_NONE) return;
+    if(!Selected || Selected->selectedState == SELECTED_NONE) return false;
 
     switch(SelectedWhich) {
         case ELEM_COMMENT:
@@ -798,10 +794,6 @@ void EditSelectedElement(void)
             ShowReadEncDialog(Selected->d.readEnc.name);
             break;
 
-        case ELEM_RESET_ENC:
-            ShowResetEncDialog(Selected->d.resetEnc.name);
-            break;
-
         case ELEM_MULTISET_DA: {
 			ShowMultisetDADialog(&Selected->d.multisetDA); }
             break;
@@ -869,6 +861,8 @@ void EditSelectedElement(void)
             ShowLookUpTableDialog(Selected);
             break;
     }
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -878,8 +872,9 @@ void EditSelectedElement(void)
 // selected element (which is elsewhere on screen), as that would be
 // confusing.
 //-----------------------------------------------------------------------------
-void EditElementMouseDoubleclick(int x, int y)
+bool EditElementMouseDoubleclick(int x, int y)
 {
+	bool changed = false;
     x += ScrollXOffset;
 
     y += FONT_HEIGHT/2;
@@ -901,9 +896,11 @@ void EditElementMouseDoubleclick(int x, int y)
         }
     } else {
         if(DisplayMatrix[gx][gy] == Selected) {
-            EditSelectedElement();
+            changed = EditSelectedElement();
         }
     }
+
+	return changed;
 }
 
 //-----------------------------------------------------------------------------
@@ -1037,7 +1034,7 @@ void MoveCursorNear(int gx, int gy)
 //-----------------------------------------------------------------------------
 // Negate the selected item, if this is meaningful.
 //-----------------------------------------------------------------------------
-void NegateSelected(void)
+bool NegateSelected(void)
 {
     switch(SelectedWhich) {
         case ELEM_CONTACTS:
@@ -1052,14 +1049,17 @@ void NegateSelected(void)
             break;
         }
         default:
+			return false;
             break;
     }
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
 // Make the item selected normal: not negated, not set/reset only.
 //-----------------------------------------------------------------------------
-void MakeNormalSelected(void)
+bool MakeNormalSelected(void)
 {
     switch(SelectedWhich) {
         case ELEM_CONTACTS:
@@ -1074,32 +1074,39 @@ void MakeNormalSelected(void)
             break;
         }
         default:
+			return false;
             break;
     }
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
 // Make the selected item set-only, if it is a coil.
 //-----------------------------------------------------------------------------
-void MakeSetOnlySelected(void)
+bool MakeSetOnlySelected(void)
 {
-    if(SelectedWhich != ELEM_COIL) return;
+    if(SelectedWhich != ELEM_COIL) return false;
 
     ElemCoil *c = &Selected->d.coil;
     c->setOnly = TRUE;
     c->resetOnly = FALSE;
     c->negated = FALSE;
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
 // Make the selected item reset-only, if it is a coil.
 //-----------------------------------------------------------------------------
-void MakeResetOnlySelected(void)
+bool MakeResetOnlySelected(void)
 {
-    if(SelectedWhich != ELEM_COIL) return;
+    if(SelectedWhich != ELEM_COIL) return false;
 
     ElemCoil *c = &Selected->d.coil;
     c->resetOnly = TRUE;
     c->setOnly = FALSE;
     c->negated = FALSE;
+
+	return true;
 }

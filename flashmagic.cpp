@@ -54,9 +54,9 @@ int EraseProgress(int status, unsigned long value, unsigned long value2, void *c
 	TCHAR text[100];
 
 	if (value)
-		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Preparando para gravar... %d%% concluído !", (unsigned int)(((float)value / (float)29) * 100));
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Preparando para gravar... %d%% concluído !"), (unsigned int)(((float)value / (float)29) * 100));
 	else
-		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Preparação concluída com sucesso !");
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Preparação concluída com sucesso !"));
 
 	StatusBarSetText(0, text);
 
@@ -71,9 +71,9 @@ int VerifyProgress(int status, unsigned long value, unsigned long value2, void *
 		totalWrite = value;
 
 	if (value)
-		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Verificando... %d%% concluído !", (unsigned int)(((float)value / (float)totalWrite) * 100));
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Verificando... %d%% concluído !"), (unsigned int)(((float)value / (float)totalWrite) * 100));
 	else
-		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Verificação concluída com sucesso !");
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Verificação concluída com sucesso !"));
 
 	StatusBarSetText(0, text);
 
@@ -90,9 +90,9 @@ int ProgramProgress(int status, unsigned long value, unsigned long value2, void 
 		totalWrite = value;
 
 	if (value)
-		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Gravando... %d%% concluído !", 100 - (unsigned int)(((float)value / (float)totalWrite) * 100));
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Gravando... %d%% concluído !"), 100 - (unsigned int)(((float)value / (float)totalWrite) * 100));
 	else
-		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Gravação concluída com sucesso !");
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Gravação concluída com sucesso !"));
 
 	StatusBarSetText(0, text);
 
@@ -134,22 +134,22 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 		switch (presults->result)
 		{
 		  case FM_ERROR_PORT:
-				Error("Erro ao conectar na porta COM%d !", ComPort);
+				Error(_("Erro ao conectar na porta COM%d !"), ComPort);
 			  break;
 			case FM_ERROR_BAUDRATE:
-				Error("Não foi possível conectar com baudrate %i !", BaudRate);
+				Error(_("Não foi possível conectar com baudrate %i !"), BaudRate);
 				break;
 			case FM_ERROR_INVALID_PARAMS:
-				Error("Parametros de conexão inválidos !");
+				Error(_("Parametros de conexão inválidos !"));
 				break;
 			case FM_ERROR_CMD:
-				Error("Enviado comando inválido (conectando) !");
+				Error(_("Enviado comando inválido (conectando) !"));
 				break;
 			case FM_ERROR_CANCELLED:
-				Error("Conexão cancelada !");
+				Error(_("Conexão cancelada !"));
 				break;
 			default:
-				Error("Ocorreu um erro desconhecido ao conectar !");
+				Error(_("Ocorreu um erro desconhecido ao conectar !"));
 				break;
 		}
 		return FALSE;
@@ -162,25 +162,25 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 		switch (presults->result)
 		{
 			case FM_ERROR_CMD:
-				Error("Comando inválido enviado ao apagar a memória flash !");
+				Error(_("Comando inválido enviado ao apagar a memória flash !"));
 				break;
 			case FM_ERROR_INVALID_PARAMS:
-				Error("Parametros inválidos ao apagar a memória flash !");
+				Error(_("Parametros inválidos ao apagar a memória flash !"));
 				break;
 			case FM_ERROR_CONNECT:
-				Error("Não foi possível conectar para apagar a memória flash !");
+				Error(_("Não foi possível conectar para apagar a memória flash !"));
 				break;
 			case FM_ERROR_UNSUPPORTED:
-				Error("Limpeza da memória flash não suportado !");
+				Error(_("Limpeza da memória flash não suportado !"));
 			  break;
 			case FM_ERROR_CANCELLED:
-				Error("Limpeza da memória flash cancelada !");
+				Error(_("Limpeza da memória flash cancelada !"));
 				break;
 			case FM_ERROR_OPEN:
-				Error("Não foi possível abrir o arquivo .hex ao apagar a memória flash !");
+				Error(_("Não foi possível abrir o arquivo .hex ao apagar a memória flash !"));
 				break;
 			default:
-				Error("Ocorreu um erro desconhecido ao apagar a memória flash !");
+				Error(_("Ocorreu um erro desconhecido ao apagar a memória flash !"));
 				break;
 		}
   		fm_disconnect();
@@ -194,43 +194,43 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 		switch (presults->result)
 		{
 			case FM_ERROR_PROGRAM:
-				Error("Erro durante a gravação do programa !");
+				Error(_("Erro durante a gravação do programa !"));
 				break;
 			case FM_ERROR_HEX_CHECKSUM:
-				Error("Erro de checksum no arquivo de programa (.hex) !");
+				Error(_("Erro de checksum no arquivo de programa (.hex) !"));
 				break;
 			case FM_ERROR_CHECKSUMS:
-				Error("Erro de checksum ao gravar o programa !");
+				Error(_("Erro de checksum ao gravar o programa !"));
 				break;
 			case FM_ERROR_GENERATE_CHECKSUMS:
-				Error("Erro ao gerar checksum durante a gravação do programa !");
+				Error(_("Erro ao gerar checksum durante a gravação do programa !"));
 				break;
 			case FM_ERROR_FILL:
-				Error("Erro ao preencher a memória flash !");
+				Error(_("Erro ao preencher a memória flash !"));
 				break;
 			case FM_ERROR_OPEN:
-				Error("Erro ao abrir o arquivo de programa (.hex) !");
+				Error(_("Erro ao abrir o arquivo de programa (.hex) !"));
 				break;
 			case FM_ERROR_CONNECT:
-				Error("Não foi possível conectar para gravar o programa !");
+				Error(_("Não foi possível conectar para gravar o programa !"));
 				break;
 			case FM_ERROR_CMD:
-				Error("Comando inválido durante a gravação do programa !");
+				Error(_("Comando inválido durante a gravação do programa !"));
 				break;
 			case FM_ERROR_ALLOCATION:
-				Error("Não foi possível alocar memória durante a gravação do programa !");
+				Error(_("Não foi possível alocar memória durante a gravação do programa !"));
 				break;
 			case FM_ERROR_CANCELLED:
-				Error("Gravação do programa cancelada !");
+				Error(_("Gravação do programa cancelada !"));
 				break;
 			case FM_ERROR_JIT:
-				Error("Erro na execução do módulo JIT !");
+				Error(_("Erro na execução do módulo JIT !"));
 				break;
 			case FM_ERROR_UNSUPPORTED:
-				Error("Não suporta gravação do programa !");
+				Error(_("Não suporta gravação do programa !"));
 			  break;
 			default:
-				Error("Ocorreu um erro desconhecido ao gravar o programa !");
+				Error(_("Ocorreu um erro desconhecido ao gravar o programa !"));
 				break;
 		}
 	  fm_disconnect();
@@ -244,28 +244,28 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 		switch (presults->result)
 		{
 			case FM_ERROR_VERIFY:
-				Error("Erro na verificação !");
+				Error(_("Erro na verificação !"));
 				break;
 			case FM_ERROR_OPEN:
-				Error("Erro ao abrir o arquivo de programa (.hex) !");
+				Error(_("Erro ao abrir o arquivo de programa (.hex) !"));
 				break;
 			case FM_ERROR_CONNECT:
-				Error("Não foi possível conectar para gravar o programa !");
+				Error(_("Não foi possível conectar para gravar o programa !"));
 				break;
 			case FM_ERROR_CANCELLED:
-				Error("Gravação do programa cancelada !");
+				Error(_("Gravação do programa cancelada !"));
 				break;
 			case FM_ERROR_PORT:
-				Error("Erro ao conectar na porta COM%d !", ComPort);
+				Error(_("Erro ao conectar na porta COM%d !"), ComPort);
 				break;
 			case FM_ERROR_CMD:
-				Error("Enviado comando inválido (verificando) !");
+				Error(_("Enviado comando inválido (verificando) !"));
 				break;
 			case FM_ERROR_UNSUPPORTED:
-				Error("Não suporta verificação !");
+				Error(_("Não suporta verificação !"));
 				break;
 			default:
-				Error("Ocorreu um erro desconhecido ao verificar a gravação do programa !");
+				Error(_("Ocorreu um erro desconhecido ao verificar a gravação do programa !"));
 				break;
 		}
 		presults = fm_disconnect();
@@ -276,13 +276,13 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_disconnect();
 	if (presults->result != FM_OK)
 	{
-		Error("Ocorreu um erro desconhecido ao desconectar !");
+		Error(_("Ocorreu um erro desconhecido ao desconectar !"));
 		return FALSE;
 	}
 
 	char text[100];
 
-	StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Atualizando o relógio RTC da POP...");
+	StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Atualizando o relógio RTC da POP..."));
 
 	StatusBarSetText(0, text);
 
@@ -341,7 +341,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 			Sleep(1000);
 
 			trycount++;
-			StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "Atualizando o relógio RTC da POP...[%d]", trycount);
+			StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "%s [%d]", _("Atualizando o relógio RTC da POP..."), trycount);
 			StatusBarSetText(0, text);
 		} while(trycount < 10);
 	}
@@ -352,9 +352,9 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	CloseCOMPort();
 
 	// tell user we are done
-	StatusBarSetText(0, "Gravação concluída com sucesso");
+	StatusBarSetText(0, _("Gravação concluída com sucesso"));
 
-	ProgramSuccessfulMessage("Gravação concluída com sucesso !");
+	ProgramSuccessfulMessage(_("Gravação concluída com sucesso !"));
 
 	return TRUE;
 }

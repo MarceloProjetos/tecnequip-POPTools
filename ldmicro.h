@@ -151,6 +151,10 @@ typedef SDWORD SWORD;
 #define MNU_PUSH_RUNG_DOWN      0x13
 #define MNU_INSERT_RUNG_BEFORE  0x14
 #define MNU_INSERT_RUNG_AFTER   0x15
+#define MNU_COPY_ELEMENT        0x1a
+#define MNU_PASTE_ELEMENT       0x1b
+#define MNU_GO_HOME             0x1c
+#define MNU_GO_END              0x1d
 #define MNU_DELETE_ELEMENT      0x16
 #define MNU_DELETE_RUNG         0x17
 #define MNU_FIND_AND_REPLACE    0x18
@@ -188,7 +192,6 @@ typedef SDWORD SWORD;
 #define MNU_INSERT_MASTER_RLY   0x3d
 #define MNU_INSERT_SHIFT_REG    0x3e
 #define MNU_INSERT_LUT          0x3f
-#define MNU_INSERT_FMTD_STR     0x40
 #define MNU_INSERT_PERSIST      0x41
 #define MNU_MAKE_NORMAL         0x42
 #define MNU_NEGATE              0x43
@@ -213,6 +216,7 @@ typedef SDWORD SWORD;
 #define MNU_WRITE_SERVO_YASKAWA		0x56
 #define MNU_INSERT_RTC			0x57
 #define MNU_INSERT_MULTISET_DA  0x58
+#define MNU_INSERT_PARALLEL     0x5b
 
 #define MNU_MCU_SETTINGS        0x59
 #define MNU_MCU_PREFERENCES     0x5a
@@ -220,8 +224,9 @@ typedef SDWORD SWORD;
 
 #define MNU_SIMULATION_MODE     0x60
 #define MNU_START_SIMULATION    0x61
-#define MNU_STOP_SIMULATION     0x62
-#define MNU_SINGLE_CYCLE        0x63
+#define MNU_PAUSE_SIMULATION    0x63
+#define MNU_STOP_SIMULATION     0x64
+#define MNU_SINGLE_CYCLE        0x65
 
 #define MNU_COMPILE             0x70
 #define MNU_COMPILE_AS          0x71
@@ -230,7 +235,64 @@ typedef SDWORD SWORD;
 #define MNU_DEBUG               0x74
 
 #define MNU_MANUAL              0x80
-#define MNU_ABOUT               0x81
+#define MNU_KEYBOARD_MANUAL     0x81
+#define MNU_ABOUT               0x82
+
+#define MNU_EXAMPLE_COMMENT      0x120
+#define MNU_EXAMPLE_CONTACTS     0x121
+#define MNU_EXAMPLE_COIL         0x122
+#define MNU_EXAMPLE_TON          0x123
+#define MNU_EXAMPLE_TOF          0x124
+#define MNU_EXAMPLE_RTO          0x125
+#define MNU_EXAMPLE_RES          0x126
+#define MNU_EXAMPLE_OSR          0x127
+#define MNU_EXAMPLE_OSF          0x128
+#define MNU_EXAMPLE_CTU          0x129
+#define MNU_EXAMPLE_CTD          0x12a
+#define MNU_EXAMPLE_CTC          0x12b
+#define MNU_EXAMPLE_ADD          0x12c
+#define MNU_EXAMPLE_SUB          0x12d
+#define MNU_EXAMPLE_MUL          0x12e
+#define MNU_EXAMPLE_DIV          0x12f
+#define MNU_EXAMPLE_MOV          0x130
+#define MNU_EXAMPLE_READ_ADC     0x131
+#define MNU_EXAMPLE_SET_PWM      0x132
+#define MNU_EXAMPLE_UART_SEND    0x133
+#define MNU_EXAMPLE_UART_RECV    0x134
+#define MNU_EXAMPLE_EQU          0x135
+#define MNU_EXAMPLE_NEQ          0x136
+#define MNU_EXAMPLE_GRT          0x137
+#define MNU_EXAMPLE_GEQ          0x138
+#define MNU_EXAMPLE_LES          0x139
+#define MNU_EXAMPLE_LEQ          0x13a
+#define MNU_EXAMPLE_OPEN         0x13b
+#define MNU_EXAMPLE_SHORT        0x13c
+#define MNU_EXAMPLE_MASTER_RLY   0x13d
+#define MNU_EXAMPLE_SHIFT_REG    0x13e
+#define MNU_EXAMPLE_LUT          0x13f
+#define MNU_EXAMPLE_FMTD_STR     0x140
+#define MNU_EXAMPLE_PERSIST      0x141
+#define MNU_EXAMPLE_PWL          0x146
+#define MNU_EXAMPLE_READ_ENC     0x147
+#define MNU_EXAMPLE_RESET_ENC    0x148
+#define MNU_EXAMPLE_READ_USS     0x149
+#define MNU_EXAMPLE_WRITE_USS    0x14a
+#define MNU_EXAMPLE_SET_DA       0x14c
+#define MNU_EXAMPLE_READ_MODBUS  0x14d
+#define MNU_EXAMPLE_WRITE_MODBUS 0x14e
+#define MNU_EXAMPLE_SET_BIT		0x14f
+#define MNU_EXAMPLE_READ_MODBUS_ETH	0x150
+#define MNU_EXAMPLE_WRITE_MODBUS_ETH	0x151
+#define MNU_EXAMPLE_CHECK_BIT	0x152
+#define MNU_EXAMPLE_READ_FMTD_STR		0x153
+#define MNU_EXAMPLE_WRITE_FMTD_STR		0x154
+#define MNU_EXAMPLE_READ_SERVO_YASK		0x155
+#define MNU_EXAMPLE_WRITE_SERVO_YASK	0x156
+#define MNU_EXAMPLE_RTC			0x157
+#define MNU_EXAMPLE_MULTISET_DA  0x158
+
+#define MNU_EXAMPLE_ADC_LED    0x200
+#define MNU_EXAMPLE_SEMAPHORE  0x201
 
 // Columns within the I/O etc. listview.
 #define LV_IO_NAME              0x00
@@ -449,10 +511,6 @@ typedef struct ElemReadEncTag {
     char    name[MAX_NAME_LEN];
 } ElemReadEnc;
 
-typedef struct ElemResetEncTag {
-    char    name[MAX_NAME_LEN];
-} ElemResetEnc;
-
 typedef struct ElemMultisetDATag {
 	char    name[MAX_NAME_LEN];		// Tempo
 	char    name1[MAX_NAME_LEN];	// Deslocamento
@@ -594,7 +652,6 @@ typedef struct ElemLeafTag {
         ElemReadAdc         readAdc;
 		ElemSetDA			setDA;
         ElemReadEnc         readEnc;
-        ElemResetEnc        resetEnc;
 		ElemMultisetDA      multisetDA;
         ElemReadUSS         readUSS;
         ElemWriteUSS        writeUSS;
@@ -700,6 +757,7 @@ typedef struct PlcProgramTag {
 	int			pulses;
 	float		factor;
 	unsigned char x4;
+	BOOL canSave;
 
 #define MAX_RUNGS 999
     ElemSubcktSeries *rungs[MAX_RUNGS];
@@ -882,7 +940,11 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 // heap used for all the program storage is not yet corrupt, and oops() if
 // it is
 void CheckHeap(char *file, int line);
+#ifdef _DEBUG
 #define ok() CheckHeap(__FILE__, __LINE__)
+#else
+#define ok()
+#endif
 
 // maincontrols.cpp
 void MakeMainWindowControls(void);
@@ -894,6 +956,7 @@ void RefreshControlsToSettings(void);
 void MainWindowResized(void);
 void ToggleSimulationMode(void);
 void StopSimulation(void);
+void PauseSimulation(void);
 void StartSimulation(void);
 void UpdateMainWindowTitleBar(void);
 void StatusBarSetText(int bar, char * text);
@@ -939,15 +1002,15 @@ extern int ScrollYOffsetMax;
 
 // schematic.cpp
 void SelectElement(int gx, int gy, int state);
-void MoveCursorKeyboard(int keyCode);
+void MoveCursorKeyboard(int keyCode, int shiftPressed);
 void MoveCursorMouseClick(int x, int y);
 BOOL MoveCursorTopLeft(void);
-void EditElementMouseDoubleclick(int x, int y);
-void EditSelectedElement(void);
-void MakeResetOnlySelected(void);
-void MakeSetOnlySelected(void);
-void MakeNormalSelected(void);
-void NegateSelected(void);
+bool EditElementMouseDoubleclick(int x, int y);
+bool EditSelectedElement(void);
+bool MakeResetOnlySelected(void);
+bool MakeSetOnlySelected(void);
+bool MakeNormalSelected(void);
+bool NegateSelected(void);
 void ForgetFromGrid(void *p);
 void ForgetEverything(void);
 void WhatCanWeDoFromCursorAndTopology(void);
@@ -980,59 +1043,64 @@ extern BOOL CanInsertComment;
 unsigned int FindAndReplace(char *search_text, char *new_text, int mode);
 
 // circuit.cpp
-void AddTimer(int which);
-void AddRTC(int which);
-void AddCoil(void);
-void AddContact(void);
-void AddEmpty(int which);
-void AddMove(void);
-void AddMath(int which);
-void AddCmp(int which);
-void AddReset(void);
-void AddCounter(int which);
-void AddReadAdc(void);
-void AddSetDA(void);
-void AddReadEnc(void);
-void AddResetEnc(void);
-void AddMultisetDA(void);
-void AddReadFormatString(void);
-void AddWriteFormatString(void);
-void AddReadServoYaskawa(void);
-void AddWriteServoYaskawa(void);
-void AddReadUSS(void);
-void AddWriteUSS(void);
-void AddReadModbus(void);
-void AddWriteModbus(void);
-void AddReadModbusEth(void);
-void AddWriteModbusEth(void);
-void AddSetPwm(void);
-void AddUart(int which);
-void AddPersist(void);
-void AddComment(char *text);
-void AddSetBit(void);
-void AddCheckBit(void);
-void AddShiftRegister(void);
-void AddMasterRelay(void);
-void AddLookUpTable(void);
-void AddPiecewiseLinear(void);
-void AddFormattedString(void);
-void DeleteSelectedFromProgram(void);
-void DeleteSelectedRung(void);
-void InsertRung(BOOL afterCursor);
+bool AddTimer(int which);
+bool AddRTC(int which);
+bool AddCoil(void);
+bool AddContact(void);
+bool AddEmpty(int which);
+bool AddMove(void);
+bool AddMath(int which);
+bool AddCmp(int which);
+bool AddReset(void);
+bool AddCounter(int which);
+bool AddReadAdc(void);
+bool AddSetDA(void);
+bool AddReadEnc(void);
+bool AddMultisetDA(void);
+bool AddReadFormatString(void);
+bool AddWriteFormatString(void);
+bool AddReadServoYaskawa(void);
+bool AddWriteServoYaskawa(void);
+bool AddReadUSS(void);
+bool AddWriteUSS(void);
+bool AddReadModbus(void);
+bool AddWriteModbus(void);
+bool AddReadModbusEth(void);
+bool AddWriteModbusEth(void);
+bool AddSetPwm(void);
+bool AddUart(int which);
+bool AddPersist(void);
+bool AddComment(char *text);
+bool AddSetBit(void);
+bool AddCheckBit(void);
+bool AddShiftRegister(void);
+bool AddMasterRelay(void);
+bool AddLookUpTable(void);
+bool AddPiecewiseLinear(void);
+bool AddFormattedString(void);
+bool AddParallelStart(void);
+int RemoveParallelStart(int which, void *any);
+bool DeleteSelectedFromProgram(void);
+bool DeleteSelectedRung(void);
+bool InsertRung(BOOL afterCursor);
 int RungContainingSelected(void);
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
 BOOL UartFunctionUsed(void);
 BOOL PwmFunctionUsed(void);
-void PushRungUp(void);
-void PushRungDown(void);
+void CopyLeaf(ElemLeaf *leaf, int which);
+bool PasteLeaf(void);
+bool PushRung(bool up);
 void NewProgram(void);
 ElemLeaf *AllocLeaf(void);
 ElemSubcktSeries *AllocSubcktSeries(void);
 ElemSubcktParallel *AllocSubcktParallel(void);
 void FreeCircuit(int which, void *any);
 void FreeEntireProgram(void);
+
+// undoredo.cpp
 void UndoUndo(void);
 void UndoRedo(void);
+void UndoForget(void);
 void UndoRemember(void);
 void UndoFlush(void);
 BOOL CanUndo(void);
@@ -1070,7 +1138,6 @@ void ShowSetBitDialog(char *name, int * set, int * bit);
 void ShowCheckBitDialog(char *name, int * set, int * bit);
 void ShowSetDADialog(char *name, int *mode);
 void ShowReadEncDialog(char *name);
-void ShowResetEncDialog(char *name);
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
 void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
 void ShowModbusDialog(char *name, int *id, int *address, bool *set, bool *retransmitir);
@@ -1089,11 +1156,13 @@ void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
 // confdialog.cpp
-void ShowConfDialog(bool NetworkSection);
+bool ShowConfDialog(bool NetworkSection);
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
+void OpenCHM(void);
+void OpenCHM(unsigned int hID);
 // FARdialog.cpp
-void ShowFARDialog();
+bool ShowFARDialog();
 // prefdialog.cpp
 void ShowPrefDialog(void);
 
@@ -1134,6 +1203,8 @@ int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto);
 unsigned int GetTypeFromName(char *name);
 bool IsInternalFlag(char *name);
 bool IsValidNumber(char *number);
+void ChangeFileExtension(char *name, char *ext);
+char *GetPinADC(char *name);
 extern BOOL RunningInBatchMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
@@ -1152,6 +1223,8 @@ extern BOOL DialogCancel;
 
 bool IsValidNameAndType(char *old_name, char *name, unsigned int new_type);
 bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned int Rules, unsigned int new_type, int MinVal, int MaxVal);
+
+int iscontrol(WPARAM wParam);
 
 // lang.cpp
 char *_(char *in);

@@ -37,10 +37,10 @@ static HWND BitCombobox;
 
 static LONG_PTR PrevNameProc;
 
-const LPCTSTR ComboboxBitItens[] = { _("0"), _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
-									_("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
-									_("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"), 
-									_("31")/*, _("32")*/};
+const LPCTSTR ComboboxBitItens[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
+									"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", 
+									"21", "22", "23", "24", "25", "26", "27", "28", "29", "30", 
+									"31"/*, "32"*/};
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
@@ -165,7 +165,7 @@ void ShowSetBitDialog(char *name, int * set, int * bit)
 
     if(!DialogCancel) {
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_tmp));
-		if(IsValidNameAndType(name, name_tmp, "Nome", VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
+		if(IsValidNameAndType(name, name_tmp, _("Nome"), VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
 			strcpy(name, name_tmp);
 
 	        if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)

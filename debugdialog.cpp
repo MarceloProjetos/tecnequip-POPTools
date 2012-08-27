@@ -178,10 +178,10 @@ unsigned int LogPut(bool mode_tcp, unsigned int Id, unsigned int FunctionCode, u
 {
 	struct RotateListItem item;
 
-	strcpy (item.txt[COMMLIST_COLUMN_IFACE],           mode_tcp ? "Ethernet" : "Serial");
-	strcpy (item.txt[COMMLIST_COLUMN_REPLY],           ExceptionCode == MODBUS_EXCEPTION_NONE ? "OK" : "ERRO");
+	strcpy (item.txt[COMMLIST_COLUMN_IFACE],           mode_tcp ? _("Ethernet") : _("Serial"));
+	strcpy (item.txt[COMMLIST_COLUMN_REPLY],           ExceptionCode == MODBUS_EXCEPTION_NONE ? _("OK") : _("ERRO"));
 	sprintf(item.txt[COMMLIST_COLUMN_ID   ], "%d"    , Id);
-	strcpy (item.txt[COMMLIST_COLUMN_FC   ],           FunctionCode == MODBUS_FC_READ_HOLDING_REGISTERS ? "Ler" : "Escrever");
+	strcpy (item.txt[COMMLIST_COLUMN_FC   ],           FunctionCode == MODBUS_FC_READ_HOLDING_REGISTERS ? _("Ler") : _("Escrever"));
 	sprintf(item.txt[COMMLIST_COLUMN_REG  ], "%d"    , Reg);
 	sprintf(item.txt[COMMLIST_COLUMN_VALUE], "0x%04X", Val);
 
@@ -322,7 +322,7 @@ void MB_Transfer(bool mode_send, bool mode_tcp, bool retry)
 			}
 
 			if(!OpenCOMPort(POPSettings.COMPortDebug, Prog.baudRate, bByteSize, bParity, bStopBits)) {
-				Error("Erro abrindo porta serial!");
+				Error(_("Erro abrindo porta serial!"));
 				return;
 			}
 		}
@@ -526,7 +526,7 @@ static void MakeControls(void)
         10, 25, 65, 21, grouper3, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    txtIP = CreateWindowEx(0, WC_STATIC, _(""),
+    txtIP = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         85, 25, 85, 21, grouper3, NULL, Instance, NULL);
     NiceFont(txtIP);
@@ -536,7 +536,7 @@ static void MakeControls(void)
         10, 46, 65, 41, grouper3, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    txtCOM = CreateWindowEx(0, WC_STATIC, _(""),
+    txtCOM = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         85, 56, 85, 21, grouper3, NULL, Instance, NULL);
     NiceFont(txtCOM);
@@ -569,12 +569,12 @@ static void MakeControls(void)
         ListView_InsertColumn(hWnd, i, &lvc); \
     } while(0)
 
-    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_IFACE, 100, "Interface");
-    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_REPLY, 100, "Resposta");
-    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_ID   , 100, "ID");
-    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_FC   , 100, "Função");
-    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_REG  , 100, "Registrador");
-    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_VALUE, 100, "Valor");
+    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_IFACE, 100, _("Interface"));
+    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_REPLY, 100, _("Resposta"));
+    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_ID   , 100, _("ID"));
+    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_FC   , 100, _("Função"));
+    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_REG  , 100, _("Registrador"));
+    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_VALUE, 100, _("Valor"));
 
 	ListView_SetBkColor     (CommList, RGB(0x00,0x00,0x00));
 	ListView_SetTextBkColor (CommList, RGB(0x00,0x00,0x00));

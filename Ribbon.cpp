@@ -6,6 +6,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved
 
 #include "ldmicro.h"
+#include "PropertySet.h"
 
 #include <atlbase.h>
 #include <atlcom.h>
@@ -228,6 +229,13 @@ HRESULT PopulateRibbonRecentItems(__deref_out PROPVARIANT* pvarValue)
 ****                                 ****
 ****************************************/
 
+#define MAX_ITEMS 100
+
+typedef struct {
+	PCWSTR CatName;
+	int    ListID[MAX_ITEMS];
+} GalleryItems;
+
 IUIFramework* g_pFramework = NULL;
 
 // The code below implements a list where the current state of ribbon' comands are saved. We have to do this because
@@ -310,6 +318,10 @@ public:
         COM_INTERFACE_ENTRY(IUICommandHandler)
     END_COM_MAP()
 
+	CApplication(void)
+	{
+		m_pifbFactory = NULL;
+	}
 
     STDMETHOD(OnViewChanged)(UINT32 nViewID, __in UI_VIEWTYPE typeID, __in IUnknown* pView, UI_VIEWVERB verb, INT32 uReasonCode)  
     { 
@@ -352,11 +364,17 @@ public:
         __in_opt const PROPVARIANT* ppropvarValue,
         __in_opt IUISimplePropertySet* pCommandExecutionProperties)
     {
-		int opcode = 0;
+		int opcode = 0, OpenHelp = 0;
         HRESULT hr = S_OK;
 
         if(verb == UI_EXECUTIONVERB_EXECUTE) {
-            switch(nCmdID) {
+			// If the user is pressing CONTROL key, we should to
+			// open UserManual page related to selected command.
+			if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+				OpenHelp = 1;
+			}
+
+			switch(nCmdID) {
 			case cmdFindText:
 				opcode=0;
 				break;
@@ -381,6 +399,8 @@ public:
 					opcode = MNU_RECENT_START+i;
 				}
 
+				OpenHelp = 0;
+
 				break;
 
 #define EXEC_OPCODE(cmd,op) case cmd: opcode = op; break;
@@ -400,6 +420,11 @@ public:
 			EXEC_OPCODE(cmdMoveLineDown           , MNU_PUSH_RUNG_DOWN         );
 			EXEC_OPCODE(cmdInsertLineAfter        , MNU_INSERT_RUNG_AFTER      );
 			EXEC_OPCODE(cmdInsertLineBefore       , MNU_INSERT_RUNG_BEFORE     );
+			EXEC_OPCODE(cmdGoHome                 , MNU_GO_HOME                );
+			EXEC_OPCODE(cmdGoEnd                  , MNU_GO_END                 );
+			EXEC_OPCODE(cmdInstrParallel          , MNU_INSERT_PARALLEL        );
+			EXEC_OPCODE(cmdCopyInstr              , MNU_COPY_ELEMENT           );
+			EXEC_OPCODE(cmdPasteInstr             , MNU_PASTE_ELEMENT          );
 			EXEC_OPCODE(cmdDeleteInstr            , MNU_DELETE_ELEMENT         );
 			EXEC_OPCODE(cmdDeleteLine             , MNU_DELETE_RUNG            );
 			EXEC_OPCODE(cmdFindDialog             , MNU_FIND_AND_REPLACE       );
@@ -475,6 +500,7 @@ public:
 			EXEC_OPCODE(cmdSimulation             , MNU_SIMULATION_MODE        );
 			EXEC_OPCODE(cmdSimulationExit         , MNU_SIMULATION_MODE        );
 			EXEC_OPCODE(cmdSimulationStart        , MNU_START_SIMULATION       );
+			EXEC_OPCODE(cmdSimulationPause        , MNU_PAUSE_SIMULATION       );
 			EXEC_OPCODE(cmdSimulationStop         , MNU_STOP_SIMULATION        );
 			EXEC_OPCODE(cmdSimulationSingleCycle  , MNU_SINGLE_CYCLE           );
 
@@ -485,6 +511,75 @@ public:
 			EXEC_OPCODE(cmdDebug                  , MNU_DEBUG                  );
 
 			EXEC_OPCODE(cmdUserManual             , MNU_MANUAL                 );
+			EXEC_OPCODE(cmdKeyboardManual         , MNU_KEYBOARD_MANUAL        );
+
+			// Example comands list
+			EXEC_OPCODE(cmdExampleComment           , MNU_EXAMPLE_COMMENT         );
+
+			EXEC_OPCODE(cmdExampleContact           , MNU_EXAMPLE_CONTACTS        );
+			EXEC_OPCODE(cmdExampleCoil              , MNU_EXAMPLE_COIL            );
+			EXEC_OPCODE(cmdExampleOneShotFalling    , MNU_EXAMPLE_OSF             );
+			EXEC_OPCODE(cmdExampleOneShotRising     , MNU_EXAMPLE_OSR             );
+			EXEC_OPCODE(cmdExampleCircuitOpen       , MNU_EXAMPLE_OPEN            );
+			EXEC_OPCODE(cmdExampleCircuitClosed     , MNU_EXAMPLE_SHORT           );
+			EXEC_OPCODE(cmdExampleMasterRelayControl, MNU_EXAMPLE_MASTER_RLY      );
+
+			EXEC_OPCODE(cmdExampleTimerON           , MNU_EXAMPLE_TON             );
+			EXEC_OPCODE(cmdExampleTimerOFF          , MNU_EXAMPLE_TOF             );
+			EXEC_OPCODE(cmdExampleTimerONRet        , MNU_EXAMPLE_RTO             );
+			EXEC_OPCODE(cmdExampleSchedule          , MNU_EXAMPLE_RTC             );
+			EXEC_OPCODE(cmdExampleTimerReset        , MNU_EXAMPLE_RES             );
+
+			EXEC_OPCODE(cmdExampleCounterInc        , MNU_EXAMPLE_CTU             );
+			EXEC_OPCODE(cmdExampleCounterDec        , MNU_EXAMPLE_CTD             );
+			EXEC_OPCODE(cmdExampleCounterCirc       , MNU_EXAMPLE_CTC             );
+			EXEC_OPCODE(cmdExampleCounterReset      , MNU_EXAMPLE_RES             );
+
+			EXEC_OPCODE(cmdExampleMathAdd           , MNU_EXAMPLE_ADD             );
+			EXEC_OPCODE(cmdExampleMathSub           , MNU_EXAMPLE_SUB             );
+			EXEC_OPCODE(cmdExampleMathMult          , MNU_EXAMPLE_MUL             );
+			EXEC_OPCODE(cmdExampleMathDivide        , MNU_EXAMPLE_DIV             );
+			EXEC_OPCODE(cmdExampleShiftRegister     , MNU_EXAMPLE_SHIFT_REG       );
+			EXEC_OPCODE(cmdExampleLookUpTable       , MNU_EXAMPLE_LUT             );
+			EXEC_OPCODE(cmdExamplePieceWiseLinear   , MNU_EXAMPLE_PWL             );
+
+			EXEC_OPCODE(cmdExampleMov               , MNU_EXAMPLE_MOV             );
+			EXEC_OPCODE(cmdExampleSetBit            , MNU_EXAMPLE_SET_BIT         );
+			EXEC_OPCODE(cmdExampleCheckBit          , MNU_EXAMPLE_CHECK_BIT       );
+			EXEC_OPCODE(cmdExamplePersist           , MNU_EXAMPLE_PERSIST         );
+
+			EXEC_OPCODE(cmdExampleCondEqual         , MNU_EXAMPLE_EQU             );
+			EXEC_OPCODE(cmdExampleCondNotEqual      , MNU_EXAMPLE_NEQ             );
+			EXEC_OPCODE(cmdExampleCondGreater       , MNU_EXAMPLE_GRT             );
+			EXEC_OPCODE(cmdExampleCondGreaterEqual  , MNU_EXAMPLE_GEQ             );
+			EXEC_OPCODE(cmdExampleCondLesser        , MNU_EXAMPLE_LES             );
+			EXEC_OPCODE(cmdExampleCondLesserEqual   , MNU_EXAMPLE_LEQ             );
+
+			EXEC_OPCODE(cmdExampleReadAD            , MNU_EXAMPLE_READ_ADC        );
+			EXEC_OPCODE(cmdExampleWriteDA           , MNU_EXAMPLE_SET_DA          );
+
+			EXEC_OPCODE(cmdExamplePWM               , MNU_EXAMPLE_SET_PWM         );
+			EXEC_OPCODE(cmdExampleRampDA            , MNU_EXAMPLE_MULTISET_DA     );
+			EXEC_OPCODE(cmdExampleReadEnc           , MNU_EXAMPLE_READ_ENC        );
+			EXEC_OPCODE(cmdExampleResetEnc          , MNU_EXAMPLE_RESET_ENC       );
+
+			EXEC_OPCODE(cmdExampleWriteChar         , MNU_EXAMPLE_UART_SEND       );
+			EXEC_OPCODE(cmdExampleReadChar          , MNU_EXAMPLE_UART_RECV       );
+			EXEC_OPCODE(cmdExampleReadFormatString  , MNU_EXAMPLE_READ_FMTD_STR   );
+			EXEC_OPCODE(cmdExampleWriteFormatString , MNU_EXAMPLE_WRITE_FMTD_STR  );
+
+			EXEC_OPCODE(cmdExampleReadUSS           , MNU_EXAMPLE_READ_USS        );
+			EXEC_OPCODE(cmdExampleWriteUSS          , MNU_EXAMPLE_WRITE_USS       );
+			EXEC_OPCODE(cmdExampleReadNS600         , MNU_EXAMPLE_READ_SERVO_YASK );
+			EXEC_OPCODE(cmdExampleWriteNS600        , MNU_EXAMPLE_WRITE_SERVO_YASK);
+
+			EXEC_OPCODE(cmdExampleReadModBUS485     , MNU_EXAMPLE_READ_MODBUS     );
+			EXEC_OPCODE(cmdExampleWriteModBUS485    , MNU_EXAMPLE_WRITE_MODBUS    );
+			EXEC_OPCODE(cmdExampleReadModBUSEth     , MNU_EXAMPLE_READ_MODBUS_ETH );
+			EXEC_OPCODE(cmdExampleWriteModBUSEth    , MNU_EXAMPLE_WRITE_MODBUS_ETH);
+
+			EXEC_OPCODE(cmdExampleAdcLed            , MNU_EXAMPLE_ADC_LED         );
+			EXEC_OPCODE(cmdExampleSemaphore         , MNU_EXAMPLE_SEMAPHORE       );
 
 /*
 			case cmdMyChoice:
@@ -508,8 +603,12 @@ public:
         }	    
 
 		if (SUCCEEDED(hr) && opcode) {
-			ProcessMenu(opcode);
-            InvalidateRect(MainWindow, NULL, FALSE);
+			if(OpenHelp) {
+				OpenCHM(nCmdID);
+			} else {
+				ProcessMenu(opcode);
+		        InvalidateRect(MainWindow, NULL, FALSE);
+			}
 		}
 
 		return hr;
@@ -547,14 +646,116 @@ public:
 			hr = PopulateRibbonRecentItems(ppropvarNewValue);
 		} else if (key == UI_PKEY_Enabled) {
 			hr = UIInitPropertyFromBoolean(UI_PKEY_Enabled, RibbonGetCmdState(nCmdID), ppropvarNewValue);
+		} else if (nCmdID == cmdExamples && (key == UI_PKEY_Categories || key == UI_PKEY_ItemsSource)) {
+			GalleryItems gi[] = {
+				// TODO: Internacionalizar
+				{ L"I/O"            , { cmdExampleContact, cmdExampleCoil, cmdExampleOneShotRising, cmdExampleOneShotFalling, cmdExampleMasterRelayControl, cmdExampleCircuitOpen, cmdExampleCircuitClosed, 0 } },
+				{ L"Temporizadores" , { cmdExampleTimerON, cmdExampleTimerOFF, cmdExampleTimerONRet, cmdExampleSchedule, cmdExampleTimerReset, 0 } },
+				{ L"Contadores"     , { cmdExampleCounterInc, cmdExampleCounterDec, cmdExampleCounterCirc, cmdExampleCounterReset, 0 } },
+				{ L"Variáveis"      , { cmdExampleMov, cmdExampleSetBit, cmdExampleCheckBit, cmdExamplePersist, 0 } },
+				{ L"Condicionais"   , { cmdExampleCondEqual, cmdExampleCondGreater, cmdExampleCondLesser, cmdExampleCondNotEqual, cmdExampleCondGreaterEqual, cmdExampleCondLesserEqual, 0 } },
+				{ L"Matemática"     , { cmdExampleMathAdd, cmdExampleMathSub, cmdExampleMathMult, cmdExampleMathDivide, cmdExampleShiftRegister, cmdExampleLookUpTable, cmdExamplePieceWiseLinear, 0 } },
+				{ L"Analógicos"     , { cmdExampleReadAD, cmdExampleWriteDA, 0 } },
+				{ L"Motores"        , { cmdExamplePWM, cmdExampleRampDA, cmdExampleReadEnc, cmdExampleResetEnc, 0 } },
+				{ L"ModBUS"         , { cmdExampleReadModBUS485, cmdExampleWriteModBUS485, cmdExampleReadModBUSEth, cmdExampleWriteModBUSEth, 0 } },
+				{ L"RS-485 - Texto" , { cmdExampleReadFormatString, cmdExampleWriteFormatString, cmdExampleReadChar, cmdExampleWriteChar, 0 } },
+				{ L"RS-485 - Outros", { cmdExampleReadNS600, cmdExampleWriteNS600, cmdExampleReadUSS, cmdExampleWriteUSS, 0 } },
+				{ L"Aplicações"     , { cmdExampleAdcLed, cmdExampleSemaphore, 0 } },
+				{ NULL, NULL }
+			};
+			hr = PopulateGallery(ppropvarCurrentValue, key, gi);
 		}
 
         return hr;
-    }
+	}
 
 private:
     BOOL _fEnabled;
+    IUIImageFromBitmap* m_pifbFactory;
 
+	// Factory method to create IUIImages from resource identifiers.
+	HRESULT CreateUIImageFromBitmapResource(LPCTSTR pszResource, __out IUIImage **ppimg)
+	{
+		HRESULT hr = E_FAIL;
+
+		*ppimg = NULL;
+
+		if (NULL == m_pifbFactory)
+		{
+			hr = CoCreateInstance(CLSID_UIRibbonImageFromBitmapFactory, NULL, CLSCTX_ALL, IID_PPV_ARGS(&m_pifbFactory));
+			if (FAILED(hr))
+			{
+				return hr;
+			}
+		}
+
+		// Load the bitmap from the resource file.
+		HBITMAP hbm = (HBITMAP) LoadImage(GetModuleHandle(NULL), pszResource, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+		if (hbm)
+		{
+			// Use the factory implemented by the framework to produce an IUIImage.
+			hr = m_pifbFactory->CreateImage(hbm, UI_OWNERSHIP_TRANSFER, ppimg);
+			if (FAILED(hr))
+			{
+				DeleteObject(hbm);
+			}
+		}
+		return hr;
+	}
+
+	// Factory method to create IUIImages from resource identifiers.
+	HRESULT PopulateGallery(const PROPVARIANT* ppropvarCurrentValue, REFPROPERTYKEY key, GalleryItems *gi)
+	{
+		HRESULT hr = S_OK;
+		CPropertySet *pProp = NULL;
+		IUICollection* pCollection = NULL;
+
+		if(key == UI_PKEY_Categories) {
+			hr = ppropvarCurrentValue->punkVal->QueryInterface(IID_PPV_ARGS(&pCollection));
+			if(FAILED(hr)) goto exit;
+
+			for(int i=0; gi[i].CatName != NULL; i++) {
+				hr = CPropertySet::CreateInstance(&pProp);
+				if(FAILED(hr)) goto exit;
+
+				// Initialize the property set
+				pProp->InitializeCategoryProperties(gi[i].CatName, i);
+
+				// Add the newly-created property set to the collection supplied 
+				// by the framework.
+				hr = pCollection->Add(pProp);
+				if(FAILED(hr)) goto exit;
+
+				SAFE_RELEASE(pProp);
+			}
+		} else if (key == UI_PKEY_ItemsSource) {
+			hr = ppropvarCurrentValue->punkVal->QueryInterface(IID_PPV_ARGS(&pCollection));
+			if(FAILED(hr)) goto exit;
+
+			for(int i=0; gi[i].CatName != NULL; i++) {
+				for(int j=0; gi[i].ListID[j]; j++) {
+					hr = CPropertySet::CreateInstance(&pProp);
+					if(FAILED(hr)) goto exit;
+
+					// Initialize the property set with the appropriate command id and
+					// category id and type Action.
+					pProp->InitializeCommandProperties(i, gi[i].ListID[j], UI_COMMANDTYPE_ACTION);
+
+					// Add the newly-created property set to the collection supplied
+					// by the framework.
+					hr = pCollection->Add(pProp);
+					if(FAILED(hr)) goto exit;
+
+					SAFE_RELEASE(pProp);
+				}
+			}
+		}
+
+exit:
+		SAFE_RELEASE(pProp);
+		SAFE_RELEASE(pCollection);
+		return hr;
+	}
 };
 
 HRESULT InitRibbon(HWND hWindowFrame)

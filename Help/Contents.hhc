@@ -80,12 +80,42 @@
                       <param name="Local" value="topics\Redo.htm">
                     </OBJECT>
                     <LI><OBJECT type="text/sitemap">
-                      <param name="Name" value="Instruções">
+                      <param name="Name" value="Navegação">
                     </OBJECT>
                     <UL>
                         <LI><OBJECT type="text/sitemap">
+                          <param name="Name" value="Início">
+                          <param name="Local" value="topics\GoHome.htm">
+                        </OBJECT>
+                        <LI><OBJECT type="text/sitemap">
+                          <param name="Name" value="Final">
+                          <param name="Local" value="topics\GoEnd.htm">
+                        </OBJECT>
+                    </UL>
+                    <LI><OBJECT type="text/sitemap">
+                      <param name="Name" value="Instrução">
+                    </OBJECT>
+                    <UL>
+                        <LI><OBJECT type="text/sitemap">
+                          <param name="Name" value="Copiar">
+                          <param name="Local" value="topics\CopyInstr.htm">
+                        </OBJECT>
+                        <LI><OBJECT type="text/sitemap">
+                          <param name="Name" value="Colar">
+                          <param name="Local" value="topics\PasteInstr.htm">
+                        </OBJECT>
+                        <LI><OBJECT type="text/sitemap">
                           <param name="Name" value="Excluir">
                           <param name="Local" value="topics\DeleteInstr.htm">
+                        </OBJECT>
+                    </UL>
+                    <LI><OBJECT type="text/sitemap">
+                      <param name="Name" value="Documentação">
+                    </OBJECT>
+                    <UL>
+                        <LI><OBJECT type="text/sitemap">
+                          <param name="Name" value="Comentário">
+                          <param name="Local" value="topics\InstrComment.htm">
                         </OBJECT>
                     </UL>
                     <LI><OBJECT type="text/sitemap">
@@ -192,10 +222,26 @@
                           <param name="Name" value="Manual do Usuário">
                           <param name="Local" value="topics\UserManual.htm">
                         </OBJECT>
+                        <UL>
+                            <LI><OBJECT type="text/sitemap">
+                              <param name="Name" value="Teclado">
+                              <param name="Local" value="topics\KeyboardManual.htm">
+                            </OBJECT>
+                        </UL>
                         <LI><OBJECT type="text/sitemap">
                           <param name="Name" value="Exemplos">
                           <param name="Local" value="topics\Examples.htm">
                         </OBJECT>
+                        <UL>
+                            <LI><OBJECT type="text/sitemap">
+                              <param name="Name" value="Barra de Leds - A/D">
+                              <param name="Local" value="topics\ExampleAdcLed.htm">
+                            </OBJECT>
+                            <LI><OBJECT type="text/sitemap">
+                              <param name="Name" value="Semáforo">
+                              <param name="Local" value="topics\ExampleSemaphore.htm">
+                            </OBJECT>
+                        </UL>
                     </UL>
                 </UL>
                 <LI><OBJECT type="text/sitemap">
@@ -378,15 +424,6 @@
                                 </OBJECT>
                             </UL>
                         </UL>
-                        <LI><OBJECT type="text/sitemap">
-                          <param name="Name" value="Documentação">
-                        </OBJECT>
-                        <UL>
-                            <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Comentário">
-                              <param name="Local" value="topics\InstrComment.htm">
-                            </OBJECT>
-                        </UL>
                     </UL>
                     <LI><OBJECT type="text/sitemap">
                       <param name="Name" value="Automação">
@@ -510,6 +547,10 @@
                   <param name="Local" value="topics\SimulationStop.htm">
                 </OBJECT>
                 <LI><OBJECT type="text/sitemap">
+                  <param name="Name" value="Pausar">
+                  <param name="Local" value="topics\SimulationPause.htm">
+                </OBJECT>
+                <LI><OBJECT type="text/sitemap">
                   <param name="Name" value="Simples Ciclo">
                   <param name="Local" value="topics\SimulationSingleCycle.htm">
                 </OBJECT>
@@ -519,6 +560,10 @@
                 </OBJECT>
             </UL>
         </UL>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Teclas de Atalho">
+          <param name="Local" value="topics\TeclasAtalho.htm">
+        </OBJECT>
         <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Licença">
           <param name="Local" value="topics\License.htm">

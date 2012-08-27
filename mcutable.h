@@ -911,7 +911,7 @@ McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS] = {
 		LPC1768EncPinInfo, arraylen(LPC1768EncPinInfo),
 		0x7FFFFFFF,
         { 99, 99 },
-        12,
+        0, // PWM pin
         ISA_LPC17,
         FALSE,
 		0x00

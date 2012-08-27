@@ -49,13 +49,13 @@ static HWND YearCombobox;
 
 static LONG_PTR PrevNameProc;
 
-const LPCTSTR MDayItens[] = { _("Todos"), _("1"), _("2"), _("3"), _("4"), _("5"), _("6"), _("7"), _("8"), _("9"), _("10"), 
-									_("11"), _("12"), _("13"), _("14"), _("15"), _("16"), _("17"), _("18"), _("19"), _("20"), 
-									_("21"), _("22"), _("23"), _("24"), _("25"), _("26"), _("27"), _("28"), _("29"), _("30"), 
-									_("31")};
+const LPCTSTR MDayItens[] = { _("Todos"), "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
+									"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", 
+									"21", "22", "23", "24", "25", "26", "27", "28", "29", "30", 
+									"31"};
 
-const LPCTSTR MonthItens[] = { _("Todos"), _("Jan"), _("Fev"), _("Mar"), _("Abr"), _("Mai"), _("Jun"), _("Jul"), _("Ago"), _("Set"), _("Out"), 
-									_("Nov"), _("Dez")};
+const LPCTSTR MonthItens[] = { _("Todos"), _("Janeiro"), _("Fevereiro"), _("Março"), _("Abril"), _("Maio"), _("Junho"), _("Julho"), _("Agosto"), _("Setembro"), _("Outubro"), 
+									_("Novembro"), _("Dezembro")};
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
@@ -76,9 +76,10 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static void MakeControls(void)
 {
+	char *WeekDays = _("SMTWTFS"), WeekDay[2] = { 0, 0 };
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Dias"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        7, 3, 290, 95, RTCDialog, NULL, Instance, NULL);
+        7, 3, 350, 95, RTCDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
     WDayRadio = CreateWindowEx(0, WC_BUTTON, _("Dia da Semana"),
@@ -86,75 +87,82 @@ static void MakeControls(void)
         15, 30, 110, 20, RTCDialog, NULL, Instance, NULL);
     NiceFont(WDayRadio);
 
-    HWND textLabel0 = CreateWindowEx(0, WC_STATIC, _("D"),
+	WeekDay[0] = WeekDays[0];
+    HWND textLabel0 = CreateWindowEx(0, WC_STATIC, WeekDay,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        92, 21, 40, 21, grouper, NULL, Instance, NULL);
+        90, 21, 40, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel0);
 
-    HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("S"),
+	WeekDay[0] = WeekDays[1];
+    HWND textLabel1 = CreateWindowEx(0, WC_STATIC, WeekDay,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        115, 21, 40, 21, grouper, NULL, Instance, NULL);
+        125, 21, 40, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel1);
 
-    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("T"),
+	WeekDay[0] = WeekDays[2];
+    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, WeekDay,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        140, 21, 40, 21, grouper, NULL, Instance, NULL);
+        160, 21, 40, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
-    HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Q"),
+	WeekDay[0] = WeekDays[3];
+    HWND textLabel3 = CreateWindowEx(0, WC_STATIC, WeekDay,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        165, 21, 40, 21, grouper, NULL, Instance, NULL);
+        195, 21, 40, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel3);
 
-    HWND textLabel4 = CreateWindowEx(0, WC_STATIC, _("Q"),
+	WeekDay[0] = WeekDays[4];
+    HWND textLabel4 = CreateWindowEx(0, WC_STATIC, WeekDay,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        190, 21, 40, 21, grouper, NULL, Instance, NULL);
+        230, 21, 40, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel4);
 
-    HWND textLabel5 = CreateWindowEx(0, WC_STATIC, _("S"),
+	WeekDay[0] = WeekDays[5];
+    HWND textLabel5 = CreateWindowEx(0, WC_STATIC, WeekDay,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        215, 21, 40, 21, grouper, NULL, Instance, NULL);
+        265, 21, 40, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel5);
 
-    HWND textLabel6 = CreateWindowEx(0, WC_STATIC, _("S"),
+	WeekDay[0] = WeekDays[6];
+    HWND textLabel6 = CreateWindowEx(0, WC_STATIC, WeekDay,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        240, 21, 40, 21, grouper, NULL, Instance, NULL);
+        300, 21, 40, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel6);
 
-    WDayCheckbox0 = CreateWindowEx(0, WC_BUTTON, _(""),
+    WDayCheckbox0 = CreateWindowEx(0, WC_BUTTON, "",
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        122, 35, 15, 21, grouper, NULL, Instance, NULL);
+        120, 35, 15, 21, grouper, NULL, Instance, NULL);
     NiceFont(WDayCheckbox0);
 
-    WDayCheckbox1 = CreateWindowEx(0, WC_BUTTON, _(""),
+    WDayCheckbox1 = CreateWindowEx(0, WC_BUTTON, "",
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        145, 35, 15, 21, grouper, NULL, Instance, NULL);
-    NiceFont(WDayCheckbox0);
+        155, 35, 15, 21, grouper, NULL, Instance, NULL);
+    NiceFont(WDayCheckbox1);
 
-    WDayCheckbox2 = CreateWindowEx(0, WC_BUTTON, _(""),
+    WDayCheckbox2 = CreateWindowEx(0, WC_BUTTON, "",
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        170, 35, 15, 21, grouper, NULL, Instance, NULL);
-    NiceFont(WDayCheckbox0);
+        190, 35, 15, 21, grouper, NULL, Instance, NULL);
+    NiceFont(WDayCheckbox2);
 
-    WDayCheckbox3 = CreateWindowEx(0, WC_BUTTON, _(""),
+    WDayCheckbox3 = CreateWindowEx(0, WC_BUTTON, "",
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        195, 35, 15, 21, grouper, NULL, Instance, NULL);
-    NiceFont(WDayCheckbox0);
+        225, 35, 15, 21, grouper, NULL, Instance, NULL);
+    NiceFont(WDayCheckbox3);
 
-    WDayCheckbox4 = CreateWindowEx(0, WC_BUTTON, _(""),
+    WDayCheckbox4 = CreateWindowEx(0, WC_BUTTON, "",
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        220, 35, 15, 21, grouper, NULL, Instance, NULL);
-    NiceFont(WDayCheckbox0);
+        260, 35, 15, 21, grouper, NULL, Instance, NULL);
+    NiceFont(WDayCheckbox4);
 
-    WDayCheckbox5 = CreateWindowEx(0, WC_BUTTON, _(""),
+    WDayCheckbox5 = CreateWindowEx(0, WC_BUTTON, "",
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        245, 35, 15, 21, grouper, NULL, Instance, NULL);
-    NiceFont(WDayCheckbox0);
+        295, 35, 15, 21, grouper, NULL, Instance, NULL);
+    NiceFont(WDayCheckbox5);
 
-    WDayCheckbox6 = CreateWindowEx(0, WC_BUTTON, _(""),
+    WDayCheckbox6 = CreateWindowEx(0, WC_BUTTON, "",
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        270, 35, 15, 21, grouper, NULL, Instance, NULL);
-    NiceFont(WDayCheckbox0);
+        330, 35, 15, 21, grouper, NULL, Instance, NULL);
+    NiceFont(WDayCheckbox6);
 
     MDayRadio = CreateWindowEx(0, WC_BUTTON, _("Dia do Mês"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
@@ -163,47 +171,67 @@ static void MakeControls(void)
 
 	MDayCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        122, 61, 45, 140, grouper, NULL, Instance, NULL);
+        120, 61, 65, 140, grouper, NULL, Instance, NULL);
     NiceFont(MDayCombobox);
+
+    HWND textLabel7 = CreateWindowEx(0, WC_STATIC, "/",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        183, 63, 13, 21, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel7);
 
 	MonthCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        171, 61, 45, 140, grouper, NULL, Instance, NULL);
+        200, 61, 65, 140, grouper, NULL, Instance, NULL);
     NiceFont(MonthCombobox);
+
+    HWND textLabel8 = CreateWindowEx(0, WC_STATIC, "/",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        263, 63, 13, 21, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel8);
 
 	YearCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        220, 61, 65, 140, grouper, NULL, Instance, NULL);
+        280, 61, 65, 140, grouper, NULL, Instance, NULL);
     NiceFont(YearCombobox);
 
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Horário:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        7, 105, 50, 25, RTCDialog, NULL, Instance, NULL);
+        7, 105, 109, 25, RTCDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     HourTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        130, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
+        126, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
     FixedFont(HourTextbox);
+
+    HWND textLabel9 = CreateWindowEx(0, WC_STATIC, ":",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        153, 105, 13, 21, RTCDialog, NULL, Instance, NULL);
+    NiceFont(textLabel9);
 
     MinTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        165, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
+        171, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
     FixedFont(MinTextbox);
+
+    HWND textLabel10 = CreateWindowEx(0, WC_STATIC, ":",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        198, 105, 13, 21, RTCDialog, NULL, Instance, NULL);
+    NiceFont(textLabel10);
 
     SecTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        200, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
+        216, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
     FixedFont(SecTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        150, 140, 70, 23, RTCDialog, NULL, Instance, NULL); 
+        210, 140, 70, 23, RTCDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        225, 140, 70, 23, RTCDialog, NULL, Instance, NULL); 
+        285, 140, 70, 23, RTCDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 
     PrevNameProc = SetWindowLongPtr(HourTextbox, GWLP_WNDPROC, 
@@ -223,7 +251,7 @@ void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * m
 
     RTCDialog = CreateWindowClient(0, "LDmicroDialog",
         _("RTC"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 300, 170, MainWindow, NULL, Instance, NULL);
+        100, 100, 360, 170, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
    

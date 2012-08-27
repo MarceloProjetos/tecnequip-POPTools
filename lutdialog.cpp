@@ -465,8 +465,8 @@ void ShowLookUpTableDialog(ElemLeaf *l)
         SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(dest_tmp));
         SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(index_tmp));
         DestroyLutControls();
-		if(IsValidNameAndType(t->dest , dest_tmp , "Destino", VALIDATE_IS_VAR           , GetTypeFromName(dest_tmp ), 0, 0) &&
-		   IsValidNameAndType(t->index, index_tmp, "Indice" , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(index_tmp), -10, 50)) {
+		if(IsValidNameAndType(t->dest , dest_tmp , _("Destino"), VALIDATE_IS_VAR           , GetTypeFromName(dest_tmp ), 0, 0) &&
+		   IsValidNameAndType(t->index, index_tmp, _("Indice" ), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(index_tmp), -10, 50)) {
 			// The call to DestroyLutControls updated ValuesCache, so just read
 			// them out of there (whichever mode we were in before).
 		    int i;

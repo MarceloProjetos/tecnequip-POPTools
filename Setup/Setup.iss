@@ -22,7 +22,9 @@ LicenseFile=..\Setup\EULA.TXT
 ChangesAssociations=yes
 
 [Languages]
-Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+Name: "ptbr"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+Name: "en"; MessagesFile: "compiler:Default.isl"
+Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 ; [Types]
 ; Name: "full"; Description: "Instalação Completa"
@@ -35,11 +37,15 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "installusbdriver"; Description: "Instalar Driver USB"; GroupDescription: "Drivers:";
+Name: "installusbdriver"; Description: "Instalar Driver USB"; GroupDescription: "Drivers:"; Languages: ptbr
+Name: "installusbdriver"; Description: "Install USB Driver"; GroupDescription: "Drivers:"; Languages: en
+Name: "installusbdriver"; Description: "Instalar Driver USB"; GroupDescription: "Drivers:"; Languages: es
 ; Name: "restart"; Description: "Reiniciar o computador. A reinicialização do computador é necessária para o correto funcionamento do compilador que acompanha o programa POP7Tools. (mais informações em http://www.yagarto.de)"; Flags: restart
 
 [Files]
-Source: "..\bin\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\POPTools.exe"; DestDir: "{app}"; Languages: ptbr; Flags: ignoreversion
+Source: "..\bin\POPTools_en.exe"; DestDir: "{app}"; DestName: "POPTools.exe"; Languages: en; Flags: ignoreversion
+Source: "..\bin\POPTools_es.exe"; DestDir: "{app}"; DestName: "POPTools.exe"; Languages: es; Flags: ignoreversion
 Source: "..\Help\Ajuda.chm"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Setup\EULA.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\settings.xml"; DestDir: "{app}"; Flags: ignoreversion
@@ -60,7 +66,7 @@ Source: "..\bin\gcc\*.exe"; DestDir: "{app}\gcc"; Permissions: users-modify; Fla
 ;Source: "..\bin\src\lwip-1.4.0\*.o"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 ;Source: "..\bin\src\lwip-1.4.0\*.dll"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 ;Source: "..\bin\src\lwip-1.4.0\*.exe"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\examples\*"; DestDir: "{app}\examples"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\examples\*"; DestDir: "{app}\examples"; Permissions: users-readexec; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Setup\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-tools-20100703-setup.exe"; DestDir: "{app}"; Flags: ignoreversion

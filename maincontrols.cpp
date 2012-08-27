@@ -136,7 +136,7 @@ void MakeMainWindowControls(void)
 	RefreshDrawWindow();
 
 	StatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
-        "POPTools iniciado", MainWindow, 0);
+        _("POPTools iniciado"), MainWindow, 0);
     int edges[] = { 250, 370, -1 };
     SendMessage(StatusBar, SB_SETPARTS, 3, (LPARAM)edges);
 
@@ -308,7 +308,6 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableMenuItem(InstructionMenu, MNU_INSERT_OPEN, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
     EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_FMTD_STR, t);
 }
 
 //-----------------------------------------------------------------------------
@@ -914,6 +913,7 @@ void ToggleSimulationMode(void)
 	SetApplicationMode();
 
     if(InSimulationMode) {
+		RemoveParallelStart(0, NULL);
 #ifdef POPTOOLS_DISABLE_RIBBON
         EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
         EnableMenuItem(SimulateMenu, MNU_SINGLE_CYCLE, MF_ENABLED);
@@ -934,6 +934,7 @@ void ToggleSimulationMode(void)
 		RibbonSetCmdState(cmdFileSave             , FALSE);
 		RibbonSetCmdState(cmdUndo                 , FALSE);
 		RibbonSetCmdState(cmdRedo                 , FALSE);
+		RibbonSetCmdState(cmdSimulationPause      , FALSE);
 		RibbonSetCmdState(cmdSimulationStop       , FALSE);
 		RibbonSetCmdState(cmdSimulationStart      , TRUE );
 		RibbonSetCmdState(cmdSimulationSingleCycle, TRUE );
@@ -998,6 +999,7 @@ void StartSimulation(void)
     EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_GRAYED);
     EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_ENABLED);
 #else
+	RibbonSetCmdState(cmdSimulationPause      , TRUE );
 	RibbonSetCmdState(cmdSimulationStop       , TRUE );
 	RibbonSetCmdState(cmdSimulationStart      , FALSE);
 	RibbonSetCmdState(cmdSimulationSingleCycle, FALSE);
@@ -1015,11 +1017,35 @@ void StopSimulation(void)
 {
     RealTimeSimulationRunning = FALSE;
 
+	ClearSimulationData();
+
 #ifdef POPTOOLS_DISABLE_RIBBON
     EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
     EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_GRAYED);
 #else
+	RibbonSetCmdState(cmdSimulationPause      , FALSE);
 	RibbonSetCmdState(cmdSimulationStop       , FALSE);
+	RibbonSetCmdState(cmdSimulationStart      , TRUE );
+	RibbonSetCmdState(cmdSimulationSingleCycle, TRUE );
+#endif
+    KillTimer(MainWindow, TIMER_SIMULATE);
+
+    UpdateMainWindowTitleBar();
+}
+
+//-----------------------------------------------------------------------------
+// Stop real-time simulation. Have to update the controls grayed status
+// to reflect this.
+//-----------------------------------------------------------------------------
+void PauseSimulation(void)
+{
+    RealTimeSimulationRunning = FALSE;
+
+#ifdef POPTOOLS_DISABLE_RIBBON
+    EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
+    EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_GRAYED);
+#else
+	RibbonSetCmdState(cmdSimulationPause      , FALSE);
 	RibbonSetCmdState(cmdSimulationStart      , TRUE );
 	RibbonSetCmdState(cmdSimulationSingleCycle, TRUE );
 #endif

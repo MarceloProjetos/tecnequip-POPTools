@@ -1,66 +1,66 @@
-POPTools:1.2
+POPTools:1.4
 MICRO=NXP LPC1768 LQFP100
 CYCLE=10000
 CRYSTAL=4000000
 BAUD=9600
 PARITY=0
-COM=1
+MODBUSID=0
+COM=0
 IP=192.168.0.251
 MASK=255.255.255.0
 GW=192.168.0.1
-COMPILED=C:\Users\Tecnequip\Documents\adc_led.hex
+DNS=192.168.0.1
+SNTP=9-0:br.pool.ntp.org
+X4=1
+CANSAVE=0
 
 IO LIST
-    XAD1 at 1 0
-    XAD2 at 2 0
-    XAD3 at 3 0
-    XAD4 at 4 0
-    XAD5 at 5 0
-    XAD6 at 6 0
-    YS1 at 1 0
-    YS2 at 2 0
-    YS3 at 3 0
-    YS4 at 4 0
-    YS5 at 5 0
-    YS6 at 6 0
-    YS7 at 7 0
-    YS8 at 8 0
-    YS9 at 9 0
-    YS10 at 10 0
-    YS11 at 11 0
-    YS12 at 12 0
-    YS13 at 13 0
-    YS14 at 14 0
-    YS15 at 15 0
-    YS16 at 16 0
-    XMAD1 at 20 0
-    XMAD2 at 20 1
-    XMAD3 at 20 2
-    XMAD4 at 20 3
-    XMAD5 at 20 4
-    XMAD6 at 20 5
-    YADVAL at 21 0
-    ADC1 at 1 0
-    ADC2 at 2 0
-    ADC3 at 3 0
-    ADC4 at 4 0
-    ADC5 at 5 0
-    YLED at 18 0
-    ADCT at 6 0
+    ADC1 at 1 0 type 4
+    ADC2 at 2 0 type 4
+    ADC3 at 3 0 type 4
+    ADC4 at 4 0 type 4
+    ADC5 at 5 0 type 4
+    ADCT at 6 0 type 4
+    ADVAL at 21 0 type 2048
+    XAD1 at 1 0 type 1
+    XAD2 at 2 0 type 1
+    XAD3 at 3 0 type 1
+    XAD4 at 4 0 type 1
+    XAD5 at 5 0 type 1
+    XAD6 at 6 0 type 1
+    XMAD1 at 20 0 type 1
+    XMAD2 at 20 1 type 1
+    XMAD3 at 20 2 type 1
+    XMAD4 at 20 3 type 1
+    XMAD5 at 20 4 type 1
+    XMAD6 at 20 5 type 1
+    YS1 at 1 0 type 2
+    YS10 at 10 0 type 2
+    YS11 at 11 0 type 2
+    YS12 at 12 0 type 2
+    YS13 at 13 0 type 2
+    YS14 at 14 0 type 2
+    YS15 at 15 0 type 2
+    YS16 at 16 0 type 2
+    YS2 at 2 0 type 2
+    YS3 at 3 0 type 2
+    YS4 at 4 0 type 2
+    YS5 at 5 0 type 2
+    YS6 at 6 0 type 2
+    YS7 at 7 0 type 2
+    YS8 at 8 0 type 2
+    YS9 at 9 0 type 2
 END
 
 PROGRAM
 RUNG
-    COMMENT Código para piscar o led de CPU
+    COMMENT POPTools v1.4 - Tecnequip Tecnologia em Equipamentos Ltda.\r\nData: 13/08/2012
 END
 RUNG
-    CONTACTS YLED 1 0
-    TON TON 500000
-    TOF TOFF 500000
-    COIL YLED 0 0 0 0
+    COMMENT Exemplo de Aplicação - Barra de Leds com valor lido do A/D.\r\nNeste exemplo são utilizadas as saídas digitais para criar uma barra de leds conforme o valor lido do A/D.
 END
 RUNG
-    COMMENT Leitura dos A/Ds
+    COMMENT Leitura dos A/Ds.\r\nA seguir são realizadas leituras em todos os canais analógicos.
 END
 RUNG
     PARALLEL
@@ -73,7 +73,7 @@ RUNG
     END
 END
 RUNG
-    COMMENT Seleção do A/D atual
+    COMMENT Seleção do A/D atual\r\nConforme a Entrada Digital ou Bit selecionado pelo ModBUS é escolhido qual canal será utilizado.
 END
 RUNG
     MOVE ADC 0
@@ -121,7 +121,7 @@ RUNG
     MOVE ADC ADCT
 END
 RUNG
-    COMMENT Lógica para criar um indicador com os leds de saída de forma a visualizar o valor do A/D atual
+    COMMENT Lógica para criar um indicador com os leds de saída de forma a visualizar o valor do A/D atual.\r\nQuanto maior o valor, mais saídas são ligadas. Assim cria-se o efeito de uma barra progressiva.
 END
 RUNG
     GRT ADC 0
@@ -188,12 +188,8 @@ RUNG
     COIL YS16 0 0 0 0
 END
 RUNG
-    COMMENT Declaração de variável para ModBUS e atribuição do valor do A/D atual a ela
+    COMMENT Declaração de variável para ModBUS e atribuição do valor do A/D atual a ela.\r\nA variável ADVAL é associada ao registrador M1 do ModBUS, permitindo assim a leitura do valor do A/D atual remotamente.
 END
 RUNG
-    OSR
-    COIL YADVAL 0 0 1 0
-END
-RUNG
-    MOVE YADVAL ADC
+    MOVE ADVAL ADC
 END

@@ -997,8 +997,6 @@ DWORD CompileAnsiCToGCC(char *dest)
 	char str[MAX_PATH+500];
 	DWORD err = 0;
 
-	StatusBarSetText(0, "Compilando... aguarde !");
-
 	if ((err = InvokeGCC(dest)))
 	{
 		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"C:\\Users\\<User>\\AppData\\Temp\\POPTools\\output.log\"\n"), err);	}
@@ -1008,8 +1006,6 @@ DWORD CompileAnsiCToGCC(char *dest)
 	}
 
 	CompileSuccessfulMessage(str);
-
-	StatusBarSetText(0, "");
 
 	return err;
 }

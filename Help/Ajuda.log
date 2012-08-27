@@ -24,7 +24,12 @@ topics\About.htm
 topics\Exit.htm
 topics\Undo.htm
 topics\Redo.htm
+topics\GoHome.htm
+topics\GoEnd.htm
+topics\CopyInstr.htm
+topics\PasteInstr.htm
 topics\DeleteInstr.htm
+topics\InstrComment.htm
 topics\FindDialog.htm
 topics\Find.htm
 topics\InsertLine.htm
@@ -44,7 +49,10 @@ topics\CompileAndProgram.htm
 topics\Debug.htm
 topics\Simulation.htm
 topics\UserManual.htm
+topics\KeyboardManual.htm
 topics\Examples.htm
+topics\ExampleAdcLed.htm
+topics\ExampleSemaphore.htm
 topics\InstrContact.htm
 topics\InstrCoil.htm
 topics\InstrOneShotRising.htm
@@ -78,7 +86,6 @@ topics\InstrMathDivide.htm
 topics\InstrShiftRegister.htm
 topics\InstrLookUpTable.htm
 topics\InstrPieceWiseLinear.htm
-topics\InstrComment.htm
 topics\InstrReadAD.htm
 topics\InstrWriteDA.htm
 topics\InstrPWM.htm
@@ -99,19 +106,22 @@ topics\InstrReadUSS.htm
 topics\InstrWriteUSS.htm
 topics\SimulationStart.htm
 topics\SimulationStop.htm
+topics\SimulationPause.htm
 topics\SimulationSingleCycle.htm
 topics\SimulationExit.htm
+HHC3004: Warning: TeclasAtalho.htm : The HTML tag ")</td" is not a valid HTML tag (it does not begin with an alphanumeric character).
+topics\TeclasAtalho.htm
 topics\License.htm
 img\ConfigSerial.png
 img\ConfigRede.png
 img\ConfigPosicionamento.png
 
 Compile time: 0 minutes, 0 seconds
-93	Topics
-357	Local links
+201	Topics
+375	Local links
 0	Internet links
 3	Graphics
 
 
-Created f:\SVN\POPTools\Help\Ajuda.chm, 137,895 bytes
-Compression decreased file by 144,034 bytes.
+Created f:\SVN\POPTools\Help\Ajuda.chm, 145,341 bytes
+Compression decreased file by 153,034 bytes.

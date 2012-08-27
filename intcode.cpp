@@ -732,7 +732,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             Op(INT_END_IF);
             Op(INT_COPY_BIT_TO_BIT, storeName, stateInOut);
 
-            Op(INT_IF_VARIABLE_LES_LITERAL, l->d.counter.name,
+			Op(INT_IF_VARIABLE_GRT_VARIABLE, l->d.counter.name,
                 l->d.counter.max);
                 Op(INT_CLEAR_BIT, stateInOut);
             Op(INT_ELSE);
@@ -857,7 +857,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 
             case ELEM_RESET_ENC:
 				Op(INT_IF_BIT_SET, stateInOut);
-				Op(INT_RESET_ENC, l->d.resetEnc.name);
+				Op(INT_RESET_ENC);
                 Op(INT_END_IF);
                 break;
 
@@ -1152,17 +1152,35 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 EepromAddrFree += 2;
                 break;
             }
-            case ELEM_UART_SEND:
-                Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_UART_SEND, l->d.uart.name, stateInOut);
-                Op(INT_END_IF);
-                break;
+            case ELEM_UART_SEND: {
+				char oneShot[MAX_NAME_LEN];
+				GenSymOneShot(oneShot);
 
-            case ELEM_UART_RECV:
-                Op(INT_IF_BIT_SET, stateInOut);
-                Op(INT_UART_RECV, l->d.uart.name, stateInOut);
-                Op(INT_END_IF);
+				Op(INT_IF_BIT_SET, stateInOut);
+					Op(INT_IF_BIT_CLEAR, oneShot);
+						Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+			            Op(INT_UART_SEND, l->d.uart.name, stateInOut);
+					Op(INT_END_IF);
+				Op(INT_ELSE);
+					Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+				Op(INT_END_IF);
                 break;
+			}
+
+            case ELEM_UART_RECV: {
+				char oneShot[MAX_NAME_LEN];
+				GenSymOneShot(oneShot);
+
+				Op(INT_IF_BIT_SET, stateInOut);
+					Op(INT_IF_BIT_CLEAR, oneShot);
+						Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+		                Op(INT_UART_RECV, l->d.uart.name, stateInOut);
+					Op(INT_END_IF);
+				Op(INT_ELSE);
+					Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+				Op(INT_END_IF);
+                break;
+			}
         }
 
         case ELEM_DIV: {

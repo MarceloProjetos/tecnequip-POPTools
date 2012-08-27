@@ -567,7 +567,7 @@ void Render()
 
 		hr = pLineFillPathGeometry->Open(&pSink);
 		if(!SUCCEEDED(hr)) {
-			Error("Ocorreu um erro ao desenhar o gráfico do D/A.");
+			Error(_("Ocorreu um erro ao desenhar o gráfico do D/A."));
 			DiscardDeviceResources();
 			return;
 		}
@@ -723,7 +723,7 @@ void UpdateWindow(void)
 		_itoa(MAX_GAIN_TIME_VAL, num, 10);
 		SendMessage(GainTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 		StringCchPrintf(msg, sizeof(msg), _("O valor máximo permitido para o campo Tempo (%%) da Curva de Ganho é %d."), MAX_GAIN_TIME_VAL);
-		MessageBox(MultisetDADialog, msg, "Valor inválido no campo Tempo (%) !", MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Tempo (%) !"), MB_OK | MB_ICONEXCLAMATION);
 	}
 
 	current.gaint = max(0, min(MAX_GAIN_TIME_VAL, abs(atoi(num))));
@@ -736,7 +736,7 @@ void UpdateWindow(void)
 		_itoa(min(current.gaint, MAX_GAIN_RESOLUTION_VAL), num, 10);
 		SendMessage(GainInitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 		StringCchPrintf(msg, sizeof(msg), _("O valor máximo permitido para o campo Resolução (%%) da Curva de Ganho é %s."), num);
-		MessageBox(MultisetDADialog, msg, "Valor inválido no campo Resolução (%) !", MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Resolução (%) !"), MB_OK | MB_ICONEXCLAMATION);
 	}
 
 	current.gainr = max(0, min(MAX_GAIN_RESOLUTION_VAL, abs(atoi(num))));
@@ -750,7 +750,7 @@ void UpdateWindow(void)
 		_itoa(max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num)))), num, 10);
 		SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 		StringCchPrintf(msg, sizeof(msg), _("O valor permitido para o campo Tempo (ms) no Tamanho da Rampa esta entre %d e %d."), MIN_TIME_VAL, MAX_TIME_VAL);
-		MessageBox(MultisetDADialog, msg, "Valor inválido no campo Tempo (ms) !", MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Tempo (ms) !"), MB_OK | MB_ICONEXCLAMATION);
 	}
 
 	current.time = max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num))));
@@ -782,7 +782,7 @@ void UpdateWindow(void)
 		_itoa(current.initval, num, 10);
 		SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 		StringCchPrintf(msg, sizeof(msg), _("O valor permitido para o campo Resolução DA no Tamanho da Rampa esta entre %d e %d."), current.type == 0 ? static_cast<int>(DA_RESOLUTION * 0.1f) : (current.type == 1 ? static_cast<int>(MAX_MILIVOLT_VAL * 0.1f)  : 10), current.type == 0 ? DA_RESOLUTION - 1 : (current.type == 1 ? MAX_MILIVOLT_VAL : 100));
-		MessageBox(MultisetDADialog, msg, "Valor inválido no campo Resolução DA !", MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Resolução DA !"), MB_OK | MB_ICONEXCLAMATION);
 	}
 
 	if (current.type == 1)  // (mV)

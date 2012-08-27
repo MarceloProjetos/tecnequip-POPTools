@@ -67,8 +67,8 @@ static LONG_PTR PrevBaudProc;
 const LPCTSTR ComboboxGMTItens[] = { _("(GMT-12:00) Linha de Data Internacional Oeste"), _("(GMT-11:00) Ilhas Midway,Samoa"),
 								_("(GMT-10:00) Hawaí"), _("(GMT-09:00) Alasca"),
 								_("(GMT-08:00) Hora do Pacífico"), _("(GMT-07:00) Hora das Montanhas (EUA e Canadá)"),
-								_("(GMT-06:00) América Central, Hora Central EUA/Canadá"), _("(GMT-05:00) Rio Branco, Lima, Bogotá"),
-								_("(GMT-04:00) Manaus, Caracas, La Paz"), _("(GMT-03:00) Brasilia, Buenos Aires"),
+								_("(GMT-06:00) América Central, Hora Central EUA/Canadá"), _("(GMT-05:00) Lima, Bogotá"),
+								_("(GMT-04:00) Rio Branco, Manaus, Caracas, La Paz"), _("(GMT-03:00) Brasilia, Buenos Aires"),
 								_("(GMT-02:00) Atlântico Central"), _("(GMT-01:00) Açores, Cabo Verde"),
 								_("(GMT 00:00) Hora de Greenwich: Londres, Dublin, Lisboa"), _("(GMT+01:00) Berlim, Estocolmo, Roma, Bruxelas"),
 								_("(GMT+02:00) Atenas, Helsinque, Leste Europeu, Jerusalém"), _("(GMT+03:00) Bagdá, Kuwait, Nairóbi, Moscou,Riad"),
@@ -78,8 +78,8 @@ const LPCTSTR ComboboxGMTItens[] = { _("(GMT-12:00) Linha de Data Internacional 
 								_("(GMT+10:00) Brisbane, Camberra, Melbourne, Sydney"), _("(GMT+11:00) Magadã, Ilhas Salomão, Nova Caledônia"),
 								_("(GMT+12:00) Fiji, Kamchatka, Auckland"), _("(GMT+13:00) Nuku'alofa") };
 
-const LPCTSTR ComboboxBaudRateItens[] = { /*_("2400"), _("4800"), _("7200"),*/ _("9600"), _("14400"), _("19200")/*, _("28800"), 
-						_("38400"), _("57600"), _("115200")*/ };
+const LPCTSTR ComboboxBaudRateItens[] = { /*"2400", "4800", "7200",*/ "9600", "14400", "19200"/*, "28800", 
+						"38400", "57600", "115200"*/ };
 
 const LPCTSTR ComboboxParityItens[] = { _("8-None-1"), _("8-Even-1"), _("8-Odd-1"), _("7-None-1"), _("7-Even-1"), _("7-Odd-1") };
 
@@ -88,7 +88,7 @@ const LPCTSTR ComboboxParityItens[] = { _("8-None-1"), _("8-Even-1"), _("8-Odd-1
 // http://tf.nist.gov/tf-cgi/servers.cgi
 // https://support.ntp.org/bin/view/Servers/StratumOneTimeServers
 // http://support.ntp.org/bin/view/Servers/NTPPoolServers
-const LPCTSTR ComboboxSNTPItens[] = { _("br.pool.ntp.org"), _("a.ntp.br"), _("gps.ntp.br"), _("pool.ntp.org"), _("time-nw.nist.gov"), _("time.microsoft.com") };
+const LPCTSTR ComboboxSNTPItens[] = { "br.pool.ntp.org", "a.ntp.br", "gps.ntp.br", "pool.ntp.org", "time-nw.nist.gov", "time.microsoft.com" };
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
@@ -191,13 +191,13 @@ static void MakeControls(void)
 
 	container_tabs.mask   = TCIF_TEXT;
 
-	container_tabs.pszText = "Serial";
+	container_tabs.pszText = _("Serial");
 	TabCtrl_InsertItem(TabCtrl, 0, &container_tabs);
 
-	container_tabs.pszText = "Rede";
+	container_tabs.pszText = _("Rede");
 	TabCtrl_InsertItem(TabCtrl, 1, &container_tabs);
 
-	container_tabs.pszText = "Posicionamento";
+	container_tabs.pszText = _("Posicionamento");
 	TabCtrl_InsertItem(TabCtrl, 2, &container_tabs);
 
     TabChild[0] = CreateWindowEx(0, WC_BUTTON, "",
@@ -377,8 +377,9 @@ static void MakeControls(void)
 	OnTabChange();
 }
 
-void ShowConfDialog(bool NetworkSection)
+bool ShowConfDialog(bool NetworkSection)
 {
+	bool changed = false;
 	unsigned int i, ipaddress, ipmask, ipgw, ipdns;
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "LDmicroDialog", _("PLC Configuration"),
@@ -547,9 +548,11 @@ void ShowConfDialog(bool NetworkSection)
 		Prog.dailysave = SendMessage(DailySaveCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
 
 		Prog.x4 = (char)SendMessage(X4Checkbox, BM_GETCHECK, 0, 0);
+
+		changed = true;
 	}
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(ConfDialog);
-    return;
+    return changed;
 }

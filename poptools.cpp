@@ -52,18 +52,17 @@ static HHOOK       MouseHookHandle;
 static int         MouseY;
 
 // For the open/save dialog boxes
-#define LDMICRO_PATTERN "POPTools Projeto Ladder (*.ld)\0*.ld\0" \
-                     "All files\0*\0\0"
+#define LDMICRO_PATTERN _("POPTools Projeto Ladder (*.ld)\0*.ld\0All files\0*\0\0")
 char CurrentSaveFile[MAX_PATH];
 BOOL ProgramChangedNotSaved = FALSE;
 
-#define HEX_PATTERN  "Intel Hex Files (*.hex)\0*.hex\0All files\0*\0\0"
-#define C_PATTERN    "Linguagem C (*.c)\0*.c\0Todos os Arquivos\0*\0\0"
+#define HEX_PATTERN  _("Intel Hex Files (*.hex)\0*.hex\0All files\0*\0\0")
+#define C_PATTERN    _("Linguagem C (*.c)\0*.c\0Todos os Arquivos\0*\0\0")
 #define INTERPRETED_PATTERN \
     "Interpretable Byte Code Files (*.int)\0*.int\0All Files\0*\0\0"
 char CurrentCompileFile[MAX_PATH];
 
-#define TXT_PATTERN  "Arquivos de Texto (*.txt)\0*.txt\0Todos os Arquivos\0*\0\0"
+#define TXT_PATTERN  _("Arquivos de Texto (*.txt)\0*.txt\0Todos os Arquivos\0*\0\0")
 
 // Internal flags available to the users.
 char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "" };
@@ -106,6 +105,7 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 			;
 	}
 
+	// TODO: Internacionalizar
 	tdConfig.pszWindowTitle     = L"POPTools";
 	tdConfig.pszMainIcon        = pszMainIcon;
 	tdConfig.pszMainInstruction = pszMainInstruction;
@@ -120,6 +120,7 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 
 	tdConfig.pszVerificationText     = pszVerificationText;
 	tdConfig.pszExpandedInformation  = pszExpandedInformation;
+	// TODO: Internacionalizar
 	tdConfig.pszExpandedControlText  = L"Mais informações";
 	tdConfig.pszCollapsedControlText = L"Menos informações";
 	tdConfig.hFooterIcon             = NULL;
@@ -242,7 +243,11 @@ static BOOL SaveAsDialog(void)
 {
     OPENFILENAME ofn;
 
-    memset(&ofn, 0, sizeof(ofn));
+	if(!Prog.canSave) {
+		CurrentSaveFile[0] = '\0';
+	}
+
+	memset(&ofn, 0, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
     ofn.hInstance = Instance;
     ofn.lpstrFilter = LDMICRO_PATTERN;
@@ -274,7 +279,12 @@ static void ExportDialog(void)
     char exportFile[MAX_PATH];
     OPENFILENAME ofn;
 
-    exportFile[0] = '\0';
+	if(strlen(CurrentSaveFile) != 0) {
+		strcpy(exportFile, CurrentSaveFile);
+		ChangeFileExtension(exportFile, "txt");
+	} else {
+	    exportFile[0] = '\0';
+	}
 
     memset(&ofn, 0, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
@@ -302,7 +312,12 @@ static void SaveAsAnsiC(void)
     char exportFile[MAX_PATH];
     OPENFILENAME ofn;
 
-    exportFile[0] = '\0';
+	if(strlen(CurrentSaveFile) != 0) {
+		strcpy(exportFile, CurrentSaveFile);
+		ChangeFileExtension(exportFile, "c");
+	} else {
+	    exportFile[0] = '\0';
+	}
 
     memset(&ofn, 0, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
@@ -319,7 +334,7 @@ static void SaveAsAnsiC(void)
         return;
 
     if(GenerateIntermediateCode() && GenerateCFile(exportFile))
-		MessageBox(MainWindow, "Arquivo gerado com sucesso!", "Sucesso", MB_OK);
+		MessageBox(MainWindow, _("Arquivo gerado com sucesso!"), _("Sucesso"), MB_OK);
 }
 
 //-----------------------------------------------------------------------------
@@ -328,7 +343,7 @@ static void SaveAsAnsiC(void)
 //-----------------------------------------------------------------------------
 static BOOL SaveProgram(void)
 {
-    if(strlen(CurrentSaveFile)) {
+    if(strlen(CurrentSaveFile) && Prog.canSave) {
         if(!SaveProjectToFile(CurrentSaveFile)) {
             Error(_("Couldn't write to '%s'."), CurrentSaveFile);
             return FALSE;
@@ -339,19 +354,6 @@ static BOOL SaveProgram(void)
     } else {
         return SaveAsDialog();
     }
-}
-
-void ChangeFileExtension(char *name, char *ext)
-{
-	unsigned int pos;
-
-	pos = strlen(name) - 1;
-	while(name[pos] != '.' && pos) pos--;
-	if(pos) {
-		name[pos] = 0;
-	}
-
-	sprintf(name, "%s.%s", name, ext);
 }
 
 //-----------------------------------------------------------------------------
@@ -410,7 +412,7 @@ static BOOL CompileProgram(BOOL compileAs)
 			CurrentCompileFile[0] = '\0';
             goto CompileProgramEnd;
 		} else if(ofn.Flags & OFN_EXTENSIONDIFFERENT) {
-			if(MessageBox(MainWindow, _("Tipo de arquivo deve ser .hex\nA extensão será alterada automaticamente."),"Aviso", MB_ICONEXCLAMATION | MB_OKCANCEL) == IDCANCEL) {
+			if(MessageBox(MainWindow, _("Tipo de arquivo deve ser .hex\nA extensão será alterada automaticamente."),_("Aviso"), MB_ICONEXCLAMATION | MB_OKCANCEL) == IDCANCEL) {
 				strcpy(CurrentCompileFile, "");
 				goto CompileProgramEnd;
 			}
@@ -419,7 +421,9 @@ static BOOL CompileProgram(BOOL compileAs)
 		}
     }
 
-    if(!GenerateIntermediateCode()) goto CompileProgramEnd;
+	RemoveParallelStart(0, NULL);
+
+	if(!GenerateIntermediateCode()) goto CompileProgramEnd;
 
     if(Prog.mcu == NULL) {
         Error(_("Must choose a target microcontroller before compiling."));
@@ -436,7 +440,7 @@ static BOOL CompileProgram(BOOL compileAs)
         goto CompileProgramEnd;
     }
 
-	StatusBarSetText(0, "Compilando... aguarde");
+	StatusBarSetText(0, _("Compilando... aguarde !"));
 
     SetCursor(LoadCursor(NULL, IDC_WAIT));
   //  switch(Prog.mcu->whichIsa) {
@@ -473,7 +477,7 @@ static void WriteProgram(BOOL compileAs)
 	if(!POPSettings.COMPortFlash) {
 		iCOMPort = LoadCOMPorts(0, 0, 0);
 		if(!iCOMPort) {
-			Error("POP-7 não encontrada!");
+			Error(_("POP-7 não encontrada!"));
 			return;
 		}
 	} else {
@@ -492,7 +496,7 @@ static void WriteProgram(BOOL compileAs)
 		SetCursor(LoadCursor(NULL, IDC_ARROW));
 		RunningInBatchMode = PreviousRunningInBatchMode;
 
-		StatusBarSetText(0, "Erro na compilacao !!!");
+		StatusBarSetText(0, _("Erro na compilacao !!!"));
 
 		if(strlen(CurrentCompileFile))
 			CompileProgram(false);
@@ -513,7 +517,7 @@ static void WriteProgram(BOOL compileAs)
 //-----------------------------------------------------------------------------
 BOOL CheckSaveUserCancels(void)
 {
-    if(!ProgramChangedNotSaved) {
+	if(!ProgramChangedNotSaved || !Prog.canSave) {
         // no problem
         return FALSE;
     }
@@ -598,8 +602,11 @@ void ProgramChanged(void)
 }
 #define CHANGING_PROGRAM(x) { \
         UndoRemember(); \
-        x; \
-        ProgramChanged(); \
+        if(x) { \
+			ProgramChanged(); \
+		} else { \
+			UndoForget(); \
+		} \
     }
 
 //-----------------------------------------------------------------------------
@@ -636,7 +643,6 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(MouseHookHandle, code, wParam, lParam);
 }
 
-void OpenCHM(void);
 //-----------------------------------------------------------------------------
 // Handle a selection from the menu bar of the main window.
 //-----------------------------------------------------------------------------
@@ -721,6 +727,10 @@ void ProcessMenu(int code)
 				CHANGING_PROGRAM(AddComment(_("--add comment here--")));
             break;
 
+        case MNU_INSERT_PARALLEL:
+            CHANGING_PROGRAM(AddParallelStart());
+            break;
+
         case MNU_INSERT_CONTACTS:
             CHANGING_PROGRAM(AddContact());
             break;
@@ -793,10 +803,6 @@ void ProcessMenu(int code)
             CHANGING_PROGRAM(AddPiecewiseLinear());
             break;
         
-        case MNU_INSERT_FMTD_STR:
-            CHANGING_PROGRAM(AddFormattedString());
-            break;
-
         case MNU_INSERT_OSR:
             CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
             break;
@@ -826,7 +832,7 @@ void ProcessMenu(int code)
             break;
 
         case MNU_INSERT_RESET_ENC:
-            CHANGING_PROGRAM(AddResetEnc());
+            CHANGING_PROGRAM(AddEmpty(ELEM_RESET_ENC));
             break;
 			
 		case MNU_INSERT_MULTISET_DA:
@@ -927,10 +933,12 @@ cmp:
 
         case MNU_UNDO:
             UndoUndo();
+			ProgramChanged();
             break;
 
         case MNU_REDO:
             UndoRedo();
+			ProgramChanged();
             break;
 
         case MNU_INSERT_RUNG_BEFORE:
@@ -946,11 +954,27 @@ cmp:
             break;
 
         case MNU_PUSH_RUNG_UP:
-            CHANGING_PROGRAM(PushRungUp());
+            CHANGING_PROGRAM(PushRung(true));
             break;
 
         case MNU_PUSH_RUNG_DOWN:
-            CHANGING_PROGRAM(PushRungDown());
+            CHANGING_PROGRAM(PushRung(false));
+            break;
+
+        case MNU_GO_HOME:
+			MoveCursorKeyboard(VK_HOME, TRUE);
+            break;
+
+        case MNU_GO_END:
+			MoveCursorKeyboard(VK_END, TRUE);
+            break;
+
+        case MNU_COPY_ELEMENT:
+            CopyLeaf(Selected, SelectedWhich);
+            break;
+
+        case MNU_PASTE_ELEMENT:
+            CHANGING_PROGRAM(PasteLeaf());
             break;
 
         case MNU_DELETE_ELEMENT:
@@ -962,7 +986,8 @@ cmp:
             break;
 
         case MNU_FIND_AND_REPLACE_NEXT:
-			FindAndReplace(NULL, NULL, FAR_FIND_NEXT);
+			if(!FindAndReplace(NULL, NULL, FAR_FIND_NEXT))
+				FindAndReplace(NULL, NULL, FAR_FIND_FIRST);
             break;
 
         case MNU_MCU_SETTINGS:
@@ -982,11 +1007,16 @@ cmp:
             StartSimulation();
             break;
 
+        case MNU_PAUSE_SIMULATION:
+            PauseSimulation();
+            break;
+
         case MNU_STOP_SIMULATION:
             StopSimulation();
             break;
 
         case MNU_SINGLE_CYCLE:
+			RibbonSetCmdState(cmdSimulationStop, TRUE);
             SimulateOneCycle(TRUE);
             break;
 
@@ -1019,8 +1049,110 @@ cmp:
 //            ShowHelpDialog(FALSE);
             break;
 
+        case MNU_KEYBOARD_MANUAL:
+			OpenCHM(6);
+//            ShowHelpDialog(FALSE);
+            break;
+
+		case MNU_EXAMPLE_COMMENT:
+            OpenDialog("examples\\comment.ld");
+			break;
+		case MNU_EXAMPLE_CONTACTS:
+		case MNU_EXAMPLE_COIL:
+            OpenDialog("examples\\contacts.ld");
+			break;
+		case MNU_EXAMPLE_TON:
+		case MNU_EXAMPLE_TOF:
+		case MNU_EXAMPLE_RTO:
+		case MNU_EXAMPLE_RES:
+		case MNU_EXAMPLE_CTU:
+		case MNU_EXAMPLE_CTD:
+		case MNU_EXAMPLE_CTC:
+            OpenDialog("examples\\timers-counters.ld");
+			break;
+		case MNU_EXAMPLE_OSR:
+		case MNU_EXAMPLE_OSF:
+            OpenDialog("examples\\OneShot.ld");
+			break;
+		case MNU_EXAMPLE_ADD:
+		case MNU_EXAMPLE_SUB:
+		case MNU_EXAMPLE_MUL:
+		case MNU_EXAMPLE_DIV:
+            OpenDialog("examples\\math.ld");
+			break;
+		case MNU_EXAMPLE_MOV:
+		case MNU_EXAMPLE_SET_BIT:
+		case MNU_EXAMPLE_CHECK_BIT:
+		case MNU_EXAMPLE_PERSIST:
+            OpenDialog("examples\\variables.ld");
+			break;
+		case MNU_EXAMPLE_READ_ADC:
+            OpenDialog("examples\\adc.ld");
+            break;
+		case MNU_EXAMPLE_SET_PWM:
+		case MNU_EXAMPLE_MULTISET_DA:
+            OpenDialog("examples\\motors.ld");
+            break;
+		case MNU_EXAMPLE_UART_SEND:
+		case MNU_EXAMPLE_UART_RECV:
+            OpenDialog("examples\\char.ld");
+            break;
+		case MNU_EXAMPLE_EQU:
+		case MNU_EXAMPLE_NEQ:
+		case MNU_EXAMPLE_GRT:
+		case MNU_EXAMPLE_GEQ:
+		case MNU_EXAMPLE_LES:
+		case MNU_EXAMPLE_LEQ:
+            OpenDialog("examples\\conditionals.ld");
+            break;
+		case MNU_EXAMPLE_OPEN:
+		case MNU_EXAMPLE_SHORT:
+		case MNU_EXAMPLE_MASTER_RLY:
+            OpenDialog("examples\\OpenShort.ld");
+            break;
+		case MNU_EXAMPLE_SHIFT_REG:
+            OpenDialog("examples\\ShiftRegister.ld");
+            break;
+		case MNU_EXAMPLE_LUT:
+            OpenDialog("examples\\LookUpTable.ld");
+            break;
+		case MNU_EXAMPLE_PWL:
+		case MNU_EXAMPLE_READ_ENC:
+		case MNU_EXAMPLE_RESET_ENC:
+            OpenDialog("examples\\PieceWiseLinear.ld");
+            break;
+		case MNU_EXAMPLE_READ_USS:
+		case MNU_EXAMPLE_WRITE_USS:
+            OpenDialog("examples\\uss.ld");
+            break;
+		case MNU_EXAMPLE_SET_DA:
+            OpenDialog("examples\\da.ld");
+            break;
+		case MNU_EXAMPLE_READ_MODBUS:
+		case MNU_EXAMPLE_WRITE_MODBUS:
+		case MNU_EXAMPLE_READ_MODBUS_ETH:
+		case MNU_EXAMPLE_WRITE_MODBUS_ETH:
+            OpenDialog("examples\\modbus.ld");
+            break;
+		case MNU_EXAMPLE_READ_FMTD_STR:
+		case MNU_EXAMPLE_WRITE_FMTD_STR:
+            OpenDialog("examples\\string.ld");
+            break;
+		case MNU_EXAMPLE_READ_SERVO_YASK:
+		case MNU_EXAMPLE_WRITE_SERVO_YASK:
+            OpenDialog("examples\\ns600.ld");
+            break;
+		case MNU_EXAMPLE_RTC:
+            OpenDialog("examples\\rtc.ld");
+            break;
+		case MNU_EXAMPLE_ADC_LED:
+            OpenDialog("examples\\adc_led.ld");
+            break;
+		case MNU_EXAMPLE_SEMAPHORE:
+            OpenDialog("examples\\semaphore.ld");
+            break;
+
         case MNU_ABOUT:
-            //ShowHelpDialog(TRUE);
 			mysplash.Show();
             break;
     }
@@ -1091,7 +1223,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
         case WM_KEYDOWN: {
-
+			bool bShiftPressed   = GetAsyncKeyState(VK_SHIFT  ) & 0x8000 ? true : false;
+			bool bControlPressed = GetAsyncKeyState(VK_CONTROL) & 0x8000 ? true : false;
 			/*if((GetAsyncKeyState(VK_SHIFT) & 0x8000) && 
 				(wParam == 0x31)) {
 				CHAR msg[50];
@@ -1100,8 +1233,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}*/
 
 			if(wParam == 'M') {
-				if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-					ToggleSimulationMode();
+				if(bControlPressed) {
+					ProcessMenu(MNU_SIMULATION_MODE);
 					break;
                 }
             } else if(wParam == VK_TAB) {
@@ -1109,24 +1242,24 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 BlinkCursor(0, 0, 0, 0);
                 break;
             } else if(wParam == VK_F1) {
-                ShowHelpDialog(FALSE);
+				ProcessMenu(MNU_MANUAL);
                 break;
             }
 
             if(InSimulationMode) {
                 switch(wParam) {
-                    case ' ':
-                        SimulateOneCycle(TRUE);
+                    case VK_RETURN:
+						ProcessMenu(MNU_SINGLE_CYCLE);
                         break;
 
                     case 'R':
-                        if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
-                            StartSimulation();
+                        if(bControlPressed)
+							ProcessMenu(MNU_START_SIMULATION);
                         break;
 
                     case 'H':
-                        if(GetAsyncKeyState(VK_CONTROL) & 0x8000)
-                            StopSimulation();
+                        if(bControlPressed)
+							ProcessMenu(MNU_PAUSE_SIMULATION);
                         break;
 
                     case VK_DOWN:
@@ -1158,10 +1291,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         InvalidateRect(MainWindow, NULL, FALSE);
                         break;
 
-                    case VK_RETURN:
                     case VK_ESCAPE:
+						// TODO: Internacionalizar
 						if(!POPSettings.ShowSimulationWarnings || ShowTaskDialog(L"Tem certeza que deseja sair da simulação?", L"O processo será interrompido", TD_WARNING_ICON, TDCBF_YES_BUTTON | TDCBF_NO_BUTTON, L"Sempre mostrar avisos da simulação", &POPSettings.ShowSimulationWarnings) == IDYES) {
-	                        ToggleSimulationMode();
+							ProcessMenu(MNU_SIMULATION_MODE);
 						}
 	                    break;
                 }
@@ -1170,31 +1303,30 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             switch(wParam) {
                 case VK_F3:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-						if(!FindAndReplace(NULL, NULL, FAR_FIND_NEXT))
-							FindAndReplace(NULL, NULL, FAR_FIND_FIRST);
+                    if(bShiftPressed) {
+						ProcessMenu(MNU_FIND_AND_REPLACE_NEXT);
 					} else {
-						CHANGING_PROGRAM(ShowFARDialog());
+						ProcessMenu(MNU_FIND_AND_REPLACE);
 					}
                     break;
 
                 case VK_F5:
-                    CompileProgram(FALSE);
+					ProcessMenu(MNU_COMPILE);
                     break;
 
                 case VK_UP:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(PushRungUp());
+                    if(bShiftPressed) {
+						ProcessMenu(MNU_PUSH_RUNG_UP);
                     } else {
-                        MoveCursorKeyboard(wParam);
+                        MoveCursorKeyboard(wParam, FALSE);
                     }
                     break;
 
                 case VK_DOWN:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(PushRungDown());
+                    if(bShiftPressed) {
+						ProcessMenu(MNU_PUSH_RUNG_DOWN);
                     } else {
-                        MoveCursorKeyboard(wParam);
+                        MoveCursorKeyboard(wParam, FALSE);
                     }
                     break;
 
@@ -1202,7 +1334,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 case VK_END:
                 case VK_RIGHT:
                 case VK_LEFT:
-                    MoveCursorKeyboard(wParam);
+                    MoveCursorKeyboard(wParam, bShiftPressed);
                     break;
 
                 case VK_RETURN:
@@ -1214,257 +1346,240 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					i = RungContainingSelected();
 					emptyRung = i<0 ? 0 : Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which == ELEM_PLACEHOLDER;
 
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000 || emptyRung) {
-                        CHANGING_PROGRAM(DeleteSelectedRung());
+                    if(bShiftPressed || emptyRung) {
+						ProcessMenu(MNU_DELETE_RUNG);
                     } else {
-                        CHANGING_PROGRAM(DeleteSelectedFromProgram());
+						ProcessMenu(MNU_DELETE_ELEMENT);
                     }
                     break;
 
 				case 191: // VK_F2:
-					if(CanInsertComment)
-						CHANGING_PROGRAM(AddComment(_("--add comment here--")));
+					ProcessMenu(MNU_INSERT_COMMENT);
                     break;
 
                 case 'C':
-					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-						CHANGING_PROGRAM(AddCounter(ELEM_CTC));
-					} else if(!(GetAsyncKeyState(VK_CONTROL) & 0x8000)) {
-						CHANGING_PROGRAM(AddContact());
+					if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_CTC);
+					} else if(bControlPressed) {
+						ProcessMenu(MNU_COPY_ELEMENT);
+					} else {
+						ProcessMenu(MNU_INSERT_CONTACTS);
 					}
                     break;
 
                 case 'B':
-					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-						CHANGING_PROGRAM(AddCheckBit());
+					if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_CHECK_BIT);
 					} else {
-						CHANGING_PROGRAM(AddSetBit());
+						ProcessMenu(MNU_INSERT_SET_BIT);
 					}
                     break;
 
 				// TODO: rather country-specific here
 
 				case 'K':
-					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-						CHANGING_PROGRAM(AddReadServoYaskawa());
-					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddWriteServoYaskawa());
+					if(bShiftPressed) {
+						ProcessMenu(MNU_READ_SERVO_YASKAWA);
+					} else if(bControlPressed) {
+						ProcessMenu(MNU_WRITE_SERVO_YASKAWA);
 					}
                 case 'L':
-                    CHANGING_PROGRAM(AddCoil());
+					ProcessMenu(MNU_INSERT_COIL);
                     break;
 
                 case 'R':
-					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddMultisetDA());
+					if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_MULTISET_DA);
 					} else {
-						CHANGING_PROGRAM(MakeResetOnlySelected());
+						ProcessMenu(MNU_MAKE_RESET_ONLY);
 					}
                     break;
 
+                case ' ':
+					ProcessMenu(MNU_MAKE_NORMAL);
+                    break;
+
                 case 'E':
-                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                        ExportDialog();
+                    if(bControlPressed) {
+						ProcessMenu(MNU_EXPORT);
                     } else {
-                        CHANGING_PROGRAM(AddReset());
+						ProcessMenu(MNU_INSERT_RES);
                     }
                     break;
 
                 case 'S':
-                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                        SaveProgram();
-                        UpdateMainWindowTitleBar();
+                    if(bControlPressed) {
+						ProcessMenu(MNU_SAVE);
                     } else {
-                        CHANGING_PROGRAM(MakeSetOnlySelected());
+						ProcessMenu(MNU_MAKE_SET_ONLY);
                     }
                     break;
 
                 case 'N':
-                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                        if(CheckSaveUserCancels()) break;
-                        if(!ProgramChangedNotSaved) {
-                            int r = MessageBox(MainWindow, 
-                                _("Start new program?"),
-                                "POPTools", MB_YESNO | MB_DEFBUTTON2 |
-                                MB_ICONQUESTION);
-                            if(r == IDNO) break;
-                        }
-                        NewProgram();
-                        strcpy(CurrentSaveFile, "");
-                        strcpy(CurrentCompileFile, "");
-                        GenerateIoListDontLoseSelection();
-                        RefreshScrollbars();
-                        UpdateMainWindowTitleBar();
+                    if(bControlPressed) {
+						ProcessMenu(MNU_NEW);
                     } else {
-                        CHANGING_PROGRAM(NegateSelected());
+						ProcessMenu(MNU_NEGATE);
                     }
                     break;
 
                 case 'A':
-					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddReadAdc());
-					} else {
-						CHANGING_PROGRAM(MakeNormalSelected());
-					}
+					ProcessMenu(MNU_INSERT_READ_ADC);
                     break;
 
                 case 'T':
-                    CHANGING_PROGRAM(AddTimer(ELEM_RTO));
+					ProcessMenu(MNU_INSERT_RTO);
                     break;
 
                 case 'O':
-                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                        if(CheckSaveUserCancels()) break;
-                        OpenDialog(NULL);
+                    if(bControlPressed) {
+						ProcessMenu(MNU_OPEN);
                     } else {
-                        CHANGING_PROGRAM(AddTimer(ELEM_TON));
+						ProcessMenu(MNU_INSERT_TON);
                     }
                     break;
 
                 case 'F':
-                    CHANGING_PROGRAM(AddTimer(ELEM_TOF));
+					ProcessMenu(MNU_INSERT_TOF);
                     break;
 
                 case 'I':
-                    CHANGING_PROGRAM(AddCounter(ELEM_CTU));
+					ProcessMenu(MNU_INSERT_CTU);
                     break;
 
                 case 'U':
-					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-						CHANGING_PROGRAM(AddReadUSS());
-					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddWriteUSS());
+					if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_READ_USS);
+					} else if(bControlPressed) {
+						ProcessMenu(MNU_INSERT_WRITE_USS);
 					}
                     break;
 
                 case '4':
-					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-						CHANGING_PROGRAM(AddReadModbus());
-					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddWriteModbus());
+					if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_READ_MODBUS);
+					} else if(bControlPressed) {
+						ProcessMenu(MNU_INSERT_WRITE_MODBUS);
 					}
                     break;
 
                 case 'X':
-					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-						CHANGING_PROGRAM(AddReadModbusEth());
-					} else if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddWriteModbusEth());
+					if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_READ_MODBUS_ETH);
+					} else if(bControlPressed) {
+						ProcessMenu(MNU_INSERT_WRITE_MODBUS_ETH);
 					}
                     break;
 
                 case 'J':
-                    CHANGING_PROGRAM(AddCounter(ELEM_CTC));
+					ProcessMenu(MNU_INSERT_CTC);
                     break;
 
                 case 'M':
-                    CHANGING_PROGRAM(AddMove());
+					ProcessMenu(MNU_INSERT_MOV);
                     break;
 
-                /*case 'P':
-                    CHANGING_PROGRAM(AddReadAdc());
-                    break;*/
+                case 'P':
+					ProcessMenu(MNU_INSERT_PARALLEL);
+                    break;
 
 				case 'Q':
-					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddResetEnc());
+					if(bControlPressed) {
+						ProcessMenu(MNU_INSERT_RESET_ENC);
 					} else {
-						CHANGING_PROGRAM(AddReadEnc());
+						ProcessMenu(MNU_INSERT_READ_ENC);
 					}
                     break;
 
 				case 'W':
-					CHANGING_PROGRAM(AddSetPwm());
+					ProcessMenu(MNU_INSERT_SET_PWM);
 					break;
 
 				case VK_OEM_PLUS:
 				case VK_ADD:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(AddMath(ELEM_ADD));
+                    if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_ADD);
                     } else {
-                        CHANGING_PROGRAM(AddCmp(ELEM_EQU));
+						ProcessMenu(MNU_INSERT_EQU);
                     } 
 
                     break;
 
                 case VK_OEM_MINUS:
 				case VK_SUBTRACT:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                    } else {
-                        CHANGING_PROGRAM(AddMath(ELEM_SUB));
-                    }
+					ProcessMenu(MNU_INSERT_SUB);
                     break;
 
 				case 0xc1:
 				case 0x6f:
-					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-						CHANGING_PROGRAM(AddMath(ELEM_DIV));
+					if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_DIV);
 					} else {
-						CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
+						ProcessMenu(MNU_INSERT_OSR);
 					}
 					break;
 				case 0xe2:
-					CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
+					ProcessMenu(MNU_INSERT_OSF);
 					break;
                 case '8':
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(AddMath(ELEM_MUL));
+                    if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_MUL);
                     }
                     break;
 
                 case 'D':
-					if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-						CHANGING_PROGRAM(AddSetDA());
+					if(bControlPressed) {
+						ProcessMenu(MNU_INSERT_SET_DA);
 					} else {
-						CHANGING_PROGRAM(AddCounter(ELEM_CTD));
+						ProcessMenu(MNU_INSERT_CTD);
 					}
                     break;
 
-				case 0x31:
-					if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-						CHANGING_PROGRAM(AddCmp(ELEM_NEQ));
+				case 0x31: // !
+					if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_NEQ);
 					}
 					break;
                 case VK_OEM_PERIOD:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(AddCmp(ELEM_GRT));
+                    if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_GRT);
                     } else {
-                        CHANGING_PROGRAM(AddCmp(ELEM_GEQ));
+						ProcessMenu(MNU_INSERT_GEQ);
                     }
                     break;
 
                 case VK_OEM_COMMA:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(AddCmp(ELEM_LES));
+                    if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_LES);
                     } else {
-                        CHANGING_PROGRAM(AddCmp(ELEM_LEQ));
+						ProcessMenu(MNU_INSERT_LEQ);
                     }
                     break;
 
-                //case 'V':
-                //    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                //        CHANGING_PROGRAM(InsertRung(TRUE));
-                //    }
-                //    break;
+                case 'V':
+                    if(bControlPressed) {
+						ProcessMenu(MNU_PASTE_ELEMENT);
+                    }
+                    break;
 
                 case VK_INSERT:
-                    if(GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-                        CHANGING_PROGRAM(InsertRung(FALSE));
+                    if(bShiftPressed) {
+						ProcessMenu(MNU_INSERT_RUNG_BEFORE);
                     }
 					else {
-                        CHANGING_PROGRAM(InsertRung(TRUE));
+						ProcessMenu(MNU_INSERT_RUNG_AFTER);
                     }
                     break;
 
                 case 'Z':
-                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                        UndoUndo();
+                    if(bControlPressed) {
+						ProcessMenu(MNU_UNDO);
                     }
                     break;
 
                 case 'Y':
-                    if(GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-                        UndoRedo();
+                    if(bControlPressed) {
+						ProcessMenu(MNU_REDO);
                     }
                     break;
 
@@ -1642,6 +1757,7 @@ void LoadSettings(void)
 	swprintf(settings_file, totallen+1, L"%s\\%s", settings_path, SETTINGS_FILE);
 
 	if(!XmlSettings.Open(settings_file)) {
+		// TODO: Internacionalizar
 		ShowTaskDialog(L"Erro ao carregar as preferências", L"Será utilizada a configuração padrão", TD_ERROR_ICON, TDCBF_OK_BUTTON);
 
 		POPSettings.ShowSimulationWarnings = TRUE;
@@ -1852,7 +1968,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         RunningInBatchMode = TRUE;
 
         char *err =
-            "Bad command line arguments: run 'poptools /c src.ld dest.hex'";
+            _("Bad command line arguments: run 'poptools /c src.ld dest.hex'");
 
         char *source = lpCmdLine + 2;
         while(isspace(*source)) {
@@ -1870,7 +1986,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         if(*dest == '\0') { Error(err); exit(-1); }
         if(!LoadProjectFromFile(source)) {
-            Error("Couldn't open '%s', running non-interactively.", source);
+            Error(_("Couldn't open '%s', running non-interactively."), source);
             exit(-1);
         }
         strcpy(CurrentCompileFile, dest);

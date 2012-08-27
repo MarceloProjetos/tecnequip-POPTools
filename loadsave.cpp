@@ -118,7 +118,7 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
         &l->d.counter.max)==2))
     {
         *which = ELEM_CTC;
-    } else if(sscanf(line, "RESET_ENC %s", l->d.resetEnc.name)==1) {
+    } else if(memcmp(line, "RESET_ENC", 9)==0) {
         *which = ELEM_RESET_ENC;
     } else if(sscanf(line, "RES %s", l->d.reset.name)==1) {
         *which = ELEM_RES;
@@ -374,11 +374,24 @@ BOOL LoadProjectFromFile(char *filename)
     FreeEntireProgram();
     strcpy(CurrentCompileFile, "");
 
-    FILE *f = fopen(filename, "r");
+	char szAppPath[MAX_PATH]  = "";
+	char szfilename[MAX_PATH] = "";
+    FILE *f;
+
+	if(filename[0] == '\\' || filename[1] == ':') { // Absolute path
+		strcpy(szfilename, filename);
+	} else { // Relative path
+		::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
+		// Extract directory
+		strncpy(szfilename, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
+		sprintf(szfilename, "%s\\%s", szfilename, filename);
+	}
+
+	f = fopen(szfilename, "r");
     if(!f) return FALSE;
 
     char line[512];
-    int version, crystal, cycle, baud, UART, ip[4], mask[4], gw[4], dns[4], x4, ModBUSID;
+    int version, crystal, cycle, baud, UART, ip[4], mask[4], gw[4], dns[4], x4, ModBUSID, canSave;
 	char sntp[126];
 
 	version = 0;
@@ -445,6 +458,8 @@ BOOL LoadProjectFromFile(char *filename)
 			strncpy(Prog.sntp, sntp, sizeof(Prog.sntp));
 		} else if(sscanf(line, "X4=%d", &x4)) {
 			Prog.x4 = x4;
+        } else if(sscanf(line, "CANSAVE=%d", &canSave)) {
+            Prog.canSave = canSave ? TRUE : FALSE;
         } else if(memcmp(line, "COMPILED=", 9)==0) {
             //line[strlen(line)-1] = '\0';
             //strcpy(CurrentCompileFile, line+9);
@@ -654,7 +669,7 @@ cmp:
             break;
 
         case ELEM_RESET_ENC:
-            fprintf(f, "RESET_ENC %s\n", l->d.resetEnc.name);
+            fprintf(f, "RESET_ENC\n");
             break;
 
         case ELEM_READ_USS:
@@ -821,7 +836,13 @@ cmp:
 //-----------------------------------------------------------------------------
 BOOL SaveProjectToFile(char *filename)
 {
-    FILE *f = fopen(filename, "w");
+	char szfilename[MAX_PATH+1];
+    FILE *f;
+
+	RemoveParallelStart(0, NULL);
+
+	GetFullPathName(filename, MAX_PATH, szfilename, NULL);
+	f = fopen(szfilename, "w");
     if(!f) return FALSE;
 
     fprintf(f, "POPTools:1.%d\n", current_version);
@@ -840,6 +861,7 @@ BOOL SaveProjectToFile(char *filename)
 	fprintf(f, "DNS=%d.%d.%d.%d\n", Prog.dns[0], Prog.dns[1], Prog.dns[2], Prog.dns[3]);
 	fprintf(f, "SNTP=%d-%d:%s\n", Prog.gmt, Prog.dailysave, Prog.sntp);
 	fprintf(f, "X4=%d\n", Prog.x4);
+    fprintf(f, "CANSAVE=1\n");
     if(strlen(CurrentCompileFile) > 0) {
         //fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
     }

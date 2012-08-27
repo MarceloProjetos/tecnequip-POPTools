@@ -84,34 +84,34 @@ static void MakeControls(void)
         10, 5, 270, 50, PrefDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
-    HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("Porta Gravação:"),
+    HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("Porta de Gravação:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 60, 110, 21, PrefDialog, NULL, Instance, NULL);
+        10, 60, 120, 21, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel1);
 
 	ComPortFlashCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        125, 60, 155, 100, PrefDialog, NULL, Instance, NULL);
+        135, 60, 145, 100, PrefDialog, NULL, Instance, NULL);
     NiceFont(ComPortFlashCombobox);
 
-    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Porta Depuração:"),
+    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Porta de Depuração:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 90, 110, 21, PrefDialog, NULL, Instance, NULL);
+        10, 90, 120, 21, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
 	ComPortDebugCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        125, 90, 155, 100, PrefDialog, NULL, Instance, NULL);
+        135, 90, 145, 100, PrefDialog, NULL, Instance, NULL);
     NiceFont(ComPortDebugCombobox);
 
     HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Projetos Recentes:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 125, 110, 20, PrefDialog, NULL, Instance, NULL);
+        10, 125, 120, 20, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel3);
 
 	ClearRecentList = CreateWindowEx(0, WC_BUTTON, _("Limpar!"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        125, 120, 155, 30, PrefDialog, NULL, Instance, NULL); 
+        135, 120, 145, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(ClearRecentList);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),

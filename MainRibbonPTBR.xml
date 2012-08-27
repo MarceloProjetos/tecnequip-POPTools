@@ -33,7 +33,14 @@
     <Command Name="GroupCounter"    Symbol="cmdGroupCounter"    Id="30011" LabelTitle="Contadores"      />
     <Command Name="GroupVar"        Symbol="cmdGroupVar"        Id="30012" LabelTitle="Variáveis"       />
     <Command Name="GroupCond"       Symbol="cmdGroupCond"       Id="30013" LabelTitle="Condicionais"    />
-    <Command Name="GroupMath"       Symbol="cmdGroupMath"       Id="30014" LabelTitle="Matemática"      />
+    <Command Name="GroupMath"       Symbol="cmdGroupMath"       Id="30014" LabelTitle="Matemática"       >
+      <Command.LargeImages>
+        <Image Source="imgs/GroupMathHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/GroupMathHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
     <Command Name="GroupAnalog"     Symbol="cmdGroupAnalog"     Id="30015" LabelTitle="Analógicos"      />
     <Command Name="GroupMotors"     Symbol="cmdGroupMotors"     Id="30022" LabelTitle="Motores"         />
     <Command Name="GroupCommText"   Symbol="cmdGroupCommText"   Id="30016" LabelTitle="RS-485 - Texto"  />
@@ -59,6 +66,7 @@
     <Command Name="GroupSimulExit"  Symbol="cmdGroupSimulExit"  Id="30025"                              />
     <Command Name="GroupActions"    Symbol="cmdGroupActions"    Id="30026" LabelTitle="Ações"           />
     <Command Name="GroupComment"    Symbol="cmdGroupComment"    Id="30027" LabelTitle="Documentação"    />
+    <Command Name="GroupNavigate"   Symbol="cmdGroupNavigate"   Id="30029" LabelTitle="Navegação"       />
 
     <!-- Comandos relacionados ao menu da aplicação -->
     <Command Name       = "FileNew"
@@ -176,7 +184,7 @@
              Id         = "30201"
              LabelTitle = "Refazer">
       <Command.TooltipTitle      >Refazer (Ctrl+Y)</Command.TooltipTitle>
-      <Command.TooltipDescription>Refazer a última ação.</Command.TooltipDescription>
+      <Command.TooltipDescription>Refazer a última ação desfeita.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/RedoHL.bmp"/>
       </Command.LargeImages>
@@ -185,6 +193,7 @@
     <Command Name       = "InsertLine"
              Symbol     = "cmdInsertLine"
              Id         = "30202">
+      <Command.TooltipTitle      >Inserir Linha</Command.TooltipTitle>
       <Command.TooltipDescription>Obter outras formas para inserir uma linha</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InsertLineHH.bmp"/>
@@ -277,6 +286,62 @@
       </Command.LargeImages>
       <Command.SmallImages>
         <Image Source="imgs/DeleteInstrHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name       = "CopyInstr"
+             Symbol     = "cmdCopyInstr"
+             Id         = "30209"
+             LabelTitle = "Copiar">
+      <Command.TooltipTitle      >Copiar (CTRL+C)</Command.TooltipTitle>
+      <Command.TooltipDescription>Copia o objeto selecionado para a memória.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/CopyInstrHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/CopyInstrHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name       = "PasteInstr"
+             Symbol     = "cmdPasteInstr"
+             Id         = "30210"
+             LabelTitle = "Colar">
+      <Command.TooltipTitle      >Colar (CTRL+V)</Command.TooltipTitle>
+      <Command.TooltipDescription>Insere na posição atual o objeto previamente copiado para a memória.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/PasteInstrHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/PasteInstrHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name       = "GoHome"
+             Symbol     = "cmdGoHome"
+             Id         = "30211"
+             LabelTitle = "Início">
+      <Command.TooltipTitle      >Início (Shift+Home)</Command.TooltipTitle>
+      <Command.TooltipDescription>Recua o cursor para o início do diagrama.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/GoHomeHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/GoHomeHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name       = "GoEnd"
+             Symbol     = "cmdGoEnd"
+             Id         = "30212"
+             LabelTitle = "Final">
+      <Command.TooltipTitle      >Final (Shift+END)</Command.TooltipTitle>
+      <Command.TooltipDescription>Avança o cursor para o final do diagrama.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/GoEndHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/GoEndHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
@@ -424,6 +489,20 @@
 
 
     <!-- Comandos de ajuda -->
+    <Command Name         = "SplitUserManual"
+               Symbol     = "cmdSplitUserManual"
+               Id         = "30415"
+               LabelTitle = "Manual">
+      <Command.TooltipTitle      >Manual do Usuário</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir o Manual do Usuário, contendo a ajuda para todo o programa.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/UserManualHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/UserManualHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
     <Command Name         = "UserManual"
                Symbol     = "cmdUserManual"
                Id         = "30410"
@@ -435,6 +514,20 @@
       </Command.LargeImages>
       <Command.SmallImages>
         <Image Source="imgs/UserManualHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name         = "KeyboardManual"
+               Symbol     = "cmdKeyboardManual"
+               Id         = "30412"
+               LabelTitle = "Teclado">
+      <Command.TooltipTitle      >Manual do Usuário</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir o Manual do Usuário, contendo a ajuda para todo o programa.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/KeyboardManualHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/KeyboardManualHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
@@ -452,6 +545,28 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name         = "ExampleAdcLed"
+               Symbol     = "cmdExampleAdcLed"
+               Id         = "30413"
+               LabelTitle = "Barra de Leds - A/D">
+      <Command.TooltipTitle      >Barra de Leds - A/D</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de aplicação - Barra de Leds.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/ExampleAdcLedHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
+
+    <Command Name         = "ExampleSemaphore"
+               Symbol     = "cmdExampleSemaphore"
+               Id         = "30414"
+               LabelTitle = "Semáforo">
+      <Command.TooltipTitle      >Semáforo</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de aplicação - Semáforo.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/ExampleSemaphoreHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
+
     <!-- Comandos para inserir instruções ao Diagrama Ladder -->
     <Command Name         = "InstrComment"
                Symbol     = "cmdInstrComment"
@@ -463,6 +578,16 @@
         <Image Source="imgs/InstrCommentHH.bmp"/>
       </Command.LargeImages>
     </Command>
+    <Command Name         = "ExampleComment"
+               Symbol     = "cmdExampleComment"
+               Id         = "31500"
+               LabelTitle = "Comentário">
+      <Command.TooltipTitle      >Comentário (;)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de comentário.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCommentHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
 
     <Command Name         = "InstrContact"
                Symbol     = "cmdInstrContact"
@@ -470,6 +595,19 @@
                LabelTitle = "Contato">
       <Command.TooltipTitle      >Contato (C)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir um contato na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrContactHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrContactHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleContact"
+               Symbol     = "cmdExampleContact"
+               Id         = "31501"
+               LabelTitle = "Contato">
+      <Command.TooltipTitle      >Contato (C)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução contato.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrContactHH.bmp"/>
       </Command.LargeImages>
@@ -491,6 +629,19 @@
         <Image Source="imgs/InstrOneShotRisingHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleOneShotRising"
+               Symbol     = "cmdExampleOneShotRising"
+               Id         = "31502"
+               LabelTitle = "Borda de Subida">
+      <Command.TooltipTitle      >Borda de Subida (/)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução detecção de borda de subida.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrOneShotRisingHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrOneShotRisingHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrOneShotFalling"
                Symbol     = "cmdInstrOneShotFalling"
@@ -498,6 +649,19 @@
                LabelTitle = "Borda de Descida">
       <Command.TooltipTitle      >Borda de Descida (\)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir detecção de borda de descida na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrOneShotFallingHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrOneShotFallingHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleOneShotFalling"
+               Symbol     = "cmdExampleOneShotFalling"
+               Id         = "31503"
+               LabelTitle = "Borda de Descida">
+      <Command.TooltipTitle      >Borda de Descida (\)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução detecção de borda de descida.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrOneShotFallingHH.bmp"/>
       </Command.LargeImages>
@@ -519,6 +683,19 @@
         <Image Source="imgs/InstrTimerONHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleTimerON"
+               Symbol     = "cmdExampleTimerON"
+               Id         = "31504"
+               LabelTitle = "Atraso para Ligar">
+      <Command.TooltipTitle      >Atraso para ligar (O)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução temporizador com atraso para ligar.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrTimerONHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrTimerONHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrTimerOFF"
                Symbol     = "cmdInstrTimerOFF"
@@ -526,6 +703,19 @@
                LabelTitle = "Atraso para Desligar">
       <Command.TooltipTitle      >Atraso para Desligar (F)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir temporizador com atraso para desligar na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrTimerOFFHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrTimerOFFHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleTimerOFF"
+               Symbol     = "cmdExampleTimerOFF"
+               Id         = "31505"
+               LabelTitle = "Atraso para Desligar">
+      <Command.TooltipTitle      >Atraso para Desligar (F)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução temporizador com atraso para desligar.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrTimerOFFHH.bmp"/>
       </Command.LargeImages>
@@ -547,6 +737,19 @@
         <Image Source="imgs/InstrTimerONRetHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleTimerONRet"
+               Symbol     = "cmdExampleTimerONRet"
+               Id         = "31506"
+               LabelTitle = "Atraso Retentivo para Ligar">
+      <Command.TooltipTitle      >Atraso Retentivo para Ligar (T)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução temporizador retentivo com atraso para ligar.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrTimerONRetHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrTimerONRetHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrSchedule"
                Symbol     = "cmdInstrSchedule"
@@ -554,6 +757,19 @@
                LabelTitle = "Agendador de Tarefa">
       <Command.TooltipTitle      >Agendador de Tarefa</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir tarefa agendada na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrScheduleHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrScheduleHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleSchedule"
+               Symbol     = "cmdExampleSchedule"
+               Id         = "31507"
+               LabelTitle = "Agendador de Tarefa">
+      <Command.TooltipTitle      >Agendador de Tarefa</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução tarefa agendada.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrScheduleHH.bmp"/>
       </Command.LargeImages>
@@ -575,6 +791,19 @@
         <Image Source="imgs/InstrTimerResetHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleTimerReset"
+               Symbol     = "cmdExampleTimerReset"
+               Id         = "31551"
+               LabelTitle = "Zerar">
+      <Command.TooltipTitle      >Zerar (E)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução zerar timer retentivo.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrTimerResetHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrTimerResetHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrCounterInc"
                Symbol     = "cmdInstrCounterInc"
@@ -582,6 +811,19 @@
                LabelTitle = "Incremental">
       <Command.TooltipTitle      >Incremental (I)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir contador incremental na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCounterIncHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCounterIncHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleCounterInc"
+               Symbol     = "cmdExampleCounterInc"
+               Id         = "31508"
+               LabelTitle = "Incremental">
+      <Command.TooltipTitle      >Incremental (I)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução contador incremental.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrCounterIncHH.bmp"/>
       </Command.LargeImages>
@@ -603,6 +845,19 @@
         <Image Source="imgs/InstrCounterDecHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleCounterDec"
+               Symbol     = "cmdExampleCounterDec"
+               Id         = "31509"
+               LabelTitle = "Decremental">
+      <Command.TooltipTitle      >Decremental (D)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução contador decremental.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCounterDecHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCounterDecHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrCounterCirc"
                Symbol     = "cmdInstrCounterCirc"
@@ -617,6 +872,19 @@
         <Image Source="imgs/InstrCounterCircHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleCounterCirc"
+               Symbol     = "cmdExampleCounterCirc"
+               Id         = "31510"
+               LabelTitle = "Circular">
+      <Command.TooltipTitle      >Circular (Shift+C)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução contador circular.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCounterCircHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCounterCircHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrCounterReset"
                Symbol     = "cmdInstrCounterReset"
@@ -624,6 +892,19 @@
                LabelTitle = "Zerar">
       <Command.TooltipTitle      >Zerar (E)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir zerar contador na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCounterResetHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCounterResetHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleCounterReset"
+               Symbol     = "cmdExampleCounterReset"
+               Id         = "31517"
+               LabelTitle = "Zerar">
+      <Command.TooltipTitle      >Zerar (E)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução zerar contador.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrCounterResetHH.bmp"/>
       </Command.LargeImages>
@@ -646,6 +927,20 @@
         <Image Source="imgs/InstrCircuitOpenHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleCircuitOpen"
+               Symbol     = "cmdExampleCircuitOpen"
+               Id         = "31511"
+               LabelTitle = "Circuito Aberto"
+               LabelDescription = "Inserir circuito aberto na posição do cursor.">
+      <Command.TooltipTitle      >Circuito Aberto</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução circuito aberto.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCircuitOpenHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCircuitOpenHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrCircuitClosed"
                Symbol     = "cmdInstrCircuitClosed"
@@ -654,6 +949,20 @@
                LabelDescription = "Inserir circuito fechado na posição do cursor.">
       <Command.TooltipTitle      >Circuito Fechado</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir circuito fechado na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCircuitClosedHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCircuitClosedHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleCircuitClosed"
+               Symbol     = "cmdExampleCircuitClosed"
+               Id         = "31512"
+               LabelTitle = "Circuito Fechado"
+               LabelDescription = "Inserir circuito fechado na posição do cursor.">
+      <Command.TooltipTitle      >Circuito Fechado</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução circuito fechado.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrCircuitClosedHH.bmp"/>
       </Command.LargeImages>
@@ -676,6 +985,20 @@
         <Image Source="imgs/InstrMasterRelayControlHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleMasterRelayControl"
+               Symbol     = "cmdExampleMasterRelayControl"
+               Id         = "31513"
+               LabelTitle = "Chave Geral"
+               LabelDescription = "Inserir chave geral na posição do cursor. Utilizado para desativar o barramento abaixo desta instrução.">
+      <Command.TooltipTitle      >Chave Geral</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução chave geral.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMasterRelayControlHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMasterRelayControlHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrSetBit"
                Symbol     = "cmdInstrSetBit"
@@ -683,6 +1006,19 @@
                LabelTitle = "Liga / Desliga Bit">
       <Command.TooltipTitle      >Liga / Desliga Bit (B)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir liga/desliga bit na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrSetBitHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrSetBitHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleSetBit"
+               Symbol     = "cmdExampleSetBit"
+               Id         = "31514"
+               LabelTitle = "Liga / Desliga Bit">
+      <Command.TooltipTitle      >Liga / Desliga Bit (B)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução liga/desliga bit.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrSetBitHH.bmp"/>
       </Command.LargeImages>
@@ -704,6 +1040,19 @@
         <Image Source="imgs/InstrCheckBitHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleCheckBit"
+               Symbol     = "cmdExampleCheckBit"
+               Id         = "31515"
+               LabelTitle = "Checar Bit">
+      <Command.TooltipTitle      >Checar Bit (Shift+B)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução checar bit.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCheckBitHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCheckBitHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrCoil"
                Symbol     = "cmdInstrCoil"
@@ -711,6 +1060,19 @@
                LabelTitle = "Bobina">
       <Command.TooltipTitle      >Bobina (L)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir bobina na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCoilHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCoilHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleCoil"
+               Symbol     = "cmdExampleCoil"
+               Id         = "31516"
+               LabelTitle = "Bobina">
+      <Command.TooltipTitle      >Bobina (L)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução bobina.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrCoilHH.bmp"/>
       </Command.LargeImages>
@@ -732,6 +1094,19 @@
         <Image Source="imgs/InstrMovHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleMov"
+               Symbol     = "cmdExampleMov"
+               Id         = "31518"
+               LabelTitle = "Mover Valor">
+      <Command.TooltipTitle      >Mover Valor (M)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução mover valor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMovHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMovHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrCondEqual"
                Symbol     = "cmdInstrCondEqual"
@@ -739,6 +1114,19 @@
                LabelTitle = "Igual">
       <Command.TooltipTitle      >Igual (=)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir condicional igual na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCondEqualHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondEqualHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleCondEqual"
+               Symbol     = "cmdExampleCondEqual"
+               Id         = "31519"
+               LabelTitle = "Igual">
+      <Command.TooltipTitle      >Igual (=)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução condicional igual.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrCondEqualHH.bmp"/>
       </Command.LargeImages>
@@ -760,6 +1148,19 @@
         <Image Source="imgs/InstrCondNotEqualHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleCondNotEqual"
+               Symbol     = "cmdExampleCondNotEqual"
+               Id         = "31520"
+               LabelTitle = "Diferente">
+      <Command.TooltipTitle      >Diferente (!)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução condicional diferente.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCondNotEqualHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondNotEqualHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrCondGreater"
                Symbol     = "cmdInstrCondGreater"
@@ -767,6 +1168,19 @@
                LabelTitle = "Maior">
       <Command.TooltipTitle      >Maior (&gt;)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir condicional maior na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCondGreaterHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondGreaterHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleCondGreater"
+               Symbol     = "cmdExampleCondGreater"
+               Id         = "31521"
+               LabelTitle = "Maior">
+      <Command.TooltipTitle      >Maior (&gt;)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução condicional maior.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrCondGreaterHH.bmp"/>
       </Command.LargeImages>
@@ -788,6 +1202,19 @@
         <Image Source="imgs/InstrCondGreaterEqualHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleCondGreaterEqual"
+               Symbol     = "cmdExampleCondGreaterEqual"
+               Id         = "31522"
+               LabelTitle = "Maior ou Igual">
+      <Command.TooltipTitle      >Maior ou Igual (.)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução condicional maior ou igual.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCondGreaterEqualHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondGreaterEqualHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrCondLesser"
                Symbol     = "cmdInstrCondLesser"
@@ -795,6 +1222,19 @@
                LabelTitle = "Menor">
       <Command.TooltipTitle      >Menor (&lt;)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir condicional menor na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCondLesserHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondLesserHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleCondLesser"
+               Symbol     = "cmdExampleCondLesser"
+               Id         = "31523"
+               LabelTitle = "Menor">
+      <Command.TooltipTitle      >Menor (&lt;)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução condicional menor.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrCondLesserHH.bmp"/>
       </Command.LargeImages>
@@ -816,6 +1256,19 @@
         <Image Source="imgs/InstrCondLesserEqualHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleCondLesserEqual"
+               Symbol     = "cmdExampleCondLesserEqual"
+               Id         = "31524"
+               LabelTitle = "Menor ou Igual">
+      <Command.TooltipTitle      >Menor ou Igual (,)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução condicional menor ou igual.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrCondLesserEqualHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrCondLesserEqualHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrMathAdd"
                Symbol     = "cmdInstrMathAdd"
@@ -823,6 +1276,19 @@
                LabelTitle = "Somar">
       <Command.TooltipTitle      >Somar (+)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir instrução matemática somar na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMathAddHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathAddHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleMathAdd"
+               Symbol     = "cmdExampleMathAdd"
+               Id         = "31525"
+               LabelTitle = "Somar">
+      <Command.TooltipTitle      >Somar (+)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução matemática somar.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrMathAddHH.bmp"/>
       </Command.LargeImages>
@@ -844,6 +1310,19 @@
         <Image Source="imgs/InstrMathSubHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleMathSub"
+               Symbol     = "cmdExampleMathSub"
+               Id         = "31526"
+               LabelTitle = "Subtrair">
+      <Command.TooltipTitle      >Subtrair (-)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução matemática subtrair.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMathSubHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathSubHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrMathMult"
                Symbol     = "cmdInstrMathMult"
@@ -858,6 +1337,19 @@
         <Image Source="imgs/InstrMathMultHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleMathMult"
+               Symbol     = "cmdExampleMathMult"
+               Id         = "31527"
+               LabelTitle = "Multiplicar">
+      <Command.TooltipTitle      >Multiplicar (*)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução matemática multiplicar.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMathMultHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathMultHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrMathDivide"
                Symbol     = "cmdInstrMathDivide"
@@ -865,6 +1357,19 @@
                LabelTitle = "Dividir">
       <Command.TooltipTitle      >Dividir (Shift+/)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir instrução matemática dividir na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMathDivideHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathDivideHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleMathDivide"
+               Symbol     = "cmdExampleMathDivide"
+               Id         = "31528"
+               LabelTitle = "Dividir">
+      <Command.TooltipTitle      >Dividir (Shift+/)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução matemática dividir.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrMathDivideHH.bmp"/>
       </Command.LargeImages>
@@ -887,6 +1392,20 @@
         <Image Source="imgs/InstrShiftRegisterHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleShiftRegister"
+               Symbol     = "cmdExampleShiftRegister"
+               Id         = "31529"
+               LabelTitle = "Tabela de Troca"
+               LabelDescription = "Inserir tabela de troca na posição do cursor.">
+      <Command.TooltipTitle      >Tabela de Troca</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução tabela de troca.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrShiftRegisterHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrShiftRegisterHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrLookUpTable"
                Symbol     = "cmdInstrLookUpTable"
@@ -895,6 +1414,20 @@
                LabelDescription = "Inserir tabela de busca na posição do cursor.">
       <Command.TooltipTitle      >Tabela de Busca</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir tabela de busca na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrLookUpTableHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrLookUpTableHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleLookUpTable"
+               Symbol     = "cmdExampleLookUpTable"
+               Id         = "31530"
+               LabelTitle = "Tabela de Busca"
+               LabelDescription = "Inserir tabela de busca na posição do cursor.">
+      <Command.TooltipTitle      >Tabela de Busca</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução tabela de busca.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrLookUpTableHH.bmp"/>
       </Command.LargeImages>
@@ -917,13 +1450,40 @@
         <Image Source="imgs/InstrPieceWiseLinearHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExamplePieceWiseLinear"
+               Symbol     = "cmdExamplePieceWiseLinear"
+               Id         = "31531"
+               LabelTitle = "Linearização por Segmentos"
+               LabelDescription = "Inserir linearização por segmentos na posição do cursor.">
+      <Command.TooltipTitle      >Linearização por Segmentos</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução linearização por segmentos.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrPieceWiseLinearHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrPieceWiseLinearHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrReadAD"
                Symbol     = "cmdInstrReadAD"
                Id         = "30532"
                LabelTitle = "Leitura de A/D">
-      <Command.TooltipTitle      >Leitura de A/D (Ctrl+A)</Command.TooltipTitle>
+      <Command.TooltipTitle      >Leitura de A/D (A)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura de A/D na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadADHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadADHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleReadAD"
+               Symbol     = "cmdExampleReadAD"
+               Id         = "31532"
+               LabelTitle = "Leitura de A/D">
+      <Command.TooltipTitle      >Leitura de A/D (Ctrl+A)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução leitura de A/D.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadADHH.bmp"/>
       </Command.LargeImages>
@@ -945,6 +1505,19 @@
         <Image Source="imgs/InstrPWMHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExamplePWM"
+               Symbol     = "cmdExamplePWM"
+               Id         = "31533"
+               LabelTitle = "Saída PWM">
+      <Command.TooltipTitle      >Saída PWM (W)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução saída PWM.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrPWMHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrPWMHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrWriteDA"
                Symbol     = "cmdInstrWriteDA"
@@ -952,6 +1525,19 @@
                LabelTitle = "Escrita no D/A">
       <Command.TooltipTitle      >Escrita no D/A (Ctrl+D)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita no D/A na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteDAHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteDAHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleWriteDA"
+               Symbol     = "cmdExampleWriteDA"
+               Id         = "31534"
+               LabelTitle = "Escrita no D/A">
+      <Command.TooltipTitle      >Escrita no D/A (Ctrl+D)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrita no D/A.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteDAHH.bmp"/>
       </Command.LargeImages>
@@ -973,6 +1559,19 @@
         <Image Source="imgs/InstrReadEncHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleReadEnc"
+               Symbol     = "cmdExampleReadEnc"
+               Id         = "31535"
+               LabelTitle = "Leitura de Encoder">
+      <Command.TooltipTitle      >Leitura de Encoder (Q)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução leitura de encoder.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadEncHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadEncHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrResetEnc"
                Symbol     = "cmdInstrResetEnc"
@@ -980,6 +1579,19 @@
                LabelTitle = "Reset de Encoder">
       <Command.TooltipTitle      >Reset de Encoder (Ctrl+Q)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir reset de encoder na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrResetEncHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrResetEncHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleResetEnc"
+               Symbol     = "cmdExampleResetEnc"
+               Id         = "31536"
+               LabelTitle = "Reset de Encoder">
+      <Command.TooltipTitle      >Reset de Encoder (Ctrl+Q)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução reset de encoder.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrResetEncHH.bmp"/>
       </Command.LargeImages>
@@ -1001,14 +1613,39 @@
         <Image Source="imgs/InstrRampDAHS.bmp"/>
       </Command.SmallImages>
     </Command>
+    <Command Name         = "ExampleRampDA"
+               Symbol     = "cmdExampleRampDA"
+               Id         = "31537"
+               LabelTitle = "Rampa de Aceleração/Desaceleração">
+      <Command.TooltipTitle      >Rampa de Aceleração/Desaceleração (Ctrl+R)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução rampa de aceleração/desaceleração.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrRampDAHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrRampDAHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <Command Name         = "InstrReadFormatString"
                Symbol     = "cmdInstrReadFormatString"
                Id         = "30538"
-               LabelTitle = "Ler String Formatada"
-               LabelDescription = "Inserir ler string formatada na posição do cursor.">
+               LabelTitle = "Ler String Formatada">
       <Command.TooltipTitle      >Ler String Formatada</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir ler string formatada na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadFormatStringHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadFormatStringHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleReadFormatString"
+               Symbol     = "cmdExampleReadFormatString"
+               Id         = "31538"
+               LabelTitle = "Ler String Formatada">
+      <Command.TooltipTitle      >Ler String Formatada</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução ler string formatada.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadFormatStringHH.bmp"/>
       </Command.LargeImages>
@@ -1020,10 +1657,22 @@
     <Command Name         = "InstrWriteFormatString"
                Symbol     = "cmdInstrWriteFormatString"
                Id         = "30539"
-               LabelTitle = "Escrever String Formatada"
-               LabelDescription = "Inserir escrever string formatada na posição do cursor.">
+               LabelTitle = "Escrever String Formatada">
       <Command.TooltipTitle      >Escrever String Formatada</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrever string formatada na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteFormatStringHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteFormatStringHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleWriteFormatString"
+               Symbol     = "cmdExampleWriteFormatString"
+               Id         = "31539"
+               LabelTitle = "Escrever String Formatada">
+      <Command.TooltipTitle      >Escrever String Formatada</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrever string formatada.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteFormatStringHH.bmp"/>
       </Command.LargeImages>
@@ -1035,10 +1684,22 @@
     <Command Name         = "InstrReadNS600"
                Symbol     = "cmdInstrReadNS600"
                Id         = "30540"
-               LabelTitle = "Leitura de NS-600 Yaskawa"
-               LabelDescription = "Inserir leitura de NS-600 Yaskawa na posição do cursor.">
+               LabelTitle = "Leitura de NS-600 Yaskawa">
       <Command.TooltipTitle      >Leitura de NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura de NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadNS600HH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadNS600HS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleReadNS600"
+               Symbol     = "cmdExampleReadNS600"
+               Id         = "31540"
+               LabelTitle = "Leitura de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Leitura de NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução leitura de NS-600 Yaskawa.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadNS600HH.bmp"/>
       </Command.LargeImages>
@@ -1050,10 +1711,22 @@
     <Command Name         = "InstrWriteNS600"
                Symbol     = "cmdInstrWriteNS600"
                Id         = "30541"
-               LabelTitle = "Escrita no NS-600 Yaskawa"
-               LabelDescription = "Inserir escrita no NS-600 Yaskawa na posição do cursor.">
+               LabelTitle = "Escrita no NS-600 Yaskawa">
       <Command.TooltipTitle      >Escrita no NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita no NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteNS600HH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteNS600HS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleWriteNS600"
+               Symbol     = "cmdExampleWriteNS600"
+               Id         = "31541"
+               LabelTitle = "Escrita no NS-600 Yaskawa">
+      <Command.TooltipTitle      >Escrita no NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrita no NS-600 Yaskawa.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteNS600HH.bmp"/>
       </Command.LargeImages>
@@ -1065,10 +1738,22 @@
     <Command Name         = "InstrWriteChar"
                Symbol     = "cmdInstrWriteChar"
                Id         = "30542"
-               LabelTitle = "Escrita de Caracter"
-               LabelDescription = "Inserir escrita de caracter na posição do cursor.">
+               LabelTitle = "Escrita de Caracter">
       <Command.TooltipTitle      >Escrita de Caracter</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita de caracter na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteCharHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteCharHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleWriteChar"
+               Symbol     = "cmdExampleWriteChar"
+               Id         = "31542"
+               LabelTitle = "Escrita de Caracter">
+      <Command.TooltipTitle      >Escrita de Caracter</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrita de caracter.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteCharHH.bmp"/>
       </Command.LargeImages>
@@ -1080,10 +1765,22 @@
     <Command Name         = "InstrReadChar"
                Symbol     = "cmdInstrReadChar"
                Id         = "30543"
-               LabelTitle = "Leitura de Caracter"
-               LabelDescription = "Inserir leitura de caracter na posição do cursor.">
+               LabelTitle = "Leitura de Caracter">
       <Command.TooltipTitle      >Leitura de Caracter</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura de caracter na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadCharHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadCharHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleReadChar"
+               Symbol     = "cmdExampleReadChar"
+               Id         = "31543"
+               LabelTitle = "Leitura de Caracter">
+      <Command.TooltipTitle      >Leitura de Caracter</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução leitura de caracter.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadCharHH.bmp"/>
       </Command.LargeImages>
@@ -1095,10 +1792,22 @@
     <Command Name         = "InstrReadUSS"
                Symbol     = "cmdInstrReadUSS"
                Id         = "30544"
-               LabelTitle = "Leitura USS"
-               LabelDescription = "Inserir leitura uss na posição do cursor.">
+               LabelTitle = "Leitura USS">
       <Command.TooltipTitle      >Leitura USS (Shift+U)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura uss na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadUSSHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadUSSHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleReadUSS"
+               Symbol     = "cmdExampleReadUSS"
+               Id         = "31544"
+               LabelTitle = "Leitura USS">
+      <Command.TooltipTitle      >Leitura USS (Shift+U)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução leitura uss.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadUSSHH.bmp"/>
       </Command.LargeImages>
@@ -1110,10 +1819,22 @@
     <Command Name         = "InstrWriteUSS"
                Symbol     = "cmdInstrWriteUSS"
                Id         = "30545"
-               LabelTitle = "Escrita USS"
-               LabelDescription = "Inserir escrita uss na posição do cursor.">
+               LabelTitle = "Escrita USS">
       <Command.TooltipTitle      >Escrita USS (Ctrl+U)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita uss na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteUSSHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteUSSHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleWriteUSS"
+               Symbol     = "cmdExampleWriteUSS"
+               Id         = "31545"
+               LabelTitle = "Escrita USS">
+      <Command.TooltipTitle      >Escrita USS (Ctrl+U)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrita uss.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteUSSHH.bmp"/>
       </Command.LargeImages>
@@ -1125,10 +1846,22 @@
     <Command Name         = "InstrReadModBUS485"
                Symbol     = "cmdInstrReadModBUS485"
                Id         = "30546"
-               LabelTitle = "Ler Registrador RS-485"
-               LabelDescription = "Inserir ler registrador modbus rs-485 na posição do cursor.">
+               LabelTitle = "Ler Registrador RS-485">
       <Command.TooltipTitle      >Ler Registrador ModBUS RS-485 (Shift+4)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir ler registrador modbus rs-485 na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadModBUS485HH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadModBUS485HS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleReadModBUS485"
+               Symbol     = "cmdExampleReadModBUS485"
+               Id         = "31546"
+               LabelTitle = "Ler Registrador RS-485">
+      <Command.TooltipTitle      >Ler Registrador ModBUS RS-485 (Shift+4)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução ler registrador modbus rs-485.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadModBUS485HH.bmp"/>
       </Command.LargeImages>
@@ -1140,10 +1873,22 @@
     <Command Name         = "InstrWriteModBUS485"
                Symbol     = "cmdInstrWriteModBUS485"
                Id         = "30547"
-               LabelTitle = "Escrever Registrador RS-485"
-               LabelDescription = "Inserir escrever registrador modbus rs-485 na posição do cursor.">
+               LabelTitle = "Escrever Registrador RS-485">
       <Command.TooltipTitle      >Escrever Registrador RS-485 (Ctrl+4)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrever registrador modbus rs-485 na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteModBUS485HH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteModBUS485HS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleWriteModBUS485"
+               Symbol     = "cmdExampleWriteModBUS485"
+               Id         = "31547"
+               LabelTitle = "Escrever Registrador RS-485">
+      <Command.TooltipTitle      >Escrever Registrador RS-485 (Ctrl+4)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrever registrador modbus rs-485.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteModBUS485HH.bmp"/>
       </Command.LargeImages>
@@ -1155,10 +1900,22 @@
     <Command Name         = "InstrReadModBUSEth"
                Symbol     = "cmdInstrReadModBUSEth"
                Id         = "30548"
-               LabelTitle = "Ler Registrador Ethernet"
-               LabelDescription = "Inserir ler registrador modbus ethernet na posição do cursor.">
+               LabelTitle = "Ler Registrador Ethernet">
       <Command.TooltipTitle      >Ler Registrador Ethernet (Shift+X)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir ler registrador modbus ethernet na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadModBUSEthHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadModBUSEthHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleReadModBUSEth"
+               Symbol     = "cmdExampleReadModBUSEth"
+               Id         = "31548"
+               LabelTitle = "Ler Registrador Ethernet">
+      <Command.TooltipTitle      >Ler Registrador Ethernet (Shift+X)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução ler registrador modbus ethernet.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadModBUSEthHH.bmp"/>
       </Command.LargeImages>
@@ -1170,10 +1927,22 @@
     <Command Name         = "InstrWriteModBUSEth"
                Symbol     = "cmdInstrWriteModBUSEth"
                Id         = "30549"
-               LabelTitle = "Escrever Registrador Ethernet"
-               LabelDescription = "Inserir escrever registrador modbus ethernet na posição do cursor.">
+               LabelTitle = "Escrever Registrador Ethernet">
       <Command.TooltipTitle      >Escrever Registrador Ethernet (Ctrl+X)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrever registrador modbus ethernet na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteModBUSEthHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteModBUSEthHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleWriteModBUSEth"
+               Symbol     = "cmdExampleWriteModBUSEth"
+               Id         = "31549"
+               LabelTitle = "Escrever Registrador Ethernet">
+      <Command.TooltipTitle      >Escrever Registrador Ethernet (Ctrl+X)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrever registrador modbus ethernet.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteModBUSEthHH.bmp"/>
       </Command.LargeImages>
@@ -1193,6 +1962,33 @@
       </Command.LargeImages>
       <Command.SmallImages>
         <Image Source="imgs/InstrPersistHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExamplePersist"
+               Symbol     = "cmdExamplePersist"
+               Id         = "31550"
+               LabelTitle = "Persistente">
+      <Command.TooltipTitle      >Persistente</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução persistente.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrPersistHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrPersistHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name         = "InstrParallel"
+               Symbol     = "cmdInstrParallel"
+               Id         = "30552"
+               LabelTitle = "Paralelo">
+      <Command.TooltipTitle      >Paralelo (P)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir início de paralelo na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrParallelHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrParallelHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
@@ -1228,9 +2024,9 @@
     <Command Name         = "SimulationStop"
                Symbol     = "cmdSimulationStop"
                Id         = "30602"
-               LabelTitle = "Parar">
-      <Command.TooltipTitle      >Parar (Ctrl+H)</Command.TooltipTitle>
-      <Command.TooltipDescription>Interromper a simulação em tempo real do Diagrama Ladder.</Command.TooltipDescription>
+               LabelTitle = "Interromper">
+      <Command.TooltipTitle      >Interromper (Ctrl+H)</Command.TooltipTitle>
+      <Command.TooltipDescription>Interromper a simulação do Diagrama Ladder, retornando toda a lógica ao estado inicial.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/SimulationStopHH.bmp"/>
       </Command.LargeImages>
@@ -1239,9 +2035,23 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name         = "SimulationPause"
+               Symbol     = "cmdSimulationPause"
+               Id         = "30603"
+               LabelTitle = "Pausar">
+      <Command.TooltipTitle      >Pausar (Ctrl+H)</Command.TooltipTitle>
+      <Command.TooltipDescription>Pausar a simulação em tempo real do Diagrama Ladder.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/SimulationPauseHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/SimulationPauseHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
     <Command Name         = "SimulationSingleCycle"
                Symbol     = "cmdSimulationSingleCycle"
-               Id         = "30603"
+               Id         = "30604"
                LabelTitle = "Simples Ciclo">
       <Command.TooltipTitle      >Simples Ciclo (Espaço)</Command.TooltipTitle>
       <Command.TooltipDescription>Executar um único ciclo.</Command.TooltipDescription>
@@ -1255,7 +2065,7 @@
 
     <Command Name         = "SimulationExit"
                Symbol     = "cmdSimulationExit"
-               Id         = "30604"
+               Id         = "30605"
                LabelTitle = "Sair da Simulação">
       <Command.TooltipTitle      >Sair da Simulação (Ctrl+M)</Command.TooltipTitle>
       <Command.TooltipDescription>Sair do modo de simulação do Diagrama Ladder.</Command.TooltipDescription>
@@ -1344,10 +2154,20 @@
               <Scale   Group ="GroupFind" Size="Popup"  />
             </ScalingPolicy>
           </Tab.ScalingPolicy>
-          <Group CommandName="GroupInstr" SizeDefinition="OneButton">
-            <Button CommandName="DeleteInstr"/>
+          <Group CommandName="GroupNavigate" SizeDefinition="TwoButtons">
+            <Button CommandName="GoHome"/>
+            <Button CommandName="GoEnd"/>
           </Group>
-<!--          <Group CommandName="GroupFind" SizeDefinition ="BigButtonsAndSmallButtonsOrInputs">
+          <Group CommandName="GroupInstr" SizeDefinition="FourButtons">
+            <Button CommandName="DeleteInstr"/>
+            <Button CommandName="CopyInstr"/>
+            <Button CommandName="PasteInstr"/>
+            <Button CommandName="InstrParallel"/>
+          </Group>
+          <Group CommandName="GroupComment" SizeDefinition="OneButton">
+            <Button CommandName="InstrComment"/>
+          </Group>
+          <!--          <Group CommandName="GroupFind" SizeDefinition ="BigButtonsAndSmallButtonsOrInputs">
             <ControlGroup>
               <Button CommandName="Find"/>
               <Button CommandName="Change"/>
@@ -1401,8 +2221,28 @@
             <Button CommandName="Simulation"/>
           </Group>
           <Group CommandName="GroupHelp" SizeDefinition="ThreeButtons">
-            <Button CommandName="UserManual"/>
-            <Button CommandName="Examples"/>
+            <SplitButton CommandName="SplitUserManual">
+              <SplitButton.ButtonItem>
+                <Button CommandName="UserManual"/>
+              </SplitButton.ButtonItem>
+              <SplitButton.MenuGroups>
+                <MenuGroup Class="MajorItems">
+                  <Button CommandName="UserManual"/>
+                  <Button CommandName="KeyboardManual"/>
+                </MenuGroup>
+              </SplitButton.MenuGroups>
+            </SplitButton>
+            <DropDownGallery CommandName="Examples"
+                             TextPosition="Bottom"
+                             Type="Commands"
+                             ItemHeight="32"
+                             ItemWidth="32">
+              <DropDownGallery.MenuLayout>
+                <FlowMenuLayout Rows="9"
+                                Columns="6"
+                                Gripper="None"/>
+              </DropDownGallery.MenuLayout>
+            </DropDownGallery>
             <Button CommandName="About"/>
           </Group>
         </Tab>
@@ -1419,6 +2259,7 @@
               </ScalingPolicy.IdealSizes>
               <Scale Group ="GroupMath"    Size="Small" />
               <Scale Group ="GroupCond"    Size="Small" />
+              <Scale Group ="GroupMath"    Size="Popup" />
             </ScalingPolicy>
           </Tab.ScalingPolicy>
           <Group CommandName="GroupIO" SizeDefinition="FiveButtons">
@@ -1474,9 +2315,6 @@
               </MenuGroup>
             </DropDownButton>
           </Group>
-          <Group CommandName="GroupComment" SizeDefinition="OneButton">
-            <Button CommandName="InstrComment"/>
-          </Group>
         </Tab>
         <Tab CommandName="TabInstrAutom">
           <Tab.ScalingPolicy>
@@ -1491,6 +2329,7 @@
               <Scale Group ="GroupCommOthers" Size="Medium"  />
               <Scale Group ="GroupCommOthers" Size="Small"  />
               <Scale Group ="GroupCommOthers" Size="Popup"  />
+              <Scale Group ="GroupCommModBUS" Size="Popup"  />
             </ScalingPolicy>
           </Tab.ScalingPolicy>
           <Group CommandName="GroupAnalog" SizeDefinition="TwoButtons">
@@ -1516,15 +2355,16 @@
             <Button CommandName="InstrWriteChar"/>
           </Group>
           <Group CommandName="GroupCommOthers" SizeDefinition="FourButtons">
-            <Button CommandName="InstrReadNS600"/>
-            <Button CommandName="InstrWriteNS600"/>
             <Button CommandName="InstrReadUSS"/>
             <Button CommandName="InstrWriteUSS"/>
+            <Button CommandName="InstrReadNS600"/>
+            <Button CommandName="InstrWriteNS600"/>
           </Group>
         </Tab>
         <Tab CommandName="TabSimulation" ApplicationModes="1">
-          <Group CommandName="GroupSimulation" SizeDefinition="ThreeButtons" ApplicationModes="1" >
+          <Group CommandName="GroupSimulation" SizeDefinition="FourButtons" ApplicationModes="1" >
             <Button CommandName="SimulationStart"/>
+            <Button CommandName="SimulationPause"/>
             <Button CommandName="SimulationStop"/>
             <Button CommandName="SimulationSingleCycle"/>
           </Group>

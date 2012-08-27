@@ -96,17 +96,12 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_GEQ:
         case ELEM_LES:
         case ELEM_LEQ:
-		case ELEM_SET_DA:
         case ELEM_UART_RECV:
         case ELEM_UART_SEND:
         case ELEM_READ_USS:
         case ELEM_WRITE_USS:
 		case ELEM_SET_BIT:
 		case ELEM_CHECK_BIT:
-        case ELEM_READ_ADC:
-        case ELEM_READ_ENC:
-        case ELEM_RESET_ENC:
-		case ELEM_MULTISET_DA:
         case ELEM_READ_MODBUS:
         case ELEM_WRITE_MODBUS:
         case ELEM_READ_MODBUS_ETH:
@@ -144,6 +139,11 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_RES:
         case ELEM_COIL:
         case ELEM_MOVE:
+		case ELEM_SET_DA:
+        case ELEM_READ_ADC:
+        case ELEM_READ_ENC:
+        case ELEM_RESET_ENC:
+		case ELEM_MULTISET_DA:
         case ELEM_SHIFT_REGISTER:
         case ELEM_LOOK_UP_TABLE:
         case ELEM_PIECEWISE_LINEAR:
@@ -435,7 +435,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_CTC: {
             char buf[256];
             ElemCounter *c = &leaf->d.counter;
-            sprintf(buf, "{\x01""CTC\x02 0:%d}", c->max);
+            sprintf(buf, _("{\x01""CTC\x02 0:%d}"), c->max);
 
             CenterWithSpaces(*cx, *cy, c->name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
@@ -444,14 +444,15 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_RES: {
             ElemReset *r = &leaf->d.reset;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{RES}", poweredBefore, poweredAfter);
+            CenterWithWires(*cx, *cy, _("{RES}"), poweredBefore, poweredAfter);
             break;
         }
         case ELEM_READ_ADC: {
+			char txt[50];
             ElemReadAdc *r = &leaf->d.readAdc;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{READ ADC}", poweredBefore,
-                poweredAfter);
+			sprintf(txt, _("{READ ADC %s }"), GetPinADC(r->name));
+            CenterWithWires(*cx, *cy, txt, poweredBefore, poweredAfter);
             break;
         }
         case ELEM_SET_DA: {
@@ -473,70 +474,27 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 			}
 
 			CenterWithSpaces(*cx, *cy, name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{SET DA}", poweredBefore,
+            CenterWithWires(*cx, *cy, _("{SET DA}"), poweredBefore,
                 poweredAfter);
             break;
         }
         case ELEM_READ_ENC: {
             ElemReadEnc *r = &leaf->d.readEnc;
             CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{READ ENC}", poweredBefore,
+            CenterWithWires(*cx, *cy, _("{READ ENC}"), poweredBefore,
                 poweredAfter);
             break;
         }
 		case ELEM_MULTISET_DA : {
 			ElemMultisetDA *r = &leaf->d.multisetDA;
 			//CenterWithSpaces(*cx, *cy, r->forward ? "AVANCAR" : "RECUAR", poweredAfter, TRUE);
-			CenterWithSpaces(*cx, *cy, "RAMPA", poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, r->speedup ? "{ACELERACAO}" : "{DESACELERACAO}", poweredBefore,
+			CenterWithSpaces(*cx, *cy, _("RAMPA"), poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, r->speedup ? _("{ACELERACAO}") : _("{DESACELERACAO}"), poweredBefore,
                 poweredAfter);
             break;
 		}
         case ELEM_RESET_ENC: {
-            ElemResetEnc *r = &leaf->d.resetEnc;
-            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{RESET ENC}", poweredBefore,
-                poweredAfter);
-            break;
-        }
-        case ELEM_READ_USS: {
-            ElemReadUSS *r = &leaf->d.readUSS;
-            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{READ USS}", poweredBefore,
-                poweredAfter);
-            break;
-        }
-        case ELEM_WRITE_USS: {
-            ElemWriteUSS *r = &leaf->d.writeUSS;
-            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{WRITE USS}", poweredBefore, poweredAfter);
-            break;
-        }
-        case ELEM_READ_MODBUS: {
-            ElemReadModbus *r = &leaf->d.readModbus;
-            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{READ MB 485}", poweredBefore,
-                poweredAfter);
-            break;
-        }
-        case ELEM_WRITE_MODBUS: {
-            ElemWriteModbus *r = &leaf->d.writeModbus;
-            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{WRITE MB 485}", poweredBefore,
-                poweredAfter);
-            break;
-        }
-        case ELEM_READ_MODBUS_ETH: {
-            ElemReadModbusEth *r = &leaf->d.readModbusEth;
-            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{READ MB ETH}", poweredBefore,
-                poweredAfter);
-            break;
-        }
-        case ELEM_WRITE_MODBUS_ETH: {
-            ElemWriteModbusEth *r = &leaf->d.writeModbusEth;
-            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{WRITE MB ETH}", poweredBefore,
+            CenterWithWires(*cx, *cy, _("{RESET ENC}"), poweredBefore,
                 poweredAfter);
             break;
         }
@@ -546,13 +504,13 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             CenterWithSpaces(*cx, *cy, s->name, poweredAfter, TRUE);
             char l[50];
             if(s->targetFreq >= 100000) {
-                sprintf(l, "{PWM %d kHz}", (s->targetFreq+500)/1000);
+                sprintf(l, _("{PWM %d kHz}"), (s->targetFreq+500)/1000);
             } else if(s->targetFreq >= 10000) {
-                sprintf(l, "{PWM %.1f kHz}", s->targetFreq/1000.0);
+                sprintf(l, _("{PWM %.1f kHz}"), s->targetFreq/1000.0);
             } else if(s->targetFreq >= 1000) {
-                sprintf(l, "{PWM %.2f kHz}", s->targetFreq/1000.0);
+                sprintf(l, _("{PWM %.2f kHz}"), s->targetFreq/1000.0);
             } else {
-                sprintf(l, "{PWM %d Hz}", s->targetFreq);
+                sprintf(l, _("{PWM %d Hz}"), s->targetFreq);
             }
             CenterWithWires(*cx, *cy, l, poweredBefore,
                 poweredAfter);
@@ -560,7 +518,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         }
         case ELEM_PERSIST:
             CenterWithSpaces(*cx, *cy, leaf->d.persist.var, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, "{PERSIST}", poweredBefore, poweredAfter);
+            CenterWithWires(*cx, *cy, _("{PERSIST}"), poweredBefore, poweredAfter);
             break;
 
         case ELEM_MOVE: 
@@ -586,14 +544,14 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             //memcpy(bot+2, m->src, strlen(m->src));
 
 			sprintf(top, "{%s :=}", m->dest);
-			sprintf(bot, "{%s MOV}", m->src);
+			sprintf(bot, _("{%s MOV}"), m->src);
 
             CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
         case ELEM_MASTER_RELAY:
-            CenterWithWires(*cx, *cy, "{MASTER RLY}", poweredBefore, poweredAfter);
+            CenterWithWires(*cx, *cy, _("{MASTER RLY}"), poweredBefore, poweredAfter);
             break;
 
         /*case ELEM_SET_BIT: {
@@ -611,7 +569,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             bot[strlen(bot)] = ' ';
             bot[19] = '}';
             bot[20] = '\0';
-            CenterWithSpaces(*cx, *cy, "{\x01SHIFT REG\x02   }", poweredAfter, FALSE);
+            CenterWithSpaces(*cx, *cy, _("{\x01SHIFT REG\x02   }"), poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
@@ -622,11 +580,11 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             if(which == ELEM_PIECEWISE_LINEAR) {
                 dest = leaf->d.piecewiseLinear.dest;
                 index = leaf->d.piecewiseLinear.index;
-                str = "PWL";
+                str = _("PWL");
             } else {
                 dest = leaf->d.lookUpTable.dest;
                 index = leaf->d.lookUpTable.index;
-                str = "LUT";
+                str = _("LUT");
             }
             memset(top, ' ', sizeof(top));
             top[0] = '{';
@@ -661,6 +619,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             buf[2] = ')';
             buf[3] = '\0';
 
+			// TODO: Internacionalizar
 			sprintf(name_with_type, "%s (%c)", c->name, c->type == IO_TYPE_DIG_OUTPUT ? 'S' : 'R');
 
 			CenterWithSpaces(*cx, *cy, name_with_type, poweredAfter, TRUE);
@@ -676,22 +635,23 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 
             memset(top, ' ', sizeof(top)-1);
             top[0] = '{';
+			top[1] = '\x01';
 
             memset(bot, ' ', sizeof(bot)-1);
             bot[0] = '{';
 
-            int lt = 1;
+            int lt = 2;
             if(which == ELEM_ADD) {
-                memcpy(top+lt, "\x01""ADD\x02", 5);
+                memcpy(top+lt, _("ADD\x02"), 4);
             } else if(which == ELEM_SUB) {
-                memcpy(top+lt, "\x01SUB\x02", 5);
+                memcpy(top+lt, _("SUB\x02"), 4);
             } else if(which == ELEM_MUL) {
-                memcpy(top+lt, "\x01MUL\x02", 5);
+                memcpy(top+lt, _("MUL\x02"), 4);
             } else if(which == ELEM_DIV) {
-                memcpy(top+lt, "\x01""DIV\x02", 5);
+                memcpy(top+lt, _("DIV\x02"), 4);
             } else oops();
 
-            lt += 7;
+            lt += 6;
             memcpy(top+lt, leaf->d.math.dest, strlen(leaf->d.math.dest));
             lt += strlen(leaf->d.math.dest) + 2;
             top[lt++] = ':';
@@ -786,6 +746,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             buf[2] = '[';
             buf[3] = '\0';
 
+			// TODO: Internacionalizar
 			switch(c->type) {
 			case IO_TYPE_DIG_INPUT:
 				ch = 'E';
@@ -872,10 +833,10 @@ cmp:
             char *s1, *s2;
             if(which == ELEM_ONE_SHOT_RISING) {
                 s1 = "      _ ";
-                s2 = "[\x01OSR\x02_/ ]";
+                s2 = _("[\x01OSR\x02_/ ]");
             } else if(which == ELEM_ONE_SHOT_FALLING) {
                 s1 = "    _   ";
-                s2 = "[\x01OSF\x02 \\_]";
+                s2 = _("[\x01OSF\x02 \\_]");
             } else oops();
 
             CenterWithSpaces(*cx, *cy, s1, poweredAfter, FALSE);
@@ -886,16 +847,18 @@ cmp:
         }
         case ELEM_CTU:
         case ELEM_CTD: {
-            char *s;
-            if(which == ELEM_CTU)
-                s = "\x01""CTU\x02";
-            else if(which == ELEM_CTD)
-                s = "\x01""CTD\x02";
-            else oops();
+            char *s, op;
+            if(which == ELEM_CTU) {
+                s = _("CTU");
+				op = '>';
+			} else if(which == ELEM_CTD) {
+                s = _("CTD");
+				op = '<';
+			} else oops();
 
             char buf[256];
             ElemCounter *c = &leaf->d.counter;
-            sprintf(buf, "[%s >=%d]", s, c->max);
+            sprintf(buf, "[\x01%s\x02 %c=%d]", s, op, c->max);
 
             CenterWithSpaces(*cx, *cy, c->name, poweredAfter, TRUE);
             CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
@@ -908,21 +871,21 @@ cmp:
         case ELEM_TOF: {
             char *s;
             if(which == ELEM_TON)
-                s = "\x01TON\x02";
+                s = _("TON");
             else if(which == ELEM_TOF)
-                s = "\x01TOF\x02";
+                s = _("TOF");
             else if(which == ELEM_RTO)
-                s = "\x01RTO\x02";
+                s = _("RTO");
             else oops();
 
             char buf[256];
             ElemTimer *t = &leaf->d.timer;
             if(t->delay >= 1000*1000) {
-                sprintf(buf, "[%s %.3f s]", s, t->delay/1000000.0);
+                sprintf(buf, "[\x01%s\x02 %.3f s]", s, t->delay/1000000.0);
             } else if(t->delay >= 100*1000) {
-                sprintf(buf, "[%s %.1f ms]", s, t->delay/1000.0);
+                sprintf(buf, "[\x01%s\x02 %.1f ms]", s, t->delay/1000.0);
             } else {
-                sprintf(buf, "[%s %.2f ms]", s, t->delay/1000.0);
+                sprintf(buf, "[\x01%s\x02 %.2f ms]", s, t->delay/1000.0);
             }
 
             CenterWithSpaces(*cx, *cy, t->name, poweredAfter, TRUE);
@@ -944,33 +907,33 @@ cmp:
 
             ElemRTC *t = &leaf->d.rtc;
 			
-			if (t->mday)
-				sprintf(mday, "%d", t->mday);
-			else
-				sprintf(mday, "%c", '*');
-
-			if (t->month)
-				sprintf(month, "%d", t->month);
-			else
-				sprintf(month, "%c", '*');
-
-			if (t->year)
-				sprintf(year, "%02d", t->year);			
-			else
-				sprintf(year, "%c", '*');
-
             if(t->wday & (1 << 7)) 
 			{
-				sprintf(buf, "[%s%s%s%s%s%s%s %02d:%02d:%02d]", 
-					(t->wday & 1) ? "D" : "_",
-					(t->wday & 2) ? "S" : "_",
-					(t->wday & 4) ? "T" : "_",
-					(t->wday & 8) ? "Q" : "_",
-					(t->wday & 16) ? "Q" : "_",
-					(t->wday & 32) ? "S" : "_",
-					(t->wday & 64) ? "S" : "_",
+				int i;
+
+				sprintf(buf, "[%s %02d:%02d:%02d]", _("SMTWTFS"),
 					t->hour, t->minute, t->second);
+
+				for(i=0; i<7; i++) {
+					if(!(t->wday & (1<<i)))
+						buf[i+1] = '_';
+				}
             } else {
+				if (t->mday)
+					sprintf(mday, "%02d", t->mday);
+				else
+					sprintf(mday, "%c", '*');
+
+				if (t->month)
+					sprintf(month, "%02d", t->month);
+				else
+					sprintf(month, "%c", '*');
+
+				if (t->year)
+					sprintf(year, "%02d", t->year);			
+				else
+					sprintf(year, "%c", '*');
+
 				sprintf(buf, "[%s/%s/%s %02d:%02d:%02d]", mday, month, year, t->hour, t->minute, t->second);
             } 
 
@@ -984,7 +947,7 @@ cmp:
 		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING: {
             char bot[100];
-            sprintf(bot, "%s: %s", which == ELEM_READ_FORMATTED_STRING ? "READ" : "WRITE", 
+            sprintf(bot, "%s: %s", which == ELEM_READ_FORMATTED_STRING ? _("READ") : _("WRITE"), 
 										leaf->d.fmtdStr.var);
 
             int extra = 2*POS_WIDTH - strlen(bot);
@@ -1004,7 +967,7 @@ cmp:
 		case ELEM_READ_SERVO_YASKAWA:
 		case ELEM_WRITE_SERVO_YASKAWA:{
             char bot[100];
-            sprintf(bot, "%s: %s", which == ELEM_READ_SERVO_YASKAWA ? "RX NS600" : "TX NS600", 
+            sprintf(bot, "%s: %s", which == ELEM_READ_SERVO_YASKAWA ? _("RX NS600") : _("TX NS600"), 
 										leaf->d.servoYaskawa.var);
 
             int extra = 2*POS_WIDTH - strlen(bot);
@@ -1024,7 +987,7 @@ cmp:
         case ELEM_SET_BIT:
 		{
 			char str[100];
-			sprintf(str, "{%s BIT:%d}", leaf->d.setBit.set ? "SET" : "RST", leaf->d.setBit.bit);
+			sprintf(str, _("{%s BIT:%d}"), leaf->d.setBit.set ? _("SET") : _("RST"), leaf->d.setBit.bit);
             CenterWithWires(*cx, *cy, str, poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, leaf->d.setBit.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
@@ -1033,7 +996,7 @@ cmp:
         case ELEM_CHECK_BIT:
 		{
 			char str[100];
-			sprintf(str, "{CHECK %s:%d}", leaf->d.checkBit.set ? "ON" : "OFF", leaf->d.checkBit.bit);
+			sprintf(str, _("{CHECK %s:%d}"), leaf->d.checkBit.set ? _("ON") : _("OFF"), leaf->d.checkBit.bit);
             CenterWithWires(*cx, *cy, str, poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, leaf->d.checkBit.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
@@ -1042,7 +1005,7 @@ cmp:
         case ELEM_READ_USS:
         case ELEM_WRITE_USS:
             CenterWithWires(*cx, *cy,
-                (which == ELEM_READ_USS) ? "{READ USS}" : "{WRITE USS}",
+                (which == ELEM_READ_USS) ? _("{READ USS}") : _("{WRITE USS}"),
                 poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, (which == ELEM_READ_USS) ? leaf->d.readUSS.name : leaf->d.writeUSS.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
@@ -1051,7 +1014,7 @@ cmp:
         case ELEM_READ_MODBUS:
         case ELEM_WRITE_MODBUS:
             CenterWithWires(*cx, *cy,
-                (which == ELEM_READ_MODBUS) ? "{READ MB 485}" : "{WRITE MB 485}",
+                (which == ELEM_READ_MODBUS) ? _("{READ MB 485}") : _("{WRITE MB 485}"),
                 poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, (which == ELEM_READ_MODBUS) ? leaf->d.readModbus.name : leaf->d.writeModbus.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
@@ -1060,7 +1023,7 @@ cmp:
         case ELEM_READ_MODBUS_ETH:
         case ELEM_WRITE_MODBUS_ETH:
             CenterWithWires(*cx, *cy,
-                (which == ELEM_READ_MODBUS_ETH) ? "{READ MB ETH}" : "{WRITE MB ETH}",
+                (which == ELEM_READ_MODBUS_ETH) ? _("{READ MB ETH}") : _("{WRITE MB ETH}"),
                 poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, (which == ELEM_READ_MODBUS_ETH) ? leaf->d.readModbusEth.name : leaf->d.writeModbusEth.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
@@ -1069,7 +1032,7 @@ cmp:
 		case ELEM_UART_RECV:
         case ELEM_UART_SEND:
             CenterWithWires(*cx, *cy,
-                (which == ELEM_UART_RECV) ? "{UART RECV}" : "{UART SEND}",
+                (which == ELEM_UART_RECV) ? _("{UART RECV}") : _("{UART SEND}"),
                 poweredBefore, poweredAfter);
             CenterWithSpaces(*cx, *cy, leaf->d.uart.name, poweredAfter, TRUE);
             *cx += POS_WIDTH;
@@ -1235,6 +1198,8 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
                     if(CheckBoundsUndoIfFails(gx, gy)) return FALSE;
 
                     DM_BOUNDS(gx, gy);
+					if(gx>0 && DisplayMatrixWhich[gx-1][gy] == ELEM_PLACEHOLDER)
+						break;
                     DisplayMatrix[gx][gy] = PADDING_IN_DISPLAY_MATRIX;
                     DisplayMatrixWhich[gx][gy] = ELEM_PADDING;
 
@@ -1265,10 +1230,13 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
             BOOL needWire;
 
             if(*cx/POS_WIDTH != ColsAvailable) {
+				int gx = *cx/POS_WIDTH;
+				int gy = *cy/POS_HEIGHT;
+
                 needWire = FALSE;
                 for(j = heightMax - 1; j >= 1; j--) {
                     if(j <= lowestPowered) PoweredText(poweredAfter);
-                    if(DisplayMatrix[*cx/POS_WIDTH - 1][*cy/POS_HEIGHT + j]) {
+                    if(DisplayMatrix[gx - 1][gy + j] && DisplayMatrixWhich[gx - 1][gy + j] != ELEM_PLACEHOLDER) {
                         needWire = TRUE;
                     }
                     if(needWire) VerticalWire(*cx - 1, *cy + j*POS_HEIGHT);
@@ -1308,7 +1276,7 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
 void DrawEndRung(int cx, int cy)
 {
     int i;
-    char *str = "[END]";
+    char *str = _("[END]");
     int lead = (POS_WIDTH - strlen(str))/2;
     ThisHighlighted = TRUE;
     for(i = 0; i < lead; i++) {

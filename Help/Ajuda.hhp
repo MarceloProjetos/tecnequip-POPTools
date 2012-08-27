@@ -34,3 +34,9 @@ img\WelcomePicture.jpg
 topics\Topic1.htm
 topics\Default.htm
 
+[ALIAS]
+#include contexts.ali
+
+[MAP]
+#include contexts.h
+

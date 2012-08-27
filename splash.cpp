@@ -5,6 +5,7 @@
 #include "windows.h"
 #include "resource.h"
 #include "SPLASH.h"
+#include "ldmicro.h"
 
 HBITMAP hBitmap;
 
@@ -18,7 +19,7 @@ LRESULT CALLBACK SplashWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	case WM_CREATE:
         hBitmap = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_SPLASH));
         if(hBitmap == NULL)
-            MessageBox(hwnd, "Could not load splash image!", "Error", MB_OK | MB_ICONEXCLAMATION);
+            MessageBox(hwnd, _("Could not load splash image!"), _("Error"), MB_OK | MB_ICONEXCLAMATION);
 		break;
 	case WM_PAINT: {
 			BITMAP bm;
@@ -82,8 +83,8 @@ void SPLASH::Show()
     wc.lpszClassName = c_szSplashClass;
     RegisterClass(&wc);
 
-	hSplashWnd=CreateWindowEx(WS_EX_CLIENTEDGE,c_szSplashClass,"Sobre...",
-		WS_POPUPWINDOW|WS_EX_TOPMOST|WS_EX_TOOLWINDOW | WS_DLGFRAME| SS_BITMAP,440,300,420,330,hParentWindow,NULL,GetModuleHandle(NULL),NULL);
+	hSplashWnd=CreateWindowEx(WS_EX_CLIENTEDGE,c_szSplashClass,_("Sobre..."),
+		WS_POPUPWINDOW|WS_EX_TOPMOST|WS_EX_TOOLWINDOW | WS_DLGFRAME| SS_BITMAP,440,300,550,450,hParentWindow,NULL,GetModuleHandle(NULL),NULL);
 
 	HBITMAP hBitmap;
 	hBitmap = LoadBitmap(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SPLASH));

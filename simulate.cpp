@@ -592,10 +592,6 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.readEnc.name, VAR_FLAG_ANY);
             break;
 
-        case ELEM_RESET_ENC:
-            MarkWithCheck(l->d.resetEnc.name, VAR_FLAG_ANY);
-            break;
-
         case ELEM_READ_USS:
             MarkWithCheck(l->d.readUSS.name, VAR_FLAG_ANY);
             break;
@@ -645,6 +641,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         }
 
         case ELEM_PERSIST:
+        case ELEM_RESET_ENC:
 		case ELEM_READ_FORMATTED_STRING:
 		case ELEM_WRITE_FORMATTED_STRING:
 		case ELEM_READ_SERVO_YASKAWA:
@@ -920,7 +917,7 @@ math:
                 break;
 
             case INT_SET_DA:
-                SetSimulationVariable(a->name1, GetDAShadow(a->name1));
+                SetDAShadow(a->name1, GetSimulationVariable(a->name1));
                 break;
 
             case INT_READ_ENC:
@@ -1200,6 +1197,12 @@ void DescribeForIoList(char *name, int type, char *out)
             sprintf(out, "%d", SingleBitOn(name));
             break;
 
+		case IO_TYPE_SET_DA: {
+            SWORD v = GetDAShadow(name);
+            sprintf(out, "%i (0x%08x)", v, v);
+            break;
+		}
+
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
         case IO_TYPE_RTO: {
@@ -1443,7 +1446,7 @@ static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int para
 {
     char append[125];
 
-    sprintf(append, "USS: id=%d, param=%d, index=%d, name=%s, value=%d\r\n", id, param, index, name, val);
+    sprintf(append, _("USS: id=%d, param=%d, index=%d, name=%s, value=%d\r\n"), id, param, index, name, val);
 
     char buf[MAX_SCROLLBACK];
 
@@ -1464,7 +1467,7 @@ static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int a
 {
     char append[125];
 
-    sprintf(append, "MODBUS: id=%d, address=%d, name=%s\r\n", id, address, name);
+    sprintf(append, _("MODBUS: id=%d, address=%d, name=%s\r\n"), id, address, name);
 
     char buf[MAX_SCROLLBACK];
 
@@ -1485,7 +1488,7 @@ static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned in
 {
     char append[125];
 
-    sprintf(append, "MODBUS_ETH: id=%d, address=%d, name=%s\r\n", id, address, name);
+    sprintf(append, _("MODBUS_ETH: id=%d, address=%d, name=%s\r\n"), id, address, name);
 
     char buf[MAX_SCROLLBACK];
 
