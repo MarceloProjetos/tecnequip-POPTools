@@ -57,14 +57,23 @@ const LPCTSTR ComboboxGMTItens[] = { _("(GMT-12:00) Linha de Data Internacional 
 const LPCTSTR ComboboxBaudRateItens[] = { /*"2400", "4800", "7200",*/ "9600", "14400", "19200"/*, "28800", 
 						"38400", "57600", "115200"*/ };
 
-const LPCTSTR ComboboxParityItens[] = { _("8-None-1"), _("8-Even-1"), _("8-Odd-1"), _("7-None-1"), _("7-Even-1"), _("7-Odd-1") };
-
 // http://www.ntp.br/
 // http://pt.wikipedia.org/wiki/Network_Time_Protocol
 // http://tf.nist.gov/tf-cgi/servers.cgi
 // https://support.ntp.org/bin/view/Servers/StratumOneTimeServers
 // http://support.ntp.org/bin/view/Servers/NTPPoolServers
 const LPCTSTR ComboboxSNTPItens[] = { "br.pool.ntp.org", "a.ntp.br", "gps.ntp.br", "pool.ntp.org", "time-nw.nist.gov", "time.microsoft.com" };
+
+struct strSerialConfig SerialConfig[] = {
+	{ 8, NOPARITY  , ONESTOPBIT, _("8-None-1") },
+	{ 8, EVENPARITY, ONESTOPBIT, _("8-Even-1") },
+	{ 8, ODDPARITY , ONESTOPBIT, _("8-Odd-1" ) },
+	{ 7, NOPARITY  , ONESTOPBIT, _("7-None-1") },
+	{ 7, EVENPARITY, ONESTOPBIT, _("7-Even-1") },
+	{ 7, ODDPARITY , ONESTOPBIT, _("7-Odd-1" ) }
+};
+
+char *SerialParityString[] = { _("Sem Paridade"), _("Paridade Ímpar"), _("Paridade Par") };
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
@@ -386,8 +395,8 @@ bool ShowConfDialog(bool NetworkSection)
 	/*SendMessage(PLCCombobox, CB_SETCURSEL, 0, 0);
 	SendMessage(PLCCombobox, CB_SETDROPPEDWIDTH, 100, 0);*/
 
-	for (i = 0; i < sizeof(ComboboxParityItens) / sizeof(ComboboxParityItens[0]); i++)
-		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxParityItens[i]));
+	for (i = 0; i < sizeof(SerialConfig) / sizeof(SerialConfig[0]); i++)
+		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)SerialConfig[i].ConfigName));
 
 	SendMessage(ParityCombobox, CB_SETCURSEL, Prog.settings.UART, 0);
 	SendMessage(ParityCombobox, CB_SETDROPPEDWIDTH, 100, 0);

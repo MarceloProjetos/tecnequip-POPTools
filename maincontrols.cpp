@@ -113,8 +113,8 @@ void MakeMainWindowControls(void)
 
 	StatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
         _("POPTools iniciado"), MainWindow, 0);
-    int edges[] = { 250, 370, -1 };
-    SendMessage(StatusBar, SB_SETPARTS, 3, (LPARAM)edges);
+    int edges[] = { 250, 370, 490, -1 };
+    SendMessage(StatusBar, SB_SETPARTS, 4, (LPARAM)edges);
 
     ShowWindow(IoList, SW_SHOW);
 }
@@ -769,16 +769,20 @@ void RefreshControlsToSettings(void)
         SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_("no MCU selected"));
     }*/
     char buf[256];
-    sprintf(buf, _("cycle time %.2f ms"), (double)Prog.settings.cycleTime/1000.0);
+	sprintf(buf, _("IP: %d.%d.%d.%d"), Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
     SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)buf);
+
+	sprintf(buf, _("ModBUS ID: %d"), Prog.settings.ModBUSID);
+    SendMessage(StatusBar, SB_SETTEXT, 2, (LPARAM)buf);
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC || Prog.mcu->whichIsa == ISA_INTERPRETED))
     {
 		strcpy(buf, "");
     } else {
-        sprintf(buf, _("processor clock %.4f MHz"), (double)Prog.settings.mcuClock/1000000.0);
+		sprintf(buf, _("RS-485: %d bps, %d bits de dados, %s, Bits de Parada: %d"), Prog.settings.baudRate, SerialConfig[Prog.settings.UART].bByteSize,
+			SerialParityString[SerialConfig[Prog.settings.UART].bParity], SerialConfig[Prog.settings.UART].bStopBits);
     }
-    SendMessage(StatusBar, SB_SETTEXT, 2, (LPARAM)buf);
+    SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 
     for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
 	{

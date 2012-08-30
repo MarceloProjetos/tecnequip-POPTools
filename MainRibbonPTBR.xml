@@ -595,6 +595,17 @@
       </Command.LargeImages>
     </Command>
 
+    <Command Name         = "ExampleTester"
+               Symbol     = "cmdExampleTester"
+               Id         = "30416"
+               LabelTitle = "Testador">
+      <Command.TooltipTitle      >Testador</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de aplicação - Testador.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/ExampleTesterHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
+
     <!-- Comandos para inserir instruções ao Diagrama Ladder -->
     <Command Name         = "InstrComment"
                Symbol     = "cmdInstrComment"
@@ -1409,10 +1420,10 @@
     <Command Name         = "InstrShiftRegister"
                Symbol     = "cmdInstrShiftRegister"
                Id         = "30529"
-               LabelTitle = "Tabela de Troca"
-               LabelDescription = "Inserir tabela de troca na posição do cursor.">
-      <Command.TooltipTitle      >Tabela de Troca</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir tabela de troca na posição do cursor.</Command.TooltipDescription>
+               LabelTitle = "Fila de Variáveis"
+               LabelDescription = "Inserir fila de variáveis na posição do cursor.">
+      <Command.TooltipTitle      >Fila de Variáveis</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir fila de variáveis na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrShiftRegisterHH.bmp"/>
       </Command.LargeImages>
@@ -1423,10 +1434,10 @@
     <Command Name         = "ExampleShiftRegister"
                Symbol     = "cmdExampleShiftRegister"
                Id         = "31529"
-               LabelTitle = "Tabela de Troca"
-               LabelDescription = "Inserir tabela de troca na posição do cursor.">
-      <Command.TooltipTitle      >Tabela de Troca</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução tabela de troca.</Command.TooltipDescription>
+               LabelTitle = "Fila de Variáveis"
+               LabelDescription = "Inserir tabela de fila de variáveis do cursor.">
+      <Command.TooltipTitle      >Fila de Variáveis</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução fila de variáveis.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrShiftRegisterHH.bmp"/>
       </Command.LargeImages>
@@ -1577,8 +1588,8 @@
     <Command Name         = "InstrReadEnc"
                Symbol     = "cmdInstrReadEnc"
                Id         = "30535"
-               LabelTitle = "Leitura Encoder">
-      <Command.TooltipTitle      >Leitura Encoder (Q)</Command.TooltipTitle>
+               LabelTitle = "Leitura de Encoder">
+      <Command.TooltipTitle      >Leitura de Encoder (Q)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura de encoder na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadEncHH.bmp"/>
@@ -1590,8 +1601,8 @@
     <Command Name         = "ExampleReadEnc"
                Symbol     = "cmdExampleReadEnc"
                Id         = "31535"
-               LabelTitle = "Leitura Encoder">
-      <Command.TooltipTitle      >Leitura Encoder (Q)</Command.TooltipTitle>
+               LabelTitle = "Leitura de Encoder">
+      <Command.TooltipTitle      >Leitura de Encoder (Q)</Command.TooltipTitle>
       <Command.TooltipDescription>Abrir exemplo de instrução leitura de encoder.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadEncHH.bmp"/>
@@ -1712,8 +1723,8 @@
     <Command Name         = "InstrReadNS600"
                Symbol     = "cmdInstrReadNS600"
                Id         = "30540"
-               LabelTitle = "Leitura NS-600 Yaskawa">
-      <Command.TooltipTitle      >Leitura NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
+               LabelTitle = "Leitura de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Leitura de NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir leitura de NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadNS600HH.bmp"/>
@@ -1725,8 +1736,8 @@
     <Command Name         = "ExampleReadNS600"
                Symbol     = "cmdExampleReadNS600"
                Id         = "31540"
-               LabelTitle = "Leitura NS-600 Yaskawa">
-      <Command.TooltipTitle      >Leitura NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
+               LabelTitle = "Leitura de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Leitura de NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
       <Command.TooltipDescription>Abrir exemplo de instrução leitura de NS-600 Yaskawa.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrReadNS600HH.bmp"/>
@@ -1739,8 +1750,8 @@
     <Command Name         = "InstrWriteNS600"
                Symbol     = "cmdInstrWriteNS600"
                Id         = "30541"
-               LabelTitle = "Escrita NS-600 Yaskawa">
-      <Command.TooltipTitle      >Escrita NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
+               LabelTitle = "Escrita de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Escrita de NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita no NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteNS600HH.bmp"/>
@@ -1752,8 +1763,8 @@
     <Command Name         = "ExampleWriteNS600"
                Symbol     = "cmdExampleWriteNS600"
                Id         = "31541"
-               LabelTitle = "Escrita NS-600 Yaskawa">
-      <Command.TooltipTitle      >Escrita NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
+               LabelTitle = "Escrita de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Escrita de NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
       <Command.TooltipDescription>Abrir exemplo de instrução escrita no NS-600 Yaskawa.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteNS600HH.bmp"/>
@@ -2364,7 +2375,6 @@
               </ScalingPolicy.IdealSizes>
               <Scale Group ="GroupCommOthers" Size="Medium" />
               <Scale Group ="GroupCommText"   Size="Medium" />
-              <Scale Group ="GroupAnalog"     Size="Medium" />
               <Scale Group ="GroupCommModBUS" Size="Popup"  />
               <Scale Group ="GroupMotors"     Size="Medium" />
               <Scale Group ="GroupCommOthers" Size="Small"  />

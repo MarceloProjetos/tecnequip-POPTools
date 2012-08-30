@@ -710,7 +710,7 @@ DWORD InvokeGCC(char* dest)
 
 	//output the application being run from the command window to the log file.
 
-	strcat(szArgs, ">> \"");
+	strcat(szArgs, "> \"");
 	strcat(szArgs, szAppOutputDir);
 	strcat(szArgs, "\\POPTools\\output.log\" 2>&1");
 
@@ -859,46 +859,6 @@ DWORD GenerateCFile(char *filename)
 
 	fprintf(f, "\n");
 
-	struct serialtag
-	{
-		int bits;
-		int parity;
-		int stopbit;
-	} serial;
-
-	switch(Prog.settings.UART)
-	{
-	case 1: // 8-E-1
-		serial.bits = 8;  // 8 bits
-		serial.parity = 2; // even
-		serial.stopbit = 1; // 1 stopbit
-		break;
-	case 2: // 8-O-1
-		serial.bits = 8;  // 8 bits
-		serial.parity = 1; // odd
-		serial.stopbit = 1; // 1 stopbit
-		break;
-	case 3: // 7-N-1
-		serial.bits = 7;  // 8 bits
-		serial.parity = 0; // even
-		serial.stopbit = 1; // 1 stopbit
-		break;
-	case 4: // 7-E-1
-		serial.bits = 7;  // 8 bits
-		serial.parity = 2; // even
-		serial.stopbit = 1; // 1 stopbit
-		break;
-	case 5: // 7-O-1
-		serial.bits = 7;  // 8 bits
-		serial.parity = 1; // odd
-		serial.stopbit = 1; // 1 stopbit
-		break;
-	default: // 8-N-1
-		serial.bits = 8;  // 8 bits
-		serial.parity = 0; // none
-		serial.stopbit = 1; // 1 stopbit
-	}
-
     fprintf(f,"void PLC_Run(void)\n{\n");
 
     GenerateAnsiC(f, ad_mask);
@@ -913,7 +873,8 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "	MODBUS_MASTER = %d;\n", MODBUS_MASTER);
 	fprintf(f, "	ModBUS_SetID(%d);\n", Prog.settings.ModBUSID);
 	fprintf(f, "\n");
-	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", Prog.settings.baudRate, serial.bits, serial.parity, serial.stopbit);
+	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", Prog.settings.baudRate, SerialConfig[Prog.settings.UART].bByteSize,
+		SerialConfig[Prog.settings.UART].bParity, SerialConfig[Prog.settings.UART].bStopBits == ONESTOPBIT ? 1 : 2);
 	fprintf(f, "\n");
 	fprintf(f, "	IP4_ADDR(&IP_ADDRESS, %d,%d,%d,%d);\n", Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
 	fprintf(f, "	IP4_ADDR(&IP_NETMASK, %d,%d,%d,%d);\n", Prog.settings.mask[0], Prog.settings.mask[1], Prog.settings.mask[2], Prog.settings.mask[3]);

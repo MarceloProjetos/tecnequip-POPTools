@@ -352,6 +352,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug - ES|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - ES|Win32'">true</ExcludedFromBuild>
+      <SubType>Designer</SubType>
     </CustomBuild>
     <CustomBuild Include="MainRibbonES.xml">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe MainRibbonES.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>

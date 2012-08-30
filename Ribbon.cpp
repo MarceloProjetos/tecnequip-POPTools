@@ -580,6 +580,7 @@ public:
 
 			EXEC_OPCODE(cmdExampleAdcLed            , MNU_EXAMPLE_ADC_LED         );
 			EXEC_OPCODE(cmdExampleSemaphore         , MNU_EXAMPLE_SEMAPHORE       );
+			EXEC_OPCODE(cmdExampleTester            , MNU_EXAMPLE_TESTER          );
 
 /*
 			case cmdMyChoice:
@@ -660,7 +661,7 @@ public:
 				{ L"ModBUS"         , { cmdExampleReadModBUS485, cmdExampleWriteModBUS485, cmdExampleReadModBUSEth, cmdExampleWriteModBUSEth, 0 } },
 				{ L"RS-485 - Texto" , { cmdExampleReadFormatString, cmdExampleWriteFormatString, cmdExampleReadChar, cmdExampleWriteChar, 0 } },
 				{ L"RS-485 - Outros", { cmdExampleReadNS600, cmdExampleWriteNS600, cmdExampleReadUSS, cmdExampleWriteUSS, 0 } },
-				{ L"Aplicações"     , { cmdExampleAdcLed, cmdExampleSemaphore, 0 } },
+				{ L"Aplicações"     , { cmdExampleAdcLed, cmdExampleSemaphore, cmdExampleTester, 0 } },
 				{ NULL, NULL }
 			};
 			hr = PopulateGallery(ppropvarCurrentValue, key, gi);

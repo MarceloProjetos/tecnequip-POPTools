@@ -302,6 +302,7 @@ void            DAC_Start(unsigned char up, unsigned char linear, unsigned char 
 /***************************************************************************/
 #ifndef __ADC_H__
 extern unsigned int ADC_Read(unsigned int a);
+extern void ADC_SetMask(unsigned int ad_mask);
 #endif
 
 /***************************************************************************/

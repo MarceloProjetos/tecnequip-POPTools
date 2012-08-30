@@ -47,7 +47,14 @@
     <Command Name="GroupAnalog"     Symbol="cmdGroupAnalog"     Id="30015" LabelTitle="Analógicos"      />
     <Command Name="GroupMotors"     Symbol="cmdGroupMotors"     Id="30022" LabelTitle="Motores"         />
     <Command Name="GroupCommText"   Symbol="cmdGroupCommText"   Id="30016" LabelTitle="RS-485 - Texto"  />
-    <Command Name="GroupCommModBUS" Symbol="cmdGroupCommModBUS" Id="30017" LabelTitle="ModBUS"          />
+    <Command Name="GroupCommModBUS" Symbol="cmdGroupCommModBUS" Id="30017" LabelTitle="ModBUS"           >
+    <Command.LargeImages>
+      <Image Source="imgs/GroupCommModBUSHH.bmp"/>
+    </Command.LargeImages>
+    <Command.SmallImages>
+      <Image Source="imgs/GroupCommModBUSHS.bmp"/>
+    </Command.SmallImages>
+    </Command>
     <Command Name="GroupCommOthers" Symbol="cmdGroupCommOthers" Id="30018" LabelTitle="RS-485 - Outros" />
     <Command Name="DropDownIO"      Symbol="cmdDropDownIO"      Id="30020" LabelTitle="Mais I/O"         >
       <Command.LargeImages>
@@ -70,6 +77,24 @@
     <Command Name="GroupActions"    Symbol="cmdGroupActions"    Id="30026" LabelTitle="Ações"           />
     <Command Name="GroupComment"    Symbol="cmdGroupComment"    Id="30027" LabelTitle="Documentação"    />
     <Command Name="GroupNavigate"   Symbol="cmdGroupNavigate"   Id="30029" LabelTitle="Navegação"       />
+
+    <Command Name="DropDownMBSend"    Symbol="cmdDropDownMBSend"    Id="30030" LabelTitle="ModBUS - Escrita">
+      <Command.LargeImages>
+        <Image Source="imgs/DropDownMBSendHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/DropDownMBSendHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name="DropDownMBRecv"    Symbol="cmdDropDownMBRecv"    Id="30031" LabelTitle="ModBUS - Leitura">
+      <Command.LargeImages>
+        <Image Source="imgs/DropDownMBRecvHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/DropDownMBRecvHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
 
     <!-- Comandos relacionados ao menu da aplicação -->
     <Command Name       = "FileNew"
@@ -567,6 +592,17 @@
       <Command.TooltipDescription>Abrir exemplo de aplicação - Semáforo.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/ExampleSemaphoreHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
+
+    <Command Name         = "ExampleTester"
+               Symbol     = "cmdExampleTester"
+               Id         = "30416"
+               LabelTitle = "Testador">
+      <Command.TooltipTitle      >Testador</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de aplicação - Testador.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/ExampleTesterHH.bmp"/>
       </Command.LargeImages>
     </Command>
 
@@ -1384,10 +1420,10 @@
     <Command Name         = "InstrShiftRegister"
                Symbol     = "cmdInstrShiftRegister"
                Id         = "30529"
-               LabelTitle = "Tabela de Troca"
-               LabelDescription = "Inserir tabela de troca na posição do cursor.">
-      <Command.TooltipTitle      >Tabela de Troca</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir tabela de troca na posição do cursor.</Command.TooltipDescription>
+               LabelTitle = "Fila de Variáveis"
+               LabelDescription = "Inserir fila de variáveis na posição do cursor.">
+      <Command.TooltipTitle      >Fila de Variáveis</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir fila de variáveis na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrShiftRegisterHH.bmp"/>
       </Command.LargeImages>
@@ -1398,10 +1434,10 @@
     <Command Name         = "ExampleShiftRegister"
                Symbol     = "cmdExampleShiftRegister"
                Id         = "31529"
-               LabelTitle = "Tabela de Troca"
-               LabelDescription = "Inserir tabela de troca na posição do cursor.">
-      <Command.TooltipTitle      >Tabela de Troca</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução tabela de troca.</Command.TooltipDescription>
+               LabelTitle = "Fila de Variáveis"
+               LabelDescription = "Inserir tabela de fila de variáveis do cursor.">
+      <Command.TooltipTitle      >Fila de Variáveis</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução fila de variáveis.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrShiftRegisterHH.bmp"/>
       </Command.LargeImages>
@@ -1714,8 +1750,8 @@
     <Command Name         = "InstrWriteNS600"
                Symbol     = "cmdInstrWriteNS600"
                Id         = "30541"
-               LabelTitle = "Escrita no NS-600 Yaskawa">
-      <Command.TooltipTitle      >Escrita no NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
+               LabelTitle = "Escrita de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Escrita de NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita no NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteNS600HH.bmp"/>
@@ -1727,8 +1763,8 @@
     <Command Name         = "ExampleWriteNS600"
                Symbol     = "cmdExampleWriteNS600"
                Id         = "31541"
-               LabelTitle = "Escrita no NS-600 Yaskawa">
-      <Command.TooltipTitle      >Escrita no NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
+               LabelTitle = "Escrita de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Escrita de NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
       <Command.TooltipDescription>Abrir exemplo de instrução escrita no NS-600 Yaskawa.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrWriteNS600HH.bmp"/>
@@ -2227,7 +2263,7 @@
           <Group CommandName="GroupSimulation" SizeDefinition="OneButton">
             <Button CommandName="Simulation"/>
           </Group>
-          <Group CommandName="GroupHelp" SizeDefinition="ThreeButtons">
+          <Group CommandName="GroupHelp" SizeDefinition="ThreeButtons-OneBigAndTwoSmall">
             <SplitButton CommandName="SplitUserManual">
               <SplitButton.ButtonItem>
                 <Button CommandName="UserManual"/>
@@ -2339,7 +2375,6 @@
               </ScalingPolicy.IdealSizes>
               <Scale Group ="GroupCommOthers" Size="Medium" />
               <Scale Group ="GroupCommText"   Size="Medium" />
-              <Scale Group ="GroupAnalog"     Size="Medium" />
               <Scale Group ="GroupCommModBUS" Size="Popup"  />
               <Scale Group ="GroupMotors"     Size="Medium" />
               <Scale Group ="GroupCommOthers" Size="Small"  />
@@ -2353,16 +2388,24 @@
             <Button CommandName="InstrWriteDA"/>
           </Group>
           <Group CommandName="GroupMotors" SizeDefinition="FourButtons">
-            <Button CommandName="InstrPWM"/>
             <Button CommandName="InstrRampDA"/>
+            <Button CommandName="InstrPWM"/>            
             <Button CommandName="InstrReadEnc"/>
             <Button CommandName="InstrResetEnc"/>
           </Group>
-          <Group CommandName="GroupCommModBUS" SizeDefinition="FourButtons">
-            <Button CommandName="InstrReadModBUS485"/>
-            <Button CommandName="InstrWriteModBUS485"/>
-            <Button CommandName="InstrReadModBUSEth"/>
-            <Button CommandName="InstrWriteModBUSEth"/>
+          <Group CommandName="GroupCommModBUS" SizeDefinition="TwoButtons">
+            <DropDownButton CommandName="DropDownMBRecv">
+              <MenuGroup Class="MajorItems">
+                <Button CommandName="InstrReadModBUS485"/>
+                <Button CommandName="InstrReadModBUSEth"/>
+              </MenuGroup>
+            </DropDownButton>
+            <DropDownButton CommandName="DropDownMBSend">
+              <MenuGroup Class="MajorItems">
+                <Button CommandName="InstrWriteModBUS485"/>
+                <Button CommandName="InstrWriteModBUSEth"/>
+              </MenuGroup>
+            </DropDownButton>
           </Group>
           <Group CommandName="GroupCommText" SizeDefinition="FourButtons">
             <Button CommandName="InstrReadFormatString"/>

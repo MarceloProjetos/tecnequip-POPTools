@@ -992,7 +992,9 @@ void ShowIoMapDialog(int item)
         return;
     }
 
-    if(_stricmp(Prog.io.assignment[item].name, _("new"))==0) {
+	if((_stricmp(Prog.io.assignment[item].name, _("in"))==0 && Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT) ||
+		(_stricmp(Prog.io.assignment[item].name, _("out"))==0 && Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT) ||
+		_stricmp(Prog.io.assignment[item].name, _("new"))==0) {
         Error(_("Rename I/O from default name ('%s') before assigning "
             "MCU pin."), Prog.io.assignment[item].name);
         return;

@@ -110,6 +110,13 @@ typedef SDWORD SWORD;
 // Constants for the GUI. We have drop-down menus, a listview for the I/Os,
 // etc.
 
+struct strSerialConfig {
+	BYTE  bByteSize;
+	BYTE  bParity;
+	BYTE  bStopBits;
+	char *ConfigName;
+};
+
 // Menu IDs
 
 #define MNU_NEW                 0x01
@@ -270,6 +277,7 @@ typedef SDWORD SWORD;
 
 #define MNU_EXAMPLE_ADC_LED    0x200
 #define MNU_EXAMPLE_SEMAPHORE  0x201
+#define MNU_EXAMPLE_TESTER     0x202
 
 // Columns within the I/O etc. listview.
 #define LV_IO_NAME              0x00
@@ -1141,6 +1149,8 @@ void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
 // confdialog.cpp
+extern struct strSerialConfig SerialConfig[];
+extern char *SerialParityString[];
 bool ShowConfDialog(bool NetworkSection);
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);

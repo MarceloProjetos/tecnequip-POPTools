@@ -260,45 +260,13 @@ void MB_Transfer(bool mode_send, bool mode_tcp, bool retry)
 	} else { // All OK, let's start the communication!
 		MODBUS_Device *mbdev;
 		unsigned int retries = retry ? 2 : 0;
-		BYTE bByteSize, bParity, bStopBits;
 
 		if(mode_tcp) {
 			mbdev = &MBDev_TCP;
 		} else {
 			mbdev = &MBDev_Serial;
-			switch(Prog.settings.UART) {
-			case 1: // 8-E-1
-				bByteSize  = 8; // 8 Bits
-				bParity    = EVENPARITY; // even
-				bStopBits  = ONESTOPBIT;
-				break;
-			case 2: // 8-O-1
-				bByteSize  = 8; // 8 Bits
-				bParity    = ODDPARITY; // odd
-				bStopBits  = ONESTOPBIT;
-				break;
-			case 3: // 7-N-1
-				bByteSize  = 7; // 7 Bits
-				bParity    = NOPARITY; // odd
-				bStopBits  = ONESTOPBIT;
-				break;
-			case 4: // 7-E-1
-				bByteSize  = 7; // 7 Bits
-				bParity    = EVENPARITY; // odd
-				bStopBits  = ONESTOPBIT;
-				break;
-			case 5: // 7-O-1
-				bByteSize  = 7; // 7 Bits
-				bParity    = ODDPARITY; // odd
-				bStopBits  = ONESTOPBIT;
-				break;
-			default: // 8-N-1
-				bByteSize  = 8; // 8 Bits
-				bParity    = NOPARITY; // no parity
-				bStopBits  = ONESTOPBIT;
-			}
-
-			if(!OpenCOMPort(POPSettings.COMPortDebug, Prog.settings.baudRate, bByteSize, bParity, bStopBits)) {
+			if(!OpenCOMPort(POPSettings.COMPortDebug, Prog.settings.baudRate, SerialConfig[Prog.settings.UART].bByteSize,
+					SerialConfig[Prog.settings.UART].bParity, SerialConfig[Prog.settings.UART].bStopBits)) {
 				Error(_("Erro abrindo porta serial!"));
 				return;
 			}

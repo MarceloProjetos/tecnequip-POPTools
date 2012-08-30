@@ -642,6 +642,7 @@ void ProcessMenu(int code)
         case MNU_NEW:
             if(CheckSaveUserCancels()) break;
             NewProgram();
+			ProgramChangedNotSaved = FALSE;
             strcpy(CurrentSaveFile, "");
             strcpy(CurrentCompileFile, "");
             GenerateIoListDontLoseSelection();
@@ -1125,6 +1126,10 @@ cmp:
             break;
 		case MNU_EXAMPLE_SEMAPHORE:
             OpenDialog("examples\\semaphore.ld");
+            break;
+
+		case MNU_EXAMPLE_TESTER:
+            OpenDialog("examples\\Tester.ld");
             break;
 
         case MNU_ABOUT:

@@ -610,6 +610,19 @@ bool IsInternalFlag(char *name)
 	return FALSE;	
 }
 
+bool IsReservedName(char *name)
+{
+	int i;
+	char *reserved[] = { _("in"), _("out"), _("new"), NULL };
+
+	for(i=0; reserved[i] != NULL; i++) {
+		if(!_stricmp(name, reserved[i]))
+			return true;
+	}
+
+	return false;
+}
+
 bool IsValidNumber(char *number)
 {
 	if(!IsNumber(number))
@@ -648,10 +661,11 @@ bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned in
 	bool ret = FALSE;
 	unsigned int current_type = GetTypeFromName(name);
 	bool name_is_internal_flag = IsInternalFlag(name);
+	bool name_is_reserved = IsReservedName(name);
 	bool name_is_number = IsNumber(name);
 
-	// Check for Internal Flags restrictions
-	if(new_type != IO_TYPE_INTERNAL_FLAG && name_is_internal_flag) {
+	// Check for Internal Flags and Reserved Names restrictions
+	if((new_type != IO_TYPE_INTERNAL_FLAG && name_is_internal_flag) || name_is_reserved) {
 		Error(_("Nome '%s' reservado para uso interno, favor escolher outro nome."), name);
 		return FALSE;
 	} else  if(new_type == IO_TYPE_INTERNAL_FLAG && !name_is_internal_flag) {
