@@ -1,30 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// The table of supported MCUs, used to determine where the IOs are, what
-// instruction set, what init code, etc.
-// Jonathan Westhues, Oct 2004
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// ATmega128 or ATmega64
-
 McuIoPinInfo AvrAtmega128_64TQFPIoPinInfo[] = {
     { 'E',  0,  2 },
     { 'E',  1,  3 },

@@ -1,26 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Routines for modifying the circuit: add a particular element at a
-// particular point, delete the selected element, etc. 
-// Jonathan Westhues, Oct 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +24,46 @@ ElemSubcktParallel *AllocSubcktParallel(void)
 }
 
 static BOOL CollapseUnnecessarySubckts(int which, void *any);
+
+//-----------------------------------------------------------------------------
+// Returns TRUE if the subcircuit contains any of the given instruction
+// types (ELEM_....), else FALSE.
+//-----------------------------------------------------------------------------
+static BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
+{
+    switch(which) {
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
+            int i;
+            for(i = 0; i < p->count; i++) {
+                if(ContainsWhich(p->contents[i].which, p->contents[i].d.any,
+                    seek1, seek2, seek3))
+                {
+                    return TRUE;
+                }
+            }
+            break;
+        }
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int i;
+            for(i = 0; i < s->count; i++) {
+                if(ContainsWhich(s->contents[i].which, s->contents[i].d.any,
+                    seek1, seek2, seek3))
+                {
+                    return TRUE;
+                }
+            }
+            break;
+        }
+        default:
+            if(which == seek1 || which == seek2 || which == seek3) {
+                return TRUE;
+            }
+            break;
+    }
+    return FALSE;
+}
 
 // The following element holds the start point where a parallel subcircuit should be inserted.
 ElemLeaf *ParallelStart;
@@ -159,9 +176,9 @@ int SearchMatch(ElemSubcktSeries *series, int which, void *any, int direction)
 int RemoveParallelStart(int which, void *any)
 {
 	int i, ret = SUBCKT_STATUS_NOTFOUND;
-	if(ParallelStart != NULL) {
+	if(Prog.ParallelStart != NULL) {
 		if(any == NULL) {
-			InsertionPoint Point = { 0, ParallelStart, NULL, NULL };
+			InsertionPoint Point = { 0, Prog.ParallelStart, NULL, NULL };
 			for(i=0; i < Prog.numRungs; i++) {
 				if(ElemInSubcktSeries(ELEM_SERIES_SUBCKT, Prog.rungs[i], &Point) != SUBCKT_STATUS_NOTFOUND) {
 					any = Prog.rungs[i];
@@ -171,14 +188,17 @@ int RemoveParallelStart(int which, void *any)
 			}
 		}
 		if(any == NULL) {
-			CheckFree(ParallelStart);
-			ParallelStart = NULL;
+			// Prog.ParallelStart was not found. We should to look for ELEM_PLACEHOLDER instead.
+			for(i=0; i < Prog.numRungs; i++) {
+				if(RemoveParallelStart(ELEM_SERIES_SUBCKT, Prog.rungs[i]) != SUBCKT_STATUS_NOTFOUND)
+					break;
+			}
 		} else {
 			switch(which) {
 				case ELEM_SERIES_SUBCKT: {
 					ElemSubcktSeries *s = (ElemSubcktSeries *)any;
 					for(i = 0; i < s->count; i++) {
-						// ParallelStart will be always an element inside a Parallel subcircuit.
+						// Prog.ParallelStart will be always an element inside a Parallel subcircuit.
 						if(s->contents[i].which == ELEM_PARALLEL_SUBCKT) {
 							ret = RemoveParallelStart(ELEM_PARALLEL_SUBCKT, s->contents[i].d.any);
 							if(ret != SUBCKT_STATUS_NOTFOUND)
@@ -190,13 +210,23 @@ int RemoveParallelStart(int which, void *any)
 				case ELEM_PARALLEL_SUBCKT: {
 					ElemSubcktParallel *p = (ElemSubcktParallel *)any;
 					for(i = 0; i < p->count; i++) {
-						if(p->contents[i].d.any == ParallelStart) {
-							CheckFree(ParallelStart);
+						if(p->contents[i].which == ELEM_PLACEHOLDER) {
+							CheckFree(p->contents[i].d.leaf);
+
 							memmove(&p->contents[i], &p->contents[i+1],
 								(p->count - i - 1)*sizeof(p->contents[0]));
 							(p->count)--;
-							ParallelStart = NULL;
+
+							if(Selected == Prog.ParallelStart) {
+								Selected = p->contents[0].d.leaf;
+								SelectedWhich = p->contents[0].which;
+								Selected->selectedState = SELECTED_LEFT;
+								WhatCanWeDoFromCursorAndTopology();
+							}
+
 							ret = SUBCKT_STATUS_INSIDE;
+							Prog.ParallelStart = NULL;
+
 							break;
 						} else if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
 							ret = RemoveParallelStart(ELEM_SERIES_SUBCKT, p->contents[i].d.any);
@@ -212,31 +242,22 @@ int RemoveParallelStart(int which, void *any)
 	return ret;
 }
 
-// Tries to insert a parallel subcircuit between ParallelStart and currently selected object
+// Tries to insert a parallel subcircuit between Prog.ParallelStart and currently selected object
 void InsertParallel(int newWhich, ElemLeaf *newElem)
 {
 	int i, CurrentRung, UseCurrentParallel = 1;
-	InsertionPoint StartPoint = { 0, ParallelStart, NULL, NULL}, EndPoint = { 0, Selected, NULL, NULL};
+	InsertionPoint StartPoint = { 0, Prog.ParallelStart, NULL, NULL}, EndPoint = { 0, Selected, NULL, NULL};
 
 	// First we should to remove last saved state because UndoRemember was called before to add this new elemment.
 	// We don't want user going back to this state (with parallel start)!
 	UndoForget();
 
-	// Phase 1: check if ParallelStart and currently selected object are in the same subcircuit.
+	// Phase 1: check if Prog.ParallelStart and currently selected object are in the same subcircuit.
 	for(i=0; i < Prog.numRungs; i++) {
 		ElemInSubcktSeries(ELEM_SERIES_SUBCKT, Prog.rungs[i], &StartPoint);
 		if(StartPoint.series != NULL) {
-			// Start found, now we will search for End in the same subcircuit.
-			ElemInSubcktSeries(ELEM_SERIES_SUBCKT, StartPoint.series, &EndPoint);
-			if(EndPoint.series == NULL) { // End not found. Maybe start and end are swapped?
-				ElemInSubcktSeries(ELEM_SERIES_SUBCKT, Prog.rungs[i], &EndPoint);
-				if(EndPoint.series) { // End found in the same rung. Now we search for start in the same subcircuit
-					StartPoint.point    = 0;
-					StartPoint.series   = NULL;
-					StartPoint.parallel = NULL;
-					ElemInSubcktSeries(ELEM_SERIES_SUBCKT, EndPoint.series, &StartPoint);
-				}
-			}
+			// Start found, now we will search for End in the same rung and stop the search.
+			ElemInSubcktSeries(ELEM_SERIES_SUBCKT, Prog.rungs[i], &EndPoint);
 			break;
 		}
 	}
@@ -303,8 +324,15 @@ void InsertParallel(int newWhich, ElemLeaf *newElem)
 	}
 
 	// Phase 3: creates a series subcircuit containing all elements between start and end points.
-	if(StartPoint.series && StartPoint.series == EndPoint.series) {
+	if(StartPoint.series && StartPoint.series == EndPoint.series && SelectedWhich!= ELEM_PLACEHOLDER) {
 		if(StartPoint.point > EndPoint.point) {
+			// Special condition: selectedstate is SELECTED_RIGHT
+			if(Selected->selectedState == SELECTED_RIGHT) {
+				EndPoint.point++;
+				StartPoint.point--;
+				UseCurrentParallel = 0;
+			}
+
 			i = StartPoint.point;
 			StartPoint.point = EndPoint.point;
 			EndPoint.point = i;
@@ -346,7 +374,7 @@ void InsertParallel(int newWhich, ElemLeaf *newElem)
 		CheckFree(newElem);
 	}
 
-	// Phase 5: free ParallelStart and collapse.
+	// Phase 5: free Prog.ParallelStart and collapse.
 	RemoveParallelStart(ELEM_SERIES_SUBCKT, Prog.rungs[CurrentRung]);
 	while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[CurrentRung]));
 }
@@ -382,7 +410,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 }
             }
             if(i == s->count) break;
-			if(ParallelStart != NULL) {
+			if(Prog.ParallelStart != NULL) {
 				InsertParallel(newWhich, newElem);
 				return TRUE;
 			}
@@ -459,7 +487,7 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
                 }
             }
             if(i == p->count) break;
-			if(ParallelStart != NULL) {
+			if(Prog.ParallelStart != NULL) {
 				InsertParallel(newWhich, newElem);
 				return TRUE;
 			}
@@ -513,6 +541,99 @@ static BOOL AddLeafWorker(int which, void *any, int newWhich, ElemLeaf *newElem)
     return FALSE;
 }
 
+bool MoveCoilsOutsideWorker(ElemSubcktSeries *rung, ElemSubcktParallel *p, ElemSubcktSeries *CoilSeries, void **any)
+{
+	int i;
+	bool NeedMove = false;
+
+	for(i = 0; i < p->count; i++) {
+		if(p->contents[i].which == ELEM_SERIES_SUBCKT) {
+			ElemSubcktSeries *s = p->contents[i].d.series;
+			switch(s->contents[s->count-1].which) {
+			case ELEM_COIL:
+				CoilSeries = s;
+				if(*any != NULL) {
+					NeedMove = true;
+				}
+				break;
+			case ELEM_PARALLEL_SUBCKT:
+				if(MoveCoilsOutsideWorker(rung, s->contents[s->count-1].d.parallel, CoilSeries, any)) {
+					return true; // Coil moved, exiting...
+				}
+				break;
+			default:
+				if(CoilSeries != NULL) {
+					NeedMove = true;
+				} else {
+					*any = s->contents[s->count-1].d.any;
+				}
+			}
+		} else if(p->contents[i].which == ELEM_COIL) {
+			; // do nothing for now...
+		} else if(CoilSeries != NULL) {
+			NeedMove = true;
+		} else {
+			*any = p->contents[i].d.any;
+		}
+
+		if(NeedMove) {
+			// Found a coil inside parallel! Lets move it outside.
+			if(rung->count >= (MAX_ELEMENTS_IN_SUBCKT-1)) {
+				// What should we do now? I can't move coil outside!
+				// For now, just keep it as is...
+				Error(_("Too many elements in subcircuit!"));
+			} else {
+				rung->contents[rung->count].d.any = CoilSeries->contents[CoilSeries->count-1].d.any;
+				rung->contents[rung->count].which = CoilSeries->contents[CoilSeries->count-1].which;
+				rung->count++;
+				CoilSeries->count--;
+			}
+
+			// Coil moved, end loop.
+			break;
+		}
+	}
+
+	return NeedMove;
+}
+
+// A coil was added. We should check if there is different elements ending in other subckts.
+void MoveCoilsOutside(ElemSubcktSeries *s)
+{
+	if(s == NULL) s = Prog.rungs[0];
+
+	if(s->contents[s->count-1].which == ELEM_PARALLEL_SUBCKT) {
+		ElemSubcktParallel *p = s->contents[s->count-1].d.parallel;
+		if(s->count == 1 && p->count == 2 &&
+			p->contents[0].which == ELEM_COIL && p->contents[0].which == ELEM_COIL) {
+				Error("Duas bobinas!");
+		} else {
+			void *any = NULL;
+			MoveCoilsOutsideWorker(s, p, NULL, &any);
+		}
+	}
+}
+
+void AddPlaceHolderIfNoEOL(ElemSubcktSeries *s)
+{
+	if(s->count && s->contents[s->count-1].which == ELEM_PARALLEL_SUBCKT) {
+		// The line ends in a parallel. Now we have to check if there is any EOL element inside it.
+		BOOL HasEOL = ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_CTC, ELEM_RES, ELEM_READ_ADC) ||
+						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_SET_DA, ELEM_READ_ENC, ELEM_MULTISET_DA) ||
+						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_RESET_ENC, ELEM_SET_PWM, ELEM_PERSIST) ||
+						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_MOVE, ELEM_MASTER_RELAY, ELEM_SHIFT_REGISTER) ||
+						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_PIECEWISE_LINEAR, ELEM_LOOK_UP_TABLE, ELEM_COIL) ||
+						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_DIV, ELEM_MUL, ELEM_SUB) ||
+						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_ADD, 0, 0);
+
+		if(!HasEOL) {
+			s->contents[s->count].d.leaf = AllocLeaf();
+			s->contents[s->count].which  = ELEM_PLACEHOLDER;
+			s->count++;
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Add the specified leaf node in the position indicated by the cursor. We
 // will search through the entire program using AddLeafWorker to find the
@@ -527,6 +648,16 @@ static BOOL AddLeaf(int newWhich, ElemLeaf *newElem)
     for(i = 0; i < Prog.numRungs; i++) {
         if(AddLeafWorker(ELEM_SERIES_SUBCKT, Prog.rungs[i], newWhich, newElem))
         {
+			// If the last item is a parallel and there is no EOL element,
+			// we should to add a placeholder as the last item so the user can
+			// insert an EOL element for the whole circuit.
+			AddPlaceHolderIfNoEOL(Prog.rungs[i]);
+
+			// Now we need to check if there is a coil inside a parallel.
+			// If yes, it should to be moved outside!
+			if(newWhich == ELEM_COIL) {
+//				MoveCoilsOutside(Prog.rungs[i]);
+			}
             WhatCanWeDoFromCursorAndTopology();
             return TRUE;
         }
@@ -544,7 +675,7 @@ bool CanInsert(int which)
 		break;
 
 	case ELEM_PLACEHOLDER:
-		if(ParallelStart != NULL || SelectedWhich == ELEM_PLACEHOLDER) {
+		if(Prog.ParallelStart != NULL || SelectedWhich == ELEM_PLACEHOLDER) {
 			break;
 		}
 		if(Selected->selectedState != SELECTED_BELOW) {
@@ -659,7 +790,7 @@ bool AddParallelStart(void)
 
 	elem = AllocLeaf();
 	AddLeaf(ELEM_PLACEHOLDER, elem);
-	ParallelStart = elem;
+	Prog.ParallelStart = elem;
 
 	return true;
 }
@@ -1228,9 +1359,11 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
 //-----------------------------------------------------------------------------
 bool DeleteSelectedFromProgram(void)
 {
-    if(!Selected || Selected->selectedState == SELECTED_NONE) return false;
+	if(!Selected || Selected->selectedState == SELECTED_NONE) return false;
     int i = RungContainingSelected();
     if(i < 0) return false;
+
+	RemoveParallelStart(0, NULL);
 
     if(Prog.rungs[i]->count == 1 && 
         Prog.rungs[i]->contents[0].which != ELEM_PARALLEL_SUBCKT)
@@ -1249,6 +1382,7 @@ bool DeleteSelectedFromProgram(void)
     }
 
     if(DeleteSelectedFromSubckt(ELEM_SERIES_SUBCKT, Prog.rungs[i])) {
+		AddPlaceHolderIfNoEOL(Prog.rungs[i]);
         while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[i]))
             ;
         WhatCanWeDoFromCursorAndTopology();
@@ -1310,51 +1444,51 @@ void FreeEntireProgram(void)
     }
 
     Prog.numRungs = 0;
-    Prog.cycleTime = 10000;
-    Prog.mcuClock = 100000000;
-    Prog.baudRate = 9600;
-	Prog.UART = 0;
-	Prog.ModBUSID = 0;
+    Prog.settings.cycleTime = 10000;
+    Prog.settings.mcuClock = 100000000;
+    Prog.settings.baudRate = 9600;
+	Prog.settings.UART = 0;
+	Prog.settings.ModBUSID = 0;
     Prog.io.count = 0;
     Prog.mcu = NULL;
 
-	memset(&Prog.ip, 0, sizeof(Prog.ip));
-	memset(&Prog.mask, 0, sizeof(Prog.mask));
-	memset(&Prog.gw, 0, sizeof(Prog.gw));
-	memset(&Prog.dns, 0, sizeof(Prog.dns));
-	memset(&Prog.sntp, 0, sizeof(Prog.sntp));
+	memset(&Prog.settings.ip, 0, sizeof(Prog.settings.ip));
+	memset(&Prog.settings.mask, 0, sizeof(Prog.settings.mask));
+	memset(&Prog.settings.gw, 0, sizeof(Prog.settings.gw));
+	memset(&Prog.settings.dns, 0, sizeof(Prog.settings.dns));
+	memset(&Prog.settings.sntp, 0, sizeof(Prog.settings.sntp));
 
-	strncpy(Prog.sntp, "br.pool.ntp.org", sizeof(Prog.sntp));
+	strncpy(Prog.settings.sntp, "br.pool.ntp.org", sizeof(Prog.settings.sntp));
 
-	Prog.gmt = 9;
-	Prog.dailysave = 0;
+	Prog.settings.gmt = 9;
+	Prog.settings.dailysave = 0;
 
-	Prog.ip[0] = 192;
-	Prog.ip[1] = 168;
-	Prog.ip[2] = 0;
-	Prog.ip[3] = 254;
+	Prog.settings.ip[0] = 192;
+	Prog.settings.ip[1] = 168;
+	Prog.settings.ip[2] = 0;
+	Prog.settings.ip[3] = 254;
 
-	Prog.mask[0] = 255;
-	Prog.mask[1] = 255;
-	Prog.mask[2] = 255;
-	Prog.mask[3] = 0;
+	Prog.settings.mask[0] = 255;
+	Prog.settings.mask[1] = 255;
+	Prog.settings.mask[2] = 255;
+	Prog.settings.mask[3] = 0;
 
-	Prog.gw[0] = 192;
-	Prog.gw[1] = 168;
-	Prog.gw[2] = 0;
-	Prog.gw[3] = 1;
+	Prog.settings.gw[0] = 192;
+	Prog.settings.gw[1] = 168;
+	Prog.settings.gw[2] = 0;
+	Prog.settings.gw[3] = 1;
 
-	Prog.dns[0] = 192;
-	Prog.dns[1] = 168;
-	Prog.dns[2] = 0;
-	Prog.dns[3] = 1;
+	Prog.settings.dns[0] = 192;
+	Prog.settings.dns[1] = 168;
+	Prog.settings.dns[2] = 0;
+	Prog.settings.dns[3] = 1;
 
-	Prog.diameter = 0;
-	Prog.pulses = 0;
-	Prog.factor = 0;
-	Prog.x4 = 1;
+	Prog.settings.diameter = 0;
+	Prog.settings.pulses = 0;
+	Prog.settings.factor = 0;
+	Prog.settings.x4 = 1;
 
-	Prog.canSave = TRUE;
+	Prog.settings.canSave = TRUE;
 
 	for(i = 0; i < MAX_IO; i++)
 	{
@@ -1439,6 +1573,8 @@ bool DeleteSelectedRung(void)
         Error(_("Cannot delete rung; program must have at least one rung."));
         return false;
     }
+
+	RemoveParallelStart(0, NULL);
 
     int gx, gy;
     BOOL foundCursor;
@@ -1599,46 +1735,6 @@ BOOL ItemIsLastInCircuit(ElemLeaf *item)
         &andItemAfter);
 
     if(found) return !andItemAfter;
-    return FALSE;
-}
-
-//-----------------------------------------------------------------------------
-// Returns TRUE if the subcircuit contains any of the given instruction
-// types (ELEM_....), else FALSE.
-//-----------------------------------------------------------------------------
-static BOOL ContainsWhich(int which, void *any, int seek1, int seek2, int seek3)
-{
-    switch(which) {
-        case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int i;
-            for(i = 0; i < p->count; i++) {
-                if(ContainsWhich(p->contents[i].which, p->contents[i].d.any,
-                    seek1, seek2, seek3))
-                {
-                    return TRUE;
-                }
-            }
-            break;
-        }
-        case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int i;
-            for(i = 0; i < s->count; i++) {
-                if(ContainsWhich(s->contents[i].which, s->contents[i].d.any,
-                    seek1, seek2, seek3))
-                {
-                    return TRUE;
-                }
-            }
-            break;
-        }
-        default:
-            if(which == seek1 || which == seek2 || which == seek3) {
-                return TRUE;
-            }
-            break;
-    }
     return FALSE;
 }
 

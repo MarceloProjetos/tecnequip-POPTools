@@ -1,27 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Write the program as ANSI C source. This is very simple, because the
-// intermediate code structure is really a lot like C. Someone else will be
-// responsible for calling us with appropriate timing.
-// Jonathan Westhues, Oct 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <Shlobj.h>
 #include <stdio.h>
@@ -786,6 +762,7 @@ DWORD GenerateCFile(char *filename)
 
     if(setjmp(CompileErrorBuf) != 0) {
         fclose(f);
+		remove(filename);
         return 0;
     }
 
@@ -822,8 +799,8 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "#include \"ld.h\"\n");
 
 	fprintf(f, "\n");
-	//fprintf(f, "const volatile unsigned int 	CYCLE_TIME = %d;\n", Prog.cycleTime / 1000);
-	//fprintf(f, "const volatile unsigned int		TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n", Prog.cycleTime / 1000);
+	//fprintf(f, "const volatile unsigned int 	CYCLE_TIME = %d;\n", Prog.settings.cycleTime / 1000);
+	//fprintf(f, "const volatile unsigned int		TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n", Prog.settings.cycleTime / 1000);
 	
 	fprintf(f, "\n");
 	fprintf(f, "extern volatile unsigned char 	MODBUS_MASTER; // 0 = Slave, 1 = Master\n");
@@ -842,9 +819,9 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "extern struct ip_addr			IP_DNS;\n");
 
 	fprintf(f, "\n");
-	fprintf(f, "char 							SNTP_SERVER_ADDRESS[] = \"%s\";\n", Prog.sntp);
-	fprintf(f, "int								SNTP_GMT = %d;\n", Prog.gmt > 12 ? Prog.gmt - 12 : Prog.gmt - 12);
-	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", Prog.dailysave);
+	fprintf(f, "char 							SNTP_SERVER_ADDRESS[] = \"%s\";\n", Prog.settings.sntp);
+	fprintf(f, "int								SNTP_GMT = %d;\n", Prog.settings.gmt > 12 ? Prog.settings.gmt - 12 : Prog.settings.gmt - 12);
+	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", Prog.settings.dailysave);
 
 	//int j;
 
@@ -889,7 +866,7 @@ DWORD GenerateCFile(char *filename)
 		int stopbit;
 	} serial;
 
-	switch(Prog.UART)
+	switch(Prog.settings.UART)
 	{
 	case 1: // 8-E-1
 		serial.bits = 8;  // 8 bits
@@ -934,16 +911,16 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "{\n");
 	fprintf(f, "	I_SerialReady = 1;\n");
 	fprintf(f, "	MODBUS_MASTER = %d;\n", MODBUS_MASTER);
-	fprintf(f, "	ModBUS_SetID(%d);\n", Prog.ModBUSID);
+	fprintf(f, "	ModBUS_SetID(%d);\n", Prog.settings.ModBUSID);
 	fprintf(f, "\n");
-	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", Prog.baudRate, serial.bits, serial.parity, serial.stopbit);
+	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", Prog.settings.baudRate, serial.bits, serial.parity, serial.stopbit);
 	fprintf(f, "\n");
-	fprintf(f, "	IP4_ADDR(&IP_ADDRESS, %d,%d,%d,%d);\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
-	fprintf(f, "	IP4_ADDR(&IP_NETMASK, %d,%d,%d,%d);\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
-	fprintf(f, "	IP4_ADDR(&IP_GATEWAY, %d,%d,%d,%d);\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
-	fprintf(f, "	IP4_ADDR(&IP_DNS, %d,%d,%d,%d);\n", Prog.dns[0], Prog.dns[1], Prog.dns[2], Prog.dns[3]);
+	fprintf(f, "	IP4_ADDR(&IP_ADDRESS, %d,%d,%d,%d);\n", Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
+	fprintf(f, "	IP4_ADDR(&IP_NETMASK, %d,%d,%d,%d);\n", Prog.settings.mask[0], Prog.settings.mask[1], Prog.settings.mask[2], Prog.settings.mask[3]);
+	fprintf(f, "	IP4_ADDR(&IP_GATEWAY, %d,%d,%d,%d);\n", Prog.settings.gw[0], Prog.settings.gw[1], Prog.settings.gw[2], Prog.settings.gw[3]);
+	fprintf(f, "	IP4_ADDR(&IP_DNS, %d,%d,%d,%d);\n", Prog.settings.dns[0], Prog.settings.dns[1], Prog.settings.dns[2], Prog.settings.dns[3]);
 	fprintf(f, "\n");
-	if(Prog.x4) {
+	if(Prog.settings.x4) {
 		fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_4X;\n");
 	} else {
 		fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_2X;\n");

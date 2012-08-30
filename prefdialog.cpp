@@ -1,26 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Dialog for setting the properties of a set of contacts: negated or not,
-// plus the name
-// Jonathan Westhues, Oct 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +12,7 @@ static HWND ShowWarningsNo;
 static HWND ClearRecentList;
 static HWND ComPortFlashCombobox;
 static HWND ComPortDebugCombobox;
+static HWND AutoSaveIntervalCombobox;
 
 static LONG_PTR PrevPrefDialogProc;
 
@@ -84,52 +62,82 @@ static void MakeControls(void)
         10, 5, 270, 50, PrefDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
+    HWND textlabel4 = CreateWindowEx(0, WC_STATIC, _("Intervalo"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 75, 110, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(textlabel4);
+
+	AutoSaveIntervalCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        135, 73, 135, 100, PrefDialog, NULL, Instance, NULL);
+    NiceFont(AutoSaveIntervalCombobox);
+
+    HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Cópia de Segurança"),
+        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
+        10, 55, 270, 50, PrefDialog, NULL, Instance, NULL);
+    NiceFont(grouper2);
+
     HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("Porta de Gravação:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 60, 120, 21, PrefDialog, NULL, Instance, NULL);
+        10, 110, 120, 21, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel1);
 
 	ComPortFlashCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        135, 60, 145, 100, PrefDialog, NULL, Instance, NULL);
+        135, 110, 145, 100, PrefDialog, NULL, Instance, NULL);
     NiceFont(ComPortFlashCombobox);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Porta de Depuração:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 90, 120, 21, PrefDialog, NULL, Instance, NULL);
+        10, 140, 120, 21, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
 	ComPortDebugCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        135, 90, 145, 100, PrefDialog, NULL, Instance, NULL);
+        135, 140, 145, 100, PrefDialog, NULL, Instance, NULL);
     NiceFont(ComPortDebugCombobox);
 
     HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Projetos Recentes:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 125, 120, 20, PrefDialog, NULL, Instance, NULL);
+        10, 175, 120, 20, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel3);
 
 	ClearRecentList = CreateWindowEx(0, WC_BUTTON, _("Limpar!"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        135, 120, 145, 30, PrefDialog, NULL, Instance, NULL); 
+        135, 170, 145, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(ClearRecentList);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        290, 10, 70, 67, PrefDialog, NULL, Instance, NULL); 
+        135, 210, 70, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        290, 83, 70, 67, PrefDialog, NULL, Instance, NULL); 
+        210, 210, 70, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 }
 
 void ShowPrefDialog(void)
 {
+	int i;
+	struct {
+		int   interval;
+		char *text;
+	} AutoSaveItems[] = {
+		{  0, "Desativado" },
+		{  1, "1 Minuto"   },
+		{  5, "5 Minutos"  },
+		{ 10, "10 Minutos" },
+		{ 15, "15 Minutos" },
+		{ 30, "30 Minutos" },
+		{ 60, "1 Hora"     },
+		{  0, NULL         }
+	};
+
 	PrefDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Preferências"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 370, 160, MainWindow, NULL, Instance, NULL);
+        100, 100, 290, 250, MainWindow, NULL, Instance, NULL);
 
 	PrevPrefDialogProc = SetWindowLongPtr(PrefDialog, GWLP_WNDPROC, (LONG_PTR)PrefDialogProc);
 
@@ -140,6 +148,21 @@ void ShowPrefDialog(void)
 
 	LoadCOMPorts(ComPortDebugCombobox, POPSettings.COMPortDebug, false);
 	SendMessage (ComPortDebugCombobox, CB_SETDROPPEDWIDTH, 300, 0);
+
+	// Load Combobox items
+	for (i = 0; AutoSaveItems[i].text; i++)
+		SendMessage(AutoSaveIntervalCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)AutoSaveItems[i].text));
+	// Search for item to be selected
+	for (i = 0; AutoSaveItems[i].text; i++) {
+		if(AutoSaveItems[i].interval >= POPSettings.AutoSaveInterval)
+			break;
+	}
+	// If not found, choose the last item
+	if(AutoSaveItems[i].text == NULL)
+		i--;
+
+	// Select item
+	SendMessage(AutoSaveIntervalCombobox, CB_SETCURSEL, i, 0);
 
 	if(POPSettings.ShowSimulationWarnings) {
         SendMessage(ShowWarningsYes, BM_SETCHECK, BST_CHECKED, 0);
@@ -173,6 +196,9 @@ void ShowPrefDialog(void)
 
     if(!DialogCancel) {
 		char buf[16];
+        int index = SendMessage(AutoSaveIntervalCombobox, CB_GETCURSEL, 0, 0);
+		POPSettings.AutoSaveInterval = AutoSaveItems[index > 0 ? index : 0].interval;
+		SetAutoSaveInterval(POPSettings.AutoSaveInterval);
 
         SendMessage(ComPortFlashCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
 		POPSettings.COMPortFlash = atoi(&buf[3]);

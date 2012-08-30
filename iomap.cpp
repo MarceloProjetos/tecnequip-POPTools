@@ -1,30 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Routines to maintain the processor I/O list. Whenever the user changes the
-// name of an element, rebuild the I/O list from the PLC program, so that new
-// assigned names are automatically reflected in the I/O list. Also keep a 
-// list of old I/Os that have been deleted, so that if the user deletes a
-// a name and then recreates it the associated settings (e.g. pin number)
-// will not be forgotten. Also the dialog box for assigning I/O pins.
-// Jonathan Westhues, Oct 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>

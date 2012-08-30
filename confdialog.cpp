@@ -1,27 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Dialog for setting the overall PLC parameters. Mostly this relates to
-// timing; to set up the timers we need to know the desired cycle time,
-// which is configurable, plus the MCU clock (i.e. crystal frequency).
-// Jonathan Westhues, Nov 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -396,13 +372,13 @@ bool ShowConfDialog(bool NetworkSection)
 	}
 
     char buf[16];
-/*    sprintf(buf, "%.1f", (Prog.cycleTime / 1000.0));
+/*    sprintf(buf, "%.1f", (Prog.settings.cycleTime / 1000.0));
     SendMessage(CycleTextbox, WM_SETTEXT, 0, (LPARAM)buf);*/
 
-	SendMessage(ip  , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.ip  [0], Prog.ip  [1], Prog.ip  [2], Prog.ip  [3]));
-	SendMessage(mask, IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]));
-	SendMessage(gw  , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.gw  [0], Prog.gw  [1], Prog.gw  [2], Prog.gw  [3]));
-	SendMessage(dns , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.dns [0], Prog.dns [1], Prog.dns [2], Prog.dns [3]));
+	SendMessage(ip  , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.ip  [0], Prog.settings.ip  [1], Prog.settings.ip  [2], Prog.settings.ip  [3]));
+	SendMessage(mask, IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.mask[0], Prog.settings.mask[1], Prog.settings.mask[2], Prog.settings.mask[3]));
+	SendMessage(gw  , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.gw  [0], Prog.settings.gw  [1], Prog.settings.gw  [2], Prog.settings.gw  [3]));
+	SendMessage(dns , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.dns [0], Prog.settings.dns [1], Prog.settings.dns [2], Prog.settings.dns [3]));
 
 	/*for (i = 0; i < sizeof(ComboboxPLCItens) / sizeof(ComboboxPLCItens[0]); i++)
 		SendMessage(PLCCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxPLCItens[i]));*/
@@ -413,10 +389,10 @@ bool ShowConfDialog(bool NetworkSection)
 	for (i = 0; i < sizeof(ComboboxParityItens) / sizeof(ComboboxParityItens[0]); i++)
 		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxParityItens[i]));
 
-	SendMessage(ParityCombobox, CB_SETCURSEL, Prog.UART, 0);
+	SendMessage(ParityCombobox, CB_SETCURSEL, Prog.settings.UART, 0);
 	SendMessage(ParityCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
-	sprintf(buf, "%d", Prog.baudRate);
+	sprintf(buf, "%d", Prog.settings.baudRate);
 	for (i = 0; i < sizeof(ComboboxBaudRateItens) / sizeof(ComboboxBaudRateItens[0]); i++)
 	{
 		SendMessage(BaudRateCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBaudRateItens[i]));
@@ -424,31 +400,31 @@ bool ShowConfDialog(bool NetworkSection)
 			SendMessage(BaudRateCombobox, CB_SETCURSEL, i, 0);
 	}
 
-	sprintf(buf, "%d", Prog.ModBUSID);
+	sprintf(buf, "%d", Prog.settings.ModBUSID);
 	SendMessage(ModBUSIDTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
 	for (i = 0; i < sizeof(ComboboxSNTPItens) / sizeof(ComboboxSNTPItens[0]); i++)
 		SendMessage(SNTPCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxSNTPItens[i]));
-	SendMessage(SNTPCombobox, WM_SETTEXT, 0, (LPARAM)Prog.sntp);
+	SendMessage(SNTPCombobox, WM_SETTEXT, 0, (LPARAM)Prog.settings.sntp);
 
 	for (i = 0; i < sizeof(ComboboxGMTItens) / sizeof(ComboboxGMTItens[0]); i++)
 		SendMessage(GMTCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxGMTItens[i]));
-	SendMessage(GMTCombobox, CB_SETCURSEL, Prog.gmt, 0);
+	SendMessage(GMTCombobox, CB_SETCURSEL, Prog.settings.gmt, 0);
 	SendMessage(GMTCombobox, CB_SETDROPPEDWIDTH, 300, 0);
 
-	if (Prog.dailysave)
+	if (Prog.settings.dailysave)
 		SendMessage(DailySaveCheckbox, BM_SETCHECK, BST_CHECKED, 0);
 
-	sprintf(buf, "%d", Prog.diameter);
+	sprintf(buf, "%d", Prog.settings.diameter);
 	SendMessage(DiameterTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-	sprintf(buf, "%d", Prog.pulses);
+	sprintf(buf, "%d", Prog.settings.pulses);
 	SendMessage(PulsesTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-	sprintf(buf, "%05f", Prog.factor);
+	sprintf(buf, "%05f", Prog.settings.factor);
 	SendMessage(FactorTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-	if (Prog.x4)
+	if (Prog.settings.x4)
 		SendMessage(X4Checkbox, BM_SETCHECK, BST_CHECKED, 0);
 	else
 		SendMessage(X2Checkbox, BM_SETCHECK, BST_CHECKED, 0);
@@ -456,10 +432,10 @@ bool ShowConfDialog(bool NetworkSection)
 	//SendMessage(BaudRateCombobox, CB_SETCURSEL, 0, 0);
 	SendMessage(BaudRateCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
-	//sprintf(buf, "%.6f", Prog.mcuClock / 1e6);
+	//sprintf(buf, "%.6f", Prog.settings.mcuClock / 1e6);
     //SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-    //sprintf(buf, "%d", Prog.baudRate);
+    //sprintf(buf, "%d", Prog.settings.baudRate);
     //SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     EnableWindow(MainWindow, FALSE);
@@ -490,15 +466,15 @@ bool ShowConfDialog(bool NetworkSection)
     if(!DialogCancel) {
         char buf[16];
 /*        SendMessage(CycleTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        Prog.cycleTime = (int)(1000*atof(buf) + 0.5);
-        if(Prog.cycleTime == 0) {
+        Prog.settings.cycleTime = (int)(1000*atof(buf) + 0.5);
+        if(Prog.settings.cycleTime == 0) {
             Error(_("Zero cycle time not valid; resetting to 10 ms."));
-            Prog.cycleTime = 10000;
+            Prog.settings.cycleTime = 10000;
         }*/
 
         /*SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
             (LPARAM)(buf));*/
-        //Prog.mcuClock = (int)(1e6*atof(buf) + 0.5);
+        //Prog.settings.mcuClock = (int)(1e6*atof(buf) + 0.5);
 
 		// Recebe dados de rede configurados
 		SendMessage(ip  , IPM_GETADDRESS, 0, (LPARAM)&ipaddress);
@@ -507,47 +483,47 @@ bool ShowConfDialog(bool NetworkSection)
 		SendMessage(dns , IPM_GETADDRESS, 0, (LPARAM)&ipdns    );
 
 		// Carrega IP
-		Prog.ip[0] = FIRST_IPADDRESS (ipaddress);
-		Prog.ip[1] = SECOND_IPADDRESS(ipaddress);
-		Prog.ip[2] = THIRD_IPADDRESS (ipaddress);
-		Prog.ip[3] = FOURTH_IPADDRESS(ipaddress);
+		Prog.settings.ip[0] = FIRST_IPADDRESS (ipaddress);
+		Prog.settings.ip[1] = SECOND_IPADDRESS(ipaddress);
+		Prog.settings.ip[2] = THIRD_IPADDRESS (ipaddress);
+		Prog.settings.ip[3] = FOURTH_IPADDRESS(ipaddress);
 
 		// Carrega Mascara
-		Prog.mask[0] = FIRST_IPADDRESS (ipmask);
-		Prog.mask[1] = SECOND_IPADDRESS(ipmask);
-		Prog.mask[2] = THIRD_IPADDRESS (ipmask);
-		Prog.mask[3] = FOURTH_IPADDRESS(ipmask);
+		Prog.settings.mask[0] = FIRST_IPADDRESS (ipmask);
+		Prog.settings.mask[1] = SECOND_IPADDRESS(ipmask);
+		Prog.settings.mask[2] = THIRD_IPADDRESS (ipmask);
+		Prog.settings.mask[3] = FOURTH_IPADDRESS(ipmask);
 
 		// Carrega Gateway
-		Prog.gw[0] = FIRST_IPADDRESS (ipgw);
-		Prog.gw[1] = SECOND_IPADDRESS(ipgw);
-		Prog.gw[2] = THIRD_IPADDRESS (ipgw);
-		Prog.gw[3] = FOURTH_IPADDRESS(ipgw);
+		Prog.settings.gw[0] = FIRST_IPADDRESS (ipgw);
+		Prog.settings.gw[1] = SECOND_IPADDRESS(ipgw);
+		Prog.settings.gw[2] = THIRD_IPADDRESS (ipgw);
+		Prog.settings.gw[3] = FOURTH_IPADDRESS(ipgw);
 
 		// Carrega DNS
-		Prog.dns[0] = FIRST_IPADDRESS (ipdns);
-		Prog.dns[1] = SECOND_IPADDRESS(ipdns);
-		Prog.dns[2] = THIRD_IPADDRESS (ipdns);
-		Prog.dns[3] = FOURTH_IPADDRESS(ipdns);
+		Prog.settings.dns[0] = FIRST_IPADDRESS (ipdns);
+		Prog.settings.dns[1] = SECOND_IPADDRESS(ipdns);
+		Prog.settings.dns[2] = THIRD_IPADDRESS (ipdns);
+		Prog.settings.dns[3] = FOURTH_IPADDRESS(ipdns);
 
         SendMessage(BaudRateCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
             (LPARAM)(buf));
-        Prog.baudRate = atoi(buf);
+        Prog.settings.baudRate = atoi(buf);
 
-		Prog.UART = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
+		Prog.settings.UART = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
 
         SendMessage(ModBUSIDTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		Prog.ModBUSID = atoi(buf);
-		if(Prog.ModBUSID < 0)
-			Prog.ModBUSID = 0;
+		Prog.settings.ModBUSID = atoi(buf);
+		if(Prog.settings.ModBUSID < 0)
+			Prog.settings.ModBUSID = 0;
 
-		SendMessage(SNTPCombobox, WM_GETTEXT, (WPARAM)sizeof(Prog.sntp),
-            (LPARAM)(Prog.sntp));
+		SendMessage(SNTPCombobox, WM_GETTEXT, (WPARAM)sizeof(Prog.settings.sntp),
+            (LPARAM)(Prog.settings.sntp));
 
-		Prog.gmt = SendMessage(GMTCombobox, CB_GETCURSEL, 0, 0);
-		Prog.dailysave = SendMessage(DailySaveCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
+		Prog.settings.gmt = SendMessage(GMTCombobox, CB_GETCURSEL, 0, 0);
+		Prog.settings.dailysave = SendMessage(DailySaveCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
 
-		Prog.x4 = (char)SendMessage(X4Checkbox, BM_GETCHECK, 0, 0);
+		Prog.settings.x4 = (char)SendMessage(X4Checkbox, BM_GETCHECK, 0, 0);
 
 		changed = true;
 	}

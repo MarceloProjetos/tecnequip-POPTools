@@ -25,6 +25,9 @@
       <Command.LargeImages>
         <Image Source="imgs/GroupFindHH.bmp"/>
       </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/GroupFindHS.bmp"/>
+      </Command.SmallImages>
     </Command>
     <Command Name="GroupConfig"     Symbol="cmdGroupConfig"     Id="30008" LabelTitle="Configurações"   />
     <Command Name="GroupHelp"       Symbol="cmdGroupHelp"       Id="30028" LabelTitle="Ajuda"           />
@@ -2149,9 +2152,13 @@
                 <Scale Group ="GroupConfig"     Size="Large"  />
                 <Scale Group ="GroupActions"    Size="Large"  />
                 <Scale Group ="GroupSimulation" Size="Large"  />
+                <Scale Group ="GroupHelp"       Size="Large"  />
               </ScalingPolicy.IdealSizes>
-              <Scale   Group ="GroupFind" Size="Medium" />
+              <Scale   Group ="GroupHelp" Size="Medium" />
+              <Scale   Group ="GroupHelp" Size="Small"  />
+              <Scale   Group ="GroupActions" Size="Medium"/>
               <Scale   Group ="GroupFind" Size="Popup"  />
+              <Scale   Group ="GroupLine" Size="Small"  />
             </ScalingPolicy>
           </Tab.ScalingPolicy>
           <Group CommandName="GroupNavigate" SizeDefinition="TwoButtons">
@@ -2259,6 +2266,10 @@
               </ScalingPolicy.IdealSizes>
               <Scale Group ="GroupMath"    Size="Small" />
               <Scale Group ="GroupCond"    Size="Small" />
+              <Scale Group ="GroupVar"     Size="Small" />
+              <Scale Group ="GroupCounter" Size="Small" />
+              <Scale Group ="GroupTimer"   Size="Small" />
+              <Scale Group ="GroupIO"      Size="Small" />
               <Scale Group ="GroupMath"    Size="Popup" />
             </ScalingPolicy>
           </Tab.ScalingPolicy>
@@ -2326,8 +2337,14 @@
                 <Scale Group ="GroupCommModBUS" Size="Large"  />
                 <Scale Group ="GroupCommOthers" Size="Large"  />
               </ScalingPolicy.IdealSizes>
-              <Scale Group ="GroupCommOthers" Size="Medium"  />
+              <Scale Group ="GroupCommOthers" Size="Medium" />
+              <Scale Group ="GroupCommText"   Size="Medium" />
+              <Scale Group ="GroupAnalog"     Size="Medium" />
+              <Scale Group ="GroupCommModBUS" Size="Popup"  />
+              <Scale Group ="GroupMotors"     Size="Medium" />
               <Scale Group ="GroupCommOthers" Size="Small"  />
+              <Scale Group ="GroupCommText"   Size="Small"  />
+              <Scale Group ="GroupMotors"     Size="Small"  />
               <Scale Group ="GroupCommOthers" Size="Popup"  />
             </ScalingPolicy>
           </Tab.ScalingPolicy>

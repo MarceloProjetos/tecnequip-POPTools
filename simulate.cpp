@@ -1,29 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Routines to simulate the logic interactively, for testing purposes. We can
-// simulate in real time, triggering off a Windows timer, or we can 
-// single-cycle it. The GUI acts differently in simulation mode, to show the
-// status of all the signals graphically, show how much time is left on the
-// timers, etc.
-// Jonathan Westhues, Nov 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>
@@ -1146,10 +1120,10 @@ void SimulateOneCycle(BOOL forceRefresh)
 //-----------------------------------------------------------------------------
 void StartSimulationTimer(void)
 {
-    int p = Prog.cycleTime/1000;
+    int p = Prog.settings.cycleTime/1000;
     if(p < 5) {
         SetTimer(MainWindow, TIMER_SIMULATE, 10, PlcCycleTimer);
-        CyclesPerTimerTick = 10000 / Prog.cycleTime;
+        CyclesPerTimerTick = 10000 / Prog.settings.cycleTime;
     } else {
         SetTimer(MainWindow, TIMER_SIMULATE, p, PlcCycleTimer);
         CyclesPerTimerTick = 1;
@@ -1206,7 +1180,7 @@ void DescribeForIoList(char *name, int type, char *out)
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
         case IO_TYPE_RTO: {
-            double dtms = GetSimulationVariable(name) * (Prog.cycleTime / 1000.0);
+            double dtms = GetSimulationVariable(name) * (Prog.settings.cycleTime / 1000.0);
             if(dtms < 1000) {
                 sprintf(out, "%.2f ms", dtms);
             } else {

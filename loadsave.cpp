@@ -1,34 +1,24 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Load/save the circuit from/to a file in a nice ASCII format.
-// Jonathan Westhues, Nov 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "ldmicro.h"
 
+#define USE_BINFMT 1
+
+// Magic number to help us to identify if the file is valid.
+// Format: xxxxyyzz
+// Where:
+// xxxx = always 0f5a
+// yy   = flags. reserved for future use.
+// zz   = format version
+const unsigned long int  BINFMT_MAGIC = 0x0f5a0005;
+
 static ElemSubcktSeries *LoadSeriesFromFile(FILE *f, int version);
 
 static const int current_version = 4;
+
+#define OLDFMT_MAX_VERSION 4
 
 //-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
@@ -293,36 +283,56 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
 //-----------------------------------------------------------------------------
 static ElemSubcktParallel *LoadParallelFromFile(FILE *f, int version)
 {
-    char line[512];
-    void *any;
-    int which;
-
     ElemSubcktParallel *ret = AllocSubcktParallel();
-    int cnt = 0;
+
+	if(version > OLDFMT_MAX_VERSION) {
+		int i;
+		fread(&(ret->count), sizeof(ret->count), 1, f);
+		if(!ret->count) return NULL;
+		for(i=0; i<ret->count; i++) {
+			fread(&ret->contents[i].which, sizeof(ret->contents[i].which), 1, f);
+			if(!ret->contents[i].which) return NULL;
+			if(ret->contents[i].which == ELEM_SERIES_SUBCKT) {
+				ret->contents[i].d.series = LoadSeriesFromFile(f, version);
+				if(ret->contents[i].d.series == NULL) return NULL;
+			} else {
+				ret->contents[i].d.leaf = AllocLeaf();
+				fread(ret->contents[i].d.leaf, sizeof(ElemLeaf), 1, f);
+			}
+		}
+
+		return ret;
+	} else {
+		char line[512];
+		void *any;
+		int which;
+
+		int cnt = 0;
     
-    for(;;) {
-        if(!fgets(line, sizeof(line), f)) return NULL;
-        char *s = line;
-        while(isspace(*s)) s++;
+		for(;;) {
+			if(!fgets(line, sizeof(line), f)) return NULL;
+			char *s = line;
+			while(isspace(*s)) s++;
 
-        if(_stricmp(s, "SERIES\n")==0) {
-            which = ELEM_SERIES_SUBCKT;
-            any = LoadSeriesFromFile(f, version);
-            if(!any) return NULL;
+			if(_stricmp(s, "SERIES\n")==0) {
+				which = ELEM_SERIES_SUBCKT;
+				any = LoadSeriesFromFile(f, version);
+				if(!any) return NULL;
 
-        } else if(LoadLeafFromFile(s, &any, &which, version)) {
-            // got it
-        } else if(_stricmp(s, "END\n")==0) {
-            ret->count = cnt;
-            return ret;
-        } else {
-            return NULL;
-        }
-        ret->contents[cnt].which = which;
-        ret->contents[cnt].d.any = any;
-        cnt++;
-        if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return NULL;
-    }
+			} else if(LoadLeafFromFile(s, &any, &which, version)) {
+				// got it
+			} else if(_stricmp(s, "END\n")==0) {
+				ret->count = cnt;
+				return ret;
+			} else {
+				return NULL;
+			}
+			ret->contents[cnt].which = which;
+			ret->contents[cnt].d.any = any;
+			cnt++;
+			if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return NULL;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -331,36 +341,56 @@ static ElemSubcktParallel *LoadParallelFromFile(FILE *f, int version)
 //-----------------------------------------------------------------------------
 static ElemSubcktSeries *LoadSeriesFromFile(FILE *f, int version)
 {
-    char line[512];
-    void *any;
-    int which;
-
     ElemSubcktSeries *ret = AllocSubcktSeries();
-    int cnt = 0;
+
+	if(version > OLDFMT_MAX_VERSION) {
+		int i;
+		fread(&(ret->count), sizeof(ret->count), 1, f);
+		if(!ret->count) return NULL;
+		for(i=0; i<ret->count; i++) {
+			fread(&ret->contents[i].which, sizeof(ret->contents[i].which), 1, f);
+			if(!ret->contents[i].which) return NULL;
+			if(ret->contents[i].which == ELEM_PARALLEL_SUBCKT) {
+				ret->contents[i].d.parallel = LoadParallelFromFile(f, version);
+				if(ret->contents[i].d.parallel == NULL) return NULL;
+			} else {
+				ret->contents[i].d.leaf = AllocLeaf();
+				fread(ret->contents[i].d.leaf, sizeof(ElemLeaf), 1, f);
+			}
+		}
+
+		return ret;
+	} else {
+		char line[512];
+		void *any;
+		int which;
+
+		int cnt = 0;
     
-    for(;;) {
-        if(!fgets(line, sizeof(line), f)) return NULL;
-        char *s = line;
-        while(isspace(*s)) s++;
+		for(;;) {
+			if(!fgets(line, sizeof(line), f)) return NULL;
+			char *s = line;
+			while(isspace(*s)) s++;
 
-        if(_stricmp(s, "PARALLEL\n")==0) {
-            which = ELEM_PARALLEL_SUBCKT;
-            any = LoadParallelFromFile(f, version);
-            if(!any) return NULL;
+			if(_stricmp(s, "PARALLEL\n")==0) {
+				which = ELEM_PARALLEL_SUBCKT;
+				any = LoadParallelFromFile(f, version);
+				if(!any) return NULL;
 
-        } else if(LoadLeafFromFile(s, &any, &which, version)) {
-            // got it
-        } else if(_stricmp(s, "END\n")==0) {
-            ret->count = cnt;
-            return ret;
-        } else {
-            return NULL;
-        }
-        ret->contents[cnt].which = which;
-        ret->contents[cnt].d.any = any;
-        cnt++;
-        if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return NULL;
-    }
+			} else if(LoadLeafFromFile(s, &any, &which, version)) {
+				// got it
+			} else if(_stricmp(s, "END\n")==0) {
+				ret->count = cnt;
+				return ret;
+			} else {
+				return NULL;
+			}
+			ret->contents[cnt].which = which;
+			ret->contents[cnt].d.any = any;
+			cnt++;
+			if(cnt >= MAX_ELEMENTS_IN_SUBCKT) return NULL;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -371,6 +401,9 @@ static ElemSubcktSeries *LoadSeriesFromFile(FILE *f, int version)
 //-----------------------------------------------------------------------------
 BOOL LoadProjectFromFile(char *filename)
 {
+	int version;
+	unsigned long int magic;
+
     FreeEntireProgram();
     strcpy(CurrentCompileFile, "");
 
@@ -387,111 +420,173 @@ BOOL LoadProjectFromFile(char *filename)
 		sprintf(szfilename, "%s\\%s", szfilename, filename);
 	}
 
-	f = fopen(szfilename, "r");
+#if (USE_BINFMT)
+	f = fopen(szfilename, "rb");
     if(!f) return FALSE;
 
-    char line[512];
-    int version, crystal, cycle, baud, UART, ip[4], mask[4], gw[4], dns[4], x4, ModBUSID, canSave;
-	char sntp[126];
+	// Start with the magic number
+	fread(&magic, sizeof(magic), 1, f);
+	if(magic != BINFMT_MAGIC) { // Bad magic number. Maybe it is old format?
+#else
+	if(1) {
+#endif
+		char line[512];
+		int crystal, cycle, baud, UART, ip[4], mask[4], gw[4], dns[4], x4, ModBUSID, canSave;
+		char sntp[126];
 
-	version = 0;
+		version = 0;
 
-    while(fgets(line, sizeof(line), f)) {
-        if(_stricmp(line, "IO LIST\n")==0) {
-            if(!LoadIoListFromFile(f, version)) {
-                fclose(f);
-                return FALSE;
-            }
-		} else if(sscanf(line, "LDmicro0.%d", &version)) {
-			if (version < current_version)
-				Error(_("Aviso: O arquivo deste projeto é de uma versão anterior e será atualizado para a versão atual quando for gravado !"));
-			else if (version > current_version)
-			{
-				Error(_("Aviso: Este projeto não pode ser aberto porque foi gravado com uma versão mais nova do programa POPTools !"));
-				fclose(f);
-                return FALSE;
+#if (USE_BINFMT)
+		fclose(f);
+#endif
+		f = fopen(szfilename, "r");
+		if(!f) return FALSE;
+
+		while(fgets(line, sizeof(line), f)) {
+			if(!strlen(line)) goto failed;
+			if(_stricmp(line, "IO LIST\n")==0) {
+				if(!LoadIoListFromFile(f, version)) {
+					fclose(f);
+					return FALSE;
+				}
+			} else if(sscanf(line, "LDmicro0.%d", &version)) {
+				if (version < current_version)
+					Error(_("Aviso: O arquivo deste projeto é de uma versão anterior e será atualizado para a versão atual quando for gravado !"));
+				else if (version > current_version)
+				{
+					Error(_("Aviso: Este projeto não pode ser aberto porque foi gravado com uma versão mais nova do programa POPTools !"));
+					fclose(f);
+					return FALSE;
+				}
+				//Prog.settings.version = version;
+			} else if(sscanf(line, "POPTools:1.%d", &version)) {
+				if (version < current_version)
+					Error(_("Aviso: O arquivo deste projeto é de uma versão anterior e será atualizado para a versão atual quando for gravado !"));
+				else if (version > current_version)
+				{
+					Error(_("Aviso: Este projeto não pode ser aberto porque foi gravado com uma versão mais nova do programa POPTools !"));
+					fclose(f);
+					return FALSE;
+				}
+				//Prog.settings.version = version;
+			} else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
+				Prog.settings.mcuClock = crystal;
+			} else if(sscanf(line, "CYCLE=%d", &cycle)) {
+				Prog.settings.cycleTime = cycle;
+			} else if(sscanf(line, "BAUD=%d", &baud)) {
+				Prog.settings.baudRate = baud;
+			} else if(sscanf(line, "PARITY=%d", &UART)) {
+				Prog.settings.UART = UART;
+			} else if(sscanf(line, "MODBUSID=%d", &ModBUSID)) {
+				Prog.settings.ModBUSID = ModBUSID;
+	//        } else if(sscanf(line, "COM=%d", &comPort)) {
+	//            Prog.settings.comPort = comPort;
+			} else if(sscanf(line, "IP=%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3])) {
+				Prog.settings.ip[0] = ip[0];
+				Prog.settings.ip[1] = ip[1];
+				Prog.settings.ip[2] = ip[2];
+				Prog.settings.ip[3] = ip[3];
+			} else if(sscanf(line, "MASK=%d.%d.%d.%d", &mask[0], &mask[1], &mask[2], &mask[3])) {
+				Prog.settings.mask[0] = mask[0];
+				Prog.settings.mask[1] = mask[1];
+				Prog.settings.mask[2] = mask[2];
+				Prog.settings.mask[3] = mask[3];
+			} else if(sscanf(line, "GW=%d.%d.%d.%d", &gw[0], &gw[1], &gw[2], &gw[3])) {
+				Prog.settings.gw[0] = gw[0];
+				Prog.settings.gw[1] = gw[1];
+				Prog.settings.gw[2] = gw[2];
+				Prog.settings.gw[3] = gw[3];
+			} else if(sscanf(line, "DNS=%d.%d.%d.%d", &dns[0], &dns[1], &dns[2], &dns[3])) {
+				Prog.settings.dns[0] = dns[0];
+				Prog.settings.dns[1] = dns[1];
+				Prog.settings.dns[2] = dns[2];
+				Prog.settings.dns[3] = dns[3];
+			} else if(sscanf(line, "SNTP=%d-%d:%s", &Prog.settings.gmt, &Prog.settings.dailysave, &sntp)) {
+				strncpy(Prog.settings.sntp, sntp, sizeof(Prog.settings.sntp));
+			} else if(sscanf(line, "X4=%d", &x4)) {
+				Prog.settings.x4 = x4;
+			} else if(sscanf(line, "CANSAVE=%d", &canSave)) {
+				Prog.settings.canSave = canSave ? TRUE : FALSE;
+			} else if(memcmp(line, "COMPILED=", 9)==0) {
+				//line[strlen(line)-1] = '\0';
+				//strcpy(CurrentCompileFile, line+9);
+			} else if(memcmp(line, "MICRO=", 6)==0) {
+				line[strlen(line)-1] = '\0';
+				int i;
+				for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
+					if(_stricmp(SupportedMcus[i].mcuName, line+6)==0) {
+						Prog.mcu = &SupportedMcus[i];
+						break;
+					}
+				}
+				if(i == NUM_SUPPORTED_MCUS) {
+					Error(_("Microcontroller '%s' not supported.\r\n\r\n"
+						"Defaulting to no selected MCU."), line+6);
+				}
+			} else if(_stricmp(line, "PROGRAM\n")==0) {
+				break;
 			}
-			//Prog.version = version;
-		} else if(sscanf(line, "POPTools:1.%d", &version)) {
-			if (version < current_version)
-				Error(_("Aviso: O arquivo deste projeto é de uma versão anterior e será atualizado para a versão atual quando for gravado !"));
-			else if (version > current_version)
-			{
-				Error(_("Aviso: Este projeto não pode ser aberto porque foi gravado com uma versão mais nova do programa POPTools !"));
-				fclose(f);
-                return FALSE;
-			}
-			//Prog.version = version;
-        } else if(sscanf(line, "CRYSTAL=%d", &crystal)) {
-            Prog.mcuClock = crystal;
-        } else if(sscanf(line, "CYCLE=%d", &cycle)) {
-            Prog.cycleTime = cycle;
-        } else if(sscanf(line, "BAUD=%d", &baud)) {
-            Prog.baudRate = baud;
-        } else if(sscanf(line, "PARITY=%d", &UART)) {
-			Prog.UART = UART;
-        } else if(sscanf(line, "MODBUSID=%d", &ModBUSID)) {
-			Prog.ModBUSID = ModBUSID;
-//        } else if(sscanf(line, "COM=%d", &comPort)) {
-//            Prog.comPort = comPort;
-        } else if(sscanf(line, "IP=%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3])) {
-            Prog.ip[0] = ip[0];
-            Prog.ip[1] = ip[1];
-            Prog.ip[2] = ip[2];
-            Prog.ip[3] = ip[3];
-        } else if(sscanf(line, "MASK=%d.%d.%d.%d", &mask[0], &mask[1], &mask[2], &mask[3])) {
-            Prog.mask[0] = mask[0];
-            Prog.mask[1] = mask[1];
-            Prog.mask[2] = mask[2];
-            Prog.mask[3] = mask[3];
-        } else if(sscanf(line, "GW=%d.%d.%d.%d", &gw[0], &gw[1], &gw[2], &gw[3])) {
-            Prog.gw[0] = gw[0];
-            Prog.gw[1] = gw[1];
-            Prog.gw[2] = gw[2];
-            Prog.gw[3] = gw[3];
-        } else if(sscanf(line, "DNS=%d.%d.%d.%d", &dns[0], &dns[1], &dns[2], &dns[3])) {
-            Prog.dns[0] = dns[0];
-            Prog.dns[1] = dns[1];
-            Prog.dns[2] = dns[2];
-            Prog.dns[3] = dns[3];
-		} else if(sscanf(line, "SNTP=%d-%d:%s", &Prog.gmt, &Prog.dailysave, &sntp)) {
-			strncpy(Prog.sntp, sntp, sizeof(Prog.sntp));
-		} else if(sscanf(line, "X4=%d", &x4)) {
-			Prog.x4 = x4;
-        } else if(sscanf(line, "CANSAVE=%d", &canSave)) {
-            Prog.canSave = canSave ? TRUE : FALSE;
-        } else if(memcmp(line, "COMPILED=", 9)==0) {
-            //line[strlen(line)-1] = '\0';
-            //strcpy(CurrentCompileFile, line+9);
-        } else if(memcmp(line, "MICRO=", 6)==0) {
-            line[strlen(line)-1] = '\0';
-            int i;
-            for(i = 0; i < NUM_SUPPORTED_MCUS; i++) {
-                if(_stricmp(SupportedMcus[i].mcuName, line+6)==0) {
-                    Prog.mcu = &SupportedMcus[i];
-                    break;
-                }
-            }
-            if(i == NUM_SUPPORTED_MCUS) {
-                Error(_("Microcontroller '%s' not supported.\r\n\r\n"
-                    "Defaulting to no selected MCU."), line+6);
-            }
-        } else if(_stricmp(line, "PROGRAM\n")==0) {
-            break;
-        }
-    }
-    if(_stricmp(line, "PROGRAM\n") != 0) goto failed;
+		}
+		if(_stricmp(line, "PROGRAM\n") != 0) goto failed;
 
-    int rung;
-    for(rung = 0;;) {
-        if(!fgets(line, sizeof(line), f)) break;
-        if(_stricmp(line, "RUNG\n")!=0) goto failed;
+		int rung;
+		for(rung = 0;;) {
+			if(!fgets(line, sizeof(line), f)) break;
+			if(_stricmp(line, "RUNG\n")!=0) goto failed;
 
-        Prog.rungs[rung] = LoadSeriesFromFile(f, version);
-        if(!Prog.rungs[rung]) goto failed;
-        rung++;
-    }
-    Prog.numRungs = rung;
+			Prog.rungs[rung] = LoadSeriesFromFile(f, version);
+			if(!Prog.rungs[rung]) goto failed;
+			rung++;
+		}
+		Prog.numRungs = rung;
+	} else {
+		long size, lido;
+		LPVOID buffer;
+		unsigned short int crc_calc, crc_read;
+
+		fseek(f, 0, SEEK_END);
+		size   = ftell(f) - sizeof(BINFMT_MAGIC) - sizeof(crc_read);
+		buffer = CheckMalloc(size);
+
+		fseek(f, sizeof(BINFMT_MAGIC), SEEK_SET);
+		lido = fread(buffer, size, 1, f);
+
+		crc_calc = CRC16((unsigned char *)buffer, size);
+
+		fread(&crc_read, sizeof(crc_read), 1, f);
+		CheckFree(buffer);
+
+		if(crc_calc != crc_read) goto failed;
+
+		fseek(f, sizeof(BINFMT_MAGIC), SEEK_SET);
+
+		// Format version
+		version = magic&0xFF;
+
+		// CPU ID
+		int cpu;
+		fread(&cpu, sizeof(cpu), 1, f);
+		if(cpu < 0 || cpu >= NUM_SUPPORTED_MCUS)
+			cpu = 0;
+
+		// I/O list
+		fread(&Prog.io.count, sizeof(Prog.io.count), 1, f);
+		fread(&Prog.io.assignment, sizeof(Prog.io.assignment[0]), Prog.io.count, f);
+
+		// Project settings
+		fread(&Prog.settings, sizeof(Prog.settings), 1, f);
+
+		// Header is done. Now we will load the number of rungs then the old logic will save each rung
+		fread(&Prog.numRungs, sizeof(Prog.numRungs), 1, f);
+
+		int i, which;
+		for(i = 0; i < Prog.numRungs; i++) {
+			fread(&which, sizeof(which), 1, f);
+			if(which != ELEM_SERIES_SUBCKT) goto failed;
+			Prog.rungs[i] = LoadSeriesFromFile(f, version);
+			if(!Prog.rungs[i]) goto failed;
+		}
+	}
 
 	UpdateTypesFromSeenPreviouslyList();
 	UpdateTypeForInternalRelays();
@@ -530,9 +625,41 @@ static void Indent(FILE *f, int depth)
 static void SaveElemToFile(FILE *f, int which, void *any, int depth)
 {
     ElemLeaf *l = (ElemLeaf *)any;
+
+#if (USE_BINFMT)
+	fwrite(&which, sizeof(which), 1, f);
+
+	switch(which) {
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            int i;
+			fwrite(&(s->count), sizeof(s->count), 1, f);
+            for(i = 0; i < s->count; i++) {
+                SaveElemToFile(f, s->contents[i].which, s->contents[i].d.any,
+                    depth+1);
+            }
+            break;
+        }
+
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *s = (ElemSubcktParallel *)any;
+            int i;
+			fwrite(&(s->count), sizeof(s->count), 1, f);
+            for(i = 0; i < s->count; i++) {
+                SaveElemToFile(f, s->contents[i].which, s->contents[i].d.any,
+                    depth+1);
+            }
+            break;
+        }
+
+        default:
+			fwrite(l, sizeof(ElemLeaf), 1, f);
+            break;
+    }
+#else
     char *s;
 
-    Indent(f, depth);
+	Indent(f, depth);
 
     switch(which) {
         case ELEM_PLACEHOLDER:
@@ -828,6 +955,7 @@ cmp:
             oops();
             break;
     }
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -842,25 +970,50 @@ BOOL SaveProjectToFile(char *filename)
 	RemoveParallelStart(0, NULL);
 
 	GetFullPathName(filename, MAX_PATH, szfilename, NULL);
-	f = fopen(szfilename, "w");
+	f = fopen(szfilename, USE_BINFMT ? "wb+" : "w");
     if(!f) return FALSE;
 
+#if (USE_BINFMT)
+	// Start with the magic number
+	fwrite(&BINFMT_MAGIC, sizeof(BINFMT_MAGIC), 1, f);
+
+	// CPU ID
+	int cpu;
+	for(cpu=0; cpu<NUM_SUPPORTED_MCUS; cpu++) {
+		if(Prog.mcu == &SupportedMcus[cpu])
+			break;
+	}
+	if(cpu == NUM_SUPPORTED_MCUS)
+		cpu = 0;
+
+	fwrite(&cpu, sizeof(cpu), 1, f);
+
+	// I/O list
+	fwrite(&Prog.io.count, sizeof(Prog.io.count), 1, f);
+	fwrite(&Prog.io.assignment, sizeof(Prog.io.assignment[0]), Prog.io.count, f);
+
+	// Project settings
+	fwrite(&Prog.settings, sizeof(Prog.settings), 1, f);
+
+	// Header is done. Now we will save the number of rungs then the old logic will save each rung
+	fwrite(&Prog.numRungs, sizeof(Prog.numRungs), 1, f);
+#else
     fprintf(f, "POPTools:1.%d\n", current_version);
     if(Prog.mcu) {
         fprintf(f, "MICRO=%s\n", Prog.mcu->mcuName);
     }
-    fprintf(f, "CYCLE=%d\n", Prog.cycleTime);
-    fprintf(f, "CRYSTAL=%d\n", Prog.mcuClock);
-    fprintf(f, "BAUD=%d\n", Prog.baudRate);
-	fprintf(f, "PARITY=%d\n", Prog.UART);
-	fprintf(f, "MODBUSID=%d\n", Prog.ModBUSID);
+    fprintf(f, "CYCLE=%d\n", Prog.settings.cycleTime);
+    fprintf(f, "CRYSTAL=%d\n", Prog.settings.mcuClock);
+    fprintf(f, "BAUD=%d\n", Prog.settings.baudRate);
+	fprintf(f, "PARITY=%d\n", Prog.settings.UART);
+	fprintf(f, "MODBUSID=%d\n", Prog.settings.ModBUSID);
 	fprintf(f, "COM=%d\n", POPSettings.COMPortFlash ? POPSettings.COMPortFlash - 1 : 0);
-    fprintf(f, "IP=%d.%d.%d.%d\n", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
-    fprintf(f, "MASK=%d.%d.%d.%d\n", Prog.mask[0], Prog.mask[1], Prog.mask[2], Prog.mask[3]);
-    fprintf(f, "GW=%d.%d.%d.%d\n", Prog.gw[0], Prog.gw[1], Prog.gw[2], Prog.gw[3]);
-	fprintf(f, "DNS=%d.%d.%d.%d\n", Prog.dns[0], Prog.dns[1], Prog.dns[2], Prog.dns[3]);
-	fprintf(f, "SNTP=%d-%d:%s\n", Prog.gmt, Prog.dailysave, Prog.sntp);
-	fprintf(f, "X4=%d\n", Prog.x4);
+    fprintf(f, "IP=%d.%d.%d.%d\n", Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
+    fprintf(f, "MASK=%d.%d.%d.%d\n", Prog.settings.mask[0], Prog.settings.mask[1], Prog.settings.mask[2], Prog.settings.mask[3]);
+    fprintf(f, "GW=%d.%d.%d.%d\n", Prog.settings.gw[0], Prog.settings.gw[1], Prog.settings.gw[2], Prog.settings.gw[3]);
+	fprintf(f, "DNS=%d.%d.%d.%d\n", Prog.settings.dns[0], Prog.settings.dns[1], Prog.settings.dns[2], Prog.settings.dns[3]);
+	fprintf(f, "SNTP=%d-%d:%s\n", Prog.settings.gmt, Prog.settings.dailysave, Prog.settings.sntp);
+	fprintf(f, "X4=%d\n", Prog.settings.x4);
     fprintf(f, "CANSAVE=1\n");
     if(strlen(CurrentCompileFile) > 0) {
         //fprintf(f, "COMPILED=%s\n", CurrentCompileFile);
@@ -868,18 +1021,55 @@ BOOL SaveProjectToFile(char *filename)
 
     fprintf(f, "\n");
     // list extracted from schematic, but the pin assignments are not
-    fprintf(f, "IO LIST\n", Prog.mcuClock);
+    fprintf(f, "IO LIST\n", Prog.settings.mcuClock);
     SaveIoListToFile(f);
-    fprintf(f, "END\n", Prog.mcuClock);
+    fprintf(f, "END\n", Prog.settings.mcuClock);
 
-    fprintf(f, "\n", Prog.mcuClock);
-    fprintf(f, "PROGRAM\n", Prog.mcuClock);
+    fprintf(f, "\n", Prog.settings.mcuClock);
+    fprintf(f, "PROGRAM\n", Prog.settings.mcuClock);
+#endif
 
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
         SaveElemToFile(f, ELEM_SERIES_SUBCKT, Prog.rungs[i], 0);
     }
 
-    fclose(f);
+#if (USE_BINFMT)
+	unsigned short int crc = 0;
+	long size;
+
+	fseek(f, 0, SEEK_END);
+	size = ftell(f) - sizeof(BINFMT_MAGIC);
+	LPVOID buffer = CheckMalloc(size);
+
+	fseek(f, sizeof(BINFMT_MAGIC), SEEK_SET);
+	fread(buffer, size, 1, f);
+
+	crc = CRC16((unsigned char *)buffer, size);
+
+	fseek(f, 0, SEEK_END);
+	fwrite(&crc, sizeof(crc), 1, f);
+	CheckFree(buffer);
+#endif
+
+	fclose(f);
     return TRUE;
+}
+
+void SetAutoSaveInterval(int interval)
+{
+	KillTimer(MainWindow, TIMER_AUTOSAVE);
+	if(interval) {
+		SetTimer(MainWindow, TIMER_AUTOSAVE, interval*60000, AutoSaveNow);
+	}
+}
+
+void CALLBACK AutoSaveNow(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
+{
+	if(strlen(CurrentSaveFile) && Prog.ParallelStart == NULL) {
+		char AutoSaveName[MAX_PATH];
+		strcpy(AutoSaveName, CurrentSaveFile);
+		ChangeFileExtension(AutoSaveName, "bld");
+		SaveProjectToFile(AutoSaveName);
+	}
 }

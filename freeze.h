@@ -1,9 +1,3 @@
-/*
- * A library for storing parameters in the registry.
- *
- * Jonathan Westhues, 2002
- */
-
 #ifndef __FREEZE_H
 #define __FREEZE_H
 

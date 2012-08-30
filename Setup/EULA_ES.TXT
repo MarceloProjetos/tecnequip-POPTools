@@ -1,0 +1,14 @@
+﻿Recomendamos que lea atentamente los terminos y condiciones antes de usar este software. A menos que tenga un acuerdo de Licencia diferente, firmado por TECNEQUIP Tecnologia em Equipamentos Ltda., o uso, distribuicion o instalacion de esta copia por POPTools ("SOFTWARE") indica haber aceptado su licencia.
+Caso no concuerde con cualquier de los terminos de esta licencia, no la instale, distribuya o use este SOFTWARE.
+Esta Licencia le confiere los siguientes  derechos:
+
+INSTALACION: podra instalar un numero ilimitado de este software.
+USO: podra crear un numero ilimitado de de proyectos usando este SOFTWARE, libre de licencias adicionales, royalties o cualquier otra tasa.
+REPRODUCCION y DISTRIBUICION: no podra reproducir o distribuir este SOFTWARE sin permiso escrito de TECNEQUIP.
+ALTERACIONES: no sera permitido, en cualquier circunstancia, realizar cualquier alteracion en el SOFTWARE, tales como remover logotipos, marcas comerciales, alterar textos o cualquier otra modificacion.
+PROPRIEDADE INTELECTUAL: todas las marcas y derechos contenidas en este SOFTWARE (incluido pero no limitado a imagenes, videos, animaciones, audios y textos), cualquier material que acompañe o cualquier copia del SOFTWARE será propriedad de TECNEQUIP. Este SOFTWARE esta protegido por la Lei de Derechos Autorales y Tratados Internacionales. Siendo así debera considerar este SOFTWARWE como cualquier otro material con derechos reservados.
+
+IMPORTANTE: este SOFTWARE y todos sus archivos, dados y materiales que lo acompañan, se entregaran tal como estan y sin garantias de cualquier tipo, sean expresas o implicitas. Buenos procedimientos de procesamento de datos afirmam que cualquier programa deberá ser testado en situacione no-criticas antes de ser considerado seguro. Portanto quien lo use inadecuadamente asumira sus prorios riesgos del uso del programa.
+
+
+No sera permitido el uso de este SOFTWARE para generar proyectos de POP-7 en aplicaciones donde las fallas puedan ocasionar graves heridas, o perdida de vidas, sin autorizacion por escrito de TECNEQUIP. De esta forma TECNEQUIP, sus Directivos, Accionistas o Colaboradores y Subsidiarias no podran ser responsabilizados, de forma alguna, por cualquier daño causado por uso del SOFTWARE.

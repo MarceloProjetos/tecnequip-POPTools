@@ -12,7 +12,7 @@ MODBUS_HANDLER_TX(Modbus_TCP_Tx)
 	int iResult;
 	char strIP[20];
 
-	sprintf(strIP, "%d.%d.%d.%d", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
+	sprintf(strIP, "%d.%d.%d.%d", Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
 
 	ZeroMemory( &hints, sizeof(hints) );
 	hints.ai_family = AF_UNSPEC;

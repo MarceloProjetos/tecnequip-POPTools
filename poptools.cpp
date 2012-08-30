@@ -1,29 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// A ladder logic compiler for 8 bit micros: user draws a ladder diagram,
-// with an appropriately constrained `schematic editor,' and then we can
-// simulated it under Windows or generate PIC/AVR code that performs the
-// requested operations. This files contains the program entry point, plus
-// most of the UI logic relating to the main window.
-// Jonathan Westhues, Oct 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
@@ -243,7 +217,7 @@ static BOOL SaveAsDialog(void)
 {
     OPENFILENAME ofn;
 
-	if(!Prog.canSave) {
+	if(!Prog.settings.canSave) {
 		CurrentSaveFile[0] = '\0';
 	}
 
@@ -343,7 +317,7 @@ static void SaveAsAnsiC(void)
 //-----------------------------------------------------------------------------
 static BOOL SaveProgram(void)
 {
-    if(strlen(CurrentSaveFile) && Prog.canSave) {
+    if(strlen(CurrentSaveFile) && Prog.settings.canSave) {
         if(!SaveProjectToFile(CurrentSaveFile)) {
             Error(_("Couldn't write to '%s'."), CurrentSaveFile);
             return FALSE;
@@ -517,7 +491,7 @@ static void WriteProgram(BOOL compileAs)
 //-----------------------------------------------------------------------------
 BOOL CheckSaveUserCancels(void)
 {
-	if(!ProgramChangedNotSaved || !Prog.canSave) {
+	if(!ProgramChangedNotSaved || !Prog.settings.canSave) {
         // no problem
         return FALSE;
     }
@@ -578,6 +552,7 @@ static void OpenDialog(char *filename)
     } else {
         ProgramChangedNotSaved = FALSE;
         strcpy(CurrentSaveFile, tempSaveFile);
+		ChangeFileExtension(CurrentSaveFile, "ld");
         UndoFlush();
 
 		UpdateRecentList(tempSaveFile);
@@ -1760,6 +1735,7 @@ void LoadSettings(void)
 		// TODO: Internacionalizar
 		ShowTaskDialog(L"Erro ao carregar as preferências", L"Será utilizada a configuração padrão", TD_ERROR_ICON, TDCBF_OK_BUTTON);
 
+		POPSettings.AutoSaveInterval = 0;
 		POPSettings.ShowSimulationWarnings = TRUE;
 
 		delete [] settings_file;
@@ -1776,6 +1752,27 @@ void LoadSettings(void)
 			if(!wcscmp(pCurrentElementList->element.name, L"ShowWarnings")) {
 				pStr = _com_util::ConvertBSTRToString(pCurrentElementList->element.value);
 				POPSettings.ShowSimulationWarnings = atoi(pStr) ? TRUE : FALSE;
+				delete pStr;
+			}
+
+			pCurrentElementList = pCurrentElementList->next;
+		}
+
+		XmlSettings.FreeElementList(pElementList);
+	}
+
+	XmlSettings.ClearActiveSelection();
+	XmlSettings.SelectElements(L"ProgramSettings", 0);
+	pElementList = XmlSettings.GetElementList(-1);
+	if(pElementList != NULL) {
+		pCurrentElementList = pElementList->children;
+
+		while(pCurrentElementList != NULL) {
+			if(!wcscmp(pCurrentElementList->element.name, L"AutoSaveInterval")) {
+				pStr = _com_util::ConvertBSTRToString(pCurrentElementList->element.value);
+				POPSettings.AutoSaveInterval = atoi(pStr);
+				if(POPSettings.AutoSaveInterval < 0)
+					POPSettings.AutoSaveInterval = 0;
 				delete pStr;
 			}
 
@@ -1834,12 +1831,18 @@ void LoadSettings(void)
 void SaveSettings(void)
 {
 	unsigned int i;
-	wchar_t COMPort[10];
+	wchar_t tmp[10];
 
 	XmlSettings.ClearActiveSelection();
 	XmlSettings.SelectElements(L"SimulationSettings", 0);
 	XmlSettings.SelectElements(L"ShowWarnings", 0);
 	XmlSettings.ChangeElement(0, POPSettings.ShowSimulationWarnings ? L"1" : L"0");
+
+	XmlSettings.ClearActiveSelection();
+	XmlSettings.SelectElements(L"ProgramSettings", 0);
+	XmlSettings.SelectElements(L"AutoSaveInterval", 0);
+	swprintf((wchar_t *)tmp, 10, L"%d", POPSettings.AutoSaveInterval);
+	XmlSettings.ChangeElement(0, tmp);
 
 	XmlSettings.ClearActiveSelection();
 	XmlSettings.SelectElements(L"RecentList", 0);
@@ -1855,14 +1858,14 @@ void SaveSettings(void)
 	XmlSettings.ClearActiveSelection();
 	XmlSettings.SelectElements(L"PortSettings", 0);
 	XmlSettings.SelectElements(L"COMPortFlash", 0);
-	swprintf((wchar_t *)COMPort, 10, L"%d", POPSettings.COMPortFlash);
-	XmlSettings.ChangeElement(0, COMPort);
+	swprintf((wchar_t *)tmp, 10, L"%d", POPSettings.COMPortFlash);
+	XmlSettings.ChangeElement(0, tmp);
 
 	XmlSettings.ClearActiveSelection();
 	XmlSettings.SelectElements(L"PortSettings", 0);
 	XmlSettings.SelectElements(L"COMPortDebug", 0);
-	swprintf((wchar_t *)COMPort, 10, L"%d", POPSettings.COMPortDebug);
-	XmlSettings.ChangeElement(0, COMPort);
+	swprintf((wchar_t *)tmp, 10, L"%d", POPSettings.COMPortDebug);
+	XmlSettings.ChangeElement(0, tmp);
 
 	XmlSettings.Save(NULL);
 }
@@ -2000,7 +2003,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     ShowWindow(MainWindow, SW_SHOW);
     SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
-    
+	SetAutoSaveInterval(POPSettings.AutoSaveInterval);
+
     if(strlen(lpCmdLine) > 0) {
         char line[MAX_PATH];
         if(*lpCmdLine == '"') { 

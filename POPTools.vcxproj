@@ -262,7 +262,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ansic.cpp" />
     <ClCompile Include="checkbitdialog.cpp" />
     <ClCompile Include="circuit.cpp" />
     <ClCompile Include="coildialog.cpp" />
@@ -281,7 +280,6 @@
     <ClCompile Include="helpdialog.cpp" />
     <ClCompile Include="helptext.cpp" />
     <ClCompile Include="intcode.cpp" />
-    <ClCompile Include="interpreted.cpp" />
     <ClCompile Include="iomap.cpp" />
     <ClCompile Include="lang.cpp" />
     <ClCompile Include="poptools.cpp" />
@@ -337,7 +335,6 @@
     <None Include="bin\src\memory.ld" />
     <None Include="bin\src\startup_LPC17xx.o" />
     <None Include="bin\src\syscalls.o" />
-    <None Include="favicon.ico" />
     <CustomBuild Include="MainRibbonEN.xml">
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
@@ -391,6 +388,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - ES|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'">true</ExcludedFromBuild>
+      <SubType>Designer</SubType>
     </CustomBuild>
     <None Include="poptools.ico" />
     <None Include="poptools32.ico" />

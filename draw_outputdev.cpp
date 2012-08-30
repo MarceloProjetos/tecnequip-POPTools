@@ -1,27 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// The two `output devices' for the drawing code: either the export as text
-// stuff to write to a file, or all the routines concerned with drawing to
-// the screen.
-// Jonathan Westhues, Dec 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -264,12 +240,10 @@ void PaintWindow(void)
 
 	HDC paintDc;
     if(!BackDc) {
-        HWND desktop = GetDesktopWindow();
-        RECT dk;
-        GetClientRect(desktop, &dk);
-
-        BitmapWidth = max(2000, dk.right + 300);
-        BackBitmap = CreateCompatibleBitmap(Hdc, BitmapWidth, dk.bottom + 300);
+		int width  = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+		int height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        BitmapWidth = max(POS_WIDTH*FONT_WIDTH*(DISPLAY_MATRIX_X_SIZE+1), width + 300);
+        BackBitmap = CreateCompatibleBitmap(Hdc, BitmapWidth, height + 300);
         BackDc = CreateCompatibleDC(Hdc);
         SelectObject(BackDc, BackBitmap);
     }
@@ -549,10 +523,10 @@ void ExportDrawingAsText(char *file)
 
     if(Prog.mcu) {
         fprintf(f, _("Para '%s', cristal de %.6f MHz, tempo de ciclo de %.1f ms\n\n"),
-            Prog.mcu->mcuName, Prog.mcuClock/1e6, Prog.cycleTime/1e3);
+            Prog.mcu->mcuName, Prog.settings.mcuClock/1e6, Prog.settings.cycleTime/1e3);
     } else {
         fprintf(f, _("no MCU assigned, %.6f MHz crystal, %.1f ms cycle time\n\n"),
-            Prog.mcuClock/1e6, Prog.cycleTime/1e3);
+            Prog.settings.mcuClock/1e6, Prog.settings.cycleTime/1e3);
     }
 
     fprintf(f, _("\nDiagrama Ladder:\n\n"));

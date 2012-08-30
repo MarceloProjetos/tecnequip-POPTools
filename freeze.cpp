@@ -1,7 +1,6 @@
 /*
  * A library for storing parameters in the registry.
  *
- * Jonathan Westhues, 2002
  */
 #include <windows.h>
 #include <stdlib.h>

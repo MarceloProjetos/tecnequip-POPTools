@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ansic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="circuit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,9 +49,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="intcode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="interpreted.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lang.cpp">
@@ -202,9 +196,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="splash.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="favicon.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="bin\src\compile">

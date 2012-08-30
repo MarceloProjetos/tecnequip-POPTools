@@ -1,27 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Common controls in the main window. The main window consists of the drawing
-// area, where the ladder diagram is displayed, plus various controls for
-// scrolling, I/O list, menus.
-// Jonathan Westhues, Nov 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
@@ -793,14 +769,14 @@ void RefreshControlsToSettings(void)
         SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_("no MCU selected"));
     }*/
     char buf[256];
-    sprintf(buf, _("cycle time %.2f ms"), (double)Prog.cycleTime/1000.0);
+    sprintf(buf, _("cycle time %.2f ms"), (double)Prog.settings.cycleTime/1000.0);
     SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)buf);
 
     if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC || Prog.mcu->whichIsa == ISA_INTERPRETED))
     {
 		strcpy(buf, "");
     } else {
-        sprintf(buf, _("processor clock %.4f MHz"), (double)Prog.mcuClock/1000000.0);
+        sprintf(buf, _("processor clock %.4f MHz"), (double)Prog.settings.mcuClock/1000000.0);
     }
     SendMessage(StatusBar, SB_SETTEXT, 2, (LPARAM)buf);
 

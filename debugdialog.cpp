@@ -1,26 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Dialog for setting the properties of a set of contacts: negated or not,
-// plus the name
-// Jonathan Westhues, Oct 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -289,7 +266,7 @@ void MB_Transfer(bool mode_send, bool mode_tcp, bool retry)
 			mbdev = &MBDev_TCP;
 		} else {
 			mbdev = &MBDev_Serial;
-			switch(Prog.UART) {
+			switch(Prog.settings.UART) {
 			case 1: // 8-E-1
 				bByteSize  = 8; // 8 Bits
 				bParity    = EVENPARITY; // even
@@ -321,7 +298,7 @@ void MB_Transfer(bool mode_send, bool mode_tcp, bool retry)
 				bStopBits  = ONESTOPBIT;
 			}
 
-			if(!OpenCOMPort(POPSettings.COMPortDebug, Prog.baudRate, bByteSize, bParity, bStopBits)) {
+			if(!OpenCOMPort(POPSettings.COMPortDebug, Prog.settings.baudRate, bByteSize, bParity, bStopBits)) {
 				Error(_("Erro abrindo porta serial!"));
 				return;
 			}
@@ -359,7 +336,7 @@ static void SyncConfigToScreen(void)
 {
 	char buf[30];
 
-	sprintf(buf, "%d.%d.%d.%d", Prog.ip[0], Prog.ip[1], Prog.ip[2], Prog.ip[3]);
+	sprintf(buf, "%d.%d.%d.%d", Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
 	SendMessage(txtIP, WM_SETTEXT, 0, (LPARAM)buf);
 
 	sprintf(buf, "COM%d", POPSettings.COMPortDebug);

@@ -1,27 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Routines to maintain the stack of recent versions of the program that we
-// use for the undo/redo feature. Don't be smart at all; keep deep copies of
-// the entire program at all times.
-// Jonathan Westhues, split May 2005
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -180,7 +156,7 @@ void UndoRemember(void)
 
 //-----------------------------------------------------------------------------
 // Discard previous state. It is useful when we had saved previous state but
-//  no changes was made in Prog.
+//  no changes was made in Prog.settings.
 //-----------------------------------------------------------------------------
 void UndoForget(void)
 {
@@ -211,6 +187,8 @@ void UndoUndo(void)
 
     PopProgramStack(&(Undo.undo));
 
+	RemoveParallelStart(0, NULL);
+
     if(Undo.undo.count > 0) {
         SetUndoEnabled(TRUE, TRUE);
     } else {
@@ -234,6 +212,8 @@ void UndoRedo(void)
 	ForgetEverything();
 
     PopProgramStack(&(Undo.redo));
+
+	RemoveParallelStart(0, NULL);
 
     if(Undo.redo.count > 0) {
         SetUndoEnabled(TRUE, TRUE);

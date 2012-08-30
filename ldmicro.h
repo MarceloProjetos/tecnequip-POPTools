@@ -1,26 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Constants, structures, declarations etc. for the PIC ladder logic compiler
-// Jonathan Westhues, Oct 2004
-//-----------------------------------------------------------------------------
-
 #ifndef __LDMICRO_H
 #define __LDMICRO_H
 
@@ -304,6 +281,7 @@ typedef SDWORD SWORD;
 // Timer IDs associated with the main window.
 #define TIMER_BLINK_CURSOR      1
 #define TIMER_SIMULATE          2
+#define TIMER_AUTOSAVE          3
 
 //-----------------------------------------------
 // Data structures for the actual ladder logic. A rung on the ladder
@@ -741,23 +719,26 @@ typedef struct PlcProgramTag {
         int                 count;
     }           io;
     McuIoInfo  *mcu;
-    int         cycleTime;
-    int         mcuClock;
-    int         baudRate;	// RS485 baudrate
-	int			UART;
-	int			ModBUSID;
-	unsigned char ip[4];
-	unsigned char mask[4];
-	unsigned char gw[4];
-	unsigned char dns[4];
-	char		sntp[126];
-	int			gmt;
-	unsigned char dailysave;
-	int			diameter;
-	int			pulses;
-	float		factor;
-	unsigned char x4;
-	BOOL canSave;
+	ElemLeaf   *ParallelStart;
+	struct {
+		int         cycleTime;
+		int         mcuClock;
+		int         baudRate;	// RS485 baudrate
+		int			UART;
+		int			ModBUSID;
+		unsigned char ip[4];
+		unsigned char mask[4];
+		unsigned char gw[4];
+		unsigned char dns[4];
+		char		sntp[126];
+		int			gmt;
+		unsigned char dailysave;
+		int			diameter;
+		int			pulses;
+		float		factor;
+		unsigned char x4;
+		BOOL canSave;
+	} settings;
 
 #define MAX_RUNGS 999
     ElemSubcktSeries *rungs[MAX_RUNGS];
@@ -800,6 +781,8 @@ typedef struct SettingsTag {
 	// COM Port Settings
 	int COMPortFlash;
 	int COMPortDebug;
+	// Interval in minutes between autosave calls
+	int	AutoSaveInterval;
 } Settings;
 
 //-----------------------------------------------
@@ -1108,6 +1091,8 @@ BOOL CanUndo(void);
 // loadsave.cpp
 BOOL LoadProjectFromFile(char *filename);
 BOOL SaveProjectToFile(char *filename);
+void SetAutoSaveInterval(int interval);
+void CALLBACK AutoSaveNow(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 
 // iolist.cpp
 int GenerateIoList(int prevSel);
@@ -1205,6 +1190,7 @@ bool IsInternalFlag(char *name);
 bool IsValidNumber(char *number);
 void ChangeFileExtension(char *name, char *ext);
 char *GetPinADC(char *name);
+unsigned short int CRC16(unsigned char *puchMsg, unsigned int usDataLen);
 extern BOOL RunningInBatchMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;

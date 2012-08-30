@@ -18,13 +18,12 @@ OutputDir=..\Setup
 OutputBaseFilename=POPTools_Setup_v1.4
 Compression=lzma
 SolidCompression=yes
-LicenseFile=..\Setup\EULA.TXT
 ChangesAssociations=yes
 
 [Languages]
-Name: "ptbr"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
-Name: "en"; MessagesFile: "compiler:Default.isl"
-Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"
+Name: "ptbr"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"; LicenseFile: "..\Setup\EULA_PTBR.txt"
+Name: "en"; MessagesFile: "compiler:Default.isl"; LicenseFile: "..\Setup\EULA_PTBR.txt"
+Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"; LicenseFile: "..\Setup\EULA_ES.txt"
 
 ; [Types]
 ; Name: "full"; Description: "Instalação Completa"
@@ -47,7 +46,9 @@ Source: "..\bin\POPTools.exe"; DestDir: "{app}"; Languages: ptbr; Flags: ignorev
 Source: "..\bin\POPTools_en.exe"; DestDir: "{app}"; DestName: "POPTools.exe"; Languages: en; Flags: ignoreversion
 Source: "..\bin\POPTools_es.exe"; DestDir: "{app}"; DestName: "POPTools.exe"; Languages: es; Flags: ignoreversion
 Source: "..\Help\Ajuda.chm"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\Setup\EULA.TXT"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Setup\EULA_PTBR.TXT"; DestDir: "{app}"; DestName: "EULA.txt"; Languages: ptbr; Flags: ignoreversion
+Source: "..\Setup\EULA_EN.TXT"; DestDir: "{app}"; DestName: "EULA.txt"; Languages: en; Flags: ignoreversion
+Source: "..\Setup\EULA_ES.TXT"; DestDir: "{app}"; DestName: "EULA.txt"; Languages: es; Flags: ignoreversion
 Source: "..\bin\settings.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\settings.xml"; DestDir: "{localappdata}\POPTools"; Flags: ignoreversion
 Source: "..\flashmagicarmcortex.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -81,6 +82,7 @@ Name: "{commondesktop}\POPTools"; Filename: "{app}\POPTools.exe"; Tasks: desktop
 [Registry]
 ; Root: HKLM; Subkey: "System\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "Path"; ValueData: "{reg:HKLM\System\CurrentControlSet\Control\Session Manager\Environment,Path};c:\yagarto;c:\yagarto_tools";
 Root: HKCR; Subkey: ".ld"; ValueType: string; ValueName: ""; ValueData: "POPToolsFiles"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".bld"; ValueType: string; ValueName: ""; ValueData: "POPToolsFiles"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "POPToolsFiles"; ValueType: string; ValueName: ""; ValueData: "POPTools Files"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "POPToolsFiles\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\POPTools.exe,0"
 Root: HKCR; Subkey: "POPToolsFiles\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\POPTools.exe"" ""%1"""

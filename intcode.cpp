@@ -1,27 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Generate intermediate code for the ladder logic. Basically generate code
-// for a `virtual machine' with operations chosen to be easy to compile to
-// AVR or PIC16 code.
-// Jonathan Westhues, Nov 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
 #include <setjmp.h>
@@ -468,7 +444,7 @@ void Comment(char *str, ...)
 //-----------------------------------------------------------------------------
 static int TimerPeriod(ElemLeaf *l)
 {
-    unsigned int period = (l->d.timer.delay / Prog.cycleTime) - 1;
+    unsigned int period = (l->d.timer.delay / Prog.settings.cycleTime) - 1;
 
     if(period < 1)  {
         Error(_("Timer period too short (needs faster cycle time)."));
