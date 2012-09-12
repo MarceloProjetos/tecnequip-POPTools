@@ -174,9 +174,10 @@ static void MakeControls(void)
         5, 5, 325, 250, ConfDialog, NULL, Instance, NULL);
     NiceFont(TabCtrl);
 
-	container_tabs.mask   = TCIF_TEXT;
+	container_tabs.mask   = TCIF_TEXT;// | TCIF_IMAGE;
 
 	container_tabs.pszText = _("Serial");
+//	container_tabs.iImage = ;
 	TabCtrl_InsertItem(TabCtrl, 0, &container_tabs);
 
 	container_tabs.pszText = _("Rede");
@@ -449,7 +450,7 @@ bool ShowConfDialog(bool NetworkSection)
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(ConfDialog, TRUE);
-    SetFocus(CycleTextbox);
+    SetFocus(OkButton);
 
     MSG msg;
     DWORD ret;
