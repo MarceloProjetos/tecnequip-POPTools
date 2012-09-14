@@ -137,7 +137,7 @@ void ShowPrefDialog(void)
 
 	PrefDialog = CreateWindowClient(0, "LDmicroDialog",
         _("Preferências"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 290, 250, MainWindow, NULL, Instance, NULL);
+        150, 160, 290, 250, MainWindow, NULL, Instance, NULL);
 
 	PrevPrefDialogProc = SetWindowLongPtr(PrefDialog, GWLP_WNDPROC, (LONG_PTR)PrefDialogProc);
 
@@ -172,6 +172,7 @@ void ShowPrefDialog(void)
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(PrefDialog, TRUE);
+	SetFocus(OkButton);
 
     MSG msg;
     DWORD ret;

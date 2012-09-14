@@ -1,26 +1,3 @@
-//-----------------------------------------------------------------------------
-// Copyright 2007 Jonathan Westhues
-//
-// This file is part of LDmicro.
-// 
-// LDmicro is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LDmicro is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LDmicro.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// Dialog for setting the properties of a set of contacts: negated or not,
-// plus the name
-// Jonathan Westhues, Oct 2004
-//-----------------------------------------------------------------------------
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -194,44 +171,55 @@ static void MakeControls(void)
         280, 61, 65, 140, grouper, NULL, Instance, NULL);
     NiceFont(YearCombobox);
 
+	//Icone de edição do relogio
+	HWND textLabel47 = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
+        SS_BITMAP | SS_BLACKRECT | SS_GRAYFRAME | SS_LEFT | SS_LEFTNOWORDWRAP | SS_RIGHT | SS_WHITERECT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        10, 100, 64, 64, RTCDialog, NULL, Instance, NULL);
+
+	HBITMAP hBmp = (HBITMAP) LoadImage(NULL,"imgs/time_config.bmp",IMAGE_BITMAP,0,0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
+	SendMessage(textLabel47,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp);
+
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Horário:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        7, 105, 109, 25, RTCDialog, NULL, Instance, NULL);
+        180, 115, 50, 25, RTCDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
+	// Campo de horas do horario
     HourTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        126, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
+        236, 115, 30, 20, RTCDialog, NULL, Instance, NULL);
     FixedFont(HourTextbox);
 
     HWND textLabel9 = CreateWindowEx(0, WC_STATIC, ":",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        153, 105, 13, 21, RTCDialog, NULL, Instance, NULL);
+        262, 115, 13, 20, RTCDialog, NULL, Instance, NULL);
     NiceFont(textLabel9);
 
-    MinTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    // Campo de minutos do horario
+	MinTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        171, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
+        279, 115, 30, 20, RTCDialog, NULL, Instance, NULL);
     FixedFont(MinTextbox);
 
     HWND textLabel10 = CreateWindowEx(0, WC_STATIC, ":",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        198, 105, 13, 21, RTCDialog, NULL, Instance, NULL);
+        306, 115, 13, 20, RTCDialog, NULL, Instance, NULL);
     NiceFont(textLabel10);
 
+	// Campo de segundos do horario
     SecTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        216, 105, 30, 21, RTCDialog, NULL, Instance, NULL);
+        324, 115, 30, 20, RTCDialog, NULL, Instance, NULL);
     FixedFont(SecTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        210, 140, 70, 23, RTCDialog, NULL, Instance, NULL); 
+        210, 150, 70, 23, RTCDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        285, 140, 70, 23, RTCDialog, NULL, Instance, NULL); 
+        285, 150, 70, 23, RTCDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 
     PrevNameProc = SetWindowLongPtr(HourTextbox, GWLP_WNDPROC, 
@@ -251,7 +239,7 @@ void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * m
 
     RTCDialog = CreateWindowClient(0, "LDmicroDialog",
         _("RTC"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 360, 170, MainWindow, NULL, Instance, NULL);
+        100, 100, 363, 180, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
    
