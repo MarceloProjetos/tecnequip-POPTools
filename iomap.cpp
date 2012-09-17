@@ -872,7 +872,12 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam,
                 DialogCancel = TRUE;
             } else if(h == PinList && HIWORD(wParam) == LBN_DBLCLK) {
                 DialogDone = TRUE;
-            }
+			} else if (h == PinList && HIWORD(wParam) == LBN_SELCHANGE) {
+				char pin[16];
+				SendMessage(PinList, LB_GETTEXT,
+					(WPARAM)SendMessage(PinList, LB_GETCURSEL, 0, 0), (LPARAM)pin);
+				EnableWindow(BitCombobox, atoi(pin)<20 ? FALSE : TRUE);
+			}
             break;
         }
 
@@ -932,7 +937,7 @@ static void MakeControls(void)
     NiceFont(textLabel2);
 
 	BitCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
-        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST | WS_DISABLED,
         55, 325, 66, 140, IoDialog, NULL, Instance, NULL);
     NiceFont(BitCombobox);
 
@@ -1021,6 +1026,9 @@ void ShowIoMapDialog(int item)
 		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
 
 	SendMessage(BitCombobox, CB_SETCURSEL, Prog.io.assignment[item].bit, 0);
+	if(Prog.io.assignment[item].pin >= 20) {
+		EnableWindow(BitCombobox, TRUE);
+	}
 
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
 	PinListItemCount++;
