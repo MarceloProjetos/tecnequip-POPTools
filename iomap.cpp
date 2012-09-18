@@ -51,7 +51,7 @@ static BOOL EncoderSliderCancel;*/
 const LPCTSTR ComboboxBitItens[] = { "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9", "10",
 									"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", 
 									"21", "22", "23", "24", "25", "26", "27", "28", "29", "30", 
-									"31"/*, "32"*/};
+									"31"};
 
 //-----------------------------------------------------------------------------
 // Append an I/O to the I/O list if it is not in there already.
@@ -876,6 +876,8 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam,
 				char pin[16];
 				SendMessage(PinList, LB_GETTEXT,
 					(WPARAM)SendMessage(PinList, LB_GETCURSEL, 0, 0), (LPARAM)pin);
+				if(atoi(pin)<20)
+					SendMessage(BitCombobox, CB_SETCURSEL, 0, 0);
 				EnableWindow(BitCombobox, atoi(pin)<20 ? FALSE : TRUE);
 			}
             break;

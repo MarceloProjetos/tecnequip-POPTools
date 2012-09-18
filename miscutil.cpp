@@ -643,6 +643,8 @@ bool IsValidVarName(char *name)
 {
 	bool first = true;
 
+	 if(name == NULL || !strlen(name)) return false; // If text in white retorn false
+
 	while(*name) {
 		// If char isn't letter nor '_' or is number in the first position, returns false
 		if((toupper(*name) < 'A' || toupper(*name) > 'Z') && *name != '_' && !(!first && (*name >= '0' && *name <= '9')))
