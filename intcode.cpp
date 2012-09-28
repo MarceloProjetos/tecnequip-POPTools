@@ -3,7 +3,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 #include "intcode.h"
 
 IntOp IntCode[MAX_INT_OPS];
@@ -810,6 +810,25 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             break;
         }
 
+        case ELEM_SQRT: {
+            if(IsNumber(l->d.sqrt.dest)) {
+                Error(_("Sqrt instruction: '%s' not a valid destination."),
+                    l->d.sqrt.dest);
+                CompileError();
+            }
+            Op(INT_IF_BIT_SET, stateInOut);
+            if(IsNumber(l->d.sqrt.src)) {
+                Op(INT_SET_VARIABLE_TO_LITERAL, l->d.sqrt.dest,
+                    CheckMakeNumber(l->d.sqrt.src));
+            } else {
+                Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.sqrt.dest, l->d.sqrt.src,
+                    0);
+            }
+			Op(INT_SQRT, l->d.sqrt.dest);
+			Op(INT_END_IF);
+            break;
+        }
+
         // These four are highly processor-dependent; the int code op does
         // most of the highly specific work
         {
@@ -841,16 +860,31 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 				{
 					char gaint[10];
 					char gainr[10];
+					char type [10];
+					char str_initval[MAX_NAME_LEN];
 					char oneShot[MAX_NAME_LEN];
 					GenSymOneShot(oneShot);
 
 					_itoa(l->d.multisetDA.gaint, gaint, 10);
 					_itoa(l->d.multisetDA.gainr, gainr, 10);
+					_itoa(l->d.multisetDA.type , type , 10);
+
+					strcpy(str_initval, l->d.multisetDA.name1);
+					if(IsNumber(str_initval)) {
+						int initval = atoi(str_initval);
+
+						if (l->d.multisetDA.type == 1)  // (mV)
+							initval = static_cast<int>(DA_RESOLUTION * (initval / DA_VOLTAGE));
+						else if (l->d.multisetDA.type == 2) // (%)
+							initval = static_cast<int>(DA_RESOLUTION * (initval / 100.0f));
+
+						_itoa(initval, str_initval, 10);
+					}
 
 					Op(INT_IF_BIT_SET, stateInOut);
 						Op(INT_IF_BIT_CLEAR, oneShot);
 							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
-							Op(INT_MULTISET_DA, l->d.multisetDA.name, l->d.multisetDA.name1, gaint, gainr, l->d.multisetDA.linear, l->d.multisetDA.speedup);
+							Op(INT_MULTISET_DA, l->d.multisetDA.name, str_initval, gaint, gainr, type, NULL, NULL, l->d.multisetDA.linear, l->d.multisetDA.StartFromCurrentValue ? 2 : l->d.multisetDA.speedup);
 						Op(INT_END_IF);
 					Op(INT_ELSE);
 						Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
@@ -1650,6 +1684,8 @@ BOOL GenerateIntermediateCode(void)
         }
         Comment("");
         Comment("start rung %d", i+1);
+		GenSymCountParThis = 0;
+		GenSymCountParOut  = 0;
         Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");
         SimState(&(Prog.rungPowered[i]), "$rung_top");
         IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], "$rung_top");

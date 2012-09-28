@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 // I/O that we have seen recently, so that we don't forget pin assignments
 // when we re-extract the list
@@ -362,6 +362,7 @@ void WhatCanWeDoFromCursorAndTopology(void)
          SelectedWhich == ELEM_LOOK_UP_TABLE ||
          SelectedWhich == ELEM_PIECEWISE_LINEAR ||
          SelectedWhich == ELEM_PERSIST ||
+         SelectedWhich == ELEM_SQRT ||
          SelectedWhich == ELEM_MOVE))
     {
         if(SelectedWhich == ELEM_COIL) {
@@ -746,6 +747,10 @@ bool EditSelectedElement(void)
             ShowMoveDialog(Selected->d.move.dest, Selected->d.move.src);
             break;
 
+        case ELEM_SQRT:
+            ShowSqrtDialog(Selected->d.sqrt.dest, Selected->d.sqrt.src);
+            break;
+
         case ELEM_SET_PWM:
             ShowSetPwmDialog(Selected->d.setPwm.name,
                 &(Selected->d.setPwm.targetFreq));
@@ -840,6 +845,49 @@ bool EditSelectedElement(void)
     }
 
 	return true;
+}
+
+int FindRung(int gx, int gy)
+{
+	int rung;
+
+	while(DM_INSIDE_BOUNDS(gx, gy) && DisplayMatrix[gx][gy] == NULL)
+		gy--;
+
+	if(DM_INSIDE_BOUNDS(gx, gy) && DisplayMatrix[gx][gy] == PADDING_IN_DISPLAY_MATRIX) {
+		while(DM_INSIDE_BOUNDS(gx, gy) && DisplayMatrix[gx][gy] == PADDING_IN_DISPLAY_MATRIX)
+			gx++;
+		if(DisplayMatrix[gx][gy] == NULL) {
+			gx--;
+			while(DM_INSIDE_BOUNDS(gx, gy) && DisplayMatrix[gx][gy] == PADDING_IN_DISPLAY_MATRIX)
+				gx--;
+		}
+	}
+
+	if(DM_INSIDE_BOUNDS(gx, gy) && VALID_LEAF(DisplayMatrix[gx][gy])) {
+		for(rung=0; rung<Prog.numRungs; rung++) {
+			if(ContainsElem(ELEM_SERIES_SUBCKT, Prog.rungs[rung], DisplayMatrix[gx][gy])) {
+				return rung;
+			}
+		}
+	}
+
+	return -1;
+}
+
+void ToggleBreakPoint(int y)
+{
+	int rung;
+
+    y += FONT_HEIGHT/2;
+
+    int gy = (y - Y_PADDING)/(POS_HEIGHT*FONT_HEIGHT);
+
+    gy += ScrollYOffset;
+
+	rung = FindRung(0, gy);
+	if(rung >= 0)
+		Prog.rungHasBreakPoint[rung] = !Prog.rungHasBreakPoint[rung];
 }
 
 //-----------------------------------------------------------------------------
@@ -954,7 +1002,24 @@ void MoveCursorMouseClick(int x, int y)
             }
         }
         SelectElement(gx, gy, state);
-    }
+	} else if (DisplayMatrix[gx][gy] && DisplayMatrix[gx][gy] == PADDING_IN_DISPLAY_MATRIX) {
+		int offset = 1;
+		while(gx+offset<DISPLAY_MATRIX_X_SIZE && DisplayMatrix[gx+offset][gy] &&
+				DisplayMatrix[gx+offset][gy] == PADDING_IN_DISPLAY_MATRIX) {
+			offset++;
+		}
+		if(VALID_LEAF(DisplayMatrix[gx+offset][gy])) {
+			SelectElement(gx+offset, gy, SELECTED_LEFT);
+		} else {
+			offset = -1;
+			while(gx+offset>0 && DisplayMatrix[gx+offset][gy] && DisplayMatrix[gx+offset][gy] == PADDING_IN_DISPLAY_MATRIX) {
+				offset--;
+			}
+			if(VALID_LEAF(DisplayMatrix[gx+offset][gy])) {
+				SelectElement(gx+offset, gy, SELECTED_RIGHT);
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

@@ -269,6 +269,7 @@ static void Default_HandlerHF(void)
 	while (1)
 	{
 //		PLC_ERROR |= 1 << 29;
+		break;
 	}
 }
 

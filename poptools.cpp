@@ -3,7 +3,7 @@
 #include <commdlg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "ldmicro.h"
+#include "poptools.h"
 #include "freeze.h"
 #include "mcutable.h"
 
@@ -694,8 +694,12 @@ void ProcessMenu(int code)
             break;
 
         case MNU_EXIT:
-            if(CheckSaveUserCancels()) break;
-            PostQuitMessage(0);
+			if(InSimulationMode) {
+				ToggleSimulationMode();
+			} else {
+				if(CheckSaveUserCancels()) break;
+				PostQuitMessage(0);
+			}
             break;
 
         case MNU_INSERT_COMMENT:
@@ -861,6 +865,10 @@ void ProcessMenu(int code)
 
         case MNU_INSERT_UART_RECV:
             CHANGING_PROGRAM(AddUart(ELEM_UART_RECV));
+            break;
+
+        case MNU_INSERT_SQRT:
+            CHANGING_PROGRAM(AddSqrt());
             break;
 
         case MNU_INSERT_PERSIST:
@@ -1054,6 +1062,7 @@ cmp:
 		case MNU_EXAMPLE_SUB:
 		case MNU_EXAMPLE_MUL:
 		case MNU_EXAMPLE_DIV:
+		case MNU_EXAMPLE_SQRT:
             OpenDialog("examples\\math.ld");
 			break;
 		case MNU_EXAMPLE_MOV:
@@ -1146,6 +1155,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	int i, emptyRung;
 
     switch (msg) {
+		case WM_SOCKET:
+			SimulationServer_Message(wParam, lParam);
+			return 1;
+			break;
+
 		case WM_CREATE: 
 			mysplash.Init(hwnd);
 
@@ -1575,7 +1589,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_LBUTTONDBLCLK: {
             int x = LOWORD(lParam);
             int y = HIWORD(lParam) - RibbonHeight;
-            if(InSimulationMode) {
+
+			if(x < X_PADDING - FONT_WIDTH + 3) {
+				ToggleBreakPoint(y);
+			} else if(InSimulationMode) {
                 EditElementMouseDoubleclick(x, y);
             } else {
                 CHANGING_PROGRAM(EditElementMouseDoubleclick(x, y));
@@ -2031,6 +2048,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// Initialize ModBUS protocol and devices
 	Init_MBDev();
+	Init_MBDev_Slave();
 
 	MSG msg;
     DWORD ret;

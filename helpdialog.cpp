@@ -4,7 +4,7 @@
 #include <commctrl.h>
 #include <richedit.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 extern char *HelpText[];
 extern char *HelpTextDe[];

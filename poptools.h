@@ -97,6 +97,9 @@ typedef SDWORD SWORD;
 #define DA_VOLTAGE			10000.0f	// voltagem DA em mV (-10V +10V)
 #define DA_CYCLE_INTERVAL	10			// miliseconds
 
+// Identifier for the message sent to MainWindow when SimSocket receives something
+#define WM_SOCKET 104
+
 // Activating the next line will disable Ribbon in Main Window.
 //#define POPTOOLS_DISABLE_RIBBON
 
@@ -160,6 +163,7 @@ struct strSerialConfig {
 #define MNU_INSERT_SUB          0x2d
 #define MNU_INSERT_MUL          0x2e
 #define MNU_INSERT_DIV          0x2f
+#define MNU_INSERT_SQRT         0x5c
 #define MNU_INSERT_MOV          0x30
 #define MNU_INSERT_READ_ADC     0x31
 #define MNU_INSERT_SET_PWM      0x32
@@ -238,6 +242,7 @@ struct strSerialConfig {
 #define MNU_EXAMPLE_SUB          0x12d
 #define MNU_EXAMPLE_MUL          0x12e
 #define MNU_EXAMPLE_DIV          0x12f
+#define MNU_EXAMPLE_SQRT         0x15c
 #define MNU_EXAMPLE_MOV          0x130
 #define MNU_EXAMPLE_READ_ADC     0x131
 #define MNU_EXAMPLE_SET_PWM      0x132
@@ -318,6 +323,7 @@ struct strSerialConfig {
 #define ELEM_SUB                0x1a
 #define ELEM_MUL                0x1b
 #define ELEM_DIV                0x1c
+#define ELEM_SQRT               0x43
 #define ELEM_EQU                0x1d
 #define ELEM_NEQ                0x1e
 #define ELEM_GRT                0x1f
@@ -382,6 +388,7 @@ struct strSerialConfig {
         case ELEM_SUB: \
         case ELEM_MUL: \
         case ELEM_DIV: \
+        case ELEM_SQRT: \
         case ELEM_MOVE: \
         case ELEM_SHORT: \
         case ELEM_OPEN: \
@@ -469,6 +476,11 @@ typedef struct ElemMathTag {
     char    dest[MAX_NAME_LEN];
 } ElemMath;
 
+typedef struct ElemSqrtTag {
+    char    src[MAX_NAME_LEN];
+    char    dest[MAX_NAME_LEN];
+} ElemSqrt;
+
 typedef struct ElemCmpTag {
     char    op1[MAX_NAME_LEN];
     char    op2[MAX_NAME_LEN];
@@ -508,6 +520,7 @@ typedef struct ElemMultisetDATag {
 	int		type;					// 0 = Valor saida do DA (2048 ~ -2048), 1 = milivolt (mV) (10V ~-10V), 2 = percentual (%)
 	int		gaint;					// tempo da curva de ganho em %
 	int		gainr;					// resolução da curva de ganho em %
+	BOOL	StartFromCurrentValue;	// 0 = Iniciar ou ir para zero, conforme speedup. 1 = partir do valor atual até o valor configurado
 } ElemMultisetDA;
 
 typedef struct ElemReadUSSTag {
@@ -633,6 +646,7 @@ typedef struct ElemLeafTag {
         ElemReset           reset;
         ElemMove            move;
         ElemMath            math;
+        ElemSqrt            sqrt;
         ElemCmp             cmp;
         ElemCounter         counter;
         ElemReadAdc         readAdc;
@@ -750,6 +764,7 @@ typedef struct PlcProgramTag {
 
 #define MAX_RUNGS 999
     ElemSubcktSeries *rungs[MAX_RUNGS];
+    BOOL              rungHasBreakPoint[MAX_RUNGS];
     BOOL              rungPowered[MAX_RUNGS];
     int               numRungs;
 } PlcProgram;
@@ -962,6 +977,7 @@ extern int IoListTop;
 extern int IoListHeight;
 extern HWND UartSimulationWindow;
 extern HWND UartSimulationTextControl;
+extern BOOL RealTimeSimulationRunning;
 
 // draw.cpp
 int ProgCountWidestRow(void);
@@ -1007,6 +1023,7 @@ void ForgetEverything(void);
 void WhatCanWeDoFromCursorAndTopology(void);
 BOOL FindSelected(int *gx, int *gy);
 void MoveCursorNear(int gx, int gy);
+void ToggleBreakPoint(int y);
 
 #define DISPLAY_MATRIX_X_SIZE 32
 #define DISPLAY_MATRIX_Y_SIZE 4096
@@ -1041,6 +1058,7 @@ bool AddContact(void);
 bool AddEmpty(int which);
 bool AddMove(void);
 bool AddMath(int which);
+bool AddSqrt(void);
 bool AddCmp(int which);
 bool AddReset(void);
 bool AddCounter(int which);
@@ -1087,6 +1105,7 @@ ElemSubcktSeries *AllocSubcktSeries(void);
 ElemSubcktParallel *AllocSubcktParallel(void);
 void FreeCircuit(int which, void *any);
 void FreeEntireProgram(void);
+BOOL ContainsElem(int which, void *any, ElemLeaf *seek);
 
 // undoredo.cpp
 void UndoUndo(void);
@@ -1148,6 +1167,7 @@ void ShowSimulationVarSetDialog(char *name, char *val);
 void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
+void ShowSqrtDialog(char *dest, char *src);
 // confdialog.cpp
 extern struct strSerialConfig SerialConfig[];
 extern char *SerialParityString[];
@@ -1167,6 +1187,8 @@ void UpdateTypeInCircuit(char *name, unsigned int type);
 void UpdateTypesFromSeenPreviouslyList();
 void UpdateTypeForInternalRelays();
 BOOL ExistsCoilWithName(char *name);
+int IoMap_GetIndex(PlcProgramSingleIo *io);
+int IoMap_IsModBUS(PlcProgramSingleIo *io);
 
 // miscutil.cpp
 #define oops() { \
@@ -1238,6 +1260,7 @@ void SimulateOneCycle(BOOL forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void StartSimulationTimer(void);
 void ClearSimulationData(void);
+void DescribeForIoList(int val, int type, char *out);
 void DescribeForIoList(char *name, int type, char *out);
 void SimulationToggleContact(char *name);
 void SetAdcShadow(char *name, SWORD val);
@@ -1251,6 +1274,40 @@ void ShowUartSimulationWindow(void);
 extern BOOL InSimulationMode; 
 extern BOOL SimulateRedrawAfterNextCycle;
 #define MAX_SCROLLBACK 16384
+
+// WatchPoint declarations
+struct WatchPoint {
+	char              *name;
+	int                val;
+	struct WatchPoint *next;
+};
+
+extern struct WatchPoint *listWP;
+
+void  AddWP      (char *name, int val);
+void  RemoveWP   (char *name);
+int  *GetValWP   (char *name, int *val);
+void  ClearListWP(void);
+
+// Hardware Registers
+#define HWR_MODBUS_SIZE 32
+
+#define HWR_REG_INPUT  0
+#define HWR_REG_OUTPUT 1
+#define HWR_REG_MODBUS 2
+
+typedef struct strHardwareRegisters HardwareRegisters;
+struct strHardwareRegisters {
+	unsigned int  DigitalInput;
+	unsigned int  DigitalOutput;
+	         int  ModBUS[HWR_MODBUS_SIZE];
+			 bool Syncing;
+			 bool NeedUpdate;
+};
+
+extern HardwareRegisters hwreg;
+
+void HardwareRegisters_Sync(HardwareRegisters *hwr);
 
 // compilecommon.cpp
 void AllocStart(void);
@@ -1281,5 +1338,11 @@ BOOL FlashProgram(char * hexFile, int ComPort, long BaudRate);
 
 // debugdialog.cpp
 void ShowDebugDialog(void);
+
+// modbus_slave.cpp
+void Init_MBDev_Slave        (void);
+int  SimulationServer_Start  (void);
+void SimulationServer_Stop   (void);
+void SimulationServer_Message(WPARAM wParam, LPARAM lParam);
 
 #endif

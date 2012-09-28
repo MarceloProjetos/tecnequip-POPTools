@@ -24,7 +24,7 @@ char 							SNTP_SERVER_ADDRESS[] = "192.168.0.5";
 int								SNTP_GMT = -3;
 int								SNTP_DAILY_SAVE = 0;
 
-#define PLC_DAC_RAMPA_LINEAR_RECUAR
+#define PLC_DAC_RAMPA_VALIDACAO
 
 #if defined(PLC_NULL)
 #include "POPTools/PLC_NULL.h"
@@ -66,6 +66,8 @@ int								SNTP_DAILY_SAVE = 0;
 #include "POPTools/PLC_DA.h"
 #elif defined(PLC_CPU_LED)
 #include "POPTools/PLC_CPU_LED.h"
+#elif defined(PLC_DAC_RAMPA_VALIDACAO)
+#include "POPTools/PLC_DAC_RAMPA_VALIDACAO.h"
 #elif defined(PLC_DAC_RAMPA_LINEAR)
 #include "POPTools/PLC_DAC_RAMPA_LINEAR.h"
 #elif defined(PLC_DAC_RAMPA_LINEAR_RECUAR)
@@ -76,6 +78,8 @@ int								SNTP_DAILY_SAVE = 0;
 #include "POPTools/PLC_DAC_RAMPA_CURVA_RECUAR.h"
 #elif defined(PLC_ENCODER)
 #include "POPTools/PLC_ENCODER.h"
+#elif defined(PLC_SCADA)
+#include "POPTools/PLC_SCADA.h"
 #else
 // Variaveis PLC
 volatile int I_mcr = 0;
@@ -94,7 +98,7 @@ void PLC_Init(void)
 	RS485_Config(19200, 8, 2, 1);
 	//RS485_Config(9600, 8, 0, 1);
 
-	IP4_ADDR(&IP_ADDRESS, 192,168,2,254);
+	IP4_ADDR(&IP_ADDRESS, 192,168,0,254);
 	IP4_ADDR(&IP_NETMASK, 255,255,255,0);
 	IP4_ADDR(&IP_GATEWAY, 192,168,0,10);
 	IP4_ADDR(&IP_DNS, 192,168,0,10);

@@ -5,7 +5,7 @@
 #include <limits.h>
 #include <time.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 #include "intcode.h"
 #include "freeze.h"
 
@@ -144,6 +144,246 @@ static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned in
 static void SimulateIntCode(void);
 static char *MarkUsedVariable(char *name, DWORD flag);
 
+struct WatchPoint *listWP = NULL;
+
+void AddWP(char *name, int val)
+{
+	struct WatchPoint *previous = NULL, *current = listWP, *newWP;
+
+	while(current != NULL) {
+		if(!_stricmp(name, current->name))
+			break;
+
+		previous = current;
+		current = current->next;
+	}
+
+	if(current != NULL) { // name already in the list, change it!
+		current->val = val;
+	} else {
+		newWP = (struct WatchPoint *)CheckMalloc(sizeof(struct WatchPoint));
+		newWP->name = name;
+		newWP->val = val;
+		if(previous != NULL) {
+			previous->next = newWP;
+		} else { // list empty!
+			listWP = newWP;
+		}
+	}
+}
+
+void RemoveWP(char *name)
+{
+	struct WatchPoint *previous = NULL, *current = listWP;
+
+	while(current != NULL) {
+		if(!_stricmp(name, current->name)) {
+			if(previous != NULL) {
+				previous->next = current->next;
+			} else {
+				listWP = current->next;
+			}
+			CheckFree(current);
+			break;
+		}
+
+		previous = current;
+		current = current->next;
+	}
+}
+
+int * GetValWP(char *name, int *val)
+{
+	struct WatchPoint *current = listWP;
+
+	while(current != NULL && val != NULL) {
+		if(!_stricmp(name, current->name)) {
+			*val = current->val;
+			return val;
+		}
+
+		current = current->next;
+	}
+
+	return NULL;
+}
+
+void ClearListWP(void)
+{
+	while(listWP != NULL) {
+		RemoveWP(listWP->name);
+	}
+}
+
+void CheckWP(char *name, int val)
+{
+	int wpval;
+	char desc[100];
+	bool NeedStop = false;
+
+	if(name == NULL) {
+		struct WatchPoint *current = listWP;
+		while(current != NULL) {
+			name = current->name;
+			val  = GetSimulationVariable(name);
+			if(GetValWP(name, &wpval) != NULL && wpval == val) {
+				NeedStop = true;
+				break;
+			}
+			current = current->next;
+		}
+	} else if(GetValWP(name, &wpval) != NULL && wpval == val) {
+		NeedStop = true;
+	}
+
+	if(NeedStop) {
+		PauseSimulation();
+		DescribeForIoList(wpval, GetTypeFromName(name), desc);
+		Error("Simulação interrompida!\n\n%s = %s", name, desc);
+	}
+}
+
+/*** Hardware Registers Simulation ***/
+
+//-----------------------------------------------------------------------------
+// The following code will simulate the registers of POP-7 so we will be able
+// to emulate a POP-7 hardware in POPTools. When simulation is running, a
+// socket is opened waiting for ModBUS messages.
+//-----------------------------------------------------------------------------
+
+HardwareRegisters hwreg;
+
+void HardwareRegisters_Init(HardwareRegisters *hwr)
+{
+	if(hwr != NULL) {
+		memset(hwr, 0, sizeof(HardwareRegisters));
+	}
+}
+
+void HardwareRegisters_SetBit(HardwareRegisters *hwr, int reg, int index, int bit, int val)
+{
+	unsigned int mask;
+
+	if(hwr == NULL || bit<0 || bit>31 || index<0) return;
+
+	mask = 1UL << bit;
+
+	switch(reg) {
+	case HWR_REG_INPUT:
+		if(!val) {
+			hwr->DigitalInput &= ~mask;
+		} else {
+			hwr->DigitalInput |=  mask;
+		}
+		break;
+
+	case HWR_REG_OUTPUT:
+		if(!val) {
+			hwr->DigitalOutput &= ~mask;
+		} else {
+			hwr->DigitalOutput |=  mask;
+		}
+		break;
+
+	case HWR_REG_MODBUS:
+		if(index < HWR_MODBUS_SIZE) {
+			if(!val) {
+				hwr->ModBUS[index] &= ~mask;
+			} else {
+				hwr->ModBUS[index] |=  mask;
+			}
+		}
+	}
+}
+
+void HardwareRegisters_SetValue(HardwareRegisters *hwr, int index, int val)
+{
+	if(hwr != NULL && index >= 0 && index < HWR_MODBUS_SIZE) {
+		hwr->ModBUS[index] = val;
+	}
+}
+
+void HardwareRegisters_Update(HardwareRegisters *hwr, char *name, int val)
+{
+	int i, index, ismb;
+	if(name == NULL) return;
+
+	for(i=0; i<Prog.io.count; i++) {
+		if(Prog.io.assignment[i].pin != NO_PIN_ASSIGNED &&
+				!strcmp(name, Prog.io.assignment[i].name)) { // name has assignment
+			index = IoMap_GetIndex(&Prog.io.assignment[i]);
+			ismb  = IoMap_IsModBUS(&Prog.io.assignment[i]);
+
+			// Now we have to update register associated to name
+			switch(Prog.io.assignment[i].type) {
+			case IO_TYPE_DIG_INPUT:
+				HardwareRegisters_SetBit(hwr, ismb ? HWR_REG_MODBUS : HWR_REG_INPUT,
+					index, ismb ? Prog.io.assignment[i].bit : index, val);
+				break;
+
+			case IO_TYPE_DIG_OUTPUT:
+				HardwareRegisters_SetBit(hwr, ismb ? HWR_REG_MODBUS : HWR_REG_OUTPUT,
+					index, ismb ? Prog.io.assignment[i].bit : index, val);
+				break;
+
+			case IO_TYPE_GENERAL:
+				HardwareRegisters_SetValue(hwr, index, val);
+				break;
+			}
+			// Register updated, exit search loop.
+			break;
+		}
+	}
+}
+
+static void SetSingleBit(char *name, BOOL state);
+
+void HardwareRegisters_Sync(HardwareRegisters *hwr)
+{
+	int i, index, ismb;
+	unsigned int mask;
+	if(hwr == NULL) return;
+
+	hwr->Syncing = true;
+
+	for(i=0; i<Prog.io.count; i++) {
+		if(Prog.io.assignment[i].pin != NO_PIN_ASSIGNED) {
+			index = IoMap_GetIndex(&Prog.io.assignment[i]);
+			ismb  = IoMap_IsModBUS(&Prog.io.assignment[i]);
+				mask = 1UL << Prog.io.assignment[i].bit;
+
+			// Now we have to update register associated to name
+			switch(Prog.io.assignment[i].type) {
+			case IO_TYPE_DIG_INPUT:
+//				HardwareRegisters_SetBit(hwr, ismb ? HWR_REG_MODBUS : HWR_REG_INPUT,
+//					index, ismb ? Prog.io.assignment[i].bit : index, val);
+				break;
+
+			case IO_TYPE_DIG_OUTPUT:
+				if(ismb)
+					SetSingleBit(Prog.io.assignment[i].name, (hwreg.ModBUS[index] & mask) ? TRUE : FALSE);
+				break;
+
+			case IO_TYPE_GENERAL:
+				SetSimulationVariable(Prog.io.assignment[i].name, hwreg.ModBUS[index]);
+				break;
+			}
+		}
+	}
+
+	hwr->Syncing    = false;
+	hwr->NeedUpdate = true;
+}
+
+// Update Hardware Registers, check WatchPoints, etc.
+void UpdateSimulation(char *name, int val)
+{
+	if(!hwreg.Syncing) {
+		HardwareRegisters_Update(&hwreg, name, val);
+		CheckWP(name, val);
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Query the state of a single-bit element (relay, digital in, digital out).
 // Looks in the SingleBitItems list; if an item is not present then it is
@@ -170,12 +410,14 @@ static void SetSingleBit(char *name, BOOL state)
     for(i = 0; i < SingleBitItemsCount; i++) {
         if(_stricmp(SingleBitItems[i].name, name)==0) {
             SingleBitItems[i].powered = state;
+			UpdateSimulation(name, state);
             return;
         }
     }
     if(i < MAX_IO) {
         strcpy(SingleBitItems[i].name, name);
         SingleBitItems[i].powered = state;
+		UpdateSimulation(name, state);
         SingleBitItemsCount++;
     }
 }
@@ -190,6 +432,7 @@ static void IncrementVariable(char *name)
     for(i = 0; i < VariablesCount; i++) {
         if(_stricmp(Variables[i].name, name)==0) {
             (Variables[i].val)++;
+			UpdateSimulation(name, Variables[i].val);
             return;
         }
     }
@@ -202,6 +445,7 @@ static void SetSimulationBit(char *name, int bit)
     for(i = 0; i < VariablesCount; i++) {
         if(_stricmp(Variables[i].name, name)==0) {
             (Variables[i].val) |= 1 << bit;
+			UpdateSimulation(name, Variables[i].val);
 			NeedRedraw = TRUE;
             return;
         }
@@ -215,6 +459,7 @@ static void ClearSimulationBit(char *name, int bit)
     for(i = 0; i < VariablesCount; i++) {
         if(_stricmp(Variables[i].name, name)==0) {
             (Variables[i].val) &= ~(1 << bit);
+			UpdateSimulation(name, Variables[i].val);
 			NeedRedraw = TRUE;
             return;
         }
@@ -245,6 +490,7 @@ void SetSimulationVariable(char *name, SWORD val)
     for(i = 0; i < VariablesCount; i++) {
         if(_stricmp(Variables[i].name, name)==0) {
             Variables[i].val = val;
+			UpdateSimulation(name, val);
 			NeedRedraw = TRUE;
             return;
         }
@@ -279,11 +525,13 @@ void SetAdcShadow(char *name, SWORD val)
     for(i = 0; i < AdcShadowsCount; i++) {
         if(_stricmp(AdcShadows[i].name, name)==0) {
             AdcShadows[i].val = val;
+			UpdateSimulation(name, val);
             return;
         }
     }
     strcpy(AdcShadows[i].name, name);
     AdcShadows[i].val = val;
+	UpdateSimulation(name, val);
     AdcShadowsCount++;
 }
 
@@ -313,11 +561,13 @@ void SetDAShadow(char *name, SWORD val)
     for(i = 0; i < DAShadowsCount; i++) {
         if(_stricmp(DAShadows[i].name, name)==0) {
             DAShadows[i].val = val;
+			UpdateSimulation(name, val);
             return;
         }
     }
     strcpy(DAShadows[i].name, name);
     DAShadows[i].val = val;
+	UpdateSimulation(name, val);
     DAShadowsCount++;
 }
 
@@ -347,11 +597,13 @@ void SetEncShadow(char *name, SWORD val)
     for(i = 0; i < EncShadowsCount; i++) {
         if(_stricmp(EncShadows[i].name, name)==0) {
             EncShadows[i].val = val;
+			UpdateSimulation(name, val);
             return;
         }
     }
     strcpy(EncShadows[i].name, name);
     EncShadows[i].val = val;
+	UpdateSimulation(name, val);
     EncShadowsCount++;
 }
 
@@ -381,11 +633,13 @@ void SetResetEncShadow(char *name, SWORD val)
     for(i = 0; i < ResetEncShadowsCount; i++) {
         if(_stricmp(ResetEncShadows[i].name, name)==0) {
             ResetEncShadows[i].val = val;
+			UpdateSimulation(name, val);
             return;
         }
     }
     strcpy(ResetEncShadows[i].name, name);
     ResetEncShadows[i].val = val;
+	UpdateSimulation(name, val);
     ResetEncShadowsCount++;
 }
 
@@ -544,6 +798,10 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 
         case ELEM_MOVE:
             MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
+            break;
+
+        case ELEM_SQRT:
+            MarkWithCheck(l->d.sqrt.dest, VAR_FLAG_ANY);
             break;
 
         case ELEM_LOOK_UP_TABLE:
@@ -902,6 +1160,10 @@ math:
                 SetSimulationVariable(a->name1, GetResetEncShadow(a->name1));
                 break;
 
+            case INT_SQRT:
+                SetSimulationVariable(a->name1, (int)sqrt((float)GetSimulationVariable(a->name1)));
+                break;
+
 			case INT_MULTISET_DA:
 				//SetSimulationVariable(a->name, GetMultiDAShadow(a->name));
 				//SetSimulationVariable(a->name1, GetMultiDAShadow(a->name1));
@@ -1109,6 +1371,11 @@ void SimulateOneCycle(BOOL forceRefresh)
     SimulateRedrawAfterNextCycle = FALSE;
     if(NeedRedraw) SimulateRedrawAfterNextCycle = TRUE;
 
+	if(hwreg.NeedUpdate && hwreg.Syncing == false) {
+		UpdateSimulation(NULL, 0);
+		hwreg.NeedUpdate = false;
+	}
+
     Simulating = FALSE;
 }
 
@@ -1155,32 +1422,33 @@ void ClearSimulationData(void)
         return;
     }
 
-    SimulateOneCycle(TRUE);
+	HardwareRegisters_Init(&hwreg);
+
+	SimulateOneCycle(TRUE);
 }
 
 //-----------------------------------------------------------------------------
 // Provide a description for an item (Xcontacts, Ycoil, Rrelay, Ttimer,
 // or other) in the I/O list.
 //-----------------------------------------------------------------------------
-void DescribeForIoList(char *name, int type, char *out)
+void DescribeForIoList(int val, int type, char *out)
 {
     switch(type) {
         case IO_TYPE_INTERNAL_RELAY:
         case IO_TYPE_DIG_OUTPUT:
         case IO_TYPE_DIG_INPUT:
-            sprintf(out, "%d", SingleBitOn(name));
+            sprintf(out, "%d", val);
             break;
 
 		case IO_TYPE_SET_DA: {
-            SWORD v = GetDAShadow(name);
-            sprintf(out, "%i (0x%08x)", v, v);
+            sprintf(out, "%i (0x%08x)", val, val);
             break;
 		}
 
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
         case IO_TYPE_RTO: {
-            double dtms = GetSimulationVariable(name) * (Prog.settings.cycleTime / 1000.0);
+            double dtms = val * (Prog.settings.cycleTime / 1000.0);
             if(dtms < 1000) {
                 sprintf(out, "%.2f ms", dtms);
             } else {
@@ -1189,11 +1457,38 @@ void DescribeForIoList(char *name, int type, char *out)
             break;
 			}
         default: {
-            SWORD v = GetSimulationVariable(name);
-            sprintf(out, "%i (0x%08x)", v, v);
+            sprintf(out, "%i (0x%08x)", val, val);
             break;
         }
     }
+}
+
+void DescribeForIoList(char *name, int type, char *out)
+{
+	int val;
+
+	switch(type) {
+        case IO_TYPE_INTERNAL_RELAY:
+        case IO_TYPE_DIG_OUTPUT:
+        case IO_TYPE_DIG_INPUT:
+            val = SingleBitOn(name);
+            break;
+
+		case IO_TYPE_SET_DA:
+            val = GetDAShadow(name);
+            break;
+
+        case IO_TYPE_TON:
+        case IO_TYPE_TOF:
+        case IO_TYPE_RTO:
+            val = GetSimulationVariable(name);
+			break;
+
+        default:
+            val = GetSimulationVariable(name);
+    }
+
+	DescribeForIoList(val, type, out);
 }
 
 //-----------------------------------------------------------------------------

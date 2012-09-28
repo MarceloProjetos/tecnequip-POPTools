@@ -546,7 +546,7 @@ unsigned int Modbus_RTU_Receive(struct MODBUS_Device *dev, struct MODBUS_PDU msg
       case MODBUS_FC_READ_COILS:
         data.read_coils.start = (msg.Data[0]<<8) | (msg.Data[1]);
         data.read_coils.quant = (msg.Data[2]<<8) | (msg.Data[3]);
-        if(!data.read_discrete_inputs.quant)
+        if(!data.read_coils.quant)
           reply.ExceptionCode = MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
         break;
 

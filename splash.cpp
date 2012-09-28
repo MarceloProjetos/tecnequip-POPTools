@@ -5,7 +5,7 @@
 #include "windows.h"
 #include "resource.h"
 #include "SPLASH.h"
-#include "ldmicro.h"
+#include "poptools.h"
 
 HBITMAP hBitmap;
 

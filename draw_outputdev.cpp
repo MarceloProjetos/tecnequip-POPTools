@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 void (*DrawChars)(int, int, char *);
 
@@ -290,6 +290,16 @@ void PaintWindow(void)
             int yp = y + FONT_HEIGHT*(POS_HEIGHT/2) - 
                 POS_HEIGHT*FONT_HEIGHT*ScrollYOffset;
 
+			if(Prog.rungHasBreakPoint[i]) {
+				HBRUSH redBrush=CreateSolidBrush(RGB(255,0,0));
+				HGDIOBJ oldPen=SelectObject(Hdc,redBrush);
+
+				int center = (X_PADDING - FONT_WIDTH + 3)/2;
+				Ellipse(Hdc,center-X_PADDING/4,yp+FONT_HEIGHT,center+X_PADDING/4,yp+FONT_HEIGHT+X_PADDING/2);
+
+				SelectObject(Hdc,oldPen);
+			}
+
             if(rung < 10) {
                 char r[1] = { rung + '0' };
                 TextOut(Hdc, 5 + FONT_WIDTH, yp, r, 1);
@@ -303,8 +313,12 @@ void PaintWindow(void)
             }
 
             int cx = 0;
-            DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, 
-                Prog.rungPowered[i]);
+			// If DrawElement returned TRUE ans has breakpoint for this line, pause simulation.
+            if(DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, 
+                Prog.rungPowered[i]) && RealTimeSimulationRunning && Prog.rungHasBreakPoint[i]) {
+					PauseSimulation();
+					Error("Simulação interrompida na linha %d", i+1);
+			}
         }
 
         cy += thisHeight;

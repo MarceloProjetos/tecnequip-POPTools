@@ -301,8 +301,9 @@ void            DAC_Start(unsigned char up, unsigned char linear, unsigned char 
 /* ADC                                                                     */
 /***************************************************************************/
 #ifndef __ADC_H__
-extern unsigned int ADC_Read(unsigned int a);
-extern void ADC_SetMask(unsigned int ad_mask);
+extern unsigned int ADC_Read   (unsigned int a);
+extern void         ADC_Update (void);
+extern void         ADC_SetMask(unsigned int ad_mask);
 #endif
 
 /***************************************************************************/
@@ -336,6 +337,11 @@ extern QEI_CFG_Type QEIConfig;
 extern int ENC_Read(void);
 extern void ENC_Reset(void);
 #endif
+
+/***************************************************************************/
+/* MATH                                                                    */
+/***************************************************************************/
+int srint(int *sr);
 
 /***************************************************************************/
 /* PLC                                                                     */

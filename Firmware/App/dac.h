@@ -23,6 +23,7 @@ void 			DAC_Start(unsigned char up, unsigned char linear, unsigned char gaint, u
 
 typedef struct DA_SetTag
 {
+	unsigned char   ID;         // ID da rampa
 	unsigned char	up;			// 1 = up, 0 = down
 	unsigned char	linear;		// 1 = linear, 0 = curve
 	unsigned char 	gaint;		// time gain (%)

@@ -407,9 +407,13 @@
                               <param name="Local" value="topics\InstrMathDivide.htm">
                             </OBJECT>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Tabelas">
+                              <param name="Name" value="Mais">
                             </OBJECT>
                             <UL>
+                                <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="Raiz Quadrada">
+                                  <param name="Local" value="topics\InstrMathSqrt.htm">
+                                </OBJECT>
                                 <LI><OBJECT type="text/sitemap">
                                   <param name="Name" value="Tabela de Troca">
                                   <param name="Local" value="topics\InstrShiftRegister.htm">

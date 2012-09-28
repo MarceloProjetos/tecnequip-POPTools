@@ -3,7 +3,7 @@
 #include <commdlg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "ldmicro.h"
+#include "poptools.h"
 
 // scrollbars for the ladder logic area
 static HWND         HorizScrollBar;
@@ -44,7 +44,7 @@ int                 IoListTop;
 extern BOOL ProgramChangedNotSaved;
 
 // whether the simulation is running in real time
-static BOOL         RealTimeSimulationRunning;
+BOOL         RealTimeSimulationRunning;
 
 void StatusBarSetText(int bar, char * text)
 {
@@ -780,7 +780,7 @@ void RefreshControlsToSettings(void)
 		strcpy(buf, "");
     } else {
 		sprintf(buf, _("RS-485: %d bps, %d bits de dados, %s, Bits de Parada: %d"), Prog.settings.baudRate, SerialConfig[Prog.settings.UART].bByteSize,
-			SerialParityString[SerialConfig[Prog.settings.UART].bParity], SerialConfig[Prog.settings.UART].bStopBits);
+			SerialParityString[SerialConfig[Prog.settings.UART].bParity], SerialConfig[Prog.settings.UART].bStopBits == ONESTOPBIT ? 1 : 2);
     }
     SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 
@@ -888,7 +888,11 @@ void MainWindowResized(void)
 //-----------------------------------------------------------------------------
 void ToggleSimulationMode(void)
 {
-    InSimulationMode = !InSimulationMode;
+	LVCOLUMN col;
+	col.mask = LVCF_TEXT;
+
+	InSimulationMode = !InSimulationMode;
+	ClearListWP();
 
 	SetApplicationMode();
 
@@ -926,8 +930,12 @@ void ToggleSimulationMode(void)
             ShowUartSimulationWindow();
         }
 
-        ClearSimulationData();
+		col.pszText = _("Interromper se =");
+		
+		ClearSimulationData();
 
+		if(InSimulationMode)
+			SimulationServer_Start();
 	} else {
         RealTimeSimulationRunning = FALSE;
         KillTimer(MainWindow, TIMER_SIMULATE);
@@ -955,15 +963,20 @@ void ToggleSimulationMode(void)
 		RibbonSetCmdState(cmdRedo    , TRUE);
 #endif
 
-        if(UartFunctionUsed()) {
+		col.pszText = _("Pin on Processor");
+
+		if(UartFunctionUsed()) {
             DestroyUartSimulationWindow();
         }
+
+		SimulationServer_Stop();
     }
 
     UpdateMainWindowTitleBar();
 
     DrawMenuBar(MainWindow);
     InvalidateRect(MainWindow, NULL, FALSE);
+	ListView_SetColumn(IoList, LV_IO_PIN, &col);
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
 }
 

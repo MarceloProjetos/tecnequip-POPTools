@@ -357,6 +357,58 @@
           <param name="Name" value="Licença">
           <param name="Local" value="topics\License.htm">
         </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Início">
+          <param name="Local" value="topics\GoHome.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Final">
+          <param name="Local" value="topics\GoEnd.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Copiar">
+          <param name="Local" value="topics\CopyInstr.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Colar">
+          <param name="Local" value="topics\PasteInstr.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Configurações do Projeto - Serial">
+          <param name="Local" value="topics\ConfigSerial.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Configurações do Projeto - Rede">
+          <param name="Local" value="topics\ConfigRede.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Configurações do Projeto - Posicionamento">
+          <param name="Local" value="topics\ConfigPosicionamento.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Teclado">
+          <param name="Local" value="topics\KeyboardManual.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Barra de Leds - A/D">
+          <param name="Local" value="topics\ExampleAdcLed.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Semáforo">
+          <param name="Local" value="topics\ExampleSemaphore.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Raiz Quadrada">
+          <param name="Local" value="topics\InstrMathSqrt.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Pausar">
+          <param name="Local" value="topics\SimulationPause.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Teclas de Atalho">
+          <param name="Local" value="topics\TeclasAtalho.htm">
+        </OBJECT>
     </UL>
 </BODY>
 </HTML>

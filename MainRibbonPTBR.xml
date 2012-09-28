@@ -64,7 +64,7 @@
         <Image Source="imgs/DropDownIOHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    <Command Name="DropDownMath"    Symbol="cmdDropDownMath"    Id="30021" LabelTitle="Tabelas"          >
+    <Command Name="DropDownMath"    Symbol="cmdDropDownMath"    Id="30021" LabelTitle="Mais"             >
       <Command.LargeImages>
         <Image Source="imgs/DropDownMathHH.bmp"/>
       </Command.LargeImages>
@@ -1417,6 +1417,33 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name         = "InstrMathSqrt"
+               Symbol     = "cmdInstrMathSqrt"
+               Id         = "30553"
+               LabelTitle = "Raiz Quadrada">
+      <Command.TooltipTitle      >Raiz Quadrada (Shift+/)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir instrução matemática raiz quadrada na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMathSqrtHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathSqrtHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleMathSqrt"
+               Symbol     = "cmdExampleMathSqrt"
+               Id         = "31553"
+               LabelTitle = "Raiz Quadrada">
+      <Command.TooltipTitle      >Raiz Quadrada (Shift+/)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução matemática raiz quadrada.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMathSqrtHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathSqrtHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
     <Command Name         = "InstrShiftRegister"
                Symbol     = "cmdInstrShiftRegister"
                Id         = "30529"
@@ -2356,6 +2383,7 @@
             <Button CommandName="InstrMathDivide"/>
             <DropDownButton CommandName="DropDownMath">
               <MenuGroup Class="MajorItems">
+                <Button CommandName="InstrMathSqrt"/>
                 <Button CommandName="InstrShiftRegister"/>
                 <Button CommandName="InstrLookUpTable"/>
                 <Button CommandName="InstrPieceWiseLinear"/>

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 // I/O that we have seen recently, so that we don't forget pin assignments
 // when we re-extract the list
@@ -211,6 +211,11 @@ void ExtractNamesFromCircuit(int which, void *any)
 	            AppendIo(l->d.math.op2, IO_TYPE_GENERAL, 0);
             break;
 
+        case ELEM_SQRT:
+            AppendIo(l->d.sqrt.dest, IO_TYPE_GENERAL, 0);
+			if(!IsNumber(l->d.sqrt.src))
+	            AppendIo(l->d.sqrt.src, IO_TYPE_GENERAL, 0);
+            break;
 		case ELEM_READ_FORMATTED_STRING:
 		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING:
@@ -321,6 +326,13 @@ void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_PERSIST:
 			AppendIo(l->d.persist.var, IO_TYPE_GENERAL, 0);
 
+		case ELEM_MULTISET_DA:
+			if(!IsNumber(l->d.multisetDA.name))
+				AppendIo(l->d.multisetDA.name, IO_TYPE_GENERAL, 0);
+			if(!IsNumber(l->d.multisetDA.name1))
+				AppendIo(l->d.multisetDA.name1, IO_TYPE_GENERAL, 0);
+			break;
+
 		case ELEM_RTC:
         case ELEM_RESET_ENC:
         case ELEM_PLACEHOLDER:
@@ -331,7 +343,6 @@ void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_ONE_SHOT_RISING:
         case ELEM_ONE_SHOT_FALLING:
         case ELEM_RES:
-		case ELEM_MULTISET_DA:
             break;
 
         default:
@@ -569,6 +580,8 @@ static int CompareIoPort(const void *av, const void *bv)
 				i1 = 90000;
 			else if (a->type == IO_TYPE_DIG_OUTPUT && a->pin == 18)
 				i1 = 90001;
+			else if (a->type == IO_TYPE_GENERAL && a->pin > 19)
+				i1 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit;
 			else if (a->type == IO_TYPE_DIG_OUTPUT && a->pin > 19)
 				i1 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit; // "M%d.%d"
 			else if (a->type == IO_TYPE_DIG_OUTPUT)
@@ -630,6 +643,8 @@ static int CompareIoPort(const void *av, const void *bv)
 				i2 = 90000;
 			else if (b->type == IO_TYPE_DIG_OUTPUT && b->pin == 18)
 				i2 = 90001;
+			else if (b->type == IO_TYPE_GENERAL && b->pin > 19)
+				i2 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit; // "M%d.%d"
 			else if (b->type == IO_TYPE_DIG_OUTPUT && b->pin > 19)
 				i2 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit; // "M%d.%d"
 			else if (b->type == IO_TYPE_DIG_OUTPUT)
@@ -935,7 +950,7 @@ static void MakeControls(void)
 	
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        6, 325, 35, 21, IoDialog, NULL, Instance, NULL);
+        6, 327, 35, 21, IoDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
 	BitCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
@@ -1204,6 +1219,169 @@ cant_use_this_io:;
     return;
 }
 
+// ShowWatchPoint Dialog functions
+HWND CheckON;
+HWND CheckOFF;
+HWND CheckVal;
+HWND EnabledWP;
+
+static LONG_PTR PrevWPDialogProc;
+
+void SetWPControlsEnabled()
+{
+	BOOL enabled = (Button_GetCheck(EnabledWP) == BST_CHECKED ? TRUE : FALSE);
+
+	if(CheckON  != NULL)
+		Button_Enable(CheckON , enabled);
+	if(CheckOFF != NULL)
+		Button_Enable(CheckOFF, enabled);
+	if(CheckVal != NULL)
+		Edit_Enable  (CheckVal, enabled);
+}
+
+static LRESULT CALLBACK WPDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) {
+        case WM_COMMAND: {
+            HWND h = (HWND)lParam;
+            if(h == EnabledWP && wParam == BN_CLICKED) {
+				SetWPControlsEnabled();
+            }
+            break;
+        }
+    }
+
+	return CallWindowProc((WNDPROC)PrevWPDialogProc, hwnd, msg, wParam, lParam);
+}
+
+int *ShowWatchPointDialog(char *name, int type, int *curval, int *newval)
+{
+	int *ret = NULL;
+	char buf[20];
+
+	// Create window
+    MakeWindowClass();
+
+	HWND WPDialog = CreateWindowClient(0, "LDmicroIo",
+        _("Set WatchPoint"), WS_OVERLAPPED | WS_SYSMENU,
+        100, 100, 230, 85, MainWindow, NULL, Instance, NULL);
+
+	PrevWPDialogProc = SetWindowLongPtr(WPDialog, GWLP_WNDPROC, (LONG_PTR)WPDialogProc);
+
+	// Create controls
+	CheckON  = NULL;
+	CheckOFF = NULL;
+	CheckVal = NULL;
+
+    EnabledWP = CreateWindowEx(0, WC_BUTTON, _("WatchPoint Enabled"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_AUTOCHECKBOX,
+        10, 10, 140, 21, WPDialog, NULL, Instance, NULL); 
+    NiceFont(EnabledWP);
+
+	if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT ||
+			type == IO_TYPE_INTERNAL_RELAY || type == IO_TYPE_INTERNAL_FLAG) {
+		CheckON = CreateWindowEx(0, WC_BUTTON, _("Ligado"),
+			WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+			10, 35, 100, 20, WPDialog, NULL, Instance, NULL);
+		NiceFont(CheckON);
+
+		CheckOFF = CreateWindowEx(0, WC_BUTTON, _("Desligado"),
+			WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+			10, 55, 100, 20, WPDialog, NULL, Instance, NULL);
+		NiceFont(CheckOFF);
+
+		Button_SetCheck(CheckON , BST_CHECKED  );
+		Button_SetCheck(CheckOFF, BST_UNCHECKED);
+	} else {
+		HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
+			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+			10, 45, 40, 21, WPDialog, NULL, Instance, NULL);
+		NiceFont(textLabel);
+
+		CheckVal = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+			WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+			55, 45, 85, 21, WPDialog, NULL, Instance, NULL);
+		FixedFont(CheckVal);
+	}
+
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
+        150, 10, 70, 30, WPDialog, NULL, Instance, NULL); 
+    NiceFont(OkButton);
+
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        150, 45, 70, 30, WPDialog, NULL, Instance, NULL); 
+    NiceFont(CancelButton);
+
+	// Set initial values
+	if(curval != NULL) {
+		Button_SetCheck(EnabledWP , BM_SETCHECK);
+		if(CheckVal == NULL) {
+			if(*curval == 0) {
+				Button_SetCheck(CheckON , BST_UNCHECKED);
+				Button_SetCheck(CheckOFF, BST_CHECKED  );
+			}
+		} else {
+			int val = *curval;
+			if(type == IO_TYPE_RTO || type == IO_TYPE_TON || type == IO_TYPE_TOF)
+				val = (val * Prog.settings.cycleTime) / 1000;
+
+			sprintf(buf, "%d", val);
+			Edit_SetText(CheckVal, buf);
+		}
+	}
+
+	SetWPControlsEnabled();
+
+	// Dialog Loop
+    EnableWindow(MainWindow, FALSE);
+    ShowWindow(WPDialog, TRUE);
+    SetFocus(EnabledWP);
+
+    MSG msg;
+    DialogDone = FALSE;
+    DialogCancel = FALSE;
+    while(GetMessage(&msg, NULL, 0, 0) && !DialogDone) {
+        if(msg.message == WM_KEYDOWN) {
+            if(msg.wParam == VK_RETURN) {
+                DialogDone = TRUE;
+                break;
+            } else if(msg.wParam == VK_ESCAPE) {
+                DialogDone = TRUE;
+                DialogCancel = TRUE;
+                break;
+            }
+        }
+
+        if(IsDialogMessage(WPDialog, &msg)) continue;
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+	// Check return
+    if(!DialogCancel) {
+		if(Button_GetCheck(EnabledWP) == BST_CHECKED && newval != NULL) {
+			if(CheckVal == NULL) {
+				*newval = (Button_GetCheck(CheckON) == BST_CHECKED);
+			} else {
+				Edit_GetText(CheckVal, buf, sizeof(buf)-1);
+				*newval = atoi(buf);
+				if(type == IO_TYPE_RTO || type == IO_TYPE_TON || type == IO_TYPE_TOF)
+					*newval = (*newval * 1000) / Prog.settings.cycleTime;
+			}
+
+			ret = newval;
+		}
+    } else {
+		ret = curval;
+	}
+
+    EnableWindow(MainWindow, TRUE);
+    DestroyWindow(WPDialog);
+	return ret;
+}
+
 //-----------------------------------------------------------------------------
 // Called in response to a notify for the listview. Handles click, text-edit
 // operations etc., but also gets called to find out what text to display
@@ -1253,17 +1431,26 @@ void IoMapListProc(NMHDR *h)
             int item = i->item.iItem;
             switch(i->item.iSubItem) {
                 case LV_IO_PIN:
-                    // Don't confuse people by displaying bogus pin assignments
-                    // for the C target.
-                    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
-                                    Prog.mcu->whichIsa == ISA_INTERPRETED) )
-                    {
-                        strcpy(i->item.pszText, "");
-                        break;
-                    }
+					if(InSimulationMode) {
+						int val;
+						if(GetValWP(Prog.io.assignment[item].name, &val) != NULL) {
+							DescribeForIoList(val, Prog.io.assignment[item].type, i->item.pszText);
+						} else {
+							strcpy(i->item.pszText, "");
+						}
+					} else {
+						// Don't confuse people by displaying bogus pin assignments
+						// for the C target.
+						if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
+										Prog.mcu->whichIsa == ISA_INTERPRETED) )
+						{
+							strcpy(i->item.pszText, "");
+							break;
+						}
 
-                    PinNumberForIo(i->item.pszText,
-                        &(Prog.io.assignment[item]));
+						PinNumberForIo(i->item.pszText,
+							&(Prog.io.assignment[item]));
+					}
                     break;
 
                 case LV_IO_TYPE: {
@@ -1365,21 +1552,31 @@ void IoMapListProc(NMHDR *h)
         case LVN_ITEMACTIVATE: {
 			NMITEMACTIVATE *i = (NMITEMACTIVATE *)h;
             if(InSimulationMode) {
-                char *name = Prog.io.assignment[i->iItem].name;
-                if(Prog.io.assignment[i->iItem].type == IO_TYPE_DIG_INPUT) {
-                    SimulationToggleContact(name);
-                } else if(Prog.io.assignment[i->iItem].type == IO_TYPE_READ_ADC) {
-                    ShowAnalogSliderPopup(name);
-                } else if(Prog.io.assignment[i->iItem].type == IO_TYPE_READ_ENC) {
-                    ShowEncoderSliderPopup(name);
-				} else if(Prog.io.assignment[i->iItem].type == IO_TYPE_COUNTER ||
-						Prog.io.assignment[i->iItem].type == IO_TYPE_TOF ||
-						Prog.io.assignment[i->iItem].type == IO_TYPE_TON ||
-						Prog.io.assignment[i->iItem].type == IO_TYPE_GENERAL) {
-					sprintf(val, "%d", GetSimulationVariable(name));
-                    ShowSimulationVarSetDialog(name, val);
-					SetSimulationVariable(name, atoi(val));
-                }
+				char *name = Prog.io.assignment[i->iItem].name;
+				if(i->iSubItem != LV_IO_PIN) {
+					if(Prog.io.assignment[i->iItem].type == IO_TYPE_DIG_INPUT) {
+						SimulationToggleContact(name);
+					} else if(Prog.io.assignment[i->iItem].type == IO_TYPE_READ_ADC) {
+						ShowAnalogSliderPopup(name);
+					} else if(Prog.io.assignment[i->iItem].type == IO_TYPE_READ_ENC) {
+						ShowEncoderSliderPopup(name);
+					} else if(Prog.io.assignment[i->iItem].type == IO_TYPE_COUNTER ||
+							Prog.io.assignment[i->iItem].type == IO_TYPE_TOF ||
+							Prog.io.assignment[i->iItem].type == IO_TYPE_TON ||
+							Prog.io.assignment[i->iItem].type == IO_TYPE_GENERAL) {
+						sprintf(val, "%d", GetSimulationVariable(name));
+						ShowSimulationVarSetDialog(name, val);
+						SetSimulationVariable(name, atoi(val));
+					}
+				} else {
+					int wpval;
+					if(ShowWatchPointDialog(name, Prog.io.assignment[i->iItem].type, GetValWP(name, &wpval), &wpval) != NULL) {
+						AddWP(name, wpval);
+					} else {
+						RemoveWP(name);
+					}
+					InvalidateRect(IoList, NULL, FALSE);
+				}
             } else {
                 UndoRemember();
                 ShowIoMapDialog(i->iItem);
@@ -1642,4 +1839,36 @@ void ShowEncoderSliderPopup(char *name)
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(EncoderSliderMain);
     ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+}
+
+// Returns if io is associated to a ModBUS register or not.
+int IoMap_IsModBUS(PlcProgramSingleIo *io)
+{
+	if(io == NULL || io->pin == NO_PIN_ASSIGNED) return 0;
+
+	if(io->pin < 20)
+		return 0;
+
+	return 1;
+}
+
+// Returns index of register associated to pin. Examples:
+// Pin associated to Digital Input 3: returns 2
+// Pin associated to ModBUS register 5: returns 4
+// Please note that there is no way to know if the index is for a Digital
+// Input or ModBUS register. To know this, please call IoMap_IsModBUS()
+int IoMap_GetIndex(PlcProgramSingleIo *io)
+{
+	int ret = 0;
+	if(io == NULL || io->pin == NO_PIN_ASSIGNED) return 0;
+
+	if(io->type == IO_TYPE_DIG_INPUT) {
+		ret = IoMap_IsModBUS(io) ? io->pin - 20 : io->pin - 1;
+	} else if(io->type == IO_TYPE_DIG_OUTPUT) {
+		ret = IoMap_IsModBUS(io) ? io->pin - 20 : io->pin - 1;
+	} else if(io->type == IO_TYPE_GENERAL) {
+		ret = io->pin - 20;
+	}
+
+	return ret;
 }

@@ -4,7 +4,7 @@
 #include <commctrl.h>
 #include <time.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 static HWND RTCDialog;
 

@@ -5,7 +5,7 @@
 //
 // Copyright (c) Microsoft Corporation. All rights reserved
 
-#include "ldmicro.h"
+#include "poptools.h"
 #include "PropertySet.h"
 
 #include <atlbase.h>
@@ -455,6 +455,7 @@ public:
 			EXEC_OPCODE(cmdInstrMathSub           , MNU_INSERT_SUB             );
 			EXEC_OPCODE(cmdInstrMathMult          , MNU_INSERT_MUL             );
 			EXEC_OPCODE(cmdInstrMathDivide        , MNU_INSERT_DIV             );
+			EXEC_OPCODE(cmdInstrMathSqrt          , MNU_INSERT_SQRT            );
 			EXEC_OPCODE(cmdInstrShiftRegister     , MNU_INSERT_SHIFT_REG       );
 			EXEC_OPCODE(cmdInstrLookUpTable       , MNU_INSERT_LUT             );
 			EXEC_OPCODE(cmdInstrPieceWiseLinear   , MNU_INSERT_PWL             );
@@ -539,6 +540,7 @@ public:
 			EXEC_OPCODE(cmdExampleMathSub           , MNU_EXAMPLE_SUB             );
 			EXEC_OPCODE(cmdExampleMathMult          , MNU_EXAMPLE_MUL             );
 			EXEC_OPCODE(cmdExampleMathDivide        , MNU_EXAMPLE_DIV             );
+			EXEC_OPCODE(cmdExampleMathSqrt          , MNU_EXAMPLE_SQRT            );
 			EXEC_OPCODE(cmdExampleShiftRegister     , MNU_EXAMPLE_SHIFT_REG       );
 			EXEC_OPCODE(cmdExampleLookUpTable       , MNU_EXAMPLE_LUT             );
 			EXEC_OPCODE(cmdExamplePieceWiseLinear   , MNU_EXAMPLE_PWL             );
@@ -655,7 +657,7 @@ public:
 				{ L"Contadores"     , { cmdExampleCounterInc, cmdExampleCounterDec, cmdExampleCounterCirc, cmdExampleCounterReset, 0 } },
 				{ L"Variáveis"      , { cmdExampleMov, cmdExampleSetBit, cmdExampleCheckBit, cmdExamplePersist, 0 } },
 				{ L"Condicionais"   , { cmdExampleCondEqual, cmdExampleCondGreater, cmdExampleCondLesser, cmdExampleCondNotEqual, cmdExampleCondGreaterEqual, cmdExampleCondLesserEqual, 0 } },
-				{ L"Matemática"     , { cmdExampleMathAdd, cmdExampleMathSub, cmdExampleMathMult, cmdExampleMathDivide, cmdExampleShiftRegister, cmdExampleLookUpTable, cmdExamplePieceWiseLinear, 0 } },
+				{ L"Matemática"     , { cmdExampleMathAdd, cmdExampleMathSub, cmdExampleMathMult, cmdExampleMathDivide, cmdExampleMathSqrt, cmdExampleShiftRegister, cmdExampleLookUpTable, cmdExamplePieceWiseLinear, 0 } },
 				{ L"Analógicos"     , { cmdExampleReadAD, cmdExampleWriteDA, 0 } },
 				{ L"Motores"        , { cmdExamplePWM, cmdExampleRampDA, cmdExampleReadEnc, cmdExampleResetEnc, 0 } },
 				{ L"ModBUS"         , { cmdExampleReadModBUS485, cmdExampleWriteModBUS485, cmdExampleReadModBUSEth, cmdExampleWriteModBUSEth, 0 } },

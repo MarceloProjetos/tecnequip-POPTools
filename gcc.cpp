@@ -4,7 +4,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 #include "intcode.h"
 
 static char SeenVariables[MAX_IO][MAX_NAME_LEN];
@@ -243,10 +243,9 @@ static void GenerateDeclarations(FILE *f)
 			case INT_MULTISET_DA:
                 intVar1 = IntCode[i].name1;
                 intVar2 = IntCode[i].name2;
-				intVar3 = IntCode[i].name3;
-				intVar4 = IntCode[i].name4;
                 break;
 
+			case INT_SQRT:
             case INT_END_IF:
             case INT_ELSE_IF:
             case INT_ELSE:
@@ -439,12 +438,16 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
             case INT_SET_DA:
 				fprintf(f, "DAC_Write(DAC_Conv(%s, %d));\n", IsNumber(IntCode[i].name1) ? IntCode[i].name1 : MapSym(IntCode[i].name1), IntCode[i].literal);
 				break;
+            case INT_SQRT:
+				fprintf(f, "srint(&%s);\n", MapSym(IntCode[i].name1));
+				break;
 			case INT_MULTISET_DA:
-				fprintf(f, "DAC_Start(%d, %d, %s, %s, %s, %s);\n", IntCode[i].bit, IntCode[i].literal, IntCode[i].name3, IntCode[i].name4, IntCode[i].name1, IntCode[i].name2);
+				fprintf(f, "DAC_Start(%d, %d, %s, %s, %s, DAC_Conv(%s, %s));\n", IntCode[i].bit, IntCode[i].literal, IntCode[i].name3, IntCode[i].name4,
+					IsNumber(IntCode[i].name1) ? IntCode[i].name1 : MapSym(IntCode[i].name1), IsNumber(IntCode[i].name2) ? IntCode[i].name2 : MapSym(IntCode[i].name2), IntCode[i].name5);
 				break;
 			case INT_CHECK_RTC:
 				fprintf(f, "RTC_Now = RTC_GetTime();\n");
-				
+
 				int j;
 				for(j = 0; j < indent; j++) fprintf(f, "    ");
 

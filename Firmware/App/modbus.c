@@ -71,7 +71,7 @@ void Modbus_Init(void)
 	modbus_rs485.identification.Id                 = ModBUSID;
 	modbus_rs485.identification.VendorName         = "Tecnequip";
 	modbus_rs485.identification.ProductCode        = "POP7";
-	modbus_rs485.identification.MajorMinorRevision = "V1 Rev2";
+	modbus_rs485.identification.MajorMinorRevision = "V1 Rev1";
 
 	modbus_rs485.hl      = ModbusHandlers;
 	modbus_rs485.hl_size = ARRAY_SIZE(ModbusHandlers);
@@ -83,7 +83,7 @@ void Modbus_Init(void)
 	modbus_rs232.identification.Id                 = 0x01;
 	modbus_rs232.identification.VendorName         = "Tecnequip";
 	modbus_rs232.identification.ProductCode        = "POP7";
-	modbus_rs232.identification.MajorMinorRevision = "V1 Rev2";
+	modbus_rs232.identification.MajorMinorRevision = "V1 Rev1";
 
 	modbus_rs232.hl      = ModbusHandlers232;
 	modbus_rs232.hl_size = ARRAY_SIZE(ModbusHandlers232);
@@ -95,7 +95,7 @@ void Modbus_Init(void)
 	modbus_tcp_slave.identification.Id                 = ModBUSID;
 	modbus_tcp_slave.identification.VendorName         = "Tecnequip";
 	modbus_tcp_slave.identification.ProductCode        = "POP7";
-	modbus_tcp_slave.identification.MajorMinorRevision = "V1 Rev2";
+	modbus_tcp_slave.identification.MajorMinorRevision = "V1 Rev1";
 
 	modbus_tcp_slave.hl      = ModbusHandlers;
 	modbus_tcp_slave.hl_size = ARRAY_SIZE(ModbusHandlers);
@@ -350,7 +350,7 @@ unsigned int Modbus_WriteSingleCoil(struct MODBUS_Device *dev, union MODBUS_FCD_
 unsigned int Modbus_WriteSingleRegister(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
 {
   if (data->write_single_register.address < 32)
-    MODBUS_REGISTER[data->write_single_register.address] = data->write_single_register.val;
+    MODBUS_REGISTER[data->write_single_register.address] = (short int)data->write_single_register.val;
   else
     return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 
@@ -380,7 +380,7 @@ unsigned int Modbus_WriteMultipleRegisters(struct MODBUS_Device *dev, union MODB
     for (i = 0; i < data->write_multiple_registers.size; i += 2)
     {
       pos = data->write_multiple_registers.start + (i / 2);
-      MODBUS_REGISTER[pos] = *(unsigned short *)(&data->write_multiple_registers.val[i]);
+      MODBUS_REGISTER[pos] = *(short int *)(&data->write_multiple_registers.val[i]);
     }
 //      data->write_single_register.val[i] = M[data->write_multiple_registers.address + (i] ;
   } else

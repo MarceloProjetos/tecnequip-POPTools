@@ -271,6 +271,7 @@
     <ClCompile Include="contactsdialog.cpp" />
     <ClCompile Include="Firmware\App\modbus_rtu.c" />
     <ClCompile Include="modbus_master.cpp" />
+    <ClCompile Include="modbus_slave.cpp" />
     <ClCompile Include="multisetdadialog.cpp" />
     <ClCompile Include="draw.cpp" />
     <ClCompile Include="draw_outputdev.cpp" />
@@ -316,7 +317,7 @@
     <ClInclude Include="freeze.h" />
     <ClInclude Include="intcode.h" />
     <ClInclude Include="lang-tables.h" />
-    <ClInclude Include="ldmicro.h" />
+    <ClInclude Include="poptools.h" />
     <ClInclude Include="mcutable.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="splash.h" />

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 typedef struct LangTableTag {
     char *from;

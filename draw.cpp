@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 // Number of drawing columns (leaf element units) available. We want to
 // know this so that we can right-justify the coils.
@@ -124,6 +124,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_PIECEWISE_LINEAR:
         case ELEM_MASTER_RELAY:
         case ELEM_SET_PWM:
+        case ELEM_SQRT:
         case ELEM_PERSIST:
             if(ColsAvailable - soFar > 1) {
                 return ColsAvailable - soFar;
@@ -463,8 +464,8 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 		case ELEM_MULTISET_DA : {
 			ElemMultisetDA *r = &leaf->d.multisetDA;
 			//CenterWithSpaces(*cx, *cy, r->forward ? "AVANCAR" : "RECUAR", poweredAfter, TRUE);
-			CenterWithSpaces(*cx, *cy, _("RAMPA"), poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, r->speedup ? _("{ACELERACAO}") : _("{DESACELERACAO}"), poweredBefore,
+			CenterWithSpaces(*cx, *cy, r->linear ? _("RAMPA LINEAR") : _("RAMPA CURVA"), poweredAfter, TRUE);
+			CenterWithWires(*cx, *cy, r->StartFromCurrentValue ? "{COINCIDIR}": (r->speedup ? _("{ACELERACAO}") : _("{DESACELERACAO}")), poweredBefore,
                 poweredAfter);
             break;
 		}
@@ -660,6 +661,19 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 
             *cx += POS_WIDTH;
 
+            break;
+        }
+        case ELEM_SQRT: 
+		{
+            char top[256];
+            char bot[256];
+            ElemSqrt *s = &leaf->d.sqrt;
+
+			sprintf(top, "{%s :=}", s->dest);
+			sprintf(bot, _("{%s SQRT}"), s->src);
+
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
             break;
         }
         default:

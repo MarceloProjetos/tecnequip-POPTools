@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 static ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 
@@ -624,7 +624,7 @@ void AddPlaceHolderIfNoEOL(ElemSubcktSeries *s)
 						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_MOVE, ELEM_MASTER_RELAY, ELEM_SHIFT_REGISTER) ||
 						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_PIECEWISE_LINEAR, ELEM_LOOK_UP_TABLE, ELEM_COIL) ||
 						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_DIV, ELEM_MUL, ELEM_SUB) ||
-						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_ADD, 0, 0);
+						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_ADD, ELEM_SQRT, 0);
 
 		if(!HasEOL) {
 			s->contents[s->count].d.leaf = AllocLeaf();
@@ -735,6 +735,7 @@ bool CanInsert(int which)
 	case ELEM_MUL:
 	case ELEM_SUB:
 	case ELEM_ADD:
+	case ELEM_SQRT:
 	    if(CanInsertEnd) return true;
 		break;
 
@@ -965,6 +966,17 @@ bool AddMove(void)
     strcpy(t->d.move.dest, _("dest"));
     strcpy(t->d.move.src, _("src"));
     AddLeaf(ELEM_MOVE, t);
+
+	return true;
+}
+bool AddSqrt(void)
+{
+    if(!CanInsert(ELEM_SQRT)) return false;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.sqrt.dest, _("dest"));
+    strcpy(t->d.sqrt.src, _("src"));
+    AddLeaf(ELEM_SQRT, t);
 
 	return true;
 }
@@ -1458,6 +1470,8 @@ void FreeEntireProgram(void)
 	memset(&Prog.settings.dns, 0, sizeof(Prog.settings.dns));
 	memset(&Prog.settings.sntp, 0, sizeof(Prog.settings.sntp));
 
+	memset(&Prog.rungHasBreakPoint, 0, sizeof(Prog.rungHasBreakPoint));
+
 	strncpy(Prog.settings.sntp, "br.pool.ntp.org", sizeof(Prog.settings.sntp));
 
 	Prog.settings.gmt = 9;
@@ -1511,7 +1525,7 @@ void FreeEntireProgram(void)
 //-----------------------------------------------------------------------------
 // Returns true if the given subcircuit contains the given leaf.
 //-----------------------------------------------------------------------------
-static BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
+BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
 {
     switch(which) {
         case ELEM_SERIES_SUBCKT: {
@@ -1587,6 +1601,8 @@ bool DeleteSelectedRung(void)
     Prog.numRungs--;
     memmove(&Prog.rungs[i], &Prog.rungs[i+1], 
         (Prog.numRungs - i)*sizeof(Prog.rungs[0]));
+	memmove(&Prog.rungHasBreakPoint[i], &Prog.rungHasBreakPoint[i+1], 
+        (Prog.numRungs - i)*sizeof(Prog.rungHasBreakPoint[0]));
 
     if(foundCursor) MoveCursorNear(gx, gy);
 
@@ -1620,14 +1636,17 @@ bool InsertRung(BOOL afterCursor)
         Error(_("Too many rungs!"));
         return false;
     }
-    
+
     int i = RungContainingSelected();
     if(i < 0) return false;
 
     if(afterCursor) i++;
     memmove(&Prog.rungs[i+1], &Prog.rungs[i],
         (Prog.numRungs - i)*sizeof(Prog.rungs[0]));
+	memmove(&Prog.rungHasBreakPoint[i+1], &Prog.rungHasBreakPoint[i], 
+        (Prog.numRungs - i)*sizeof(Prog.rungHasBreakPoint[0]));
     Prog.rungs[i] = AllocEmptyRung();
+	Prog.rungHasBreakPoint[i] = FALSE;
 
 	Selected->selectedState = SELECTED_NONE;
 	SelectedWhich = Prog.rungs[i]->contents->which;

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <commctrl.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 static HWND CommentDialog;
 

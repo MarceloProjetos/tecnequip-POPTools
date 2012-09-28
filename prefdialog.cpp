@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <commctrl.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 static HWND PrefDialog;
 
@@ -103,7 +103,7 @@ static void MakeControls(void)
     NiceFont(textLabel3);
 
 	ClearRecentList = CreateWindowEx(0, WC_BUTTON, _("Limpar!"),
-        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_PUSHBUTTON,
         135, 170, 145, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(ClearRecentList);
 

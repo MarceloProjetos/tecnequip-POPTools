@@ -10,6 +10,7 @@
 ******************************************************************************/
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
 #include "lpc17xx.h"
 #include "lwip/opt.h"
 #include "lwip/arch.h"
@@ -33,27 +34,7 @@ OS_STK	DACCycleStack[DAC_CYCLE_THREAD_STACKSIZE];
 OS_MutexID		DAC_Mutex;
 unsigned int 	DAC_Value = 0;
 
-void DAC_Init(void)
-{
-  //if ( I2CInitFast( (unsigned int)I2CMASTER ) == FALSE )  /* initialize I2c */
-  if ( I2C_InitFast( (unsigned int)I2CMASTER ) == FALSE )  /* initialize I2c */
-    return;
-
-  DAC_Mutex = CoCreateMutex();
-
-  // Inicializa o D/A para estar em zero volts ao inves de -10V
-  DAC_Write(DAC_RESOLUTION);
-
-  // Configure XTR300 I/Os
-  PINCON->PINSEL3 &= ~0x00FC0000;  /* set PIO1.25  -  PIO1.27 to GPIO */
-  PINCON->PINSEL7 &= ~0x003C0000;  /* set PIO3.25 and PIO3.26 to GPIO */
-
-  GPIO1->FIODIR   |=  0x08000000;  /* set PIO1.27 to output */
-  GPIO1->FIOCLR   |=  0x08000000;  /* set PIO1.27 to low  */
-
-  GPIO3->FIODIR   |=  0x02000000;  /* set PIO3.25 to output */
-  GPIO3->FIOSET   |=  0x02000000;  /* set PIO3.25 to high */
-}
+DA_Set GlobalDA;
 
 #define DAC_MODE_RAW 0
 #define DAC_MODE_MV  1
@@ -198,8 +179,7 @@ unsigned int DAC_CalcGainUp(int calc_time, int calc_initval, unsigned char calc_
 #else
 unsigned int DAC_CalcGain(unsigned char up, int calc_time, int calc_initval, unsigned char calc_gaint, unsigned char calc_gainr, int tm)
 {
-	if (calc_initval > DAC_RESOLUTION - 1 ||
-		calc_initval < (DAC_RESOLUTION * -1))
+	if (abs(calc_initval) >  2*DAC_RESOLUTION - 1)
 		return 0;
 
 	int VarDA;
@@ -278,59 +258,99 @@ unsigned int DAC_CalcCurveDown(int time, int value, int tm)
 
 void DAC_Cycle(void * pdata)
 {
-	unsigned int i;
+	char ramp_ON   = 0;
+	unsigned int i = 0;
+	int start = 0, offset = 0;
 
-	unsigned char 	up     = ((DA_Set*)pdata)->up;
-	unsigned char 	linear = ((DA_Set*)pdata)->linear;
-	unsigned char	gaint  = ((DA_Set*)pdata)->gaint;
-	unsigned char	gainr  = ((DA_Set*)pdata)->gainr;
-	unsigned int 	time   = ((DA_Set*)pdata)->time;
-	int 			value  = ((DA_Set*)pdata)->value;
+	DA_Set local;
+	local.ID = 0;
 
-	if (time < DAC_CYCLE_INTERVAL * 3 || time > 10000)
-		CoExitTask();
+	while(1) {
+		if(GlobalDA.ID != local.ID) {
+			local = GlobalDA;
 
-	if (value < -2048 || value > 2047)
-		CoExitTask();
+			if((local.time >= DAC_CYCLE_INTERVAL * 3 && local.time <= 10000) &&
+			   (local.value >= -DAC_RESOLUTION && local.value <= DAC_RESOLUTION-1)) {
+				i       = 0;
+				start   = 0;
+				offset  = 0;
+				ramp_ON = 1;
 
-	for (i = 0; i < time; i+=DAC_CYCLE_INTERVAL)
-	{
-		if(up) {
-			if (linear)
-				DAC_Write(DAC_CalcGainUp(time, value, gaint, gainr, i));
-			else
-				DAC_Write(DAC_CalcCurveUp(time, value, i));
-		} else {
-			if (linear)
-				DAC_Write(DAC_CalcGainDown(time, value, gaint, gainr, i));
-			else
-				DAC_Write(DAC_CalcCurveDown(time, value, i));
+				if(local.up == 2) { // Modo coincidente
+					local.up = 1;
+					start  = DAC_Read() - DAC_RESOLUTION;
+					offset = local.value - start;
+				}
+			}
+		}
+
+		if(ramp_ON) {
+			if(local.up) {
+				if (local.linear)
+					DAC_Write(DAC_CalcGainUp   (local.time, offset ? offset : local.value, local.gaint, local.gainr, i) + start);
+				else
+					DAC_Write(DAC_CalcCurveUp  (local.time, offset ? offset : local.value,                           i) + start);
+			} else {
+				if (local.linear)
+					DAC_Write(DAC_CalcGainDown (local.time, offset ? offset : local.value, local.gaint, local.gainr, i) + start);
+				else
+					DAC_Write(DAC_CalcCurveDown(local.time, offset ? offset : local.value,                           i) + start);
+			}
+
+			i += DAC_CYCLE_INTERVAL;
+
+			if(i >= local.time) {
+				ramp_ON = 0;
+				DAC_Write((local.up ? local.value : 0) + DAC_RESOLUTION);
+			}
 		}
 
 		CoTickDelay(DAC_CYCLE_INTERVAL);
 	}
-
-	DAC_Write((up ? value : 0) + DAC_RESOLUTION);
 
 	CoExitTask();
 }
 
 void DAC_Start(unsigned char up, unsigned char linear, unsigned char gaint, unsigned char gainr, int time, int value)
 {
-	DA_Set da;
+	GlobalDA.up     = up;
+	GlobalDA.linear = linear;
 
-	da.up     = up;
-	da.linear = linear;
+	GlobalDA.gaint  = gaint;
+	GlobalDA.gainr  = gainr;
 
-	da.gaint  = gaint;
-	da.gainr  = gainr;
+	GlobalDA.time   = time;
+	GlobalDA.value  = value - DAC_RESOLUTION;
 
-	da.time   = time;
-	da.value  = value;
+	GlobalDA.ID++;
+}
 
-	CoCreateTask(DAC_Cycle, &da,
-				  DAC_CYCLE_THREAD_PRIO,
-				  &DACCycleStack[DAC_CYCLE_THREAD_STACKSIZE-1],
-				  DAC_CYCLE_THREAD_STACKSIZE);
+void DAC_Init(void)
+{
+  //if ( I2CInitFast( (unsigned int)I2CMASTER ) == FALSE )  /* initialize I2c */
+  if ( I2C_InitFast( (unsigned int)I2CMASTER ) == FALSE )  /* initialize I2c */
+    return;
+
+  DAC_Mutex = CoCreateMutex();
+
+  // Inicializa o D/A para estar em zero volts ao inves de -10V
+  DAC_Write(DAC_RESOLUTION);
+
+  // Configure XTR300 I/Os
+  PINCON->PINSEL3 &= ~0x00FC0000;  /* set PIO1.25  -  PIO1.27 to GPIO */
+  PINCON->PINSEL7 &= ~0x003C0000;  /* set PIO3.25 and PIO3.26 to GPIO */
+
+  GPIO1->FIODIR   |=  0x08000000;  /* set PIO1.27 to output */
+  GPIO1->FIOCLR   |=  0x08000000;  /* set PIO1.27 to low  */
+
+  GPIO3->FIODIR   |=  0x02000000;  /* set PIO3.25 to output */
+  GPIO3->FIOSET   |=  0x02000000;  /* set PIO3.25 to high */
+
+  GlobalDA.ID = 0;
+
+  CoCreateTask(DAC_Cycle, NULL,
+		  	   DAC_CYCLE_THREAD_PRIO,
+		  	   &DACCycleStack[DAC_CYCLE_THREAD_STACKSIZE-1],
+		  	   DAC_CYCLE_THREAD_STACKSIZE);
 }
 

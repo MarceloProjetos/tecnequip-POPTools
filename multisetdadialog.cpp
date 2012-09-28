@@ -4,7 +4,7 @@
 #include <commctrl.h>
 #include <math.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 #define MARGIN		25.0f
 #define FONT_NAME	L"Verdana"
@@ -27,12 +27,15 @@ static ID2D1StrokeStyle *		pDashStrokeStyle;
 static ID2D1TransformedGeometry * pTransformedGeometry;
 static ID2D1PathGeometry*		pLinePathGeometry;
 static ID2D1PathGeometry*		pLineFillPathGeometry;
+static ID2D1PathGeometry*		pCoincFillPathGeometry;
 static IDWriteTextFormat*		pTextFormat;
 static ID2D1SolidColorBrush*	pBackgroundBrush;
 static ID2D1SolidColorBrush*	pAxisBrush;
 static ID2D1SolidColorBrush*	pLineBrush;
 static ID2D1SolidColorBrush*	pGainBrush;
 static ID2D1SolidColorBrush*	pLineFillBrush;
+static ID2D1SolidColorBrush*	pCoincFillBrush;
+static ID2D1SolidColorBrush*	pCoincBrush;
 static ID2D1SolidColorBrush*	pPointBrush;
 static ID2D1SolidColorBrush*	pFontBrush;
 
@@ -40,6 +43,7 @@ static HWND ForwardRadio;
 static HWND BackwardRadio;
 static HWND SpeedUpRadio;
 static HWND SpeedDownRadio;
+static HWND SpeedCoincRadio;
 static HWND LinearRadio;
 static HWND CurveRadio;
 static HWND TimeTextbox;
@@ -51,6 +55,7 @@ static HWND ResolTypeCombobox;
 static HWND GraphBox;
 
 static LONG_PTR PrevMultisetDADialogProc;
+static LONG_PTR PrevNumAlphaProc;
 static LONG_PTR PrevNumProc;
 static LONG_PTR PrevResolTypeProc;
 static LONG_PTR PrevGraphBoxProc;
@@ -67,7 +72,7 @@ static ElemMultisetDA current;
 
 static vector<D2D1_POINT_2F>	DAPoints;
 
-const LPCTSTR ResollTypeItens[] = { _("Resolução DA (12 bits)[2047 ~ -2048]"), _("Resolução DA (mV)[10000 ~ -10000]"), _("Resolução DA (%)[0 ~ 100]") };
+const LPCTSTR ResollTypeItens[] = { _("(12 bits)[2047 ~ -2048]"), _("(mV)[10000 ~ -10000]"), _("(%)[0 ~ 100]") };
 
 void CalcLinearUp(int calc_time, int calc_initval)
 {
@@ -200,13 +205,13 @@ void CalcGainUp(int calc_time, int calc_initval, int calc_gainx, int calc_gainy 
 
 	memset(gains, 0, sizeof(gains));
 
-	int VarDA;
+	float VarDA;
 
-	int DeltaXGanho  = (calc_time    * calc_gainx) / 100;
-	int DeltaYGanho  = (calc_initval * calc_gainy) / 100;
+	float DeltaXGanho  = (float)(calc_time    * calc_gainx) / 100;
+	float DeltaYGanho  = (float)(calc_initval * calc_gainy) / 100;
 
-	int DeltaXLinear = calc_time    - 2*DeltaXGanho;
-	int DeltaYLinear = calc_initval - 2*DeltaYGanho;
+	float DeltaXLinear = calc_time    - 2*DeltaXGanho;
+	float DeltaYLinear = calc_initval - 2*DeltaYGanho;
 
 	for (tm=0; tm < calc_time; tm+=DA_CYCLE_INTERVAL)
 	{
@@ -341,6 +346,11 @@ HRESULT CreateDeviceResources()
 
 		if (SUCCEEDED(hr))
 		{
+			hr = pD2DFactory->CreatePathGeometry(&pCoincFillPathGeometry);
+		}
+
+		if (SUCCEEDED(hr))
+		{
 			hr = pD2DFactory->CreateStrokeStyle(
 				D2D1::StrokeStyleProperties(
 					D2D1_CAP_STYLE_ROUND,
@@ -394,6 +404,26 @@ HRESULT CreateDeviceResources()
 
 		if (SUCCEEDED(hr))
 		{
+			//D2D1_COLOR_F c = D2D1::ColorF(0xc2d1f0);
+			//c.a = 0.6f;
+			hr = pRenderTarget->CreateSolidColorBrush(
+				D2D1::ColorF(D2D1::ColorF::LightGreen, 0.5f),
+				&pCoincFillBrush
+				);
+		}
+
+		if (SUCCEEDED(hr))
+		{
+			//D2D1_COLOR_F c = D2D1::ColorF(0xc2d1f0);
+			//c.a = 0.6f;
+			hr = pRenderTarget->CreateSolidColorBrush(
+				D2D1::ColorF(D2D1::ColorF::Green, 0.5f),
+				&pCoincBrush
+				);
+		}
+
+		if (SUCCEEDED(hr))
+		{
 			hr = pRenderTarget->CreateSolidColorBrush(
 				D2D1::ColorF(D2D1::ColorF::Red),
 				&pGainBrush
@@ -427,15 +457,15 @@ HRESULT CreateDeviceResources()
 		{
 			
 			D2D1_STROKE_STYLE_PROPERTIES properties = D2D1::StrokeStyleProperties();
-			properties.dashStyle = D2D1_DASH_STYLE_DASH;
+			properties.dashStyle = D2D1_DASH_STYLE_DASH_DOT;
 
 			/*float dashes[] =
 			{
 			2.0f, 1.0f,
 			3.0f, 1.0f,
-			};*/
+			};
 
-			//hr = m_pDrawArea->Factory->CreateStrokeStyle(properties, dashes, _countof(dashes), &m_strokeStyle);
+			pD2DFactory->CreateStrokeStyle(properties, dashes, _countof(dashes), &pDashStrokeStyle);*/
 			pD2DFactory->CreateStrokeStyle(properties, NULL, NULL, &pDashStrokeStyle);
 		}
 
@@ -459,11 +489,13 @@ void DiscardDeviceResources()
 	SafeRelease(&pTransformedGeometry);
 	SafeRelease(&pLinePathGeometry);
 	SafeRelease(&pLineFillPathGeometry);
+	SafeRelease(&pCoincFillPathGeometry);
 	SafeRelease(&pTextFormat);
-	SafeRelease(&pBackgroundBrush);
 	SafeRelease(&pAxisBrush);
 	SafeRelease(&pLineBrush);
 	SafeRelease(&pLineFillBrush);
+	SafeRelease(&pCoincFillBrush);
+	SafeRelease(&pCoincBrush);
 	SafeRelease(&pPointBrush);
 	SafeRelease(&pFontBrush);
 }
@@ -480,16 +512,44 @@ void ReleasePoint(D2D1_POINT_2F p)
 {
 }
 
+// Function to Normalize D/A value. It returns an absolute offset from 0V to p point.
+inline float NormalizeDA(float p, float GraphResolution)
+{
+	return abs(abs(p) - (current.speedup ? DA_RESOLUTION : GraphResolution));
+}
+
 void Render()
 {
     HRESULT hr;
+	float OffsetX = 0, OffsetY = 0, GraphResolution = DA_RESOLUTION;
 
     hr = CreateDeviceResources();
 
     if (SUCCEEDED(hr) && !(pRenderTarget->CheckWindowState() & D2D1_WINDOW_STATE_OCCLUDED))
     {
-        // Retrieve the size of the render target.
+		// If final D/A value is below 10% of max value, we should to scale graph to be easier to see the result
+		if(abs(initval) < GraphResolution*0.1f) {
+			GraphResolution /= 10;
+		}
+
+		// If we should to coincide the ramp with current D/A value, show a green area before
+		// the ramp so the user will understand it.
+		if(current.StartFromCurrentValue) {
+			// Offset for X and Y axis from ramp start
+			OffsetX = abs(time   ) * 0.2f;
+			OffsetY = abs(initval) * 0.2f;
+			// If the final value for D/A is low, shows a inverse graph
+			if(abs(initval) < GraphResolution/2) {
+				OffsetY = (GraphResolution/2)*0.8f;
+			}
+		}
+
+		// Retrieve the size of the render target.
         D2D1_SIZE_F size = pRenderTarget->GetSize();
+
+		// Scale to draw graph. They will convert values from time and D/A values to graph coordinates.
+		float scaleX = (size.width  - (MARGIN * 3)) / abs(time);
+		float scaleY = (size.height - (MARGIN * 2)) / GraphResolution; // abs(initval);
 
         pRenderTarget->BeginDraw();	
 
@@ -510,15 +570,15 @@ void Render()
 		WCHAR Num[24];
 
 		// Draw Text X Scale
-		float interval = (size.width - MARGIN * 2) / DA_CYCLE_INTERVAL;
-		for (int i = 1; i < size.width / DA_CYCLE_INTERVAL; i++)
+		float interval = (size.width - MARGIN * 3 - OffsetX*scaleX) / DA_CYCLE_INTERVAL;
+		for (int i = 0; i < size.width / DA_CYCLE_INTERVAL; i++)
 		{
-			pRenderTarget->DrawLine(D2D1::Point2F(MARGIN - 1.0f + (interval * i), size.height - MARGIN + 1.0f - 5.0f), 
-									D2D1::Point2F(MARGIN - 1.0f + (interval * i), size.height - MARGIN + 1.0f + 5.0f), pAxisBrush);
+			pRenderTarget->DrawLine(D2D1::Point2F(MARGIN*2 - 1.0f + (interval * i) + OffsetX*scaleX, size.height - MARGIN + 1.0f - 5.0f*(i>0)), 
+									D2D1::Point2F(MARGIN*2 - 1.0f + (interval * i) + OffsetX*scaleX, size.height - MARGIN + 1.0f + 5.0f), pAxisBrush);
 
-			D2D1_RECT_F r = D2D1::RectF(MARGIN - 1.0f + (interval * i) - (FONT_SIZE * 2.0f),
+			D2D1_RECT_F r = D2D1::RectF(MARGIN*2 - 1.0f + (interval * i) - (FONT_SIZE * 2.0f) + OffsetX*scaleX,
 										size.height - FONT_SIZE - 5.0f, 
-										MARGIN - 1.0f + (interval * i) + (FONT_SIZE * 2.0f), 
+										MARGIN*2 - 1.0f + (interval * i) + (FONT_SIZE * 2.0f) + OffsetX*scaleX, 
 										size.height - 5.0f);
 
 			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", (abs(time) / DA_CYCLE_INTERVAL) * i );
@@ -540,30 +600,25 @@ void Render()
 										(MARGIN * 2) - 5.0f, 
 										MARGIN - 1.0f + (interval * i) + FONT_SIZE);
 
-			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", static_cast<int>(initval < 0 ? DA_RESOLUTION * (0.25f * i) * -1.0f: DA_RESOLUTION * (0.25f * (4 - i))));
+			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", static_cast<int>(initval < 0 ? GraphResolution * (0.25f * i) * -1.0f: GraphResolution * (0.25f * (4 - i))));
 
 			pRenderTarget->DrawText(Num, static_cast<UINT>(wcslen(Num)), pTextFormat, &r, pAxisBrush);
 		}
 
-		// Scale to draw graph
-		float scaleX = (size.width - (MARGIN * 3)) / abs(time);
-		float scaleY = (size.height - (MARGIN * 2)) / DA_RESOLUTION; // abs(initval);
+		// Load size and height with ramp limits
+		size.width  = (float)abs(time);
+		size.height = GraphResolution;
 
-		size.width = ceil((size.width - (MARGIN * 3)) / scaleX); 
-		size.height = ceil((size.height - (MARGIN * 2)) / scaleY);
-
-		D2D1_MATRIX_3X2_F scale = D2D1::Matrix3x2F::Scale(scaleX, scaleY, D2D1::Point2F(0.0f, 0.0f));
-		
-		float intervalX = size.width / (abs(time) / DA_CYCLE_INTERVAL);
-		float intervalY = (size.height - (MARGIN * 2)) / DA_RESOLUTION; // abs(initval);
+		// How much should we advance in X coordinate for each D/A cycle interval
+		float intervalX = (size.width - OffsetX) / (abs(time) / DA_CYCLE_INTERVAL);
 
 		D2D1_MATRIX_3X2_F translate = D2D1::Matrix3x2F::Translation(MARGIN * 2, MARGIN);
 
         pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
-		pRenderTarget->SetTransform(scale * translate);
+		pRenderTarget->SetTransform(translate);
 
 		// Create graph geometry
-		ID2D1GeometrySink *pSink = NULL;
+		ID2D1GeometrySink *pSink = NULL, *pSinkCoinc = NULL;
 
 		hr = pLineFillPathGeometry->Open(&pSink);
 		if(!SUCCEEDED(hr)) {
@@ -572,125 +627,184 @@ void Render()
 			return;
 		}
 
+		int i, pass, end = (int)ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL));
+		float desl, p, x, y, prevx, prevy, startx, starty, offset = 0, fator_graph, fator_ramp, FigureOffsetY = 0;
+
 		pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
 
+		// Point where to start to draw the graph in X axis.
+		startx = prevx = OffsetX * scaleX;
+
+		// Point where to start to draw the graph in Y axis.
+		starty = NormalizeDA(points[0], GraphResolution);
+		if((!current.speedup && current.forward) || (current.speedup && !current.forward)) {
+			starty = GraphResolution - starty;
+		}
+		starty = prevy = (size.height - starty)*scaleY;
+
+		// If we are drawing the inverse graph, we should to offset figure points in Y axis
+		if(current.StartFromCurrentValue && abs(initval) < GraphResolution/2) {
+			FigureOffsetY = initval*scaleY;
+		}
+
 		// Calculate graphic points
-		pSink->BeginFigure(D2D1::Point2F(0.0f, size.height - (current.speedup ? (initval < 0 ? points[0] : points[0] - DA_RESOLUTION) : (initval < 0 ? points[0] + DA_RESOLUTION : points[0]))), D2D1_FIGURE_BEGIN_FILLED);
+		pSink->BeginFigure(D2D1::Point2F(startx, starty + FigureOffsetY), D2D1_FIGURE_BEGIN_FILLED);
+		if(current.StartFromCurrentValue) { // If we are using coincide mode...
+			// We have to use offset in Y axis
+			starty += (initval<0 ? +OffsetY : -OffsetY)*scaleY;
 
-		int i;
-		float p;
-		for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
-		{
-			p = current.linear ? gains[i] : points[i];
-			pSink->AddLine(D2D1::Point2F(intervalX * i, size.height - (current.speedup ? (initval < 0 ? p : p - DA_RESOLUTION) : (initval < 0 ? p + DA_RESOLUTION : p))));
-		}
-
-		if (current.speedup)
-		{
-			pSink->AddLine(D2D1::Point2F(intervalX * i, initval < 0 ? abs(initval) : size.height - initval));
-			pSink->AddLine(D2D1::Point2F(intervalX * i, initval < 0 ? 0.0f : DA_RESOLUTION));
-		}
-		else
-		{
-			pSink->AddLine(D2D1::Point2F(intervalX * i, initval < 0 ? 0.0f : DA_RESOLUTION));
-			pSink->AddLine(D2D1::Point2F(initval < 0 ? 0.0f : 0.0f, initval < 0 ? 0.0f : DA_RESOLUTION));
-		}
-
-		pSink->EndFigure(D2D1_FIGURE_END_CLOSED); // D2D1_FIGURE_END_OPEN D2D1_FIGURE_END_CLOSED
-		
-		hr = pSink->Close();
-		SafeRelease(&pSink);
-
-		// Draw graph area
-		pRenderTarget->FillGeometry(pLineFillPathGeometry, pLineFillBrush);
-		//pRenderTarget->DrawGeometry(pLineFillPathGeometry, pLineFillBrush);
-
-		// Draw graphic line
-		pRenderTarget->SetTransform(translate);
-		size = pRenderTarget->GetSize();
-
-		intervalX = (size.width - (MARGIN * 3)) / (abs(time) / DA_CYCLE_INTERVAL);
-		intervalY = (size.height - (MARGIN * 2)) / abs(initval);
-
-		float point1, point2 = 0.0f;
-		for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
-		{
-			if (current.speedup)
-			{
-				point1 = (points[i - 1] - DA_RESOLUTION) * scaleY;
-				point2 = (points[i] - DA_RESOLUTION) * scaleY;
-
-				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
-										D2D1::Point2F(intervalX * i, initval < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
-										pLineBrush, current.linear ? 2.0f : 4.0f, current.linear ? pDashStrokeStyle : pLineStrokeStyle);
-			}
-			else
-			{
-				point1 = points[i - 1] * scaleY;
-				point2 = points[i] * scaleY;
-
-				pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
-										D2D1::Point2F(intervalX * i, initval < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
-										pLineBrush, current.linear ? 2.0f : 4.0f, current.linear ? pDashStrokeStyle : pLineStrokeStyle);
+			hr = pCoincFillPathGeometry->Open(&pSinkCoinc);
+			if(!SUCCEEDED(hr)) {
+				Error(_("Ocorreu um erro ao desenhar o gráfico do D/A."));
+				DiscardDeviceResources();
+				return;
 			}
 
+			// Draw Green Area
+			pSinkCoinc->BeginFigure(D2D1::Point2F(startx, prevy  + FigureOffsetY), D2D1_FIGURE_BEGIN_FILLED);
+
+			pSinkCoinc->AddLine    (D2D1::Point2F(0.0f  , prevy  + FigureOffsetY));
+			pSinkCoinc->AddLine    (D2D1::Point2F(0.0f  , starty                ));
+			pSinkCoinc->AddLine    (D2D1::Point2F(startx, starty                ));
+
+			pSinkCoinc->EndFigure  (D2D1_FIGURE_END_CLOSED); // D2D1_FIGURE_END_OPEN D2D1_FIGURE_END_CLOSED
+
+			hr = pSinkCoinc->Close();
+			SafeRelease(&pSinkCoinc);
+
+			// Draw graph area
+			pRenderTarget->FillGeometry(pCoincFillPathGeometry, pCoincFillBrush);
+
+			// Draw Green Line
+			pRenderTarget->DrawLine(D2D1::Point2F(0.0f  , starty),
+									D2D1::Point2F(startx, starty),
+									pCoincBrush, 4.0f, pDashStrokeStyle);
+
+			// Continue to draw graphic
+			pSink->AddLine    (D2D1::Point2F(startx, starty));
+
+			// Line to separate green area from graph area
+			pRenderTarget->DrawLine(D2D1::Point2F(startx, 0.0f), 
+									D2D1::Point2F(startx, GraphResolution*scaleY),
+									pAxisBrush, 1.0f, pDashStrokeStyle);
 		}
 
-		if (current.speedup)
-		{
-			point1 = (points[i - 1] - DA_RESOLUTION) * scaleY;
+		// Calculate total variation of Y axis, in D/A values.
+		desl = abs(NormalizeDA(current.linear ? gains[      0] : points[0      ], GraphResolution) -
+				   NormalizeDA(current.linear ? gains[end - 1] : points[end - 1], GraphResolution));
 
-			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
-									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? abs(initval * scaleY) : size.height - (initval * scaleY) - (MARGIN * 2)), 
-									pLineBrush, current.linear ? 2.0f : 4.0f, current.linear ? pDashStrokeStyle : pLineStrokeStyle);
-		}
-		else
-		{
-			point1 = points[i - 1] * scaleY;
+		// We have to go through graph points two times.
+		// The first one is to draw the blue area
+		// The second one is to draw line graph over borders of blue area.
+		for(pass = 0; pass<2; pass++) {
+			// initalize previous point with start point.
+			prevx = startx;
+			prevy = starty;
 
-			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ?  abs(point1) : size.height - point1 - (MARGIN * 2)),
-									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? 0.0f : size.height - (MARGIN * 2)), 
-									pLineBrush, current.linear ? 2.0f : 4.0f, current.linear ? pDashStrokeStyle : pLineStrokeStyle);
-		}
+			// Loop to calculate graph points
+			for (i = 1; i <= end; i++) {
+				// Calculate X axis position
+				x = intervalX * i + OffsetX;
+				if(i<end) { // If we didn't reach end point, calculate next one...
+					// Normalized point. Now we have in p a value from 0 to GraphResolution, indicating
+					// the "height" of D/A in Y axis
+					p = NormalizeDA(current.linear ? gains[i] : points[i], GraphResolution);
 
-		if (current.linear)
-		{
+					// Now we calculate a value from 0 to 1, indicanting the position of p related to
+					// GraphResolution in Y axis
+					fator_graph = p/GraphResolution;
+					if((current.speedup && current.forward) || (!current.speedup && !current.forward)) {
+						fator_graph = 1.0f - fator_graph;
+					}
 
-			for (i = 1; i < ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL)); i++)
-			{
-				if (current.speedup) {
-					point1 = (gains[i - 1] - DA_RESOLUTION) * scaleY;
-					point2 = (gains[i    ] - DA_RESOLUTION) * scaleY;
+					if(abs(initval) < GraphResolution/2) { // if drawing inverse graph...
+						// Invers graph, we have to consider inverse p value.
+						p = GraphResolution - p;
+						// Value from 0 to 1 indicating p position related to total variation of the ramp
+						fator_ramp = p/desl;
+
+						// Offset for Y axis to draw graph
+						offset = OffsetY - OffsetY*(1.0f - fator_ramp) + abs(initval)*(1.0f - fator_ramp);
+					} else {
+						// Value from 0 to 1 indicating p position related to total variation of the ramp
+						fator_ramp = p/desl;
+
+						// Offset for Y axis to draw graph
+						offset = OffsetY - OffsetY*fator_ramp;
+					}
+
+					// If initval (D/A value) is negative, invert offset.
+					if(initval > 0) {
+						offset *= -1;
+					}
+
+					// Calculate Y axis position
+					y = size.height*fator_graph + (current.StartFromCurrentValue ? offset : 0);
+				} else if(current.speedup) {
+					// Last point! If accelerating, final point should to be final D/A value
+					y = initval < 0 ? abs(initval) : size.height - initval;
+				} else if(current.StartFromCurrentValue) {
+					// Last point! We are decelerating and using coincide mode. Special case!
+					// Final point should to be final D/A value.
+					y = (initval < 0 ? 0.0f : GraphResolution) - initval;
 				} else {
-					point1 = gains[i - 1] * scaleY;
-					point2 = gains[i] * scaleY;
+					// Last point! We are decelerating and not using coincide mode.
+					// Final point should to be 0V
+					y = initval < 0 ? 0.0f : GraphResolution;
 				}
 
-					pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ? abs(point1) : size.height - point1 - (MARGIN * 2)),
-											D2D1::Point2F(intervalX * i, initval < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
-											i > gain_idx ? pGainBrush : pLineBrush, 4.0f, pLineStrokeStyle);
+				// Convert calculated X and Y values to graph coordinates
+				x *= scaleX;
+				y *= scaleY;
+
+				if(pass == 0) {
+					// First pass, draw the point in figure representing blue graph area.
+					pSink->AddLine(D2D1::Point2F(x, y));
+				} else {
+					// Second pass. Draw a line from previous calculated point to new one.
+					// This way we will make a continuous line, following D/A calculated values
+					pRenderTarget->DrawLine(D2D1::Point2F(prevx, prevy),
+											D2D1::Point2F(    x,     y), 
+											i > (end*(1.0f-(float)(current.gaint)/100)) && current.linear ? pGainBrush : pLineBrush,
+											4.0f, pLineStrokeStyle);
+				}
+
+				if(current.linear && pass == 1 && i == end/2) {
+					// We reached mid point when drawing graph line. We have to insert the graph dot.
+					pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F(x,y), 4.0f, 4.0f), pLineBrush);
+				}
+
+				// Keep current X and Y axis values for future use.
+				prevx = x;
+				prevy = y;
 			}
 
-			if (current.speedup) {
-				point1 = (gains[i - 1] - DA_RESOLUTION) * scaleY;
-				point2 = initval * scaleY;
-			} else {
-				point1 = gains[i - 1] * scaleY;
-				point2 = 0;
+			// At this point, the current objet is almost finished. We just have to close figures, etc.
+			if(pass == 0) { // First pass, We have to close the figure representing blue area.
+				pSink->AddLine(D2D1::Point2F(current.speedup || current.StartFromCurrentValue ? x : 0.0f, initval < 0 ? 0.0f : GraphResolution * scaleY));
+
+				pSink->EndFigure(D2D1_FIGURE_END_CLOSED); // D2D1_FIGURE_END_OPEN D2D1_FIGURE_END_CLOSED
+		
+				hr = pSink->Close();
+				SafeRelease(&pSink);
+
+				// Draw graph area
+				pRenderTarget->FillGeometry(pLineFillPathGeometry, pLineFillBrush);
+
+				// When using linear mode, we have to draw a dotted line from start to end point so it is eays
+				// for the user to see variation of ramp because of gain factors.
+				if (current.linear) {
+					pRenderTarget->DrawLine(D2D1::Point2F(startx, starty),
+											D2D1::Point2F(     x,      y),
+											pLineBrush, 2.0f, pDashStrokeStyle);
+				}
 			}
-
-			pRenderTarget->DrawLine(D2D1::Point2F(intervalX * (i - 1), initval < 0 ?  abs(point1) : size.height - point1 - (MARGIN * 2)),
-									D2D1::Point2F(size.width - (MARGIN * 3) - 1.0f, initval < 0 ? abs(point2) : size.height - point2 - (MARGIN * 2)), 
-									pGainBrush, 4.0f, pLineStrokeStyle);
-
-			// Draws the junction circle
-			point1 = (initval < 0 ? -initval / 2 : DA_RESOLUTION - (initval / 2)) * scaleY;
-			pRenderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F((current.time / 2) * scaleX, point1), 4.0f, 4.0f),
-									pLineBrush);
 		}
 
+		// Render finished! After all hard work, just end draw... :-)
 		hr = pRenderTarget->EndDraw();
 
+		// Discard all objects allocated to render graph
 		DiscardDeviceResources();
 	}
 }
@@ -711,10 +825,16 @@ void UpdateWindow(void)
 	else
 		current.forward = FALSE;
 
-	if(SendMessage(SpeedUpRadio, BM_GETSTATE, 0, 0) & BST_CHECKED && !SendMessage(SpeedDownRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
+	if(SendMessage(SpeedCoincRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+		current.StartFromCurrentValue = TRUE;
 		current.speedup = TRUE;
-	else
+	} else if(SendMessage(SpeedUpRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+		current.StartFromCurrentValue = FALSE;
+		current.speedup = TRUE;
+	} else {
+		current.StartFromCurrentValue = FALSE;
 		current.speedup = FALSE;
+	}
 
 	SendMessage(GainTimeTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
 
@@ -745,44 +865,69 @@ void UpdateWindow(void)
 
 	SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
 
-	if (atoi(num) > MAX_TIME_VAL || atoi(num) < MIN_TIME_VAL)
-	{
-		_itoa(max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num)))), num, 10);
+	if(IsNumber(num)) {
+		if (atoi(num) > MAX_TIME_VAL || atoi(num) < MIN_TIME_VAL)
+		{
+			_itoa(max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num)))), num, 10);
+			SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+			StringCchPrintf(msg, sizeof(msg), _("O valor permitido para o campo Tempo (ms) no Tamanho da Rampa esta entre %d e %d."), MIN_TIME_VAL, MAX_TIME_VAL);
+			MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Tempo (ms) !"), MB_OK | MB_ICONEXCLAMATION);
+		}
+
+		current.time = max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num))));
+		_itoa(current.time, num, 10);
+		_itoa(current.time, current.name, 10);
 		SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		StringCchPrintf(msg, sizeof(msg), _("O valor permitido para o campo Tempo (ms) no Tamanho da Rampa esta entre %d e %d."), MIN_TIME_VAL, MAX_TIME_VAL);
-		MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Tempo (ms) !"), MB_OK | MB_ICONEXCLAMATION);
+	} else {
+		current.time = 600;
+		strcpy(current.name, num);
 	}
 
-	current.time = max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num))));
 	time = current.time;
 
 	current.type = SendMessage(ResolTypeCombobox, CB_GETCURSEL, 0, 0);
 
 	SendMessage(InitValTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
 
-	if (current.type == 1)  // (mV)
-	{
-		current.initval = max(static_cast<int>(MAX_MILIVOLT_VAL * 0.1f), min(MAX_MILIVOLT_VAL, abs(atoi(num))));
-	}
-	else if (current.type == 2) // (%)
-	{
-		current.initval = max(10, min(100, abs(atoi(num))));
-	}
-	else // DA 
-	{
-		current.initval = max(static_cast<int>(DA_RESOLUTION * 0.1f), min(DA_RESOLUTION, abs(atoi(num))));
-		if (current.forward && current.initval >= DA_RESOLUTION)
-			current.initval = DA_RESOLUTION - 1;
-	}
+	if(IsNumber(num)) {
+		if (current.type == 1)  // (mV)
+		{
+			current.initval = min(MAX_MILIVOLT_VAL, abs(atoi(num)));
+		}
+		else if (current.type == 2) // (%)
+		{
+			current.initval = min(100, abs(atoi(num)));
+		}
+		else // DA 
+		{
+			current.initval = min(DA_RESOLUTION, abs(atoi(num)));
+			if (current.forward && current.initval >= DA_RESOLUTION)
+				current.initval = DA_RESOLUTION - 1;
+		}
 	
-	if ((current.type == 0 && (((current.forward && atoi(num) > DA_RESOLUTION - 1) || (!current.forward && atoi(num) > DA_RESOLUTION)) || atoi(num) < static_cast<int>(DA_RESOLUTION * 0.1f))) ||
-		(current.type == 1 && (atoi(num) > MAX_MILIVOLT_VAL || atoi(num) < static_cast<int>(MAX_MILIVOLT_VAL * 0.1f))) || 
-		(current.type == 2 && (atoi(num) > 100 || atoi(num) < 10)))
-	{
 		_itoa(current.initval, num, 10);
+		_itoa(current.forward ? current.initval : current.initval * -1, current.name1, 10);
 		SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		StringCchPrintf(msg, sizeof(msg), _("O valor permitido para o campo Resolução DA no Tamanho da Rampa esta entre %d e %d."), current.type == 0 ? static_cast<int>(DA_RESOLUTION * 0.1f) : (current.type == 1 ? static_cast<int>(MAX_MILIVOLT_VAL * 0.1f)  : 10), current.type == 0 ? DA_RESOLUTION - 1 : (current.type == 1 ? MAX_MILIVOLT_VAL : 100));
-		MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Resolução DA !"), MB_OK | MB_ICONEXCLAMATION);
+
+		if ((current.type == 0 && (((current.forward && atoi(num) > DA_RESOLUTION - 1) || (!current.forward && atoi(num) > DA_RESOLUTION)))) ||
+			(current.type == 1 && (atoi(num) > MAX_MILIVOLT_VAL)) || 
+			(current.type == 2 && (atoi(num) > 100)))
+		{
+			StringCchPrintf(msg, sizeof(msg), _("O valor máximo permitido para o campo Resolução DA no Tamanho da Rampa é %d."), current.type == 0 ? DA_RESOLUTION - 1 : (current.type == 1 ? MAX_MILIVOLT_VAL : 100));
+			MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Resolução DA !"), MB_OK | MB_ICONEXCLAMATION);
+		}
+	} else {
+		switch(current.type) {
+		case 1:
+			current.initval = 10000;
+			break;
+		case 2:
+			current.initval = 100;
+			break;
+		default:
+			current.initval = 2047;
+		}
+		strcpy(current.name1, num);
 	}
 
 	if (current.type == 1)  // (mV)
@@ -791,21 +936,21 @@ void UpdateWindow(void)
 		initval = static_cast<int>(DA_RESOLUTION * (current.initval / 100.0f));
 	else // DA 
 		initval = current.initval;
-		
-	initval = current.forward ? initval : initval * -1;
 
-	_itoa(current.time, num, 10);
-	SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-	_itoa(current.initval, num, 10);
-	SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+	if(current.StartFromCurrentValue && abs(initval) < (abs(initval) < DA_RESOLUTION*0.1f ? DA_RESOLUTION*0.1f : DA_RESOLUTION)/2) {
+		current.speedup = !current.speedup;
+	}
+
+	if(!current.forward) {
+		initval *= -1;
+	}
 
 	_itoa(current.gainr, num, 10);
 	SendMessage(GainInitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 	_itoa(current.gaint, num, 10);
 	SendMessage(GainTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-	
-	_itoa(current.time, current.name, 10);
-	_itoa(current.forward ? current.initval : current.initval * -1, current.name1, 10);
+
+	if(!initval) initval = current.forward ? +1 : -1;
 
 	if (current.linear)
 	{
@@ -839,28 +984,31 @@ void ConvertResolType(int r)
 	float c; // convert
 
 	SendMessage(InitValTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
-	i = atoi(num);
 
-	if (current.type == 1)  // (mV)
-		c = static_cast<float>(DA_VOLTAGE);
-	else if (current.type == 2) // (%)
-		c = 100.0f;
-	else // DA 
-		c = static_cast<float>(DA_RESOLUTION);
+	if(IsNumber(num)) {
+		i = atoi(num);
 
-	p = static_cast<float>(i / c);
+		if (current.type == 1)  // (mV)
+			c = static_cast<float>(DA_VOLTAGE);
+		else if (current.type == 2) // (%)
+			c = 100.0f;
+		else // DA 
+			c = static_cast<float>(DA_RESOLUTION);
 
-	// value round down version							// value round up version
-	if (r == 1)  // (mV)
-		i = static_cast<int>(floor(DA_VOLTAGE * p));	// static_cast<int>(ceil(DA_VOLTAGE * p))
-	else if (r == 2) // (%)
-		i = static_cast<int>(floor(100.f * p));			// static_cast<int>(ceil(100.f * p))
-	else // DA 
-		i = static_cast<int>(floor(DA_RESOLUTION * p));	// static_cast<int>(ceil(DA_RESOLUTION * p))
+		p = static_cast<float>(i / c);
 
-	_itoa(i, num, 10);
+		// value round down version							// value round up version
+		if (r == 1)  // (mV)
+			i = static_cast<int>(floor(DA_VOLTAGE * p));	// static_cast<int>(ceil(DA_VOLTAGE * p))
+		else if (r == 2) // (%)
+			i = static_cast<int>(floor(100.f * p));			// static_cast<int>(ceil(100.f * p))
+		else // DA 
+			i = static_cast<int>(floor(DA_RESOLUTION * p));	// static_cast<int>(ceil(DA_RESOLUTION * p))
 
-	SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+		_itoa(i, num, 10);
+
+		SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+	}
 
 	UpdateWindow();
 }
@@ -879,7 +1027,9 @@ static LRESULT CALLBACK MultisetDADialogProc(HWND hwnd, UINT msg, WPARAM wParam,
             break;
 		case WM_COMMAND:
 			h = (HWND)lParam;
-			if (wParam == BN_CLICKED) 
+			if((h == TimeTextbox || h == InitValTextbox) && HIWORD(wParam) == CBN_KILLFOCUS) {
+				UpdateWindow();
+			} else if (wParam == BN_CLICKED) 
 			{
 				UpdateWindow();
 			}
@@ -986,11 +1136,42 @@ static LRESULT CALLBACK NumberProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
     return CallWindowProc((WNDPROC)PrevNumProc, hwnd, msg, wParam, lParam);
 }
 
+//-----------------------------------------------------------------------------
+// Don't allow any characters other than 0-9 and a-z in the name.
+//-----------------------------------------------------------------------------
+static LRESULT CALLBACK NumberAlphaProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) 
+	{
+		case WM_GETDLGCODE:
+			{
+				MSG * m = (MSG *)lParam;
+			
+				if(m && m->message == WM_KEYDOWN && m->wParam == VK_RETURN)
+				{
+					UpdateWindow();
+					return 0;
+				}
+				//return DLGC_WANTALLKEYS;
+			}
+			break;
+		case WM_KILLFOCUS:	
+			UpdateWindow();
+			break;
+		case WM_CHAR:
+			if(!(isdigit(wParam) || isalpha(wParam) || /*wParam == '-' ||*/ wParam == '\b')) 
+		        return 0;
+			break;
+    }
+
+    return CallWindowProc((WNDPROC)PrevNumAlphaProc, hwnd, msg, wParam, lParam);
+}
+
 static void MakeControls(void)
 {
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Tipo de Rampa"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE | WS_TABSTOP,
-        7, 3, 110, 68, MultisetDADialog, NULL, Instance, NULL);
+        7, 3, 110, 90, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
     LinearRadio = CreateWindowEx(0, WC_BUTTON, _("Linear"),
@@ -1005,7 +1186,7 @@ static void MakeControls(void)
 
     HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Direção do Movimento"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        120, 3, 145, 68, MultisetDADialog, NULL, Instance, NULL);
+        120, 3, 145, 90, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper2);
 
     ForwardRadio = CreateWindowEx(0, WC_BUTTON, _("Avançar"),
@@ -1020,7 +1201,7 @@ static void MakeControls(void)
 
     HWND grouper3 = CreateWindowEx(0, WC_BUTTON, _("Variação Velocidade"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        268, 3, 140, 68, MultisetDADialog, NULL, Instance, NULL);
+        268, 3, 140, 90, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper3);
 
     SpeedUpRadio = CreateWindowEx(0, WC_BUTTON, _("Aceleração"),
@@ -1033,54 +1214,85 @@ static void MakeControls(void)
         279, 42, 120, 25, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(SpeedDownRadio); 
 
-    HWND GainTimeLabel = CreateWindowEx(0, WC_STATIC, _("Tempo (%):"),
+    SpeedCoincRadio = CreateWindowEx(0, WC_BUTTON, _("Coincidir"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
+        279, 64, 120, 25, MultisetDADialog, NULL, Instance, NULL);
+    NiceFont(SpeedCoincRadio); 
+
+    HWND GainTimeLabel = CreateWindowEx(0, WC_STATIC, _("Tempo:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        410, 20, 120, 21, MultisetDADialog, NULL, Instance, NULL);
+        380, 28, 120, 21, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(GainTimeLabel);
+
+    HWND GainTimeLabel2 = CreateWindowEx(0, WC_STATIC, "%",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        535, 28, 15, 21, MultisetDADialog, NULL, Instance, NULL);
+    NiceFont(GainTimeLabel2);
 
 	GainTimeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        535, 20, 25, 21, MultisetDADialog, NULL, Instance, NULL);
+        505, 28, 25, 21, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(GainTimeTextbox);
 
-    HWND GainResolLabel = CreateWindowEx(0, WC_STATIC, _("Resolução DA (%):"),
+    HWND GainResolLabel = CreateWindowEx(0, WC_STATIC, _("Resolução DA:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        410, 45, 120, 21, MultisetDADialog, NULL, Instance, NULL);
+        380, 60, 120, 21, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(GainResolLabel);
+
+    HWND GainResolLabel2 = CreateWindowEx(0, WC_STATIC, "%",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        535, 60, 15, 21, MultisetDADialog, NULL, Instance, NULL);
+    NiceFont(GainResolLabel2);
 
     GainInitValTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        535, 45, 25, 21, MultisetDADialog, NULL, Instance, NULL);
+        505, 60, 25, 21, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(GainInitValTextbox);
     
     HWND grouper4 = CreateWindowEx(0, WC_BUTTON, _("Curva de Ganho"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        411, 3, 155, 68, MultisetDADialog, NULL, Instance, NULL);
+        411, 3, 145, 90, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper4);
 
-    HWND timeLabel = CreateWindowEx(0, WC_STATIC, _("Tempo (ms):"),
+    HWND timeLabel = CreateWindowEx(0, WC_STATIC, _("Tempo:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        580, 20, 150, 21, MultisetDADialog, NULL, Instance, NULL);
+        560, 28, 55, 21, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(timeLabel);
 
-    TimeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        735, 20, 50, 21, MultisetDADialog, NULL, Instance, NULL);
+    HWND timeLabel2 = CreateWindowEx(0, WC_STATIC, "ms",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        765, 28, 30, 21, MultisetDADialog, NULL, Instance, NULL);
+    NiceFont(timeLabel2);
+
+    TimeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
+        620, 28, 140, 321, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(TimeTextbox);
+
+	LoadIOListToComboBox(TimeTextbox, IO_TYPE_GENERAL);
+	SendMessage(TimeTextbox, CB_SETDROPPEDWIDTH, 300, 0);
+
+    HWND ResolTypeLabel = CreateWindowEx(0, WC_STATIC, _("Valor:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        560, 63, 55, 21, MultisetDADialog, NULL, Instance, NULL);
+    NiceFont(ResolTypeLabel);
 
 	ResolTypeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        580, 43, 150, 100, MultisetDADialog, NULL, Instance, NULL);
+        725, 60, 60, 100, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(ResolTypeCombobox);
 
-    InitValTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        735, 45, 50, 21, MultisetDADialog, NULL, Instance, NULL);
+    InitValTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
+        620, 61, 100, 321, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(InitValTextbox);
+
+	LoadIOListToComboBox(InitValTextbox, IO_TYPE_GENERAL);
+	SendMessage(InitValTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     HWND grouper5 = CreateWindowEx(0, WC_BUTTON, _("Tamanho da Rampa"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        570, 3, 225, 68, MultisetDADialog, NULL, Instance, NULL);
+        560, 3, 235, 90, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper5);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
@@ -1095,16 +1307,10 @@ static void MakeControls(void)
 
     GraphBox = CreateWindowEx(0, WC_STATIC, NULL,
         WS_CHILD | SS_OWNERDRAW | WS_VISIBLE | CS_VREDRAW | WS_CLIPSIBLINGS | CS_HREDRAW | CS_PARENTDC,
-        7, 80, 864, 490, MultisetDADialog, NULL, Instance, NULL);
+        7, 100, 864, 490, MultisetDADialog, NULL, Instance, NULL);
 
 	PrevResolTypeProc = SetWindowLongPtr(ResolTypeCombobox, GWLP_WNDPROC, 
         (LONG_PTR)ResolTypeProc);
-
-    PrevNumProc = SetWindowLongPtr(TimeTextbox, GWLP_WNDPROC, 
-        (LONG_PTR)NumberProc);
-
-	PrevNumProc = SetWindowLongPtr(InitValTextbox, GWLP_WNDPROC, 
-        (LONG_PTR)NumberProc);
 
 	PrevNumProc = SetWindowLongPtr(GainInitValTextbox, GWLP_WNDPROC, 
         (LONG_PTR)NumberProc);
@@ -1120,10 +1326,15 @@ static void MakeControls(void)
 void ShowMultisetDADialog(ElemMultisetDA *l)
 {
 	char num[12];
+	char time_tmp   [MAX_NAME_LEN];
+	char initval_tmp[MAX_NAME_LEN];
 
 	current = *l;
 	time = current.time;
 	//initval = current.initval;
+
+	strcpy(time_tmp   , l->name );
+	strcpy(initval_tmp, l->name1);
 
 	MultisetDADialog = CreateWindowClient(0, "LDmicroDialog",
         _("Rampa de Aceleração/Desaceleração"), WS_OVERLAPPED | WS_SYSMENU | WS_EX_CONTROLPARENT,
@@ -1141,7 +1352,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 		SendMessage(ResolTypeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ResollTypeItens[i]));
 
 	SendMessage(ResolTypeCombobox, CB_SETCURSEL, current.type, 0);
-	SendMessage(ResolTypeCombobox, CB_SETDROPPEDWIDTH, 230, 0);
+	SendMessage(ResolTypeCombobox, CB_SETDROPPEDWIDTH, 150, 0);
 
 	_itoa(current.gaint, num, 10);
     SendMessage(GainTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
@@ -1149,11 +1360,8 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 	_itoa(current.gainr, num, 10);
     SendMessage(GainInitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 
-	_itoa(current.time, num, 10);
-    SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-
-	_itoa(current.initval, num, 10);
-    SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
+	SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(current.name));
+    SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(current.name1));
 
     if(current.linear) {
         SendMessage(LinearRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -1165,7 +1373,10 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
     } else {
         SendMessage(BackwardRadio, BM_SETCHECK, BST_CHECKED, 0);
     } 
-    if(current.speedup) {
+
+	if(current.StartFromCurrentValue) {
+        SendMessage(SpeedCoincRadio, BM_SETCHECK, BST_CHECKED, 0);
+	} else if(current.speedup) {
         SendMessage(SpeedUpRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else {
         SendMessage(SpeedDownRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -1208,8 +1419,11 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 		DispatchMessage(&msg);
     }
 
-    if(!DialogCancel) 
+    if(!DialogCancel &&
+			IsValidNameAndType(time_tmp   , current.name , _("Tempo"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(current.name), 0, 0) &&
+			IsValidNameAndType(initval_tmp, current.name1, _("Valor"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(current.name), 0, 0)) {
 		*l = current;
+	}
 
 	DiscardDeviceResources();
     EnableWindow(MainWindow, TRUE);

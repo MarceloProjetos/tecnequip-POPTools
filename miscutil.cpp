@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ldmicro.h"
+#include "poptools.h"
 
 // We should display messages to the user differently if we are running
 // interactively vs. in batch (command-line) mode.
@@ -29,12 +29,14 @@ HFONT MyFixedFont;
 //-----------------------------------------------------------------------------
 void dbp(char *str, ...)
 {
-    va_list f;
+#ifdef _DEBUG
+	va_list f;
     char buf[1024];
     va_start(f, str);
     vsprintf(buf, str, f);
     OutputDebugString(buf);
     OutputDebugString("\n");
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -643,7 +645,7 @@ bool IsValidVarName(char *name)
 {
 	bool first = true;
 
-	 if(name == NULL || !strlen(name)) return false; // If text in white retorn false
+	if(name == NULL || !strlen(name)) return false; // If text in white return false
 
 	while(*name) {
 		// If char isn't letter nor '_' or is number in the first position, returns false

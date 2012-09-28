@@ -83,6 +83,7 @@ topics\InstrMathAdd.htm
 topics\InstrMathSub.htm
 topics\InstrMathMult.htm
 topics\InstrMathDivide.htm
+topics\InstrMathSqrt.htm
 topics\InstrShiftRegister.htm
 topics\InstrLookUpTable.htm
 topics\InstrPieceWiseLinear.htm
@@ -117,11 +118,11 @@ img\ConfigRede.png
 img\ConfigPosicionamento.png
 
 Compile time: 0 minutes, 0 seconds
-201	Topics
-375	Local links
+103	Topics
+403	Local links
 0	Internet links
 3	Graphics
 
 
-Created f:\SVN\POPTools\Help\Ajuda.chm, 145,341 bytes
-Compression decreased file by 153,034 bytes.
+Created f:\SVN\POPTools\Help\Ajuda.chm, 144,173 bytes
+Compression decreased file by 160,514 bytes.

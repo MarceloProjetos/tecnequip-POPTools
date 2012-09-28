@@ -64,6 +64,7 @@
 #define INT_WRITE_SERVO_YASKAWA					33
 #define INT_CHECK_RTC							34
 #define INT_MULTISET_DA							35
+#define INT_SQRT								36
 
 #define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50
