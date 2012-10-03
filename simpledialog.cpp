@@ -510,41 +510,6 @@ void ShowUartDialog(int which, char *name)
 	}
 }
 
-void ShowMathDialog(int which, char *dest, char *op1, char *op2)
-{
-    char *l2, *title;
-    if(which == ELEM_ADD) {
-        l2 = "+ :";
-        title = _("Add");
-    } else if(which == ELEM_SUB) {
-        l2 = "- :";
-        title = _("Subtract");
-    } else if(which == ELEM_MUL) {
-        l2 = "* :";
-        title = _("Multiply");
-    } else if(which == ELEM_DIV) {
-        l2 = "/ :";
-        title = _("Divide");
-    } else oops();
-
-	char dest_tmp[MAX_NAME_LEN], op1_tmp[MAX_NAME_LEN], op2_tmp[MAX_NAME_LEN];
-    char *labels[] = { _("Destination:"), _("is set := :"), l2 };
-    char *dests[] = { dest_tmp, op1_tmp, op2_tmp };
-
-	strcpy(op1_tmp , op1 );
-	strcpy(op2_tmp , op2 );
-	strcpy(dest_tmp, dest);
-	ShowSimpleDialog(title, 3, labels, 0, 0x7, 0x7, 0x7, dests);
-
-	if(IsValidNameAndType(dest, dest_tmp, _("Destino"), VALIDATE_IS_VAR          , GetTypeFromName(dest_tmp), 0, 0) &&
-	   IsValidNameAndType(op1 , op1_tmp , NULL     , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op1_tmp ), 0, 0) &&
-	   IsValidNameAndType(op2 , op2_tmp , NULL     , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op2_tmp ), 0, 0)) {
-			strcpy(op1 , op1_tmp );
-			strcpy(op2 , op2_tmp );
-			strcpy(dest, dest_tmp);
-	}
-}
-
 void ShowShiftRegisterDialog(char *name, int *stages)
 {
     char stagesStr[20], name_tmp[MAX_NAME_LEN];

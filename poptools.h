@@ -1345,4 +1345,7 @@ int  SimulationServer_Start  (void);
 void SimulationServer_Stop   (void);
 void SimulationServer_Message(WPARAM wParam, LPARAM lParam);
 
+// mathdialog.cpp
+void ShowMathDialog(int which, char *dest, char *op1, char *op2);
+
 #endif

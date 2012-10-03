@@ -270,6 +270,7 @@
     <ClCompile Include="confdialog.cpp" />
     <ClCompile Include="contactsdialog.cpp" />
     <ClCompile Include="Firmware\App\modbus_rtu.c" />
+    <ClCompile Include="mathdialog.cpp" />
     <ClCompile Include="modbus_master.cpp" />
     <ClCompile Include="modbus_slave.cpp" />
     <ClCompile Include="multisetdadialog.cpp" />
