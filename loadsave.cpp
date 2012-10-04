@@ -967,6 +967,10 @@ BOOL SaveProjectToFile(char *filename)
 	char szfilename[MAX_PATH+1];
     FILE *f;
 
+#ifndef _DEBUG
+	Prog.settings.canSave = TRUE;
+#endif
+
 	// When the line bellow is active, saved files cannot be overwrited.
 //	Prog.settings.canSave=FALSE;
 

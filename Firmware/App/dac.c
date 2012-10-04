@@ -208,7 +208,7 @@ unsigned int DAC_CalcGain(unsigned char up, int calc_time, int calc_initval, uns
 #define DAC_CalcGainDown(calc_time,calc_initval,calc_gaint,calc_gainr,tm) DAC_CalcGain(0,calc_time,calc_initval,calc_gaint,calc_gainr,tm)
 #endif
 
-unsigned int DAC_CalcCurveUp(int time, int value, int tm)
+int DAC_CalcCurveUp(int time, int value, int tm)
 {
 	float factor = 0;
 
@@ -232,7 +232,7 @@ unsigned int DAC_CalcCurveUp(int time, int value, int tm)
 	return DAC_RESOLUTION + (value * 2 * factor) / 1000.0f;
 }
 
-unsigned int DAC_CalcCurveDown(int time, int value, int tm)
+int DAC_CalcCurveDown(int time, int value, int tm)
 {
 	float factor = 0;
 
@@ -287,14 +287,14 @@ void DAC_Cycle(void * pdata)
 		if(ramp_ON) {
 			if(local.up) {
 				if (local.linear)
-					DAC_Write(DAC_CalcGainUp   (local.time, offset ? offset : local.value, local.gaint, local.gainr, i) + start);
+					DAC_Write(DAC_CalcGainUp   (local.time, (offset||start) ? offset : local.value, local.gaint, local.gainr, i) + start);
 				else
-					DAC_Write(DAC_CalcCurveUp  (local.time, offset ? offset : local.value,                           i) + start);
+					DAC_Write(DAC_CalcCurveUp  (local.time, (offset||start) ? offset : local.value,                           i) + start);
 			} else {
 				if (local.linear)
-					DAC_Write(DAC_CalcGainDown (local.time, offset ? offset : local.value, local.gaint, local.gainr, i) + start);
+					DAC_Write(DAC_CalcGainDown (local.time, (offset||start) ? offset : local.value, local.gaint, local.gainr, i) + start);
 				else
-					DAC_Write(DAC_CalcCurveDown(local.time, offset ? offset : local.value,                           i) + start);
+					DAC_Write(DAC_CalcCurveDown(local.time, (offset||start) ? offset : local.value,                           i) + start);
 			}
 
 			i += DAC_CYCLE_INTERVAL;

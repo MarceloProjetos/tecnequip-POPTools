@@ -26,6 +26,7 @@ static HWND PinList;
 static HWND OkButton;
 static HWND CancelButton;
 static HWND BitCombobox;
+static HWND textLabelName;
 
 // stuff for the popup that lets you set the simulated value of an analog in
 static HWND AnalogSliderMain;
@@ -888,12 +889,17 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam,
             } else if(h == PinList && HIWORD(wParam) == LBN_DBLCLK) {
                 DialogDone = TRUE;
 			} else if (h == PinList && HIWORD(wParam) == LBN_SELCHANGE) {
-				char pin[16];
+				bool sem_bit;
+				char pin[16], name[MAX_NAME_LEN];
+				SendMessage(textLabelName, WM_GETTEXT, (WPARAM)MAX_NAME_LEN, (LPARAM)(name));
+
 				SendMessage(PinList, LB_GETTEXT,
 					(WPARAM)SendMessage(PinList, LB_GETCURSEL, 0, 0), (LPARAM)pin);
-				if(atoi(pin)<20)
+
+				sem_bit = atoi(pin)<20 || GetTypeFromName(name) == IO_TYPE_GENERAL;
+				if(sem_bit)
 					SendMessage(BitCombobox, CB_SETCURSEL, 0, 0);
-				EnableWindow(BitCombobox, atoi(pin)<20 ? FALSE : TRUE);
+				EnableWindow(BitCombobox, sem_bit ? FALSE : TRUE);
 			}
             break;
         }
@@ -940,8 +946,13 @@ static void MakeControls(void)
 {
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Assign:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        6, 1, 80, 17, IoDialog, NULL, Instance, NULL);
+        6, 1, 50, 17, IoDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
+
+    textLabelName = CreateWindowEx(0, WC_STATIC, "?",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        57, 1, 64, 17, IoDialog, NULL, Instance, NULL);
+    NiceFont(textLabelName);
 
     PinList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
@@ -999,8 +1010,7 @@ void ShowIoMapDialog(int item)
        Prog.io.assignment[item].type != IO_TYPE_READ_ENC &&
        Prog.io.assignment[item].type != IO_TYPE_RESET_ENC)
     {
-        Error(_("Can only assign pin number to input/output pins (Xname or "
-            "Yname or Aname)."));
+        Error(_("Can only assign pin number to input/output pins or general variable."));
         return;
     }
 
@@ -1043,7 +1053,7 @@ void ShowIoMapDialog(int item)
 		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
 
 	SendMessage(BitCombobox, CB_SETCURSEL, Prog.io.assignment[item].bit, 0);
-	if(Prog.io.assignment[item].pin >= 20) {
+	if(Prog.io.assignment[item].pin >= 20 && GetTypeFromName(Prog.io.assignment[item].name) != IO_TYPE_GENERAL) {
 		EnableWindow(BitCombobox, TRUE);
 	}
 
@@ -1126,7 +1136,9 @@ void ShowIoMapDialog(int item)
 cant_use_this_io:;
     }
 
-    EnableWindow(MainWindow, FALSE);
+	SendMessage(textLabelName, WM_SETTEXT, 0, (LPARAM)(Prog.io.assignment[item].name));
+
+	EnableWindow(MainWindow, FALSE);
     ShowWindow(IoDialog, TRUE);
     SetFocus(PinList);
 

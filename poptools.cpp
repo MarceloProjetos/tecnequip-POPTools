@@ -1212,7 +1212,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			Hdc = BeginPaint(hwnd, &ps);
 
-            EndPaint(DrawWindow, &ps);
+//            EndPaint(hwnd, &ps);
             return 1;
         }
 
