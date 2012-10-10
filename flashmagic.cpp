@@ -130,8 +130,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_connect(&options, sizeof(options));
 	if (presults->result != FM_OK)
 	{
-		// Sound rec_ok save in Sounds/rec_ok.wav
-		PlaySound(TEXT("Sounds/rec_erro.wav"),NULL, SND_FILENAME);
+		// Sound rec_ok save in Sounds/rec_erro.wav
+		PlaySound(MAKEINTRESOURCE(5001),GetModuleHandle(NULL), SND_RESOURCE);
 		switch (presults->result)
 		{
 		  case FM_ERROR_PORT:
@@ -160,8 +160,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_erase(FM_BLOCKS, 0x3FFFFFFF, 1, EraseProgress, 0, NULL);
 	if (presults->result != FM_OK)
 	{
-		// Sound rec_ok save in Sounds/rec_ok.wav
-		PlaySound(TEXT("Sounds/rec_erro.wav"),NULL, SND_FILENAME);
+		// Sound rec_ok save in Sounds/rec_erro.wav
+		PlaySound(MAKEINTRESOURCE(5001),GetModuleHandle(NULL), SND_RESOURCE);
 		switch (presults->result)
 		{
 			case FM_ERROR_CMD:
@@ -194,8 +194,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_program(hexFile, 0, 0, 0, 1, NULL, NULL, 0, FM_NORMAL, FM_PROGOPT_NONE, ProgramProgress, 0);
 	if (presults->result != FM_OK)
 	{
-		// Sound rec_ok save in Sounds/rec_ok.wav
-		PlaySound(TEXT("Sounds/rec_erro.wav"),NULL, SND_FILENAME);
+		// Sound rec_ok save in Sounds/rec_erro.wav
+		PlaySound(MAKEINTRESOURCE(5001),GetModuleHandle(NULL), SND_RESOURCE);
 		switch (presults->result)
 		{
 			case FM_ERROR_PROGRAM:
@@ -246,8 +246,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_verify(hexFile, 0, VerifyProgress, 0);
 	if (presults->result != FM_OK)
 	{
-		// Sound rec_ok save in Sounds/rec_ok.wav
-		PlaySound(TEXT("Sounds/rec_erro.wav"),NULL, SND_FILENAME);
+		// Sound rec_ok save in Sounds/rec_erro.wav
+		PlaySound(MAKEINTRESOURCE(5001),GetModuleHandle(NULL), SND_RESOURCE);
 
 		switch (presults->result)
 		{
@@ -361,11 +361,13 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 
 	// tell user we are done
 	StatusBarSetText(0, _("Gravação concluída com sucesso"));
-	
+
 	// Sound rec_ok save in Sounds/rec_ok.wav
-	PlaySound(TEXT("Sounds/rec_ok.wav"),NULL, SND_FILENAME);
-
+	PlaySound(MAKEINTRESOURCE(5000),GetModuleHandle(NULL), SND_RESOURCE);
+	
 	ProgramSuccessfulMessage(_("Gravação concluída com sucesso !"));
+	
 
+	
 	return TRUE;
 }

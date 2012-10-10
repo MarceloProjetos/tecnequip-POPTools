@@ -26,4 +26,9 @@
 
 IDB_SPLASH              BITMAP                  "splash.bmp"
 
-
+/////////////////////////////////////////////////////////////////////////////
+//
+// Sound
+//
+IDB_WAVE_REC_OK                    WAVE                    "Sounds/rec_ok.wav"
+IDB_WAVE_REC_ERRO                  WAVE                    "Sounds/rec_erro.wav"

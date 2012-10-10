@@ -5,6 +5,9 @@
 #define IDB_SPLASH                      101
 #define IDI_ICON1                       102
 
+#define IDB_WAVE_REC_OK     5000
+#define IDB_WAVE_REC_ERRO   5001
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
