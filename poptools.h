@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <windowsx.h>
+#include "mmsystem.h"
 #include <comutil.h>
 #include <ShlObj.h>
 #include <ShellAPI.h>

@@ -72,7 +72,7 @@ int VerifyProgress(int status, unsigned long value, unsigned long value2, void *
 
 	if (value)
 		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Verificando... %d%% concluído !"), (unsigned int)(((float)value / (float)totalWrite) * 100));
-	else
+	else 
 		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Verificação concluída com sucesso !"));
 
 	StatusBarSetText(0, text);
@@ -93,7 +93,6 @@ int ProgramProgress(int status, unsigned long value, unsigned long value2, void 
 		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Gravando... %d%% concluído !"), 100 - (unsigned int)(((float)value / (float)totalWrite) * 100));
 	else
 		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), _("Gravação concluída com sucesso !"));
-
 	StatusBarSetText(0, text);
 
 	return 1;
@@ -131,6 +130,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_connect(&options, sizeof(options));
 	if (presults->result != FM_OK)
 	{
+		// Sound rec_ok save in Sounds/rec_ok.wav
+		PlaySound(TEXT("Sounds/rec_erro.wav"),NULL, SND_FILENAME);
 		switch (presults->result)
 		{
 		  case FM_ERROR_PORT:
@@ -150,7 +151,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 				break;
 			default:
 				Error(_("Ocorreu um erro desconhecido ao conectar !"));
-				break;
+			break;
 		}
 		return FALSE;
 	}
@@ -159,6 +160,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_erase(FM_BLOCKS, 0x3FFFFFFF, 1, EraseProgress, 0, NULL);
 	if (presults->result != FM_OK)
 	{
+		// Sound rec_ok save in Sounds/rec_ok.wav
+		PlaySound(TEXT("Sounds/rec_erro.wav"),NULL, SND_FILENAME);
 		switch (presults->result)
 		{
 			case FM_ERROR_CMD:
@@ -191,6 +194,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_program(hexFile, 0, 0, 0, 1, NULL, NULL, 0, FM_NORMAL, FM_PROGOPT_NONE, ProgramProgress, 0);
 	if (presults->result != FM_OK)
 	{
+		// Sound rec_ok save in Sounds/rec_ok.wav
+		PlaySound(TEXT("Sounds/rec_erro.wav"),NULL, SND_FILENAME);
 		switch (presults->result)
 		{
 			case FM_ERROR_PROGRAM:
@@ -241,6 +246,9 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_verify(hexFile, 0, VerifyProgress, 0);
 	if (presults->result != FM_OK)
 	{
+		// Sound rec_ok save in Sounds/rec_ok.wav
+		PlaySound(TEXT("Sounds/rec_erro.wav"),NULL, SND_FILENAME);
+
 		switch (presults->result)
 		{
 			case FM_ERROR_VERIFY:
@@ -353,6 +361,9 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 
 	// tell user we are done
 	StatusBarSetText(0, _("Gravação concluída com sucesso"));
+	
+	// Sound rec_ok save in Sounds/rec_ok.wav
+	PlaySound(TEXT("Sounds/rec_ok.wav"),NULL, SND_FILENAME);
 
 	ProgramSuccessfulMessage(_("Gravação concluída com sucesso !"));
 
