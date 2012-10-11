@@ -90,6 +90,9 @@ typedef SDWORD SWORD;
 
 #define DEFAULT_CPU "NXP LPC1768 LQFP100"
 
+// Color Visual Style
+#define CORES_CONSOLE 1
+
 // Size of the font that we will use to draw the ladder diagrams, in pixels
 #define FONT_WIDTH   7
 #define FONT_HEIGHT 13

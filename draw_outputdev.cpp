@@ -379,17 +379,18 @@ void PaintWindow(void)
 //-----------------------------------------------------------------------------
 static void SetSyntaxHighlightingColours(void)
 {
-    static const SyntaxHighlightingColours Schemes[] = {
+#if CORES_CONSOLE
+     static const SyntaxHighlightingColours Schemes[] = {
         {
-            RGB(0, 0, 0),           // bg
+			RGB(0, 0, 0),           // bg
             RGB(255, 255, 225),     // def
-            RGB(255, 110, 90),      // selected
+            RGB(255, 90, 90),       // selected
             RGB(255, 150, 90),      // op
             RGB(255, 255, 100),     // punct
             RGB(255, 160, 160),     // lit
             RGB(120, 255, 130),     // name
             RGB(130, 130, 130),     // rungNum
-            RGB(130, 130, 245),     // comment
+            RGB(130, 130, 255),     // comment
 
             RGB(255, 255, 255),     // bus
 
@@ -401,6 +402,30 @@ static void SetSyntaxHighlightingColours(void)
             RGB(255, 150, 150),     // simBusLeft
             RGB(150, 150, 255),     // simBusRight
         },
+#else  
+	static const SyntaxHighlightingColours Schemes[] = {
+        {
+			 RGB(250, 250, 255),    // bg
+            RGB(0, 0, 255),         // def
+            RGB(255, 0, 0),         // selected
+            RGB(255, 0, 0),         // op
+            RGB(0, 0, 0),           // punct
+            RGB(0, 170, 220),       // lit
+            RGB(40, 180, 0),        // name
+            RGB(20, 20, 255),       // rungNum
+            RGB(40, 200, 0),        // comment
+
+            RGB(0, 0, 255),         // bus
+
+            RGB(10, 10, 38),        // simBg
+            RGB(44, 231, 148),      // simRungNum
+            RGB(100, 130, 130),     // simOff
+            RGB(255, 150, 150),     // simOn
+
+            RGB(255, 150, 150),     // simBusLeft
+            RGB(150, 150, 255),     // simBusRight            
+        },
+#endif
     };
 
     memcpy(&HighlightColours, &Schemes[0], sizeof(Schemes[0]));
