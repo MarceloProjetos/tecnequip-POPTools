@@ -732,6 +732,21 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_WRITE_YASKAWA	 0x00400000
 #define IO_TYPE_INTERNAL_FLAG	 0x80000000
 
+#define IO_TYPE_VAR             (IO_TYPE_GENERAL          | \
+								 IO_TYPE_READ_ADC         | \
+								 IO_TYPE_COUNTER          | \
+								 IO_TYPE_READ_ENC         | \
+								 IO_TYPE_READ_USS         | \
+								 IO_TYPE_WRITE_USS        | \
+								 IO_TYPE_SET_DA           | \
+								 IO_TYPE_READ_MODBUS      | \
+								 IO_TYPE_WRITE_MODBUS     | \
+								 IO_TYPE_READ_MODBUS_ETH  | \
+								 IO_TYPE_WRITE_MODBUS_ETH | \
+								 IO_TYPE_READ_YASKAWA     | \
+								 IO_TYPE_WRITE_YASKAWA      \
+								)
+
     unsigned int  type;
 #define NO_PIN_ASSIGNED         0
     int         pin;
@@ -1326,6 +1341,12 @@ void ComplainAboutBaudRateError(int divisor, double actual, double err);
 void ComplainAboutBaudRateOverflow(void);
 #define CompileError() longjmp(CompileErrorBuf, 1)
 extern jmp_buf CompileErrorBuf;
+
+#define DIAGRAM_VALIDATION_OK      0
+#define DIAGRAM_VALIDATION_WARNING 1
+#define DIAGRAM_VALIDATION_ERROR   2
+
+extern int ValidateDiagram(void);
 
 // intcode.cpp
 void IntDumpListing(char *outFile);

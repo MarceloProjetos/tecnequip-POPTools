@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "poptools.h"
+#include "intcode.h"
 
 // If we encounter an error while compiling then it's convenient to break
 // out of the possibly-deeply-recursed function we're in.
@@ -319,6 +320,49 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput)
             }
         }
     }
+}
+
+int ValidateDiagram(void)
+{
+	char msg_error[100] = "", msg_warning[100] = "";
+	int i, ret = DIAGRAM_VALIDATION_OK;
+
+	// Validate I/O Pin Assignment
+	// Only if not in Simulation Mode
+	if(!InSimulationMode) {
+		for(i = 0; i < Prog.io.count; i++) {
+			switch(Prog.io.assignment[i].type) {
+			case IO_TYPE_READ_ADC:
+				if(Prog.io.assignment[i].pin == IO_TYPE_PENDING) {
+					Error(_("Variável A/D '%s' deve ser associado a um canal válido!"), Prog.io.assignment[i].name);
+					ret = DIAGRAM_VALIDATION_ERROR;
+				}
+			}
+		}
+	}
+
+	// Validate Generated IntCode
+	if(ret != DIAGRAM_VALIDATION_ERROR) {
+		for(i = 0; i < IntCodeLen; i++) {
+			if(IntCode[i].op == INT_READ_ADC && GetTypeFromName(IntCode[i].name1) != IO_TYPE_READ_ADC) {
+				sprintf(msg_error, "Variável A/D '%s' usada em lógica incompatível!", IntCode[i].name1);
+			}
+
+			if(msg_error[0]) {
+				Error(_(msg_error));
+				ret = DIAGRAM_VALIDATION_ERROR;
+				break;
+			}
+
+			if(msg_warning[0]) {
+				Error(_(msg_warning));
+				ret = DIAGRAM_VALIDATION_WARNING;
+				msg_warning[0] = '\0';
+			}
+		}
+	}
+
+	return ret;
 }
 
 //-----------------------------------------------------------------------------

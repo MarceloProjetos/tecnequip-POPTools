@@ -239,7 +239,7 @@ void CheckWP(char *name, int val)
 	if(NeedStop) {
 		PauseSimulation();
 		DescribeForIoList(wpval, GetTypeFromName(name), desc);
-		Error("Simulação interrompida!\n\n%s = %s", name, desc);
+		Error(_("Simulação interrompida!\n\n%s = %s"), name, desc);
 	}
 }
 

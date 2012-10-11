@@ -23,6 +23,7 @@ static BOOL DialogCancel;
 static HWND IoDialog;
 
 static HWND PinList;
+static HWND lblBit;
 static HWND OkButton;
 static HWND CancelButton;
 static HWND BitCombobox;
@@ -896,7 +897,7 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam,
 				SendMessage(PinList, LB_GETTEXT,
 					(WPARAM)SendMessage(PinList, LB_GETCURSEL, 0, 0), (LPARAM)pin);
 
-				sem_bit = atoi(pin)<20 || GetTypeFromName(name) == IO_TYPE_GENERAL;
+				sem_bit = atoi(pin)<20;
 				if(sem_bit)
 					SendMessage(BitCombobox, CB_SETCURSEL, 0, 0);
 				EnableWindow(BitCombobox, sem_bit ? FALSE : TRUE);
@@ -959,10 +960,10 @@ static void MakeControls(void)
         LBS_NOTIFY, 6, 18, 115, 320, IoDialog, NULL, Instance, NULL);
     FixedFont(PinList);
 	
-    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
+    lblBit = CreateWindowEx(0, WC_STATIC, _("Bit:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         6, 327, 35, 21, IoDialog, NULL, Instance, NULL);
-    NiceFont(textLabel2);
+    NiceFont(lblBit);
 
 	BitCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST | WS_DISABLED,
@@ -971,12 +972,12 @@ static void MakeControls(void)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        10, 365, 105, 23, IoDialog, NULL, Instance, NULL); 
+        10, 365, 107, 23, IoDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        10, 396, 105, 23, IoDialog, NULL, Instance, NULL); 
+        10, 396, 107, 23, IoDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 }
 
@@ -1053,8 +1054,21 @@ void ShowIoMapDialog(int item)
 		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
 
 	SendMessage(BitCombobox, CB_SETCURSEL, Prog.io.assignment[item].bit, 0);
-	if(Prog.io.assignment[item].pin >= 20 && GetTypeFromName(Prog.io.assignment[item].name) != IO_TYPE_GENERAL) {
+	if(Prog.io.assignment[item].pin >= 20) {
 		EnableWindow(BitCombobox, TRUE);
+	}
+
+	if(Prog.io.assignment[item].type != IO_TYPE_DIG_INPUT && Prog.io.assignment[item].type != IO_TYPE_DIG_OUTPUT) {
+		ShowWindow(BitCombobox, 0);
+		ShowWindow(lblBit     , 0);
+
+		RECT r, rOK;
+		GetWindowRect(PinList , &r  );
+		GetWindowRect(OkButton, &rOK);
+
+		r.bottom = rOK.top - 6;
+
+		SetWindowPos(PinList, NULL, 6, 18, r.right - r.left, r.bottom - r.top, SWP_NOZORDER);
 	}
 
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));

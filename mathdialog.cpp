@@ -24,7 +24,7 @@ static void MakeControls(char *op) // op: text for current operator
         7, 30, 90, 221, MathDialog, NULL, Instance, NULL);
     FixedFont(DestTextbox);
 
-	LoadIOListToComboBox(DestTextbox, IO_TYPE_ALL);
+	LoadIOListToComboBox(DestTextbox, IO_TYPE_VAR);
 	SendMessage(DestTextbox, CB_SETDROPPEDWIDTH, 200, 0);
 
 	// Text equal ( = )
@@ -44,7 +44,7 @@ static void MakeControls(char *op) // op: text for current operator
         124, 30, 90, 221, MathDialog, NULL, Instance, NULL);
     FixedFont(Op1Textbox);
 
-	LoadIOListToComboBox(Op1Textbox, IO_TYPE_ALL);
+	LoadIOListToComboBox(Op1Textbox, IO_TYPE_VAR);
 	SendMessage(Op1Textbox, CB_SETDROPPEDWIDTH, 200, 0);
 
 	// Text between operators
@@ -64,7 +64,7 @@ static void MakeControls(char *op) // op: text for current operator
         240, 30, 90, 221, MathDialog, NULL, Instance, NULL);
     FixedFont(Op2Textbox);
 
-	LoadIOListToComboBox(Op2Textbox, IO_TYPE_ALL);
+	LoadIOListToComboBox(Op2Textbox, IO_TYPE_VAR);
 	SendMessage(Op2Textbox, CB_SETDROPPEDWIDTH, 200, 0);
 
 	// Dialog buttons
@@ -81,6 +81,7 @@ static void MakeControls(char *op) // op: text for current operator
 
 void ShowMathDialog(int which, char *dest, char *op1, char *op2)
 {
+	PlaySound(MAKEINTRESOURCE(5000),GetModuleHandle(NULL), SND_RESOURCE);
     char *l2, *title;
     if(which == ELEM_ADD) {
         l2 = "+";

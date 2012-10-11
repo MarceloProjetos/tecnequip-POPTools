@@ -905,6 +905,10 @@ DWORD CompileAnsiCToGCC(char *dest)
 	char szAppHeader[MAX_PATH]		= "";
 	char szAppSourceFile[MAX_PATH]	= "";
 
+	if(ValidateDiagram() == DIAGRAM_VALIDATION_ERROR) {
+		return 1;
+	}
+
 	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
 
 	GetTempPath(sizeof(szTempPath), szTempPath);

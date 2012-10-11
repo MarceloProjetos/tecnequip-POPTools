@@ -1656,6 +1656,9 @@ static LangTable LangPtTable[] = {
 	{ "", "x 4" },
 	{ "", "xvar" },
 	{ "", "yvar" },
+	{ "Operator 1", "Operador 1" },
+	{ "Operator 2", "Operador 2" },
+	{ "Square Root", "Raiz Quadrada" },
 };
 static Lang LangPt = {
     LangPtTable, sizeof(LangPtTable)/sizeof(LangPtTable[0])

@@ -1269,7 +1269,7 @@ static void MakeControls(void)
         620, 28, 140, 321, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(TimeTextbox);
 
-	LoadIOListToComboBox(TimeTextbox, IO_TYPE_GENERAL);
+	LoadIOListToComboBox(TimeTextbox, IO_TYPE_VAR);
 	SendMessage(TimeTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     HWND ResolTypeLabel = CreateWindowEx(0, WC_STATIC, _("Valor:"),

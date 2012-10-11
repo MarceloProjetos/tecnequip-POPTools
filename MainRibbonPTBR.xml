@@ -766,9 +766,9 @@
     <Command Name         = "InstrTimerONRet"
                Symbol     = "cmdInstrTimerONRet"
                Id         = "30506"
-               LabelTitle = "Atraso Retentivo para Ligar">
-      <Command.TooltipTitle      >Atraso Retentivo para Ligar (T)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir temporizador retentivo com atraso para ligar na posição do cursor.</Command.TooltipDescription>
+               LabelTitle = "Atraso com Memória">
+      <Command.TooltipTitle      >Atraso com Memória (T)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir atraso com memória na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrTimerONRetHH.bmp"/>
       </Command.LargeImages>
@@ -779,9 +779,9 @@
     <Command Name         = "ExampleTimerONRet"
                Symbol     = "cmdExampleTimerONRet"
                Id         = "31506"
-               LabelTitle = "Atraso Retentivo para Ligar">
-      <Command.TooltipTitle      >Atraso Retentivo para Ligar (T)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução temporizador retentivo com atraso para ligar.</Command.TooltipDescription>
+               LabelTitle = "Atraso com Memória">
+      <Command.TooltipTitle      >Atraso com Memória (T)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução atraso com memória.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrTimerONRetHH.bmp"/>
       </Command.LargeImages>
