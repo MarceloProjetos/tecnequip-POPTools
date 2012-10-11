@@ -409,9 +409,9 @@ static void SetSyntaxHighlightingColours(void)
             RGB(0, 0, 255),         // def
             RGB(255, 0, 0),         // selected
             RGB(255, 0, 0),         // op
-            RGB(0, 0, 0),           // punct
-            RGB(0, 170, 220),       // lit
-            RGB(40, 180, 0),        // name
+            RGB(250, 100, 0),       // punct
+            RGB(190, 0, 250),       // lit
+            RGB(30, 130, 10),       // name
             RGB(20, 20, 255),       // rungNum
             RGB(40, 200, 0),        // comment
 
@@ -442,9 +442,13 @@ void InitForDrawing(void)
     FixedWidthFont = CreateFont(
         FONT_HEIGHT, FONT_WIDTH,
         0, 0,
+#if CORES_CONSOLE
         FW_REGULAR,
-        FALSE,
-        FALSE,
+#else
+		FW_MEDIUM,
+#endif
+        FALSE, // Italic 
+        FALSE, // Underline
         FALSE,
         ANSI_CHARSET,
         OUT_DEFAULT_PRECIS,
@@ -456,9 +460,13 @@ void InitForDrawing(void)
     FixedWidthFontBold = CreateFont(
         FONT_HEIGHT, FONT_WIDTH,
         0, 0,
-        FW_REGULAR, // the bold text renders funny under Vista
-        FALSE,
-        FALSE,
+#if CORES_CONSOLE
+        FW_REGULAR,
+#else
+		FW_MEDIUM,
+#endif
+        FALSE, // Italic 
+        FALSE, // Underline
         FALSE,
         ANSI_CHARSET,
         OUT_DEFAULT_PRECIS,

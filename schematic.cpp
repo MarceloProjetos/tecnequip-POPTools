@@ -886,7 +886,7 @@ void ToggleBreakPoint(int y)
     gy += ScrollYOffset;
 
 	rung = FindRung(0, gy);
-	if(rung >= 0)
+	if(rung >= 0 && (Prog.rungs[rung]->contents[0].which != ELEM_COMMENT || Prog.rungHasBreakPoint[rung]))
 		Prog.rungHasBreakPoint[rung] = !Prog.rungHasBreakPoint[rung];
 }
 
