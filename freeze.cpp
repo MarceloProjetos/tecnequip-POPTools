@@ -1,12 +1,6 @@
-/*
- * A library for storing parameters in the registry.
- *
- */
-#include <windows.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "poptools.h"
 
-/*
+/*A library for storing parameters in the registry.
  * store a window's position in the registry, or fail silently if the registry calls don't work
  */
 void FreezeWindowPosF(HWND hwnd, char *subKey, char *name)

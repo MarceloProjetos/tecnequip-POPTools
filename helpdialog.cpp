@@ -1,9 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-#include <richedit.h>
-
 #include "poptools.h"
 
 extern char *HelpText[];
@@ -208,7 +202,7 @@ static LRESULT CALLBACK HelpProc(HWND hwnd, UINT msg, WPARAM wParam,
 //-----------------------------------------------------------------------------
 // Create the class for the help window.
 //-----------------------------------------------------------------------------
-static void MakeClass(void)
+/*static void MakeClass(void)
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
@@ -219,7 +213,7 @@ static void MakeClass(void)
     wc.lpfnWndProc      = (WNDPROC)HelpProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.lpszClassName    = "LDmicroHelp";
+    wc.lpszClassName    = "POPToolsHelp";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -240,8 +234,8 @@ void ShowHelpDialog(BOOL about)
 
     MakeClass();
 
-    char *s = about ? _("About LDmicro") : _("LDmicro Help");
-    HelpDialog[a] = CreateWindowEx(0, "LDmicroHelp", s,
+    char *s = about ? _("About LDmicro") : _("POPTools Help");
+    HelpDialog[a] = CreateWindowEx(0, "POPToolsHelp", s,
         WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX |
         WS_SIZEBOX,
         100, 100, 650, 300+10*FONT_HEIGHT, NULL, NULL, Instance, NULL);
@@ -260,7 +254,7 @@ void ShowHelpDialog(BOOL about)
     Resizing(&r, WMSZ_TOP);
     SetWindowPos(HelpDialog[a], HWND_TOP, r.left, r.top, r.right - r.left, 
         r.bottom - r.top, 0);
-}
+}*/
 
 void OpenCHM(unsigned int hID)
 {

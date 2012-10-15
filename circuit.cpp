@@ -1,9 +1,5 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
 #include "poptools.h"
+#include <time.h>
 
 static ElemSubcktSeries *LoadSeriesFromFile(FILE *f);
 

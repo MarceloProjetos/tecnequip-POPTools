@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND FARDialog;
@@ -137,7 +132,7 @@ bool ShowFARDialog()
 {
 	changed = false;
 
-    FARDialog = CreateWindowClient(0, "LDmicroDialog",
+    FARDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Localizar e Substituir"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 296, 135, MainWindow, NULL, Instance, NULL);
 

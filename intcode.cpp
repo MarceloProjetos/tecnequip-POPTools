@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-
 #include "poptools.h"
 #include "intcode.h"
 

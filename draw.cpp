@@ -1,7 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "poptools.h"
 
 // Number of drawing columns (leaf element units) available. We want to

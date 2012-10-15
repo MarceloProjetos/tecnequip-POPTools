@@ -428,7 +428,9 @@
     <None Include="splash.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="ldmicro.exe.manifest" />
+    <Manifest Include="poptools.exe.manifest">
+      <SubType>Designer</SubType>
+    </Manifest>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

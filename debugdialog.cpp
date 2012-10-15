@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND DebugDialog;

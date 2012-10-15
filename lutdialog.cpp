@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND LutDialog;
@@ -350,7 +345,7 @@ void ShowLookUpTableDialog(ElemLeaf *l)
 
     // Now create the dialog's fixed controls, plus the changing (depending
     // on show style/entry count) controls for the initial configuration.
-    LutDialog = CreateWindowClient(0, "LDmicroDialog",
+    LutDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Look-Up Table"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 320, 375, MainWindow, NULL, Instance, NULL);
     MakeFixedControls(FALSE);
@@ -482,7 +477,7 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
 
     // Now create the dialog's fixed controls, plus the changing (depending
     // on show style/entry count) controls for the initial configuration.
-    LutDialog = CreateWindowClient(0, "LDmicroDialog",
+    LutDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Piecewise Linear Table"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 320, 375, MainWindow, NULL, Instance, NULL);
     MakeFixedControls(TRUE);

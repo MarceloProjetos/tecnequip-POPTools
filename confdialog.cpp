@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 // Quantidade de paginas do TabControl da janela de Configuracao
@@ -421,7 +416,7 @@ bool ShowConfDialog(bool NetworkSection)
 	bool changed = false;
 	unsigned int i, ipaddress, ipmask, ipgw, ipdns;
     // The window's height will be resized later, to fit the explanation text.
-    ConfDialog = CreateWindowClient(0, "LDmicroDialog", _("PLC Configuration"),
+    ConfDialog = CreateWindowClient(0, "POPToolsDialog", _("PLC Configuration"),
         WS_OVERLAPPED | WS_SYSMENU,
         150, 160, 393, 435, MainWindow, NULL, Instance, NULL); //The cofig windows size
 

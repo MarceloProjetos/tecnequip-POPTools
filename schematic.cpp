@@ -1,7 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "poptools.h"
 
 // I/O that we have seen recently, so that we don't forget pin assignments

@@ -1,9 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-#include <math.h>
-
 #include "poptools.h"
 
 #define MARGIN		25.0f
@@ -1336,7 +1330,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 	strcpy(time_tmp   , l->name );
 	strcpy(initval_tmp, l->name1);
 
-	MultisetDADialog = CreateWindowClient(0, "LDmicroDialog",
+	MultisetDADialog = CreateWindowClient(0, "POPToolsDialog",
         _("Rampa de Aceleração/Desaceleração"), WS_OVERLAPPED | WS_SYSMENU | WS_EX_CONTROLPARENT,
         100, 100, 880, 600, MainWindow, NULL, Instance, NULL);
 

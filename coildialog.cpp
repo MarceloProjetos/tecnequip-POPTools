@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND CoilDialog;
@@ -153,7 +148,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
 	unsigned int type;
 	char name_tmp[MAX_NAME_LEN];
 
-	CoilDialog = CreateWindowClient(0, "LDmicroDialog",
+	CoilDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Coil"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 359, 135, MainWindow, NULL, Instance, NULL);
     RECT r;

@@ -1,7 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "poptools.h"
 
 // We should display messages to the user differently if we are running
@@ -84,7 +80,7 @@ void Error(char *str, ...)
         WriteFile(h, str, strlen(str), &written, NULL);
     } else {
         HWND h = GetForegroundWindow();
-        MessageBox(h, buf, _("LDmicro Error"), MB_OK | MB_ICONERROR);
+        MessageBox(h, buf, _("POPTools Error"), MB_OK | MB_ICONERROR);
     }
 }
 
@@ -290,7 +286,7 @@ void MakeDialogBoxClass(void)
     wc.lpfnWndProc      = (WNDPROC)DialogProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "LDmicroDialog";
+    wc.lpszClassName    = "POPToolsDialog";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),

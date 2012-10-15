@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND ContactsDialog;
@@ -145,7 +140,7 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 	char name_tmp[MAX_NAME_LEN];
 	unsigned int type;
 
-	ContactsDialog = CreateWindowClient(0, "LDmicroDialog",
+	ContactsDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Contacts"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 404, 115, MainWindow, NULL, Instance, NULL);
 

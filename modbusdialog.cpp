@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND SimpleDialog;
@@ -149,7 +144,7 @@ static void MakeControls(void)
 void ShowModbusDialog(char *name, int *id, int *address, bool *set, bool *retransmitir)
 {
 	char name_temp[MAX_NAME_LEN];
-    SetBitDialog = CreateWindowClient(0, "LDmicroDialog",
+    SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Modbus"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 404, 115, MainWindow, NULL, Instance, NULL);
 

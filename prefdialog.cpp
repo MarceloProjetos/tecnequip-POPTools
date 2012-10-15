@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND PrefDialog;
@@ -135,7 +130,7 @@ void ShowPrefDialog(void)
 		{  0, NULL         }
 	};
 
-	PrefDialog = CreateWindowClient(0, "LDmicroDialog",
+	PrefDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Preferências"), WS_OVERLAPPED | WS_SYSMENU,
         150, 160, 290, 250, MainWindow, NULL, Instance, NULL);
 

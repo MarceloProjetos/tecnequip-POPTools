@@ -1,7 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND ResetDialog;
@@ -60,7 +56,7 @@ void ShowResetDialog(char *name)
 {
 	char name_tmp[MAX_NAME_LEN];
 
-    ResetDialog = CreateWindowClient(0, "LDmicroDialog",
+    ResetDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Reset"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 276, 75, MainWindow, NULL, Instance, NULL);
 

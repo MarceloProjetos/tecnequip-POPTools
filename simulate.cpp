@@ -1,11 +1,5 @@
-#include <windows.h>
-#include <commctrl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <time.h>
-
 #include "poptools.h"
+#include <time.h>
 #include "intcode.h"
 #include "freeze.h"
 
@@ -1563,7 +1557,7 @@ void ShowUartSimulationWindow(void)
     wc.lpfnWndProc      = (WNDPROC)UartSimulationProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "LDmicroUartSimulationWindow";
+    wc.lpszClassName    = "POPToolsUartSimulationWindow";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
 
@@ -1586,13 +1580,13 @@ void ShowUartSimulationWindow(void)
     //if(TerminalY >= (DWORD)(r.bottom - 10)) TerminalY = 100;
 
     //UartSimulationWindow = CreateWindowClient(WS_EX_TOOLWINDOW |
-    //    WS_EX_APPWINDOW, "LDmicroUartSimulationWindow",
+    //    WS_EX_APPWINDOW, "POPToolsUartSimulationWindow",
     //    "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX,
     //    TerminalX, TerminalY, TerminalW, TerminalH,
     //    MainWindow, NULL, Instance, NULL);
 
     UartSimulationWindow = CreateWindowClient(/*WS_EX_TOOLWINDOW |
-        WS_EX_APPWINDOW, "LDmicroUartSimulationWindow",
+        WS_EX_APPWINDOW, "POPToolsUartSimulationWindow",
         "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX*/
 		WS_EX_CLIENTEDGE, WC_LISTVIEW, "", WS_CHILD |
         LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS | WS_TABSTOP |

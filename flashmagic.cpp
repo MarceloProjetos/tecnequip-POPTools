@@ -1,16 +1,7 @@
-#include <windows.h>
-#include <Shlobj.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <time.h>
-
 #include "poptools.h"
 #include "intcode.h"
-
+#include <time.h>
 #include "flashmagicarmcortex.h"
-
-#include <Strsafe.h>
 
 static unsigned long totalWrite = 0;
 

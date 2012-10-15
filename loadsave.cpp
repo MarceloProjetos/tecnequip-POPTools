@@ -1,7 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "poptools.h"
 
 #define USE_BINFMT 1
@@ -449,7 +445,7 @@ BOOL LoadProjectFromFile(char *filename)
 					fclose(f);
 					return FALSE;
 				}
-			} else if(sscanf(line, "LDmicro0.%d", &version)) {
+			} else if(sscanf(line, "POPTools0.%d", &version)) {
 				if (version < current_version)
 					Error(_("Aviso: O arquivo deste projeto é de uma versão anterior e será atualizado para a versão atual quando for gravado !"));
 				else if (version > current_version)

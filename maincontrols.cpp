@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <commctrl.h>
-#include <commdlg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include "poptools.h"
 
 // scrollbars for the ladder logic area
@@ -190,12 +185,12 @@ void UpdateMainWindowTitleBar(void)
     char line[MAX_PATH+100];
     if(InSimulationMode) {
         if(RealTimeSimulationRunning) {
-            strcpy(line, _("LDmicro - Simulation (Running)"));
+            strcpy(line, _("POPTools - Simulation (Running)"));
         } else {
-            strcpy(line, _("LDmicro - Simulation (Stopped)"));
+            strcpy(line, _("POPTools - Simulation (Stopped)"));
         }
     } else {
-        strcpy(line, _("LDmicro - Program Editor"));
+        strcpy(line, _("POPTools - Program Editor"));
     }
     if(strlen(CurrentSaveFile) > 0) {
         sprintf(line+strlen(line), " - %d.%d.%d.%d - %s%s", 

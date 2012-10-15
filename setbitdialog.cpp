@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND SetBitDialog;
@@ -94,7 +89,7 @@ void ShowSetBitDialog(char *name, int * set, int * bit)
 {
 	char name_tmp[MAX_NAME_LEN];
 
-    SetBitDialog = CreateWindowClient(0, "LDmicroDialog",
+    SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Set Bit"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 404, 75, MainWindow, NULL, Instance, NULL);
 

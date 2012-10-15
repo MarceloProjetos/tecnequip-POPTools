@@ -1,10 +1,5 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-#include <time.h>
-
 #include "poptools.h"
+#include <time.h>
 
 static HWND RTCDialog;
 
@@ -237,7 +232,7 @@ void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * m
 	t = localtime(&now);
 	y = t->tm_year + 1900;
 
-    RTCDialog = CreateWindowClient(0, "LDmicroDialog",
+    RTCDialog = CreateWindowClient(0, "POPToolsDialog",
         _("RTC"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 363, 180, MainWindow, NULL, Instance, NULL);
 

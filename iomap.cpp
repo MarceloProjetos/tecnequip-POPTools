@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <commctrl.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "poptools.h"
 
 // I/O that we have seen recently, so that we don't forget pin assignments
@@ -932,7 +927,7 @@ static BOOL MakeWindowClass()
     wc.lpfnWndProc      = (WNDPROC)IoDialogProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "LDmicroIo";
+    wc.lpszClassName    = "POPToolsIo";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -1040,7 +1035,7 @@ void ShowIoMapDialog(int item)
     // APPWINDOW style, it becomes impossible to get the window back (by
     // Alt+Tab or taskbar).
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
-        "LDmicroIo", _("I/O Pin"),
+        "POPToolsIo", _("I/O Pin"),
         WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 127, 430, MainWindow, NULL, Instance, NULL);
 
@@ -1288,7 +1283,7 @@ int *ShowWatchPointDialog(char *name, int type, int *curval, int *newval)
 	// Create window
     MakeWindowClass();
 
-	HWND WPDialog = CreateWindowClient(0, "LDmicroIo",
+	HWND WPDialog = CreateWindowClient(0, "POPToolsIo",
         _("Set WatchPoint"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 230, 85, MainWindow, NULL, Instance, NULL);
 
@@ -1648,7 +1643,7 @@ void ShowAnalogSliderPopup(char *name)
     wc.lpfnWndProc      = (WNDPROC)AnalogSliderDialogProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "LDmicroAnalogSlider";
+    wc.lpszClassName    = "POPToolsAnalogSlider";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
 
@@ -1683,7 +1678,7 @@ void ShowAnalogSliderPopup(char *name)
     }
     if(top < 0) top = 0;
     
-    AnalogSliderMain = CreateWindowClient(0, "LDmicroAnalogSlider", _("I/O Pin"),
+    AnalogSliderMain = CreateWindowClient(0, "POPToolsAnalogSlider", _("I/O Pin"),
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
         left, top, 30, 100, MainWindow, NULL, Instance, NULL);
 
@@ -1773,7 +1768,7 @@ void ShowEncoderSliderPopup(char *name)
     wc.lpfnWndProc      = (WNDPROC)EncoderSliderDialogProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "LDmicroEncoderSlider";
+    wc.lpszClassName    = "POPToolsEncoderSlider";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
 
@@ -1808,7 +1803,7 @@ void ShowEncoderSliderPopup(char *name)
     }
     if(top < 0) top = 0;
 
-    EncoderSliderMain = CreateWindowClient(0, "LDmicroEncoderSlider", _("I/O Pin"),
+    EncoderSliderMain = CreateWindowClient(0, "POPToolsEncoderSlider", _("I/O Pin"),
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
         left, top, 30, 100, MainWindow, NULL, Instance, NULL);
 

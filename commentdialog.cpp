@@ -1,7 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND CommentDialog;
@@ -29,7 +25,7 @@ static void MakeControls(void)
 
 void ShowCommentDialog(char *comment)
 {
-    CommentDialog = CreateWindowClient(0, "LDmicroDialog",
+    CommentDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Comment"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 700, 65, MainWindow, NULL, Instance, NULL);
 

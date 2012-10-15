@@ -1,7 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "poptools.h"
 
 // Store a `deep copy' of the entire program before every change, in a

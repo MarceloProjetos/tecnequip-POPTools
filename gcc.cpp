@@ -1,9 +1,3 @@
-#include <windows.h>
-#include <Shlobj.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <stdlib.h>
-
 #include "poptools.h"
 #include "intcode.h"
 

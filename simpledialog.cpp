@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <commctrl.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "poptools.h"
 
 static HWND SimpleDialog;
@@ -138,7 +133,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
 
     if(boxes > MAX_BOXES) oops();
 
-    SimpleDialog = CreateWindowClient(0, "LDmicroDialog", title, 
+    SimpleDialog = CreateWindowClient(0, "POPToolsDialog", title, 
         WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 304, 15 + 30*(boxes < 2 ? 2 : boxes), MainWindow, NULL,
         Instance, NULL);

@@ -1,5 +1,5 @@
-#ifndef __LDMICRO_H
-#define __LDMICRO_H
+#ifndef __POPTOOLS_H
+#define __POPTOOLS_H
 
 #include <windows.h>
 #include <windowsx.h>
@@ -10,8 +10,19 @@
 #include <tchar.h>
 #include <wchar.h>
 #include <math.h>
-
 #include <vector>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <commctrl.h>
+#include <commdlg.h>
+#include <setjmp.h>
+#include <richedit.h>
+#include <atlbase.h>
+#include <limits.h>
+#include <atlcom.h>
+#include <initguid.h>
 
 // Direct2D Header Files
 #include <d2d1.h>
@@ -23,15 +34,18 @@
 // String Safe Header File
 #include <strsafe.h>
 
+// Activating the next line will disable Ribbon in Main Window.
+//#define POPTOOLS_DISABLE_RIBBON
+
+#include "resource.h"
+#include "splash.h"
+#include "XMLWrapper.h"
+#include "modbus_master.h"
+#include "MainRibbon.h"
+
 #pragma warning(disable : 4995)
-
-#include <WinSock2.h>
-#include <WS2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
-
-#include <commctrl.h>
 #pragma comment(lib, "comctl32.lib")
-
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "WindowsCodecs.lib")
 #pragma comment(lib, "dwrite.lib")
@@ -78,7 +92,6 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 #endif
 
-#include <setjmp.h>
 typedef signed long SDWORD;
 //typedef signed short SWORD;
 typedef SDWORD SWORD;
@@ -91,7 +104,7 @@ typedef SDWORD SWORD;
 #define DEFAULT_CPU "NXP LPC1768 LQFP100"
 
 // Color Visual Style
-#define CORES_CONSOLE 0
+#define CORES_CONSOLE 1
 
 // Size of the font that we will use to draw the ladder diagrams, in pixels
 #define FONT_WIDTH   7
@@ -103,15 +116,6 @@ typedef SDWORD SWORD;
 
 // Identifier for the message sent to MainWindow when SimSocket receives something
 #define WM_SOCKET 104
-
-// Activating the next line will disable Ribbon in Main Window.
-//#define POPTOOLS_DISABLE_RIBBON
-
-#include "resource.h"
-#include "splash.h"
-#include "XMLWrapper.h"
-#include "modbus_master.h"
-#include "MainRibbon.h"
 
 //-----------------------------------------------
 // Constants for the GUI. We have drop-down menus, a listview for the I/Os,

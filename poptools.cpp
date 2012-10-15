@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <commctrl.h>
-#include <commdlg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include "poptools.h"
 #include "freeze.h"
 #include "mcutable.h"
@@ -11,7 +6,6 @@ HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
 
-#include <atlbase.h>
 CComModule _Module;
 
 ID2D1Factory*		pD2DFactory;
@@ -1698,7 +1692,7 @@ static BOOL MakeWindowClass()
     wc.lpfnWndProc      = (WNDPROC)MainWndProc;
     wc.hInstance        = Instance;
     wc.hbrBackground    = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.lpszClassName    = "LDmicro";
+    wc.lpszClassName    = "POPTools";
     wc.lpszMenuName     = NULL;
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon            = (HICON)LoadImage(Instance, MAKEINTRESOURCE(4000),
@@ -1955,7 +1949,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	top = MakeMainWindowMenus();
 #endif
 
-    MainWindow = CreateWindowEx(0, "LDmicro", "",
+    MainWindow = CreateWindowEx(0, "POPTools", "",
         WS_OVERLAPPED | WS_THICKFRAME | WS_CLIPCHILDREN | WS_MAXIMIZEBOX |
         WS_MINIMIZEBOX | WS_SYSMENU,
         10, 10, 800, 600, NULL, top, Instance, NULL);

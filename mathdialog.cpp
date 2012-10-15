@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND MathDialog;
@@ -97,7 +92,7 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
         title = _("Divide");
     } else oops();
 
-	MathDialog = CreateWindowClient(0, "LDmicroDialog",
+	MathDialog = CreateWindowClient(0, "POPToolsDialog",
         title, WS_OVERLAPPED | WS_SYSMENU,
         450, 250, 337, 90, MainWindow, NULL, Instance, NULL);
 

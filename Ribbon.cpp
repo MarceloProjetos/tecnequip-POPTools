@@ -7,11 +7,6 @@
 
 #include "poptools.h"
 #include "PropertySet.h"
-
-#include <atlbase.h>
-#include <atlcom.h>
-#include <initguid.h>
-
 #include <uiribbon.h>
 #include <UIRibbonPropertyHelpers.h>
 

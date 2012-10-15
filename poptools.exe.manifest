@@ -3,7 +3,7 @@
 <assemblyIdentity
     version="1.0.0.0"
     processorArchitecture="X86"
-    name="JonathanWesthues.LadderLogic.LDMicro"
+    name="Marcelo Utikawa da fonseca.Poptools"
     type="win32"
 />
 <description>Ladder logic editor/compiler for PIC and AVR micros.</description>

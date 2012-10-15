@@ -1,8 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <commctrl.h>
-
 #include "poptools.h"
 
 static HWND SetDADialog;
@@ -63,7 +58,7 @@ void ShowSetDADialog(char *name, int *mode)
 	int mode_tmp, min, max;
 	char name_tmp[MAX_NAME_LEN];
 
-	SetDADialog = CreateWindowClient(0, "LDmicroDialog",
+	SetDADialog = CreateWindowClient(0, "POPToolsDialog",
         _("Set D/A"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 345, 128, MainWindow, NULL, Instance, NULL);
 

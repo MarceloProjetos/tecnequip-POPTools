@@ -1,7 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "poptools.h"
 
 void (*DrawChars)(int, int, char *);
@@ -389,13 +385,13 @@ static void SetSyntaxHighlightingColours(void)
             RGB(255, 255, 100),     // punct
             RGB(255, 160, 160),     // lit
             RGB(120, 255, 130),     // name
-            RGB(130, 130, 130),     // rungNum
+            RGB(130, 130, 255),     // rungNum
             RGB(130, 130, 255),     // comment
 
             RGB(255, 255, 255),     // bus
 
             RGB(0, 0, 0),           // simBg
-            RGB(130, 130, 130),     // simRungNum
+            RGB(130, 130, 255),     // simRungNum
             RGB(100, 130, 130),     // simOff
             RGB(255, 150, 150),     // simOn
 
