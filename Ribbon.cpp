@@ -1,24 +1,4 @@
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
-// Copyright (c) Microsoft Corporation. All rights reserved
-
 #include "poptools.h"
-#include "PropertySet.h"
-#include <uiribbon.h>
-#include <UIRibbonPropertyHelpers.h>
-
-/****************************************
-****                                 ****
-***       MRU Classes Definition      ***
-****                                 ****
-****************************************/
-
-#include <shellapi.h>
-#include <strsafe.h>
-#include <OleAuto.h>
 
 //PURPOSE: Implement the properties that describe a Recent Item to the Windows Ribbon
 class CRecentFileProperties

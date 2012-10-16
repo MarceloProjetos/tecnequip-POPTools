@@ -1,6 +1,8 @@
 #ifndef __POPTOOLS_H
 #define __POPTOOLS_H
 
+#pragma warning(push)
+#pragma warning(disable : 4995) //Disable warning related to deprecated functions (unsecure): strcpy, sprintf...
 #include <windows.h>
 #include <windowsx.h>
 #include "mmsystem.h"
@@ -9,6 +11,7 @@
 #include <ShellAPI.h>
 #include <tchar.h>
 #include <wchar.h>
+#include <time.h>
 #include <math.h>
 #include <vector>
 #include <WinSock2.h>
@@ -24,13 +27,14 @@
 #include <atlcom.h>
 #include <initguid.h>
 
+
 // Direct2D Header Files
 #include <d2d1.h>
 #include <d2d1helper.h>
 #include <dwrite.h>
 #include <wincodec.h>
-
 #include <assert.h>
+
 // String Safe Header File
 #include <strsafe.h>
 
@@ -42,8 +46,21 @@
 #include "XMLWrapper.h"
 #include "modbus_master.h"
 #include "MainRibbon.h"
+#include <uiribbon.h>
+#include <UIRibbonPropertyHelpers.h>
+#include "PropertySet.h"
 
-#pragma warning(disable : 4995)
+/****************************************
+****                                 ****
+***       MRU Classes Definition      ***
+****                                 ****
+****************************************/
+
+#include <shellapi.h>
+#include <strsafe.h>
+#include <OleAuto.h>
+#pragma warning(pop) //Enable warning related to deprecated functions (unsecure)
+
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "d2d1.lib")
@@ -100,6 +117,7 @@ typedef SDWORD SWORD;
 
 // The library that I use to do registry stuff.
 #define FREEZE_SUBKEY "POPTools"
+#include "freeze.h"
 
 #define DEFAULT_CPU "NXP LPC1768 LQFP100"
 
@@ -703,6 +721,8 @@ typedef struct ElemSubckParallelTag {
     } contents[MAX_ELEMENTS_IN_SUBCKT];
     int count;
 } ElemSubcktParallel;
+
+#include "intcode.h"
 
 typedef struct McuIoInfoTag McuIoInfo;
 

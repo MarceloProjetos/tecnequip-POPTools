@@ -54,7 +54,7 @@ static LONG_PTR PrevNumProc;
 static LONG_PTR PrevResolTypeProc;
 static LONG_PTR PrevGraphBoxProc;
 
-static int		time;
+static int		tempo;
 static int		initval;
 static int		gainr;
 static int		gaint;
@@ -68,7 +68,7 @@ static vector<D2D1_POINT_2F>	DAPoints;
 
 const LPCTSTR ResollTypeItens[] = { _("(12 bits)[2047 ~ -2048]"), _("(mV)[10000 ~ -10000]"), _("(%)[0 ~ 100]") };
 
-void CalcLinearUp(int calc_time, int calc_initval)
+void CalcLinearUp(int calc_tempo, int calc_initval)
 {
 	int tm = 0;
 
@@ -76,7 +76,7 @@ void CalcLinearUp(int calc_time, int calc_initval)
 		calc_initval < (DA_RESOLUTION * -1))
 		return;
 
-	float t = static_cast<float>(calc_time);
+	float t = static_cast<float>(calc_tempo);
 	float d = static_cast<float>(calc_initval);
 
 	memset(points, 0, sizeof(points));
@@ -84,14 +84,14 @@ void CalcLinearUp(int calc_time, int calc_initval)
 	float a = d / t; // coeficiente angular
 	float l = 0.0f; // coeficiente linear
 
-	for (int i = 0; i < calc_time / DA_CYCLE_INTERVAL; i++)
+	for (int i = 0; i < calc_tempo / DA_CYCLE_INTERVAL; i++)
 	{
 		tm = i * DA_CYCLE_INTERVAL;
 		points[i] = DA_RESOLUTION + ((tm * a) + l); // y = a.x + b
 	}
 }
 
-void CalcLinearDown(int calc_time, int calc_initval)
+void CalcLinearDown(int calc_tempo, int calc_initval)
 {
 	int tm = 0;
 
@@ -99,7 +99,7 @@ void CalcLinearDown(int calc_time, int calc_initval)
 		calc_initval < (DA_RESOLUTION * -1))
 		return;
 
-	float t = static_cast<float>(calc_time);
+	float t = static_cast<float>(calc_tempo);
 	float d = static_cast<float>(calc_initval);
 
 	memset(points, 0, sizeof(points));
@@ -109,7 +109,7 @@ void CalcLinearDown(int calc_time, int calc_initval)
 
 	if (d < 0)
 	{
-		for (int i = 0; i < calc_time / DA_CYCLE_INTERVAL; i++)
+		for (int i = 0; i < calc_tempo / DA_CYCLE_INTERVAL; i++)
 		{
 			tm = i * DA_CYCLE_INTERVAL;
 			points[i] = ((tm * a) + l); // y = a.x + b
@@ -118,7 +118,7 @@ void CalcLinearDown(int calc_time, int calc_initval)
 	else
 	{
 		a *= -1.0f;
-		for (int i = 0; i < calc_time / DA_CYCLE_INTERVAL; i++)
+		for (int i = 0; i < calc_tempo / DA_CYCLE_INTERVAL; i++)
 		{
 			tm = i * DA_CYCLE_INTERVAL;
 			points[i] = ((tm * a) + l); // y = a.x + b
@@ -127,7 +127,7 @@ void CalcLinearDown(int calc_time, int calc_initval)
 
 }
 
-void CalcGainDown(int calc_time, int calc_initval, int calc_gainx, int calc_gainy = 5)
+void CalcGainDown(int calc_tempo, int calc_initval, int calc_gainx, int calc_gainy = 5)
 {
 	int tm = 0;
 	int i = 0;
@@ -138,7 +138,7 @@ void CalcGainDown(int calc_time, int calc_initval, int calc_gainx, int calc_gain
 
 	float gx = static_cast<float>(calc_gainx);
 	float gy = static_cast<float>(calc_gainy);
-	float t = static_cast<float>(calc_time);
+	float t = static_cast<float>(calc_tempo);
 	float d = static_cast<float>(calc_initval);
 
 	memset(gains, 0, sizeof(gains));
@@ -188,7 +188,7 @@ void CalcGainDown(int calc_time, int calc_initval, int calc_gainx, int calc_gain
 
 }
 
-void CalcGainUp(int calc_time, int calc_initval, int calc_gainx, int calc_gainy = 5)
+void CalcGainUp(int calc_tempo, int calc_initval, int calc_gainx, int calc_gainy = 5)
 {
 	int tm = 0;
 	int i = 0;
@@ -201,29 +201,29 @@ void CalcGainUp(int calc_time, int calc_initval, int calc_gainx, int calc_gainy 
 
 	float VarDA;
 
-	float DeltaXGanho  = (float)(calc_time    * calc_gainx) / 100;
+	float DeltaXGanho  = (float)(calc_tempo    * calc_gainx) / 100;
 	float DeltaYGanho  = (float)(calc_initval * calc_gainy) / 100;
 
-	float DeltaXLinear = calc_time    - 2*DeltaXGanho;
+	float DeltaXLinear = calc_tempo    - 2*DeltaXGanho;
 	float DeltaYLinear = calc_initval - 2*DeltaYGanho;
 
-	for (tm=0; tm < calc_time; tm+=DA_CYCLE_INTERVAL)
+	for (tm=0; tm < calc_tempo; tm+=DA_CYCLE_INTERVAL)
 	{
 		i = tm/DA_CYCLE_INTERVAL;
 
 		if (tm < DeltaXGanho) {
 			VarDA = (DeltaYGanho * tm) / DeltaXGanho;
-		} else if(tm < (calc_time - DeltaXGanho)) {
+		} else if(tm < (calc_tempo - DeltaXGanho)) {
 			VarDA = DeltaYGanho + (DeltaYLinear * (tm - DeltaXGanho)) / DeltaXLinear;
 		} else {
-			VarDA = calc_initval - (DeltaYGanho * (calc_time - tm)) / DeltaXGanho;
+			VarDA = calc_initval - (DeltaYGanho * (calc_tempo - tm)) / DeltaXGanho;
 		}
 
 		gains[i] = (float)(VarDA+2048);
 	}
 }
 
-void CalcCurveUp(int calc_time, int calc_initval)
+void CalcCurveUp(int calc_tempo, int calc_initval)
 {
 	int tm = 0;
 	float factor = 0;
@@ -234,18 +234,18 @@ void CalcCurveUp(int calc_time, int calc_initval)
 
 	memset(points, 0, sizeof(points));
 
-	for (int i = 0; i < calc_time / DA_CYCLE_INTERVAL; i++)
+	for (int i = 0; i < calc_tempo / DA_CYCLE_INTERVAL; i++)
 	{
 		tm = i * DA_CYCLE_INTERVAL;
-		if (tm < calc_time)
+		if (tm < calc_tempo)
 		{
-			if (tm < calc_time / 2)
+			if (tm < calc_tempo / 2)
 			{
-				factor = pow((tm * 1000.0f) / calc_time, 2);
+				factor = pow((tm * 1000.0f) / calc_tempo, 2);
 			}
 			else
 			{
-				factor = 500000.0f - pow(1000.0f - (tm * 1000.0f) / calc_time, 2);	
+				factor = 500000.0f - pow(1000.0f - (tm * 1000.0f) / calc_tempo, 2);	
 			}
 			factor /= 1000.0f;
 		}
@@ -257,7 +257,7 @@ void CalcCurveUp(int calc_time, int calc_initval)
 	}
 }
 
-void CalcCurveDown(int calc_time, int calc_initval)
+void CalcCurveDown(int calc_tempo, int calc_initval)
 {
 	int tm = 0;
 	float factor = 0;
@@ -268,18 +268,18 @@ void CalcCurveDown(int calc_time, int calc_initval)
 
 	memset(points, 0, sizeof(points));
 
-	for (int i = 0; i < calc_time / DA_CYCLE_INTERVAL; i++)
+	for (int i = 0; i < calc_tempo / DA_CYCLE_INTERVAL; i++)
 	{
 		tm = i * DA_CYCLE_INTERVAL;
-		if (tm < calc_time)
+		if (tm < calc_tempo)
 		{
-			if (tm < calc_time / 2)
+			if (tm < calc_tempo / 2)
 			{
-				factor = 500000.0f - pow((tm * 1000.0f) / calc_time, 2);
+				factor = 500000.0f - pow((tm * 1000.0f) / calc_tempo, 2);
 			}
 			else
 			{
-				factor = pow(1000.0f - (tm * 1000.0f) / calc_time, 2);
+				factor = pow(1000.0f - (tm * 1000.0f) / calc_tempo, 2);
 			}
 			factor /= 1000.0f;
 		}
@@ -530,7 +530,7 @@ void Render()
 		// the ramp so the user will understand it.
 		if(current.StartFromCurrentValue) {
 			// Offset for X and Y axis from ramp start
-			OffsetX = abs(time   ) * 0.2f;
+			OffsetX = abs(tempo   ) * 0.2f;
 			OffsetY = abs(initval) * 0.2f;
 			// If the final value for D/A is low, shows a inverse graph
 			if(abs(initval) < GraphResolution/2) {
@@ -542,7 +542,7 @@ void Render()
         D2D1_SIZE_F size = pRenderTarget->GetSize();
 
 		// Scale to draw graph. They will convert values from time and D/A values to graph coordinates.
-		float scaleX = (size.width  - (MARGIN * 3)) / abs(time);
+		float scaleX = (size.width  - (MARGIN * 3)) / abs(tempo);
 		float scaleY = (size.height - (MARGIN * 2)) / GraphResolution; // abs(initval);
 
         pRenderTarget->BeginDraw();	
@@ -575,7 +575,7 @@ void Render()
 										MARGIN*2 - 1.0f + (interval * i) + (FONT_SIZE * 2.0f) + OffsetX*scaleX, 
 										size.height - 5.0f);
 
-			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", (abs(time) / DA_CYCLE_INTERVAL) * i );
+			StringCchPrintfW(Num, ARRAYSIZE(Num), L"%d", (abs(tempo) / DA_CYCLE_INTERVAL) * i );
 
 			pRenderTarget->DrawText(Num, static_cast<UINT>(wcslen(Num)), pTextFormat, &r, pAxisBrush);
 		}
@@ -600,11 +600,11 @@ void Render()
 		}
 
 		// Load size and height with ramp limits
-		size.width  = (float)abs(time);
+		size.width  = (float)abs(tempo);
 		size.height = GraphResolution;
 
 		// How much should we advance in X coordinate for each D/A cycle interval
-		float intervalX = (size.width - OffsetX) / (abs(time) / DA_CYCLE_INTERVAL);
+		float intervalX = (size.width - OffsetX) / (abs(tempo) / DA_CYCLE_INTERVAL);
 
 		D2D1_MATRIX_3X2_F translate = D2D1::Matrix3x2F::Translation(MARGIN * 2, MARGIN);
 
@@ -621,7 +621,7 @@ void Render()
 			return;
 		}
 
-		int i, pass, end = (int)ceil(static_cast<float>(abs(time) / DA_CYCLE_INTERVAL));
+		int i, pass, end = (int)ceil(static_cast<float>(abs(tempo) / DA_CYCLE_INTERVAL));
 		float desl, p, x, y, prevx, prevy, startx, starty, offset = 0, fator_graph, fator_ramp, FigureOffsetY = 0;
 
 		pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
@@ -877,7 +877,7 @@ void UpdateWindow(void)
 		strcpy(current.name, num);
 	}
 
-	time = current.time;
+	tempo = current.time;
 
 	current.type = SendMessage(ResolTypeCombobox, CB_GETCURSEL, 0, 0);
 
@@ -949,19 +949,19 @@ void UpdateWindow(void)
 	if (current.linear)
 	{
 		if (current.speedup) {
-			CalcLinearUp(time, initval);
-			CalcGainUp  (time, initval, gaint, gainr);
+			CalcLinearUp(tempo, initval);
+			CalcGainUp  (tempo, initval, gaint, gainr);
 		} else {
-			CalcLinearDown(time, initval);
-			CalcGainDown(time, initval, gaint, gainr);
+			CalcLinearDown(tempo, initval);
+			CalcGainDown(tempo, initval, gaint, gainr);
 		}
 	}
 	else
 	{
 		if (current.speedup)
-			CalcCurveUp(time, initval);
+			CalcCurveUp(tempo, initval);
 		else
-			CalcCurveDown(time, initval);
+			CalcCurveDown(tempo, initval);
 	}
 		 
 	DiscardDeviceResources();
@@ -1324,7 +1324,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 	char initval_tmp[MAX_NAME_LEN];
 
 	current = *l;
-	time = current.time;
+	tempo = current.time;
 	//initval = current.initval;
 
 	strcpy(time_tmp   , l->name );

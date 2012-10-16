@@ -1,5 +1,4 @@
 #include "poptools.h"
-#include "freeze.h"
 #include "mcutable.h"
 
 HINSTANCE   Instance;
@@ -8,8 +7,8 @@ HDC         Hdc;
 
 CComModule _Module;
 
-ID2D1Factory*		pD2DFactory;
-IDWriteFactory*		pWriteFactory;
+ID2D1Factory*			pD2DFactory;
+IDWriteFactory*			pWriteFactory;
 IWICImagingFactory *	pWICFactory;
 
 SPLASH mysplash;

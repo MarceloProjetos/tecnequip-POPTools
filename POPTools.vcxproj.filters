@@ -13,136 +13,148 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Diálogos">
+      <UniqueIdentifier>{0b18ea33-0d88-465b-b9cf-1bbd8b0f4967}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interface">
+      <UniqueIdentifier>{1c31734d-1587-42ae-8a1d-b05fa0555739}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Diagrama Ladder">
+      <UniqueIdentifier>{124b686b-40ce-48ff-8465-de843dbb3c91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\POP-7">
+      <UniqueIdentifier>{1d80a9d2-9960-41de-ad93-4b833ef5a1e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{2533b9e8-7abc-4ff8-802a-048156f5ece2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="circuit.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="checkbitdialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
     <ClCompile Include="coildialog.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
     <ClCompile Include="commentdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="compilecommon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="confdialog.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
     <ClCompile Include="contactsdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="draw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="draw_outputdev.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="freeze.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="helpdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="helptext.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="intcode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lang.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="loadsave.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lutdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="maincontrols.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="miscutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="resetdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="schematic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="simpledialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="simulate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="undoredo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="gcc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="iomap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="setbitdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="flashmagic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="modbusdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="checkbitdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="splash.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rtcdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="multisetdadialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XMLWrapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FARdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="prefdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="poptools.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Firmware\App\modbus_rtu.c">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
     <ClCompile Include="debugdialog.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
-    <ClCompile Include="modbus_master.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="FARdialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
-    <ClCompile Include="Ribbon.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="helpdialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
-    <ClCompile Include="setdadialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PropertySet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="modbus_slave.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="lutdialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
     <ClCompile Include="mathdialog.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Diálogos</Filter>
+    </ClCompile>
+    <ClCompile Include="modbusdialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
+    </ClCompile>
+    <ClCompile Include="rtcdialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
+    </ClCompile>
+    <ClCompile Include="setbitdialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
+    </ClCompile>
+    <ClCompile Include="setdadialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
+    </ClCompile>
+    <ClCompile Include="simpledialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
+    </ClCompile>
+    <ClCompile Include="resetdialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
+    </ClCompile>
+    <ClCompile Include="multisetdadialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
+    </ClCompile>
+    <ClCompile Include="circuit.cpp">
+      <Filter>Source Files\Diagrama Ladder</Filter>
+    </ClCompile>
+    <ClCompile Include="compilecommon.cpp">
+      <Filter>Source Files\Diagrama Ladder</Filter>
+    </ClCompile>
+    <ClCompile Include="draw.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="draw_outputdev.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="freeze.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="intcode.cpp">
+      <Filter>Source Files\Diagrama Ladder</Filter>
+    </ClCompile>
+    <ClCompile Include="iomap.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="prefdialog.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="confdialog.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="maincontrols.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Ribbon.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="PropertySet.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="splash.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="schematic.cpp">
+      <Filter>Source Files\Diagrama Ladder</Filter>
+    </ClCompile>
+    <ClCompile Include="simulate.cpp">
+      <Filter>Source Files\Diagrama Ladder</Filter>
+    </ClCompile>
+    <ClCompile Include="gcc.cpp">
+      <Filter>Source Files\POP-7</Filter>
+    </ClCompile>
+    <ClCompile Include="flashmagic.cpp">
+      <Filter>Source Files\POP-7</Filter>
+    </ClCompile>
+    <ClCompile Include="modbus_master.cpp">
+      <Filter>Source Files\POP-7</Filter>
+    </ClCompile>
+    <ClCompile Include="Firmware\App\modbus_rtu.c">
+      <Filter>Source Files\POP-7</Filter>
+    </ClCompile>
+    <ClCompile Include="modbus_slave.cpp">
+      <Filter>Source Files\POP-7</Filter>
+    </ClCompile>
+    <ClCompile Include="undoredo.cpp">
+      <Filter>Source Files\Diagrama Ladder</Filter>
+    </ClCompile>
+    <ClCompile Include="lang.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="loadsave.cpp">
+      <Filter>Source Files\Diagrama Ladder</Filter>
+    </ClCompile>
+    <ClCompile Include="poptools.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="miscutil.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="XMLWrapper.cpp">
+      <Filter>Source Files\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

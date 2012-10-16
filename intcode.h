@@ -1,5 +1,3 @@
-
-
 #ifndef __INTCODE_H
 #define __INTCODE_H
 

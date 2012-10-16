@@ -1,5 +1,4 @@
 #include "poptools.h"
-#include "intcode.h"
 
 static char SeenVariables[MAX_IO][MAX_NAME_LEN];
 static int SeenVariablesCount;

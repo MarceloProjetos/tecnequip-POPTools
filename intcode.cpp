@@ -1,5 +1,4 @@
 #include "poptools.h"
-#include "intcode.h"
 
 IntOp IntCode[MAX_INT_OPS];
 int IntCodeLen;

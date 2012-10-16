@@ -310,7 +310,6 @@
     <ClCompile Include="freeze.cpp" />
     <ClCompile Include="gcc.cpp" />
     <ClCompile Include="helpdialog.cpp" />
-    <ClCompile Include="helptext.cpp" />
     <ClCompile Include="intcode.cpp" />
     <ClCompile Include="iomap.cpp" />
     <ClCompile Include="lang.cpp" />

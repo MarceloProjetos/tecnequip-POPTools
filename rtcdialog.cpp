@@ -1,5 +1,4 @@
 #include "poptools.h"
-#include <time.h>
 
 static HWND RTCDialog;
 

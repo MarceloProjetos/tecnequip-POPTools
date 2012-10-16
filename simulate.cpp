@@ -1,7 +1,4 @@
 #include "poptools.h"
-#include <time.h>
-#include "intcode.h"
-#include "freeze.h"
 
 static struct {
     char name[MAX_NAME_LEN];

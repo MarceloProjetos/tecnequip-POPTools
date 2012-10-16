@@ -3,10 +3,10 @@
 <assemblyIdentity
     version="1.0.0.0"
     processorArchitecture="X86"
-    name="Marcelo Utikawa da fonseca.Poptools"
+    name="Marcelo Utikawa da Fonseca.Poptools"
     type="win32"
 />
-<description>Ladder logic editor/compiler for PIC and AVR micros.</description>
+<description>Ladder logic editor/compiler for POP-7.</description>
 <dependency>
     <dependentAssembly>
         <assemblyIdentity

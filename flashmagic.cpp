@@ -1,6 +1,4 @@
 #include "poptools.h"
-#include "intcode.h"
-#include <time.h>
 #include "flashmagicarmcortex.h"
 
 static unsigned long totalWrite = 0;
