@@ -45,18 +45,21 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>Windows7.1SDK</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>Windows7.1SDK</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - ES|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>Windows7.1SDK</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -64,6 +67,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
     <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -71,6 +75,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
     <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - ES|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -78,6 +83,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
     <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -232,7 +238,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=0x400;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_PT;NDEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -254,7 +260,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=0x400;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_EN;NDEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -276,7 +282,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=0x400;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_ES;NDEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -354,7 +360,7 @@
     <ClInclude Include="VersionInfo.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ldmicro.rc" />
+    <ResourceCompile Include="poptools.rc" />
     <ResourceCompile Include="MainRibbon.rc" />
     <ResourceCompile Include="version.rc" />
   </ItemGroup>

@@ -38,9 +38,6 @@
 // String Safe Header File
 #include <strsafe.h>
 
-// Activating the next line will disable Ribbon in Main Window.
-//#define POPTOOLS_DISABLE_RIBBON
-
 #include "resource.h"
 #include "splash.h"
 #include "XMLWrapper.h"
@@ -243,9 +240,7 @@ struct strSerialConfig {
 #define MNU_SINGLE_CYCLE        0x65
 
 #define MNU_COMPILE             0x70
-#define MNU_COMPILE_AS          0x71
 #define MNU_PROGRAM				0x72
-#define MNU_PROGRAM_AS			0x73
 #define MNU_DEBUG               0x74
 
 #define MNU_MANUAL              0x80
@@ -1009,7 +1004,6 @@ void PauseSimulation(void);
 void StartSimulation(void);
 void UpdateMainWindowTitleBar(void);
 void StatusBarSetText(int bar, char * text);
-void PopulateRecentListMenu(void);
 void RefreshDrawWindow();
 extern int ScrollWidth;
 extern int ScrollHeight;
@@ -1266,7 +1260,6 @@ bool IsValidNumber(char *number);
 void ChangeFileExtension(char *name, char *ext);
 char *GetPinADC(char *name);
 unsigned short int CRC16(unsigned char *puchMsg, unsigned int usDataLen);
-extern BOOL RunningInBatchMode;
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
 extern HWND OkButton;
@@ -1378,7 +1371,7 @@ BOOL GenerateIntermediateCode(void);
 // gcc.cpp
 void GenerateDeclarations(FILE *f);
 void CompileAnsiC(char *outFile);
-DWORD CompileAnsiCToGCC(char *outFile);
+DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage);
 DWORD GenerateCFile(char *filename);
 // interpreted.c
 void CompileInterpreted(char *outFile);

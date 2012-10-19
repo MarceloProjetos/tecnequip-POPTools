@@ -511,12 +511,12 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             int i;
             ElemSubcktSeries *s = (ElemSubcktSeries *)any;
             
-            Comment("start series [");
+            Comment(_("start series ["));
             for(i = 0; i < s->count; i++) {
                 IntCodeFromCircuit(s->contents[i].which, s->contents[i].d.any,
                     stateInOut);
             }
-            Comment("] finish series");
+            Comment(_("] finish series"));
             break;
         }
         case ELEM_PARALLEL_SUBCKT: {
@@ -526,7 +526,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             char parOut[MAX_NAME_LEN];
             GenSymParOut(parOut);
 
-            Comment("start parallel [");
+            Comment(_("start parallel ["));
 
             Op(INT_CLEAR_BIT, parOut);
 
@@ -543,7 +543,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 Op(INT_END_IF);
             }
             Op(INT_COPY_BIT_TO_BIT, stateInOut, parOut);
-            Comment("] finish parallel");
+            Comment(_("] finish parallel"));
             
             break;
         }
@@ -1677,7 +1677,7 @@ BOOL GenerateIntermediateCode(void)
             continue;
         }
         Comment("");
-        Comment("start rung %d", i+1);
+        Comment(_("start rung %d"), i+1);
 		GenSymCountParThis = 0;
 		GenSymCountParOut  = 0;
         Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");

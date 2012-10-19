@@ -22,7 +22,6 @@ static LRESULT CALLBACK PrefDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
             HWND h = (HWND)lParam;
 			if(wParam == BN_CLICKED && h == ClearRecentList) {
 				memset(POPSettings.recent_list, 0, sizeof(POPSettings.recent_list));
-				PopulateRecentListMenu();
 				break;
 			} else if(h == ComPortFlashCombobox && HIWORD(wParam) == CBN_DROPDOWN) {
 				LoadCOMPorts(ComPortFlashCombobox, POPSettings.COMPortFlash, true);

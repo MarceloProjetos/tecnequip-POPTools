@@ -198,8 +198,6 @@ void UpdateRecentList(char *filename)
 	}
 
 	strcpy(POPSettings.recent_list[0], filename);
-
-	PopulateRecentListMenu();
 }
 
 //-----------------------------------------------------------------------------
@@ -327,66 +325,9 @@ static BOOL SaveProgram(void)
 // Compile the program to a hex file for the target micro. Get the output
 // file name if necessary, then call the micro-specific compile routines.
 //-----------------------------------------------------------------------------
-static BOOL CompileProgram(BOOL compileAs)
+static BOOL CompileProgram(BOOL ShowSuccessMessage)
 {
 	BOOL ret = FALSE;
-
-	// check if a valid path and write permission
-	if (compileAs || strlen(CurrentCompileFile) > 0)
-	{
-		// We should to use "a" instead of "w" to avoid to overwrite the current file
-		FILE *f = fopen(CurrentCompileFile, "r");
-		if(!f)
-			CurrentCompileFile[0] = '\0';
-		else {
-			fclose(f);
-			fopen(CurrentCompileFile, "a");
-			if(!f)
-				CurrentCompileFile[0] = '\0';
-			else
-				fclose(f);
-		}
-	}
-
-    if(compileAs || strlen(CurrentCompileFile)==0) 
-	{
-        OPENFILENAME ofn;
-
-		if(strlen(CurrentSaveFile) && !strlen(CurrentCompileFile)) {
-			strcpy(CurrentCompileFile, CurrentSaveFile);
-			ChangeFileExtension(CurrentCompileFile, "hex");
-		}
-
-        memset(&ofn, 0, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hInstance = Instance;
-        ofn.lpstrTitle = _("Compile To");
-        if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
-            ofn.lpstrFilter = C_PATTERN;
-            ofn.lpstrDefExt = "c";
-        } else if(Prog.mcu && Prog.mcu->whichIsa == ISA_INTERPRETED) {
-            ofn.lpstrFilter = INTERPRETED_PATTERN;
-            ofn.lpstrDefExt = "int";
-        } else {
-            ofn.lpstrFilter = HEX_PATTERN;
-            ofn.lpstrDefExt = "hex";
-        }
-        ofn.lpstrFile = CurrentCompileFile;
-        ofn.nMaxFile = sizeof(CurrentCompileFile);
-        ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
-
-        if(!GetSaveFileName(&ofn)) {
-			CurrentCompileFile[0] = '\0';
-            goto CompileProgramEnd;
-		} else if(ofn.Flags & OFN_EXTENSIONDIFFERENT) {
-			if(MessageBox(MainWindow, _("Tipo de arquivo deve ser .hex\nA extensão será alterada automaticamente."),_("Aviso"), MB_ICONEXCLAMATION | MB_OKCANCEL) == IDCANCEL) {
-				strcpy(CurrentCompileFile, "");
-				goto CompileProgramEnd;
-			}
-
-		ChangeFileExtension(CurrentCompileFile, "hex");
-		}
-    }
 
 	RemoveParallelStart(0, NULL);
 
@@ -410,23 +351,13 @@ static BOOL CompileProgram(BOOL compileAs)
 	StatusBarSetText(0, _("Compilando... aguarde !"));
 
     SetCursor(LoadCursor(NULL, IDC_WAIT));
-  //  switch(Prog.mcu->whichIsa) {
-  //      case ISA_ANSIC:         CompileAnsiC(CurrentCompileFile); break;
-  //      case ISA_INTERPRETED:   CompileInterpreted(CurrentCompileFile); break;
-  //      case ISA_LPC17:         CompileAnsiCToGCC(CurrentCompileFile); break;
-		//case ISA_AVR:
-		//case ISA_PIC16:
-		//	break;
-  //      default: oops();
-  //  }
-	if(CompileAnsiCToGCC(CurrentCompileFile) == 0)
+
+	if(CompileAnsiCToGCC(ShowSuccessMessage) == 0)
 		ret = TRUE;
 
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
 
 	StatusBarSetText(0, "");
-
-//    IntDumpListing("t.pl");
 
 CompileProgramEnd:
 	return ret;
@@ -436,10 +367,9 @@ CompileProgramEnd:
 // Compile the program to a hex file for the target micro. Get the output
 // file name if necessary, then call the micro-specific compile routines.
 //-----------------------------------------------------------------------------
-static void WriteProgram(BOOL compileAs)
+static void WriteProgram(void)
 {
 	unsigned int iCOMPort;
-	BOOL PreviousRunningInBatchMode = RunningInBatchMode;
 
 	if(!POPSettings.COMPortFlash) {
 		iCOMPort = LoadCOMPorts(0, 0, 0);
@@ -451,26 +381,17 @@ static void WriteProgram(BOOL compileAs)
 		iCOMPort = POPSettings.COMPortFlash;
 	}
 
-	RunningInBatchMode = TRUE;
-    if (CompileProgram(compileAs)) 
+    if (CompileProgram(FALSE)) 
 	{
 		SetCursor(LoadCursor(NULL, IDC_WAIT));
-		RunningInBatchMode = PreviousRunningInBatchMode;
 		FlashProgram(CurrentCompileFile, iCOMPort, 230400);
 	} 
 	else 
 	{
 		SetCursor(LoadCursor(NULL, IDC_ARROW));
-		RunningInBatchMode = PreviousRunningInBatchMode;
 
 		StatusBarSetText(0, _("Erro na compilacao !!!"));
-
-		if(strlen(CurrentCompileFile))
-			CompileProgram(false);
-//		CompileSuccessfulMessage("Erro na compilacao !!! ");
 	}
-
-	RunningInBatchMode = PreviousRunningInBatchMode;
 
 	StatusBarSetText(0, "");
 
@@ -650,7 +571,6 @@ void ProcessMenu(int code)
 
         case MNU_RECENT_CLEAR:
 			memset(POPSettings.recent_list, 0, sizeof(POPSettings.recent_list));
-			PopulateRecentListMenu();
 			break;
 
         case MNU_RECENT_START+0:
@@ -663,6 +583,10 @@ void ProcessMenu(int code)
         case MNU_RECENT_START+7:
         case MNU_RECENT_START+8:
         case MNU_RECENT_START+9:
+			if(InSimulationMode) {
+				Error(_("Favor interromper a simulação primeiro!"));
+				break;
+			}
             if(CheckSaveUserCancels()) break;
 			recent_index = code - MNU_RECENT_START;
 			OpenDialog(POPSettings.recent_list[recent_index]);
@@ -999,22 +923,12 @@ cmp:
 
         case MNU_COMPILE:
             if(CheckSaveUserCancels()) break;
-            CompileProgram(FALSE);
-            break;
-
-        case MNU_COMPILE_AS:
-            if(CheckSaveUserCancels()) break;
             CompileProgram(TRUE);
             break;
 
         case MNU_PROGRAM:
             if(CheckSaveUserCancels()) break;
-            WriteProgram(FALSE);
-            break;
-
-        case MNU_PROGRAM_AS:
-            if(CheckSaveUserCancels()) break;
-            WriteProgram(TRUE);
+            WriteProgram();
             break;
 
 		case MNU_DEBUG:
@@ -1944,9 +1858,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	MakeDialogBoxClass();
 
 	HMENU top = NULL;
-#ifdef POPTOOLS_DISABLE_RIBBON	
-	top = MakeMainWindowMenus();
-#endif
 
     MainWindow = CreateWindowEx(0, "POPTools", "",
         WS_OVERLAPPED | WS_THICKFRAME | WS_CLIPCHILDREN | WS_MAXIMIZEBOX |
@@ -1970,51 +1881,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return 1;
 	}
 
-#ifndef POPTOOLS_DISABLE_RIBBON	
 	InitRibbon(MainWindow);
-#endif
 
 	NewProgram();
     strcpy(CurrentSaveFile, "");
-
-    // Check if we're running in non-interactive mode; in that case we should
-    // load the file, compile, and exit.
-    while(isspace(*lpCmdLine)) {
-        lpCmdLine++;
-    }
-    if(memcmp(lpCmdLine, "/c", 2)==0) {
-        RunningInBatchMode = TRUE;
-
-        char *err =
-            _("Bad command line arguments: run 'poptools /c src.ld dest.hex'");
-
-        char *source = lpCmdLine + 2;
-        while(isspace(*source)) {
-            source++;
-        }
-        if(*source == '\0') { Error(err); exit(-1); }
-        char *dest = source;
-        while(!isspace(*dest) && *dest) {
-            dest++;
-        }
-        if(*dest == '\0') { Error(err); exit(-1); }
-        *dest = '\0'; dest++;
-        while(isspace(*dest)) {
-            dest++;
-        }
-        if(*dest == '\0') { Error(err); exit(-1); }
-        if(!LoadProjectFromFile(source)) {
-            Error(_("Couldn't open '%s', running non-interactively."), source);
-            exit(-1);
-        }
-        strcpy(CurrentCompileFile, dest);
-        GenerateIoMapList(-1);
-        CompileProgram(FALSE);
-        exit(0);
-    }
-
-    // We are running interactively, or we would already have exited. We
-    // can therefore show the window now, and otherwise set up the GUI.
 
     ShowWindow(MainWindow, SW_SHOW);
     SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);

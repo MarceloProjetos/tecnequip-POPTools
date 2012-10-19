@@ -2156,21 +2156,6 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name         = "CompileAs"
-               Symbol     = "cmdCompileAs"
-               Id         = "30701"
-               LabelTitle = "Compilar como..."
-             LabelDescription = "Selecionar destino e gerar arquivo .hex para gravação na POP-7 a patir do Diagrama Ladder.">
-      <Command.TooltipTitle      >Compilar como...</Command.TooltipTitle>
-      <Command.TooltipDescription>Selecionar destino e gerar arquivo .hex para gravação na POP-7 a patir do Diagrama Ladder.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/CompileAsHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/CompileAsHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
     <Command Name         = "CompileAndProgram"
                Symbol     = "cmdCompileAndProgram"
                Id         = "30702"
@@ -2273,17 +2258,7 @@
             <Button CommandName="Settings"/>
           </Group>
           <Group CommandName="GroupActions" SizeDefinition="ThreeButtons">
-            <SplitButton CommandName="InsertLine">
-              <SplitButton.ButtonItem>
-                <Button CommandName="Compile"/>
-              </SplitButton.ButtonItem>
-              <SplitButton.MenuGroups>
-                <MenuGroup Class="MajorItems">
-                  <Button CommandName="Compile"/>
-                  <Button CommandName="CompileAs"/>
-                </MenuGroup>
-              </SplitButton.MenuGroups>
-            </SplitButton>
+            <Button CommandName="CompileAs"/>
             <Button CommandName="CompileAndProgram"/>
             <Button CommandName="Debug"/>
           </Group>

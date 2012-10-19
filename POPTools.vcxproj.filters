@@ -28,6 +28,15 @@
     <Filter Include="Source Files\Utils">
       <UniqueIdentifier>{2533b9e8-7abc-4ff8-802a-048156f5ece2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Ribbon">
+      <UniqueIdentifier>{4bdb9132-037d-4ce6-8059-c646098e8d07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Imagens">
+      <UniqueIdentifier>{369be56c-caf2-4635-ad83-d8494b9a1662}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\GCC">
+      <UniqueIdentifier>{82afc936-8037-49e8-8eb2-27351d33f8c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="checkbitdialog.cpp">
@@ -132,9 +141,6 @@
     <ClCompile Include="modbus_master.cpp">
       <Filter>Source Files\POP-7</Filter>
     </ClCompile>
-    <ClCompile Include="Firmware\App\modbus_rtu.c">
-      <Filter>Source Files\POP-7</Filter>
-    </ClCompile>
     <ClCompile Include="modbus_slave.cpp">
       <Filter>Source Files\POP-7</Filter>
     </ClCompile>
@@ -155,6 +161,9 @@
     </ClCompile>
     <ClCompile Include="XMLWrapper.cpp">
       <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Firmware\App\modbus_rtu.c">
+      <Filter>Source Files\POP-7</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -202,63 +211,63 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ldmicro.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
     <ResourceCompile Include="version.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
     <ResourceCompile Include="MainRibbon.rc">
+      <Filter>Resource Files\Ribbon</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="poptools.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="splash.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="bin\src\compile">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="bin\src\libpop.a">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="bin\src\libpop.map">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="bin\src\link.ld">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="bin\src\memory.ld">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="bin\src\startup_LPC17xx.o">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="bin\src\syscalls.o">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="bin\src\ld.h">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="poptools.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="bin\settings.xml">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="poptools.ico">
+      <Filter>Resource Files\Imagens</Filter>
+    </None>
     <None Include="poptools32.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Imagens</Filter>
+    </None>
+    <None Include="splash.bmp">
+      <Filter>Resource Files\Imagens</Filter>
+    </None>
+    <None Include="bin\src\compile">
+      <Filter>Resource Files\GCC</Filter>
+    </None>
+    <None Include="bin\src\libpop.a">
+      <Filter>Resource Files\GCC</Filter>
+    </None>
+    <None Include="bin\src\libpop.map">
+      <Filter>Resource Files\GCC</Filter>
+    </None>
+    <None Include="bin\src\link.ld">
+      <Filter>Resource Files\GCC</Filter>
+    </None>
+    <None Include="bin\src\memory.ld">
+      <Filter>Resource Files\GCC</Filter>
+    </None>
+    <None Include="bin\src\startup_LPC17xx.o">
+      <Filter>Resource Files\GCC</Filter>
+    </None>
+    <None Include="bin\src\syscalls.o">
+      <Filter>Resource Files\GCC</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="MainRibbonPTBR.xml">
-      <Filter>Resource Files</Filter>
+    <CustomBuild Include="MainRibbonEN.xml">
+      <Filter>Resource Files\Ribbon</Filter>
     </CustomBuild>
     <CustomBuild Include="MainRibbonES.xml">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Ribbon</Filter>
     </CustomBuild>
-    <CustomBuild Include="MainRibbonEN.xml">
-      <Filter>Resource Files</Filter>
+    <CustomBuild Include="MainRibbonPTBR.xml">
+      <Filter>Resource Files\Ribbon</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

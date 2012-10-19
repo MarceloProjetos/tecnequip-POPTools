@@ -891,7 +891,7 @@ DWORD GenerateCFile(char *filename)
 	return 1;
 }
 
-DWORD CompileAnsiCToGCC(char *dest)
+DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 {
 	char szAppPath[MAX_PATH]		= "";
 	char szTempPath[MAX_PATH]		= "";
@@ -926,7 +926,7 @@ DWORD CompileAnsiCToGCC(char *dest)
 	}
 
 	strncpy(szAppSourceFile, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
-	szAppSourceFile[strlen(szAppSourceFile)] = '\0';
+	sprintf(CurrentCompileFile, "%s\\ld.hex", szAppSourceFile);
 	strcat(szAppSourceFile, "\\ld.c");
 
 	if(!GenerateCFile(szAppSourceFile))
@@ -935,15 +935,13 @@ DWORD CompileAnsiCToGCC(char *dest)
 	char str[MAX_PATH+500];
 	DWORD err = 0;
 
-	if ((err = InvokeGCC(dest)))
-	{
-		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"C:\\Users\\<User>\\AppData\\Temp\\POPTools\\output.log\"\n"), err);	}
-	else
-	{
-		sprintf(str, _("Compilado com sucesso. O arquivo binário foi criado em '%s'.\r\n\r\n"), dest);
+	if ((err = InvokeGCC(CurrentCompileFile))) {
+		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"C:\\Users\\<User>\\AppData\\Temp\\POPTools\\output.log\"\n"), err);
+		CompileSuccessfulMessage(str);
+	} else if(ShowSuccessMessage) {
+		sprintf(str, _("Compilado com sucesso. O arquivo binário foi criado em '%s'.\r\n\r\n"), CurrentCompileFile);
+		CompileSuccessfulMessage(str);
 	}
-
-	CompileSuccessfulMessage(str);
 
 	return err;
 }

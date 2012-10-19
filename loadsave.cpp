@@ -401,7 +401,6 @@ BOOL LoadProjectFromFile(char *filename)
 	unsigned long int magic;
 
     FreeEntireProgram();
-    strcpy(CurrentCompileFile, "");
 
 	char szAppPath[MAX_PATH]  = "";
 	char szfilename[MAX_PATH] = "";

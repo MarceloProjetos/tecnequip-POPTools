@@ -481,7 +481,6 @@ public:
 			EXEC_OPCODE(cmdSimulationSingleCycle  , MNU_SINGLE_CYCLE           );
 
 			EXEC_OPCODE(cmdCompile                , MNU_COMPILE                );
-			EXEC_OPCODE(cmdCompileAs              , MNU_COMPILE_AS             );
 			EXEC_OPCODE(cmdCompileAndProgram      , MNU_PROGRAM                );
 
 			EXEC_OPCODE(cmdDebug                  , MNU_DEBUG                  );

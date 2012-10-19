@@ -1515,6 +1515,8 @@ void FreeEntireProgram(void)
 			break;
 		}
 	}
+
+    strcpy(CurrentCompileFile, "");
 }
 
 //-----------------------------------------------------------------------------

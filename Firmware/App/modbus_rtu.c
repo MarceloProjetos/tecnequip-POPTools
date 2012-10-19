@@ -1,9 +1,5 @@
 #include "modbus_rtu.h"
 
-#ifdef  __cplusplus
-extern "C" {
-#endif
-
 /* Table of CRC values for high-order byte */
 static unsigned char auchCRCHi[] = {
 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81,
@@ -702,7 +698,3 @@ unsigned short int Modbus_RTU_CRC16(unsigned char *puchMsg, unsigned short int u
   //return (uchCRCHi << 8 | uchCRCLo) ;
   return (uchCRCLo << 8 | uchCRCHi) ;
 }
-
-#ifdef  __cplusplus
-}
-#endif

@@ -1,9 +1,5 @@
 #include "poptools.h"
 
-// We should display messages to the user differently if we are running
-// interactively vs. in batch (command-line) mode.
-BOOL RunningInBatchMode = FALSE;
-
 // Allocate memory on a local heap
 HANDLE MainHeap;
 
@@ -64,24 +60,9 @@ void Error(char *str, ...)
     char buf[1024];
     va_start(f, str);
     vsprintf(buf, str, f);
-    if(RunningInBatchMode) {
-        AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
-        HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-        DWORD written;
 
-        // Indicate that it's an error, plus the output filename
-        char str[MAX_PATH+100];
-        sprintf(str, "compile error ('%s'): ", CurrentCompileFile);
-        WriteFile(h, str, strlen(str), &written, NULL);
-        // The error message itself
-        WriteFile(h, buf, strlen(buf), &written, NULL);
-        // And an extra newline to be safe.
-        strcpy(str, "\n");
-        WriteFile(h, str, strlen(str), &written, NULL);
-    } else {
-        HWND h = GetForegroundWindow();
-        MessageBox(h, buf, _("POPTools Error"), MB_OK | MB_ICONERROR);
-    }
+	HWND h = GetForegroundWindow();
+    MessageBox(h, buf, _("POPTools Error"), MB_OK | MB_ICONERROR);
 }
 
 //-----------------------------------------------------------------------------
@@ -90,18 +71,8 @@ void Error(char *str, ...)
 //-----------------------------------------------------------------------------
 void CompileSuccessfulMessage(char *str)
 {
-    if(RunningInBatchMode) {
-        char str[MAX_PATH+100];
-        sprintf(str, "compiled okay, wrote '%s'\n", CurrentCompileFile);
-
-        AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
-        HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-        DWORD written;
-        WriteFile(h, str, strlen(str), &written, NULL);
-    } else {
-        MessageBox(MainWindow, str, _("Compile"),
-            MB_OK | MB_ICONINFORMATION);
-    }
+    MessageBox(MainWindow, str, _("Compile"),
+        MB_OK | MB_ICONINFORMATION);
 }
 
 //-----------------------------------------------------------------------------
@@ -110,18 +81,8 @@ void CompileSuccessfulMessage(char *str)
 //-----------------------------------------------------------------------------
 void ProgramSuccessfulMessage(char *str)
 {
-    if(RunningInBatchMode) {
-        char str[MAX_PATH+100];
-        sprintf(str, "compiled okay, wrote '%s'\n", CurrentCompileFile);
-
-        AttachConsoleDynamic(ATTACH_PARENT_PROCESS);
-        HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-        DWORD written;
-        WriteFile(h, str, strlen(str), &written, NULL);
-    } else {
-        MessageBox(MainWindow, str, _("Compile Successful"),
-            MB_OK | MB_ICONINFORMATION);
-    }
+    MessageBox(MainWindow, str, _("Compile Successful"),
+        MB_OK | MB_ICONINFORMATION);
 }
 
 //-----------------------------------------------------------------------------
