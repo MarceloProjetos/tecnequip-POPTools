@@ -408,6 +408,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'">true</ExcludedFromBuild>
+      <SubType>Designer</SubType>
     </CustomBuild>
     <CustomBuild Include="MainRibbonPTBR.xml">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe MainRibbonPTBR.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
