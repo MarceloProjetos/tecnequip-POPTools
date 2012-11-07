@@ -46,14 +46,15 @@
     </Command>
     <Command Name="GroupAnalog"     Symbol="cmdGroupAnalog"     Id="30015" LabelTitle="Analógicos"      />
     <Command Name="GroupMotors"     Symbol="cmdGroupMotors"     Id="30022" LabelTitle="Motores"         />
-    <Command Name="GroupEnc"        Symbol="cmdGroupEnc"        Id="30083" LabelTitle="Encoder incremental">
+    <Command Name="GroupEnc"        Symbol="cmdGroupEnc"        Id="30032" LabelTitle="Encoder Incremental">
     <Command.LargeImages>
       <Image Source="imgs/GroupEncHH.bmp"/>
     </Command.LargeImages>
     <Command.SmallImages>
       <Image Source="imgs/GroupEncHS.bmp"/>
     </Command.SmallImages>
-    </Command>
+    </Command>  
+    <Command Name="GroupSSIEnc"     Symbol="cmdGroupSSIEnc"     Id="30033" LabelTitle="Encoder SSI"     />
     <Command Name="GroupCommText"   Symbol="cmdGroupCommText"   Id="30016" LabelTitle="RS-485 - Texto"  />
     <Command Name="GroupCommModBUS" Symbol="cmdGroupCommModBUS" Id="30017" LabelTitle="ModBUS"           >
     <Command.LargeImages>
@@ -64,6 +65,7 @@
     </Command.SmallImages>
     </Command>
     <Command Name="GroupCommOthers" Symbol="cmdGroupCommOthers" Id="30018" LabelTitle="RS-485 - Outros" />
+    <Command Name="GroupMem"        Symbol="cmdGroupMem"        Id="30034" LabelTitle="Memória"         />
     <Command Name="DropDownIO"      Symbol="cmdDropDownIO"      Id="30020" LabelTitle="Mais I/O"         >
       <Command.LargeImages>
         <Image Source="imgs/DropDownIOHH.bmp"/>
@@ -185,6 +187,24 @@
       </Command.LargeImages>
     </Command>
 
+    <Command Name     = "Print"
+     Symbol           = "cmdPrint"
+     Id               = "30109"
+     LabelTitle       = "Imprimir...">
+      <Command.LargeImages>
+        <Image Source="imgs/InstrPrintHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
+    
+    <Command Name         = "About"
+         Symbol           = "cmdAbout"
+         Id               = "30108"
+         LabelTitle       = "Sobre...">
+      <Command.LargeImages>
+        <Image Source="imgs/AboutHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
+    
     <Command Name             = "Exit"
              Symbol           = "cmdExit"
              Id               = "30107"
@@ -194,14 +214,7 @@
       </Command.LargeImages>
     </Command>
 
-    <Command Name             = "About"
-             Symbol           = "cmdAbout"
-             Id               = "30108"
-             LabelTitle       = "Sobre...">
-      <Command.LargeImages>
-        <Image Source="imgs/AboutHH.bmp"/>
-      </Command.LargeImages>
-    </Command>
+
 
     <!-- Comandos relacionados à edição do Diagrama Ladder -->
     <Command Name       = "Undo"
@@ -1648,6 +1661,33 @@
         <Image Source="imgs/InstrWriteDAHS.bmp"/>
       </Command.SmallImages>
     </Command>
+
+    <Command Name       = "InstrRampDA"
+             Symbol     = "cmdInstrRampDA"
+             Id         = "30537"
+             LabelTitle = "Rampa de Aceleração/Desaceleração">
+      <Command.TooltipTitle      >Rampa de Aceleração/Desaceleração (Ctrl+R)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir rampa de aceleração/desaceleração na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrRampDAHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrRampDAHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name       = "ExampleRampDA"
+             Symbol     = "cmdExampleRampDA"
+             Id         = "31537"
+             LabelTitle = "Rampa de Aceleração/Desaceleração">
+      <Command.TooltipTitle      >Rampa de Aceleração/Desaceleração (Ctrl+R)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução rampa de aceleração/desaceleração.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrRampDAHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrRampDAHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
     
     <Command Name       = "InstrPWM"
              Symbol     = "cmdInstrPWM"
@@ -1681,7 +1721,7 @@
              Id         = "30556"
              LabelTitle = "Posicionamento D/A e ENC">
       <Command.TooltipTitle>Posicionamento D/A e ENC (Ctrl+D)</Command.TooltipTitle>
-      <Command.TooltipDescription>Objeto de posicionamento atravez do D/A e ENCODER.</Command.TooltipDescription>
+      <Command.TooltipDescription>Objeto de posicionamento atraves do D/A e ENCODER.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrPosHH.bmp"/>
       </Command.LargeImages>
@@ -1689,7 +1729,7 @@
         <Image Source="imgs/InstrPosHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    <Command Name         = "ExamplePos"
+    <Command Name       = "ExamplePos"
              Symbol     = "cmdExamplePos"
              Id         = "31556"
              LabelTitle = "Posicionamento">
@@ -1716,10 +1756,10 @@
         <Image Source="imgs/InstrReadEncHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    <Command Name         = "ExampleReadEnc"
-               Symbol     = "cmdExampleReadEnc"
-               Id         = "31535"
-               LabelTitle = "Leitura de Encoder">
+    <Command Name       = "ExampleReadEnc"
+             Symbol     = "cmdExampleReadEnc"
+             Id         = "31535"
+             LabelTitle = "Leitura de Encoder">
       <Command.TooltipTitle      >Leitura de Encoder (Q)</Command.TooltipTitle>
       <Command.TooltipDescription>Abrir exemplo de instrução leitura de encoder.</Command.TooltipDescription>
       <Command.LargeImages>
@@ -1730,10 +1770,10 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name     = "InstrWriteEnc"
-           Symbol     = "cmdInstrWriteEnc"
-           Id         = "30557"
-           LabelTitle = "Escrita no Encoder">
+    <Command Name       = "InstrWriteEnc"
+             Symbol     = "cmdInstrWriteEnc"
+             Id         = "30557"
+             LabelTitle = "Escrita no Encoder">
       <Command.TooltipTitle>Escrita no Encoder (Q)</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir Escrita no encoder na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
@@ -1784,30 +1824,31 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name         = "InstrRampDA"
-               Symbol     = "cmdInstrRampDA"
-               Id         = "30537"
-               LabelTitle = "Rampa de Aceleração/Desaceleração">
-      <Command.TooltipTitle      >Rampa de Aceleração/Desaceleração (Ctrl+R)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir rampa de aceleração/desaceleração na posição do cursor.</Command.TooltipDescription>
+    <!-- Comandos para Encoder SSI no Diagrama Ladder -->
+    <Command Name         = "InstrSSIEnc"
+               Symbol     = "cmdInstrSSIEnc"
+               Id         = "30558"
+               LabelTitle = "Encoder SSI">
+      <Command.TooltipTitle      >Encoder SSI</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir um comando de leitura na porta SSI.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrRampDAHH.bmp"/>
+        <Image Source="imgs/InstrSsiHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrRampDAHS.bmp"/>
+        <Image Source="imgs/InstrSsiHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    <Command Name         = "ExampleRampDA"
-               Symbol     = "cmdExampleRampDA"
-               Id         = "31537"
-               LabelTitle = "Rampa de Aceleração/Desaceleração">
-      <Command.TooltipTitle      >Rampa de Aceleração/Desaceleração (Ctrl+R)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução rampa de aceleração/desaceleração.</Command.TooltipDescription>
+    <Command Name         = "ExampleSSIEnc"
+               Symbol     = "cmdExampleSSIEnc"
+               Id         = "31558"
+               LabelTitle = "Encoder SSI">
+      <Command.TooltipTitle      >Encoder SSI</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de leitura na porta SSI.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrRampDAHH.bmp"/>
+        <Image Source="imgs/InstrSsiHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrRampDAHS.bmp"/>
+        <Image Source="imgs/InstrSsiHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
@@ -1865,64 +1906,10 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name         = "InstrReadNS600"
-               Symbol     = "cmdInstrReadNS600"
-               Id         = "30540"
-               LabelTitle = "Leitura de NS-600 Yaskawa">
-      <Command.TooltipTitle      >Leitura de NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir leitura de NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrReadNS600HH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrReadNS600HS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-    <Command Name         = "ExampleReadNS600"
-               Symbol     = "cmdExampleReadNS600"
-               Id         = "31540"
-               LabelTitle = "Leitura de NS-600 Yaskawa">
-      <Command.TooltipTitle      >Leitura de NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução leitura de NS-600 Yaskawa.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrReadNS600HH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrReadNS600HS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
-    <Command Name         = "InstrWriteNS600"
-               Symbol     = "cmdInstrWriteNS600"
-               Id         = "30541"
-               LabelTitle = "Escrita de NS-600 Yaskawa">
-      <Command.TooltipTitle      >Escrita de NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir escrita no NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrWriteNS600HH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrWriteNS600HS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-    <Command Name         = "ExampleWriteNS600"
-               Symbol     = "cmdExampleWriteNS600"
-               Id         = "31541"
-               LabelTitle = "Escrita de NS-600 Yaskawa">
-      <Command.TooltipTitle      >Escrita de NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução escrita no NS-600 Yaskawa.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrWriteNS600HH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrWriteNS600HS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
     <Command Name         = "InstrWriteChar"
-               Symbol     = "cmdInstrWriteChar"
-               Id         = "30542"
-               LabelTitle = "Escrita de Caracter">
+           Symbol     = "cmdInstrWriteChar"
+           Id         = "30542"
+           LabelTitle = "Escrita de Caracter">
       <Command.TooltipTitle      >Escrita de Caracter</Command.TooltipTitle>
       <Command.TooltipDescription>Inserir escrita de caracter na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
@@ -2027,6 +2014,88 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name         = "InstrReadNS600"
+               Symbol     = "cmdInstrReadNS600"
+               Id         = "30540"
+               LabelTitle = "Leitura de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Leitura de NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir leitura de NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadNS600HH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadNS600HS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleReadNS600"
+               Symbol     = "cmdExampleReadNS600"
+               Id         = "31540"
+               LabelTitle = "Leitura de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Leitura de NS-600 Yaskawa (Shift+K)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução leitura de NS-600 Yaskawa.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadNS600HH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadNS600HS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name         = "InstrWriteNS600"
+               Symbol     = "cmdInstrWriteNS600"
+               Id         = "30541"
+               LabelTitle = "Escrita de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Escrita de NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir escrita no NS-600 Yaskawa na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteNS600HH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteNS600HS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleWriteNS600"
+               Symbol     = "cmdExampleWriteNS600"
+               Id         = "31541"
+               LabelTitle = "Escrita de NS-600 Yaskawa">
+      <Command.TooltipTitle      >Escrita de NS-600 Yaskawa (Ctrl+K)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrita no NS-600 Yaskawa.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteNS600HH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteNS600HS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <!-- Comandos para acessar a memória do CLP -->
+    <Command Name         = "InstrMem"
+               Symbol     = "cmdInstrMem"
+               Id         = "30559"
+               LabelTitle = "Memória">
+      <Command.TooltipTitle      >Memória permanente no CLP</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir uma leitura ou escrita na memoria permanente do CLP.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMemHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMemHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleMen"
+               Symbol     = "cmdExampleMen"
+               Id         = "31559"
+               LabelTitle = "Memória">
+      <Command.TooltipTitle      >Memória</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de acesso a Memória do CLP.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMemHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMemHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    
     <Command Name         = "InstrReadModBUS485"
                Symbol     = "cmdInstrReadModBUS485"
                Id         = "30546"
@@ -2493,6 +2562,8 @@
                 <Scale Group ="GroupAnalog"     Size="Large"  />
                 <Scale Group ="GroupMotors"     Size="Large"  />
                 <Scale Group ="GroupEnc"        Size="Large"  />
+                <Scale Group ="GroupSSIEnc"     Size="Large"  />
+                <Scale Group ="GroupMem"        Size="Large"  />
                 <Scale Group ="GroupCommText"   Size="Large"  />
                 <Scale Group ="GroupCommModBUS" Size="Large"  />
                 <Scale Group ="GroupCommOthers" Size="Large"  />
@@ -2522,6 +2593,9 @@
             <Button CommandName="InstrWriteEnc"/>
             <Button CommandName="InstrResetEnc"/>
           </Group>
+          <Group CommandName="GroupSSIEnc" SizeDefinition="OneButton">
+            <Button CommandName="InstrSSIEnc"/>
+          </Group>
           <Group CommandName="GroupCommModBUS" SizeDefinition="TwoButtons">
             <DropDownButton CommandName="DropDownMBRecv">
               <MenuGroup Class="MajorItems">
@@ -2547,6 +2621,9 @@
             <Button CommandName="InstrWriteUSS"/>
             <Button CommandName="InstrReadNS600"/>
             <Button CommandName="InstrWriteNS600"/>
+          </Group>
+          <Group CommandName="GroupMem" SizeDefinition="OneButton">
+            <Button CommandName="InstrMem"/>
           </Group>
         </Tab>
         <Tab CommandName="TabSimulation" ApplicationModes="1">
@@ -2584,6 +2661,9 @@
                 </MenuGroup>
               </SplitButton.MenuGroups>
             </SplitButton>
+          </MenuGroup>
+          <MenuGroup>
+            <Button CommandName="Print"  ApplicationModes="0,1" />
           </MenuGroup>
           <MenuGroup>
             <Button CommandName="About"  ApplicationModes="0,1" />
