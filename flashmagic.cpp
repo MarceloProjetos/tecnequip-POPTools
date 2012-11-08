@@ -119,8 +119,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_connect(&options, sizeof(options));
 	if (presults->result != FM_OK)
 	{
-		// Sound rec_ok save in Sounds/rec_erro.wav
-		PlaySound(MAKEINTRESOURCE(5001),GetModuleHandle(NULL), SND_RESOURCE);
+		// Sound rec_ok save in Sounds/rec_ok.wav
+		PlaySound(MAKEINTRESOURCE(IDB_WAVE_REC_OK),GetModuleHandle(NULL), SND_RESOURCE);
 		switch (presults->result)
 		{
 		  case FM_ERROR_PORT:
@@ -149,8 +149,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	presults = fm_erase(FM_BLOCKS, 0x3FFFFFFF, 1, EraseProgress, 0, NULL);
 	if (presults->result != FM_OK)
 	{
-		// Sound rec_ok save in Sounds/rec_erro.wav
-		PlaySound(MAKEINTRESOURCE(5001),GetModuleHandle(NULL), SND_RESOURCE);
+		// Sound rec_erro save in Sounds/rec_erro.wav
+		PlaySound(MAKEINTRESOURCE(IDB_WAVE_REC_ERRO),GetModuleHandle(NULL), SND_RESOURCE);
 		switch (presults->result)
 		{
 			case FM_ERROR_CMD:

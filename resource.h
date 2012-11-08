@@ -3,21 +3,21 @@
 #define IDB_SPLASH                      101
 #define IDI_ICON1                       102
 
-#define CLOCK_EDIT                      201
-#define NETWORK_CONFIG                  202
-#define RS485_CONFIG                    203
-#define TIME_CONFIG                     204
+#define IDB_CLOCK_EDIT                  201
+#define IDB_NETWORK_CONFIG              202
+#define IDB_RS485_CONFIG                203
+#define IDB_TIME_CONFIG                 204
 
-#define IDB_WAVE_REC_OK     5000
-#define IDB_WAVE_REC_ERRO   5001
+#define IDB_WAVE_REC_OK                5000
+#define IDB_WAVE_REC_ERRO              5001
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
   #ifndef APSTUDIO_READONLY_SYMBOLS
-  #define _APS_NEXT_RESOURCE_VALUE        103
-  #define _APS_NEXT_COMMAND_VALUE         40001
-  #define _APS_NEXT_CONTROL_VALUE         1000
-  #define _APS_NEXT_SYMED_VALUE           101
+  #define _APS_NEXT_RESOURCE_VALUE      103
+  #define _APS_NEXT_COMMAND_VALUE     40001
+  #define _APS_NEXT_CONTROL_VALUE      1000
+  #define _APS_NEXT_SYMED_VALUE         101
   #endif
 #endif

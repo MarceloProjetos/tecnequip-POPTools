@@ -1,38 +1,31 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // RT_MANIFEST
 //
-
 1                       RT_MANIFEST             "poptools.exe.manifest"
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Icon
 //
-
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-//4000                    ICON                    "favicon.ico"
+//4000                  ICON                    "favicon.ico"
 4000                    ICON                    "poptools32.ico"
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
-
 IDB_SPLASH              BITMAP                  "splash.bmp"
-CLOCK_EDIT              BITMAP                  "imgs/clock_edit.bmp"
-NETWORK_CONFIG          BITMAP                  "imgs/network_config.bmp"
-RS485_CONFIG            BITMAP                  "imgs/RS485_config.bmp"
-TIME_CONFIG             BITMAP                  "imgs/time_config.bmp"
-
+IDB_CLOCK_EDIT          BITMAP                  "imgs/clock_edit.bmp"
+IDB_NETWORK_CONFIG      BITMAP                  "imgs/network_config.bmp"
+IDB_RS485_CONFIG        BITMAP                  "imgs/RS485_config.bmp"
+IDB_TIME_CONFIG         BITMAP                  "imgs/time_config.bmp"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Sound
 //
-IDB_WAVE_REC_OK                    WAVE                    "Sounds/rec_ok.wav"
-IDB_WAVE_REC_ERRO                  WAVE                    "Sounds/rec_erro.wav"
+IDB_WAVE_REC_OK          WAVE                    "Sounds/rec_ok.wav"
+IDB_WAVE_REC_ERRO        WAVE                    "Sounds/rec_erro.wav"
