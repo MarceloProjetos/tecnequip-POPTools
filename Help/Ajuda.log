@@ -1,16 +1,22 @@
 Microsoft HTML Help Compiler 4.74.8702
 
-Compiling f:\SVN\POPTools\Help\Ajuda.chm
+Compiling c:\Pessoal\SVN\Help\Ajuda.chm
 
-css\styles_standard.css
 img\bottom_line.gif
+topics\Default.htm
+img\Diagramaladder.png
+img\Diagramaladder2.png
 img\icon.jpg
+img\InstrBobina.png
+img\InstrBobina2.png
+img\InstrContact.png
+img\InstrContact2.png
+css\styles_standard.css
+topics\Topic1.htm
 img\topicbar.gif
 img\topicbar_left.gif
-img\WelcomeLogo.jpg
-img\WelcomePicture.jpg
-topics\Topic1.htm
-topics\Default.htm
+img\WelcomeLogo.png
+img\WelcomePicture.png
 Contents.hhc
 Index.hhk
 topics\FileNew.htm
@@ -113,16 +119,19 @@ topics\SimulationExit.htm
 HHC3004: Warning: TeclasAtalho.htm : The HTML tag ")</td" is not a valid HTML tag (it does not begin with an alphanumeric character).
 topics\TeclasAtalho.htm
 topics\License.htm
+topics\Diagramaladder.htm
+topics\Primeiroladder.htm
+topics\Exemplodeaplicacao.htm
 img\ConfigSerial.png
 img\ConfigRede.png
 img\ConfigPosicionamento.png
 
-Compile time: 0 minutes, 0 seconds
-103	Topics
-403	Local links
+Compile time: 0 minutes, 3 seconds
+106	Topics
+420	Local links
 0	Internet links
 3	Graphics
 
 
-Created f:\SVN\POPTools\Help\Ajuda.chm, 144,173 bytes
-Compression decreased file by 160,514 bytes.
+Created c:\Pessoal\SVN\Help\Ajuda.chm, 598,937 bytes
+Compression decreased file by 157,664 bytes.

@@ -3,7 +3,7 @@ Title=Ajuda
 Compiled file=Ajuda.chm
 Error log file=
 Default topic=topics\default.htm
-Language=0x0409 Inglês (Estados Unidos)
+Language=0x0409 English (United States)
 Full text search stop list file=
 Contents file=Contents.hhc
 Index file=Index.hhk
@@ -24,19 +24,19 @@ Default Font=Tahoma,8,1
 main="","Contents.hhc","Index.hhk","topics\default.htm","topics\default.htm",,,,,0x00063520,264,0x0010304E,[25,25,756,515],,,,0,0,0,0
 
 [FILES]
-css\styles_standard.css
 img\bottom_line.gif
+topics\Default.htm
+img\Diagramaladder.png
+img\Diagramaladder2.png
 img\icon.jpg
+img\InstrBobina.png
+img\InstrBobina2.png
+img\InstrContact.png
+img\InstrContact2.png
+css\styles_standard.css
+topics\Topic1.htm
 img\topicbar.gif
 img\topicbar_left.gif
-img\WelcomeLogo.jpg
-img\WelcomePicture.jpg
-topics\Topic1.htm
-topics\Default.htm
-
-[ALIAS]
-#include contexts.ali
-
-[MAP]
-#include contexts.h
+img\WelcomeLogo.png
+img\WelcomePicture.png
 

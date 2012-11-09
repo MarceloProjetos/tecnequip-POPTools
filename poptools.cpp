@@ -1883,6 +1883,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	InitRibbon(MainWindow);
 
+
 	NewProgram();
     strcpy(CurrentSaveFile, "");
 
