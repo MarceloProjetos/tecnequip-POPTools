@@ -1,6 +1,9 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html><head><title>Bem vindo...</title>
 
+
+
+
   
 
   
@@ -58,26 +61,120 @@ seja relevante para a bobina saída (s).</span></p>
 demonstrado acima essa é uma linguagem de Diagrama de Blocos de
 Funções, ou seja, os programas feitos nesta linguagem, os valores fluem
 das entradas para as saídas, através de blocos de funções.</span></p>
-<p style="font-weight: bold;"><span style="font-weight: normal;"><br>
+<p style="font-weight: bold;"><span style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 </span></p>
-<p style="font-weight: bold;">Composição do CLP: <span style="font-weight: normal;">O hardware desenvolvido compreende um circuito lógico que pode ser dividido em:<br>
+<p style="font-weight: bold;">Esquema Eletrico:<span style="font-weight: normal;"> Outra forma de representar uma função lógica é
+ através da utilização de um circuito  eléctrico.</span></p>
+
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder3.png" style="width: 583px; height: 118px;" alt="paralelo ladder"><br>
+</span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;">O esquema acima e abaixo são equivalentes</span><br>
+<img src="../img/Diagramaladder4.png" style="width: 492px; height: 431px;" alt="Esquema eletrico equivalente"><br>
+</p>
+<p style="font-weight: bold;">LÓGICA COMBINACIONAL: <span style="font-weight: normal;">Agora
+iremos trabalhar alguns conceitos importantes para o desenvolvimento de
+um processo lógico de raciocínio que mas adiante nos permitirá
+compreender como serão relacionados todos os fatores relevantes à
+elaboração de projetos envolvendocontroladores programáveis. </span></p>
+<p style="font-weight: bold;">OPERAÇÕES FUNDAMENTAIS: <span style="font-weight: normal;">A
+teoria matemática das proposições lógicas foi apresentada em 1854 (1),
+pelo filósofo e matemático inglês George Boole (1815-1864), definindo
+assim os conceitosbásicos da chamada álgebra de Boole para dois valores (sistema binário).  </span><br style="font-weight: normal;">
+</p>
+<p>Inicialmente aplicou a teoria de Boole ao estudo e simplificação de
+funções usadas em telefonia, percebendo que as leis que regem as
+relações entre proposições lógicas eram as mesmas que se aplicavam para
+dispositivos de chaveamento de dois estados, já que estes dispositivos
+podem assumir os seguintes estados, como por exemplo : “ligado” ou
+“desligado”, “aberto” ou “fechado”, “potencial alto” ou ” potencial
+baixo”, “verdadeiro” ou “falso”.</p>
+<p style="font-weight: bold;"><span style="font-weight: normal;">A seguir mostraremos as equações algébricas e a tabela verdade dos operadores </span><span style="font-weight: normal;">fundamentais da álgebra booleana.</span><br>
+</p>
+
+<p style="font-weight: bold;">NOT: <span style="font-weight: normal;">Circuito lógico Equivalente e Diagrama Ladder</span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder5.JPG" style="width: 400px; height: 98px;" alt="diagrama_not"></span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder6.png" style="width: 583px; height: 94px;" alt="Diagrama_not_pop"><br>
 </span></p>
 
-<ul>
-  <li style="height: 12px;"><span style="font-weight: normal;">Circuito lógico "CPU" - CortexM3</span>;</li>
-  <li style="height: 12px;"><span style="font-weight: normal;">Circuito de comunicação RS-485</span>;</li>
-  <li style="height: 12px;"><span style="font-weight: normal;">Circuito de comunicação </span><span style="font-weight: normal;">Ethernet 10/100</span>;</li>
-  <li style="height: 12px;">Circuitos de alimenção 8-30V CC;</li>
-  <li style="height: 12px;">Circuitos de entrada analogica de 0-10V;</li>
-  <li style="height: 12px;">Circuito de saida analogica -10V a +10V;</li>
-  <li style="height: 12px;">Circuitos de entrada digital de 8-30V CC;</li>
-  <li style="height: 12px;">Circuito de saida digital 16 portas de estado solido;</li>
-  <li style="height: 5px;">Circuito de gravação via USB "Obs- O Clp pode ser gravado via USB sem a necessidade de alimentação externa;</li>
+<p style="font-weight: bold;">AND: <span style="font-weight: normal;">Circuito lógico Equivalente e Diagrama Ladder</span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder7.JPG" style="width: 400px; height: 122px;" alt="Diagrama_AND"></span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder8.png" style="width: 583px; height: 94px;" alt="Diagrama_AND_POP"><br>
+</span></p>
 
-</ul>
+<p style="font-weight: bold;">NAND: <span style="font-weight: normal;">Circuito lógico Equivalente e Diagrama Ladder</span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder9.JPG" style="width: 400px; height: 124px;" alt="Diagrama_NAND"></span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder10.png" style="width: 583px; height: 94px;" alt="Diagrama_NAND_POP"><br>
+</span></p>
+
+<p style="font-weight: bold;">OR: <span style="font-weight: normal;">Circuito lógico Equivalente e Diagrama Ladder</span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder11.JPG" style="width: 400px; height: 124px;" alt="Diagrama_OR"></span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder12.png" style="width: 583px; height: 118px;" alt="Diagrama_OR_POP"><br>
+</span></p>
+
+<p style="font-weight: bold;">NOR: <span style="font-weight: normal;">Circuito lógico Equivalente e Diagrama Ladder</span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder13.JPG" style="width: 400px; height: 124px;" alt="Diagrama_NOR"></span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder14.png" style="width: 583px; height: 118px;" alt="Diagrama_NOR_POP"><br>
+</span></p>
+
+
+<p style="font-weight: bold;">XOR: <span style="font-weight: normal;">Circuito lógico Equivalente e Diagrama Ladder</span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder15.JPG" style="width: 400px; height: 128px;" alt="Diagrama_XOR"></span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder16.png" style="width: 583px; height: 118px;" alt="Diagrama_XOR_POP"><br>
+</span></p>
+
+
+
+
+
 <br>
+<p style="font-weight: bold;"><br>
+</p>
+<p style="font-weight: bold;">Sinais Analogicos: <span style="font-weight: normal;">São sinais que variam continuamente no tempo conforme uma regra de comparação à uma referência definida.<br>
+Exemplos : potenciômetros, transdutores de temperatura, pressão, célula de<br>
+carga, umidade, vazão, medidores, válvulas e atuadores analógicos, acionamentos de<br>
+motores, etc.</span></p>
+<p style="font-weight: bold;">Sinais Digitais: <span style="font-weight: normal;">São sinais que variam continuamente no tempo assumindo apenas dois valores<br>
+definidos e distintos. Ou seja essas portas são tratadas somente como 1 ou 0.</span><span style="font-weight: normal;"></span>
+</p>
+
+<p style="font-weight: bold;">Funcionamento do CLP: <span style="font-weight: normal;">Como
+todo sistema microprocessado, tem seu princípio de funcionamento
+baseado em três passos após o inicio, Ler as entradas, Executar o
+software Ladder e Atualiza as saidas. Então como mostra a figura abaixo
+começa um novo ciclo.<br>
+</span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder17.png" style="width: 386px; height: 430px;" alt="Cliclo_CLP"><br>
+</span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><span style="font-weight: bold;"></span>Baseado na imagens acima agora é possivel dividir essas partes do CLP em:</span></p>
+<p style="font-weight: bold;"><span style="font-weight: bold;">Início:</span><br>
+</p>
+<ul>
+  <li style="height: 28px;">Circuito de gravação via USB "Obs- O Clp pode ser gravado via USB sem a necessidade de alimentação externa;</li>
+  <li>Circuitos de alimenção 8-30V CC;</li>
+</ul>
+
+<p style="font-weight: bold;"><span style="font-weight: bold;">Ler Entradas:<br>
+</span></p>
+<ul>
+  <li style="height: 12px;">Lê o circuitos de entrada analogica de 0-10V;</li>
+  <li>Lê o circuitos de entrada digital de 8-30V CC;</li>
+</ul>
+<p style="font-weight: bold;">Executar o programa</p>
+<ul>
+  <li style="height: 6px;">Executar o ladder gerado pelo programa POOPTools e todos os calculos<br>
+  </li>
+</ul>
+<ul>
+<li style="height: 12px;"><span style="font-weight: normal;">Circuito de comunicação RS-485</span>;</li><li style="height: 12px;"><span style="font-weight: normal;">Circuito de comunicação </span><span style="font-weight: normal;">Ethernet 10/100</span>;</li>
+</ul>
+<p style="font-weight: bold;">Atualizar Saídas</p>
+<ul>
+  <li>Atualiza o circuito de saida digital 16 portas de estado solido;<br>
+  </li>
+  <li>Atualiza o circuito de saida analogica -10V a +10V;</li>
+</ul>
 <p style="font-weight: bold;"><span style="font-weight: normal;">O Desenho abaixo exemplifica de maneira simples como são as ligações do CLP POP-7.</span></p>
-<p style="font-weight: bold;"><span style="font-weight: normal;"><img style="width: 651px; height: 545px;" alt="Composição" src="../img/Diagramaladder2.png"><br>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder2.png" style="width: 651px; height: 545px;" alt="Composição"><br>
 </span>
 </p>
 

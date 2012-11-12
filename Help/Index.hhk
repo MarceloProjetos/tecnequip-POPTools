@@ -409,6 +409,22 @@
           <param name="Name" value="Teclas de Atalho">
           <param name="Local" value="topics\TeclasAtalho.htm">
         </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Bem vindo">
+          <param name="Local" value="topics\default.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Bem vindo">
+          <param name="Local" value="topics\InstrContact.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Bem vindo">
+          <param name="Local" value="topics\InstrCoil.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Topic1">
+          <param name="Local" value="topics\Topic1.htm">
+        </OBJECT>
     </UL>
 </BODY>
 </HTML>
