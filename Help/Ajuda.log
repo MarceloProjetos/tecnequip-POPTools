@@ -130,7 +130,6 @@ topics\SimulationStop.htm
 topics\SimulationPause.htm
 topics\SimulationSingleCycle.htm
 topics\SimulationExit.htm
-HHC3004: Warning: TeclasAtalho.htm : The HTML tag ")</td" is not a valid HTML tag (it does not begin with an alphanumeric character).
 topics\TeclasAtalho.htm
 topics\License.htm
 topics\Diagramaladder.htm
@@ -139,14 +138,15 @@ topics\Exemplodeaplicacao.htm
 img\ConfigSerial.png
 img\ConfigRede.png
 img\ConfigPosicionamento.png
+img\teclado_atalho.jpg
 img\Diagramaladder17.png
 
 Compile time: 0 minutes, 3 seconds
 106	Topics
-428	Local links
-0	Internet links
-4	Graphics
+432	Local links
+1	Internet link
+5	Graphics
 
 
-Created c:\Pessoal\SVN\Help\Ajuda.chm, 740,051 bytes
-Compression decreased file by 185,235 bytes.
+Created c:\Pessoal\SVN\Help\Ajuda.chm, 750,903 bytes
+Compression decreased file by 242,494 bytes.
