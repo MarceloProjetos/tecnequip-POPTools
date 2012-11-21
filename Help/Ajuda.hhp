@@ -24,7 +24,11 @@ Default Font=Tahoma,8,1
 main="","Contents.hhc","Index.hhk","topics\default.htm","topics\default.htm",,,,,0x00063520,264,0x0010304E,[25,25,756,515],,,,0,0,0,0
 
 [FILES]
+img\About.png
 img\bottom_line.gif
+img\ConfigPosicionamento.png
+img\ConfigRede.png
+img\ConfigSerial.png
 topics\Default.htm
 img\Diagramaladder.png
 img\Diagramaladder10.png
@@ -34,6 +38,7 @@ img\Diagramaladder13.JPG
 img\Diagramaladder14.png
 img\Diagramaladder15.JPG
 img\Diagramaladder16.png
+img\Diagramaladder17.png
 img\Diagramaladder2.png
 img\Diagramaladder3.png
 img\Diagramaladder4.png
@@ -42,12 +47,22 @@ img\Diagramaladder6.png
 img\Diagramaladder7.JPG
 img\Diagramaladder8.png
 img\Diagramaladder9.JPG
+img\Exit.png
+img\FileNew.png
+img\FileOpen.png
+img\FileSave.png
+img\FileSaveAs.png
+img\FileSaveAsC.png
+img\FileSaveAsC2.png
+img\FileSaveAsTxt.png
 img\icon.jpg
 img\InstrBobina.png
 img\InstrBobina2.png
 img\InstrContact.png
 img\InstrContact2.png
+img\licenca1.png
 css\styles_standard.css
+img\teclado_atalho.jpg
 topics\Topic1.htm
 img\topicbar.gif
 img\topicbar_left.gif

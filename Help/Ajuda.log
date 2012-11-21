@@ -2,7 +2,11 @@ Microsoft HTML Help Compiler 4.74.8702
 
 Compiling c:\Pessoal\SVN\Help\Ajuda.chm
 
+img\About.png
 img\bottom_line.gif
+img\ConfigPosicionamento.png
+img\ConfigRede.png
+img\ConfigSerial.png
 topics\Default.htm
 img\Diagramaladder.png
 img\Diagramaladder10.png
@@ -12,6 +16,7 @@ img\Diagramaladder13.JPG
 img\Diagramaladder14.png
 img\Diagramaladder15.JPG
 img\Diagramaladder16.png
+img\Diagramaladder17.png
 img\Diagramaladder2.png
 img\Diagramaladder3.png
 img\Diagramaladder4.png
@@ -20,12 +25,22 @@ img\Diagramaladder6.png
 img\Diagramaladder7.JPG
 img\Diagramaladder8.png
 img\Diagramaladder9.JPG
+img\Exit.png
+img\FileNew.png
+img\FileOpen.png
+img\FileSave.png
+img\FileSaveAs.png
+img\FileSaveAsC.png
+img\FileSaveAsC2.png
+img\FileSaveAsTxt.png
 img\icon.jpg
 img\InstrBobina.png
 img\InstrBobina2.png
 img\InstrContact.png
 img\InstrContact2.png
+img\licenca1.png
 css\styles_standard.css
+img\teclado_atalho.jpg
 topics\Topic1.htm
 img\topicbar.gif
 img\topicbar_left.gif
@@ -135,18 +150,13 @@ topics\License.htm
 topics\Diagramaladder.htm
 topics\Primeiroladder.htm
 topics\Exemplodeaplicacao.htm
-img\ConfigSerial.png
-img\ConfigRede.png
-img\ConfigPosicionamento.png
-img\teclado_atalho.jpg
-img\Diagramaladder17.png
 
 Compile time: 0 minutes, 3 seconds
 106	Topics
-432	Local links
+478	Local links
 1	Internet link
-5	Graphics
+0	Graphics
 
 
-Created c:\Pessoal\SVN\Help\Ajuda.chm, 750,903 bytes
-Compression decreased file by 242,494 bytes.
+Created c:\Pessoal\SVN\Help\Ajuda.chm, 880,263 bytes
+Compression decreased file by 252,799 bytes.

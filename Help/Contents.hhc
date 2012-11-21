@@ -222,12 +222,10 @@
                           <param name="Name" value="Manual do Usuário">
                           <param name="Local" value="topics\UserManual.htm">
                         </OBJECT>
-                        <UL>
-                            <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Teclado">
-                              <param name="Local" value="topics\KeyboardManual.htm">
-                            </OBJECT>
-                        </UL>
+                        <LI><OBJECT type="text/sitemap">
+                          <param name="Name" value="Teclado">
+                          <param name="Local" value="topics\KeyboardManual.htm">
+                        </OBJECT>
                         <LI><OBJECT type="text/sitemap">
                           <param name="Name" value="Exemplos">
                           <param name="Local" value="topics\Examples.htm">
@@ -571,6 +569,18 @@
         <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Licença">
           <param name="Local" value="topics\License.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Diagramaladder">
+          <param name="Local" value="topics\Diagramaladder.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Primeiroladder">
+          <param name="Local" value="topics\Primeiroladder.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Exemplodeaplicacao">
+          <param name="Local" value="topics\Exemplodeaplicacao.htm">
         </OBJECT>
     </UL>
 </BODY>
