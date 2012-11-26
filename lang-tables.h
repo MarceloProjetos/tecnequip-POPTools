@@ -1665,6 +1665,8 @@ static LangTable LangPtTable[] = {
 	{ "Operator 2", "Operador 2" },
 	{ "Square Root", "Raiz Quadrada" },
 	{ "start series [", "iniciando serie [" },
+	{ "SMTWTFS", "DSTQQSS" },
+	{ "Debug", "Depurar" },
 };
 static Lang LangPt = {
     LangPtTable, sizeof(LangPtTable)/sizeof(LangPtTable[0])

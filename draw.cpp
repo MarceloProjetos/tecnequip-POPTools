@@ -881,7 +881,8 @@ cmp:
         }
 		case ELEM_RTC:
 		{
-            char buf[256];
+			int linha;
+            char bufs[256], bufe[256];
 
 			char mday[10];
 			char month[10];
@@ -891,39 +892,46 @@ cmp:
 			memset(year, 0, sizeof(year));
 
             ElemRTC *t = &leaf->d.rtc;
-			
-            if(t->wday & (1 << 7)) 
-			{
-				int i;
 
-				sprintf(buf, "[%s %02d:%02d:%02d]", _("SMTWTFS"),
-					t->hour, t->minute, t->second);
+			for(linha=0; linha<2; linha++) {
+				struct tm *ptm = linha ? &t->end : &t->start;
 
-				for(i=0; i<7; i++) {
-					if(!(t->wday & (1<<i)))
-						buf[i+1] = '_';
-				}
-            } else {
-				if (t->mday)
-					sprintf(mday, "%02d", t->mday);
-				else
-					sprintf(mday, "%c", '*');
+				if(t->wday & (1 << 7)) 
+				{
+					int i;
 
-				if (t->month)
-					sprintf(month, "%02d", t->month);
-				else
-					sprintf(month, "%c", '*');
+					sprintf(linha ? bufe : bufs, "[\x01%s %02d:%02d:%02d\x02]", _("SMTWTFS"),
+						ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 
-				if (t->year)
-					sprintf(year, "%02d", t->year);			
-				else
-					sprintf(year, "%c", '*');
+					for(i=0; i<7 && linha; i++) {
+						if(!(t->wday & (1<<i))) {
+							(linha ? bufe : bufs)[i+2] = ' ';
+						} else {
+							(linha ? bufe : bufs)[i+2] = '*';
+						}
+					}
+				} else {
+					if (ptm->tm_mday)
+						sprintf(mday, "%02d", ptm->tm_mday);
+					else
+						sprintf(mday, " *");
 
-				sprintf(buf, "[%s/%s/%s %02d:%02d:%02d]", mday, month, year, t->hour, t->minute, t->second);
-            } 
+					if (ptm->tm_mon)
+						sprintf(month, "%02d", ptm->tm_mon);
+					else
+						sprintf(month, " *");
 
-            CenterWithSpaces(*cx, *cy, "RTC", poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
+					if (ptm->tm_year)
+						sprintf(year, "%02d", ptm->tm_year);			
+					else
+						sprintf(year, " *  ");
+
+					sprintf(linha ? bufe : bufs, "[\x01%s/%s/%s %02d:%02d:%02d\x02]", mday, month, year, ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
+				} 
+			}
+
+            CenterWithSpaces(*cx, *cy, bufs, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, bufe, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
             break;

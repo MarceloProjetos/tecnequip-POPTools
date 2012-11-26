@@ -28,8 +28,12 @@ MODBUS_HANDLER_FC(MBSlave_ReadDiscreteInputs)
   unsigned int i;
   unsigned char *buf = reply->reply.read_discrete_inputs.data; // Retorna no maximo 8 bytes ou 256 bits (entradas).
 
-  for(i = 0; i < data->read_discrete_inputs.quant; i++)
+  for(i = 0; i < data->read_discrete_inputs.quant; i++) {
+	if(!(i % 8)) { // First bit of byte, set it to zero.
+		buf[i / 8] = 0;
+	}
     buf[i / 8] |= ((hwreg.DigitalInput >> (data->read_discrete_inputs.start + i)) & 1) << (i % 8);
+  }
 
   reply->reply.read_discrete_inputs.size = data->read_discrete_inputs.quant / 8 + (data->read_discrete_inputs.quant % 8 != 0);
 

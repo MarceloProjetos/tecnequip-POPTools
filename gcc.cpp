@@ -247,6 +247,7 @@ static void GenerateDeclarations(FILE *f)
             case INT_EEPROM_BUSY_CHECK:
             case INT_EEPROM_READ:
             case INT_EEPROM_WRITE:
+			case INT_SET_RTC:
 			case INT_CHECK_RTC:
                 break;
 
@@ -438,28 +439,53 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				fprintf(f, "DAC_Start(%d, %d, %s, %s, %s, DAC_Conv(%s, %s));\n", IntCode[i].bit, IntCode[i].literal, IntCode[i].name3, IntCode[i].name4,
 					IsNumber(IntCode[i].name1) ? IntCode[i].name1 : MapSym(IntCode[i].name1), IsNumber(IntCode[i].name2) ? IntCode[i].name2 : MapSym(IntCode[i].name2), IntCode[i].name5);
 				break;
-			case INT_CHECK_RTC:
-				fprintf(f, "RTC_Now = RTC_GetTime();\n");
 
-				int j;
-				for(j = 0; j < indent; j++) fprintf(f, "    ");
-
-				fprintf(f, "%s = ", MapSym(IntCode[i].name1));
-				if (IntCode[i].bit)
-					fprintf(f, "(%d & (1 << RTC_Now.Wday)) && ", IntCode[i].literal);
-				else
-				{
-					if (strcmp(IntCode[i].name2, "0") != 0)
-						fprintf(f, "RTC_Now.Mday == %s && ", IntCode[i].name2);
-					if (strcmp(IntCode[i].name3, "0") != 0)
-						fprintf(f, "RTC_Now.Mon == %s && ", IntCode[i].name3);
-					if (strcmp(IntCode[i].name4, "0") != 0)
-						fprintf(f, "RTC_Now.Year == %s && ", IntCode[i].name4);
-				}
-
-				fprintf(f, "RTC_Now.Hour == %s && RTC_Now.Min == %s && RTC_Now.Sec == %s;\n", 
-							IntCode[i].name5, IntCode[i].name6, IntCode[i].name7);
+			case INT_SET_RTC: {
+				char *RtcName[] = { "RTC_StartTM", "RTC_EndTM" };
+				fprintf(f, "%s.tm_year = %s; %s.tm_mon = %s; %s.tm_mday = %s; %s.tm_hour = %s; %s.tm_min = %s; %s.tm_sec = %s;\n",
+					RtcName[IntCode[i].bit], IntCode[i].name3, RtcName[IntCode[i].bit], IntCode[i].name2, RtcName[IntCode[i].bit], IntCode[i].name1,
+					RtcName[IntCode[i].bit], IntCode[i].name4, RtcName[IntCode[i].bit], IntCode[i].name5, RtcName[IntCode[i].bit], IntCode[i].name6);
 				break;
+			}
+
+			case INT_CHECK_RTC:
+				{
+					char *RTC_Mode;
+					int mode = atoi(IntCode[i].name2), j;
+					int WeekDays = IntCode[i].literal & 0x7F, UseWeekDays = (IntCode[i].literal >> 7) & 1;
+
+					if(mode == ELEM_RTC_MODE_FIXED) {
+						fprintf(f, "%s = ", MapSym(IntCode[i].name1));
+						if (UseWeekDays) {
+							fprintf(f, "(%d & (1 << RTC_NowTM.tm_wday)) && ", WeekDays);
+						} else {
+							fprintf(f, "(!RTC_StartTM.tm_mday || RTC_NowTM.tm_mday == RTC_StartTM.tm_mday       ) && "
+							           "(!RTC_StartTM.tm_mon  || RTC_NowTM.tm_mon  == RTC_StartTM.tm_mon  -    1) && "
+							           "(!RTC_StartTM.tm_year || RTC_NowTM.tm_year == RTC_StartTM.tm_year - 1900) && ");
+						}
+
+						fprintf(f, "(RTC_NowTM.tm_hour == RTC_StartTM.tm_hour) && "
+						           "(RTC_NowTM.tm_min  == RTC_StartTM.tm_min ) && "
+						           "(RTC_NowTM.tm_sec  == RTC_StartTM.tm_sec );\n");
+					} else {
+						if(mode == ELEM_RTC_MODE_CONTINUOUS) {
+							RTC_Mode = UseWeekDays ? "RTC_MODE_WEEKDAY_CONTINUOUS"   : "RTC_MODE_DATE_CONTINUOUS";
+						} else {
+							RTC_Mode = UseWeekDays ? "RTC_MODE_WEEKDAY_INTERMITTENT" : "RTC_MODE_DATE_INTERMITTENT";
+						}
+
+						fprintf(f, "RTC_StartTM = *AdjustDate(RTC_StartTM, RTC_GETDATE_MODE_START);\n");
+					    for(j = 0; j < indent; j++) fprintf(f, "    ");
+
+						fprintf(f, "RTC_EndTM   = *AdjustDate(RTC_EndTM  , RTC_GETDATE_MODE_END  );\n");
+					    for(j = 0; j < indent; j++) fprintf(f, "    ");
+
+						fprintf(f, "%s = RTC_OutputState(RTC_StartTM, RTC_EndTM, RTC_NowTM, %s, %d);\n",
+							MapSym(IntCode[i].name1), RTC_Mode, WeekDays);
+					}
+				}
+				break;
+
             case INT_READ_ENC:
 				fprintf(f, "%s = ENC_Read();\n", MapSym(IntCode[i].name1));
 				break;
@@ -803,7 +829,9 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "extern volatile int 			MODBUS_REGISTER[32];\n");
 	fprintf(f, "extern struct 					MB_Device modbus_master;\n");
 	//fprintf(f, "extern volatile int 			ENCODER1;\n");
-	fprintf(f, "extern RTC_Time 				RTC_Now;\n");
+	fprintf(f, "extern struct tm 				RTC_NowTM;\n");
+	fprintf(f, "struct tm 						RTC_StartTM;\n");
+	fprintf(f, "struct tm 						RTC_EndTM;\n");
 	for(i=0; *InternalFlags[i]; i++) {
 		fprintf(f, "extern volatile unsigned int 	I_%s;\n", InternalFlags[i]);
 	}

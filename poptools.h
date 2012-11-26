@@ -475,15 +475,15 @@ typedef struct ElemResetTag {
     char    name[MAX_NAME_LEN];
 } ElemReset;
 
+#define ELEM_RTC_MODE_FIXED        0
+#define ELEM_RTC_MODE_CONTINUOUS   1
+#define ELEM_RTC_MODE_INTERMITTENT 2
+
 typedef struct ElemRTCTag {
-	//unsigned char select; // 0 -> Week Day, 1 -> Month Day
+	int           mode;  // Continuous or Intermittent (when using date/hour range) or only a fixed date/hour.
     unsigned char wday;  // [0:0] Sum, [0:1] Mon, [0:2] Tue, [0:3] Wed, [0:4] Thu, [0:5] Fri, [0:6] Sat, [0:7] WDay 1=YES, 0=No
-	unsigned char mday;
-	unsigned char month;
-	unsigned int year;
-	unsigned char hour;
-	unsigned char minute;
-	unsigned char second;
+	struct tm     start; // Start date/time of the range or the fixed one
+	struct tm     end;   // End date/time when using range.
 } ElemRTC;
 
 typedef struct ElemMoveTag {
@@ -1179,7 +1179,7 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
 void ShowMultisetDADialog(ElemMultisetDA *l);
 // simpledialog.cpp
 void ShowTimerDialog(int which, int *delay, char *name);
-void ShowRTCDialog(unsigned char * wday, unsigned char * mday, unsigned char * month, unsigned int * year, unsigned char * hour, unsigned char * minute, unsigned char * second);
+void ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end);
 void ShowCounterDialog(int which, int *count, char *name);
 void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);

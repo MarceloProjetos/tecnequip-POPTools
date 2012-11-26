@@ -7,7 +7,9 @@
 extern volatile unsigned char 	MODBUS_MASTER; // 0 = Slave, 1 = Master
 extern volatile int 			MODBUS_REGISTER[32];
 extern struct MB_Device 		modbus_master;
-extern RTC_Time 				RTC_Now;
+extern struct tm 				RTC_NowTM;
+struct tm 						RTC_StartTM;
+struct tm 						RTC_EndTM;
 extern volatile unsigned int 	I_SerialReady;
 extern volatile unsigned int 	I_SerialTimeout;
 extern volatile unsigned int 	I_SerialAborted;
@@ -22,9 +24,9 @@ extern struct ip_addr			IP_DNS;
 char 							SNTP_SERVER_ADDRESS[] = "192.168.0.5";
 
 int								SNTP_GMT = -3;
-int								SNTP_DAILY_SAVE = 0;
+int								SNTP_DAILY_SAVE = 1;
 
-#define PLC_DAC_RAMPA_VALIDACAO
+#define PLC_TESTE
 
 #if defined(PLC_NULL)
 #include "POPTools/PLC_NULL.h"

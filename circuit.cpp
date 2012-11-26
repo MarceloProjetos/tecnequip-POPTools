@@ -857,13 +857,23 @@ bool AddRTC(int which)
 	t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
 
     ElemLeaf *l = AllocLeaf();
+
+	l->d.rtc.mode = ELEM_RTC_MODE_FIXED;
 	l->d.rtc.wday = 255;
-	l->d.rtc.mday = 0;
-	l->d.rtc.month = 0;
-	l->d.rtc.year = 0;
-	l->d.rtc.hour = t->tm_hour;
-	l->d.rtc.minute = t->tm_min;
-	l->d.rtc.second = t->tm_sec;
+
+	l->d.rtc.start.tm_mday = 0;
+	l->d.rtc.start.tm_mon = 0;
+	l->d.rtc.start.tm_year = 0;
+	l->d.rtc.start.tm_hour = t->tm_hour;
+	l->d.rtc.start.tm_min = t->tm_min;
+	l->d.rtc.start.tm_sec = t->tm_sec;
+
+	l->d.rtc.end.tm_mday = 0;
+	l->d.rtc.end.tm_mon = 0;
+	l->d.rtc.end.tm_year = 0;
+	l->d.rtc.end.tm_hour = t->tm_hour;
+	l->d.rtc.end.tm_min = t->tm_min;
+	l->d.rtc.end.tm_sec = t->tm_sec;
 
     AddLeaf(which, l);
 

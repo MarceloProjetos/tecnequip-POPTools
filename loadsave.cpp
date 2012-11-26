@@ -8,13 +8,105 @@
 // xxxx = always 0f5a
 // yy   = flags. reserved for future use.
 // zz   = format version
-const unsigned long int  BINFMT_MAGIC = 0x0f5a0005;
+const unsigned long int  BINFMT_MAGIC      = 0x0f5a0006;
+const unsigned long int  BINFMT_MAGIC_MASK = 0xffff0000;
 
 static ElemSubcktSeries *LoadSeriesFromFile(FILE *f, int version);
 
 static const int current_version = 4;
 
 #define OLDFMT_MAX_VERSION 4
+
+// Functions to convert savefiles from older versions
+int ConvRTC_v5_v6(ElemLeaf *l)
+{
+	ElemRTC newrtc;
+	typedef struct {
+		//unsigned char select; // 0 -> Week Day, 1 -> Month Day
+		unsigned char wday;  // [0:0] Sum, [0:1] Mon, [0:2] Tue, [0:3] Wed, [0:4] Thu, [0:5] Fri, [0:6] Sat, [0:7] WDay 1=YES, 0=No
+		unsigned char mday;
+		unsigned char month;
+		unsigned int year;
+		unsigned char hour;
+		unsigned char minute;
+		unsigned char second;
+	} ElemRTC_v5;
+
+	ElemRTC_v5 oldrtc;
+
+	oldrtc = *(ElemRTC_v5 *)(&l->d);
+
+	memset(&newrtc, 0, sizeof(newrtc));
+
+	newrtc.mode = ELEM_RTC_MODE_FIXED;
+	newrtc.wday = oldrtc.wday;
+
+	newrtc.start.tm_year = oldrtc.year;
+	newrtc.start.tm_mon  = oldrtc.month;
+	newrtc.start.tm_mday = oldrtc.mday;
+
+	newrtc.start.tm_hour = oldrtc.hour;
+	newrtc.start.tm_min  = oldrtc.minute;
+	newrtc.start.tm_sec  = oldrtc.second;
+
+	newrtc.end = newrtc.start;
+
+	l->d.rtc = newrtc;
+
+	return 1;
+}
+
+struct {
+	int intcode;
+	int maxversion;
+	int (*fnc)(ElemLeaf *);
+} ConvFunctionsList[] = {
+	{ ELEM_RTC, 5, ConvRTC_v5_v6 },
+	{ 0, 0, NULL },
+};
+
+int UpdateFromOlderVersionWorker(int which, void *any, int oldversion)
+{
+	int i, ret = 1;
+
+	switch(which) {
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
+            for(i = 0; i < s->count && ret; i++) {
+                ret = UpdateFromOlderVersionWorker(s->contents[i].which, s->contents[i].d.any, oldversion);
+            }
+            break;
+        }
+
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *s = (ElemSubcktParallel *)any;
+            for(i = 0; i < s->count && ret; i++) {
+                ret = UpdateFromOlderVersionWorker(s->contents[i].which, s->contents[i].d.any, oldversion);
+            }
+            break;
+        }
+
+        default: {
+			ElemLeaf *l = (ElemLeaf *)any;
+			for(i=0; ConvFunctionsList[i].fnc != NULL; i++) {
+				if(ConvFunctionsList[i].intcode == which && ConvFunctionsList[i].maxversion >= oldversion) {
+					for(; ConvFunctionsList[i].fnc != NULL && ConvFunctionsList[i].intcode == which && ret; i++)
+						ret = (*ConvFunctionsList[i].fnc)(l);
+				}
+			}
+            break;
+		 }
+	}
+
+	return ret;
+}
+
+void UpdateFromOlderVersion(int oldversion)
+{
+	int i;
+	for(i=0; i<Prog.numRungs; i++)
+        UpdateFromOlderVersionWorker(ELEM_SERIES_SUBCKT, Prog.rungs[i], oldversion);
+}
 
 //-----------------------------------------------------------------------------
 // Check a line of text from a saved project file to determine whether it
@@ -88,10 +180,10 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
         &l->d.timer.delay)==2))
     {
         *which = ELEM_RTO;
-	} else if((sscanf(line, "RTC %d %d/%d/%d %d:%d:%d", &l->d.rtc.wday, &l->d.rtc.mday, &l->d.rtc.month, &l->d.rtc.year,
-		&l->d.rtc.hour, &l->d.rtc.minute, &l->d.rtc.second)==7))
-    {
-        *which = ELEM_RTC;
+//	} else if((sscanf(line, "RTC %d %d/%d/%d %d:%d:%d", &l->d.rtc.wday, &l->d.rtc.mday, &l->d.rtc.month, &l->d.rtc.year,
+//		&l->d.rtc.hour, &l->d.rtc.minute, &l->d.rtc.second)==7))
+//    {
+//        *which = ELEM_RTC;
     } else if((sscanf(line, "CTD %s %d", l->d.counter.name,
         &l->d.counter.max)==2))
     {
@@ -421,7 +513,7 @@ BOOL LoadProjectFromFile(char *filename)
 
 	// Start with the magic number
 	fread(&magic, sizeof(magic), 1, f);
-	if(magic != BINFMT_MAGIC) { // Bad magic number. Maybe it is old format?
+	if((magic ^ BINFMT_MAGIC) & BINFMT_MAGIC_MASK) { // Bad magic number. Maybe it is old format?
 #else
 	if(1) {
 #endif
@@ -581,6 +673,11 @@ BOOL LoadProjectFromFile(char *filename)
 			Prog.rungs[i] = LoadSeriesFromFile(f, version);
 			if(!Prog.rungs[i]) goto failed;
 		}
+	}
+
+	// If the savefile is for an older version, update loaded leaves.
+	if(version != current_version) {
+		UpdateFromOlderVersion(version);
 	}
 
 	UpdateTypesFromSeenPreviouslyList();
@@ -1068,7 +1165,7 @@ void SetAutoSaveInterval(int interval)
 
 void CALLBACK AutoSaveNow(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 {
-	if(strlen(CurrentSaveFile) && Prog.ParallelStart == NULL) {
+	if(strlen(CurrentSaveFile) && Prog.ParallelStart == NULL && Prog.settings.canSave) {
 		char AutoSaveName[MAX_PATH];
 		strcpy(AutoSaveName, CurrentSaveFile);
 		ChangeFileExtension(AutoSaveName, "bld");

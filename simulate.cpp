@@ -375,6 +375,160 @@ void UpdateSimulation(char *name, int val)
 	}
 }
 
+/*** Functions related to RTC Simulation ***/
+
+#define RTC_MODE_DATE_CONTINUOUS      0
+#define RTC_MODE_DATE_INTERMITTENT    1
+#define RTC_MODE_WEEKDAY_CONTINUOUS   2
+#define RTC_MODE_WEEKDAY_INTERMITTENT 3
+
+#define RTC_GETDATE_MODE_START 0
+#define RTC_GETDATE_MODE_END   1
+
+struct tm RTC_StartTM, RTC_EndTM;
+
+// Adjust TM struct
+struct tm * AdjustDate(struct tm timeinfo, int mode)
+{
+	int last_day;
+	time_t rawtime = 0;
+	struct tm tm_tmp, *ptr;
+
+	// recebe referencia a estrutura tm do sistema
+	ptr = localtime(&rawtime);
+
+	// Ajuste de mes e ano para o caso de ter sido escolhido "Todos". No caso, digitado zero.
+	if(!timeinfo.tm_mon ) timeinfo.tm_mon  = (mode == RTC_GETDATE_MODE_START ?    1 :   12);
+	if(!timeinfo.tm_year) timeinfo.tm_year = (mode == RTC_GETDATE_MODE_START ? 1970 : 2037);
+
+	// Atualizacao da estrutura tm com os valores esperados
+	timeinfo.tm_year -= 1900;
+	timeinfo.tm_mon  -= 1;
+
+	// Ajusta de dia para o caso de ter sido escolhido "Todos". No caso, digitado zero.
+	if(!timeinfo.tm_mday) {
+		if(timeinfo.tm_mon == 11) { // Dezembro
+			last_day = 31;
+		} else {
+			tm_tmp = timeinfo;
+			tm_tmp.tm_mon++;
+			tm_tmp.tm_mday = 1;
+			tm_tmp.tm_hour = 0;
+			rawtime = mktime(&tm_tmp) - 3600; // Hora definida - 1 hora, volta para o mes anterior
+			tm_tmp = *localtime(&rawtime);
+			last_day = tm_tmp.tm_mday;
+		}
+
+		timeinfo.tm_mday = (mode == RTC_GETDATE_MODE_START ? 1 : last_day);
+	}
+
+	// Retorna estrutura com a data
+	*ptr = timeinfo;
+	return ptr;
+}
+
+// Tempo em segundos no dia
+static time_t GetHourOffset(struct tm timeinfo)
+{
+	time_t now = mktime(&timeinfo);
+
+	timeinfo.tm_hour = timeinfo.tm_min = timeinfo.tm_sec = 0;
+
+	return now - mktime(&timeinfo);
+}
+
+// Calculate Output State according date/time and mode.
+int RTC_OutputState(struct tm start, struct tm end, struct tm now, int mode, int mask_wday)
+{
+	int previous_wday_on;
+	time_t tstart, tend, tnow, offset_start, offset_end, offset_now;
+	int ret=0, seg = -1, seg_previous = -1, i, first_wday[4], last_wday[4], segs_wday = 0, first_found;
+
+	offset_start = GetHourOffset(start);
+	offset_end   = GetHourOffset(end  );
+	offset_now   = GetHourOffset(now  );
+
+	tstart = mktime(&start);
+	tend   = mktime(&end);
+	tnow   = mktime(&now);
+
+	if(mode == RTC_MODE_DATE_CONTINUOUS) {
+		if(tnow >= tstart && tnow < tend) {
+			ret = 1;
+		}
+	} else if(mode == RTC_MODE_DATE_INTERMITTENT) {
+		if(tnow >= tstart && tnow <= tend &&
+			(offset_start > offset_end ? (offset_now >= offset_start || offset_now < offset_end) :
+			(offset_now >= offset_start && offset_now < offset_end))) {
+			ret = 1;
+		}
+	} else {
+		first_found = 0;
+		for(i=0; i<7; i++) { // Loop entre todos os dias da semana
+			if(!first_found && ((1 << i) & mask_wday)) {
+				first_found = 1;
+				first_wday[segs_wday] = i;
+			}
+			if(first_found && !((1 << (i+1)) & mask_wday)) {
+				first_found = 0;
+				last_wday[segs_wday++] = i;
+			}
+		}
+
+		// Se o ultimo segmento termina no sabado e o primeiro comeca no domingo, eles fazem parte do mesmo segmento
+		// Isso apenas se houver mais de 1 segmento senao indica que a semana inteira foi selecionada
+		if(segs_wday > 1 && last_wday[segs_wday-1] == 6 && first_wday[0] == 0) {
+			segs_wday--;
+			first_wday[0] = first_wday[segs_wday];
+		}
+
+		for(i=0; i < segs_wday; i++) {
+			if(first_wday[i] > last_wday[i]) {
+				if(now.tm_wday >= first_wday[i] || now.tm_wday <= last_wday[i]) {
+					seg = i;
+					break;
+				}
+			} else  if(now.tm_wday >= first_wday[i] && now.tm_wday <= last_wday[i]) {
+					seg = i;
+					break;
+			}
+		}
+
+		if(mode == RTC_MODE_WEEKDAY_CONTINUOUS) {
+			if(seg >= 0 && (offset_now >= offset_start || now.tm_wday != first_wday[seg]) &&
+				(offset_now <= offset_end || now.tm_wday != last_wday[seg])) {
+				ret = 1;
+			}
+		} else if(mode == RTC_MODE_WEEKDAY_INTERMITTENT) {
+			previous_wday_on = now.tm_wday - 1;
+			if(previous_wday_on < 0) previous_wday_on = 6;
+			if(seg < 0 && offset_start > offset_end) {
+				for(i=0; i < segs_wday; i++) {
+					if(first_wday[i] > last_wday[i]) {
+						if(previous_wday_on >= first_wday[i] || previous_wday_on <= last_wday[i]) {
+							seg_previous = i;
+							break;
+						}
+					} else  if(previous_wday_on >= first_wday[i] && previous_wday_on <= last_wday[i]) {
+							seg_previous = i;
+							break;
+					}
+				}
+			}
+			previous_wday_on = (1 << previous_wday_on) & mask_wday;
+
+			if((seg >= 0 || seg_previous >= 0) && (offset_start > offset_end ? ((offset_now >= offset_start && seg>=0) || (offset_now < offset_end && previous_wday_on)) :
+				(offset_now >= offset_start && offset_now < offset_end))) {
+				ret = 1;
+			}
+		}
+	}
+
+	return ret;
+}
+
+/*** End of functions related to RTC Simulation ***/
+
 //-----------------------------------------------------------------------------
 // Query the state of a single-bit element (relay, digital in, digital out).
 // Looks in the SingleBitItems list; if an item is not present then it is
@@ -1239,45 +1393,58 @@ math:
                 }
                 break;
 
+			case INT_SET_RTC:
+				{
+					struct tm * t = a->bit ? &RTC_EndTM : &RTC_StartTM;
+
+					t->tm_mday  = atoi(a->name1);
+					t->tm_mon   = atoi(a->name2);
+					t->tm_year  = atoi(a->name3);
+					t->tm_hour  = atoi(a->name4);
+					t->tm_min   = atoi(a->name5);
+					t->tm_sec   = atoi(a->name6);
+				}
+				break;
+
 			case INT_CHECK_RTC:
 				{
+					int RTC_Mode, mode = atoi(a->name2), UseWeekDays = (a->literal>>7)&1;
 					time_t rawtime;
-					struct tm * t;
+					struct tm t;
 
 					time ( &rawtime );
-					t = localtime ( &rawtime );
+					t = *localtime ( &rawtime );
 
-					t->tm_year += 1900;
-					t->tm_mon++;
-					t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
+					if(mode == ELEM_RTC_MODE_FIXED) {
+						int DateOK;
+						if (UseWeekDays) {
+							DateOK = a->literal & (1 << t.tm_wday);
+						} else {
+							DateOK = (!RTC_StartTM.tm_mday || t.tm_mday == RTC_StartTM.tm_mday       ) &&
+								     (!RTC_StartTM.tm_mon  || t.tm_mon  == RTC_StartTM.tm_mon  -    1) &&
+									 (!RTC_StartTM.tm_year || t.tm_year == RTC_StartTM.tm_year - 1900);
+						}
 
-					int d, m, y, h, mm, s;
+						SetSingleBit(a->name1, DateOK &&
+						                      (t.tm_hour == RTC_StartTM.tm_hour) && 
+						                      (t.tm_min  == RTC_StartTM.tm_min ) && 
+						                      (t.tm_sec  == RTC_StartTM.tm_sec ));
+					} else {
+						RTC_StartTM = *AdjustDate(RTC_StartTM, RTC_GETDATE_MODE_START);
+						RTC_EndTM   = *AdjustDate(RTC_EndTM  , RTC_GETDATE_MODE_END  );
 
-					d = atoi(a->name2);
-					m = atoi(a->name3);
-					y = atoi(a->name4);
-					h = atoi(a->name5);
-					mm = atoi(a->name6);
-					s = atoi(a->name7);
+						if(mode == ELEM_RTC_MODE_CONTINUOUS) {
+							RTC_Mode = UseWeekDays ? RTC_MODE_WEEKDAY_CONTINUOUS   : RTC_MODE_DATE_CONTINUOUS;
+						} else {
+							RTC_Mode = UseWeekDays ? RTC_MODE_WEEKDAY_INTERMITTENT : RTC_MODE_DATE_INTERMITTENT;
+						}
 
-					if (a->bit)
-						SetSingleBit(a->name1,	(a->literal & (1 << t->tm_wday)) && 
-												(t->tm_hour == h) && 
-												(t->tm_min == mm) && 
-												(t->tm_sec == s));
-					else
-					{
-						SetSingleBit(a->name1,	(t->tm_mday == d) && 
-												(m > 0 ? t->tm_mon == m : 1) && 
-												(y > 0 ? t->tm_year == y : 1) && 
-												(t->tm_hour == h) && 
-												(t->tm_min == mm) && 
-												(t->tm_sec == s));
-
+						SetSingleBit(a->name1, RTC_OutputState(RTC_StartTM, RTC_EndTM, t, RTC_Mode, a->literal & 0x7F));
 					}
 				}
 				break;
-            case INT_END_IF:
+
+			case INT_END_IF:
             case INT_ELSE_IF:
             case INT_ELSE:
                 return;

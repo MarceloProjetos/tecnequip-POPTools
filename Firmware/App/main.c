@@ -14,6 +14,8 @@
 #include "qei.h"
 #include "ld.h"
 
+#include <time.h>
+
 void Devices_Init(void)
 {
 	RTC_Init();
@@ -63,6 +65,8 @@ extern volatile unsigned int 	GPIO_INPUT;
 
 volatile unsigned int 			PLC_ERROR = 0;
 
+struct tm RTC_NowTM;
+
 #define CYCLE_TIME 10
 
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
@@ -74,11 +78,15 @@ void PLC_Cycle(void *pdata)
 	{
 		end_tick = (cycle+1)*CYCLE_TIME;
 
+		// Etapa de Aquisicao
 		ADC_Update();
+		RTC_NowTM = RTC_GetTM();
 		GPIO_INPUT = GPIO_Input();
 
+		// Etapa de Execucao
 		PLC_Run();
 
+		// Etapa de Atualizacao
 		GPIO_Output(GPIO_OUTPUT);
 
 		do{

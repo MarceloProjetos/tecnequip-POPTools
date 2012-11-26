@@ -12,6 +12,8 @@
 #ifndef __RTC_H__
 #define __RTC_H__
 
+#include <time.h>
+
 typedef struct {
     unsigned int Sec;     /* Second value - [0,59] */
     unsigned int Min;     /* Minute value - [0,59] */
@@ -60,6 +62,16 @@ typedef struct {
 #define CALDIR(n) (n << 17) //1 = Backward, 0 = Forward
 #define CCALEN (1<<4)
 
+#define RTC_MODE_DATE_CONTINUOUS      0
+#define RTC_MODE_DATE_INTERMITTENT    1
+#define RTC_MODE_WEEKDAY_CONTINUOUS   2
+#define RTC_MODE_WEEKDAY_INTERMITTENT 3
+
+#define RTC_GETDATE_MODE_START 0
+#define RTC_GETDATE_MODE_END   1
+
+struct tm * AdjustDate(struct tm timeinfo, int mode);
+int RTC_OutputState(struct tm start, struct tm end, struct tm now, int mode, int mask_wday);
 
 void RTC_IRQHandler (void);
 void RTC_Init( void );
@@ -68,6 +80,7 @@ void RTC_Stop( void );
 void RTC_CTCReset( void );
 unsigned char RTC_SetTime( RTC_Time );
 RTC_Time RTC_GetTime( void );
+struct tm RTC_GetTM( void );
 void RTC_SetAlarm( RTC_Time );
 void RTC_SetAlarmMask( unsigned int AlarmMask );
 

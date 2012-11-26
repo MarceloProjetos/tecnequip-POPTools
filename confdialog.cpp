@@ -183,7 +183,7 @@ static void MakeControls(void)
 	container_tabs.pszText = _("Posicionamento");
 	TabCtrl_InsertItem(TabCtrl, 1, &container_tabs);
 
-//	container_tabs.pszText = _("Posiionamento");
+//	container_tabs.pszText = _("Propriedades");
 //	TabCtrl_InsertItem(TabCtrl, 2, &container_tabs);
 
     TabChild[0] = CreateWindowEx(0, WC_BUTTON, "",
@@ -391,6 +391,38 @@ static void MakeControls(void)
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
         250, 180, 40, 20, TabChild[1], NULL, Instance, NULL);
     NiceFont(X4Checkbox);
+
+	/*** Properties Tab - Start ***
+    HWND textLabel20 = CreateWindowEx(0, WC_STATIC, _("Diametro Roda:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        55, 90, 140, 21,  TabChild[1], NULL, Instance, NULL);
+    NiceFont(textLabel20);
+
+    DiameterTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,   
+        205, 90, 85, 21, TabChild[1], NULL, Instance, NULL);
+    NiceFont(DiameterTextbox);
+
+    HWND textLabel21 = CreateWindowEx(0, WC_STATIC, _("Número Pulsos:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        55, 120, 140, 21, TabChild[1], NULL, Instance, NULL);
+    NiceFont(textLabel21);
+
+    PulsesTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        205, 120, 85, 21, TabChild[1], NULL, Instance, NULL);
+    NiceFont(PulsesTextbox);
+
+    HWND textLabel22 = CreateWindowEx(0, WC_STATIC, _("Fator Correção:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        55, 150, 140, 21, TabChild[1], NULL, Instance, NULL);
+    NiceFont(textLabel22);
+
+    FactorTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        205, 150, 85, 21, TabChild[1], NULL, Instance, NULL);
+    NiceFont(FactorTextbox);
+	/*** Properties Tab - End ***/
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,

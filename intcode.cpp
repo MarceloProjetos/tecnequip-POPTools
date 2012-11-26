@@ -602,16 +602,30 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             break;
         }
          case ELEM_RTC: {
-			char d[10],m[10],y[10],h[10],mm[10],s[10];
-			_itoa(l->d.rtc.mday, d, 10);
-			_itoa(l->d.rtc.month, m, 10);
-            _itoa(l->d.rtc.year, y, 10);
-			_itoa(l->d.rtc.hour, h, 10);
-			_itoa(l->d.rtc.minute, mm, 10);
-			_itoa(l->d.rtc.second, s, 10);
+			char sd[10],sm[10],sy[10],sh[10],smm[10],ss[10];
+			char ed[10],em[10],ey[10],eh[10],emm[10],es[10];
+			char mode[10];
+
+			_itoa(l->d.rtc.start.tm_mday, sd  , 10);
+			_itoa(l->d.rtc.start.tm_mon , sm  , 10);
+            _itoa(l->d.rtc.start.tm_year, sy  , 10);
+			_itoa(l->d.rtc.start.tm_hour, sh  , 10);
+			_itoa(l->d.rtc.start.tm_min , smm , 10);
+			_itoa(l->d.rtc.start.tm_sec , ss  , 10);
+
+			_itoa(l->d.rtc.end.tm_mday  , ed  , 10);
+			_itoa(l->d.rtc.end.tm_mon   , em  , 10);
+            _itoa(l->d.rtc.end.tm_year  , ey  , 10);
+			_itoa(l->d.rtc.end.tm_hour  , eh  , 10);
+			_itoa(l->d.rtc.end.tm_min   , emm , 10);
+			_itoa(l->d.rtc.end.tm_sec   , es  , 10);
+
+			_itoa(l->d.rtc.mode         , mode, 10);
 
             Op(INT_IF_BIT_SET, stateInOut);
-				Op(INT_CHECK_RTC, stateInOut, d, m, y, h, mm, s, l->d.rtc.wday & 0x7f, l->d.rtc.wday >> 7);
+				Op(INT_SET_RTC, sd, sm, sy, sh, smm, ss, NULL, 0, 0);
+				Op(INT_SET_RTC, ed, em, ey, eh, emm, es, NULL, 0, 1);
+				Op(INT_CHECK_RTC, stateInOut, mode, l->d.rtc.wday);
             Op(INT_END_IF);
 
             break;

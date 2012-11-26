@@ -245,8 +245,13 @@ void ShowTimerDialog(int which, int *delay, char *name)
 
     if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), (1 << 0), dests)) {
 		if(IsValidNameAndType(name  , nameBuf, _("Nome") , VALIDATE_IS_VAR   , GetTypeFromName(nameBuf), 0, 0) &&
-		   IsValidNameAndType(delBuf, delBuf , _("Tempo"), VALIDATE_IS_NUMBER, GetTypeFromName(delBuf ), 1, 2140000)) {
-		        *delay = 1000*atoi(delBuf);
+		   IsValidNameAndType(delBuf, delBuf , _("Tempo"), VALIDATE_IS_NUMBER, GetTypeFromName(delBuf ), 1, 2147483)) {
+			   *delay = 1000*atoi(delBuf);
+			   if(*delay % Prog.settings.cycleTime) {
+				   *delay = (1 + *delay / Prog.settings.cycleTime) * Prog.settings.cycleTime;
+				   Error(_("Tempo de ciclo deve ser múltiplo de %d! Será utilizado %d."),
+							Prog.settings.cycleTime/1000, *delay/1000);
+			   }
 		        strncpy(name, nameBuf, 16);
 				name[16] = '\0';
 		}

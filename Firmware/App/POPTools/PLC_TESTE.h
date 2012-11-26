@@ -1,72 +1,27 @@
 // Variaveis PLC
 volatile unsigned char I_mcr = 0;
 volatile unsigned char I_rung_top = 0;
-volatile unsigned char GPIO_OUTPUT_PORT1 = 0;
-volatile int U_on = 0;
-volatile unsigned char I_off_antiglitch = 0;
-volatile int U_off = 0;
-volatile unsigned char I_parOut_0000 = 0;
-volatile unsigned char I_parThis_0000 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT4 = 0;
 
 void PLC_Run(void)
 {
     I_mcr = 1;
-    
+
     /* start rung 1 */
     I_rung_top = I_mcr;
     
-    /* start series [ */
-    if (GPIO_OUTPUT_PORT1) {  // S1
-        I_rung_top = 0;
-    }
-    
+    /* iniciando serie [ */
     if (I_rung_top) {  // $rung_top
-        if (U_on < 199) {
-            U_on++;
-            I_rung_top = 0;
-        }
-    } else {
-        U_on = 0;
+        RTC_StartTM.tm_year = 2012; RTC_StartTM.tm_mon = 11; RTC_StartTM.tm_mday = 23; RTC_StartTM.tm_hour = 14; RTC_StartTM.tm_min = 38; RTC_StartTM.tm_sec = 30;
+        RTC_EndTM.tm_year = 2012; RTC_EndTM.tm_mon = 11; RTC_EndTM.tm_mday = 23; RTC_EndTM.tm_hour = 14; RTC_EndTM.tm_min = 39; RTC_EndTM.tm_sec = 0;
+
+        RTC_StartTM = *AdjustDate(RTC_StartTM, RTC_GETDATE_MODE_START);
+        RTC_EndTM   = *AdjustDate(RTC_EndTM  , RTC_GETDATE_MODE_END  );
+
+        I_rung_top = RTC_OutputState(RTC_StartTM, RTC_EndTM, RTC_NowTM, RTC_MODE_DATE_CONTINUOUS, 127);
     }
     
-    if (!I_off_antiglitch) {  // $off_antiglitch
-        U_off = 199;
-    }
-    I_off_antiglitch = 1;
-    if (!I_rung_top) {  // $rung_top
-        if (U_off < 199) {
-            U_off++;
-            I_rung_top = 1;
-        }
-    } else {
-        U_off = 0;
-    }
+    GPIO_OUTPUT_PORT4 = I_rung_top;
     
-    /* start parallel [ */
-    I_parOut_0000 = 0;
-    I_parThis_0000 = I_rung_top;
-    GPIO_OUTPUT_PORT1 = I_parThis_0000;
-    
-    if (I_parThis_0000) {  // $parThis_0000
-        I_parOut_0000 = 1;
-    }
-    I_parThis_0000 = I_rung_top;
-    MODBUS_REGISTER[0] &= ~(1 << 0); MODBUS_REGISTER[0] |= I_parThis_0000 << 0;  // Mb0
-    
-    if (I_parThis_0000) {  // $parThis_0000
-        I_parOut_0000 = 1;
-    }
-    I_parThis_0000 = I_rung_top;
-    if (I_parThis_0000) {  // $parThis_0000
-        MODBUS_REGISTER[1] &= ~(1 << 0);  // Mb1
-    } else {
-        MODBUS_REGISTER[1] |= (1 << 0);  // Mb1
-    }
-    
-    if (I_parThis_0000) {  // $parThis_0000
-        I_parOut_0000 = 1;
-    }
-    I_rung_top = I_parOut_0000;
-    /* ] finish parallel */
     /* ] finish series */
 }
