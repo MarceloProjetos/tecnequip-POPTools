@@ -1,6 +1,6 @@
 Microsoft HTML Help Compiler 4.74.8702
 
-Compiling c:\Pessoal\SVN\Help\Ajuda.chm
+Compiling f:\SVN\POPTools\Help\Ajuda.chm
 
 img\About.png
 img\bottom_line.gif
@@ -153,10 +153,10 @@ topics\Exemplodeaplicacao.htm
 
 Compile time: 0 minutes, 3 seconds
 106	Topics
-478	Local links
+479	Local links
 1	Internet link
 0	Graphics
 
 
-Created c:\Pessoal\SVN\Help\Ajuda.chm, 880,263 bytes
-Compression decreased file by 252,799 bytes.
+Created f:\SVN\POPTools\Help\Ajuda.chm, 880,475 bytes
+Compression decreased file by 251,641 bytes.

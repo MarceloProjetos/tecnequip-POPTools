@@ -489,14 +489,6 @@ void ProgramChanged(void)
     RefreshScrollbars();
     UpdateMainWindowTitleBar();
 }
-#define CHANGING_PROGRAM(x) { \
-        UndoRemember(); \
-        if(x) { \
-			ProgramChanged(); \
-		} else { \
-			UndoForget(); \
-		} \
-    }
 
 //-----------------------------------------------------------------------------
 // Hook that we install when the user starts dragging the `splitter,' in case
@@ -878,6 +870,11 @@ cmp:
             CHANGING_PROGRAM(PasteLeaf());
             break;
 
+        case MNU_CUT_ELEMENT:
+			CopyLeaf(Selected, SelectedWhich);
+            CHANGING_PROGRAM(DeleteSelectedFromProgram());
+            break;
+
         case MNU_DELETE_ELEMENT:
             CHANGING_PROGRAM(DeleteSelectedFromProgram());
             break;
@@ -1059,8 +1056,6 @@ cmp:
 //-----------------------------------------------------------------------------
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	int i, emptyRung;
-
     switch (msg) {
 		case WM_SOCKET:
 			SimulationServer_Message(wParam, lParam);
@@ -1123,371 +1118,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 1;
         }
 
+		case WM_INPUTLANGCHANGE:
+			KeyboardHandlers_LangChanged();
+			break;
+
         case WM_KEYDOWN: {
-			bool bShiftPressed   = GetAsyncKeyState(VK_SHIFT  ) & 0x8000 ? true : false;
-			bool bControlPressed = GetAsyncKeyState(VK_CONTROL) & 0x8000 ? true : false;
-			/*if((GetAsyncKeyState(VK_SHIFT) & 0x8000) && 
-				(wParam == 0x31)) {
-				CHAR msg[50];
-				sprintf(msg, "Codigo da Tecla: wParam:0x%x, lParam:0x%x\n", wParam, lParam);
-				MessageBox(hwnd, msg, "Tecla digitada", NULL);
-			}*/
-
-			if(wParam == 'M') {
-				if(bControlPressed) {
-					ProcessMenu(MNU_SIMULATION_MODE);
-					break;
-                }
-            } else if(wParam == VK_TAB) {
-                SetFocus(IoList);
-                BlinkCursor(0, 0, 0, 0);
-                break;
-            } else if(wParam == VK_F1) {
-				ProcessMenu(MNU_MANUAL);
-                break;
-            }
-
-            if(InSimulationMode) {
-                switch(wParam) {
-                    case VK_RETURN:
-						ProcessMenu(MNU_SINGLE_CYCLE);
-                        break;
-
-                    case 'R':
-                        if(bControlPressed)
-							ProcessMenu(MNU_START_SIMULATION);
-                        break;
-
-                    case 'H':
-                        if(bControlPressed)
-							ProcessMenu(MNU_PAUSE_SIMULATION);
-                        break;
-
-                    case VK_DOWN:
-                        if(ScrollYOffset < ScrollYOffsetMax)
-                            ScrollYOffset++;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
-                        break;
-
-                    case VK_UP:
-                        if(ScrollYOffset > 0)
-                            ScrollYOffset--;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
-                        break;
-
-                    case VK_LEFT:
-                        ScrollXOffset -= FONT_WIDTH;
-                        if(ScrollXOffset < 0) ScrollXOffset = 0;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
-                        break;
-
-                    case VK_RIGHT:
-                        ScrollXOffset += FONT_WIDTH;
-                        if(ScrollXOffset >= ScrollXOffsetMax)
-                            ScrollXOffset = ScrollXOffsetMax;
-                        RefreshScrollbars();
-                        InvalidateRect(MainWindow, NULL, FALSE);
-                        break;
-
-                    case VK_ESCAPE:
-						// TODO: Internacionalizar
-						if(!POPSettings.ShowSimulationWarnings || ShowTaskDialog(L"Tem certeza que deseja sair da simulação?", L"O processo será interrompido", TD_WARNING_ICON, TDCBF_YES_BUTTON | TDCBF_NO_BUTTON, L"Sempre mostrar avisos da simulação", &POPSettings.ShowSimulationWarnings) == IDYES) {
-							ProcessMenu(MNU_SIMULATION_MODE);
-						}
-	                    break;
-                }
-                break;
-            }
-
-            switch(wParam) {
-                case VK_F3:
-                    if(bShiftPressed) {
-						ProcessMenu(MNU_FIND_AND_REPLACE_NEXT);
-					} else {
-						ProcessMenu(MNU_FIND_AND_REPLACE);
-					}
-                    break;
-
-                case VK_F5:
-					ProcessMenu(MNU_COMPILE);
-                    break;
-
-                case VK_UP:
-                    if(bShiftPressed) {
-						ProcessMenu(MNU_PUSH_RUNG_UP);
-                    } else {
-                        MoveCursorKeyboard(wParam, FALSE);
-                    }
-                    break;
-
-                case VK_DOWN:
-                    if(bShiftPressed) {
-						ProcessMenu(MNU_PUSH_RUNG_DOWN);
-                    } else {
-                        MoveCursorKeyboard(wParam, FALSE);
-                    }
-                    break;
-
-                case VK_HOME:
-                case VK_END:
-                case VK_RIGHT:
-                case VK_LEFT:
-                    MoveCursorKeyboard(wParam, bShiftPressed);
-                    break;
-
-                case VK_RETURN:
-                    CHANGING_PROGRAM(EditSelectedElement());
-                    break;
-
-				case VK_BACK:
-                case VK_DELETE:
-					i = RungContainingSelected();
-					emptyRung = i<0 ? 0 : Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which == ELEM_PLACEHOLDER;
-
-                    if(bShiftPressed || emptyRung) {
-						ProcessMenu(MNU_DELETE_RUNG);
-                    } else {
-						ProcessMenu(MNU_DELETE_ELEMENT);
-                    }
-                    break;
-
-				case 191: // VK_F2:
-					ProcessMenu(MNU_INSERT_COMMENT);
-                    break;
-
-                case 'C':
-					if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_CTC);
-					} else if(bControlPressed) {
-						ProcessMenu(MNU_COPY_ELEMENT);
-					} else {
-						ProcessMenu(MNU_INSERT_CONTACTS);
-					}
-                    break;
-
-                case 'B':
-					if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_CHECK_BIT);
-					} else {
-						ProcessMenu(MNU_INSERT_SET_BIT);
-					}
-                    break;
-
-				// TODO: rather country-specific here
-
-				case 'K':
-					if(bShiftPressed) {
-						ProcessMenu(MNU_READ_SERVO_YASKAWA);
-					} else if(bControlPressed) {
-						ProcessMenu(MNU_WRITE_SERVO_YASKAWA);
-					}
-                case 'L':
-					ProcessMenu(MNU_INSERT_COIL);
-                    break;
-
-                case 'R':
-					if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_MULTISET_DA);
-					} else {
-						ProcessMenu(MNU_MAKE_RESET_ONLY);
-					}
-                    break;
-
-                case ' ':
-					ProcessMenu(MNU_MAKE_NORMAL);
-                    break;
-
-                case 'E':
-                    if(bControlPressed) {
-						ProcessMenu(MNU_EXPORT);
-                    } else {
-						ProcessMenu(MNU_INSERT_RES);
-                    }
-                    break;
-
-                case 'S':
-                    if(bControlPressed) {
-						ProcessMenu(MNU_SAVE);
-                    } else {
-						ProcessMenu(MNU_MAKE_SET_ONLY);
-                    }
-                    break;
-
-                case 'N':
-                    if(bControlPressed) {
-						ProcessMenu(MNU_NEW);
-                    } else {
-						ProcessMenu(MNU_NEGATE);
-                    }
-                    break;
-
-                case 'A':
-					ProcessMenu(MNU_INSERT_READ_ADC);
-                    break;
-
-                case 'T':
-					ProcessMenu(MNU_INSERT_RTO);
-                    break;
-
-                case 'O':
-                    if(bControlPressed) {
-						ProcessMenu(MNU_OPEN);
-                    } else {
-						ProcessMenu(MNU_INSERT_TON);
-                    }
-                    break;
-
-                case 'F':
-					ProcessMenu(MNU_INSERT_TOF);
-                    break;
-
-                case 'I':
-					ProcessMenu(MNU_INSERT_CTU);
-                    break;
-
-                case 'U':
-					if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_READ_USS);
-					} else if(bControlPressed) {
-						ProcessMenu(MNU_INSERT_WRITE_USS);
-					}
-                    break;
-
-                case '4':
-					if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_READ_MODBUS);
-					} else if(bControlPressed) {
-						ProcessMenu(MNU_INSERT_WRITE_MODBUS);
-					}
-                    break;
-
-                case 'X':
-					if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_READ_MODBUS_ETH);
-					} else if(bControlPressed) {
-						ProcessMenu(MNU_INSERT_WRITE_MODBUS_ETH);
-					}
-                    break;
-
-                case 'J':
-					ProcessMenu(MNU_INSERT_CTC);
-                    break;
-
-                case 'M':
-					ProcessMenu(MNU_INSERT_MOV);
-                    break;
-
-                case 'P':
-					ProcessMenu(MNU_INSERT_PARALLEL);
-                    break;
-
-				case 'Q':
-					if(bControlPressed) {
-						ProcessMenu(MNU_INSERT_RESET_ENC);
-					} else {
-						ProcessMenu(MNU_INSERT_READ_ENC);
-					}
-                    break;
-
-				case 'W':
-					ProcessMenu(MNU_INSERT_SET_PWM);
-					break;
-
-				case VK_OEM_PLUS:
-				case VK_ADD:
-                    if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_ADD);
-                    } else {
-						ProcessMenu(MNU_INSERT_EQU);
-                    } 
-
-                    break;
-
-                case VK_OEM_MINUS:
-				case VK_SUBTRACT:
-					ProcessMenu(MNU_INSERT_SUB);
-                    break;
-
-				case 0xc1:
-				case 0x6f:
-					if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_DIV);
-					} else {
-						ProcessMenu(MNU_INSERT_OSR);
-					}
-					break;
-				case 0xe2:
-					ProcessMenu(MNU_INSERT_OSF);
-					break;
-                case '8':
-                    if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_MUL);
-                    }
-                    break;
-
-                case 'D':
-					if(bControlPressed) {
-						ProcessMenu(MNU_INSERT_SET_DA);
-					} else {
-						ProcessMenu(MNU_INSERT_CTD);
-					}
-                    break;
-
-				case 0x31: // !
-					if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_NEQ);
-					}
-					break;
-                case VK_OEM_PERIOD:
-                    if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_GRT);
-                    } else {
-						ProcessMenu(MNU_INSERT_GEQ);
-                    }
-                    break;
-
-                case VK_OEM_COMMA:
-                    if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_LES);
-                    } else {
-						ProcessMenu(MNU_INSERT_LEQ);
-                    }
-                    break;
-
-                case 'V':
-                    if(bControlPressed) {
-						ProcessMenu(MNU_PASTE_ELEMENT);
-                    }
-                    break;
-
-                case VK_INSERT:
-                    if(bShiftPressed) {
-						ProcessMenu(MNU_INSERT_RUNG_BEFORE);
-                    }
-					else {
-						ProcessMenu(MNU_INSERT_RUNG_AFTER);
-                    }
-                    break;
-
-                case 'Z':
-                    if(bControlPressed) {
-						ProcessMenu(MNU_UNDO);
-                    }
-                    break;
-
-                case 'Y':
-                    if(bControlPressed) {
-						ProcessMenu(MNU_REDO);
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-            if(wParam != VK_SHIFT && wParam != VK_CONTROL) {
+			if(wParam != VK_SHIFT && wParam != VK_CONTROL) {
+				KeyboardHandlers_Execute(wParam);
                 InvalidateRect(MainWindow, NULL, FALSE);
             }
             break;
@@ -1883,6 +1520,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	InitRibbon(MainWindow);
 
+	KeyboardHandlers_Init();
 
 	NewProgram();
     strcpy(CurrentSaveFile, "");

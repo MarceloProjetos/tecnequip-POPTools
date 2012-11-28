@@ -306,6 +306,8 @@
     <ClCompile Include="confdialog.cpp" />
     <ClCompile Include="contactsdialog.cpp" />
     <ClCompile Include="Firmware\App\modbus_rtu.c" />
+    <ClCompile Include="KeyboardHandlers.cpp" />
+    <ClCompile Include="KeyboardMap.cpp" />
     <ClCompile Include="mathdialog.cpp" />
     <ClCompile Include="modbus_master.cpp" />
     <ClCompile Include="modbus_slave.cpp" />
@@ -343,6 +345,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Firmware\App\modbus_rtu.h" />
+    <ClInclude Include="KeyboardHandlers.h" />
+    <ClInclude Include="KeyboardMap.h" />
     <ClInclude Include="modbus_master.h" />
     <ClInclude Include="PropertySet.h" />
     <ClInclude Include="XMLWrapper.h" />
@@ -429,6 +433,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'">true</ExcludedFromBuild>
       <SubType>Designer</SubType>
     </CustomBuild>
+    <None Include="ClassDiagram1.cd" />
     <None Include="poptools.ico" />
     <None Include="poptools32.ico" />
     <None Include="splash.bmp" />

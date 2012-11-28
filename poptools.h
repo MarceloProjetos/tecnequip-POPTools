@@ -46,6 +46,16 @@
 #include <uiribbon.h>
 #include <UIRibbonPropertyHelpers.h>
 #include "PropertySet.h"
+#include "KeyboardHandlers.h"
+
+#define CHANGING_PROGRAM(x) { \
+        UndoRemember(); \
+        if(x) { \
+			ProgramChanged(); \
+		} else { \
+			UndoForget(); \
+		} \
+    }
 
 /****************************************
 ****                                 ****
@@ -163,6 +173,7 @@ struct strSerialConfig {
 #define MNU_INSERT_RUNG_AFTER   0x15
 #define MNU_COPY_ELEMENT        0x1a
 #define MNU_PASTE_ELEMENT       0x1b
+#define MNU_CUT_ELEMENT         0x1e
 #define MNU_GO_HOME             0x1c
 #define MNU_GO_END              0x1d
 #define MNU_DELETE_ELEMENT      0x16
