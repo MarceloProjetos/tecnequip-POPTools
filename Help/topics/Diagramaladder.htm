@@ -40,9 +40,9 @@ linguagem gráfica, baseada em símbolos semelhantes aos encontrados nos
 esquemas
 elétricos (contatos e bobinas), as possíveis diferenças existentes
 entre os
-fabricantes de PLCs, quanto à representação das instruções, são
+fabricantes de PLCs quanto à representação das instruções são
 facilmente
-assimiladas pelos usuários, que possuem noções de diagrama de painéis
+assimiladas pelos usuários que possuem noções de diagrama de painéis
 elétricos.</p>
 <p class="MsoNormal"><br>
 </p>
@@ -52,20 +52,20 @@ elétricos.</p>
 <p style="font-weight: bold;"><span style="font-weight: normal;">Neste
 caso, a representação acima em Linguagem Ladder
 para os Elementos ENTRADA_X2 e ENTRADA_X1 são
-Contatos Normalmente Abertos e Normalmente Fechado. Porém, a
-localização de cada um na Lógica de Controle determina que a seguência
+Contatos Normalmente Aberto e Normalmente Fechado. Porém, a
+localização de cada um na Lógica de Controle determina que a sequência
 das&nbsp; Instruções sejam diferentes,
 ou seja, o Contato Normalmente Aberto precisa estar fechado para que o
 estado de ENTRADA_X1
 seja relevante para a bobina saída (s).</span></p>
 <p style="font-weight: bold;"><span style="font-weight: normal;">Conforme
-demonstrado acima essa é uma linguagem de Diagrama de Blocos de
-Funções, ou seja, os programas feitos nesta linguagem, os valores fluem
-das entradas para as saídas, através de blocos de funções.</span></p>
+demonstrado acima, essa é uma linguagem de Diagrama de Blocos de
+Funções. Ou seja: nos programas feitos nesta linguagem, os valores fluem
+das entradas para as saídas através de blocos de funções.</span></p>
 <p style="font-weight: bold;"><span style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
 </span></p>
-<p style="font-weight: bold;">Esquema Eletrico:<span style="font-weight: normal;"> Outra forma de representar uma função lógica é
- através da utilização de um circuito  eléctrico.</span></p>
+<p style="font-weight: bold;">Esquema Elétrico:<span style="font-weight: normal;"> Outra forma de representar uma função lógica é
+ através da utilização de um circuito  elétrico.</span></p>
 
 <p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder3.png" style="width: 583px; height: 118px;" alt="paralelo ladder"><br>
 </span></p>
@@ -74,19 +74,19 @@ das entradas para as saídas, através de blocos de funções.</span></p>
 </p>
 <p style="font-weight: bold;">LÓGICA COMBINACIONAL: <span style="font-weight: normal;">Agora
 iremos trabalhar alguns conceitos importantes para o desenvolvimento de
-um processo lógico de raciocínio que mas adiante nos permitirá
+um processo lógico de raciocínio que mais adiante nos permitirá
 compreender como serão relacionados todos os fatores relevantes à
-elaboração de projetos envolvendocontroladores programáveis. </span></p>
+elaboração de projetos envolvendo controladores programáveis. </span></p>
 <p style="font-weight: bold;">OPERAÇÕES FUNDAMENTAIS: <span style="font-weight: normal;">A
 teoria matemática das proposições lógicas foi apresentada em 1854 (1),
 pelo filósofo e matemático inglês George Boole (1815-1864), definindo
-assim os conceitosbásicos da chamada álgebra de Boole para dois valores (sistema binário).  </span><br style="font-weight: normal;">
+assim os conceitos básicos da chamada álgebra de Boole para dois valores (sistema binário).  </span><br style="font-weight: normal;">
 </p>
 <p>Inicialmente aplicou a teoria de Boole ao estudo e simplificação de
 funções usadas em telefonia, percebendo que as leis que regem as
 relações entre proposições lógicas eram as mesmas que se aplicavam para
-dispositivos de chaveamento de dois estados, já que estes dispositivos
-podem assumir os seguintes estados, como por exemplo : “ligado” ou
+dispositivos de chaveamento de dois estados. Estes dispositivos
+podem assumir, por exemplo, os seguintes estados: “ligado” ou
 “desligado”, “aberto” ou “fechado”, “potencial alto” ou ” potencial
 baixo”, “verdadeiro” ou “falso”.</p>
 <p style="font-weight: bold;"><span style="font-weight: normal;">A seguir mostraremos as equações algébricas e a tabela verdade dos operadores </span><span style="font-weight: normal;">fundamentais da álgebra booleana.</span><br>
@@ -117,7 +117,8 @@ abaixo).</span></p>
 
 <p style="font-weight: bold;"><br>
 </p>
-<p style="font-weight: bold;">NAND: <span style="font-weight: normal;">Circuito lógico Equivalente e Diagrama Ladder</span></p>
+<p style="font-weight: bold;">NAND: <span style="font-weight: normal;">Esta porta é similar à AND
+porém a sua saída é invertida. Veja abaixo o circuito lógico Equivalente e Diagrama Ladder:</span></p>
 
 <p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder9.JPG" style="width: 400px; height: 124px;" alt="Diagrama_NAND"></span></p>
 <p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder10.png" style="width: 583px; height: 94px;" alt="Diagrama_NAND_POP"><br>
@@ -137,7 +138,8 @@ Somente teremos zero em sua saída quando todas as entradas forem iguais a
 <p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder12.png" style="width: 583px; height: 118px;" alt="Diagrama_OR_POP"><br>
 </span></p>
 
-<p style="font-weight: bold;">NOR: <span style="font-weight: normal;">Circuito lógico Equivalente e Diagrama Ladder</span></p>
+<p style="font-weight: bold;">NOR: <span style="font-weight: normal;">Esta porta é similar à OR
+porém a sua saída é invertida. Veja abaixo o circuito lógico Equivalente e Diagrama Ladder:</span></p>
 <p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder13.JPG" style="width: 400px; height: 124px;" alt="Diagrama_NOR"></span></p>
 <p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder14.png" style="width: 583px; height: 118px;" alt="Diagrama_NOR_POP"><br>
 </span></p>
@@ -160,23 +162,23 @@ segue a tabela verdade e o Circuito lógico Equivalente em Ladder</span></p>
 <br>
 <p style="font-weight: bold;"><br>
 </p>
-<p style="font-weight: bold;">Sinais Analogicos: <span style="font-weight: normal;">São sinais que variam continuamente no tempo conforme uma regra de comparação à uma referência definida.<br>
+<p style="font-weight: bold;">Sinais Analógicos: <span style="font-weight: normal;">São sinais que variam continuamente no tempo dentro de uma faixa específica em comparação a uma referência definida.<br>
 Exemplos : potenciômetros, transdutores de temperatura, pressão, célula de<br>
 carga, umidade, vazão, medidores, válvulas e atuadores analógicos, acionamentos de<br>
 motores, etc.</span></p>
 <p style="font-weight: bold;">Sinais Digitais: <span style="font-weight: normal;">São sinais que variam continuamente no tempo assumindo apenas dois valores<br>
-definidos e distintos. Ou seja essas portas são tratadas somente como 1 ou 0.</span><span style="font-weight: normal;"></span>
+definidos e distintos. Ou seja: essas portas são tratadas somente como 1 ou 0.</span><span style="font-weight: normal;"></span>
 </p>
 
 <p style="font-weight: bold;">Funcionamento do CLP: <span style="font-weight: normal;">Como
 todo sistema microprocessado, tem seu princípio de funcionamento
-baseado em três passos após o inicio, Ler as entradas, Executar o
-software Ladder e Atualiza as saidas. Então como mostra a figura abaixo
+baseado em três passos após o início: Ler as entradas, Executar o
+Diagrama Ladder e Atualizar as saídas. Então, como mostra a figura abaixo,
 começa um novo ciclo.<br>
 </span></p>
 <p style="font-weight: bold;"><span style="font-weight: normal;"><img src="../img/Diagramaladder17.png" style="width: 386px; height: 430px;" alt="Cliclo_CLP"><br>
 </span></p>
-<p style="font-weight: bold;"><span style="font-weight: normal;"><span style="font-weight: bold;"></span>Baseado na imagens acima agora é possivel dividir essas partes do CLP em:</span></p>
+<p style="font-weight: bold;"><span style="font-weight: normal;"><span style="font-weight: bold;"></span>Baseado na imagem acima agora é possivel dividir essas partes do CLP em:</span></p>
 <p style="font-weight: bold;"><span style="font-weight: bold;">Início:</span><br>
 </p>
 <ul>

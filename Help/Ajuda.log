@@ -48,6 +48,7 @@ img\WelcomeLogo.png
 img\WelcomePicture.png
 Contents.hhc
 Index.hhk
+topics\Diagramaladder.htm
 topics\FileNew.htm
 topics\FileOpen.htm
 topics\FileSave.htm
@@ -79,7 +80,6 @@ topics\ConfigRede.htm
 topics\ConfigPosicionamento.htm
 topics\Settings.htm
 topics\Compile.htm
-topics\CompileAs.htm
 topics\CompileAndProgram.htm
 topics\Debug.htm
 topics\Simulation.htm
@@ -147,16 +147,16 @@ topics\SimulationSingleCycle.htm
 topics\SimulationExit.htm
 topics\TeclasAtalho.htm
 topics\License.htm
-topics\Diagramaladder.htm
 topics\Primeiroladder.htm
 topics\Exemplodeaplicacao.htm
+topics\CompileAs.htm
 
-Compile time: 0 minutes, 3 seconds
-106	Topics
-479	Local links
+Compile time: 0 minutes, 2 seconds
+208	Topics
+505	Local links
 1	Internet link
 0	Graphics
 
 
-Created f:\SVN\POPTools\Help\Ajuda.chm, 880,475 bytes
-Compression decreased file by 251,641 bytes.
+Created f:\SVN\POPTools\Help\Ajuda.chm, 884,145 bytes
+Compression decreased file by 252,486 bytes.

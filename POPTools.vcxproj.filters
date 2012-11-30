@@ -270,7 +270,6 @@
     <None Include="bin\src\syscalls.o">
       <Filter>Resource Files\GCC</Filter>
     </None>
-    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainRibbonEN.xml">

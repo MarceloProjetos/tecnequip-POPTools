@@ -18,6 +18,7 @@
         </OBJECT>
         <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Diagrama Ladder">
+          <param name="Local" value="topics\Diagramaladder.htm">
         </OBJECT>
         <UL>
             <LI><OBJECT type="text/sitemap">
@@ -191,10 +192,6 @@
                         <LI><OBJECT type="text/sitemap">
                           <param name="Name" value="Compilar">
                           <param name="Local" value="topics\Compile.htm">
-                        </OBJECT>
-                        <LI><OBJECT type="text/sitemap">
-                          <param name="Name" value="Compilar como...">
-                          <param name="Local" value="topics\CompileAs.htm">
                         </OBJECT>
                         <LI><OBJECT type="text/sitemap">
                           <param name="Name" value="Compilar e Gravar">
@@ -569,10 +566,6 @@
         <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Licença">
           <param name="Local" value="topics\License.htm">
-        </OBJECT>
-        <LI><OBJECT type="text/sitemap">
-          <param name="Name" value="Diagramaladder">
-          <param name="Local" value="topics\Diagramaladder.htm">
         </OBJECT>
         <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Primeiroladder">

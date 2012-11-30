@@ -3,7 +3,7 @@ Title=Ajuda
 Compiled file=Ajuda.chm
 Error log file=
 Default topic=topics\default.htm
-Language=0x0409 English (United States)
+Language=0x0409 Inglês (Estados Unidos)
 Full text search stop list file=
 Contents file=Contents.hhc
 Index file=Index.hhk
@@ -68,4 +68,10 @@ img\topicbar.gif
 img\topicbar_left.gif
 img\WelcomeLogo.png
 img\WelcomePicture.png
+
+[ALIAS]
+#include contexts.ali
+
+[MAP]
+#include contexts.h
 
