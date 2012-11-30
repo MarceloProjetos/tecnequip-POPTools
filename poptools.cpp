@@ -322,12 +322,222 @@ static BOOL SaveProgram(void)
 }
 
 //-----------------------------------------------------------------------------
+// Functions to Create, Show and Control a window to give user the progress
+// status of compile/program operations
+//-----------------------------------------------------------------------------
+static HWND hProgressWindow = NULL;
+static HWND hCompileProgressBar;
+static HWND hErasingProgressBar;
+static HWND hWritingProgressBar;
+static HWND hVerifyingProgressBar;
+static HWND hCompileOKLabel;
+static HWND hErasingOKLabel;
+static HWND hWritingOKLabel;
+static HWND hVerifyingOKLabel;
+static HWND hMessageLabel;
+
+void HideProgressWindow(void)
+{
+	if(hProgressWindow != NULL) {
+	    DestroyWindow(hProgressWindow);
+		hProgressWindow = NULL;
+	    EnableWindow(MainWindow, TRUE);
+	}
+}
+
+int UpdateProgressWindow(ProgressStatus *ps)
+{
+	static ProgressStatus last = { -1, -1, -1, NULL };
+	char text[300];
+	HWND hProgressBars  [] = { hCompileProgressBar, hErasingProgressBar, hWritingProgressBar, hVerifyingProgressBar };
+	HWND hProgressLabels[] = { hCompileOKLabel    , hErasingOKLabel    , hWritingOKLabel    , hVerifyingOKLabel     };
+	int i, iStages = sizeof(hProgressBars)/sizeof(&hProgressBars[0]);
+
+	if(hProgressWindow == NULL) return PROGRESS_STATUS_DONE;
+
+	if(ps != NULL) {
+		if(ps->iCurrentStage != last.iCurrentStage) {
+			for(i=last.iCurrentStage; i < ps->iCurrentStage && i < PROGRESS_STAGE_FINISHING; i++) {
+				if(!i) {
+					DWORD dwStyle = GetWindowLong(hProgressBars[i], GWL_STYLE);
+					SetWindowLong(hProgressBars[i], GWL_STYLE, dwStyle & ~PBS_MARQUEE);
+				}
+
+				SendMessage   (hProgressBars  [i], PBM_SETPOS, 100, 0);
+				Static_SetText(hProgressLabels[i], "OK");
+			}
+		}
+
+		if(ps->iCurrentStage < PROGRESS_STAGE_FINISHING) {
+			if(ps->iCurrentStage && ps->iStagePercent != last.iStagePercent) {
+				SendMessage(hProgressBars[ps->iCurrentStage], PBM_SETPOS, ps->iStagePercent, 0);
+			}
+
+			if(ps->bStageState != PROGRESS_STAGE_STATE_OK && ps->bStageState != last.bStageState) {
+				Static_SetText(hProgressLabels[ps->iCurrentStage], _("ERRO"));
+				SendMessage(hProgressBars[ps->iCurrentStage], PBM_SETSTATE, PBST_ERROR, 0);
+				SendMessage(hProgressBars[ps->iCurrentStage], PBM_SETPOS, ps->iStagePercent, 0);
+			}
+		}
+
+		if((ps->iCurrentStage == PROGRESS_STAGE_FINISHED && ps->iCurrentStage != last.iCurrentStage) ||
+			(ps->bStageState != PROGRESS_STAGE_STATE_OK && ps->bStageState != last.bStageState)) {
+			DialogDone = FALSE;
+			Button_Enable(CancelButton, TRUE);
+			Button_SetText(CancelButton, _("OK"));
+		}
+
+		Static_GetText(hMessageLabel, text, sizeof(text));
+		if(strcmp(ps->szMsg, text)) {
+			Static_SetText(hMessageLabel, ps->szMsg);
+		}
+
+		last = *ps;
+	}
+
+    MSG msg;
+    DWORD ret;
+
+	while((ret = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))) 
+	{
+		if (IsDialogMessage(hProgressWindow, &msg)) 
+			continue;
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+    }
+
+	if(DialogDone) {
+		Button_Enable(CancelButton, FALSE);
+		Button_GetText(CancelButton, text, sizeof(text));
+		if(!strcmp(text, _("OK"))) {
+			return PROGRESS_STATUS_DONE;
+		} else {
+			return PROGRESS_STATUS_CANCEL;
+		}
+	}
+
+	return PROGRESS_STATUS_OK;
+}
+
+void ShowProgressWindow(int mode)
+{
+	RECT rMain, rProgress;
+	int offset = 0, width, height;
+	HWND TextLabel;
+
+	if(hProgressWindow != NULL) {
+		HideProgressWindow();
+	}
+
+	// Creating Progress Window
+	hProgressWindow = CreateWindowClient(0, "POPToolsDialog",
+        _("Progress"), WS_OVERLAPPED | WS_SYSMENU,
+        100, 100, 360, 100, MainWindow, NULL, Instance, NULL);
+
+	// Compile Progress Controls
+    TextLabel = CreateWindowEx(0, WC_STATIC, _("Compilando :"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 12, 85, 20, hProgressWindow, NULL, Instance, NULL);
+    NiceFont(TextLabel);
+
+	hCompileProgressBar = CreateWindowEx(0, PROGRESS_CLASS, "", 
+		WS_CHILD | WS_VISIBLE | PBS_MARQUEE,
+		105, 10, 200, 20, hProgressWindow, NULL, Instance, NULL);
+
+    hCompileOKLabel = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        310, 12, 40, 20, hProgressWindow, NULL, Instance, NULL);
+    NiceFont(hCompileOKLabel);
+
+	if(mode == PROGRESS_MODE_PROGRAM) {
+		// Erasing Progress Controls
+		TextLabel = CreateWindowEx(0, WC_STATIC, _("Preparando :"),
+			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+			10, 42, 85, 20, hProgressWindow, NULL, Instance, NULL);
+		NiceFont(TextLabel);
+
+		hErasingProgressBar = CreateWindowEx(0, PROGRESS_CLASS, "", 
+			WS_CHILD | WS_VISIBLE,
+			105, 40, 200, 20, hProgressWindow, NULL, Instance, NULL);
+
+		hErasingOKLabel = CreateWindowEx(0, WC_STATIC, "",
+			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+			310, 42, 40, 20, hProgressWindow, NULL, Instance, NULL);
+		NiceFont(hErasingOKLabel);
+
+		// Writing Progress Controls
+		TextLabel = CreateWindowEx(0, WC_STATIC, _("Gravando :"),
+			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+			10, 72, 85, 20, hProgressWindow, NULL, Instance, NULL);
+		NiceFont(TextLabel);
+
+		hWritingProgressBar = CreateWindowEx(0, PROGRESS_CLASS, "", 
+			WS_CHILD | WS_VISIBLE,
+			105, 70, 200, 20, hProgressWindow, NULL, Instance, NULL);
+
+		hWritingOKLabel = CreateWindowEx(0, WC_STATIC, "",
+			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+			310, 72, 40, 20, hProgressWindow, NULL, Instance, NULL);
+		NiceFont(hWritingOKLabel);
+
+		// Verifying Progress Controls
+		TextLabel = CreateWindowEx(0, WC_STATIC, _("Verificando :"),
+			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+			10, 102, 85, 20, hProgressWindow, NULL, Instance, NULL);
+		NiceFont(TextLabel);
+
+		hVerifyingProgressBar = CreateWindowEx(0, PROGRESS_CLASS, "", 
+			WS_CHILD | WS_VISIBLE,
+			105, 100, 200, 20, hProgressWindow, NULL, Instance, NULL);
+
+		hVerifyingOKLabel = CreateWindowEx(0, WC_STATIC, "",
+			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+			310, 102, 40, 20, hProgressWindow, NULL, Instance, NULL);
+		NiceFont(hVerifyingOKLabel);
+
+		offset = 90;
+	}
+
+	GetWindowRect(MainWindow     , &rMain);
+	GetWindowRect(hProgressWindow, &rProgress);
+
+	width  = rProgress.right  - rProgress.left;
+	height = rProgress.bottom - rProgress.top + offset;
+
+	rProgress.top  = rMain.top  + (rMain.bottom - rMain.top  - height)/2;
+	rProgress.left = rMain.left + (rMain.right  - rMain.left - width )/2;
+
+	MoveWindow(hProgressWindow, rProgress.left, rProgress.top, width, height, TRUE);
+
+	hMessageLabel = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        10, 40 + offset, 340, 20, hProgressWindow, NULL, Instance, NULL);
+    NiceFont(hMessageLabel);
+
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        145, 70 + offset, 70, 23, hProgressWindow, NULL, Instance, NULL); 
+    NiceFont(CancelButton);
+
+	SendMessage(hCompileProgressBar, PBM_SETMARQUEE, 1, 0);
+
+	DialogDone = FALSE;
+
+	EnableWindow(MainWindow, FALSE);
+    ShowWindow(hProgressWindow, TRUE);
+}
+
+//-----------------------------------------------------------------------------
 // Compile the program to a hex file for the target micro. Get the output
 // file name if necessary, then call the micro-specific compile routines.
 //-----------------------------------------------------------------------------
 static BOOL CompileProgram(BOOL ShowSuccessMessage)
 {
+	int err;
 	BOOL ret = FALSE;
+	ProgressStatus ps;
+	char text[100];
 
 	RemoveParallelStart(0, NULL);
 
@@ -352,12 +562,35 @@ static BOOL CompileProgram(BOOL ShowSuccessMessage)
 
     SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-	if(CompileAnsiCToGCC(ShowSuccessMessage) == 0)
+	if(ShowSuccessMessage) {
+		ShowProgressWindow(PROGRESS_MODE_COMPILE);
+
+		ps.iCurrentStage = PROGRESS_STAGE_COMPILING;
+		ps.bStageState   = PROGRESS_STAGE_STATE_OK;
+		ps.iStagePercent = 0;
+		ps.szMsg = _("Compilando...");
+
+		UpdateProgressWindow(&ps);
+	}
+
+	if((err = CompileAnsiCToGCC(ShowSuccessMessage)) == 0)
 		ret = TRUE;
 
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
 
 	StatusBarSetText(0, "");
+
+	if(ShowSuccessMessage) {
+		ps.iCurrentStage = PROGRESS_STAGE_FINISHED;
+		ps.bStageState   = ret ? PROGRESS_STAGE_STATE_OK : PROGRESS_STAGE_STATE_FAILED;
+		ps.iStagePercent = 0;
+		sprintf(text, _("Erro durante Compilação! Código de erro: %d"), err);
+		ps.szMsg = ret ? _("Compilado com sucesso!") : text;
+
+		while(UpdateProgressWindow(&ps) != PROGRESS_STATUS_DONE);
+
+		HideProgressWindow();
+	}
 
 CompileProgramEnd:
 	return ret;
@@ -369,6 +602,7 @@ CompileProgramEnd:
 //-----------------------------------------------------------------------------
 static void WriteProgram(void)
 {
+	ProgressStatus ps;
 	unsigned int iCOMPort;
 
 	if(!POPSettings.COMPortFlash) {
@@ -381,8 +615,24 @@ static void WriteProgram(void)
 		iCOMPort = POPSettings.COMPortFlash;
 	}
 
-    if (CompileProgram(FALSE)) 
+	ShowProgressWindow(PROGRESS_MODE_PROGRAM);
+
+	ps.iCurrentStage = PROGRESS_STAGE_COMPILING;
+	ps.bStageState   = PROGRESS_STAGE_STATE_OK;
+	ps.iStagePercent = 0;
+	ps.szMsg = _("Compilando...");
+
+	UpdateProgressWindow(&ps);
+
+	if (CompileProgram(FALSE)) 
 	{
+		ps.iCurrentStage = PROGRESS_STAGE_ERASING;
+		ps.bStageState   = PROGRESS_STAGE_STATE_OK;
+		ps.iStagePercent = 0;
+		ps.szMsg = _("Conectando ao CLP...");
+
+		UpdateProgressWindow(&ps);
+
 		SetCursor(LoadCursor(NULL, IDC_WAIT));
 		FlashProgram(CurrentCompileFile, iCOMPort, 230400);
 	} 
@@ -390,12 +640,22 @@ static void WriteProgram(void)
 	{
 		SetCursor(LoadCursor(NULL, IDC_ARROW));
 
+		ps.iCurrentStage = PROGRESS_STAGE_COMPILING;
+		ps.bStageState   = PROGRESS_STAGE_STATE_FAILED;
+		ps.iStagePercent = 0;
+		ps.szMsg = _("Erro na compilacao !!!");
+
+		UpdateProgressWindow(&ps);
+
 		StatusBarSetText(0, _("Erro na compilacao !!!"));
 	}
 
 	StatusBarSetText(0, "");
 
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
+
+	while(UpdateProgressWindow(NULL) != PROGRESS_STATUS_DONE);
+	HideProgressWindow();
 }
 
 //-----------------------------------------------------------------------------

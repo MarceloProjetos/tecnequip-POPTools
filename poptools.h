@@ -968,6 +968,34 @@ extern char CurrentCompileFile[MAX_PATH];
 extern McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS];
 extern char *InternalFlags[]; // Internal flags available to the users.
 
+#define PROGRESS_MODE_COMPILE 0
+#define PROGRESS_MODE_PROGRAM 1
+
+#define PROGRESS_STAGE_COMPILING 0
+#define PROGRESS_STAGE_ERASING   1
+#define PROGRESS_STAGE_WRITING   2
+#define PROGRESS_STAGE_VERIFYING 3
+#define PROGRESS_STAGE_FINISHING 4
+#define PROGRESS_STAGE_FINISHED  5
+
+#define PROGRESS_STAGE_STATE_OK     0
+#define PROGRESS_STAGE_STATE_FAILED 1
+
+#define PROGRESS_STATUS_OK     0
+#define PROGRESS_STATUS_CANCEL 1
+#define PROGRESS_STATUS_DONE   2
+
+typedef struct {
+	int   iCurrentStage;
+	int   iStagePercent;
+	int   bStageState;
+	char *szMsg;
+} ProgressStatus;
+
+void HideProgressWindow  (void);
+void ShowProgressWindow  (int mode);
+int  UpdateProgressWindow(ProgressStatus *ps);
+
 /*** ShowTaskDialog prototypes ***/
 
 // Full version

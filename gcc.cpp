@@ -762,7 +762,9 @@ DWORD InvokeGCC(char* dest)
 	//DumpInvokeCmd(szCmd, szArgs);
 #endif
 
-	WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
+	while(WaitForSingleObject(ProcessInfo.hProcess, 25) == WAIT_TIMEOUT)
+		UpdateProgressWindow(NULL);
+
 	if(!GetExitCodeProcess(ProcessInfo.hProcess, &exitCode))
 		exitCode = 0;
 
@@ -965,10 +967,10 @@ DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 
 	if ((err = InvokeGCC(CurrentCompileFile))) {
 		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"C:\\Users\\<User>\\AppData\\Temp\\POPTools\\output.log\"\n"), err);
-		CompileSuccessfulMessage(str);
+//		CompileSuccessfulMessage(str);
 	} else if(ShowSuccessMessage) {
 		sprintf(str, _("Compilado com sucesso. O arquivo binário foi criado em '%s'.\r\n\r\n"), CurrentCompileFile);
-		CompileSuccessfulMessage(str);
+//		CompileSuccessfulMessage(str);
 	}
 
 	return err;
