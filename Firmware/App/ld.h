@@ -57,7 +57,7 @@ struct ip_addr {
 /***************************************************************************/
 /* GPIO                                                                    */
 /***************************************************************************/
-extern unsigned int GPIO_Output(unsigned int OUTPUT);
+extern unsigned int GPIO_Output(void);
 extern unsigned int GPIO_Input(void);
 
 /***************************************************************************/

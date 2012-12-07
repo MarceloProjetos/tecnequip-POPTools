@@ -77,7 +77,7 @@ void GPIO_Init()
 	SSP_Write((unsigned char*)&cmd, 1);
 }
 
-unsigned int GPIO_Output(unsigned int OUTPUT)
+unsigned int GPIO_Output(void)
 {
   unsigned int i = 0;
   unsigned int status = 0;
@@ -99,6 +99,8 @@ unsigned int GPIO_Output(unsigned int OUTPUT)
   i |= ((unsigned int)GPIO_OUTPUT_PORT14) << 13;
   i |= ((unsigned int)GPIO_OUTPUT_PORT15) << 14;
   i |= ((unsigned int)GPIO_OUTPUT_PORT16) << 15;
+
+  GPIO_OUTPUT = i;
 
   /*i |= OUTPUT & 0x1;
   i |= OUTPUT & (1 << 1);
@@ -168,6 +170,8 @@ unsigned int GPIO_Input(void)
   GPIO_INPUT_PORT17 = (i & (1 << 16)) >> 16;
   GPIO_INPUT_PORT18 = (i & (1 << 17)) >> 17;
   GPIO_INPUT_PORT19 = (i & (1 << 18)) >> 18;
+
+  GPIO_INPUT = i;
 
   return i;
 }

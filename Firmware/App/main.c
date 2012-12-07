@@ -60,9 +60,6 @@ extern void PLC_Run   (void);
 extern void PLC_Init  (void);
 extern void ADC_Update(void);
 
-extern volatile unsigned int 	GPIO_OUTPUT;
-extern volatile unsigned int 	GPIO_INPUT;
-
 volatile unsigned int 			PLC_ERROR = 0;
 
 struct tm RTC_NowTM;
@@ -81,13 +78,13 @@ void PLC_Cycle(void *pdata)
 		// Etapa de Aquisicao
 		ADC_Update();
 		RTC_NowTM = RTC_GetTM();
-		GPIO_INPUT = GPIO_Input();
+		GPIO_Input();
 
 		// Etapa de Execucao
 		PLC_Run();
 
 		// Etapa de Atualizacao
-		GPIO_Output(GPIO_OUTPUT);
+		GPIO_Output();
 
 		do{
 			RS232_Console(cycle);

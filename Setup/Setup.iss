@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{943E92A3-A70E-415D-B55D-44C8C15FE3F6}
 AppName=POPTools
-AppVerName=POPTools 1.4
+AppVerName=POPTools 1.5
 AppPublisher=Tecnequip Tecnologia em Equipamentos Ltda
 AppPublisherURL=http://www.tecnequip.com.br/
 AppSupportURL=http://www.tecnequip.com.br/
@@ -15,7 +15,7 @@ AppUpdatesURL=http://www.tecnequip.com.br/
 DefaultDirName={pf}\POPTools
 DefaultGroupName=POPTools
 OutputDir=..\Setup
-OutputBaseFilename=POPTools_Setup_v1.4
+OutputBaseFilename=POPTools_Setup_v1.5
 Compression=lzma
 SolidCompression=yes
 ChangesAssociations=yes

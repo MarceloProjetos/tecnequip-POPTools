@@ -627,6 +627,7 @@ unsigned int Modbus_RTU_Receive(struct MODBUS_Device *dev, struct MODBUS_PDU msg
       }
 
       if(reply.ExceptionCode == MODBUS_EXCEPTION_NONE) {
+    	  memset(&reply, 0, sizeof(reply));
         reply.ExceptionCode = (*dev->hl[fc].FunctionHandler)(dev, &data, &reply);
         reply.FunctionCode = msg.FunctionCode; // Atualiza Function Code com codigo enviado.
         reply.Id = msg.Id; // Atualiza Id com o valor recebido do handler.
