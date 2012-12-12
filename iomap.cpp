@@ -322,6 +322,7 @@ void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_PERSIST:
 			AppendIo(l->d.persist.var, IO_TYPE_GENERAL, 0);
+			break;
 
 		case ELEM_MULTISET_DA:
 			if(!IsNumber(l->d.multisetDA.name))

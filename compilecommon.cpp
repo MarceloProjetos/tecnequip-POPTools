@@ -319,8 +319,8 @@ void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput)
 
 int ValidateDiagram(void)
 {
-	char msg_error[100] = "", msg_warning[100] = "";
-	int i, ret = DIAGRAM_VALIDATION_OK;
+	char msg_error[1000] = "", msg_warning[1000] = "";
+	int i, ret = DIAGRAM_VALIDATION_OK, WarningPersist = 0;
 
 	// Validate I/O Pin Assignment
 	// Only if not in Simulation Mode
@@ -341,6 +341,11 @@ int ValidateDiagram(void)
 		for(i = 0; i < IntCodeLen; i++) {
 			if(IntCode[i].op == INT_READ_ADC && GetTypeFromName(IntCode[i].name1) != IO_TYPE_READ_ADC) {
 				sprintf(msg_error, "Variável A/D '%s' usada em lógica incompatível!", IntCode[i].name1);
+			}
+
+			if(IntCode[i].op == INT_EEPROM_READ && !WarningPersist) {
+				WarningPersist = 1;
+				sprintf(msg_warning, "Atenção: variáveis persistentes devem ser usadas cautelosamente. Excesso no uso pode interferir no desempenho da execução do diagrama ladder e reduzir a vida útil do CLP.\nA memória interna possui um limite no número de gravações.");
 			}
 
 			if(msg_error[0]) {

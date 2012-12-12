@@ -18,18 +18,13 @@
 #include "netif/ppp_oe.h"
 #include "ethernetif.h"
 #include "emac.h"
-#include "i2c.h"
+#include "eeprom_24AA02.h"
 
 /* Define those to better describe your network interface. */
 #define IFNAME0 'e'
 #define IFNAME1 'n'
 
 #define ETH_MTU		1500
-
-extern volatile unsigned int I2CCount;
-extern volatile unsigned char I2CMasterBuffer[BUFSIZE];
-extern volatile unsigned int I2CCmd, I2CMasterState;
-extern volatile unsigned int I2CReadLength, I2CWriteLength;
 
 unsigned char mac_addr[6];
 
@@ -42,22 +37,7 @@ OS_STK stkEthif[sizeEthif];
 
 void Get_MAC_Address(unsigned char * addr)
 {
-	I2C_Init( (unsigned int)I2CMASTER );
-
-	memset((void *)I2CMasterBuffer, 0, BUFSIZE);
-
-	I2CWriteLength = 2;
-	I2CReadLength = 0;
-	I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_WRITE;
-	I2CMasterBuffer[1] = 0xFA;
-	I2C_Engine();
-
-	I2CWriteLength = 1;
-	I2CReadLength = 6;
-	I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_READ;
-	I2C_Engine();
-
-	memcpy(addr, (void*)&I2CMasterBuffer[3], 6);
+	E2P_24AA02_Read(addr, 0xFA, 6);
 }
 
 /**

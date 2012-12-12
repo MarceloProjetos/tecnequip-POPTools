@@ -10,6 +10,7 @@
 *****************************************************************************/
 #include "lpc17xx.h"
 #include "i2c.h"
+#include "coos.h"
 
 #define TRUE	1
 #define FALSE	0
@@ -49,6 +50,8 @@ be READ or WRITE depending on the I2CCmd.
 void I2C0_IRQHandler(void)
 {
   unsigned char StatValue;
+
+  CoEnterISR();
 
   /* this handler deals with master read and master write only */
   StatValue = I2C0 -> I2STAT;
@@ -106,7 +109,7 @@ void I2C0_IRQHandler(void)
 	  else
 	  {
 		I2CMasterState = DATA_NACK;
-		I2C0 -> I2CONSET = I2CONSET_STO;      /* Set Stop flag */
+//		I2C0 -> I2CONSET = I2CONSET_STO;      /* Set Stop flag */
 	  }
 	}
 	I2C0 -> I2CONCLR = I2CONCLR_SIC;
@@ -148,7 +151,7 @@ void I2C0_IRQHandler(void)
 	break;
   }
 
-
+  CoExitISR();
 }
 
 /*****************************************************************************
@@ -306,6 +309,7 @@ unsigned int I2C_Engine( void )
 	  break;
 	}
   }
+
   return ( TRUE );
 }
 

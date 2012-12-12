@@ -238,6 +238,11 @@ static void GenerateDeclarations(FILE *f)
                 intVar2 = IntCode[i].name2;
                 break;
 
+            case INT_EEPROM_READ:
+            case INT_EEPROM_WRITE:
+                intVar1 = IntCode[i].name1;
+                break;
+
 			case INT_SQRT:
             case INT_END_IF:
             case INT_ELSE_IF:
@@ -245,8 +250,6 @@ static void GenerateDeclarations(FILE *f)
             case INT_COMMENT:
             case INT_SIMULATE_NODE_STATE:
             case INT_EEPROM_BUSY_CHECK:
-            case INT_EEPROM_READ:
-            case INT_EEPROM_WRITE:
 			case INT_SET_RTC:
 			case INT_CHECK_RTC:
                 break;
@@ -420,10 +423,13 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
+				fprintf(f, "%s = E2P_Busy();\n", MapSym(IntCode[i].name1));
 				break;
             case INT_EEPROM_READ:
+				fprintf(f, "%s = E2P_Read((void *)&%s, %d, 2);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1), IntCode[i].literal*2);
 				break;
             case INT_EEPROM_WRITE:
+				fprintf(f, "E2P_Write((void *)&%s, %d, 2);\n", MapSym(IntCode[i].name1), IntCode[i].literal*2);
 				break;
             case INT_READ_ADC:
 				ad_mask |= 1 << (atoi(MapSym(IntCode[i].name1)+1) - 1);
