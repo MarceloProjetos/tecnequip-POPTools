@@ -15,6 +15,7 @@
 #include "ld.h"
 
 #include <time.h>
+#include <stdlib.h>
 
 void Devices_Init(void)
 {
@@ -115,6 +116,8 @@ int main()
 			  PLC_CYCLE_THREAD_PRIO,
 			  &PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE-1],
 			  PLC_CYCLE_THREAD_STACKSIZE);
+
+	srand(time(NULL));
 
 	CoStartOS();
 

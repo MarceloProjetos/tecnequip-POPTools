@@ -3,6 +3,7 @@
  *****************************************************************************/
 #include "ld.h"
 #include "lpc17xx.h"
+#include <stdlib.h>
 
 extern volatile unsigned char 	MODBUS_MASTER; // 0 = Slave, 1 = Master
 extern volatile int 			MODBUS_REGISTER[32];

@@ -1137,6 +1137,10 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 break;
             }
             case ELEM_PERSIST: {
+				if(EepromAddrFree > EEPROM_SIZE) {
+					Error(_("Muitas variáveis persistentes!"));
+					CompileError();
+				}
                 Op(INT_IF_BIT_SET, stateInOut);
 
                 // At startup, get the persistent variable from flash.

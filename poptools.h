@@ -139,6 +139,8 @@ typedef SDWORD SWORD;
 #define DA_VOLTAGE			10000.0f	// voltagem DA em mV (-10V +10V)
 #define DA_CYCLE_INTERVAL	10			// miliseconds
 
+#define EEPROM_SIZE 0x7E
+
 // Identifier for the message sent to MainWindow when SimSocket receives something
 #define WM_SOCKET 104
 

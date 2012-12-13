@@ -429,7 +429,7 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				fprintf(f, "%s = E2P_Read((void *)&%s, %d, 2);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1), IntCode[i].literal*2);
 				break;
             case INT_EEPROM_WRITE:
-				fprintf(f, "E2P_Write((void *)&%s, %d, 2);\n", MapSym(IntCode[i].name1), IntCode[i].literal*2);
+				fprintf(f, "E2P_Write((void *)&%s, %d, 2);\n", MapSym(IntCode[i].name1), IntCode[i].literal);
 				break;
             case INT_READ_ADC:
 				ad_mask |= 1 << (atoi(MapSym(IntCode[i].name1)+1) - 1);

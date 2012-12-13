@@ -14,7 +14,7 @@ void PLC_Run(void)
 
     /* start rung 1 */
     I_rung_top = I_mcr;
-    
+    I_scratch2 = rand();
     /* iniciando serie [ */
     if (I_rung_top) {  // $rung_top
         if (!I_oneShot_0000) {  // $oneShot_0000
