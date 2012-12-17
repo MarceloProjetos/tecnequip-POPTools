@@ -434,6 +434,8 @@ public:
 			EXEC_OPCODE(cmdInstrShiftRegister     , MNU_INSERT_SHIFT_REG       );
 			EXEC_OPCODE(cmdInstrLookUpTable       , MNU_INSERT_LUT             );
 			EXEC_OPCODE(cmdInstrPieceWiseLinear   , MNU_INSERT_PWL             );
+			EXEC_OPCODE(cmdInstrRand              , MNU_INSERT_RAND            );
+			EXEC_OPCODE(cmdInstrAbs               , MNU_INSERT_ABS             );
 
 			EXEC_OPCODE(cmdInstrMov               , MNU_INSERT_MOV             );
 			EXEC_OPCODE(cmdInstrSetBit            , MNU_INSERT_SET_BIT         );
@@ -515,9 +517,11 @@ public:
 			EXEC_OPCODE(cmdExampleMathMult          , MNU_EXAMPLE_MUL             );
 			EXEC_OPCODE(cmdExampleMathDivide        , MNU_EXAMPLE_DIV             );
 			EXEC_OPCODE(cmdExampleMathSqrt          , MNU_EXAMPLE_SQRT            );
+			EXEC_OPCODE(cmdExampleAbs               , MNU_EXAMPLE_ABS             );
 			EXEC_OPCODE(cmdExampleShiftRegister     , MNU_EXAMPLE_SHIFT_REG       );
 			EXEC_OPCODE(cmdExampleLookUpTable       , MNU_EXAMPLE_LUT             );
 			EXEC_OPCODE(cmdExamplePieceWiseLinear   , MNU_EXAMPLE_PWL             );
+			EXEC_OPCODE(cmdExampleRand              , MNU_EXAMPLE_RAND            );
 
 			EXEC_OPCODE(cmdExampleMov               , MNU_EXAMPLE_MOV             );
 			EXEC_OPCODE(cmdExampleSetBit            , MNU_EXAMPLE_SET_BIT         );
@@ -631,7 +635,7 @@ public:
 				{ L"Contadores"     , { cmdExampleCounterInc, cmdExampleCounterDec, cmdExampleCounterCirc, cmdExampleCounterReset, 0 } },
 				{ L"Variáveis"      , { cmdExampleMov, cmdExampleSetBit, cmdExampleCheckBit, cmdExamplePersist, 0 } },
 				{ L"Condicionais"   , { cmdExampleCondEqual, cmdExampleCondGreater, cmdExampleCondLesser, cmdExampleCondNotEqual, cmdExampleCondGreaterEqual, cmdExampleCondLesserEqual, 0 } },
-				{ L"Matemática"     , { cmdExampleMathAdd, cmdExampleMathSub, cmdExampleMathMult, cmdExampleMathDivide, cmdExampleMathSqrt, cmdExampleShiftRegister, cmdExampleLookUpTable, cmdExamplePieceWiseLinear, 0 } },
+				{ L"Matemática"     , { cmdExampleMathAdd, cmdExampleMathSub, cmdExampleMathMult, cmdExampleMathDivide, cmdExampleAbs, cmdExampleMathSqrt, cmdExampleShiftRegister, cmdExampleLookUpTable, cmdExamplePieceWiseLinear, cmdExampleRand, 0 } },
 				{ L"Analógicos"     , { cmdExampleReadAD, cmdExampleWriteDA, 0 } },
 				{ L"Motores"        , { cmdExamplePWM, cmdExampleRampDA, cmdExampleReadEnc, cmdExampleResetEnc, 0 } },
 				{ L"ModBUS"         , { cmdExampleReadModBUS485, cmdExampleWriteModBUS485, cmdExampleReadModBUSEth, cmdExampleWriteModBUSEth, 0 } },

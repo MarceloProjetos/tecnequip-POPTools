@@ -837,6 +837,45 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
             break;
         }
 
+        case ELEM_RAND: {
+			if(IsNumber(l->d.rand.var)) {
+                Error(_("Rand instruction: '%s' not a valid destination."),
+					l->d.rand.var);
+                CompileError();
+            }
+
+			Op(INT_IF_BIT_SET, stateInOut);
+				Op(INT_RAND, l->d.rand.var, l->d.rand.min, l->d.rand.max, 0, 0);
+			Op(INT_END_IF);
+
+			break;
+        }
+
+        case ELEM_ABS: {
+			if(IsNumber(l->d.abs.dest)) {
+                Error(_("Abs instruction: '%s' not a valid destination."),
+                    l->d.abs.dest);
+                CompileError();
+            }
+
+			Op(INT_IF_BIT_SET, stateInOut);
+				Op(INT_IF_VARIABLE_LES_LITERAL, l->d.abs.src, (SWORD)0);
+			        Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch_int", CheckMakeNumber("-1"));
+					Op(INT_SET_VARIABLE_MULTIPLY, l->d.abs.dest, l->d.abs.src, "$scratch_int", 0, 0);
+				Op(INT_ELSE);
+					if(IsNumber(l->d.abs.src)) {
+						Op(INT_SET_VARIABLE_TO_LITERAL, l->d.abs.dest,
+							CheckMakeNumber(l->d.abs.src));
+					} else {
+						Op(INT_SET_VARIABLE_TO_VARIABLE, l->d.abs.dest, l->d.abs.src,
+							0);
+					}
+	            Op(INT_END_IF);
+            Op(INT_END_IF);
+
+			break;
+        }
+
         // These four are highly processor-dependent; the int code op does
         // most of the highly specific work
         {

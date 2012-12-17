@@ -949,6 +949,14 @@ static void CheckVariableNamesCircuit(int which, void *elem)
             MarkWithCheck(l->d.sqrt.dest, VAR_FLAG_ANY);
             break;
 
+        case ELEM_RAND:
+			MarkWithCheck(l->d.rand.var, VAR_FLAG_ANY);
+            break;
+
+        case ELEM_ABS:
+            MarkWithCheck(l->d.abs.dest, VAR_FLAG_ANY);
+            break;
+
         case ELEM_LOOK_UP_TABLE:
             MarkWithCheck(l->d.lookUpTable.dest, VAR_FLAG_ANY);
             break;
@@ -1307,6 +1315,15 @@ math:
 
             case INT_SQRT:
                 SetSimulationVariable(a->name1, (int)sqrt((float)GetSimulationVariable(a->name1)));
+                break;
+
+            case INT_RAND: {
+				int min, max;
+				min = IsNumber(a->name2) ? atoi(a->name2) : (int)GetSimulationVariable(a->name2);
+				max = IsNumber(a->name3) ? atoi(a->name3) : (int)GetSimulationVariable(a->name3);
+
+				SetSimulationVariable(a->name1, min + (rand() % (max - min + 1)));
+				}
                 break;
 
 			case INT_MULTISET_DA:

@@ -119,9 +119,11 @@ topics\InstrMathSub.htm
 topics\InstrMathMult.htm
 topics\InstrMathDivide.htm
 topics\InstrMathSqrt.htm
+topics\InstrAbs.htm
 topics\InstrShiftRegister.htm
 topics\InstrLookUpTable.htm
 topics\InstrPieceWiseLinear.htm
+topics\InstrRand.htm
 topics\InstrReadAD.htm
 topics\InstrWriteDA.htm
 topics\InstrPWM.htm
@@ -151,12 +153,12 @@ topics\Primeiroladder.htm
 topics\Exemplodeaplicacao.htm
 topics\CompileAs.htm
 
-Compile time: 0 minutes, 2 seconds
-208	Topics
-505	Local links
+Compile time: 0 minutes, 4 seconds
+108	Topics
+509	Local links
 1	Internet link
 0	Graphics
 
 
-Created f:\SVN\POPTools\Help\Ajuda.chm, 884,145 bytes
-Compression decreased file by 252,486 bytes.
+Created f:\SVN\POPTools\Help\Ajuda.chm, 882,943 bytes
+Compression decreased file by 256,791 bytes.

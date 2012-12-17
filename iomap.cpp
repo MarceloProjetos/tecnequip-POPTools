@@ -213,6 +213,21 @@ void ExtractNamesFromCircuit(int which, void *any)
 			if(!IsNumber(l->d.sqrt.src))
 	            AppendIo(l->d.sqrt.src, IO_TYPE_GENERAL, 0);
             break;
+
+        case ELEM_RAND:
+			AppendIo(l->d.rand.var, IO_TYPE_GENERAL, 0);
+			if(!IsNumber(l->d.rand.min))
+	            AppendIo(l->d.rand.min, IO_TYPE_GENERAL, 0);
+			if(!IsNumber(l->d.rand.max))
+	            AppendIo(l->d.rand.max, IO_TYPE_GENERAL, 0);
+            break;
+
+        case ELEM_ABS:
+			AppendIo(l->d.abs.dest, IO_TYPE_GENERAL, 0);
+			if(!IsNumber(l->d.abs.src))
+	            AppendIo(l->d.abs.src, IO_TYPE_GENERAL, 0);
+            break;
+
 		case ELEM_READ_FORMATTED_STRING:
 		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING:

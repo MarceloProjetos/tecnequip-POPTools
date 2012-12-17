@@ -243,6 +243,12 @@ static void GenerateDeclarations(FILE *f)
                 intVar1 = IntCode[i].name1;
                 break;
 
+            case INT_RAND:
+                intVar1 = IntCode[i].name1;
+                intVar2 = IntCode[i].name2;
+                intVar3 = IntCode[i].name3;
+                break;
+
 			case INT_SQRT:
             case INT_END_IF:
             case INT_ELSE_IF:
@@ -441,6 +447,13 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
             case INT_SQRT:
 				fprintf(f, "srint(&%s);\n", MapSym(IntCode[i].name1));
 				break;
+            case INT_RAND: {
+				char *min, *max;
+				min = IsNumber(IntCode[i].name2) ? IntCode[i].name2 : MapSym(IntCode[i].name2);
+				max = IsNumber(IntCode[i].name3) ? IntCode[i].name3 : MapSym(IntCode[i].name3);
+				fprintf(f, "%s = %s + (rand() %% (%s - %s + 1));\n", MapSym(IntCode[i].name1), min, max, min);
+				break;
+			}
 			case INT_MULTISET_DA:
 				fprintf(f, "DAC_Start(%d, %d, %s, %s, %s, DAC_Conv(%s, %s));\n", IntCode[i].bit, IntCode[i].literal, IntCode[i].name3, IntCode[i].name4,
 					IsNumber(IntCode[i].name1) ? IntCode[i].name1 : MapSym(IntCode[i].name1), IsNumber(IntCode[i].name2) ? IntCode[i].name2 : MapSym(IntCode[i].name2), IntCode[i].name5);

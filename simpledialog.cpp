@@ -376,6 +376,45 @@ void ShowSqrtDialog(char *dest, char *src)
 	}
 }
 
+void ShowRandDialog(char *var, char *min, char *max)
+{
+	char var_tmp[MAX_NAME_LEN], min_tmp[MAX_NAME_LEN], max_tmp[MAX_NAME_LEN];
+    char *labels[] = { _("Destination:"), _("Mínimo:"), _("Máximo:") };
+    char *dests [] = { var_tmp, min_tmp, max_tmp };
+
+	strcpy(var_tmp, var);
+	strcpy(min_tmp, min);
+	strcpy(max_tmp, max);
+
+	if(ShowSimpleDialog(_("Rand"), 3, labels, 0, 0x7, 0x7, 0x7, dests)) {
+		if(IsValidNameAndType(var, var_tmp, _("Destino"), VALIDATE_IS_VAR          , GetTypeFromName(var_tmp), 0, 0) &&
+		   IsValidNameAndType(min, min_tmp, _("Mínimo") , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(min_tmp), 0, 0) &&
+		   IsValidNameAndType(min, max_tmp, _("Máximo") , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(max_tmp), 0, 0)) {
+			strcpy(var, var_tmp);
+			strcpy(min, min_tmp);
+			strcpy(max, max_tmp);
+		}
+	}
+}
+
+void ShowAbsDialog(char *dest, char *src)
+{
+	char dest_tmp[MAX_NAME_LEN], src_tmp[MAX_NAME_LEN];
+    char *labels[] = { _("Destination:"), _("Source:") };
+    char *dests[] = { dest_tmp, src_tmp };
+
+	strcpy(src_tmp , src );
+	strcpy(dest_tmp, dest);
+
+	if(ShowSimpleDialog(_("Abs"), 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
+		if(IsValidNameAndType(dest, dest_tmp, _("Destino"), VALIDATE_IS_VAR          , GetTypeFromName(dest_tmp), 0, 0) &&
+		   IsValidNameAndType(src , src_tmp , _("Origem") , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(src_tmp ), 0, 0)) {
+			strcpy(src , src_tmp );
+			strcpy(dest, dest_tmp);
+		}
+	}
+}
+
 void ShowReadAdcDialog(char *name)
 {
 	char name_tmp[MAX_NAME_LEN];

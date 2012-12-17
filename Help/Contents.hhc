@@ -410,6 +410,10 @@
                                   <param name="Local" value="topics\InstrMathSqrt.htm">
                                 </OBJECT>
                                 <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="Valor Absoluto">
+                                  <param name="Local" value="topics\InstrAbs.htm">
+                                </OBJECT>
+                                <LI><OBJECT type="text/sitemap">
                                   <param name="Name" value="Tabela de Troca">
                                   <param name="Local" value="topics\InstrShiftRegister.htm">
                                 </OBJECT>
@@ -420,6 +424,10 @@
                                 <LI><OBJECT type="text/sitemap">
                                   <param name="Name" value="Linearização por Segmentos">
                                   <param name="Local" value="topics\InstrPieceWiseLinear.htm">
+                                </OBJECT>
+                                <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="Número Randômico">
+                                  <param name="Local" value="topics\InstrRand.htm">
                                 </OBJECT>
                             </UL>
                         </UL>

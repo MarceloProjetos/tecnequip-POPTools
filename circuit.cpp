@@ -731,6 +731,8 @@ bool CanInsert(int which)
 	case ELEM_SUB:
 	case ELEM_ADD:
 	case ELEM_SQRT:
+	case ELEM_RAND:
+	case ELEM_ABS:
 	    if(CanInsertEnd) return true;
 		break;
 
@@ -994,6 +996,29 @@ bool AddMath(int which)
     strcpy(t->d.math.op1, _("src"));
     strcpy(t->d.math.op2, "1");
     AddLeaf(which, t);
+
+	return true;
+}
+bool AddRand(void)
+{
+    if(!CanInsert(ELEM_RAND)) return false;
+
+    ElemLeaf *t = AllocLeaf();
+	strcpy(t->d.rand.var, _("var"));
+	strcpy(t->d.rand.min, "0");
+	strcpy(t->d.rand.max, "100");
+    AddLeaf(ELEM_RAND, t);
+
+	return true;
+}
+bool AddAbs(void)
+{
+    if(!CanInsert(ELEM_ABS)) return false;
+
+    ElemLeaf *t = AllocLeaf();
+	strcpy(t->d.abs.dest, _("dest"));
+	strcpy(t->d.abs.src, _("src"));
+    AddLeaf(ELEM_ABS, t);
 
 	return true;
 }

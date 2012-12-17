@@ -359,6 +359,8 @@ void WhatCanWeDoFromCursorAndTopology(void)
          SelectedWhich == ELEM_PIECEWISE_LINEAR ||
          SelectedWhich == ELEM_PERSIST ||
          SelectedWhich == ELEM_SQRT ||
+         SelectedWhich == ELEM_RAND ||
+         SelectedWhich == ELEM_ABS ||
          SelectedWhich == ELEM_MOVE))
     {
         if(SelectedWhich == ELEM_COIL) {
@@ -744,6 +746,14 @@ bool EditSelectedElement(void)
 
         case ELEM_SQRT:
             ShowSqrtDialog(Selected->d.sqrt.dest, Selected->d.sqrt.src);
+            break;
+
+        case ELEM_RAND:
+            ShowRandDialog(Selected->d.rand.var, Selected->d.rand.min, Selected->d.rand.max);
+            break;
+
+        case ELEM_ABS:
+            ShowAbsDialog(Selected->d.abs.dest, Selected->d.abs.src);
             break;
 
         case ELEM_SET_PWM:

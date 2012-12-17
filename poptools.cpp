@@ -1040,6 +1040,14 @@ void ProcessMenu(int code)
             CHANGING_PROGRAM(AddSqrt());
             break;
 
+        case MNU_INSERT_RAND:
+            CHANGING_PROGRAM(AddRand());
+            break;
+
+        case MNU_INSERT_ABS:
+            CHANGING_PROGRAM(AddAbs());
+            break;
+
         case MNU_INSERT_PERSIST:
             CHANGING_PROGRAM(AddPersist());
             break;
@@ -1228,6 +1236,10 @@ cmp:
 		case MNU_EXAMPLE_DIV:
 		case MNU_EXAMPLE_SQRT:
             OpenDialog("examples\\math.ld");
+			break;
+		case MNU_EXAMPLE_RAND:
+		case MNU_EXAMPLE_ABS:
+            OpenDialog("examples\\abs_rand.ld");
 			break;
 		case MNU_EXAMPLE_MOV:
 		case MNU_EXAMPLE_SET_BIT:
@@ -1743,6 +1755,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
 	WSADATA wsaData;
 	int iResult;
+
+	srand((unsigned int)time(NULL));
 
 	Instance = hInstance;
 

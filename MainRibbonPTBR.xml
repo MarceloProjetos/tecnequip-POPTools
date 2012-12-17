@@ -1464,8 +1464,8 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name        = "InstrABS"
-              Symbol     = "cmdInstrABSHH"
+    <Command Name        = "InstrAbs"
+              Symbol     = "cmdInstrAbs"
               Id         = "30554"
               LabelTitle = "Valor Absoluto">
       <Command.TooltipTitle      >Valor Absoluto (Shift+/)</Command.TooltipTitle>
@@ -1477,8 +1477,8 @@
         <Image Source="imgs/InstrABSHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    <Command Name         = "ExampleABSHH"
-               Symbol     = "cmdExampleABSHH"
+    <Command Name         = "ExampleAbs"
+               Symbol     = "cmdExampleAbs"
                Id         = "31554"
                LabelTitle = "Valor Absoluto">
       <Command.TooltipTitle      >Valor Absoluto (Shift+/)</Command.TooltipTitle>
@@ -1579,12 +1579,12 @@
     </Command>
 
     <Command Name     = "InstrRand"
-           Symbol     = "cmdInstrRandHH"
+           Symbol     = "cmdInstrRand"
            Id         = "30555"
-           LabelTitle = "Numero Randomico"
-           LabelDescription = "Inserir randomico na posição do cursor.">
-      <Command.TooltipTitle      >Numero Randomico</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir Numero Randomico na posição do cursor.</Command.TooltipDescription>
+           LabelTitle = "Número Randômico"
+           LabelDescription = "Inserir Número Randômico na posição do cursor.">
+      <Command.TooltipTitle      >Número Randômico</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir Número Randômico na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrRandHH.bmp"/>
       </Command.LargeImages>
@@ -1593,12 +1593,11 @@
       </Command.SmallImages>
     </Command>
     <Command Name         = "ExampleRand"
-               Symbol     = "cmdRand"
+               Symbol     = "cmdExampleRand"
                Id         = "31555"
-               LabelTitle = "Numero Randomico"
-               LabelDescription = "Inserir Numero Randomico na posição do cursor.">
-      <Command.TooltipTitle      >Numero Randomico</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de Numero Randomico.</Command.TooltipDescription>
+               LabelTitle = "Número Randômico">
+      <Command.TooltipTitle      >Número Randômico</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de Número Randômico.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrRandHH.bmp"/>
       </Command.LargeImages>
@@ -2517,7 +2516,7 @@
             <DropDownButton CommandName="DropDownMath">
               <MenuGroup Class="MajorItems">
                 <Button CommandName="InstrMathSqrt"/>
-                <Button CommandName="InstrABS"/>
+                <Button CommandName="InstrAbs"/>
                 <Button CommandName="InstrShiftRegister"/>
                 <Button CommandName="InstrLookUpTable"/>
                 <Button CommandName="InstrPieceWiseLinear"/>

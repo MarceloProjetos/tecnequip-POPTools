@@ -200,6 +200,8 @@ struct strSerialConfig {
 #define MNU_INSERT_MUL          0x2e
 #define MNU_INSERT_DIV          0x2f
 #define MNU_INSERT_SQRT         0x5c
+#define MNU_INSERT_RAND         0x5d
+#define MNU_INSERT_ABS          0x5e
 #define MNU_INSERT_MOV          0x30
 #define MNU_INSERT_READ_ADC     0x31
 #define MNU_INSERT_SET_PWM      0x32
@@ -277,6 +279,8 @@ struct strSerialConfig {
 #define MNU_EXAMPLE_MUL          0x12e
 #define MNU_EXAMPLE_DIV          0x12f
 #define MNU_EXAMPLE_SQRT         0x15c
+#define MNU_EXAMPLE_RAND         0x15d
+#define MNU_EXAMPLE_ABS          0x15e
 #define MNU_EXAMPLE_MOV          0x130
 #define MNU_EXAMPLE_READ_ADC     0x131
 #define MNU_EXAMPLE_SET_PWM      0x132
@@ -358,6 +362,8 @@ struct strSerialConfig {
 #define ELEM_MUL                0x1b
 #define ELEM_DIV                0x1c
 #define ELEM_SQRT               0x43
+#define ELEM_RAND               0x44
+#define ELEM_ABS                0x45
 #define ELEM_EQU                0x1d
 #define ELEM_NEQ                0x1e
 #define ELEM_GRT                0x1f
@@ -423,6 +429,8 @@ struct strSerialConfig {
         case ELEM_MUL: \
         case ELEM_DIV: \
         case ELEM_SQRT: \
+        case ELEM_RAND: \
+        case ELEM_ABS: \
         case ELEM_MOVE: \
         case ELEM_SHORT: \
         case ELEM_OPEN: \
@@ -663,6 +671,17 @@ typedef struct ElemPerisistTag {
     char    var[MAX_NAME_LEN];
 } ElemPersist;
 
+typedef struct ElemRandTag {
+    char    var[MAX_NAME_LEN];
+    char    min[MAX_NAME_LEN];
+    char    max[MAX_NAME_LEN];
+} ElemRand;
+
+typedef struct ElemAbsTag {
+    char    src[MAX_NAME_LEN];
+    char    dest[MAX_NAME_LEN];
+} ElemAbs;
+
 #define SELECTED_NONE       0
 #define SELECTED_ABOVE      1
 #define SELECTED_BELOW      2
@@ -681,6 +700,8 @@ typedef struct ElemLeafTag {
         ElemMove            move;
         ElemMath            math;
         ElemSqrt            sqrt;
+		ElemRand            rand;
+		ElemAbs             abs;
         ElemCmp             cmp;
         ElemCounter         counter;
         ElemReadAdc         readAdc;
@@ -1137,6 +1158,8 @@ bool AddEmpty(int which);
 bool AddMove(void);
 bool AddMath(int which);
 bool AddSqrt(void);
+bool AddRand(void);
+bool AddAbs(void);
 bool AddCmp(int which);
 bool AddReset(void);
 bool AddCounter(int which);
@@ -1246,6 +1269,8 @@ void ShowLookUpTableDialog(ElemLeaf *l);
 void ShowPiecewiseLinearDialog(ElemLeaf *l);
 void ShowResetDialog(char *name);
 void ShowSqrtDialog(char *dest, char *src);
+void ShowRandDialog(char *var, char *min, char *max);
+void ShowAbsDialog(char *dest, char *src);
 // confdialog.cpp
 extern struct strSerialConfig SerialConfig[];
 extern char *SerialParityString[];

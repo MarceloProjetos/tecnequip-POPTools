@@ -121,6 +121,8 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_MASTER_RELAY:
         case ELEM_SET_PWM:
         case ELEM_SQRT:
+        case ELEM_ABS:
+        case ELEM_RAND:
         case ELEM_PERSIST:
             if(ColsAvailable - soFar > 1) {
                 return ColsAvailable - soFar;
@@ -667,6 +669,32 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 
 			sprintf(top, "{%s :=}", s->dest);
 			sprintf(bot, _("{%s SQRT}"), s->src);
+
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
+            break;
+        }
+        case ELEM_RAND: 
+		{
+            char top[256];
+            char bot[256];
+            ElemRand *s = &leaf->d.rand;
+
+			sprintf(top, "{ %s :=}", s->var);
+			sprintf(bot, "{ %s <= ? <= %s }", s->min, s->max);
+
+            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
+            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
+            break;
+        }
+        case ELEM_ABS: 
+		{
+            char top[256];
+            char bot[256];
+            ElemAbs *s = &leaf->d.abs;
+
+			sprintf(top, "{ %s :=}", s->dest);
+			sprintf(bot, "{ |%s| }", s->src);
 
             CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
             CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
