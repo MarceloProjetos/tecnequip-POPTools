@@ -47,22 +47,22 @@
     <Command Name="GroupAnalog"     Symbol="cmdGroupAnalog"     Id="30015" LabelTitle="Analógicos"      />
     <Command Name="GroupMotors"     Symbol="cmdGroupMotors"     Id="30022" LabelTitle="Motores"         />
     <Command Name="GroupEnc"        Symbol="cmdGroupEnc"        Id="30032" LabelTitle="Encoder Incremental">
-    <Command.LargeImages>
-      <Image Source="imgs/GroupEncHH.bmp"/>
-    </Command.LargeImages>
-    <Command.SmallImages>
-      <Image Source="imgs/GroupEncHS.bmp"/>
-    </Command.SmallImages>
-    </Command>  
+      <Command.LargeImages>
+        <Image Source="imgs/GroupEncHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/GroupEncHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
     <Command Name="GroupSSIEnc"     Symbol="cmdGroupSSIEnc"     Id="30033" LabelTitle="Encoder SSI"     />
     <Command Name="GroupCommText"   Symbol="cmdGroupCommText"   Id="30016" LabelTitle="RS-485 - Texto"  />
     <Command Name="GroupCommModBUS" Symbol="cmdGroupCommModBUS" Id="30017" LabelTitle="ModBUS"           >
-    <Command.LargeImages>
-      <Image Source="imgs/GroupCommModBUSHH.bmp"/>
-    </Command.LargeImages>
-    <Command.SmallImages>
-      <Image Source="imgs/GroupCommModBUSHS.bmp"/>
-    </Command.SmallImages>
+      <Command.LargeImages>
+        <Image Source="imgs/GroupCommModBUSHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/GroupCommModBUSHS.bmp"/>
+      </Command.SmallImages>
     </Command>
     <Command Name="GroupCommOthers" Symbol="cmdGroupCommOthers" Id="30018" LabelTitle="RS-485 - Outros" />
     <Command Name="DropDownIO"      Symbol="cmdDropDownIO"      Id="30020" LabelTitle="Mais I/O"         >
@@ -194,7 +194,7 @@
         <Image Source="imgs/InstrPrintHH.bmp"/>
       </Command.LargeImages>
     </Command>
-    
+
     <Command Name         = "About"
          Symbol           = "cmdAbout"
          Id               = "30108"
@@ -203,7 +203,7 @@
         <Image Source="imgs/AboutHH.bmp"/>
       </Command.LargeImages>
     </Command>
-    
+
     <Command Name             = "Exit"
              Symbol           = "cmdExit"
              Id               = "30107"
@@ -1686,7 +1686,7 @@
         <Image Source="imgs/InstrRampDAHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    
+
     <Command Name       = "InstrPWM"
              Symbol     = "cmdInstrPWM"
              Id         = "30533"
@@ -1713,7 +1713,7 @@
         <Image Source="imgs/InstrPWMHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    
+
     <Command Name       = "InstrPos"
              Symbol     = "cmdInstrPos"
              Id         = "30556"
@@ -1794,7 +1794,7 @@
         <Image Source="imgs/InstrWriteEncHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    
+
     <Command Name         = "InstrResetEnc"
                Symbol     = "cmdInstrResetEnc"
                Id         = "30536"
@@ -2554,7 +2554,7 @@
           </Group>
           <Group CommandName="GroupMotors" SizeDefinition="ThreeButtons">
             <Button CommandName="InstrRampDA"/>
-            <Button CommandName="InstrPWM"/>            
+            <Button CommandName="InstrPWM"/>
             <Button CommandName="InstrPos"/>
           </Group>
           <Group CommandName="GroupEnc" SizeDefinition="ThreeButtons">

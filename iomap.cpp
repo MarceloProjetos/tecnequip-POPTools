@@ -279,7 +279,11 @@ void ExtractNamesFromCircuit(int which, void *any)
             AppendIo(l->d.readEnc.name, IO_TYPE_READ_ENC, 0);
             break;
 
-        case ELEM_READ_USS:
+        case ELEM_RESET_ENC:
+			AppendIo(l->d.resetEnc.name, IO_TYPE_RESET_ENC, 0);
+			break;
+
+		case ELEM_READ_USS:
             AppendIo(l->d.readUSS.name, IO_TYPE_READ_USS, 0);
             break;
 
@@ -347,7 +351,6 @@ void ExtractNamesFromCircuit(int which, void *any)
 			break;
 
 		case ELEM_RTC:
-        case ELEM_RESET_ENC:
         case ELEM_PLACEHOLDER:
         case ELEM_COMMENT:
         case ELEM_SHORT:

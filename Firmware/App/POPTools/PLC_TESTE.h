@@ -33,6 +33,8 @@ volatile unsigned char GPIO_OUTPUT_PORT16 = 0;
 
 void PLC_Run(void)
 {
+	MODBUS_REGISTER[5] = SSI_Read(25, SSI_MODE_GRAY);
+
     I_mcr = 1;
 
     /* start rung 1 */

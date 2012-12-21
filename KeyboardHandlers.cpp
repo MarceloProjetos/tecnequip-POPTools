@@ -231,12 +231,32 @@ int KBH_Cursor_Home(void *user_data)
 	return 1;
 }
 
+// Default for Portuguese: SHIFT + HOME
+int KBH_Ladder_Home(void *user_data)
+{
+	if(InSimulationMode) return 0;
+
+	ProcessMenu(MNU_GO_HOME);
+
+	return 1;
+}
+
 // Default for Portuguese: END
 int KBH_Cursor_End(void *user_data)
 {
 	if(InSimulationMode) return 0;
 
 	MoveCursorKeyboard(VK_END, FALSE);
+
+	return 1;
+}
+
+// Default for Portuguese: SHIFT + END
+int KBH_Ladder_End(void *user_data)
+{
+	if(InSimulationMode) return 0;
+
+	ProcessMenu(MNU_GO_END);
 
 	return 1;
 }
@@ -896,7 +916,9 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey(VK_RIGHT     , KBM_KEYFLAG_NONE   , KBH_Simulation_Right                   , NULL);
 	ShortcutMaps.AddKey(VK_RIGHT     , KBM_KEYFLAG_NONE   , KBH_Cursor_Right                       , NULL);
 	ShortcutMaps.AddKey(VK_HOME      , KBM_KEYFLAG_NONE   , KBH_Cursor_Home                        , NULL);
+	ShortcutMaps.AddKey(VK_HOME      , KBM_KEYFLAG_SHIFT  , KBH_Ladder_Home                        , NULL);
 	ShortcutMaps.AddKey(VK_END       , KBM_KEYFLAG_NONE   , KBH_Cursor_End                         , NULL);
+	ShortcutMaps.AddKey(VK_END       , KBM_KEYFLAG_SHIFT  , KBH_Ladder_End                         , NULL);
 	ShortcutMaps.AddKey(VK_RETURN    , KBM_KEYFLAG_NONE   , KBH_Element_Edit                       , NULL);
 	ShortcutMaps.AddKey(VK_BACK      , KBM_KEYFLAG_NONE   , KBH_Element_Delete                     , NULL);
 	ShortcutMaps.AddKey(VK_DELETE    , KBM_KEYFLAG_NONE   , KBH_Element_Delete                     , NULL);
@@ -984,7 +1006,9 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey(VK_RIGHT     , KBM_KEYFLAG_NONE   , KBH_Simulation_Right                   , NULL);
 	ShortcutMaps.AddKey(VK_RIGHT     , KBM_KEYFLAG_NONE   , KBH_Cursor_Right                       , NULL);
 	ShortcutMaps.AddKey(VK_HOME      , KBM_KEYFLAG_NONE   , KBH_Cursor_Home                        , NULL);
+	ShortcutMaps.AddKey(VK_HOME      , KBM_KEYFLAG_SHIFT  , KBH_Ladder_Home                        , NULL);
 	ShortcutMaps.AddKey(VK_END       , KBM_KEYFLAG_NONE   , KBH_Cursor_End                         , NULL);
+	ShortcutMaps.AddKey(VK_END       , KBM_KEYFLAG_SHIFT  , KBH_Ladder_End                         , NULL);
 	ShortcutMaps.AddKey(VK_RETURN    , KBM_KEYFLAG_NONE   , KBH_Element_Edit                       , NULL);
 	ShortcutMaps.AddKey(VK_BACK      , KBM_KEYFLAG_NONE   , KBH_Element_Delete                     , NULL);
 	ShortcutMaps.AddKey(VK_DELETE    , KBM_KEYFLAG_NONE   , KBH_Element_Delete                     , NULL);

@@ -981,7 +981,7 @@ void ProcessMenu(int code)
             break;
 
         case MNU_INSERT_RESET_ENC:
-            CHANGING_PROGRAM(AddEmpty(ELEM_RESET_ENC));
+            CHANGING_PROGRAM(AddResetEnc());
             break;
 			
 		case MNU_INSERT_MULTISET_DA:

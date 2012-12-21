@@ -781,6 +781,10 @@ bool EditSelectedElement(void)
             ShowReadEncDialog(Selected->d.readEnc.name);
             break;
 
+        case ELEM_RESET_ENC:
+            ShowResetEncDialog(Selected->d.resetEnc.name);
+            break;
+
         case ELEM_MULTISET_DA: {
 			ShowMultisetDADialog(&Selected->d.multisetDA); }
             break;

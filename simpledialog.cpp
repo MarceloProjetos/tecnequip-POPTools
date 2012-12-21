@@ -448,6 +448,23 @@ void ShowReadEncDialog(char *name)
 	}
 }
 
+void ShowResetEncDialog(char *name)
+{
+	char name_tmp[MAX_NAME_LEN];
+
+    char *labels[] = { _("Destination:") };
+    char *dests[] = { name_tmp };
+
+	strcpy(name_tmp, name);
+
+	if(ShowSimpleDialog(_("Reset Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
+		if(IsValidNameAndType(name, name_tmp, _("Destino"), VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
+			strcpy(name, name_tmp);
+			name[16] = '\0';
+		}
+	}
+}
+
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index)
 {
 	char name_temp[100];

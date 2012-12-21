@@ -7,6 +7,25 @@
 
 #include <string.h>
 
+/******************************************************************************
+* Encoder SSI
+******************************************************************************/
+#ifndef __SSI_H__
+#define SSI_MODE_GRAY 0
+#define SSI_MODE_BIN  1
+
+void         SSI_Init();
+unsigned int SSI_Read(unsigned int size, unsigned int mode);
+#endif
+
+/******************************************************************************
+* Encoder Wrapper
+******************************************************************************/
+#ifndef __ENCODER_H__
+int  ENC_Read (unsigned int device);
+void ENC_Reset(unsigned int device, int offset);
+#endif
+
 /***************************************************************************/
 /* EEPROM                                                                  */
 /***************************************************************************/
@@ -358,9 +377,6 @@ typedef struct {
 										*/
 } QEI_CFG_Type;
 extern QEI_CFG_Type QEIConfig;
-
-extern int ENC_Read(void);
-extern void ENC_Reset(void);
 #endif
 
 /***************************************************************************/

@@ -8,8 +8,9 @@
 // xxxx = always 0f5a
 // yy   = flags. reserved for future use.
 // zz   = format version
-const unsigned long int  BINFMT_MAGIC      = 0x0f5a0006;
+const unsigned long int  BINFMT_MAGIC      = 0x0f5a0007;
 const unsigned long int  BINFMT_MAGIC_MASK = 0xffff0000;
+#define BINFMT_GET_VERSION(m) (m & 0xff)
 
 static ElemSubcktSeries *LoadSeriesFromFile(FILE *f, int version);
 
@@ -17,7 +18,16 @@ static const int current_version = 4;
 
 #define OLDFMT_MAX_VERSION 4
 
-// Functions to convert savefiles from older versions
+// Functions to convert savefiles (Ladder Diagram) from older versions
+int ConvResetEnc_v6_v7(ElemLeaf *l)
+{
+	ElemResetEnc *r = (ElemResetEnc *)(&l->d);
+
+	strcpy(r->name, _("new"));
+
+	return 1;
+}
+
 int ConvRTC_v5_v6(ElemLeaf *l)
 {
 	ElemRTC newrtc;
@@ -57,12 +67,28 @@ int ConvRTC_v5_v6(ElemLeaf *l)
 }
 
 struct {
-	int intcode;
+	int which;
 	int maxversion;
 	int (*fnc)(ElemLeaf *);
 } ConvFunctionsList[] = {
-	{ ELEM_RTC, 5, ConvRTC_v5_v6 },
+	{ ELEM_RTC      , 5, ConvRTC_v5_v6 },
+	{ ELEM_RESET_ENC, 6, ConvResetEnc_v6_v7 },
 	{ 0, 0, NULL },
+};
+
+// Functions to convert savefiles (Settings) from older versions
+void ConvSettings_v6_v7(void)
+{
+	Prog.settings.ssi_size = 24;
+	Prog.settings.ssi_mode =  0;
+}
+
+struct {
+	int maxversion;
+	void (*fnc)(void);
+} ConvSettingsFunctionsList[] = {
+	{ 6, ConvSettings_v6_v7 },
+	{ 0, NULL },
 };
 
 int UpdateFromOlderVersionWorker(int which, void *any, int oldversion)
@@ -89,8 +115,8 @@ int UpdateFromOlderVersionWorker(int which, void *any, int oldversion)
         default: {
 			ElemLeaf *l = (ElemLeaf *)any;
 			for(i=0; ConvFunctionsList[i].fnc != NULL; i++) {
-				if(ConvFunctionsList[i].intcode == which && ConvFunctionsList[i].maxversion >= oldversion) {
-					for(; ConvFunctionsList[i].fnc != NULL && ConvFunctionsList[i].intcode == which && ret; i++)
+				if(ConvFunctionsList[i].which == which && ConvFunctionsList[i].maxversion >= oldversion) {
+					for(; ConvFunctionsList[i].fnc != NULL && ConvFunctionsList[i].which == which && ret; i++)
 						ret = (*ConvFunctionsList[i].fnc)(l);
 				}
 			}
@@ -104,6 +130,15 @@ int UpdateFromOlderVersionWorker(int which, void *any, int oldversion)
 void UpdateFromOlderVersion(int oldversion)
 {
 	int i;
+
+	// Update Settings
+	for(i=0; ConvSettingsFunctionsList[i].fnc != NULL; i++) {
+		if(ConvSettingsFunctionsList[i].maxversion >= oldversion) {
+			(*ConvSettingsFunctionsList[i].fnc)();
+		}
+	}
+
+	// Update Ladder Diagram
 	for(i=0; i<Prog.numRungs; i++)
         UpdateFromOlderVersionWorker(ELEM_SERIES_SUBCKT, Prog.rungs[i], oldversion);
 }
@@ -489,7 +524,7 @@ static ElemSubcktSeries *LoadSeriesFromFile(FILE *f, int version)
 //-----------------------------------------------------------------------------
 BOOL LoadProjectFromFile(char *filename)
 {
-	int version;
+	int version, settings_size;
 	unsigned long int magic;
 
     FreeEntireProgram();
@@ -648,7 +683,12 @@ BOOL LoadProjectFromFile(char *filename)
 		fseek(f, sizeof(BINFMT_MAGIC), SEEK_SET);
 
 		// Format version
-		version = magic&0xFF;
+		version = BINFMT_GET_VERSION(magic);
+		if(version > BINFMT_GET_VERSION(BINFMT_MAGIC)) {
+			Error(_("Aviso: Este projeto não pode ser aberto porque foi gravado com uma versão mais nova do programa POPTools !"));
+			fclose(f);
+			return FALSE;
+		}
 
 		// CPU ID
 		int cpu;
@@ -661,7 +701,14 @@ BOOL LoadProjectFromFile(char *filename)
 		fread(&Prog.io.assignment, sizeof(Prog.io.assignment[0]), Prog.io.count, f);
 
 		// Project settings
-		fread(&Prog.settings, sizeof(Prog.settings), 1, f);
+		if(version > 6) { // savefiles version 6 or older doesn't have settings size
+			fread(&settings_size, sizeof(settings_size), 1, f);
+		} else {
+			settings_size = 192;
+		}
+
+		memset(&Prog.settings, 0, sizeof(Prog.settings));
+		fread(&Prog.settings, settings_size, 1, f);
 
 		// Header is done. Now we will load the number of rungs then the old logic will save each rung
 		fread(&Prog.numRungs, sizeof(Prog.numRungs), 1, f);
@@ -676,7 +723,7 @@ BOOL LoadProjectFromFile(char *filename)
 	}
 
 	// If the savefile is for an older version, update loaded leaves.
-	if(version != current_version) {
+	if(version != BINFMT_GET_VERSION(BINFMT_MAGIC)) {
 		UpdateFromOlderVersion(version);
 	}
 
@@ -1056,6 +1103,7 @@ cmp:
 //-----------------------------------------------------------------------------
 BOOL SaveProjectToFile(char *filename)
 {
+	int settings_size;
 	char szfilename[MAX_PATH+1];
     FILE *f;
 
@@ -1092,7 +1140,9 @@ BOOL SaveProjectToFile(char *filename)
 	fwrite(&Prog.io.assignment, sizeof(Prog.io.assignment[0]), Prog.io.count, f);
 
 	// Project settings
-	fwrite(&Prog.settings, sizeof(Prog.settings), 1, f);
+	settings_size = sizeof(Prog.settings);
+	fwrite(&settings_size, sizeof(settings_size), 1, f);
+	fwrite(&Prog.settings, settings_size, 1, f);
 
 	// Header is done. Now we will save the number of rungs then the old logic will save each rung
 	fwrite(&Prog.numRungs, sizeof(Prog.numRungs), 1, f);

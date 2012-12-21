@@ -899,7 +899,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 
             case ELEM_RESET_ENC:
 				Op(INT_IF_BIT_SET, stateInOut);
-				Op(INT_RESET_ENC);
+				Op(INT_RESET_ENC, l->d.resetEnc.name);
                 Op(INT_END_IF);
                 break;
 

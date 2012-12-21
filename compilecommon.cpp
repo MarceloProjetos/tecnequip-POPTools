@@ -332,6 +332,17 @@ int ValidateDiagram(void)
 					Error(_("Variável A/D '%s' deve ser associado a um canal válido!"), Prog.io.assignment[i].name);
 					ret = DIAGRAM_VALIDATION_ERROR;
 				}
+				break;
+			case IO_TYPE_READ_ENC:
+				if(Prog.io.assignment[i].pin == IO_TYPE_PENDING) {
+					Error(_("Leitura de Encoder '%s' deve ser associada a um canal válido!"), Prog.io.assignment[i].name);
+					ret = DIAGRAM_VALIDATION_ERROR;
+				}
+			case IO_TYPE_RESET_ENC:
+				if(Prog.io.assignment[i].pin == IO_TYPE_PENDING) {
+					Error(_("Escrita de Encoder '%s' deve ser associada a um canal válido!"), Prog.io.assignment[i].name);
+					ret = DIAGRAM_VALIDATION_ERROR;
+				}
 			}
 		}
 	}

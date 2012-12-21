@@ -94,41 +94,6 @@ void QEI_IRQHandler(void)
   }
 }
 
-int ENC_Read(void)
-{
-	ENC_VAL = QEI_GetPosition(QEI);
-
-	if (VeloAccFlag == SET)
-	{
-	  //Get Position
-	  //PosCnt = QEI_GetPosition(QEI);
-	  //ENC_VAL = QEI_GetPosition(QEI);
-	  // Get Acc
-	  //averageVelo = VeloAcc / VeloCapCnt;
-	  //rpm = QEI_CalculateRPM(QEI, averageVelo, ENC_RES);
-	  // Reset VeloAccFlag
-	  //VeloAccFlag = RESET;
-	  // Reset value of Acc and Acc count to default
-	  //VeloAcc = 0;
-	  //VeloCapCnt = 0;
-	}
-
-	return ENC_VAL;
-}
-
-void ENC_Reset(void)
-{
-  VeloAccFlag = RESET;
-
-  QEI->QEICON = 0xF;
-
-  ENC_VAL = 0;
-
-  PosCnt = 0;
-  // Reset value of Acc and Acc count to default
-  VeloAcc = 0;
-  VeloCapCnt = 0;
-}
 /*********************************************************************//**
  * @brief		Resets value for each type of QEI value, such as velocity,
  * 				counter, position, etc..
@@ -142,7 +107,14 @@ void ENC_Reset(void)
  **********************************************************************/
 void QEI_Reset(QEI_TypeDef *QEIx, unsigned int ulResetType)
 {
+	VeloAccFlag = RESET;
+
 	QEIx->QEICON = ulResetType;
+
+	PosCnt = 0;
+	// Reset value of Acc and Acc count to default
+	VeloAcc = 0;
+	VeloCapCnt = 0;
 }
 
 /*********************************************************************//**

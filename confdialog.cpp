@@ -1,17 +1,14 @@
 #include "poptools.h"
 
-// Quantidade de paginas do TabControl da janela de Configuracao
-#define CONF_NPAGES 2
-#define TCM_FIRST               0x1300
-#define TCM_FIRST               0x1300
-#define TCM_GETBKCOLOR          (TCM_FIRST + 0)
-#define TabCtrl_GetBkColor(hwnd)  (COLORREF)SNDMSG((hwnd), TCM_GETBKCOLOR, 0, 0L)
-#define TCM_SETBKCOLOR          (TCM_FIRST + 1)
-#define TabCtrl_SetBkColor(hwnd, clrBk)  (BOOL)SNDMSG((hwnd), TCM_SETBKCOLOR, 0, (LPARAM)(COLORREF)(clrBk))
-
 static HWND ConfDialog;
-static HWND TabChild[CONF_NPAGES];
-static HWND TabCtrl;
+static HWND ConfigTreeView;
+static HWND GroupCommNetwork;
+static HWND GroupCommTimeZone;
+static HWND GroupCommSerial;
+static HWND GroupPosicEncInc;
+static HWND GroupPosicEncAbs;
+static HWND GroupModBUSSlave;
+static HWND GroupModBUSMaster;
 
 static HWND CrystalTextbox;
 static HWND CycleTextbox;
@@ -22,7 +19,8 @@ static HWND ParityCombobox;
 static HWND SNTPCombobox;
 static HWND GMTCombobox;
 static HWND DailySaveCheckbox;
-
+static HWND SSISizeTextbox;
+static HWND SSIModeCombobox;
 static HWND ip;
 static HWND mask;
 static HWND gw;
@@ -74,7 +72,68 @@ struct strSerialConfig SerialConfig[] = {
 	{ 7, ODDPARITY , ONESTOPBIT, _("7-Odd-1" ) }
 };
 
+char *EncAbsConfig[] = { _("Leitura Gray"), _("Leitura Binário") };
+
 char *SerialParityString[] = { _("Sem Paridade"), _("Paridade Ímpar"), _("Paridade Par") };
+
+#define CONFTVI_ID_COMM          0
+#define CONFTVI_ID_COMM_NETWORK  1
+#define CONFTVI_ID_COMM_FUSE     2
+#define CONFTVI_ID_COMM_SERIAL   3
+#define CONFTVI_ID_POSIC         4
+#define CONFTVI_ID_POSIC_ENCINC  5
+#define CONFTVI_ID_POSIC_ENCABS  6
+#define CONFTVI_ID_MODBUS        7
+#define CONFTVI_ID_MODBUS_MASTER 8
+#define CONFTVI_ID_MODBUS_SLAVE  9
+
+void OnSelChanged(int ID)
+{
+	int i;
+	HWND group, groups[] = { GroupCommNetwork, GroupCommTimeZone, GroupCommSerial, GroupPosicEncInc,
+								GroupPosicEncAbs, GroupModBUSMaster, GroupModBUSSlave };
+
+	switch(ID) {
+		case CONFTVI_ID_COMM:
+		case CONFTVI_ID_COMM_NETWORK:
+			group = GroupCommNetwork;
+			break;
+
+		case CONFTVI_ID_COMM_FUSE:
+			group = GroupCommTimeZone;
+			break;
+
+		case CONFTVI_ID_COMM_SERIAL:
+			group = GroupCommSerial;
+			break;
+
+		case CONFTVI_ID_POSIC:
+		case CONFTVI_ID_POSIC_ENCINC:
+			group = GroupPosicEncInc;
+			break;
+
+		case CONFTVI_ID_POSIC_ENCABS:
+			group = GroupPosicEncAbs;
+			break;
+
+		case CONFTVI_ID_MODBUS:
+		case CONFTVI_ID_MODBUS_MASTER:
+			group = GroupModBUSMaster;
+			break;
+
+		case CONFTVI_ID_MODBUS_SLAVE:
+			group = GroupModBUSSlave;
+			break;
+
+		default:
+			return;
+	}
+
+	for(i=0; i < ARRAY_SIZE(groups); i++) {
+		EnableWindow(groups[i], groups[i] == group ? TRUE          : FALSE  );
+		ShowWindow  (groups[i], groups[i] == group ? SW_SHOWNORMAL : SW_HIDE);
+	}
+}
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than 0-9. in the text boxes.
@@ -101,14 +160,6 @@ static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
     return CallWindowProc((WNDPROC)t, hwnd, msg, wParam, lParam);
 }
 
-void OnTabChange(void)
-{
-	unsigned int i, CurrentTab = TabCtrl_GetCurSel(TabCtrl);
-	for(i=0; i<CONF_NPAGES; i++) {
-		ShowWindow(TabChild[i], i==CurrentTab ? TRUE : FALSE);
-	}
-}
-
 //-----------------------------------------------------------------------------
 // Window proc for the dialog boxes. This Ok/Cancel stuff is common to a lot
 // of places, and there are no other callbacks from the children.
@@ -116,13 +167,25 @@ void OnTabChange(void)
 static LRESULT CALLBACK ConfDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
-        case WM_NOTIFY:
-            if(((LPNMHDR)lParam)->code == TCN_SELCHANGING) {
-				return FALSE;
-	        } else if(((LPNMHDR)lParam)->code == TCN_SELCHANGE) {
-				OnTabChange();
+        case WM_NOTIFY: {
+			LPNMHDR nm = (LPNMHDR)lParam;
+
+			if(nm->hwndFrom == ConfigTreeView) {
+				switch(nm->code) {
+				case NM_CUSTOMDRAW:
+					return CDRF_DODEFAULT;
+					break;
+
+				case TVN_SELCHANGED:
+					OnSelChanged(((LPNMTREEVIEW)lParam)->itemNew.lParam);
+					return 0;
+
+				default:
+					return 0;
+				}
 	        }
             break;
+		}
 
 		case WM_COMMAND: {
             HWND h = (HWND)lParam;
@@ -145,252 +208,338 @@ static LRESULT CALLBACK ConfDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	return CallWindowProc((WNDPROC)PrevConfDialogProc, hwnd, msg, wParam, lParam);
 }
 
+// Adds items to a tree-view control. 
+// Returns the handle to the newly added item. 
+// hwndTV - handle to the tree-view control. 
+// lpszItem - text of the item to add. 
+// nLevel - level at which to add the item. 
+//
+// g_nClosed, and g_nDocument - global indexes of the images.
+
+HTREEITEM AddItemToTree(HWND hwndTV, LPTSTR lpszItem, int nLevel, int nID)
+{ 
+    TVITEM tvi; 
+    TVINSERTSTRUCT tvins; 
+    static HTREEITEM hPrev = (HTREEITEM)TVI_FIRST; 
+    static HTREEITEM hPrevRootItem = NULL; 
+    static HTREEITEM hPrevLev2Item = NULL; 
+
+    tvi.mask = TVIF_TEXT | TVIF_PARAM; 
+
+    // Set the text of the item. 
+    tvi.pszText = lpszItem; 
+    tvi.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
+
+    // Save the heading ID in the item's application-defined 
+    // data area. 
+    tvi.lParam = (LPARAM)nID; 
+    tvins.item = tvi; 
+    tvins.hInsertAfter = hPrev; 
+
+    // Set the parent item based on the specified level. 
+    if (nLevel == 1) 
+        tvins.hParent = TVI_ROOT; 
+    else if (nLevel == 2) 
+        tvins.hParent = hPrevRootItem; 
+    else 
+        tvins.hParent = hPrevLev2Item; 
+
+    // Add the item to the tree-view control. 
+    hPrev = (HTREEITEM)SendMessage(hwndTV, TVM_INSERTITEM, 
+        0, (LPARAM)(LPTVINSERTSTRUCT)&tvins); 
+
+    if (hPrev == NULL)
+        return NULL;
+
+    // Save the handle to the item. 
+    if (nLevel == 1) 
+        hPrevRootItem = hPrev; 
+    else if (nLevel == 2) 
+        hPrevLev2Item = hPrev; 
+
+    return hPrev; 
+} 
+
+// Extracts heading text and heading levels from a global 
+// array and passes them to a function that adds them as
+// parent and child items to a tree-view control. 
+// Returns TRUE if successful, or FALSE otherwise. 
+// hwndTV - handle to the tree-view control. 
+
+struct {
+	char tchHeading[100];
+	int tchLevel;
+	int tchID;
+} g_rgDocHeadings[] = {
+	{ "Comunicação"            , 1, CONFTVI_ID_COMM          },
+		{ "Rede"               , 2, CONFTVI_ID_COMM_NETWORK  },
+		{ "Fuso Horário"       , 2, CONFTVI_ID_COMM_FUSE     },
+		{ "Serial"             , 2, CONFTVI_ID_COMM_SERIAL   },
+	{ "Posicionamento"         , 1, CONFTVI_ID_POSIC         },
+		{ "Encoder Incremental", 2, CONFTVI_ID_POSIC_ENCINC  },
+		{ "Encoder Absoluto"   , 2, CONFTVI_ID_POSIC_ENCABS  },
+	{ "ModBUS"                 , 1, CONFTVI_ID_MODBUS        },
+		{ "Mestre"             , 2, CONFTVI_ID_MODBUS_MASTER },
+		{ "Escravo"            , 2, CONFTVI_ID_MODBUS_SLAVE  },
+};
+
+BOOL InitTreeViewItems(HWND hwndTV)
+{ 
+    HTREEITEM hti;
+
+    // g_rgDocHeadings is an application-defined global array of 
+    // the following structures: 
+    //     typedef struct 
+    //       { 
+    //         TCHAR tchHeading[MAX_HEADING_LEN]; 
+    //         int tchLevel; 
+    //     } Heading; 
+    for (int i = 0; i < ARRAYSIZE(g_rgDocHeadings); i++) 
+    { 
+        // Add the item to the tree-view control. 
+        hti = AddItemToTree(hwndTV, g_rgDocHeadings[i].tchHeading, 
+            g_rgDocHeadings[i].tchLevel, g_rgDocHeadings[i].tchID);
+
+        if (hti == NULL)
+            return FALSE;
+    } 
+
+    return TRUE; 
+}
+
 static void MakeControls(void)
 {
-	TCITEM container_tabs;
-/*
-	HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Cycle Time (ms):"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 13, 145, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textLabel);
+	HWND textLabel;
 
-    CycleTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 12, 85, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(CycleTextbox);
-	*/
-    /*HWND textLabel2 = CreateWindowEx(0, WC_STATIC,
-        _("Modelo do CLP:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        0, 43, 150, 21, ConfDialog, NULL, Instance, NULL);
-    NiceFont(textLabel2);*/
+	ConfigTreeView = CreateWindowEx(WS_EX_CLIENTEDGE | WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_TREEVIEW, _("Ir Para:"),
+		TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        7, 7, 200, 223, ConfDialog, NULL, Instance, NULL);
+    NiceFont(ConfigTreeView);
 
-	/*PLCCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
-        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        155, 42, 85, 100, ConfDialog, NULL, Instance, NULL);
-    NiceFont(PLCCombobox);*/
+	InitTreeViewItems(ConfigTreeView);
 
-	TabCtrl = CreateWindow(WC_TABCONTROL, _("TabControl"),
-		WS_CLIPSIBLINGS | WS_VISIBLE | WS_CHILD,
-        5, 5, 385, 399, ConfDialog, NULL, Instance, NULL); // The tabCtrl size inside windows
-    NiceFont(TabCtrl);
+	// Group - Network Communication
+	GroupCommNetwork = CreateWindowEx(0, WC_STATIC, "",
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 200, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupCommNetwork);
 
-	container_tabs.mask   = TCIF_TEXT;
-
-	container_tabs.pszText = _("Comunicação");
-	TabCtrl_InsertItem(TabCtrl, 0, &container_tabs);
-
-	container_tabs.pszText = _("Posicionamento");
-	TabCtrl_InsertItem(TabCtrl, 1, &container_tabs);
-
-//	container_tabs.pszText = _("Propriedades");
-//	TabCtrl_InsertItem(TabCtrl, 2, &container_tabs);
-
-    TabChild[0] = CreateWindowEx(0, WC_BUTTON, "",
-        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        -50, -50, 600, 600, TabCtrl, NULL, Instance, NULL);
-    NiceFont(TabChild[0]);
-
-    TabChild[1] = CreateWindowEx(0, WC_BUTTON, "",
-        WS_CHILD | WS_CLIPSIBLINGS | BS_GROUPBOX | WS_VISIBLE,
-        -50, -50, 600, 600, TabCtrl, NULL, Instance, NULL);
-    NiceFont(TabChild[1]);
-
-/*    TabChild[2] = CreateWindowEx(0, WC_BUTTON, "",
-        WS_CHILD | WS_CLIPSIBLINGS | BS_GROUPBOX | WS_VISIBLE,
-        -50, -50, 600, 600, TabCtrl, NULL, Instance, NULL);
-    NiceFont(TabChild[2]);*/
-
-	HWND textLabel66 = CreateWindowEx(0, WC_STATIC, _("Configurações da porta Ethernet do CLP"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
-        55, 80, 230, 16, TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel66);
-	
-	HWND textLabel65 = CreateWindowEx(WS_EX_CLIENTEDGE, WC_STATIC, "", // line after string "Configurações da porta Ethernet do CLP"
-        SS_LEFT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        289, 88, 140, 4, TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel65);
-
-	HWND textLabel67 = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
+	textLabel = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
         SS_BITMAP | SS_BLACKRECT | SS_GRAYFRAME | SS_LEFT | SS_LEFTNOWORDWRAP | SS_RIGHT | SS_WHITERECT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        358, 125, 96, 96, TabChild[0], NULL, Instance, NULL);
+        308, 75, 96, 96, GroupCommNetwork, NULL, Instance, NULL);
 
 	HBITMAP hBmp = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(IDB_NETWORK_CONFIG),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
-	SendMessage(textLabel67,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp);
+	SendMessage(textLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp);
 
-    HWND textLabel5 = CreateWindowEx(0, WC_STATIC, _("Endereço IP:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Endereço IP:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 105, 140, 21, TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel5);
+        5, 0, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
     ip = CreateWindowEx(0, WC_IPADDRESS, _("IP"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        205, 105, 140, 21,  TabChild[0], NULL, Instance, NULL);
+        155, 0, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
 //    NiceFont(ip);
 
-    HWND textLabel6 = CreateWindowEx(0, WC_STATIC, _("Mascara:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Mascara:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 135, 140, 21,  TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel6);
+        5, 30, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+    NiceFont(textLabel);
 	
     mask = CreateWindowEx(0, WC_IPADDRESS, _("MASK"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        205, 135, 140, 21,  TabChild[0], NULL, Instance, NULL);
+        155, 30, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
 //    NiceFont(mask);
 
-    HWND textLabel7 = CreateWindowEx(0, WC_STATIC, _("Gateway:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Gateway:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 165, 140, 21,  TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel7);
+        5, 60, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
     gw = CreateWindowEx(0, WC_IPADDRESS, _("GW"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        205, 165, 140, 21,  TabChild[0], NULL, Instance, NULL);
+        155, 60, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
 //    NiceFont(gw);
 
-    HWND textLabel11 = CreateWindowEx(0, WC_STATIC, _("DNS:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("DNS:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 195, 140, 21,  TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel11);
+        5, 90, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
     dns = CreateWindowEx(0, WC_IPADDRESS, _("DNS"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        205, 195, 140, 21,  TabChild[0], NULL, Instance, NULL);
+        155, 90, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
 //    NiceFont(dns);
 
-	HWND textLabel64 = CreateWindowEx(0, WC_STATIC, _("Sincronizar relogio do CLP"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
-        55, 227, 152, 16,TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel64);
-	
-	HWND textLabel63 = CreateWindowEx(WS_EX_CLIENTEDGE, WC_STATIC, "", // line after string "Sincronizar relogio do CLP"
-        SS_LEFT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        211, 235, 218, 4,TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel63);
+	// Group - Time Zone
+    GroupCommTimeZone = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupCommTimeZone);
 
-	HWND textLabel68 = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
+	textLabel = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
         SS_BITMAP | SS_BLACKRECT | SS_GRAYFRAME | SS_LEFT | SS_LEFTNOWORDWRAP | SS_RIGHT | SS_WHITERECT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        355, 255, 96, 96,TabChild[0], NULL, Instance, NULL);
+        205, 5, 96, 96, GroupCommTimeZone, NULL, Instance, NULL);
 
 	HBITMAP hBmp2 = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(IDB_TIME_CONFIG),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
-	SendMessage(textLabel68,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp2);
+	SendMessage(textLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp2);
 
-    HWND textLabel15 = CreateWindowEx(0, WC_STATIC, _("Servidor de Tempo:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Servidor de Tempo:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 250, 140, 21,TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel15);
+        5, 0, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
 	SNTPCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWN,
-        205, 250, 140, 145,  TabChild[0], NULL, Instance, NULL);
+        155, 0, 140, 145, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(SNTPCombobox);
 
-	HWND textLabel16 = CreateWindowEx(0, WC_STATIC, _("Fuso Horário:"),
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Fuso Horário:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 280, 140, 21,  TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel16);
+        5, 30, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
 	GMTCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
-        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWN,
-        205, 280, 140, 145,  TabChild[0], NULL, Instance, NULL);
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        155, 30, 140, 145, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(GMTCombobox);
-    
+
 	DailySaveCheckbox = CreateWindowEx(0, WC_BUTTON, _("Horário de verão"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        205, 308, 140, 21,  TabChild[0], NULL, Instance, NULL);
+        155, 58, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(DailySaveCheckbox);
 
-	HWND textLabel61 = CreateWindowEx(0, WC_STATIC, _("Configurações da porta RS485 do CLP"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
-        55, 336, 219, 16, TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel61);
-	
-	HWND textLabel62 = CreateWindowEx(WS_EX_CLIENTEDGE, WC_STATIC, "", // line after string "Configurações da porta RS485 do CLP"
-        SS_LEFT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        278, 344, 150, 4, TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel62);
+	// Group - Serial Communication
+    GroupCommSerial = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupCommSerial);
 
-	HWND textLabel69 = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
+	textLabel = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
         SS_BITMAP | SS_BLACKRECT | SS_GRAYFRAME | SS_LEFT | SS_LEFTNOWORDWRAP | SS_RIGHT | SS_WHITERECT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        360, 365, 96, 96,TabChild[0], NULL, Instance, NULL);
+        310, 5, 96, 96, GroupCommSerial, NULL, Instance, NULL);
 
 	HBITMAP hBmp3 = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(IDB_RS485_CONFIG),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
-	SendMessage(textLabel69,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp3);
+	SendMessage(textLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp3);
 
-	HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("RS485 Baud Rate(bps):"),
+	textLabel = CreateWindowEx(0, WC_STATIC, _("RS485 Baud Rate(bps):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 360, 140, 21, TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel3);
+        5, 1, 140, 21, GroupCommSerial, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
 	BaudRateCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        205, 359, 140, 100, TabChild[0], NULL, Instance, NULL);
+        155, 0, 140, 100, GroupCommSerial, NULL, Instance, NULL);
     NiceFont(BaudRateCombobox);
 
-    HWND textLabel31 = CreateWindowEx(0, WC_STATIC, _("Data/Paridade/Stop:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Data/Paridade/Stop:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 390, 140, 21, TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel31);
+        5, 30, 140, 21, GroupCommSerial, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
 	ParityCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        205, 389, 140, 100, TabChild[0], NULL, Instance, NULL);
+        155, 29, 140, 100, GroupCommSerial, NULL, Instance, NULL);
     NiceFont(ParityCombobox);
 
-    HWND textLabel4 = CreateWindowEx(0, WC_STATIC, _("ModBUS ID:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 420, 140, 21, TabChild[0], NULL, Instance, NULL);
-    NiceFont(textLabel4);
+	// Group - Incremental Encoder
+    GroupPosicEncInc = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupPosicEncInc);
 
-    ModBUSIDTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        205, 419, 140, 21, TabChild[0], NULL, Instance, NULL);
-    NiceFont(ModBUSIDTextbox);
-
-    HWND textLabel20 = CreateWindowEx(0, WC_STATIC, _("Diametro Roda:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Diametro Roda:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 90, 140, 21,  TabChild[1], NULL, Instance, NULL);
-    NiceFont(textLabel20);
+        5, 0, 140, 21, GroupPosicEncInc, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
     DiameterTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,   
-        205, 90, 85, 21, TabChild[1], NULL, Instance, NULL);
+        155, 0, 85, 21, GroupPosicEncInc, NULL, Instance, NULL);
     NiceFont(DiameterTextbox);
 
-    HWND textLabel21 = CreateWindowEx(0, WC_STATIC, _("Número Pulsos:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Número Pulsos:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 120, 140, 21, TabChild[1], NULL, Instance, NULL);
-    NiceFont(textLabel21);
+        5, 30, 140, 21, GroupPosicEncInc, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
     PulsesTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        205, 120, 85, 21, TabChild[1], NULL, Instance, NULL);
+        155, 30, 85, 21, GroupPosicEncInc, NULL, Instance, NULL);
     NiceFont(PulsesTextbox);
 
-    HWND textLabel22 = CreateWindowEx(0, WC_STATIC, _("Fator Correção:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Fator Correção:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 150, 140, 21, TabChild[1], NULL, Instance, NULL);
-    NiceFont(textLabel22);
+        5, 60, 140, 21, GroupPosicEncInc, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
     FactorTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        205, 150, 85, 21, TabChild[1], NULL, Instance, NULL);
+        155, 60, 85, 21, GroupPosicEncInc, NULL, Instance, NULL);
     NiceFont(FactorTextbox);
 
-    HWND textLabel23 = CreateWindowEx(0, WC_STATIC, _("Fator Multiplicação:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Fator Multiplicação:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 180, 140, 21, TabChild[1], NULL, Instance, NULL);
-    NiceFont(textLabel23);
+        5, 90, 140, 21, GroupPosicEncInc, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
 	X2Checkbox = CreateWindowEx(0, WC_BUTTON, _("x 2"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        205, 180, 45, 20, TabChild[1], NULL, Instance, NULL);
+        155, 90, 45, 20, GroupPosicEncInc, NULL, Instance, NULL);
     NiceFont(X2Checkbox);
 
 	X4Checkbox = CreateWindowEx(0, WC_BUTTON, _("x 4"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        250, 180, 40, 20, TabChild[1], NULL, Instance, NULL);
+        200, 90, 40, 20, GroupPosicEncInc, NULL, Instance, NULL);
     NiceFont(X4Checkbox);
+
+	// Group - Absolute Encoder
+    GroupPosicEncAbs = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupPosicEncAbs);
+
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Modo de Leitura:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        15, 25, 120, 21, GroupPosicEncAbs, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+	SSIModeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        145, 25, 140, 100, GroupPosicEncAbs, NULL, Instance, NULL);
+    NiceFont(SSIModeCombobox);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Resolução em bits:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        15, 55, 120, 21, GroupPosicEncAbs, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    SSISizeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        145, 55, 85, 21, GroupPosicEncAbs, NULL, Instance, NULL);
+    NiceFont(SSISizeTextbox);
+
+	// Group - ModBUS Master
+    GroupModBUSMaster = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupModBUSMaster);
+
+	// Group - ModBUS Slave
+    GroupModBUSSlave = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupModBUSSlave);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("ModBUS ID:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 1, 140, 21, GroupModBUSSlave, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    ModBUSIDTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 0, 140, 21, GroupModBUSSlave, NULL, Instance, NULL);
+    NiceFont(ModBUSIDTextbox);
 
 	/*** Properties Tab - Start ***
     HWND textLabel20 = CreateWindowEx(0, WC_STATIC, _("Diametro Roda:"),
@@ -422,16 +571,17 @@ static void MakeControls(void)
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         205, 150, 85, 21, TabChild[1], NULL, Instance, NULL);
     NiceFont(FactorTextbox);
+*/
 	/*** Properties Tab - End ***/
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        244, 408, 69, 23, ConfDialog, NULL, Instance, NULL); 
+        365, 207, 69, 23, ConfDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        319, 408, 69, 23, ConfDialog, NULL, Instance, NULL); 
+        441, 207, 69, 23, ConfDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 
 //    PrevCrystalProc = SetWindowLongPtr(CrystalTextbox, GWLP_WNDPROC, 
@@ -440,7 +590,7 @@ static void MakeControls(void)
     PrevBaudProc = SetWindowLongPtr(BaudTextbox, GWLP_WNDPROC, 
         (LONG_PTR)MyNumberProc);
 
-	OnTabChange();
+//	OnTabChange();
 }
 
 bool ShowConfDialog(bool NetworkSection)
@@ -450,20 +600,18 @@ bool ShowConfDialog(bool NetworkSection)
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "POPToolsDialog", _("PLC Configuration"),
         WS_OVERLAPPED | WS_SYSMENU,
-        150, 160, 393, 435, MainWindow, NULL, Instance, NULL); //The cofig windows size
+        150, 160, 517, 237, MainWindow, NULL, Instance, NULL); //The cofig windows size
 
 	PrevConfDialogProc = SetWindowLongPtr(ConfDialog, GWLP_WNDPROC, 
         (LONG_PTR)ConfDialogProc);
 
     MakeControls();
 	if(NetworkSection) {
-		TabCtrl_SetCurSel(TabCtrl, 1);
-		OnTabChange();
+//		TabCtrl_SetCurSel(TabCtrl, 1);
+//		OnTabChange();
 	}
 
     char buf[16];
-//SendMessage(TabCtrl, TCM_SETBKCOLOR, 0, RGB(0, 0, 50));
-    TabCtrl_SetBkColor(TabCtrl, RGB(0, 0, 50)); // Essa função tem que ser chamada toda vez que redesenhar o controle
 
 	SendMessage(ip  , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.ip  [0], Prog.settings.ip  [1], Prog.settings.ip  [2], Prog.settings.ip  [3]));
 	SendMessage(mask, IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.mask[0], Prog.settings.mask[1], Prog.settings.mask[2], Prog.settings.mask[3]));
@@ -502,6 +650,10 @@ bool ShowConfDialog(bool NetworkSection)
 	SendMessage(GMTCombobox, CB_SETCURSEL, Prog.settings.gmt, 0);
 	SendMessage(GMTCombobox, CB_SETDROPPEDWIDTH, 300, 0);
 
+	for (i = 0; i < sizeof(EncAbsConfig) / sizeof(EncAbsConfig[0]); i++)
+		SendMessage(SSIModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)EncAbsConfig[i]));
+	SendMessage(SSIModeCombobox, CB_SETCURSEL, Prog.settings.ssi_mode, 0);
+
 	if (Prog.settings.dailysave)
 		SendMessage(DailySaveCheckbox, BM_SETCHECK, BST_CHECKED, 0);
 
@@ -527,6 +679,9 @@ bool ShowConfDialog(bool NetworkSection)
 
     //sprintf(buf, "%d", Prog.settings.baudRate);
     //SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+
+	sprintf(buf, "%d", Prog.settings.ssi_size);
+	SendMessage(SSISizeTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(ConfDialog, TRUE);
@@ -614,6 +769,16 @@ bool ShowConfDialog(bool NetworkSection)
 		Prog.settings.dailysave = SendMessage(DailySaveCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
 
 		Prog.settings.x4 = (char)SendMessage(X4Checkbox, BM_GETCHECK, 0, 0);
+
+		SendMessage(SSISizeTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		Prog.settings.ssi_size = atoi(buf);
+		if(Prog.settings.ssi_size < 1) {
+			Prog.settings.ssi_size = 1;
+		} else if(Prog.settings.ssi_size > 32) {
+			Prog.settings.ssi_size = 32;
+		}
+
+		Prog.settings.ssi_mode = SendMessage(SSIModeCombobox, CB_GETCURSEL, 0, 0);
 
 		changed = true;
 	}

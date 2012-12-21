@@ -97,6 +97,7 @@ void PLC_Init(void)
 {
 	I_SerialReady = 1;
 	MODBUS_MASTER = 0;
+	ModBUS_SetID(0);
 
 	RS485_Config(19200, 8, 2, 1);
 	//RS485_Config(9600, 8, 0, 1);
@@ -111,6 +112,9 @@ void PLC_Init(void)
 	IP4_ADDR(&IP_GATEWAY, 192,168,0,10);
 	IP4_ADDR(&IP_DNS, 192,168,0,10);*/
 
+	QEIConfig.CaptureMode = QEI_CAPMODE_4X;
+
 	ADC_SetMask(0x3F);
+	SSI_Init(25, SSI_MODE_GRAY);
 }
 

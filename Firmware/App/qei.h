@@ -422,9 +422,6 @@ void QEI_IntSet(QEI_TypeDef *QEIx, unsigned int ulIntType);
 void QEI_IntClear(QEI_TypeDef *QEIx, unsigned int ulIntType);
 unsigned int QEI_CalculateRPM(QEI_TypeDef *QEIx, unsigned int ulVelCapValue, unsigned int ulPPR);
 
-int ENC_Read(void);
-void ENC_Reset(void);
-
 /**
  * @}
  */

@@ -468,8 +468,9 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
 		}
         case ELEM_RESET_ENC: {
-            CenterWithWires(*cx, *cy, _("{RESET ENC}"), poweredBefore,
-                poweredAfter);
+            ElemResetEnc *r = &leaf->d.resetEnc;
+            CenterWithSpaces(*cx, *cy, r->name, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, _("{RESET ENC}"), poweredBefore, poweredAfter);
             break;
         }
         case ELEM_SET_PWM: {

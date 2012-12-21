@@ -551,6 +551,10 @@ typedef struct ElemReadEncTag {
     char    name[MAX_NAME_LEN];
 } ElemReadEnc;
 
+typedef struct ElemResetEncTag {
+    char    name[MAX_NAME_LEN];
+} ElemResetEnc;
+
 typedef struct ElemMultisetDATag {
 	char    name[MAX_NAME_LEN];		// Tempo
 	char    name1[MAX_NAME_LEN];	// Deslocamento
@@ -707,6 +711,7 @@ typedef struct ElemLeafTag {
         ElemReadAdc         readAdc;
 		ElemSetDA			setDA;
         ElemReadEnc         readEnc;
+		ElemResetEnc        resetEnc;
 		ElemMultisetDA      multisetDA;
         ElemReadUSS         readUSS;
         ElemWriteUSS        writeUSS;
@@ -832,6 +837,8 @@ typedef struct PlcProgramTag {
 		float		factor;
 		unsigned char x4;
 		BOOL canSave;
+		int ssi_size;
+		int ssi_mode;
 	} settings;
 
 #define MAX_RUNGS 999
@@ -1166,6 +1173,7 @@ bool AddCounter(int which);
 bool AddReadAdc(void);
 bool AddSetDA(void);
 bool AddReadEnc(void);
+bool AddResetEnc(void);
 bool AddMultisetDA(void);
 bool AddReadFormatString(void);
 bool AddWriteFormatString(void);
@@ -1251,6 +1259,7 @@ void ShowSetBitDialog(char *name, int * set, int * bit);
 void ShowCheckBitDialog(char *name, int * set, int * bit);
 void ShowSetDADialog(char *name, int *mode);
 void ShowReadEncDialog(char *name);
+void ShowResetEncDialog(char *name);
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
 void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
 void ShowModbusDialog(char *name, int *id, int *address, bool *set, bool *retransmitir);

@@ -1069,11 +1069,21 @@ bool AddReadAdc(void)
 }
 bool AddReadEnc(void)
 {
-    if(!CanInsertEnd) return false;
+    if(!CanInsert(ELEM_READ_ENC)) return false;
 
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.readEnc.name, _("new"));
     AddLeaf(ELEM_READ_ENC, t);
+
+	return true;
+}
+bool AddResetEnc(void)
+{
+    if(!CanInsert(ELEM_RESET_ENC)) return false;
+
+    ElemLeaf *t = AllocLeaf();
+    strcpy(t->d.resetEnc.name, _("new"));
+    AddLeaf(ELEM_RESET_ENC, t);
 
 	return true;
 }
@@ -1529,10 +1539,13 @@ void FreeEntireProgram(void)
 
 	Prog.settings.diameter = 0;
 	Prog.settings.pulses = 0;
-	Prog.settings.factor = 0;
+	Prog.settings.factor = 1;
 	Prog.settings.x4 = 1;
 
 	Prog.settings.canSave = TRUE;
+
+	Prog.settings.ssi_mode = 0;
+	Prog.settings.ssi_size = 24;
 
 	for(i = 0; i < MAX_IO; i++)
 	{

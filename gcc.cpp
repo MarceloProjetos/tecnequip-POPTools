@@ -64,6 +64,16 @@ static char *MapSym(char *str)
 				sprintf(ret, "A%d", pin);
 				return ret;
 			} 
+			if (Prog.io.assignment[i].type == IO_TYPE_READ_ENC)
+			{
+				sprintf(ret, "ENC%d", pin);
+				return ret;
+			} 
+			if (Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
+			{
+				sprintf(ret, "ENC%dW", pin);
+				return ret;
+			} 
 			if (Prog.io.assignment[i].type == IO_TYPE_GENERAL && Prog.io.assignment[i].pin) 
 			{
 				sprintf(ret, "MODBUS_REGISTER[%d]", Prog.io.assignment[i].pin - 20);
@@ -105,7 +115,7 @@ static char *MapSym(char *str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, char *str)
 {
-	if (strncmp(MapSym(str), "E", 1) == 0 || strncmp(MapSym(str), "Z", 1) == 0 || strncmp(MapSym(str), "M", 1) == 0 || isdigit(*str) || *str == '-')
+	if (strncmp(MapSym(str), "M", 1) == 0 || isdigit(*str) || *str == '-')
 	{
 		return;
 	}
@@ -505,12 +515,16 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				}
 				break;
 
-            case INT_READ_ENC:
-				fprintf(f, "%s = ENC_Read();\n", MapSym(IntCode[i].name1));
+            case INT_READ_ENC: {
+				char *name = MapSym(IntCode[i].name1);
+				fprintf(f, "%s = ENC_Read(%d);\n", name, atoi(name+3)-1);
 				break;
-            case INT_RESET_ENC:
-				fprintf(f, "ENC_Reset();\n");
+				}
+            case INT_RESET_ENC: {
+				char *name = MapSym(IntCode[i].name1);
+				fprintf(f, "ENC_Reset(%d, %s);\n", atoi(name+3)-1, name);
 				break;
+				}
 			case INT_READ_FORMATTED_STRING:
 				fprintf(f, "Format_String_Read(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
 				break;
@@ -793,6 +807,20 @@ DWORD InvokeGCC(char* dest)
 	return exitCode;
 }
 
+void CheckPinAssignments(void)
+{
+	int i;
+	unsigned int type;
+	for(i=0; i < Prog.io.count; i++) {
+		type = Prog.io.assignment[i].type;
+		if(Prog.io.assignment[i].pin == NO_PIN_ASSIGNED &&
+			type == IO_TYPE_READ_ADC || type == IO_TYPE_READ_ENC || type == IO_TYPE_RESET_ENC) {
+				Error(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), Prog.io.assignment[i].name);
+				CompileError();
+		}
+	}
+}
+
 DWORD GenerateCFile(char *filename)
 {
 	unsigned int i, ad_mask;
@@ -812,6 +840,8 @@ DWORD GenerateCFile(char *filename)
     // Set up the TRISx registers (direction). 1 means tri-stated (input).
     BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
     BuildDirectionRegisters(isInput, isOutput);
+
+	CheckPinAssignments();
 
     SeenVariablesCount = 0;
 	MODBUS_MASTER      = 0;
@@ -933,6 +963,7 @@ DWORD GenerateCFile(char *filename)
 	}
 
 	fprintf(f, "    ADC_SetMask(%d);\n", ad_mask);
+//	fprintf(f, "    SSI_Init(%d, %d);\n", Prog.settings.ssi_size, Prog.settings.ssi_mode);
 	fprintf(f, "}\n");
 
 	fclose(f);

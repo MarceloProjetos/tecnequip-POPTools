@@ -65,7 +65,6 @@
       </Command.SmallImages>
     </Command>
     <Command Name="GroupCommOthers" Symbol="cmdGroupCommOthers" Id="30018" LabelTitle="RS-485 - Outros" />
-    <Command Name="GroupMem"        Symbol="cmdGroupMem"        Id="30034" LabelTitle="Memória"         />
     <Command Name="DropDownIO"      Symbol="cmdDropDownIO"      Id="30020" LabelTitle="Mais I/O"         >
       <Command.LargeImages>
         <Image Source="imgs/DropDownIOHH.bmp"/>
@@ -1465,8 +1464,8 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name        = "InstrABS"
-              Symbol     = "cmdInstrABSHH"
+    <Command Name        = "InstrAbs"
+              Symbol     = "cmdInstrAbs"
               Id         = "30554"
               LabelTitle = "Valor Absoluto">
       <Command.TooltipTitle      >Valor Absoluto (Shift+/)</Command.TooltipTitle>
@@ -1478,8 +1477,8 @@
         <Image Source="imgs/InstrABSHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    <Command Name         = "ExampleABSHH"
-               Symbol     = "cmdExampleABSHH"
+    <Command Name         = "ExampleAbs"
+               Symbol     = "cmdExampleAbs"
                Id         = "31554"
                LabelTitle = "Valor Absoluto">
       <Command.TooltipTitle      >Valor Absoluto (Shift+/)</Command.TooltipTitle>
@@ -1580,12 +1579,12 @@
     </Command>
 
     <Command Name     = "InstrRand"
-           Symbol     = "cmdInstrRandHH"
+           Symbol     = "cmdInstrRand"
            Id         = "30555"
-           LabelTitle = "Numero Randomico"
-           LabelDescription = "Inserir randomico na posição do cursor.">
-      <Command.TooltipTitle      >Numero Randomico</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir Numero Randomico na posição do cursor.</Command.TooltipDescription>
+           LabelTitle = "Número Randômico"
+           LabelDescription = "Inserir Número Randômico na posição do cursor.">
+      <Command.TooltipTitle      >Número Randômico</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir Número Randômico na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrRandHH.bmp"/>
       </Command.LargeImages>
@@ -1594,12 +1593,11 @@
       </Command.SmallImages>
     </Command>
     <Command Name         = "ExampleRand"
-               Symbol     = "cmdRand"
+               Symbol     = "cmdExampleRand"
                Id         = "31555"
-               LabelTitle = "Numero Randomico"
-               LabelDescription = "Inserir Numero Randomico na posição do cursor.">
-      <Command.TooltipTitle      >Numero Randomico</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de Numero Randomico.</Command.TooltipDescription>
+               LabelTitle = "Número Randômico">
+      <Command.TooltipTitle      >Número Randômico</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de Número Randômico.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrRandHH.bmp"/>
       </Command.LargeImages>
@@ -2068,34 +2066,6 @@
       </Command.SmallImages>
     </Command>
 
-    <!-- Comandos para acessar a memória do CLP -->
-    <Command Name         = "InstrMem"
-               Symbol     = "cmdInstrMem"
-               Id         = "30559"
-               LabelTitle = "Memória">
-      <Command.TooltipTitle      >Memória permanente no CLP</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir uma leitura ou escrita na memoria permanente do CLP.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrMemHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrMemHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-    <Command Name         = "ExampleMen"
-               Symbol     = "cmdExampleMen"
-               Id         = "31559"
-               LabelTitle = "Memória">
-      <Command.TooltipTitle      >Memória</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de acesso a Memória do CLP.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrMemHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrMemHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
     <Command Name         = "InstrReadModBUS485"
                Symbol     = "cmdInstrReadModBUS485"
                Id         = "30546"
@@ -2546,7 +2516,7 @@
             <DropDownButton CommandName="DropDownMath">
               <MenuGroup Class="MajorItems">
                 <Button CommandName="InstrMathSqrt"/>
-                <Button CommandName="InstrABS"/>
+                <Button CommandName="InstrAbs"/>
                 <Button CommandName="InstrShiftRegister"/>
                 <Button CommandName="InstrLookUpTable"/>
                 <Button CommandName="InstrPieceWiseLinear"/>
@@ -2563,7 +2533,6 @@
                 <Scale Group ="GroupMotors"     Size="Large"  />
                 <Scale Group ="GroupEnc"        Size="Large"  />
                 <Scale Group ="GroupSSIEnc"     Size="Large"  />
-                <Scale Group ="GroupMem"        Size="Large"  />
                 <Scale Group ="GroupCommText"   Size="Large"  />
                 <Scale Group ="GroupCommModBUS" Size="Large"  />
                 <Scale Group ="GroupCommOthers" Size="Large"  />
@@ -2621,9 +2590,6 @@
             <Button CommandName="InstrWriteUSS"/>
             <Button CommandName="InstrReadNS600"/>
             <Button CommandName="InstrWriteNS600"/>
-          </Group>
-          <Group CommandName="GroupMem" SizeDefinition="OneButton">
-            <Button CommandName="InstrMem"/>
           </Group>
         </Tab>
         <Tab CommandName="TabSimulation" ApplicationModes="1">
