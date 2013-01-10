@@ -548,6 +548,7 @@ McuAdcPinInfo LPC1768AdcPinInfo[] = {
 
 McuEncPinInfo LPC1768EncPinInfo[] = {
     {  1, 0x01 },
+    {  2, 0x02 },
 };
 
 #define arraylen(x) (sizeof(x)/sizeof((x)[0]))

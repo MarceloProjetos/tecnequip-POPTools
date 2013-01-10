@@ -321,131 +321,146 @@ static void MakeControls(void)
 	// Group - Network Communication
 	GroupCommNetwork = CreateWindowEx(0, WC_STATIC, "",
 		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        215, 7, 295, 200, ConfDialog, NULL, Instance, NULL);
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupCommNetwork);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Ajuste a configuração da rede conforme a sua necessidade"),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        5, 5, 195, 54, GroupCommNetwork, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
 	textLabel = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
         SS_BITMAP | SS_BLACKRECT | SS_GRAYFRAME | SS_LEFT | SS_LEFTNOWORDWRAP | SS_RIGHT | SS_WHITERECT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        308, 75, 96, 96, GroupCommNetwork, NULL, Instance, NULL);
+        205, 0, 64, 64, GroupCommNetwork, NULL, Instance, NULL);
 
 	HBITMAP hBmp = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(IDB_NETWORK_CONFIG),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
 	SendMessage(textLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Endereço IP:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 0, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+        5, 67, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     ip = CreateWindowEx(0, WC_IPADDRESS, _("IP"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 0, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+        155, 67, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
 //    NiceFont(ip);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Mascara:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 30, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+        5, 97, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
     NiceFont(textLabel);
 	
     mask = CreateWindowEx(0, WC_IPADDRESS, _("MASK"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 30, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+        155, 97, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
 //    NiceFont(mask);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Gateway:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 60, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+        5, 127, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     gw = CreateWindowEx(0, WC_IPADDRESS, _("GW"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 60, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+        155, 127, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
 //    NiceFont(gw);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("DNS:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 90, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+        5, 157, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     dns = CreateWindowEx(0, WC_IPADDRESS, _("DNS"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 90, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
+        155, 157, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
 //    NiceFont(dns);
 
 	// Group - Time Zone
     GroupCommTimeZone = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupCommTimeZone);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Ajuste o fuso horário e indique se o horário de verão está ativado"),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        5, 5, 195, 62, GroupCommTimeZone, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
 	textLabel = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
         SS_BITMAP | SS_BLACKRECT | SS_GRAYFRAME | SS_LEFT | SS_LEFTNOWORDWRAP | SS_RIGHT | SS_WHITERECT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        205, 5, 96, 96, GroupCommTimeZone, NULL, Instance, NULL);
+        205, 0, 72, 72, GroupCommTimeZone, NULL, Instance, NULL);
 
 	HBITMAP hBmp2 = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(IDB_TIME_CONFIG),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
 	SendMessage(textLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp2);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Servidor de Tempo:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 0, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
+        5, 75, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(textLabel);
 
 	SNTPCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWN,
-        155, 0, 140, 145, GroupCommTimeZone, NULL, Instance, NULL);
+        155, 75, 140, 145, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(SNTPCombobox);
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("Fuso Horário:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 30, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
+        5, 105, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(textLabel);
 
 	GMTCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        155, 30, 140, 145, GroupCommTimeZone, NULL, Instance, NULL);
+        155, 105, 140, 145, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(GMTCombobox);
 
 	DailySaveCheckbox = CreateWindowEx(0, WC_BUTTON, _("Horário de verão"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        155, 58, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
+        155, 133, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(DailySaveCheckbox);
 
 	// Group - Serial Communication
     GroupCommSerial = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupCommSerial);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Ajuste aqui a configuração da interface RS-485 da POP-7"),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        5, 5, 195, 54, GroupCommSerial, NULL, Instance, NULL);
+    NiceFont(textLabel);
 
 	textLabel = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
         SS_BITMAP | SS_BLACKRECT | SS_GRAYFRAME | SS_LEFT | SS_LEFTNOWORDWRAP | SS_RIGHT | SS_WHITERECT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        310, 5, 96, 96, GroupCommSerial, NULL, Instance, NULL);
+        205, 0, 64, 64, GroupCommSerial, NULL, Instance, NULL);
 
 	HBITMAP hBmp3 = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(IDB_RS485_CONFIG),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
 	SendMessage(textLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp3);
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("RS485 Baud Rate(bps):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 1, 140, 21, GroupCommSerial, NULL, Instance, NULL);
+        5, 67, 140, 21, GroupCommSerial, NULL, Instance, NULL);
     NiceFont(textLabel);
 
 	BaudRateCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        155, 0, 140, 100, GroupCommSerial, NULL, Instance, NULL);
+        155, 67, 140, 100, GroupCommSerial, NULL, Instance, NULL);
     NiceFont(BaudRateCombobox);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Data/Paridade/Stop:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 30, 140, 21, GroupCommSerial, NULL, Instance, NULL);
+        5, 97, 140, 21, GroupCommSerial, NULL, Instance, NULL);
     NiceFont(textLabel);
 
 	ParityCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        155, 29, 140, 100, GroupCommSerial, NULL, Instance, NULL);
+        155, 97, 140, 100, GroupCommSerial, NULL, Instance, NULL);
     NiceFont(ParityCombobox);
 
 	// Group - Incremental Encoder
     GroupPosicEncInc = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupPosicEncInc);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Diametro Roda:"),
@@ -496,7 +511,7 @@ static void MakeControls(void)
 	// Group - Absolute Encoder
     GroupPosicEncAbs = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupPosicEncAbs);
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("Modo de Leitura:"),
@@ -522,13 +537,13 @@ static void MakeControls(void)
 	// Group - ModBUS Master
     GroupModBUSMaster = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupModBUSMaster);
 
 	// Group - ModBUS Slave
     GroupModBUSSlave = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        215, 7, 295, 85, ConfDialog, NULL, Instance, NULL);
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupModBUSSlave);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("ModBUS ID:"),

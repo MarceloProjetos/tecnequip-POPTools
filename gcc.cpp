@@ -64,27 +64,12 @@ static char *MapSym(char *str)
 				sprintf(ret, "A%d", pin);
 				return ret;
 			} 
-			if (Prog.io.assignment[i].type == IO_TYPE_READ_ENC)
-			{
-				sprintf(ret, "ENC%d", pin);
-				return ret;
-			} 
-			if (Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
-			{
-				sprintf(ret, "ENC%dW", pin);
-				return ret;
-			} 
 			if (Prog.io.assignment[i].type == IO_TYPE_GENERAL && Prog.io.assignment[i].pin) 
 			{
 				sprintf(ret, "MODBUS_REGISTER[%d]", Prog.io.assignment[i].pin - 20);
 				return ret;
 			} 
-			/*if (Prog.io.assignment[i].type == IO_TYPE_READ_ENC || Prog.io.assignment[i].type == IO_TYPE_RESET_ENC) 
-			{
-				sprintf(ret, "ENC%d", pin);
-				return ret;
-			}*/
-			else if (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
+			if (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
 			{
 				if (pin > 19)
 				{
@@ -516,13 +501,19 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				break;
 
             case INT_READ_ENC: {
+				int ch = GetPinEnc(IntCode[i].name1);
 				char *name = MapSym(IntCode[i].name1);
-				fprintf(f, "%s = ENC_Read(%d);\n", name, atoi(name+3)-1);
+				if(ch != NO_PIN_ASSIGNED) {
+					fprintf(f, "%s = ENC_Read(%d);\n", name, ch-1);
+				}
 				break;
 				}
             case INT_RESET_ENC: {
+				int ch = GetPinEnc(IntCode[i].name1);
 				char *name = MapSym(IntCode[i].name1);
-				fprintf(f, "ENC_Reset(%d, %s);\n", atoi(name+3)-1, name);
+				if(ch != NO_PIN_ASSIGNED) {
+					fprintf(f, "ENC_Reset(%d, %s);\n", ch-1, name);
+				}
 				break;
 				}
 			case INT_READ_FORMATTED_STRING:
@@ -814,7 +805,7 @@ void CheckPinAssignments(void)
 	for(i=0; i < Prog.io.count; i++) {
 		type = Prog.io.assignment[i].type;
 		if(Prog.io.assignment[i].pin == NO_PIN_ASSIGNED &&
-			type == IO_TYPE_READ_ADC || type == IO_TYPE_READ_ENC || type == IO_TYPE_RESET_ENC) {
+			(type == IO_TYPE_READ_ADC || type == IO_TYPE_READ_ENC || type == IO_TYPE_RESET_ENC)) {
 				Error(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), Prog.io.assignment[i].name);
 				CompileError();
 		}
@@ -963,7 +954,7 @@ DWORD GenerateCFile(char *filename)
 	}
 
 	fprintf(f, "    ADC_SetMask(%d);\n", ad_mask);
-//	fprintf(f, "    SSI_Init(%d, %d);\n", Prog.settings.ssi_size, Prog.settings.ssi_mode);
+	fprintf(f, "    SSI_Init(%d, %d);\n", Prog.settings.ssi_size, Prog.settings.ssi_mode);
 	fprintf(f, "}\n");
 
 	fclose(f);

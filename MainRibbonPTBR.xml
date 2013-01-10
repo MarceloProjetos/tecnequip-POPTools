@@ -1768,85 +1768,30 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name       = "InstrWriteEnc"
-             Symbol     = "cmdInstrWriteEnc"
-             Id         = "30557"
-             LabelTitle = "Escrita no Encoder">
-      <Command.TooltipTitle>Escrita no Encoder (Q)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir Escrita no encoder na posição do cursor.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrWriteEncHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrWriteEncHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-    <Command Name         = "ExampleWriteEnc"
-               Symbol     = "cmdExampleWriteEnc"
-               Id         = "31557"
-               LabelTitle = "Escrita no Encoder">
-      <Command.TooltipTitle      >Leitura de Encoder (Q)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução Escrita no encoder.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrWriteEncHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrWriteEncHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
     <Command Name         = "InstrResetEnc"
                Symbol     = "cmdInstrResetEnc"
                Id         = "30536"
-               LabelTitle = "Reset de Encoder">
-      <Command.TooltipTitle      >Reset de Encoder (Ctrl+Q)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir reset de encoder na posição do cursor.</Command.TooltipDescription>
+               LabelTitle = "Escrita no Encoder">
+      <Command.TooltipTitle      >Escrita no Encoder (Ctrl+Q)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir escrita no encoder na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrResetEncHH.bmp"/>
+        <Image Source="imgs/InstrWriteEncHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrResetEncHS.bmp"/>
+        <Image Source="imgs/InstrWriteEncHS.bmp"/>
       </Command.SmallImages>
     </Command>
     <Command Name         = "ExampleResetEnc"
                Symbol     = "cmdExampleResetEnc"
                Id         = "31536"
                LabelTitle = "Reset de Encoder">
-      <Command.TooltipTitle      >Reset de Encoder (Ctrl+Q)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução reset de encoder.</Command.TooltipDescription>
+      <Command.TooltipTitle      >Escrita no Encoder (Ctrl+Q)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrita no encoder.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrResetEncHH.bmp"/>
+        <Image Source="imgs/InstrWriteEncHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrResetEncHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
-    <!-- Comandos para Encoder SSI no Diagrama Ladder -->
-    <Command Name         = "InstrSSIEnc"
-               Symbol     = "cmdInstrSSIEnc"
-               Id         = "30558"
-               LabelTitle = "Encoder SSI">
-      <Command.TooltipTitle      >Encoder SSI</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir um comando de leitura na porta SSI.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrSsiHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrSsiHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-    <Command Name         = "ExampleSSIEnc"
-               Symbol     = "cmdExampleSSIEnc"
-               Id         = "31558"
-               LabelTitle = "Encoder SSI">
-      <Command.TooltipTitle      >Encoder SSI</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de leitura na porta SSI.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrSsiHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrSsiHS.bmp"/>
+        <Image Source="imgs/InstrWriteEncHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
@@ -2532,7 +2477,6 @@
                 <Scale Group ="GroupAnalog"     Size="Large"  />
                 <Scale Group ="GroupMotors"     Size="Large"  />
                 <Scale Group ="GroupEnc"        Size="Large"  />
-                <Scale Group ="GroupSSIEnc"     Size="Large"  />
                 <Scale Group ="GroupCommText"   Size="Large"  />
                 <Scale Group ="GroupCommModBUS" Size="Large"  />
                 <Scale Group ="GroupCommOthers" Size="Large"  />
@@ -2540,7 +2484,6 @@
               <Scale Group ="GroupCommOthers" Size="Medium" />
               <Scale Group ="GroupCommText"   Size="Medium" />
               <Scale Group ="GroupCommModBUS" Size="Popup"  />
-              <Scale Group ="GroupEnc"        Size="Medium" />
               <Scale Group ="GroupCommOthers" Size="Small"  />
               <Scale Group ="GroupCommText"   Size="Small"  />
               <Scale Group ="GroupMotors"     Size="Medium" />
@@ -2557,13 +2500,9 @@
             <Button CommandName="InstrPWM"/>
             <Button CommandName="InstrPos"/>
           </Group>
-          <Group CommandName="GroupEnc" SizeDefinition="ThreeButtons">
+          <Group CommandName="GroupEnc" SizeDefinition="TwoButtons">
             <Button CommandName="InstrReadEnc"/>
-            <Button CommandName="InstrWriteEnc"/>
             <Button CommandName="InstrResetEnc"/>
-          </Group>
-          <Group CommandName="GroupSSIEnc" SizeDefinition="OneButton">
-            <Button CommandName="InstrSSIEnc"/>
           </Group>
           <Group CommandName="GroupCommModBUS" SizeDefinition="TwoButtons">
             <DropDownButton CommandName="DropDownMBRecv">

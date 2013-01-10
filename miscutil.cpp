@@ -290,7 +290,7 @@ char *IoTypeToString(int ioType)
         case IO_TYPE_GENERAL:           return _("general var"); 
         case IO_TYPE_READ_ADC:          return _("adc input"); 
         case IO_TYPE_READ_ENC:          return _("entrada encoder"); 
-        case IO_TYPE_RESET_ENC:         return _("reset encoder"); 
+        case IO_TYPE_RESET_ENC:         return _("write encoder"); 
         case IO_TYPE_READ_USS:         return _("read USS"); 
         case IO_TYPE_WRITE_USS:         return _("write USS"); 
 		case IO_TYPE_SET_DA:			return _("Set D/A"); 
@@ -782,6 +782,18 @@ char *GetPinADC(char *name)
 	}
 
 	return "?";
+}
+
+int GetPinEnc(char *name)
+{
+	int i;
+	for(i=0; i < Prog.io.count; i++) {
+		if((Prog.io.assignment[i].type == IO_TYPE_READ_ENC || Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
+				&& !strcmp(name, Prog.io.assignment[i].name))
+			return Prog.io.assignment[i].pin;
+	}
+
+	return NO_PIN_ASSIGNED;
 }
 
 // CRC calculation //

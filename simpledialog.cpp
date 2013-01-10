@@ -457,7 +457,7 @@ void ShowResetEncDialog(char *name)
 
 	strcpy(name_tmp, name);
 
-	if(ShowSimpleDialog(_("Reset Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
+	if(ShowSimpleDialog(_("Write Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
 		if(IsValidNameAndType(name, name_tmp, _("Destino"), VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
 			strcpy(name, name_tmp);
 			name[16] = '\0';

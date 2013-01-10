@@ -15,8 +15,10 @@
 #define SSI_MODE_GRAY 0
 #define SSI_MODE_BIN  1
 
-void         SSI_Init();
-unsigned int SSI_Read(unsigned int size, unsigned int mode);
+void         SSI_Init       ();
+unsigned int SSI_Read       (unsigned int size, unsigned int mode);
+void         SSI_SetPosition(int offset);
+
 #endif
 
 /******************************************************************************

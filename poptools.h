@@ -1334,6 +1334,7 @@ bool IsInternalFlag(char *name);
 bool IsValidNumber(char *number);
 void ChangeFileExtension(char *name, char *ext);
 char *GetPinADC(char *name);
+int GetPinEnc(char *name);
 unsigned short int CRC16(unsigned char *puchMsg, unsigned int usDataLen);
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
