@@ -19,6 +19,7 @@ void			DAC_Init (void);
 unsigned int	DAC_Read (void);
 void			DAC_Write(unsigned int val);
 
+void			DAC_Abort(int mode);
 void 			DAC_Start(unsigned char up, unsigned char linear, unsigned char gaint, unsigned char gainr, int time, int value);
 
 typedef struct DA_SetTag

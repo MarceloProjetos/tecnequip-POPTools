@@ -1547,6 +1547,8 @@ void FreeEntireProgram(void)
 	Prog.settings.ssi_mode = 0;
 	Prog.settings.ssi_size = 24;
 
+	Prog.settings.ramp_abort_mode = RAMP_ABORT_LEAVE;
+
 	for(i = 0; i < MAX_IO; i++)
 	{
 		memset(Prog.io.assignment[i].name, 0, sizeof(Prog.io.assignment[i].name));

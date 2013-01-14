@@ -933,8 +933,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
 							Op(INT_MULTISET_DA, l->d.multisetDA.name, str_initval, gaint, gainr, type, NULL, NULL, l->d.multisetDA.linear, l->d.multisetDA.StartFromCurrentValue ? 2 : l->d.multisetDA.speedup);
 						Op(INT_END_IF);
-					Op(INT_ELSE);
-						Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+					Op(INT_ELSE_IF); Op(INT_IF_BIT_SET, oneShot);
+						Op(INT_MULTISET_DA, "", l->d.multisetDA.ramp_abort_mode == RAMP_ABORT_DEFAULT ? Prog.settings.ramp_abort_mode : l->d.multisetDA.ramp_abort_mode);
+						Op(INT_CLEAR_BIT, oneShot);
 					Op(INT_END_IF);
 				}
 				break;

@@ -32,7 +32,7 @@ char CurrentCompileFile[MAX_PATH];
 #define TXT_PATTERN  _("Arquivos de Texto (*.txt)\0*.txt\0Todos os Arquivos\0*\0\0")
 
 // Internal flags available to the users.
-char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "" };
+char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "RampActive", "" };
 
 // Everything relating to the PLC's program, I/O configuration, processor
 // choice, and so on--basically everything that would be saved in the

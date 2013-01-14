@@ -139,6 +139,11 @@ typedef SDWORD SWORD;
 #define DA_VOLTAGE			10000.0f	// voltagem DA em mV (-10V +10V)
 #define DA_CYCLE_INTERVAL	10			// miliseconds
 
+#define RAMP_ABORT_DEFAULT 0
+#define RAMP_ABORT_LEAVE   1
+#define RAMP_ABORT_STOP    2
+#define RAMP_ABORT_DESACEL 3
+
 #define EEPROM_SIZE 0x7E
 
 // Identifier for the message sent to MainWindow when SimSocket receives something
@@ -567,6 +572,7 @@ typedef struct ElemMultisetDATag {
 	int		gaint;					// tempo da curva de ganho em %
 	int		gainr;					// resolução da curva de ganho em %
 	BOOL	StartFromCurrentValue;	// 0 = Iniciar ou ir para zero, conforme speedup. 1 = partir do valor atual até o valor configurado
+	int		ramp_abort_mode;
 } ElemMultisetDA;
 
 typedef struct ElemReadUSSTag {
@@ -839,6 +845,7 @@ typedef struct PlcProgramTag {
 		BOOL canSave;
 		int ssi_size;
 		int ssi_mode;
+		int ramp_abort_mode;
 	} settings;
 
 #define MAX_RUNGS 999
@@ -1342,6 +1349,9 @@ extern HWND OkButton;
 extern HWND CancelButton;
 extern BOOL DialogDone;
 extern BOOL DialogCancel;
+
+// multisetdadialog.cpp
+void PopulateAbortModeCombobox(HWND AbortModeCombobox, bool IncludeDefault);
 
 // Regras de validação de variáveis
 #define VALIDATE_IS_VAR				0x00000001

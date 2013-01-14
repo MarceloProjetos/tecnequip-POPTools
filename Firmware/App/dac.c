@@ -34,6 +34,8 @@ OS_STK	DACCycleStack[DAC_CYCLE_THREAD_STACKSIZE];
 OS_MutexID		DAC_Mutex;
 unsigned int 	DAC_Value = 0;
 
+volatile unsigned int I_RampActive = 0;
+
 DA_Set GlobalDA;
 
 #define DAC_MODE_RAW 0
@@ -258,7 +260,6 @@ int DAC_CalcCurveDown(int time, int value, int tm)
 
 void DAC_Cycle(void * pdata)
 {
-	char ramp_ON   = 0;
 	unsigned int i = 0;
 	int start = 0, offset = 0;
 
@@ -271,10 +272,10 @@ void DAC_Cycle(void * pdata)
 
 			if((local.time >= DAC_CYCLE_INTERVAL * 3 && local.time <= 10000) &&
 			   (local.value >= -DAC_RESOLUTION && local.value <= DAC_RESOLUTION-1)) {
-				i       = 0;
-				start   = 0;
-				offset  = 0;
-				ramp_ON = 1;
+				i            = 0;
+				start        = 0;
+				offset       = 0;
+				I_RampActive = 1;
 
 				if(local.up == 2) { // Modo coincidente
 					local.up = 1;
@@ -284,7 +285,7 @@ void DAC_Cycle(void * pdata)
 			}
 		}
 
-		if(ramp_ON) {
+		if(I_RampActive) {
 			if(local.up) {
 				if (local.linear)
 					DAC_Write(DAC_CalcGainUp   (local.time, (offset||start) ? offset : local.value, local.gaint, local.gainr, i) + start);
@@ -300,7 +301,7 @@ void DAC_Cycle(void * pdata)
 			i += DAC_CYCLE_INTERVAL;
 
 			if(i >= local.time) {
-				ramp_ON = 0;
+				I_RampActive = 0;
 				DAC_Write((local.up ? local.value : 0) + DAC_RESOLUTION);
 			}
 		}
@@ -323,6 +324,24 @@ void DAC_Start(unsigned char up, unsigned char linear, unsigned char gaint, unsi
 	GlobalDA.value  = value - DAC_RESOLUTION;
 
 	GlobalDA.ID++;
+}
+
+// mode: 0 -> Leave, 1 -> Stop, 2 -> Desacel
+void DAC_Abort(int mode)
+{
+	if(!I_RampActive) return; // Nao existe rampa ativa para abortar!
+
+	switch(mode) {
+	case 0: // apenas abandona a rampa atual
+		I_RampActive = 0;
+		break;
+	case 1: // Desacelera para 0 Volts no menor tempo possivel (1 ciclo: 10 ms)
+		DAC_Start(2, 1, 0, 0,  10, DAC_RESOLUTION);
+		break;
+	case 2: // Gera uma rampa de desaceleracao para 0 Volts: 100 ms
+		DAC_Start(2, 1, 0, 0, 100, DAC_RESOLUTION);
+		break;
+	}
 }
 
 void DAC_Init(void)

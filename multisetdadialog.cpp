@@ -47,6 +47,7 @@ static HWND GainTimeTextbox;
 static HWND UpdateButton;
 static HWND ResolTypeCombobox;
 static HWND GraphBox;
+static HWND AbortModeCombobox;
 
 static LONG_PTR PrevMultisetDADialogProc;
 static LONG_PTR PrevNumAlphaProc;
@@ -67,6 +68,7 @@ static ElemMultisetDA current;
 static vector<D2D1_POINT_2F>	DAPoints;
 
 const LPCTSTR ResollTypeItens[] = { _("(12 bits)[2047 ~ -2048]"), _("(mV)[10000 ~ -10000]"), _("(%)[0 ~ 100]") };
+const LPCTSTR RampAbortModes [] = { _("Default"), _("Leave"), _("Stop"), _("Desaceleration") };
 
 void CalcLinearUp(int calc_tempo, int calc_initval)
 {
@@ -879,7 +881,8 @@ void UpdateWindow(void)
 
 	tempo = current.time;
 
-	current.type = SendMessage(ResolTypeCombobox, CB_GETCURSEL, 0, 0);
+	current.type            = SendMessage(ResolTypeCombobox, CB_GETCURSEL, 0, 0);
+	current.ramp_abort_mode = SendMessage(AbortModeCombobox, CB_GETCURSEL, 0, 0);
 
 	SendMessage(InitValTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
 
@@ -1165,7 +1168,7 @@ static void MakeControls(void)
 {
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Tipo de Rampa"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE | WS_TABSTOP,
-        7, 3, 110, 90, MultisetDADialog, NULL, Instance, NULL);
+        7, 3, 110, 67, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
     LinearRadio = CreateWindowEx(0, WC_BUTTON, _("Linear"),
@@ -1180,7 +1183,7 @@ static void MakeControls(void)
 
     HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Direção do Movimento"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        120, 3, 145, 90, MultisetDADialog, NULL, Instance, NULL);
+        120, 3, 145, 67, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(grouper2);
 
     ForwardRadio = CreateWindowEx(0, WC_BUTTON, _("Avançar"),
@@ -1192,6 +1195,16 @@ static void MakeControls(void)
         WS_CHILD | BS_AUTORADIOBUTTON | WS_VISIBLE | WS_TABSTOP,
         129, 42, 100, 25, MultisetDADialog, NULL, Instance, NULL);
     NiceFont(BackwardRadio); 
+
+    HWND Label = CreateWindowEx(0, WC_STATIC, _("Modo de Abandono:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        7, 74, 120, 20, MultisetDADialog, NULL, Instance, NULL);
+    NiceFont(Label);
+
+	AbortModeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        130, 72, 135, 100, MultisetDADialog, NULL, Instance, NULL);
+    NiceFont(AbortModeCombobox);
 
     HWND grouper3 = CreateWindowEx(0, WC_BUTTON, _("Variação Velocidade"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
@@ -1317,6 +1330,12 @@ static void MakeControls(void)
 
 }
 
+void PopulateAbortModeCombobox(HWND AbortModeCombobox, bool IncludeDefault)
+{
+	for (int i = IncludeDefault ? 0 : 1; i < sizeof(RampAbortModes) / sizeof(RampAbortModes[0]); i++)
+		SendMessage(AbortModeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)RampAbortModes[i]));
+}
+
 void ShowMultisetDADialog(ElemMultisetDA *l)
 {
 	char num[12];
@@ -1341,6 +1360,9 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
     GetClientRect(MultisetDADialog, &r);
 
     MakeControls();
+
+	PopulateAbortModeCombobox(AbortModeCombobox, true);
+	SendMessage(AbortModeCombobox, CB_SETCURSEL, current.ramp_abort_mode, 0);
 
 	for (int i = 0; i < sizeof(ResollTypeItens) / sizeof(ResollTypeItens[0]); i++)
 		SendMessage(ResolTypeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ResollTypeItens[i]));

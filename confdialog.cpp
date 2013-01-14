@@ -5,8 +5,9 @@ static HWND ConfigTreeView;
 static HWND GroupCommNetwork;
 static HWND GroupCommTimeZone;
 static HWND GroupCommSerial;
-static HWND GroupPosicEncInc;
-static HWND GroupPosicEncAbs;
+static HWND GroupInterfaceDA;
+static HWND GroupInterfaceEncInc;
+static HWND GroupInterfaceEncAbs;
 static HWND GroupModBUSSlave;
 static HWND GroupModBUSMaster;
 
@@ -21,6 +22,7 @@ static HWND GMTCombobox;
 static HWND DailySaveCheckbox;
 static HWND SSISizeTextbox;
 static HWND SSIModeCombobox;
+static HWND AbortModeCombobox;
 static HWND ip;
 static HWND mask;
 static HWND gw;
@@ -76,22 +78,23 @@ char *EncAbsConfig[] = { _("Leitura Gray"), _("Leitura Binário") };
 
 char *SerialParityString[] = { _("Sem Paridade"), _("Paridade Ímpar"), _("Paridade Par") };
 
-#define CONFTVI_ID_COMM          0
-#define CONFTVI_ID_COMM_NETWORK  1
-#define CONFTVI_ID_COMM_FUSE     2
-#define CONFTVI_ID_COMM_SERIAL   3
-#define CONFTVI_ID_POSIC         4
-#define CONFTVI_ID_POSIC_ENCINC  5
-#define CONFTVI_ID_POSIC_ENCABS  6
-#define CONFTVI_ID_MODBUS        7
-#define CONFTVI_ID_MODBUS_MASTER 8
-#define CONFTVI_ID_MODBUS_SLAVE  9
+#define CONFTVI_ID_COMM              0
+#define CONFTVI_ID_COMM_NETWORK      1
+#define CONFTVI_ID_COMM_FUSE         2
+#define CONFTVI_ID_COMM_SERIAL       3
+#define CONFTVI_ID_INTERFACE         4
+#define CONFTVI_ID_INTERFACE_DA      5
+#define CONFTVI_ID_INTERFACE_ENCINC  6
+#define CONFTVI_ID_INTERFACE_ENCABS  7
+#define CONFTVI_ID_MODBUS            8
+#define CONFTVI_ID_MODBUS_MASTER     9
+#define CONFTVI_ID_MODBUS_SLAVE     10
 
 void OnSelChanged(int ID)
 {
 	int i;
-	HWND group, groups[] = { GroupCommNetwork, GroupCommTimeZone, GroupCommSerial, GroupPosicEncInc,
-								GroupPosicEncAbs, GroupModBUSMaster, GroupModBUSSlave };
+	HWND group, groups[] = { GroupCommNetwork, GroupCommTimeZone, GroupCommSerial, GroupInterfaceDA,
+							GroupInterfaceEncInc, GroupInterfaceEncAbs, GroupModBUSMaster, GroupModBUSSlave };
 
 	switch(ID) {
 		case CONFTVI_ID_COMM:
@@ -107,13 +110,17 @@ void OnSelChanged(int ID)
 			group = GroupCommSerial;
 			break;
 
-		case CONFTVI_ID_POSIC:
-		case CONFTVI_ID_POSIC_ENCINC:
-			group = GroupPosicEncInc;
+		case CONFTVI_ID_INTERFACE:
+		case CONFTVI_ID_INTERFACE_DA:
+			group = GroupInterfaceDA;
 			break;
 
-		case CONFTVI_ID_POSIC_ENCABS:
-			group = GroupPosicEncAbs;
+		case CONFTVI_ID_INTERFACE_ENCINC:
+			group = GroupInterfaceEncInc;
+			break;
+
+		case CONFTVI_ID_INTERFACE_ENCABS:
+			group = GroupInterfaceEncAbs;
 			break;
 
 		case CONFTVI_ID_MODBUS:
@@ -271,16 +278,17 @@ struct {
 	int tchLevel;
 	int tchID;
 } g_rgDocHeadings[] = {
-	{ "Comunicação"            , 1, CONFTVI_ID_COMM          },
-		{ "Rede"               , 2, CONFTVI_ID_COMM_NETWORK  },
-		{ "Fuso Horário"       , 2, CONFTVI_ID_COMM_FUSE     },
-		{ "Serial"             , 2, CONFTVI_ID_COMM_SERIAL   },
-	{ "Posicionamento"         , 1, CONFTVI_ID_POSIC         },
-		{ "Encoder Incremental", 2, CONFTVI_ID_POSIC_ENCINC  },
-		{ "Encoder Absoluto"   , 2, CONFTVI_ID_POSIC_ENCABS  },
-	{ "ModBUS"                 , 1, CONFTVI_ID_MODBUS        },
-		{ "Mestre"             , 2, CONFTVI_ID_MODBUS_MASTER },
-		{ "Escravo"            , 2, CONFTVI_ID_MODBUS_SLAVE  },
+	{ "Comunicação"            , 1, CONFTVI_ID_COMM             },
+		{ "Rede"               , 2, CONFTVI_ID_COMM_NETWORK     },
+		{ "Fuso Horário"       , 2, CONFTVI_ID_COMM_FUSE        },
+		{ "Serial"             , 2, CONFTVI_ID_COMM_SERIAL      },
+	{ "Interfaces"             , 1, CONFTVI_ID_INTERFACE        },
+		{ "Saída Analógica"    , 2, CONFTVI_ID_INTERFACE_DA     },
+		{ "Encoder Incremental", 2, CONFTVI_ID_INTERFACE_ENCINC },
+		{ "Encoder Absoluto"   , 2, CONFTVI_ID_INTERFACE_ENCABS },
+	{ "ModBUS"                 , 1, CONFTVI_ID_MODBUS           },
+		{ "Mestre"             , 2, CONFTVI_ID_MODBUS_MASTER    },
+		{ "Escravo"            , 2, CONFTVI_ID_MODBUS_SLAVE     },
 };
 
 BOOL InitTreeViewItems(HWND hwndTV)
@@ -457,81 +465,97 @@ static void MakeControls(void)
         155, 97, 140, 100, GroupCommSerial, NULL, Instance, NULL);
     NiceFont(ParityCombobox);
 
-	// Group - Incremental Encoder
-    GroupPosicEncInc = CreateWindowEx(0, WC_STATIC, "",
+	// Group - Analog Output
+    GroupInterfaceDA = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
-    NiceFont(GroupPosicEncInc);
+    NiceFont(GroupInterfaceDA);
+
+    HWND Label = CreateWindowEx(0, WC_STATIC, _("Modo de Abandono:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 2, 140, 21, GroupInterfaceDA, NULL, Instance, NULL);
+    NiceFont(Label);
+
+	AbortModeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        155, 0, 130, 100, GroupInterfaceDA, NULL, Instance, NULL);
+    NiceFont(AbortModeCombobox);
+
+	// Group - Incremental Encoder
+    GroupInterfaceEncInc = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupInterfaceEncInc);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Diametro Roda:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 0, 140, 21, GroupPosicEncInc, NULL, Instance, NULL);
+        5, 0, 140, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     DiameterTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,   
-        155, 0, 85, 21, GroupPosicEncInc, NULL, Instance, NULL);
+        155, 0, 85, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(DiameterTextbox);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Número Pulsos:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 30, 140, 21, GroupPosicEncInc, NULL, Instance, NULL);
+        5, 30, 140, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     PulsesTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 30, 85, 21, GroupPosicEncInc, NULL, Instance, NULL);
+        155, 30, 85, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(PulsesTextbox);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Fator Correção:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 60, 140, 21, GroupPosicEncInc, NULL, Instance, NULL);
+        5, 60, 140, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     FactorTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 60, 85, 21, GroupPosicEncInc, NULL, Instance, NULL);
+        155, 60, 85, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(FactorTextbox);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Fator Multiplicação:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 90, 140, 21, GroupPosicEncInc, NULL, Instance, NULL);
+        5, 90, 140, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(textLabel);
 
 	X2Checkbox = CreateWindowEx(0, WC_BUTTON, _("x 2"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        155, 90, 45, 20, GroupPosicEncInc, NULL, Instance, NULL);
+        155, 90, 45, 20, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(X2Checkbox);
 
 	X4Checkbox = CreateWindowEx(0, WC_BUTTON, _("x 4"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        200, 90, 40, 20, GroupPosicEncInc, NULL, Instance, NULL);
+        200, 90, 40, 20, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(X4Checkbox);
 
 	// Group - Absolute Encoder
-    GroupPosicEncAbs = CreateWindowEx(0, WC_STATIC, "",
+    GroupInterfaceEncAbs = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
-    NiceFont(GroupPosicEncAbs);
+    NiceFont(GroupInterfaceEncAbs);
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("Modo de Leitura:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        15, 25, 120, 21, GroupPosicEncAbs, NULL, Instance, NULL);
+        5, 0, 140, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
     NiceFont(textLabel);
 
 	SSIModeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        145, 25, 140, 100, GroupPosicEncAbs, NULL, Instance, NULL);
+        155, 0, 130, 100, GroupInterfaceEncAbs, NULL, Instance, NULL);
     NiceFont(SSIModeCombobox);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Resolução em bits:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        15, 55, 120, 21, GroupPosicEncAbs, NULL, Instance, NULL);
+        5, 30, 140, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     SSISizeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        145, 55, 85, 21, GroupPosicEncAbs, NULL, Instance, NULL);
+        155, 30, 85, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
     NiceFont(SSISizeTextbox);
 
 	// Group - ModBUS Master
@@ -632,6 +656,9 @@ bool ShowConfDialog(bool NetworkSection)
 	SendMessage(mask, IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.mask[0], Prog.settings.mask[1], Prog.settings.mask[2], Prog.settings.mask[3]));
 	SendMessage(gw  , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.gw  [0], Prog.settings.gw  [1], Prog.settings.gw  [2], Prog.settings.gw  [3]));
 	SendMessage(dns , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.dns [0], Prog.settings.dns [1], Prog.settings.dns [2], Prog.settings.dns [3]));
+
+	PopulateAbortModeCombobox(AbortModeCombobox, false);
+	SendMessage(AbortModeCombobox, CB_SETCURSEL, Prog.settings.ramp_abort_mode-1, 0);
 
 	/*for (i = 0; i < sizeof(ComboboxPLCItens) / sizeof(ComboboxPLCItens[0]); i++)
 		SendMessage(PLCCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxPLCItens[i]));*/
@@ -794,6 +821,8 @@ bool ShowConfDialog(bool NetworkSection)
 		}
 
 		Prog.settings.ssi_mode = SendMessage(SSIModeCombobox, CB_GETCURSEL, 0, 0);
+
+		Prog.settings.ramp_abort_mode = SendMessage(AbortModeCombobox, CB_GETCURSEL, 0, 0) + 1;
 
 		changed = true;
 	}

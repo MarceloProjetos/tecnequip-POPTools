@@ -81,6 +81,7 @@ void ConvSettings_v6_v7(void)
 {
 	Prog.settings.ssi_size = 24;
 	Prog.settings.ssi_mode =  0;
+	Prog.settings.ramp_abort_mode = RAMP_ABORT_LEAVE;
 }
 
 struct {

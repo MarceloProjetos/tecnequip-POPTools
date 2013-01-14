@@ -229,8 +229,10 @@ static void GenerateDeclarations(FILE *f)
                 break;
 
 			case INT_MULTISET_DA:
-                intVar1 = IntCode[i].name1;
-                intVar2 = IntCode[i].name2;
+				if(strlen(IntCode[i].name1)) {
+					intVar1 = IntCode[i].name1;
+					intVar2 = IntCode[i].name2;
+				}
                 break;
 
             case INT_EEPROM_READ:
@@ -450,8 +452,12 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				break;
 			}
 			case INT_MULTISET_DA:
-				fprintf(f, "DAC_Start(%d, %d, %s, %s, %s, DAC_Conv(%s, %s));\n", IntCode[i].bit, IntCode[i].literal, IntCode[i].name3, IntCode[i].name4,
-					IsNumber(IntCode[i].name1) ? IntCode[i].name1 : MapSym(IntCode[i].name1), IsNumber(IntCode[i].name2) ? IntCode[i].name2 : MapSym(IntCode[i].name2), IntCode[i].name5);
+				if(strlen(IntCode[i].name1)) {
+					fprintf(f, "DAC_Start(%d, %d, %s, %s, %s, DAC_Conv(%s, %s));\n", IntCode[i].bit, IntCode[i].literal, IntCode[i].name3, IntCode[i].name4,
+						IsNumber(IntCode[i].name1) ? IntCode[i].name1 : MapSym(IntCode[i].name1), IsNumber(IntCode[i].name2) ? IntCode[i].name2 : MapSym(IntCode[i].name2), IntCode[i].name5);
+				} else {
+					fprintf(f, "DAC_Abort(%d);\n", IntCode[i].literal-1);
+				}
 				break;
 
 			case INT_SET_RTC: {
