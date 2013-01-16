@@ -1137,9 +1137,10 @@ void ShowIoMapDialog(int item)
 		if(Prog.io.assignment[item].type == IO_TYPE_READ_ENC || Prog.io.assignment[item].type == IO_TYPE_RESET_ENC) {
             for(j = 0; j < Prog.mcu->encCount; j++) 
 			{
+				char *strEnc[] = { _("Enc. Inc."), _("Enc. Abs.") };
                 //if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) 
 				//{
-					sprintf(buf, "%3d ENC%d", Prog.mcu->encInfo[j].pin, Prog.mcu->encInfo[j].muxRegValue);
+					sprintf(buf, "%3d %s", Prog.mcu->encInfo[j].pin, strEnc[j]);
 					SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
 					PinListItemCount++;
                 //}
@@ -1566,7 +1567,7 @@ void IoMapListProc(NMHDR *h)
 								else
 									sprintf(i->item.pszText, "AD%d", Prog.mcu->pinInfo[j].bit);
 							else if (Prog.io.assignment[item].type == IO_TYPE_READ_ENC || Prog.io.assignment[item].type == IO_TYPE_RESET_ENC)
-								sprintf(i->item.pszText, "ENC%d", Prog.mcu->pinInfo[j].bit);
+								strcpy(i->item.pszText, Prog.mcu->pinInfo[j].bit == 1 ? _("Enc. Inc.") : _("Enc. Abs."));
                             break;
                         }
                     }

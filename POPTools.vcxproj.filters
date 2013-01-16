@@ -171,6 +171,9 @@
     <ClCompile Include="KeyboardHandlers.cpp">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
+    <ClCompile Include="modbus_usb.cpp">
+      <Filter>Source Files\POP-7</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -219,6 +222,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardHandlers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Firmware\App\intreg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

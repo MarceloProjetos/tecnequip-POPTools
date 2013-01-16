@@ -17,6 +17,9 @@ static HWND ConfigButton;
 static HWND ClearButton;
 static HWND OkButton;
 static HWND CommList;
+static HWND txtInfoDate;
+static HWND txtInfoTime;
+static HWND SetDateTimeButton;
 
 static LONG_PTR PrevNameProc;
 
@@ -306,6 +309,22 @@ static void SyncConfigToScreen(void)
 	SendMessage(txtCOM, WM_SETTEXT, 0, (LPARAM)buf);
 }
 
+void CALLBACK DebugUpdateInfo(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
+{
+	struct tm t;
+
+	if(USB_GetDateTime(&t)) {
+		char buf[MAX_NAME_LEN];
+
+		sprintf(buf, "%02d/%02d/%04d", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900);
+		SendMessage(txtInfoDate, WM_SETTEXT, 0, (LPARAM)buf);
+
+		sprintf(buf, "%02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec);
+		SendMessage(txtInfoTime, WM_SETTEXT, 0, (LPARAM)buf);
+	}
+
+}
+
 //-----------------------------------------------------------------------------
 // Window proc for the dialog boxes. This Ok/Cancel stuff is common to a lot
 // of places, and there are no other callbacks from the children.
@@ -348,6 +367,8 @@ LRESULT CALLBACK DebugDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 				} else if(h == ClearButton) {
 					RotateList_Init(&RotateLog);
 					ListView_DeleteAllItems(CommList);
+				} else if(h == SetDateTimeButton) {
+					USB_SetDateTime(NULL);
 				}
 
 				break;
@@ -422,19 +443,19 @@ static void MakeControls(void)
     FixedFont(AddressTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("Sair"),
-        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        589, 375, 70, 30, DebugDialog, NULL, Instance, NULL); 
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        589, 520, 70, 30, DebugDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    ConfigButton = CreateWindowEx(0, WC_BUTTON, _("Configurações"),
-        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        7, 375, 120, 30, DebugDialog, NULL, Instance, NULL); 
-    NiceFont(ConfigButton);
-
     ClearButton = CreateWindowEx(0, WC_BUTTON, _("Limpar Registro"),
-        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        297, 375, 120, 30, DebugDialog, NULL, Instance, NULL); 
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        267, 367, 120, 30, DebugDialog, NULL, Instance, NULL); 
     NiceFont(ClearButton);
+
+    ConfigButton = CreateWindowEx(0, WC_BUTTON, _("Configurações"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        7, 520, 120, 30, DebugDialog, NULL, Instance, NULL); 
+    NiceFont(ConfigButton);
 
     SendButton = CreateWindowEx(0, WC_BUTTON, _("Executar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
@@ -495,7 +516,7 @@ static void MakeControls(void)
 
     HWND grouperReply = CreateWindowEx(0, WC_BUTTON, _("Registro"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        7, 100, 650, 270, DebugDialog, NULL, Instance, NULL);
+        7, 100, 650, 305, DebugDialog, NULL, Instance, NULL);
     NiceFont(grouperReply);
 
 	lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
@@ -519,6 +540,38 @@ static void MakeControls(void)
 	ListView_SetBkColor     (CommList, RGB(0x00,0x00,0x00));
 	ListView_SetTextBkColor (CommList, RGB(0x00,0x00,0x00));
 	ListView_SetTextColor   (CommList, RGB(0x00,0xFF,0xFF));
+
+    SetDateTimeButton = CreateWindowEx(0, WC_BUTTON, _("Atualizar Data/Hora"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        17, 470, 150, 30, DebugDialog, NULL, Instance, NULL); 
+    NiceFont(SetDateTimeButton);
+
+    grouper = CreateWindowEx(0, WC_BUTTON, _("Informações"),
+        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
+        7, 410, 650, 100, DebugDialog, NULL, Instance, NULL);
+    NiceFont(grouper);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Data:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 20, 50, 18, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    txtInfoDate = CreateWindowEx(0, WC_STATIC, _("--/--/----"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        70, 20, 150, 18, grouper, NULL, Instance, NULL);
+    NiceFont(txtInfoDate);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Hora:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 40, 50, 18, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    txtInfoTime = CreateWindowEx(0, WC_STATIC, _("--:--:--"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        70, 40, 150, 18, grouper, NULL, Instance, NULL);
+    NiceFont(txtInfoTime);
+
+    SetTimer(DebugDialog, TIMER_DEBUG_INFO, 1000, DebugUpdateInfo);
 }
 
 void ShowDebugDialog(void)
@@ -527,7 +580,7 @@ void ShowDebugDialog(void)
 
 	DebugDialog = CreateWindowClient(0, "POPDebugDialog",
         _("Debug"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 664, 410, MainWindow, NULL, Instance, NULL);
+        100, 100, 664, 555, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
 	SyncConfigToScreen();

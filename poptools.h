@@ -131,6 +131,9 @@ typedef SDWORD SWORD;
 // Color Visual Style
 #define CORES_CONSOLE 1
 
+// Cycle Time
+#define PLC_CYCLE 10 // miliseconds
+
 // Size of the font that we will use to draw the ladder diagrams, in pixels
 #define FONT_WIDTH   7
 #define FONT_HEIGHT 13
@@ -243,10 +246,11 @@ struct strSerialConfig {
 #define MNU_INSERT_CHECK_BIT	0x52
 #define MNU_READ_FMTD_STR		0x53
 #define MNU_WRITE_FMTD_STR		0x54
-#define MNU_READ_SERVO_YASKAWA		0x55
-#define MNU_WRITE_SERVO_YASKAWA		0x56
+#define MNU_READ_SERVO_YASKAWA	0x55
+#define MNU_WRITE_SERVO_YASKAWA	0x56
 #define MNU_INSERT_RTC			0x57
 #define MNU_INSERT_MULTISET_DA  0x58
+#define MNU_INSERT_POS          0x5f
 #define MNU_INSERT_PARALLEL     0x5b
 
 #define MNU_MCU_SETTINGS        0x59
@@ -338,6 +342,7 @@ struct strSerialConfig {
 #define TIMER_BLINK_CURSOR      1
 #define TIMER_SIMULATE          2
 #define TIMER_AUTOSAVE          3
+#define TIMER_DEBUG_INFO        4
 
 //-----------------------------------------------
 // Data structures for the actual ladder logic. A rung on the ladder
@@ -1376,6 +1381,7 @@ extern HRESULT InitRibbon        (HWND hWindowFrame);
 extern HRESULT RibbonSetCmdState (UINT uCmdID, BOOL bEnabled);
 extern void    DestroyRibbon     (void);
 extern void    SetApplicationMode(void);
+extern void    EnableInterfaceItem(int item, BOOL enabled);
 
 // simulate.cpp
 void SimulateOneCycle(BOOL forceRefresh);
@@ -1475,5 +1481,9 @@ void SimulationServer_Message(WPARAM wParam, LPARAM lParam);
 
 // mathdialog.cpp
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
+
+// modbus_usb.h
+bool USB_SetDateTime(struct tm *t);
+bool USB_GetDateTime(struct tm *t);
 
 #endif

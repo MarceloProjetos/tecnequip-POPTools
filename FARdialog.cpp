@@ -108,12 +108,12 @@ static void MakeControls(void)
 	SendMessage(ReplaceTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("Sair"),
-        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         216, 75, 75, 53, FARDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
 	SearchNextButton = CreateWindowEx(0, WC_BUTTON, _("Localizar"),
-        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         5, 75, 75, 53, FARDialog, NULL, Instance, NULL); 
     NiceFont(SearchNextButton);
 
@@ -152,10 +152,12 @@ bool ShowFARDialog()
     DialogDone = FALSE;
     while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
-            if(msg.wParam == VK_RETURN || msg.wParam == VK_ESCAPE) {
+            if(msg.wParam == VK_ESCAPE) {
                 DialogDone = TRUE;
                 break;
-            }
+			} else if(msg.wParam == VK_RETURN) {
+				FARDialogProc(FARDialog, WM_COMMAND, BN_CLICKED, (LPARAM)SearchNextButton);
+			}
 		}
 
         if(IsDialogMessage(FARDialog, &msg)) continue;

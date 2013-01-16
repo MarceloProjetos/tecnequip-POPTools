@@ -1,3 +1,4 @@
+#include "intreg.h"
 #include "modbus.h"
 #include "rtc.h"
 
@@ -53,17 +54,6 @@ struct MODBUS_Handler ModbusHandlers[] =
     { MODBUS_FC_READ_EXCEPTION_STATUS   , Modbus_ReadExceptionStatus    },
 };
 
-struct MODBUS_Handler ModbusHandlers232[] =
-{
-    { MODBUS_FC_READ_COILS              , Modbus_ReadCoils                 },
-    { MODBUS_FC_READ_DISCRETE_INPUTS    , Modbus_ReadDiscreteInputs        },
-    { MODBUS_FC_READ_HOLDING_REGISTERS  , Modbus232_ReadHoldingRegisters   },
-    { MODBUS_FC_WRITE_SINGLE_COIL       , Modbus_WriteSingleCoil           },
-    { MODBUS_FC_WRITE_SINGLE_REGISTER   , Modbus232_WriteSingleRegister    },
-    { MODBUS_FC_WRITE_MULTIPLE_REGISTERS, Modbus232_WriteMultipleRegisters },
-    { MODBUS_FC_READ_EXCEPTION_STATUS   , Modbus_ReadExceptionStatus       },
-};
-
 void Modbus_Init(void)
 {
 	Modbus_RTU_Init(&modbus_rs485);
@@ -85,8 +75,8 @@ void Modbus_Init(void)
 	modbus_rs232.identification.ProductCode        = "POP7";
 	modbus_rs232.identification.MajorMinorRevision = "V1 Rev1";
 
-	modbus_rs232.hl      = ModbusHandlers232;
-	modbus_rs232.hl_size = ARRAY_SIZE(ModbusHandlers232);
+	modbus_rs232.hl      = ModbusHandlers;
+	modbus_rs232.hl_size = ARRAY_SIZE(ModbusHandlers);
 	modbus_rs232.mode    = MODBUS_MODE_SLAVE;
 	modbus_rs232.TX      = Modbus_RS232_Tx;
 
@@ -275,38 +265,19 @@ unsigned int Modbus_ReadDiscreteInputs(struct MODBUS_Device *dev, union MODBUS_F
 
 unsigned int Modbus_ReadHoldingRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
 {
-  /*uint32_t sz = 0;
+  int i, val;
 
-  uint32_t i = 0;
-  uint8_t *buf = reply->reply.read_holding_registers.data;
-
-  for(i = 0; i < data->read_holding_registers.quant; i++)
-  {
-    if (data->read_holding_registers.start + i < 32)
-    {
-      buf[(2 * i)] = (uint8_t)(M[data->read_holding_registers.start + i] >> 8);
-      buf[(2 * i) + 1] = (uint8_t)(M[data->read_holding_registers.start + i]);
-      sz += 2;
-    }
-    else
-      return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-  }*/
-
-  int i, x;
-
-  if (data->read_holding_registers.start + data->read_holding_registers.quant - 1 >= 32)
-	  return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-  else
+  if (IntReg_CheckBounds(data->read_holding_registers.start, data->read_holding_registers.quant))
   {
 	  //memcpy(reply->reply.read_holding_registers.data, (void *)&M[data->read_holding_registers.start], data->read_holding_registers.quant * 2);
-	  x = data->read_holding_registers.start;
-	  for(i = data->read_holding_registers.start;
-		  i <= data->read_holding_registers.start + (data->read_holding_registers.quant * 2); i += 2) {
-		reply->reply.read_holding_registers.data[i - data->read_holding_registers.start] = MODBUS_REGISTER[x];
-		reply->reply.read_holding_registers.data[i - data->read_holding_registers.start + 1] = MODBUS_REGISTER[x] >> 8;
-		x++;
+	  for(i = 0; i <= data->read_holding_registers.quant; i++) {
+		val = IntReg_Read(i + data->read_holding_registers.start);
+		reply->reply.read_holding_registers.data[i*2    ] = val;
+		reply->reply.read_holding_registers.data[i*2 + 1] = val >> 8;
 	  }
   }
+  else
+	  return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 
   reply->reply.read_holding_registers.size = data->read_holding_registers.quant * 2;
 
@@ -348,8 +319,8 @@ unsigned int Modbus_WriteSingleCoil(struct MODBUS_Device *dev, union MODBUS_FCD_
 
 unsigned int Modbus_WriteSingleRegister(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
 {
-  if (data->write_single_register.address < 32)
-    MODBUS_REGISTER[data->write_single_register.address] = (short int)data->write_single_register.val;
+  if (IntReg_CheckBounds(data->write_single_register.address, 1))
+    IntReg_Write(data->write_single_register.address, (short int)data->write_single_register.val);
   else
     return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 
@@ -369,19 +340,13 @@ unsigned int Modbus_WriteMultipleRegisters(struct MODBUS_Device *dev, union MODB
 {
 	int i, pos;
 
-  /*if (data->write_multiple_registers.start + data->write_multiple_registers.quant >= 32)
-	  return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-  else
-	  memcpy((void*)&M[data->write_multiple_registers.start], data->write_multiple_registers.val, data->write_multiple_registers.size);*/
-
-  if (data->write_multiple_registers.start + data->write_multiple_registers.quant < 32)
+  if (IntReg_CheckBounds(data->write_multiple_registers.start, data->write_multiple_registers.quant))
   {
     for (i = 0; i < data->write_multiple_registers.size; i += 2)
     {
       pos = data->write_multiple_registers.start + (i / 2);
-      MODBUS_REGISTER[pos] = *(short int *)(&data->write_multiple_registers.val[i]);
+      IntReg_Write(pos, *(short int *)(&data->write_multiple_registers.val[i]));
     }
-//      data->write_single_register.val[i] = M[data->write_multiple_registers.address + (i] ;
   } else
     return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 
@@ -407,112 +372,6 @@ unsigned int Modbus_RWMultipleRegisters(struct MODBUS_Device *dev, union MODBUS_
 unsigned int Modbus_ReadExceptionStatus(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
 {
   reply->reply.read_exception_status.status = 0x00;
-
-  return MODBUS_EXCEPTION_NONE;
-}
-
-unsigned int Modbus232_ReadHoldingRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
-{
-  /*uint32_t sz = 0;
-
-  uint32_t i = 0;
-  uint8_t *buf = reply->reply.read_holding_registers.data;
-
-  for(i = 0; i < data->read_holding_registers.quant; i++)
-  {
-    if (data->read_holding_registers.start + i < 32)
-    {
-      buf[(2 * i)] = (uint8_t)(M[data->read_holding_registers.start + i] >> 8);
-      buf[(2 * i) + 1] = (uint8_t)(M[data->read_holding_registers.start + i]);
-      sz += 2;
-    }
-    else
-      return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-  }*/
-
-  int i, x;
-
-  if (data->read_holding_registers.start + data->read_holding_registers.quant >= 32)
-	  return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-  else
-  {
-	  //memcpy(reply->reply.read_holding_registers.data, (void *)&M[data->read_holding_registers.start], data->read_holding_registers.quant * 2);
-	  x = data->read_holding_registers.start;
-	  for(i = data->read_holding_registers.start;
-		  i <= data->read_holding_registers.start + (data->read_holding_registers.quant * 2); i += 2) {
-		reply->reply.read_holding_registers.data[i - data->read_holding_registers.start] = MODBUS_REGISTER[x];
-		reply->reply.read_holding_registers.data[i - data->read_holding_registers.start + 1] = MODBUS_REGISTER[x] >> 8;
-		x++;
-	  }
-  }
-
-  reply->reply.read_holding_registers.size = data->read_holding_registers.quant * 2;
-
-  return MODBUS_EXCEPTION_NONE;
-}
-
-unsigned int Modbus232_WriteSingleRegister(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
-{
-  if (data->write_single_register.address < 32)
-    MODBUS_REGISTER[data->write_single_register.address] = data->write_single_register.val;
-  else
-    return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-
-  reply->reply.write_single_register = data->write_single_register;
-
-  return MODBUS_EXCEPTION_NONE;
-}
-
-unsigned int Modbus232_WriteMultipleRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
-{
-	int i, pos;
-	RTC_Time Time;
-
-  if (data->write_multiple_registers.start + data->write_multiple_registers.quant < 32)
-  {
-    for (i = 0; i < data->write_multiple_registers.size; i += 2)
-    {
-// Macro que calcula o indice do array de dados do modbus para a posicao atual
-#define MBGET_IDX() ((pos - data->write_multiple_registers.start)*2)
-
-      pos = data->write_multiple_registers.start + (i / 2);
-
-      if(pos > 0 && pos < 6) { // Time registers
-			switch(pos) {
-			case 1:
-				memset(&Time, 0, sizeof(Time));
-
-				Time.Mday = data->write_multiple_registers.val[MBGET_IDX()  ];
-				Time.Mon  = data->write_multiple_registers.val[MBGET_IDX()+1];
-				break;
-
-			case 2:
-				Time.Year = *(unsigned short *)(&data->write_multiple_registers.val[MBGET_IDX()]);
-				break;
-
-			case 3:
-				Time.Hour = data->write_multiple_registers.val[MBGET_IDX()  ];
-				Time.Min  = data->write_multiple_registers.val[MBGET_IDX()+1];
-				break;
-
-			case 4:
-				Time.Sec  = data->write_multiple_registers.val[MBGET_IDX()  ];
-				Time.Wday = data->write_multiple_registers.val[MBGET_IDX()+1];
-				break;
-
-			case 5:
-				Time.Yday = *(unsigned short *)(&data->write_multiple_registers.val[MBGET_IDX()]);
-
-				RTC_SetTime(Time);
-				break;
-			}
-      }
-    }
-//      data->write_single_register.val[i] = M[data->write_multiple_registers.address + (i] ;
-  } else
-    return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-
-  reply->reply.write_multiple_registers = data->write_multiple_registers;
 
   return MODBUS_EXCEPTION_NONE;
 }

@@ -456,6 +456,7 @@ public:
 			EXEC_OPCODE(cmdInstrRampDA            , MNU_INSERT_MULTISET_DA     );
 			EXEC_OPCODE(cmdInstrReadEnc           , MNU_INSERT_READ_ENC        );
 			EXEC_OPCODE(cmdInstrResetEnc          , MNU_INSERT_RESET_ENC       );
+			EXEC_OPCODE(cmdInstrPos               , MNU_INSERT_POS             );
 
 			EXEC_OPCODE(cmdInstrWriteChar         , MNU_INSERT_UART_SEND       );
 			EXEC_OPCODE(cmdInstrReadChar          , MNU_INSERT_UART_RECV       );
@@ -804,7 +805,128 @@ HRESULT UpdateRibbonHeight(void)
 	return hr;
 }
 
-void DestroyRibbon()
+void EnableInterfaceItem(int item, BOOL enabled)
+{
+	switch(item) {
+//			RIBBON_UPDATE_CMD_STATE(cmdInstrTimerReset        , MNU_INSERT_RES             );
+//			RIBBON_UPDATE_CMD_STATE(cmdInstrCounterReset      , MNU_INSERT_RES             );
+	case MNU_INSERT_RES:
+		RibbonSetCmdState(cmdInstrTimerReset  , enabled);
+		RibbonSetCmdState(cmdInstrCounterReset, enabled);
+		break;
+
+#define RIBBON_UPDATE_CMD_STATE(cmd,mnu) case mnu: RibbonSetCmdState(cmd, enabled); break;
+
+			RIBBON_UPDATE_CMD_STATE(cmdFileNew                , MNU_NEW                    );
+			RIBBON_UPDATE_CMD_STATE(cmdFileOpen               , MNU_OPEN                   );
+			RIBBON_UPDATE_CMD_STATE(cmdFileSave               , MNU_SAVE                   );
+			RIBBON_UPDATE_CMD_STATE(cmdFileSaveAsLadder       , MNU_SAVE_AS                );
+			RIBBON_UPDATE_CMD_STATE(cmdFileSaveAsC            , MNU_SAVE_AS_C              );
+			RIBBON_UPDATE_CMD_STATE(cmdFileSaveAsText         , MNU_EXPORT                 );
+			RIBBON_UPDATE_CMD_STATE(cmdAbout                  , MNU_ABOUT                  );
+			RIBBON_UPDATE_CMD_STATE(cmdExit                   , MNU_EXIT                   );
+
+			RIBBON_UPDATE_CMD_STATE(cmdUndo                   , MNU_UNDO                   );
+			RIBBON_UPDATE_CMD_STATE(cmdRedo                   , MNU_REDO                   );
+			RIBBON_UPDATE_CMD_STATE(cmdMoveLineUp             , MNU_PUSH_RUNG_UP           );
+			RIBBON_UPDATE_CMD_STATE(cmdMoveLineDown           , MNU_PUSH_RUNG_DOWN         );
+			RIBBON_UPDATE_CMD_STATE(cmdInsertLineAfter        , MNU_INSERT_RUNG_AFTER      );
+			RIBBON_UPDATE_CMD_STATE(cmdInsertLineBefore       , MNU_INSERT_RUNG_BEFORE     );
+			RIBBON_UPDATE_CMD_STATE(cmdGoHome                 , MNU_GO_HOME                );
+			RIBBON_UPDATE_CMD_STATE(cmdGoEnd                  , MNU_GO_END                 );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrParallel          , MNU_INSERT_PARALLEL        );
+			RIBBON_UPDATE_CMD_STATE(cmdCopyInstr              , MNU_COPY_ELEMENT           );
+			RIBBON_UPDATE_CMD_STATE(cmdPasteInstr             , MNU_PASTE_ELEMENT          );
+			RIBBON_UPDATE_CMD_STATE(cmdDeleteInstr            , MNU_DELETE_ELEMENT         );
+			RIBBON_UPDATE_CMD_STATE(cmdDeleteLine             , MNU_DELETE_RUNG            );
+			RIBBON_UPDATE_CMD_STATE(cmdFindDialog             , MNU_FIND_AND_REPLACE       );
+			RIBBON_UPDATE_CMD_STATE(cmdFind                   , MNU_FIND_AND_REPLACE_NEXT  );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrComment           , MNU_INSERT_COMMENT         );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrContact           , MNU_INSERT_CONTACTS        );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCoil              , MNU_INSERT_COIL            );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrOneShotFalling    , MNU_INSERT_OSF             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrOneShotRising     , MNU_INSERT_OSR             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCircuitOpen       , MNU_INSERT_OPEN            );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCircuitClosed     , MNU_INSERT_SHORT           );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrMasterRelayControl, MNU_INSERT_MASTER_RLY      );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrTimerON           , MNU_INSERT_TON             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrTimerOFF          , MNU_INSERT_TOF             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrTimerONRet        , MNU_INSERT_RTO             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrSchedule          , MNU_INSERT_RTC             );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCounterInc        , MNU_INSERT_CTU             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCounterDec        , MNU_INSERT_CTD             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCounterCirc       , MNU_INSERT_CTC             );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrMathAdd           , MNU_INSERT_ADD             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrMathSub           , MNU_INSERT_SUB             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrMathMult          , MNU_INSERT_MUL             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrMathDivide        , MNU_INSERT_DIV             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrMathSqrt          , MNU_INSERT_SQRT            );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrShiftRegister     , MNU_INSERT_SHIFT_REG       );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrLookUpTable       , MNU_INSERT_LUT             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrPieceWiseLinear   , MNU_INSERT_PWL             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrRand              , MNU_INSERT_RAND            );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrAbs               , MNU_INSERT_ABS             );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrMov               , MNU_INSERT_MOV             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrSetBit            , MNU_INSERT_SET_BIT         );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCheckBit          , MNU_INSERT_CHECK_BIT       );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrPersist           , MNU_INSERT_PERSIST         );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCondEqual         , MNU_INSERT_EQU             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCondNotEqual      , MNU_INSERT_NEQ             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCondGreater       , MNU_INSERT_GRT             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCondGreaterEqual  , MNU_INSERT_GEQ             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCondLesser        , MNU_INSERT_LES             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrCondLesserEqual   , MNU_INSERT_LEQ             );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrReadAD            , MNU_INSERT_READ_ADC        );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteDA           , MNU_INSERT_SET_DA          );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrPWM               , MNU_INSERT_SET_PWM         );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrRampDA            , MNU_INSERT_MULTISET_DA     );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrReadEnc           , MNU_INSERT_READ_ENC        );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrResetEnc          , MNU_INSERT_RESET_ENC       );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrPos               , MNU_INSERT_POS             );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteChar         , MNU_INSERT_UART_SEND       );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrReadChar          , MNU_INSERT_UART_RECV       );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrReadFormatString  , MNU_READ_FMTD_STR          );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteFormatString , MNU_WRITE_FMTD_STR         );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrReadUSS           , MNU_INSERT_READ_USS        );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteUSS          , MNU_INSERT_WRITE_USS       );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrReadNS600         , MNU_READ_SERVO_YASKAWA     );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteNS600        , MNU_WRITE_SERVO_YASKAWA    );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrReadModBUS485     , MNU_INSERT_READ_MODBUS     );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteModBUS485    , MNU_INSERT_WRITE_MODBUS    );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrReadModBUSEth     , MNU_INSERT_READ_MODBUS_ETH );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteModBUSEth    , MNU_INSERT_WRITE_MODBUS_ETH);
+
+			RIBBON_UPDATE_CMD_STATE(cmdConfig                 , MNU_MCU_SETTINGS           );
+			RIBBON_UPDATE_CMD_STATE(cmdSettings               , MNU_MCU_PREFERENCES        );
+
+			RIBBON_UPDATE_CMD_STATE(cmdCompile                , MNU_COMPILE                );
+			RIBBON_UPDATE_CMD_STATE(cmdCompileAndProgram      , MNU_PROGRAM                );
+
+			RIBBON_UPDATE_CMD_STATE(cmdDebug                  , MNU_DEBUG                  );
+
+			RIBBON_UPDATE_CMD_STATE(cmdUserManual             , MNU_MANUAL                 );
+			RIBBON_UPDATE_CMD_STATE(cmdKeyboardManual         , MNU_KEYBOARD_MANUAL        );
+	}
+
+	RibbonSetCmdState(cmdDropDownIO    , TRUE);
+	RibbonSetCmdState(cmdDropDownMath  , TRUE);
+	RibbonSetCmdState(cmdDropDownMBSend, TRUE);
+	RibbonSetCmdState(cmdDropDownMBRecv, TRUE);
+}
+
+void DestroyRibbon(void)
 {
     if (g_pFramework)
     {

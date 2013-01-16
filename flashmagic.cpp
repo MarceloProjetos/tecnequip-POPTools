@@ -339,74 +339,29 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 		}
 	}
 
-	struct MODBUS_Reply reply;
+	bool rtcok = false;
+	int trycount = 0;
 
-	memset(&reply, 0, sizeof(reply));
-	reply.ExceptionCode = MODBUS_EXCEPTION_SLAVE_DEVICE_FAILURE;
+	do {
+		if(USB_SetDateTime(NULL)) {
+			rtcok = true;
+			break;
+		}
 
-	if(OpenCOMPort(POPSettings.COMPortFlash, 115200, 8, NOPARITY, ONESTOPBIT)) {
-		int trycount = 0;
-		BYTE cWriteBuffer[16];
-		MODBUS_FCD_Data mbdata1, mbdata2;
+		Sleep(1000);
 
-		time_t rawtime;
-		struct tm * t;
+		trycount++;
+		StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "%s [%d]", _("Atualizando o relógio RTC da POP..."), trycount);
+		ps.szMsg = text;
 
-		time ( &rawtime );
-		t = localtime ( &rawtime );
+		if(UpdateProgressWindow(&ps) == PROGRESS_STATUS_CANCEL) {
+			break;
+		}
+		StatusBarSetText(0, text);
+	} while(trycount < 10);
 
-		t->tm_year += 1900;
-		t->tm_mon++;
-		t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
-
-		memset(cWriteBuffer, 0, sizeof(cWriteBuffer));
-
-		memcpy(&cWriteBuffer[0], &t->tm_mday, 1);
-		memcpy(&cWriteBuffer[1], &t->tm_mon , 1);
-		memcpy(&cWriteBuffer[2], &t->tm_year, 2);
-		memcpy(&cWriteBuffer[4], &t->tm_hour, 1);
-		memcpy(&cWriteBuffer[5], &t->tm_min , 1);
-		memcpy(&cWriteBuffer[6], &t->tm_sec , 1);
-		memcpy(&cWriteBuffer[7], &t->tm_wday, 1);
-		memcpy(&cWriteBuffer[8], &t->tm_yday, 2);
-
-		mbdata1.write_multiple_registers.quant = 3;
-		mbdata1.write_multiple_registers.size  = mbdata1.write_multiple_registers.quant*2;
-		mbdata1.write_multiple_registers.start = 1;
-		mbdata1.write_multiple_registers.val   = cWriteBuffer;
-
-		mbdata2.write_multiple_registers.quant = 2;
-		mbdata2.write_multiple_registers.size  = mbdata2.write_multiple_registers.quant*2;
-		mbdata2.write_multiple_registers.start = 4;
-		mbdata2.write_multiple_registers.val   = cWriteBuffer+6;
-
-		do {
-			reply = Modbus_RTU_Send(&MBDev_Serial, 0, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, &mbdata1);
-			if(reply.ExceptionCode == MODBUS_EXCEPTION_NONE) {
-				reply = Modbus_RTU_Send(&MBDev_Serial, 0, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, &mbdata2);
-				if(reply.ExceptionCode == MODBUS_EXCEPTION_NONE) {
-					break;
-				}
-			}
-
-			Sleep(1000);
-
-			trycount++;
-			StringCchPrintf(text, sizeof(text) / sizeof(TCHAR), "%s [%d]", _("Atualizando o relógio RTC da POP..."), trycount);
-			ps.szMsg = text;
-
-			if(UpdateProgressWindow(&ps) == PROGRESS_STATUS_CANCEL) {
-				reply.ExceptionCode = MODBUS_EXCEPTION_SLAVE_DEVICE_FAILURE;
-				break;
-			}
-			StatusBarSetText(0, text);
-		} while(trycount < 10);
-	}
-
-	if (reply.ExceptionCode != MODBUS_EXCEPTION_NONE)
+	if (!rtcok)
 		MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nNão foi possível verificar se a data/hora foi atualizada corretamente por que a leitura do RTC retornou 0 bytes !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
-
-	CloseCOMPort();
 
 	// tell user we are done
 	ps.iCurrentStage = PROGRESS_STAGE_FINISHED;

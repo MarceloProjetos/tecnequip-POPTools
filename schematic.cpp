@@ -145,6 +145,22 @@ unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
 					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.math.op2);
 					break;
 
+				case ELEM_SQRT:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.sqrt.src);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.sqrt.dest);
+					break;
+
+				case ELEM_RAND:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.rand.var);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.rand.min);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.rand.max);
+					break;
+
+				case ELEM_ABS:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.abs.src);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.abs.dest);
+					break;
+
 				case ELEM_MOVE:
 					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.move.dest);
 					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.move.src);
@@ -166,8 +182,17 @@ unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
 					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.setDA.name);
 					break;
 
+				case ELEM_MULTISET_DA:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.multisetDA.name);
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.multisetDA.name1);
+					break;
+
 				case ELEM_READ_ENC:
 					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.readEnc.name);
+					break;
+
+				case ELEM_RESET_ENC:
+					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.resetEnc.name);
 					break;
 
 				case ELEM_READ_USS:
@@ -238,8 +263,9 @@ unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
 				case ELEM_RTC:
 				case ELEM_SHORT:
 				case ELEM_OPEN:
-				case ELEM_MULTISET_DA:
 				case ELEM_MASTER_RELAY:
+				case ELEM_ONE_SHOT_RISING:
+				case ELEM_ONE_SHOT_FALLING:
 					break;
 				}
 			}
@@ -390,7 +416,7 @@ void WhatCanWeDoFromCursorAndTopology(void)
         canNegate = TRUE;
         canNormal = TRUE;
     }
-    if(SelectedWhich == ELEM_PLACEHOLDER) {
+	if(SelectedWhich == ELEM_PLACEHOLDER && Prog.rungs[i]->count == 1) {
         // a comment must be the only element in its rung, and it will fill
         // the rung entirely
         CanInsertComment = TRUE;
@@ -403,8 +429,8 @@ void WhatCanWeDoFromCursorAndTopology(void)
         CanInsertEnd = FALSE;
         CanInsertOther = FALSE;
     }
-    /*SetMenusEnabled(canNegate, canNormal, canResetOnly, canSetOnly, canDelete,
-        CanInsertEnd, CanInsertOther, canPushDown, canPushUp, CanInsertComment);*/
+    SetMenusEnabled(canNegate, canNormal, canResetOnly, canSetOnly, canDelete,
+        CanInsertEnd, CanInsertOther, canPushDown, canPushUp, CanInsertComment);
 }
 
 //-----------------------------------------------------------------------------

@@ -220,65 +220,78 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     BOOL canSetOnly, BOOL canDelete, BOOL canInsertEnd, BOOL canInsertOther,
     BOOL canPushDown, BOOL canPushUp, BOOL canInsertComment)
 {
-    EnableMenuItem(EditMenu, MNU_PUSH_RUNG_UP,
-        canPushUp ? MF_ENABLED : MF_GRAYED);
-    EnableMenuItem(EditMenu, MNU_PUSH_RUNG_DOWN,
-        canPushDown ? MF_ENABLED : MF_GRAYED);
-    EnableMenuItem(EditMenu, MNU_DELETE_RUNG,
-        (Prog.numRungs > 1) ? MF_ENABLED : MF_GRAYED);
+    EnableInterfaceItem(MNU_PUSH_RUNG_UP, canPushUp);
+    EnableInterfaceItem(MNU_PUSH_RUNG_DOWN, canPushDown);
+    EnableInterfaceItem(MNU_DELETE_RUNG, (Prog.numRungs > 1));
 
-    EnableMenuItem(InstructionMenu, MNU_NEGATE,
-        canNegate ? MF_ENABLED : MF_GRAYED);
-    EnableMenuItem(InstructionMenu, MNU_MAKE_NORMAL,
-        canNormal ? MF_ENABLED : MF_GRAYED);
-    EnableMenuItem(InstructionMenu, MNU_MAKE_RESET_ONLY,
-        canResetOnly ? MF_ENABLED : MF_GRAYED);
-    EnableMenuItem(InstructionMenu, MNU_MAKE_SET_ONLY,
-        canSetOnly ? MF_ENABLED : MF_GRAYED);
+    EnableInterfaceItem(MNU_NEGATE, canNegate);
+    EnableInterfaceItem(MNU_MAKE_NORMAL, canNormal);
+    EnableInterfaceItem(MNU_MAKE_RESET_ONLY, canResetOnly);
+    EnableInterfaceItem(MNU_MAKE_SET_ONLY, canSetOnly);
 
-    EnableMenuItem(InstructionMenu, MNU_INSERT_COMMENT,
-        canInsertComment ? MF_ENABLED : MF_GRAYED);
+    EnableInterfaceItem(MNU_INSERT_COMMENT, canInsertComment);
 
-    EnableMenuItem(EditMenu, MNU_DELETE_ELEMENT,
-        canDelete ? MF_ENABLED : MF_GRAYED);
+    EnableInterfaceItem(MNU_DELETE_ELEMENT, canDelete);
 
     int t;
-    t = canInsertEnd ? MF_ENABLED : MF_GRAYED;
-    EnableMenuItem(InstructionMenu, MNU_INSERT_COIL, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_RES, t);
-    EnableMenuItem(MathematicMenu, MNU_INSERT_MOV, t);
-    EnableMenuItem(MathematicMenu, MNU_INSERT_ADD, t);
-    EnableMenuItem(MathematicMenu, MNU_INSERT_SUB, t);
-    EnableMenuItem(MathematicMenu, MNU_INSERT_MUL, t);
-    EnableMenuItem(MathematicMenu, MNU_INSERT_DIV, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_CTC, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_PERSIST, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_READ_ADC, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_SET_PWM, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_MASTER_RLY, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_SHIFT_REG, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_LUT, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_PWL, t);
+    t = canInsertEnd;
+    EnableInterfaceItem(MNU_INSERT_COIL, t);
+    EnableInterfaceItem(MNU_INSERT_RES, t);
+    EnableInterfaceItem(MNU_INSERT_MOV, t);
+    EnableInterfaceItem(MNU_INSERT_ADD, t);
+    EnableInterfaceItem(MNU_INSERT_SUB, t);
+    EnableInterfaceItem(MNU_INSERT_MUL, t);
+    EnableInterfaceItem(MNU_INSERT_DIV, t);
+    EnableInterfaceItem(MNU_INSERT_CTC, t);
+    EnableInterfaceItem(MNU_INSERT_PERSIST, t);
+    EnableInterfaceItem(MNU_INSERT_READ_ADC, t);
+    EnableInterfaceItem(MNU_INSERT_SET_PWM, t);
+    EnableInterfaceItem(MNU_INSERT_MASTER_RLY, t);
+    EnableInterfaceItem(MNU_INSERT_SHIFT_REG, t);
+    EnableInterfaceItem(MNU_INSERT_LUT, t);
+    EnableInterfaceItem(MNU_INSERT_PWL, t);
+	EnableInterfaceItem(MNU_INSERT_MULTISET_DA, t);
+	EnableInterfaceItem(MNU_INSERT_SET_DA, t);
+	EnableInterfaceItem(MNU_INSERT_READ_ENC, t);
+	EnableInterfaceItem(MNU_INSERT_RESET_ENC, t);
+	EnableInterfaceItem(MNU_INSERT_POS, t);
+	EnableInterfaceItem(MNU_INSERT_SQRT, t);
+	EnableInterfaceItem(MNU_INSERT_ABS, t);
+	EnableInterfaceItem(MNU_INSERT_RAND, t);
 
-    t = canInsertOther ? MF_ENABLED : MF_GRAYED;
-    EnableMenuItem(InstructionMenu, MNU_INSERT_TON, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_TOF, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_OSR, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_OSF, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_RTO, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_CONTACTS, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_CTU, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_CTD, t);
-    EnableMenuItem(ConditionalMenu, MNU_INSERT_EQU, t);
-    EnableMenuItem(ConditionalMenu, MNU_INSERT_NEQ, t);
-    EnableMenuItem(ConditionalMenu, MNU_INSERT_GRT, t);
-    EnableMenuItem(ConditionalMenu, MNU_INSERT_GEQ, t);
-    EnableMenuItem(ConditionalMenu, MNU_INSERT_LES, t);
-    EnableMenuItem(ConditionalMenu, MNU_INSERT_LEQ, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_SHORT, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_OPEN, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_SEND, t);
-    EnableMenuItem(InstructionMenu, MNU_INSERT_UART_RECV, t);
+    t = canInsertOther;
+    EnableInterfaceItem(MNU_INSERT_TON, t);
+    EnableInterfaceItem(MNU_INSERT_TOF, t);
+    EnableInterfaceItem(MNU_INSERT_OSR, t);
+    EnableInterfaceItem(MNU_INSERT_OSF, t);
+    EnableInterfaceItem(MNU_INSERT_RTO, t);
+    EnableInterfaceItem(MNU_INSERT_CONTACTS, t);
+    EnableInterfaceItem(MNU_INSERT_CTU, t);
+    EnableInterfaceItem(MNU_INSERT_CTD, t);
+    EnableInterfaceItem(MNU_INSERT_EQU, t);
+    EnableInterfaceItem(MNU_INSERT_NEQ, t);
+    EnableInterfaceItem(MNU_INSERT_GRT, t);
+    EnableInterfaceItem(MNU_INSERT_GEQ, t);
+    EnableInterfaceItem(MNU_INSERT_LES, t);
+    EnableInterfaceItem(MNU_INSERT_LEQ, t);
+    EnableInterfaceItem(MNU_INSERT_SHORT, t);
+    EnableInterfaceItem(MNU_INSERT_OPEN, t);
+    EnableInterfaceItem(MNU_INSERT_UART_SEND, t);
+    EnableInterfaceItem(MNU_INSERT_UART_RECV, t);
+	EnableInterfaceItem(MNU_INSERT_RTC, t);
+	EnableInterfaceItem(MNU_INSERT_CHECK_BIT, t);
+	EnableInterfaceItem(MNU_INSERT_SET_BIT, t);
+	EnableInterfaceItem(MNU_INSERT_READ_MODBUS, t);
+	EnableInterfaceItem(MNU_INSERT_READ_MODBUS_ETH, t);
+	EnableInterfaceItem(MNU_INSERT_WRITE_MODBUS, t);
+	EnableInterfaceItem(MNU_INSERT_WRITE_MODBUS_ETH, t);
+	EnableInterfaceItem(MNU_INSERT_READ_USS, t);
+	EnableInterfaceItem(MNU_INSERT_WRITE_USS, t);
+	EnableInterfaceItem(MNU_READ_SERVO_YASKAWA, t);
+	EnableInterfaceItem(MNU_WRITE_SERVO_YASKAWA, t);
+	EnableInterfaceItem(MNU_READ_FMTD_STR, t);
+	EnableInterfaceItem(MNU_WRITE_FMTD_STR, t);
+	EnableInterfaceItem(MNU_INSERT_PARALLEL, t);
 }
 
 //-----------------------------------------------------------------------------

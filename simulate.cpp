@@ -19,11 +19,7 @@ static struct {
 } AdcShadows[MAX_IO];
 static int AdcShadowsCount;
 
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-} DAShadows[MAX_IO];
-static int DAShadowsCount;
+SWORD DAShadow;
 
 static struct {
     char    name[MAX_NAME_LEN];
@@ -125,6 +121,41 @@ static int SimulateModbusTxCountdown = 0;
 static int SimulateModbusRxCountdown = 0;
 static int SimulateModbusEthTxCountdown = 0;
 static int SimulateModbusEthRxCountdown = 0;
+
+unsigned int Simulate_DaConv(int val, unsigned int mode)
+{
+	int ret;
+	switch(mode) {
+	case 0:
+		ret = val + DA_RESOLUTION;
+		break;
+
+	case 1:
+		ret = ((val * DA_RESOLUTION) / 10000) + DA_RESOLUTION;
+		break;
+
+	case 2:
+		ret = ((val * DA_RESOLUTION) / 100) + DA_RESOLUTION;
+		break;
+
+	default:
+		ret = DA_RESOLUTION;
+	}
+
+	if(ret < 0)
+		ret = 0;
+	else if (ret >= 2*DA_RESOLUTION)
+		ret = 2*DA_RESOLUTION - 1;
+
+	return (unsigned int)ret;
+}
+
+static struct {
+	int Count;
+	int StartCount;
+	int StartValue;
+	int FinalValue;
+} SimulateMultisetDA = { 0, DA_RESOLUTION, DA_RESOLUTION };
 
 static void AppendToUartSimulationTextControl(BYTE b);
 static void AppendToFormattedStringSimulationTextControl(char * text, char *string, SWORD val);
@@ -700,35 +731,19 @@ SWORD GetAdcShadow(char *name)
 // will get committed to the real copy when the rung-in condition to the
 // READ ADC is true.
 //-----------------------------------------------------------------------------
-void SetDAShadow(char *name, SWORD val)
+void SetDAShadow(SWORD val)
 {
-    int i;
-    for(i = 0; i < DAShadowsCount; i++) {
-        if(_stricmp(DAShadows[i].name, name)==0) {
-            DAShadows[i].val = val;
-			UpdateSimulation(name, val);
-            return;
-        }
-    }
-    strcpy(DAShadows[i].name, name);
-    DAShadows[i].val = val;
-	UpdateSimulation(name, val);
-    DAShadowsCount++;
+    DAShadow = val;
+	UpdateSimulation("$DA", val);
 }
 
 //-----------------------------------------------------------------------------
-// Return the shadow value of a variable associated with a READ ADC. This is
-// what gets copied into the real variable when an ADC read is simulated.
+// Return the shadow value of a variable associated with a DAC. This is
+// what gets copied into the real variable when an DAC write is simulated.
 //-----------------------------------------------------------------------------
-SWORD GetDAShadow(char *name)
+SWORD GetDAShadow(void)
 {
-    int i;
-    for(i = 0; i < DAShadowsCount; i++) {
-        if(_stricmp(DAShadows[i].name, name)==0) {
-            return DAShadows[i].val;
-        }
-    }
-    return 0;
+    return DAShadow;
 }
 
 //-----------------------------------------------------------------------------
@@ -1302,7 +1317,7 @@ math:
                 break;
 
             case INT_SET_DA:
-                SetDAShadow(a->name1, GetSimulationVariable(a->name1));
+                SetDAShadow(GetSimulationVariable(a->name1));
                 break;
 
             case INT_READ_ENC:
@@ -1327,8 +1342,34 @@ math:
                 break;
 
 			case INT_MULTISET_DA:
-				//SetSimulationVariable(a->name, GetMultiDAShadow(a->name));
-				//SetSimulationVariable(a->name1, GetMultiDAShadow(a->name1));
+				SimulateMultisetDA.StartValue = GetDAShadow();
+
+				if(strlen(a->name1)) {
+					int time = IsNumber(a->name1) ? atoi(a->name1) : GetSimulationVariable(a->name1);
+					SimulateMultisetDA.Count = time/PLC_CYCLE;
+					SimulateMultisetDA.FinalValue = Simulate_DaConv(IsNumber(a->name2) ? atoi(a->name2) : GetSimulationVariable(a->name2), atoi(a->name5));
+					SetSingleBit("$RampActive", TRUE);
+				} else if(SingleBitOn("$RampActive")) {
+					switch(a->literal) {
+					case RAMP_ABORT_LEAVE:
+						SimulateMultisetDA.Count = 0;
+						SetSingleBit("$RampActive", FALSE);
+						break;
+					case RAMP_ABORT_STOP:
+						SimulateMultisetDA.Count = 1;  // Desacelera em  10 ms =  1 ciclo
+						SimulateMultisetDA.FinalValue = DA_RESOLUTION;
+						SetSingleBit("$RampActive", TRUE);
+						break;
+					case RAMP_ABORT_DESACEL:
+						SimulateMultisetDA.Count = 10; // Desacelera em 100 ms = 10 ciclos
+						SimulateMultisetDA.FinalValue = DA_RESOLUTION;
+						SetSingleBit("$RampActive", TRUE);
+						break;
+					}
+				}
+
+				SimulateMultisetDA.StartCount = SimulateMultisetDA.Count;
+
 				break;
 
 			case INT_READ_FORMATTED_STRING:
@@ -1534,6 +1575,19 @@ void SimulateOneCycle(BOOL forceRefresh)
 		SetSingleBit("$SerialReady", TRUE);
 	}
 
+	if (SimulateMultisetDA.Count > 0)	{
+		float offset;
+
+		SimulateMultisetDA.Count--;
+		if(!SimulateMultisetDA.Count) {
+			SetSingleBit("$RampActive", FALSE);
+			SetDAShadow(SimulateMultisetDA.FinalValue);
+		} else {
+			offset = (float)(SimulateMultisetDA.StartValue - SimulateMultisetDA.FinalValue) / SimulateMultisetDA.StartCount;
+			SetDAShadow(SimulateMultisetDA.FinalValue + (int)(offset*SimulateMultisetDA.Count));
+		}
+	}
+
     IntPc = 0;
     SimulateIntCode();
 
@@ -1609,6 +1663,7 @@ void ClearSimulationData(void)
 void DescribeForIoList(int val, int type, char *out)
 {
     switch(type) {
+        case IO_TYPE_INTERNAL_FLAG:
         case IO_TYPE_INTERNAL_RELAY:
         case IO_TYPE_DIG_OUTPUT:
         case IO_TYPE_DIG_INPUT:
@@ -1641,26 +1696,31 @@ void DescribeForIoList(int val, int type, char *out)
 void DescribeForIoList(char *name, int type, char *out)
 {
 	int val;
+	char varname[MAX_NAME_LEN];
+
+	strcpy(varname, name);
 
 	switch(type) {
+        case IO_TYPE_INTERNAL_FLAG:
+			sprintf(varname, "$%s", name);
         case IO_TYPE_INTERNAL_RELAY:
         case IO_TYPE_DIG_OUTPUT:
         case IO_TYPE_DIG_INPUT:
-            val = SingleBitOn(name);
+            val = SingleBitOn(varname);
             break;
 
 		case IO_TYPE_SET_DA:
-            val = GetDAShadow(name);
+            val = GetDAShadow();
             break;
 
         case IO_TYPE_TON:
         case IO_TYPE_TOF:
         case IO_TYPE_RTO:
-            val = GetSimulationVariable(name);
+            val = GetSimulationVariable(varname);
 			break;
 
         default:
-            val = GetSimulationVariable(name);
+            val = GetSimulationVariable(varname);
     }
 
 	DescribeForIoList(val, type, out);

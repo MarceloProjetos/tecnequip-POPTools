@@ -76,7 +76,6 @@ static void MakeControls(char *op) // op: text for current operator
 
 void ShowMathDialog(int which, char *dest, char *op1, char *op2)
 {
-	PlaySound(MAKEINTRESOURCE(5000),GetModuleHandle(NULL), SND_RESOURCE);
     char *l2, *title;
     if(which == ELEM_ADD) {
         l2 = "+";

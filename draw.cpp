@@ -122,7 +122,6 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_SET_PWM:
         case ELEM_SQRT:
         case ELEM_ABS:
-        case ELEM_RAND:
         case ELEM_PERSIST:
             if(ColsAvailable - soFar > 1) {
                 return ColsAvailable - soFar;
@@ -130,6 +129,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
                 return 1;
             }
 
+        case ELEM_RAND:
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
@@ -365,6 +365,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 
     int thisWidth;
     switch(which) {
+        case ELEM_RAND:
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
@@ -681,11 +682,13 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             char bot[256];
             ElemRand *s = &leaf->d.rand;
 
-			sprintf(top, "{ %s :=}", s->var);
-			sprintf(bot, "{ %s <= ? <= %s }", s->min, s->max);
+			sprintf(top, "{ %s := }", s->var);
+			sprintf(bot, "{%s <= ? <= %s}", s->min, s->max);
 
-            CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
-            CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
+            int extra = 2*POS_WIDTH - FormattedStrlen(top);
+            DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1, top);
+            CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2*POS_WIDTH);
+            *cx += POS_WIDTH;
             break;
         }
         case ELEM_ABS: 
@@ -1085,6 +1088,7 @@ cmp:
 
     int xadj = 0;
     switch(which) {
+        case ELEM_RAND:
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:

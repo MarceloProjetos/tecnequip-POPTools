@@ -194,7 +194,7 @@ void Init_MBDev(void)
 	MBDev_TCP.identification.Id                 = 0x01;
 	MBDev_TCP.identification.VendorName         = "Tecnequip";
 	MBDev_TCP.identification.ProductCode        = "POPTools";
-	MBDev_TCP.identification.MajorMinorRevision = "v1.4";
+	MBDev_TCP.identification.MajorMinorRevision = "v1.5";
 
 	MBDev_TCP.hl      = NULL;
 	MBDev_TCP.hl_size = 0;
@@ -206,7 +206,7 @@ void Init_MBDev(void)
 	MBDev_Serial.identification.Id                 = 0x01;
 	MBDev_Serial.identification.VendorName         = "Tecnequip";
 	MBDev_Serial.identification.ProductCode        = "POPTools";
-	MBDev_Serial.identification.MajorMinorRevision = "v1.4";
+	MBDev_Serial.identification.MajorMinorRevision = "v1.5";
 
 	MBDev_Serial.hl      = NULL;
 	MBDev_Serial.hl_size = 0;

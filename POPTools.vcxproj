@@ -311,6 +311,7 @@
     <ClCompile Include="mathdialog.cpp" />
     <ClCompile Include="modbus_master.cpp" />
     <ClCompile Include="modbus_slave.cpp" />
+    <ClCompile Include="modbus_usb.cpp" />
     <ClCompile Include="multisetdadialog.cpp" />
     <ClCompile Include="draw.cpp" />
     <ClCompile Include="draw_outputdev.cpp" />
@@ -344,6 +345,7 @@
     <ClCompile Include="XMLWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Firmware\App\intreg.h" />
     <ClInclude Include="Firmware\App\modbus_rtu.h" />
     <ClInclude Include="KeyboardHandlers.h" />
     <ClInclude Include="KeyboardMap.h" />
