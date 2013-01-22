@@ -1,8 +1,17 @@
 #include "poptools.h"
 
-static char SeenVariables[MAX_IO][MAX_NAME_LEN];
-static int SeenVariablesCount;
+#define SEENVAR_LISTS 4
 
+// Lists indexes
+#define SEENVAR_MODE_USERBIT 0
+#define SEENVAR_MODE_SYSTEM  1
+#define SEENVAR_MODE_USERINT 2
+#define SEENVAR_MODE_OTHERS  3
+
+// There are 4 lists: bit, system, int and others.
+static char SeenVariables[SEENVAR_LISTS][MAX_IO][MAX_NAME_LEN];
+static int SeenVariablesCount[SEENVAR_LISTS];
+static char *NameVarArray[] = { "ArrayBitUser", "ArrayBitSystem", "ArrayIntUser" };
 static int MODBUS_MASTER = 0;
 
 //#define INT_UNSIGNED	
@@ -11,18 +20,46 @@ static int MODBUS_MASTER = 0;
 // Have we seen a variable before? If not then no need to generate code for
 // it, otherwise we will have to make a declaration, and mark it as seen.
 //-----------------------------------------------------------------------------
-static BOOL SeenVariable(char *name)
+static BOOL SeenVariable(char *name, int mode)
 {
-    int i;
-    for(i = 0; i < SeenVariablesCount; i++) {
-        if(_stricmp(SeenVariables[i], name)==0) {
-            return TRUE;
-        }
+    int i, index;
+	bool found = false;
+
+	for(index = 0; index < SEENVAR_LISTS && !found; index++) {
+		for(i = 0; i < SeenVariablesCount[index]; i++) {
+			if(_stricmp(SeenVariables[index][i], name)==0) {
+				found = true;
+				break;
+			}
+		}
     }
-    if(i >= MAX_IO) oops();
-    strcpy(SeenVariables[i], name);
-    SeenVariablesCount++;
-    return FALSE;
+
+	if(found) {
+		// We have to decrement the index because it was incremented after the item has been found.
+		index--;
+
+		// If it was declared as bit but now it is being used as integer, we have to change it.
+		if(index == SEENVAR_MODE_USERBIT && mode == SEENVAR_MODE_USERINT) {
+			// Move it to USERINT list
+			strcpy(SeenVariables[SEENVAR_MODE_USERINT][SeenVariablesCount[SEENVAR_MODE_USERINT]], SeenVariables[SEENVAR_MODE_USERBIT][i]);
+
+			// Move all items after the changed item one position back
+			memcpy((char *)SeenVariables[SEENVAR_MODE_USERBIT][i], (char *)SeenVariables[SEENVAR_MODE_USERBIT][i+1], SeenVariablesCount[SEENVAR_MODE_USERBIT] - i);
+
+			// Update counters
+			SeenVariablesCount[SEENVAR_MODE_USERINT]++;
+			SeenVariablesCount[SEENVAR_MODE_USERBIT]--;
+		}
+
+		return TRUE;
+	} else {
+		if(i >= MAX_IO) oops();
+
+		strcpy(SeenVariables[mode][SeenVariablesCount[mode]], name);
+		SeenVariablesCount[mode]++;
+
+		return FALSE;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -98,21 +135,26 @@ static char *MapSym(char *str)
 //-----------------------------------------------------------------------------
 // Generate a declaration for an integer var; easy, a static 32-bit qty.
 //-----------------------------------------------------------------------------
-static void DeclareInt(FILE *f, char *str)
+static void DeclareInt(FILE *f, char *rawstr)
 {
-	if (strncmp(MapSym(str), "M", 1) == 0 || isdigit(*str) || *str == '-')
+	int mode;
+	char *str = MapSym(rawstr);
+	if (isdigit(*rawstr) || *rawstr == '-')
 	{
 		return;
 	}
 
-	if (_stricmp(str, "I_SerialReady") == 0) return;
+	// The following line is really necessary? Apparently not, but ...
+	if (_stricmp(rawstr, "I_SerialReady") == 0) return;
 
-    //fprintf(f, "STATIC SWORD %s;\n", MapSym(str));
+	mode = (!strncmp(str, "U_", 2) || !strncmp(str, "I_", 2)) ? SEENVAR_MODE_USERINT : SEENVAR_MODE_OTHERS;
+	if(!SeenVariable(str, mode) && mode == SEENVAR_MODE_OTHERS && strncmp(str, "M", 1)) {
 #ifdef INT_UNSIGNED
-	fprintf(f, "volatile unsigned int %s = 0;\n", MapSym(str));
+		fprintf(f, "volatile unsigned int %s = 0;\n", str);
 #else
-	fprintf(f, "volatile int %s = 0;\n", MapSym(str));
+		fprintf(f, "volatile int %s = 0;\n", str);
 #endif
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -122,16 +164,22 @@ static void DeclareInt(FILE *f, char *str)
 //-----------------------------------------------------------------------------
 static void DeclareBit(FILE *f, char *rawStr)
 {
+	int mode, intflag;
     char *str = MapSym(rawStr);
-	if (!strncmp(str, "M", 1) || (!strncmp(str, "I_", 2) && IsInternalFlag(str+2))) {
+	if (!strncmp(str, "M", 1)) {
 		return;
 	}
 
+	intflag = (!strncmp(str, "I_", 2) && IsInternalFlag(str+2));
+
+	mode = (*rawStr == '$'  && !intflag) ? SEENVAR_MODE_SYSTEM : (!strncmp(str, "U_", 2) ? SEENVAR_MODE_USERBIT : SEENVAR_MODE_OTHERS);
+	if(!SeenVariable(str, mode) && mode == SEENVAR_MODE_OTHERS && !intflag) {
 #ifdef INT_UNSIGNED
-	fprintf(f, "volatile unsigned int %s = 0;\n", str);
+		fprintf(f, "volatile unsigned int %s = 0;\n", str);
 #else
-	fprintf(f, "volatile unsigned char %s = 0;\n", str);
+		fprintf(f, "volatile unsigned char %s = 0;\n", str);
 #endif
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -143,7 +191,7 @@ static void GenerateDeclarations(FILE *f)
     int i;
     for(i = 0; i < IntCodeLen; i++) {
         char *bitVar1 = NULL, *bitVar2 = NULL;
-        char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL, *intVar4 = NULL;
+        char *intVar1 = NULL, *intVar2 = NULL, *intVar3 = NULL;
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
@@ -260,13 +308,87 @@ static void GenerateDeclarations(FILE *f)
             default:
                 oops();
         }
-        if(bitVar1 && !SeenVariable(bitVar1)) DeclareBit(f, bitVar1);
-        if(bitVar2 && !SeenVariable(bitVar2)) DeclareBit(f, bitVar2);
+        if(bitVar1) DeclareBit(f, bitVar1);
+        if(bitVar2) DeclareBit(f, bitVar2);
 
-        if(intVar1 && !SeenVariable(intVar1)) DeclareInt(f, intVar1);
-        if(intVar2 && !SeenVariable(intVar2)) DeclareInt(f, intVar2);
-        if(intVar3 && !SeenVariable(intVar3)) DeclareInt(f, intVar3);
+        if(intVar1) DeclareInt(f, intVar1);
+        if(intVar2) DeclareInt(f, intVar2);
+        if(intVar3) DeclareInt(f, intVar3);
     }
+
+	for(i=0; i != SEENVAR_MODE_OTHERS; i++) {
+		int count = SeenVariablesCount[i];
+
+		if(i != SEENVAR_MODE_USERINT) {
+			count = count/32 + (count%32 > 0);
+		}
+
+		fprintf(f, "volatile int %s_Count = %d;\n", NameVarArray[i], count);
+		fprintf(f, "volatile int %s[%d];\n", NameVarArray[i], count);
+	}
+}
+
+#define GENVARCODE_MODE_READ  0
+#define GENVARCODE_MODE_WRITE 1
+
+char *GenVarCode(char *dest, char *name, char *val, int mode)
+{
+	int list, i, bit;
+	char buf[MAX_NAME_LEN], true_str[MAX_NAME_LEN], false_str[MAX_NAME_LEN];
+
+	for(list = 0; list < SEENVAR_LISTS; list++) {
+		for(i = 0; i < SeenVariablesCount[list]; i++) {
+			if(!strcmp(name, SeenVariables[list][i])) {
+				switch(list) {
+					case SEENVAR_MODE_USERBIT:
+					case SEENVAR_MODE_SYSTEM: {
+						bit = i%32;
+						i /= 32;
+						sprintf(buf, "%s[%d]", NameVarArray[list], i);
+
+						if(mode == GENVARCODE_MODE_READ) {
+							sprintf(dest, "((%s >> %d) & 1)", buf, bit);
+						} else {
+							sprintf(true_str , "%s |= 1UL << %d;"   , buf, bit);
+							sprintf(false_str, "%s &= ~(1UL << %d);", buf, bit);
+							if(!strcmp(val, "0")) {
+								strcpy(dest, false_str);
+							} else if(!strcmp(val, "1")) {
+								strcpy(dest, true_str);
+							} else {
+								sprintf(dest, "if(%s) %s else %s", val, true_str, false_str);
+							}
+						}
+
+						break;
+					}
+
+					case SEENVAR_MODE_USERINT:
+						if(mode == GENVARCODE_MODE_READ) {
+							sprintf(dest, "%s[%d]", NameVarArray[list], i);
+						} else {
+							sprintf(dest, "%s[%d] = %s;", NameVarArray[list], i, val);
+						}
+
+						break;
+
+					case SEENVAR_MODE_OTHERS:
+						if(mode == GENVARCODE_MODE_READ) {
+							sprintf(dest, "%s", SeenVariables[list][i]);
+						} else {
+							sprintf(dest, "%s = %s;", SeenVariables[list][i], val);
+						}
+
+						break;
+				}
+
+				return dest;
+			}
+		}
+	}
+
+	oops();
+	return NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -276,6 +398,7 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 {
     int i;
     int indent = 1;
+	char buf[1024], buf2[1024];
 
 	ad_mask = 0;
 	
@@ -295,41 +418,41 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
         switch(IntCode[i].op) {
             case INT_SET_BIT:
 				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
-					fprintf(f, "%s |= (1 << %d);  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
+					fprintf(f, "%s |= (1 << %d);  // %s = 1\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
-	                fprintf(f, "%s = 1;\n", MapSym(IntCode[i].name1));
+					fprintf(f, "%s // %s = 1\n", GenVarCode(buf, MapSym(IntCode[i].name1), "1", GENVARCODE_MODE_WRITE), IntCode[i].name1);
                 break;
 
             case INT_CLEAR_BIT:
 				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
-					fprintf(f, "%s &= ~(1 << %d);  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
+					fprintf(f, "%s &= ~(1 << %d);  // %s = 0\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
-	                fprintf(f, "%s = 0;\n", MapSym(IntCode[i].name1));
+	                fprintf(f, "%s // %s = 0\n", GenVarCode(buf, MapSym(IntCode[i].name1), "0", GENVARCODE_MODE_WRITE), IntCode[i].name1);
                 break;
 
 			case INT_SET_SINGLE_BIT:
-                fprintf(f, "%s |= 1 << %d;\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), IntCode[i].bit);
+                fprintf(f, "%s |= 1 << %d; // %s.%d\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].bit, IntCode[i].name1, IntCode[i].bit);
                 break;
 
             case INT_CLEAR_SINGLE_BIT:
-                fprintf(f, "%s &= ~(1 << %d);\n", MapSym(IntCode[i].name1), IntCode[i].bit);
+                fprintf(f, "%s &= ~(1 << %d); // %s.%d\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].bit, IntCode[i].name1, IntCode[i].bit);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
 				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
-	                fprintf(f, "%s &= ~(1 << %d); %s |= %s << %d;  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), MapSym(IntCode[i].name2), IntCode[i].bit, IntCode[i].name1);
+	                fprintf(f, "%s &= ~(1 << %d); %s |= %s << %d;  // %s = %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, MapSym(IntCode[i].name1), GenVarCode(buf2, MapSym(IntCode[i].name2), NULL, GENVARCODE_MODE_READ), IntCode[i].bit, IntCode[i].name1, IntCode[i].name2);
 				else
-					fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1), MapSym(IntCode[i].name2));
+					fprintf(f, "%s // %s = %s\n", GenVarCode(buf, MapSym(IntCode[i].name1),  GenVarCode(buf2, MapSym(IntCode[i].name2), NULL, GENVARCODE_MODE_READ), GENVARCODE_MODE_WRITE), IntCode[i].name1, IntCode[i].name2);
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                fprintf(f, "%s = %d;\n", MapSym(IntCode[i].name1),
-                    IntCode[i].literal);
+				sprintf(buf2, "%d", IntCode[i].literal);
+                fprintf(f, "%s // %s\n", GenVarCode(buf, MapSym(IntCode[i].name1), buf2, GENVARCODE_MODE_WRITE), IntCode[i].name1);
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                fprintf(f, "%s = %s;\n", MapSym(IntCode[i].name1),
-                    MapSym(IntCode[i].name2));
+                fprintf(f, "%s // %s = %s\n", GenVarCode(buf, MapSym(IntCode[i].name1), GenVarCode(buf2, MapSym(IntCode[i].name2), NULL, GENVARCODE_MODE_READ), GENVARCODE_MODE_WRITE),
+                    IntCode[i].name1, IntCode[i].name2);
                 break;
 
             {
@@ -337,25 +460,31 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
                 case INT_SET_VARIABLE_ADD: op = '+'; goto arith;
                 case INT_SET_VARIABLE_SUBTRACT: op = '-'; goto arith;
                 case INT_SET_VARIABLE_MULTIPLY: op = '*'; goto arith;
-                case INT_SET_VARIABLE_DIVIDE: op = '/'; fprintf(f, "if(%s) ", MapSym(IntCode[i].name3)); goto arith;
+                case INT_SET_VARIABLE_DIVIDE: op = '/'; fprintf(f, "if(%s) ", GenVarCode(buf , MapSym(IntCode[i].name3), NULL, GENVARCODE_MODE_READ)); goto arith;
                 arith:
-                    fprintf(f, "%s = %s %c %s;\n",
-                        MapSym(IntCode[i].name1),
-                        MapSym(IntCode[i].name2),
+					char mathstr[1024];
+					sprintf(mathstr, "%s %c %s",
+						GenVarCode(buf , MapSym(IntCode[i].name2), NULL, GENVARCODE_MODE_READ),
+						op,
+						GenVarCode(buf2, MapSym(IntCode[i].name3), NULL, GENVARCODE_MODE_READ));
+					fprintf(f, "%s // %s = %s %c %s\n",
+						GenVarCode(buf, MapSym(IntCode[i].name1), mathstr, GENVARCODE_MODE_WRITE),
+                        IntCode[i].name1,
+                        IntCode[i].name2,
                         op,
-                        MapSym(IntCode[i].name3) );
+                        IntCode[i].name3);
                     break;
             }
 
             case INT_INCREMENT_VARIABLE:
-                fprintf(f, "%s++;\n", MapSym(IntCode[i].name1));
+                fprintf(f, "%s++;\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
                 break;
 
             case INT_IF_BIT_SET:
 				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
 	                fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
-					fprintf(f, "if (%s) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].name1);
+					fprintf(f, "if (%s) {  // %s\n", GenVarCode(buf , MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].name1);
                 indent++;
                 break;
 
@@ -363,41 +492,35 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
 	                fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
 				else
-					fprintf(f, "if (!%s) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].name1);
+					fprintf(f, "if (!%s) {  // %s\n", GenVarCode(buf , MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].name1);
                 indent++;
                 break;
 
             case INT_IF_BIT_CHECK_SET:
-				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
-	                fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
-				else
-					fprintf(f, "if (%s & (1 << %d)) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
+				fprintf(f, "if (%s & (1 << %d)) {  // %s\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].bit, IntCode[i].name1);
                 indent++;
                 break;
 
             case INT_IF_BIT_CHECK_CLEAR:
-				if (strncmp(str, "MODBUS_REGISTER[", 2) == 0)
-	                fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
-				else
-					fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", MapSym(IntCode[i].name1), IntCode[i].bit, IntCode[i].name1);
+				fprintf(f, "if (!(%s & (1 << %d))) {  // %s\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].bit, IntCode[i].name1);
                 indent++;
                 break;
 
             case INT_IF_VARIABLE_LES_LITERAL:
-                fprintf(f, "if (%s < %d) {\n", MapSym(IntCode[i].name1), 
+                fprintf(f, "if (%s < %d) {\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), 
                     IntCode[i].literal);
                 indent++;
                 break;
 
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
-                fprintf(f, "if (%s == %s) {\n", MapSym(IntCode[i].name1),
-                    MapSym(IntCode[i].name2));
+                fprintf(f, "if (%s == %s) {\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ),
+                    GenVarCode(buf2, MapSym(IntCode[i].name2), NULL, GENVARCODE_MODE_READ));
                 indent++;
                 break;
 
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                fprintf(f, "if (%s > %s) {\n", MapSym(IntCode[i].name1),
-                    MapSym(IntCode[i].name2));
+                fprintf(f, "if (%s > %s) {\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ),
+                    GenVarCode(buf2, MapSym(IntCode[i].name2), NULL, GENVARCODE_MODE_READ));
                 indent++;
                 break;
 
@@ -426,35 +549,40 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
-				fprintf(f, "%s = E2P_Busy();\n", MapSym(IntCode[i].name1));
+				fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name1), "E2P_Busy()", GENVARCODE_MODE_WRITE));
 				break;
             case INT_EEPROM_READ:
-				fprintf(f, "%s = E2P_Read((void *)&%s, %d, 2);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1), IntCode[i].literal*2);
+				sprintf(buf2, "E2P_Read((void *)&%s, %d, 2)", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].literal*2);
+				fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
 				break;
             case INT_EEPROM_WRITE:
-				fprintf(f, "E2P_Write((void *)&%s, %d, 2);\n", MapSym(IntCode[i].name1), IntCode[i].literal);
+				fprintf(f, "E2P_Write((void *)&%s, %d, 2);\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].literal);
 				break;
             case INT_READ_ADC:
 				ad_mask |= 1 << (atoi(MapSym(IntCode[i].name1)+1) - 1);
-				fprintf(f, "%s = ADC_Read(%d);\n", MapSym(IntCode[i].name1), atoi(MapSym(IntCode[i].name1) + 1));
+				sprintf(buf2, "ADC_Read(%d)", atoi(MapSym(IntCode[i].name1) + 1));
+				fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name1), buf2, GENVARCODE_MODE_WRITE));
 				break;
             case INT_SET_DA:
-				fprintf(f, "DAC_Write(DAC_Conv(%s, %d));\n", IsNumber(IntCode[i].name1) ? IntCode[i].name1 : MapSym(IntCode[i].name1), IntCode[i].literal);
+				fprintf(f, "DAC_Write(DAC_Conv(%s, %d));\n", IsNumber(IntCode[i].name1) ? IntCode[i].name1 : GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].literal);
 				break;
             case INT_SQRT:
-				fprintf(f, "srint(&%s);\n", MapSym(IntCode[i].name1));
+				fprintf(f, "srint(&%s);\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_RAND: {
 				char *min, *max;
-				min = IsNumber(IntCode[i].name2) ? IntCode[i].name2 : MapSym(IntCode[i].name2);
-				max = IsNumber(IntCode[i].name3) ? IntCode[i].name3 : MapSym(IntCode[i].name3);
-				fprintf(f, "%s = %s + (rand() %% (%s - %s + 1));\n", MapSym(IntCode[i].name1), min, max, min);
+				char randbuf[1024];
+				min = IsNumber(IntCode[i].name2) ? IntCode[i].name2 : GenVarCode(buf , MapSym(IntCode[i].name2), NULL, GENVARCODE_MODE_READ);
+				max = IsNumber(IntCode[i].name3) ? IntCode[i].name3 : GenVarCode(buf2, MapSym(IntCode[i].name3), NULL, GENVARCODE_MODE_READ);
+				sprintf(randbuf, "%s + (rand() %% (%s - %s + 1))", min, max, min);
+				fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name1), randbuf, GENVARCODE_MODE_WRITE));
 				break;
 			}
 			case INT_MULTISET_DA:
 				if(strlen(IntCode[i].name1)) {
 					fprintf(f, "DAC_Start(%d, %d, %s, %s, %s, DAC_Conv(%s, %s));\n", IntCode[i].bit, IntCode[i].literal, IntCode[i].name3, IntCode[i].name4,
-						IsNumber(IntCode[i].name1) ? IntCode[i].name1 : MapSym(IntCode[i].name1), IsNumber(IntCode[i].name2) ? IntCode[i].name2 : MapSym(IntCode[i].name2), IntCode[i].name5);
+						IsNumber(IntCode[i].name1) ? IntCode[i].name1 : GenVarCode(buf , MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ),
+						IsNumber(IntCode[i].name2) ? IntCode[i].name2 : GenVarCode(buf2, MapSym(IntCode[i].name2), NULL, GENVARCODE_MODE_READ), IntCode[i].name5);
 				} else {
 					fprintf(f, "DAC_Abort(%d);\n", IntCode[i].literal-1);
 				}
@@ -471,22 +599,22 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 			case INT_CHECK_RTC:
 				{
 					char *RTC_Mode;
+					char rtcbuf[10*1024];
 					int mode = atoi(IntCode[i].name2), j;
 					int WeekDays = IntCode[i].literal & 0x7F, UseWeekDays = (IntCode[i].literal >> 7) & 1;
 
 					if(mode == ELEM_RTC_MODE_FIXED) {
-						fprintf(f, "%s = ", MapSym(IntCode[i].name1));
 						if (UseWeekDays) {
-							fprintf(f, "(%d & (1 << RTC_NowTM.tm_wday)) && ", WeekDays);
+							sprintf(rtcbuf, "(%d & (1 << RTC_NowTM.tm_wday)) && ", WeekDays);
 						} else {
-							fprintf(f, "(!RTC_StartTM.tm_mday || RTC_NowTM.tm_mday == RTC_StartTM.tm_mday       ) && "
-							           "(!RTC_StartTM.tm_mon  || RTC_NowTM.tm_mon  == RTC_StartTM.tm_mon  -    1) && "
-							           "(!RTC_StartTM.tm_year || RTC_NowTM.tm_year == RTC_StartTM.tm_year - 1900) && ");
+							sprintf(rtcbuf, "(!RTC_StartTM.tm_mday || RTC_NowTM.tm_mday == RTC_StartTM.tm_mday       ) && "
+											"(!RTC_StartTM.tm_mon  || RTC_NowTM.tm_mon  == RTC_StartTM.tm_mon  -    1) && "
+											"(!RTC_StartTM.tm_year || RTC_NowTM.tm_year == RTC_StartTM.tm_year - 1900) && ");
 						}
 
-						fprintf(f, "(RTC_NowTM.tm_hour == RTC_StartTM.tm_hour) && "
-						           "(RTC_NowTM.tm_min  == RTC_StartTM.tm_min ) && "
-						           "(RTC_NowTM.tm_sec  == RTC_StartTM.tm_sec );\n");
+						sprintf(rtcbuf, "%s(RTC_NowTM.tm_hour == RTC_StartTM.tm_hour) && "
+										  "(RTC_NowTM.tm_min  == RTC_StartTM.tm_min ) && "
+										  "(RTC_NowTM.tm_sec  == RTC_StartTM.tm_sec )", rtcbuf);
 					} else {
 						if(mode == ELEM_RTC_MODE_CONTINUOUS) {
 							RTC_Mode = UseWeekDays ? "RTC_MODE_WEEKDAY_CONTINUOUS"   : "RTC_MODE_DATE_CONTINUOUS";
@@ -500,65 +628,68 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 						fprintf(f, "RTC_EndTM   = *AdjustDate(RTC_EndTM  , RTC_GETDATE_MODE_END  );\n");
 					    for(j = 0; j < indent; j++) fprintf(f, "    ");
 
-						fprintf(f, "%s = RTC_OutputState(RTC_StartTM, RTC_EndTM, RTC_NowTM, %s, %d);\n",
-							MapSym(IntCode[i].name1), RTC_Mode, WeekDays);
+						sprintf(rtcbuf, "RTC_OutputState(RTC_StartTM, RTC_EndTM, RTC_NowTM, %s, %d)", RTC_Mode, WeekDays);
 					}
+
+					fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name1), rtcbuf, GENVARCODE_MODE_WRITE));
 				}
 				break;
 
             case INT_READ_ENC: {
 				int ch = GetPinEnc(IntCode[i].name1);
-				char *name = MapSym(IntCode[i].name1);
 				if(ch != NO_PIN_ASSIGNED) {
-					fprintf(f, "%s = ENC_Read(%d);\n", name, ch-1);
+					sprintf(buf2, "ENC_Read(%d)", ch - 1);
+					fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name1), buf2, GENVARCODE_MODE_WRITE));
 				}
 				break;
 				}
             case INT_RESET_ENC: {
 				int ch = GetPinEnc(IntCode[i].name1);
-				char *name = MapSym(IntCode[i].name1);
+				char *name = GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ);
 				if(ch != NO_PIN_ASSIGNED) {
 					fprintf(f, "ENC_Reset(%d, %s);\n", ch-1, name);
 				}
 				break;
 				}
 			case INT_READ_FORMATTED_STRING:
-				fprintf(f, "Format_String_Read(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "Format_String_Read(\"%s\", &%s);\n", IntCode[i].name2, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
 			case INT_WRITE_FORMATTED_STRING:
-				fprintf(f, "Format_String_Write(\"%s\", &%s);\n", IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "Format_String_Write(\"%s\", &%s);\n", IntCode[i].name2, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
 			case INT_READ_SERVO_YASKAWA:
-				fprintf(f, "Yaskawa_Read(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "Yaskawa_Read(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
 			case INT_WRITE_SERVO_YASKAWA:
-				fprintf(f, "Yaskawa_Write(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, MapSym(IntCode[i].name1));
+				fprintf(f, "Yaskawa_Write(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_READ_USS:
 				fprintf(f, "USS_Get_Param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
 				break; 
             case INT_WRITE_USS:
-				fprintf(f, "USS_Set_Param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
+				fprintf(f, "USS_Set_Param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_READ_MODBUS:
-				fprintf(f, "Modbus_Send(%d, MODBUS_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
+				fprintf(f, "Modbus_Send(%d, MODBUS_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_WRITE_MODBUS:
-				fprintf(f, "Modbus_Send(%d, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
+				fprintf(f, "Modbus_Send(%d, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_READ_MODBUS_ETH:
-				fprintf(f, "Modbus_TCP_Send(%d, MODBUS_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
+				fprintf(f, "Modbus_TCP_Send(%d, MODBUS_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_WRITE_MODBUS_ETH:
-				fprintf(f, "Modbus_TCP_Send(%d, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, MapSym(IntCode[i].name1));
+				fprintf(f, "Modbus_TCP_Send(%d, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_SET_PWM:
 				break;
             case INT_UART_RECV:
-				fprintf(f, "%s = RS485_Read((unsigned char *)&%s, 1);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
+				sprintf(buf2, "RS485_Read((unsigned char *)&%s, 1)", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
 				break;
             case INT_UART_SEND:
-				fprintf(f, "%s = RS485_Write((unsigned char *)&%s, 1);\n", MapSym(IntCode[i].name2), MapSym(IntCode[i].name1));
+				sprintf(buf2, "RS485_Write((unsigned char *)&%s, 1)", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
                 break;
 
             default:
@@ -840,7 +971,10 @@ DWORD GenerateCFile(char *filename)
 
 	CheckPinAssignments();
 
-    SeenVariablesCount = 0;
+	for(i = 0; i < SEENVAR_LISTS; i++) {
+	    SeenVariablesCount[i] = 0;
+	}
+
 	MODBUS_MASTER      = 0;
 
 	fprintf(f, "/*****************************************************************************\n");

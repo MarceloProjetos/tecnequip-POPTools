@@ -84,6 +84,12 @@ int								SNTP_DAILY_SAVE = 1;
 #elif defined(PLC_SCADA)
 #include "POPTools/PLC_SCADA.h"
 #else
+
+volatile int ArrayBitUser_Count = 0;
+volatile int ArrayBitUser[0];
+volatile int ArrayIntUser_Count = 0;
+volatile int ArrayIntUser[0];
+
 // Variaveis PLC
 volatile int I_mcr = 0;
 

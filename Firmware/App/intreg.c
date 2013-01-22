@@ -4,10 +4,17 @@
 
 RTC_Time Time;
 
+extern volatile int ArrayBitUser_Count;
+extern volatile int ArrayBitUser[];
+extern volatile int ArrayIntUser_Count;
+extern volatile int ArrayIntUser[];
+
 // Checa se a faixa de registradores eh valida
 int IntReg_CheckBounds(int start, int quant)
 {
-	return (start >= INTREG_START) && (quant > 0) && (start + quant - 1 < INTREG_SIZE);
+	return (quant > 0) && (((start >= INTREG_START) && (start + quant - 1 < INTREG_RESERVED_START)) ||
+			((start >= INTREG_USERBIT_START) && (start - INTREG_USERBIT_START + quant - 1 < ArrayBitUser_Count)) ||
+			((start >= INTREG_USERINT_START) && (start - INTREG_USERINT_START + quant - 1 < ArrayIntUser_Count)));
 }
 
 // Le o valor do registrador
@@ -33,6 +40,18 @@ int IntReg_Read(int reg)
 		case 4:
 			return Time.Yday;
 		}
+	} else if(reg < (INTREG_VARCOUNT_START + INTREG_VARCOUNT_SIZE)) {
+		if(reg == INTREG_VARCOUNT_START) {
+			return ArrayBitUser_Count;
+		} else {
+			return ArrayIntUser_Count;
+		}
+	} else if(reg < (INTREG_USERBIT_START + INTREG_USERBIT_SIZE)) {
+		reg -= INTREG_USERBIT_START;
+		if(reg < ArrayBitUser_Count) return ArrayBitUser[reg];
+	} else if(reg < (INTREG_USERINT_START + INTREG_USERINT_SIZE)) {
+		reg -= INTREG_USERINT_START;
+		if(reg < ArrayIntUser_Count) return ArrayIntUser[reg];
 	}
 
 	return 0;

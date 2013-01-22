@@ -566,20 +566,20 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
         case ELEM_COIL: {
             if(l->d.coil.negated) {
                 Op(INT_IF_BIT_SET, stateInOut);
-				OpBit(INT_CLEAR_BIT, l->d.contacts.name, l->d.coil.bit);
+				OpBit(INT_CLEAR_BIT, l->d.coil.name, l->d.coil.bit);
                 Op(INT_ELSE);
-                OpBit(INT_SET_BIT, l->d.contacts.name, l->d.coil.bit);
+                OpBit(INT_SET_BIT, l->d.coil.name, l->d.coil.bit);
                 Op(INT_END_IF);
             } else if(l->d.coil.setOnly) {
                 OpBit(INT_IF_BIT_SET, stateInOut, l->d.coil.bit);
-                OpBit(INT_SET_BIT, l->d.contacts.name, l->d.coil.bit);
+                OpBit(INT_SET_BIT, l->d.coil.name, l->d.coil.bit);
                 Op(INT_END_IF);
             } else if(l->d.coil.resetOnly) {
                 OpBit(INT_IF_BIT_SET, stateInOut, l->d.coil.bit);
-                OpBit(INT_CLEAR_BIT, l->d.contacts.name, l->d.coil.bit);
+                OpBit(INT_CLEAR_BIT, l->d.coil.name, l->d.coil.bit);
                 Op(INT_END_IF);
             } else {
-                OpBit(INT_COPY_BIT_TO_BIT, l->d.contacts.name, stateInOut, l->d.coil.bit);
+                OpBit(INT_COPY_BIT_TO_BIT, l->d.coil.name, stateInOut, l->d.coil.bit);
             }
             break;
         }

@@ -253,8 +253,8 @@ void MB_Transfer(bool mode_send, bool mode_tcp, bool retry)
 	/*** Check parameters ***/
 	if(iID < 0) {
 		Error(_("ID deve ser maior ou igual a zero!"));
-	} else if(iReg < 0 || iReg > 31) {
-		Error(_("Registrador deve ser entre 0 e 31!"));
+	} else if(iReg < 0) {
+		Error(_("Registrador deve ser maior que zero!"));
 	} else { // All OK, let's start the communication!
 		MODBUS_Device *mbdev;
 		unsigned int retries = retry ? 2 : 0;
@@ -546,7 +546,7 @@ static void MakeControls(void)
         17, 470, 150, 30, DebugDialog, NULL, Instance, NULL); 
     NiceFont(SetDateTimeButton);
 
-    grouper = CreateWindowEx(0, WC_BUTTON, _("Informações"),
+    grouper = CreateWindowEx(0, WC_BUTTON, _("Informações da POP-7 (Lido a partir da interface USB)"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
         7, 410, 650, 100, DebugDialog, NULL, Instance, NULL);
     NiceFont(grouper);
