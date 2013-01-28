@@ -156,7 +156,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=0x400;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_PT;_DEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=_WIN32_IE_IE70;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_PT;_DEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -183,7 +183,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=0x400;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_EN;_DEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=_WIN32_IE_IE70;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_EN;_DEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -210,7 +210,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=0x400;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_ES;_DEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=_WIN32_IE_IE70;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_ES;_DEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -237,7 +237,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=0x400;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_PT;NDEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=_WIN32_IE_IE70;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_PT;NDEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -259,7 +259,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=0x400;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_EN;NDEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=_WIN32_IE_IE70;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_EN;NDEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -281,7 +281,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=0x400;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_ES;NDEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN32_WINNT=_WIN32_WINNT_VISTA;ISOLATION_AWARE_ENABLED;_WIN32_IE=_WIN32_IE_IE70;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;LDLANG_ES;NDEBUG;_WINDOWS;POP7_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -302,6 +302,7 @@
     <ClCompile Include="circuit.cpp" />
     <ClCompile Include="coildialog.cpp" />
     <ClCompile Include="commentdialog.cpp" />
+    <ClCompile Include="CommonFileDialog.cpp" />
     <ClCompile Include="compilecommon.cpp" />
     <ClCompile Include="confdialog.cpp" />
     <ClCompile Include="contactsdialog.cpp" />

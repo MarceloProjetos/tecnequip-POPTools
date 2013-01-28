@@ -26,7 +26,7 @@ void XMLWrapper::DeInit(void)
 // Helper function to create a DOM instance. 
 void XMLWrapper::CreateAndInitDOM(void)
 {
-	CoInitialize(NULL);
+	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     hr = CoCreateInstance(__uuidof(MSXML2::DOMDocument60), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pXMLDom));
     if (SUCCEEDED(hr)) {
         // these methods should not fail so don't inspect result

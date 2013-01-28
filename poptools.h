@@ -1355,6 +1355,17 @@ extern HWND CancelButton;
 extern BOOL DialogDone;
 extern BOOL DialogCancel;
 
+typedef struct {
+	bool     CharToWideChar;
+	char    *pChar;
+	wchar_t *pWideChar;
+} tConvString;
+
+void ConvString_Free(tConvString *pStr, bool both);
+void ConvString_Convert(tConvString *pStr);
+char *ConvString_Convert(char *pc, wchar_t *pwc);
+wchar_t *ConvString_Convert(wchar_t *pwc, char *pc);
+
 // multisetdadialog.cpp
 void PopulateAbortModeCombobox(HWND AbortModeCombobox, bool IncludeDefault);
 
@@ -1485,5 +1496,9 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2);
 // modbus_usb.h
 bool USB_SetDateTime(struct tm *t);
 bool USB_GetDateTime(struct tm *t);
+
+// CommonFileDialog.cpp
+enum FDS_Mode { LoadLadder = 0, SaveLadder, SaveText, SaveC };
+HRESULT FileDialogShow(enum FDS_Mode mode, char *DefExt, char *FileName);
 
 #endif

@@ -206,26 +206,15 @@ void UpdateRecentList(char *filename)
 //-----------------------------------------------------------------------------
 static BOOL SaveAsDialog(void)
 {
-    OPENFILENAME ofn;
-
 	if(!Prog.settings.canSave) {
 		CurrentSaveFile[0] = '\0';
 	}
 
-	memset(&ofn, 0, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hInstance = Instance;
-    ofn.lpstrFilter = LDMICRO_PATTERN;
-    ofn.lpstrDefExt = "ld";
-    ofn.lpstrFile = CurrentSaveFile;
-    ofn.nMaxFile = sizeof(CurrentSaveFile);
-	ofn.hwndOwner = MainWindow;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	FileDialogShow(SaveLadder, "ld", CurrentSaveFile);
+	if(!strlen(CurrentSaveFile))
+		return FALSE;
 
-    if(!GetSaveFileName(&ofn))
-        return FALSE;
-
-    if(!SaveProjectToFile(CurrentSaveFile)) {
+	if(!SaveProjectToFile(CurrentSaveFile)) {
         Error(_("Couldn't write to '%s'."), CurrentSaveFile);
         return FALSE;
     } else {
@@ -242,7 +231,6 @@ static BOOL SaveAsDialog(void)
 static void ExportDialog(void)
 {
     char exportFile[MAX_PATH];
-    OPENFILENAME ofn;
 
 	if(strlen(CurrentSaveFile) != 0) {
 		strcpy(exportFile, CurrentSaveFile);
@@ -251,20 +239,9 @@ static void ExportDialog(void)
 	    exportFile[0] = '\0';
 	}
 
-    memset(&ofn, 0, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hInstance = Instance;
-    ofn.lpstrFilter = TXT_PATTERN;
-    ofn.lpstrFile = exportFile;
-	ofn.lpstrDefExt = "txt";
-    ofn.lpstrTitle = _("Export As Text");
-    ofn.nMaxFile = sizeof(exportFile);
-	ofn.hwndOwner = MainWindow;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
-
-    if(!GetSaveFileName(&ofn))
-        return;
-
+	FileDialogShow(SaveText, "txt", exportFile);
+	if(!strlen(exportFile))
+		return;
     ExportDrawingAsText(exportFile);
 }
 
@@ -275,7 +252,6 @@ static void ExportDialog(void)
 static void SaveAsAnsiC(void)
 {
     char exportFile[MAX_PATH];
-    OPENFILENAME ofn;
 
 	if(strlen(CurrentSaveFile) != 0) {
 		strcpy(exportFile, CurrentSaveFile);
@@ -284,19 +260,9 @@ static void SaveAsAnsiC(void)
 	    exportFile[0] = '\0';
 	}
 
-    memset(&ofn, 0, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hInstance = Instance;
-    ofn.lpstrFilter = C_PATTERN;
-    ofn.lpstrFile = exportFile;
-	ofn.lpstrDefExt = "c";
-    ofn.lpstrTitle = _("Salvar como linguagem C");
-    ofn.nMaxFile = sizeof(exportFile);
-	ofn.hwndOwner = MainWindow;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
-
-    if(!GetSaveFileName(&ofn))
-        return;
+	FileDialogShow(SaveC, "c", exportFile);
+	if(!strlen(exportFile))
+		return;
 
     if(GenerateIntermediateCode() && GenerateCFile(exportFile))
 		MessageBox(MainWindow, _("Arquivo gerado com sucesso!"), _("Sucesso"), MB_OK);
@@ -698,25 +664,14 @@ BOOL CheckSaveUserCancels(void)
 //-----------------------------------------------------------------------------
 static void OpenDialog(char *filename)
 {
-    OPENFILENAME ofn;
-
     char tempSaveFile[MAX_PATH] = "";
 
 	if(filename != NULL && strlen(filename)) {
 		strcpy(tempSaveFile, filename);
 	} else {
-	    memset(&ofn, 0, sizeof(ofn));
-		ofn.lStructSize = sizeof(ofn);
-	    ofn.hInstance = Instance;
-		ofn.lpstrFilter = LDMICRO_PATTERN;
-	    ofn.lpstrDefExt = "ld";
-		ofn.lpstrFile = tempSaveFile;
-	    ofn.nMaxFile = sizeof(tempSaveFile);
-		ofn.hwndOwner = MainWindow;
-	    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-
-	    if(!GetOpenFileName(&ofn))
-		    return;
+		FileDialogShow(LoadLadder, "ld", tempSaveFile);
+		if(!strlen(tempSaveFile))
+			return;
 	}
 
     if(!LoadProjectFromFile(tempSaveFile)) {

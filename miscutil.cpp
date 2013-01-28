@@ -859,4 +859,67 @@ unsigned short int CRC16(unsigned char *puchMsg, unsigned int usDataLen)
   return (uchCRCLo << 8 | uchCRCHi) ;
 }
 
-// XOR calculation //
+// Functions to convert wchar <=> char
+void ConvString_Free(tConvString *pStr, bool both)
+{
+	if(both || pStr->CharToWideChar) {
+		delete pStr->pWideChar;
+		pStr->pWideChar = NULL;
+	}
+
+	if(both || !pStr->CharToWideChar) {
+		delete pStr->pChar;
+		pStr->pChar = NULL;
+	}
+}
+
+void ConvString_Convert(tConvString *pStr)
+{
+	if(pStr->CharToWideChar) {
+		int len = strlen(pStr->pChar) + 1;
+		pStr->pWideChar = new wchar_t[len];
+
+	  memset(pStr->pWideChar,0,len);
+	  ::MultiByteToWideChar(CP_ACP, NULL, pStr->pChar, -1, pStr->pWideChar, len);
+	} else {
+		pStr->pChar = _com_util::ConvertBSTRToString(pStr->pWideChar);
+	}
+}
+
+char *ConvString_Convert(char *pc, wchar_t *pwc)
+{
+	tConvString pStr;
+
+	pStr.pWideChar = pwc;
+	pStr.CharToWideChar = false;
+
+	ConvString_Convert(&pStr);
+
+	if(pc) {
+		strcpy(pc, pStr.pChar);
+		ConvString_Free(&pStr, false);
+	} else {
+		pc = pStr.pChar;
+	}
+
+	return pc;
+}
+
+wchar_t *ConvString_Convert(wchar_t *pwc, char *pc)
+{
+	tConvString pStr;
+
+	pStr.pChar = pc;
+	pStr.CharToWideChar = true;
+
+	ConvString_Convert(&pStr);
+
+	if(pwc) {
+		wcscpy(pwc, pStr.pWideChar);
+		ConvString_Free(&pStr, false);
+	} else {
+		pwc = pStr.pWideChar;
+	}
+
+	return pwc;
+}
