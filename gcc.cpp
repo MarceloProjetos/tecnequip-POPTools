@@ -14,6 +14,9 @@ static int SeenVariablesCount[SEENVAR_LISTS];
 static char *NameVarArray[] = { "ArrayBitUser", "ArrayBitSystem", "ArrayIntUser" };
 static int MODBUS_MASTER = 0;
 
+// Control variables
+int HasPWM = 0;
+
 //#define INT_UNSIGNED	
 
 //-----------------------------------------------------------------------------
@@ -682,6 +685,8 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				fprintf(f, "Modbus_TCP_Send(%d, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_SET_PWM:
+				fprintf(f, "PWM_Set(%s, %s);\n", IsNumber(IntCode[i].name1) ? IntCode[i].name1 : GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].name2);
+				HasPWM = 1;
 				break;
             case INT_UART_RECV:
 				sprintf(buf2, "RS485_Read((unsigned char *)&%s, 1)", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
@@ -965,7 +970,9 @@ DWORD GenerateCFile(char *filename)
         return 0;
     }
 
-    // Set up the TRISx registers (direction). 1 means tri-stated (input).
+	HasPWM = 0;
+
+	// Set up the TRISx registers (direction). 1 means tri-stated (input).
     BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
     BuildDirectionRegisters(isInput, isOutput);
 
@@ -1095,6 +1102,9 @@ DWORD GenerateCFile(char *filename)
 
 	fprintf(f, "    ADC_SetMask(%d);\n", ad_mask);
 	fprintf(f, "    SSI_Init(%d, %d);\n", Prog.settings.ssi_size, Prog.settings.ssi_mode);
+	if(HasPWM) {
+		fprintf(f, "    PWM_Init();\n");
+	}
 	fprintf(f, "}\n");
 
 	fclose(f);

@@ -1168,13 +1168,23 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 break;
 				
             case ELEM_SET_PWM: {
-                Op(INT_IF_BIT_SET, stateInOut);
                 char line[80];
-                // ugh; need a >16 bit literal though, could be >64 kHz
+
+				char oneShot[MAX_NAME_LEN];
+				GenSymOneShot(oneShot);
+
+				// ugh; need a >16 bit literal though, could be >64 kHz
                 sprintf(line, "%d", l->d.setPwm.targetFreq);
-                Op(INT_SET_PWM, l->d.setPwm.name, line);
+
+				Op(INT_IF_BIT_SET, stateInOut);
+					Op(INT_SET_BIT, oneShot);
+					Op(INT_SET_PWM, l->d.setPwm.name, line);
+				Op(INT_ELSE_IF); Op(INT_IF_BIT_SET, oneShot);
+					Op(INT_CLEAR_BIT, oneShot);
+					Op(INT_SET_PWM, "0", "0"); // Disable PWM Output
                 Op(INT_END_IF);
-                break;
+
+				break;
             }
             case ELEM_PERSIST: {
 				if(EepromAddrFree > EEPROM_SIZE) {

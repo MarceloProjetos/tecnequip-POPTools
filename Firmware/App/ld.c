@@ -1,31 +1,6 @@
 /*****************************************************************************
  * Tecnequip Tecnologia em Equipamentos Ltda                                 *
  *****************************************************************************/
-#include "ld.h"
-#include "lpc17xx.h"
-#include <stdlib.h>
-
-extern volatile unsigned char 	MODBUS_MASTER; // 0 = Slave, 1 = Master
-extern volatile int 			MODBUS_REGISTER[32];
-extern struct MB_Device 		modbus_master;
-extern struct tm 				RTC_NowTM;
-struct tm 						RTC_StartTM;
-struct tm 						RTC_EndTM;
-extern volatile unsigned int 	I_SerialReady;
-extern volatile unsigned int 	I_SerialTimeout;
-extern volatile unsigned int 	I_SerialAborted;
-
-extern struct ip_addr 			IP_ADDRESS;
-extern struct ip_addr 			IP_NETMASK;
-extern struct ip_addr 			IP_GATEWAY;
-extern struct ip_addr			IP_DNS;
-
-//char 							SNTP_SERVER_ADDRESS[] = "servidor.local";
-//char 							SNTP_SERVER_ADDRESS[] = "br.pool.ntp.org";
-char 							SNTP_SERVER_ADDRESS[] = "192.168.0.5";
-
-int								SNTP_GMT = -3;
-int								SNTP_DAILY_SAVE = 1;
 
 #define PLC_TESTE
 
@@ -85,6 +60,32 @@ int								SNTP_DAILY_SAVE = 1;
 #include "POPTools/PLC_SCADA.h"
 #else
 
+#include "ld.h"
+#include "lpc17xx.h"
+#include <stdlib.h>
+
+extern volatile unsigned char 	MODBUS_MASTER; // 0 = Slave, 1 = Master
+extern volatile int 			MODBUS_REGISTER[32];
+extern struct MB_Device 		modbus_master;
+extern struct tm 				RTC_NowTM;
+struct tm 						RTC_StartTM;
+struct tm 						RTC_EndTM;
+extern volatile unsigned int 	I_SerialReady;
+extern volatile unsigned int 	I_SerialTimeout;
+extern volatile unsigned int 	I_SerialAborted;
+
+extern struct ip_addr 			IP_ADDRESS;
+extern struct ip_addr 			IP_NETMASK;
+extern struct ip_addr 			IP_GATEWAY;
+extern struct ip_addr			IP_DNS;
+
+//char 							SNTP_SERVER_ADDRESS[] = "servidor.local";
+//char 							SNTP_SERVER_ADDRESS[] = "br.pool.ntp.org";
+char 							SNTP_SERVER_ADDRESS[] = "192.168.0.5";
+
+int								SNTP_GMT = -3;
+int								SNTP_DAILY_SAVE = 1;
+
 volatile int ArrayBitUser_Count = 0;
 volatile int ArrayBitUser[0];
 volatile int ArrayIntUser_Count = 0;
@@ -97,7 +98,6 @@ void PLC_Run(void)
 {
     I_mcr = 1;
 }
-#endif
 
 void PLC_Init(void)
 {
@@ -122,5 +122,7 @@ void PLC_Init(void)
 
 	ADC_SetMask(0x3F);
 	SSI_Init(25, SSI_MODE_GRAY);
+	PWM_Init();
 }
 
+#endif

@@ -47,6 +47,8 @@ volatile char GPIO_OUTPUT_PORT16 __attribute__((weak)) = 0;
 volatile char GPIO_OUTPUT_PORT17 __attribute__((weak)) = 0;
 volatile char GPIO_OUTPUT_PORT18 __attribute__((weak)) = 0;
 
+volatile unsigned char GPIO_PWM_ENABLED = 0;
+
 void GPIO_Init()
 {
 
@@ -75,6 +77,16 @@ void GPIO_Init()
 
 	unsigned char cmd = OUTPUT_CMD_CONTROL;
 	SSP_Write((unsigned char*)&cmd, 1);
+
+	if(GPIO_PWM_ENABLED) {
+		unsigned int mask = HTONS(0x8000);
+
+		cmd = 0x4 << 2;
+		GPIO0->FIOCLR = 0x10000;
+		SSP_Write((unsigned char*)&cmd, 1);
+		SSP_Write((unsigned char*)&mask, 2);
+		GPIO0->FIOSET = 0x10000;
+	}
 }
 
 unsigned int GPIO_Output(void)
