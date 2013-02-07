@@ -295,6 +295,7 @@ extern unsigned int Modbus_WriteMultipleRegisters(struct MODBUS_Device *dev, uni
 extern unsigned int Modbus_Tx(unsigned char *data, unsigned int size);
 extern unsigned int Modbus_Request(unsigned char * buffer, unsigned int sz);
 extern void Modbus_Send(unsigned char id,
+                  unsigned long ip,
                   int fc,
                   unsigned short int address,
                   unsigned short int size,

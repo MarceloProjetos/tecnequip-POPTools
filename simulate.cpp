@@ -1010,15 +1010,6 @@ static void CheckVariableNamesCircuit(int which, void *elem)
 			MarkWithCheck("$ModbusReady", VAR_FLAG_ANY);
             break;
 
-        case ELEM_READ_MODBUS_ETH:
-            MarkWithCheck(l->d.readModbusEth.name, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_WRITE_MODBUS_ETH:
-            MarkWithCheck(l->d.writeModbusEth.name, VAR_FLAG_ANY);
-			MarkWithCheck("$ModbusEthReady", VAR_FLAG_ANY);
-            break;
-
         case ELEM_ADD:
         case ELEM_SUB:
         case ELEM_MUL:
@@ -1414,18 +1405,6 @@ math:
 				SetSingleBit("$ModbusReady", FALSE);
 				SimulateModbusTxCountdown = 0;
 				AppendToModbusSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
-                break;
-
-            case INT_READ_MODBUS_ETH:
-				SetSingleBit("$ModbusEthReady", FALSE);
-				SimulateModbusEthTxCountdown = 0;
-				AppendToModbusEthSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
-                break;
-
-            case INT_WRITE_MODBUS_ETH:
-				SetSingleBit("$ModbusEthReady", FALSE);
-				SimulateModbusEthTxCountdown = 0;
-				AppendToModbusEthSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
                 break;
 
             case INT_UART_SEND:

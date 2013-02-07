@@ -23,6 +23,13 @@ static HWND DailySaveCheckbox;
 static HWND SSISizeTextbox;
 static HWND SSIModeCombobox;
 static HWND AbortModeCombobox;
+static HWND MBelem;
+static HWND MBok;
+static HWND MBdelete;
+static HWND MBip;
+static HWND MBname;
+static HWND MBid;
+static HWND MBiface;
 static HWND ip;
 static HWND mask;
 static HWND gw;
@@ -77,6 +84,8 @@ struct strSerialConfig SerialConfig[] = {
 char *EncAbsConfig[] = { _("Leitura Gray"), _("Leitura Binário") };
 
 char *SerialParityString[] = { _("Sem Paridade"), _("Paridade Ímpar"), _("Paridade Par") };
+
+char *ModBUSInterfaces[] = { _("RS-485"), _("Ethernet") };
 
 #define CONFTVI_ID_COMM              0
 #define CONFTVI_ID_COMM_NETWORK      1
@@ -213,6 +222,133 @@ static LRESULT CALLBACK ConfDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	}
 
 	return CallWindowProc((WNDPROC)PrevConfDialogProc, hwnd, msg, wParam, lParam);
+}
+
+void LoadMBMasterControls(int elem)
+{
+	if(elem > 0) {
+		char buf[10];
+		MbNodeList *l = MbNodeList_GetByIndex(elem-1);
+
+		if(l != NULL) {
+			sprintf(buf, "%d", l->node.id);
+
+			EnableWindow(MBip  , l->node.iface ? TRUE : FALSE);
+			SendMessage(MBiface, CB_SETCURSEL  , l->node.iface, 0);
+			SendMessage(MBname , WM_SETTEXT    , 0, (LPARAM)l->node.name);
+			SendMessage(MBip   , IPM_SETADDRESS, 0, l->node.ip);
+			SendMessage(MBid   , WM_SETTEXT    , 0, (LPARAM)buf);
+		}
+
+		Button_SetText(MBok, _("Alterar"));
+		EnableWindow(MBdelete, TRUE);
+	} else {
+		EnableWindow(MBip  , TRUE);
+		SendMessage(MBiface, CB_SETCURSEL  , 1, 0); // Ethernet
+		SendMessage(MBname , WM_SETTEXT    , 0, (LPARAM)"");
+		SendMessage(MBip   , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]));
+		SendMessage(MBid   , WM_SETTEXT    , 0, (LPARAM)"1");
+
+		Button_SetText(MBok, _("Adicionar"));
+		EnableWindow(MBdelete, FALSE);
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Window proc for the ModBUS Master Grouper. This Ok/Cancel stuff is common to a lot
+// of places, and there are no other callbacks from the children.
+//-----------------------------------------------------------------------------
+static LRESULT CALLBACK ConfDialogProc_ModBusMasterGrouper(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) {
+		case WM_COMMAND: {
+            HWND h = (HWND)lParam;
+            if(h == MBok && wParam == BN_CLICKED) {
+				char buf[MAX_NAME_LEN];
+				PCWSTR msg;
+				MbNodeList *new_node = NULL;
+				int i = ComboBox_GetCurSel(MBelem), pos = 1;
+
+				// Check if name already in the list
+				SendMessage(MBname, WM_GETTEXT, (WPARAM)17, (LPARAM)buf);
+				for(pos = 0; pos < Prog.settings.mb_list_size; pos++) {
+					if((i-1) != pos && !strcmp(Prog.settings.mb_list[pos].node.name, buf)) {
+						ShowTaskDialog(L"Já existe um elemento com esse nome!", NULL, TD_ERROR_ICON, TDCBF_OK_BUTTON);
+						break;
+					}
+				}
+
+				if(pos == Prog.settings.mb_list_size) { // Name not found,  we can insert / update element.
+					if(!i) { // New element
+						if(Prog.settings.mb_list_size == MB_LIST_MAX) {
+							msg = L"Muitos elementos cadastrados!";
+						} else {
+							msg = L"Elemento adicionado com sucesso!";
+
+							new_node = &Prog.settings.mb_list[Prog.settings.mb_list_size];
+							new_node->NodeCount = 0;
+
+							if(!Prog.settings.mb_list_size) {
+								new_node->NodeID = 0;
+							} else {
+								new_node->NodeID = Prog.settings.mb_list[Prog.settings.mb_list_size - 1].NodeID + 1;
+							}
+
+							Prog.settings.mb_list_size++;
+						}
+					} else { // Updating existent element
+						msg = L"Elemento alterado com sucesso!";
+
+						new_node = MbNodeList_GetByIndex(i-1);
+					}
+
+					if(new_node != NULL) {
+						strcpy(new_node->node.name, buf);
+
+						SendMessage(MBid, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)buf);
+						new_node->node.id = atoi(buf);
+
+						new_node->node.iface = SendMessage(MBiface, CB_GETCURSEL, 0, 0);
+
+						SendMessage(MBip, IPM_GETADDRESS, 0, (LPARAM)&new_node->node.ip);
+
+						PopulateModBUSMasterCombobox(MBelem, true);
+						LoadMBMasterControls(0);
+					}
+
+					ShowTaskDialog(msg, NULL, new_node ? TD_INFORMATION_ICON : TD_ERROR_ICON, TDCBF_OK_BUTTON);
+				}
+            } else if(h == MBdelete && wParam == BN_CLICKED) {
+				int i = ComboBox_GetCurSel(MBelem) - 1;
+				MbNodeList *l = MbNodeList_GetByIndex(i);
+
+				if(l->NodeCount) {
+					ShowTaskDialog(L"Este elemento está em uso!", L"Primeiro remova sua referência de todas as instruções que o utilizam.",
+						TD_ERROR_ICON, TDCBF_OK_BUTTON);
+				} else if(ShowTaskDialog(L"Tem certeza que deseja excluir o item selecionado?", NULL,
+						TD_WARNING_ICON, TDCBF_YES_BUTTON | TDCBF_NO_BUTTON) == IDYES) {
+					memcpy(&Prog.settings.mb_list[i], &Prog.settings.mb_list[i+1], sizeof(Prog.settings.mb_list[i])*(Prog.settings.mb_list_size - i - 1));
+
+					Prog.settings.mb_list_size--;
+					PopulateModBUSMasterCombobox(MBelem, true);
+					LoadMBMasterControls(0);
+				}
+            } else if(h == MBelem && HIWORD(wParam) == CBN_SELCHANGE) {
+				LoadMBMasterControls(ComboBox_GetCurSel(MBelem));
+			} else if(h == MBiface && HIWORD(wParam) == CBN_SELCHANGE) {
+				if(ComboBox_GetCurSel(MBiface) == MB_IFACE_RS485) {
+					SendMessage (MBip, IPM_SETADDRESS, 0, 0);
+					EnableWindow(MBip, FALSE);
+				} else {
+					SendMessage (MBip, IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]));
+					EnableWindow(MBip, TRUE);
+				}
+			}
+            break;
+			}
+	}
+
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 // Adds items to a tree-view control. 
@@ -564,6 +700,72 @@ static void MakeControls(void)
         215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupModBUSMaster);
 
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Elemento:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 0, 80, 21, GroupModBUSMaster, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+	MBelem = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        95, 0, 200, 100, GroupModBUSMaster, NULL, Instance, NULL);
+    NiceFont(MBelem);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Nome:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        25, 45, 110, 21, GroupModBUSMaster, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    MBname = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        145, 45, 140, 21, GroupModBUSMaster, NULL, Instance, NULL);
+    NiceFont(MBname);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Interface:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        25, 75, 110, 21, GroupModBUSMaster, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+	MBiface = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        145, 75, 140, 100, GroupModBUSMaster, NULL, Instance, NULL);
+    NiceFont(MBiface);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Endereço IP:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        25, 105, 110, 21, GroupModBUSMaster, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    MBip = CreateWindowEx(0, WC_IPADDRESS, _("IP"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        145, 105, 140, 21, GroupModBUSMaster, NULL, Instance, NULL);
+//    NiceFont(MBip);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("ID do ModBUS:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        25, 135, 110, 21, GroupModBUSMaster, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    MBid = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        145, 135, 140, 21, GroupModBUSMaster, NULL, Instance, NULL);
+    NiceFont(MBid);
+
+    MBok = CreateWindowEx(0, WC_BUTTON, _("Adicionar"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        137, 165, 69, 23, GroupModBUSMaster, NULL, Instance, NULL); 
+    NiceFont(MBok);
+
+    MBdelete = CreateWindowEx(0, WC_BUTTON, _("Excluir"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        216, 165, 69, 23, GroupModBUSMaster, NULL, Instance, NULL); 
+    NiceFont(MBdelete);
+
+    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Dados do Elemento Selecionado"),
+        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
+        10, 25, 285, 170, GroupModBUSMaster, NULL, Instance, NULL);
+    NiceFont(grouper);
+	SetWindowLongPtr(GroupModBUSMaster, GWLP_WNDPROC, (LONG_PTR)ConfDialogProc_ModBusMasterGrouper);
+
 	// Group - ModBUS Slave
     GroupModBUSSlave = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
@@ -635,7 +837,8 @@ static void MakeControls(void)
 bool ShowConfDialog(bool NetworkSection)
 {
 	bool changed = false;
-	unsigned int i, ipaddress, ipmask, ipgw, ipdns;
+	MbNodeList mb_list[MB_LIST_MAX];
+	unsigned int i, ipaddress, ipmask, ipgw, ipdns, mb_list_size;
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "POPToolsDialog", _("PLC Configuration"),
         WS_OVERLAPPED | WS_SYSMENU,
@@ -665,6 +868,15 @@ bool ShowConfDialog(bool NetworkSection)
 
 	/*SendMessage(PLCCombobox, CB_SETCURSEL, 0, 0);
 	SendMessage(PLCCombobox, CB_SETDROPPEDWIDTH, 100, 0);*/
+
+	for (i = 0; i < sizeof(ModBUSInterfaces) / sizeof(ModBUSInterfaces[0]); i++)
+		SendMessage(MBiface, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ModBUSInterfaces[i]));
+
+	PopulateModBUSMasterCombobox(MBelem, true);
+	LoadMBMasterControls(0);
+
+	mb_list_size = Prog.settings.mb_list_size;
+	memcpy(mb_list, Prog.settings.mb_list, sizeof(Prog.settings.mb_list));
 
 	for (i = 0; i < sizeof(SerialConfig) / sizeof(SerialConfig[0]); i++)
 		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)SerialConfig[i].ConfigName));
@@ -825,6 +1037,9 @@ bool ShowConfDialog(bool NetworkSection)
 		Prog.settings.ramp_abort_mode = SendMessage(AbortModeCombobox, CB_GETCURSEL, 0, 0) + 1;
 
 		changed = true;
+	} else {
+		Prog.settings.mb_list_size = mb_list_size;
+		memcpy(Prog.settings.mb_list, mb_list, sizeof(mb_list));
 	}
 
     EnableWindow(MainWindow, TRUE);

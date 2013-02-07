@@ -67,6 +67,9 @@ struct tm RTC_NowTM;
 
 #define CYCLE_TIME 10
 
+extern struct MODBUS_Device modbus_tcp;
+extern volatile unsigned int I_TcpTimeout;
+
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
 void PLC_Cycle(void *pdata)
 {
@@ -90,6 +93,13 @@ void PLC_Cycle(void *pdata)
 		do{
 			RS232_Console(cycle);
 			RS485_Handler(cycle);
+
+			if(MBTCP_Transfer.status == MBTCP_STATUS_DONE) {
+				if(!I_TcpTimeout) {
+					Modbus_Request(&modbus_tcp, MBTCP_Transfer.buf, MBTCP_Transfer.bufsize);
+				}
+				MBTCP_Transfer.status = MBTCP_STATUS_READY;
+			}
 
 			CoTickDelay(1);
 		} while(CoGetOSTime() < end_tick);

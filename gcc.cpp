@@ -12,7 +12,7 @@
 static char SeenVariables[SEENVAR_LISTS][MAX_IO][MAX_NAME_LEN];
 static int SeenVariablesCount[SEENVAR_LISTS];
 static char *NameVarArray[] = { "ArrayBitUser", "ArrayBitSystem", "ArrayIntUser" };
-static int MODBUS_MASTER = 0;
+static int MODBUS_RS485_MASTER = 0, MODBUS_TCP_MASTER = 0;
 
 // Control variables
 int HasPWM = 0;
@@ -245,11 +245,8 @@ static void GenerateDeclarations(FILE *f)
                 intVar1 = IntCode[i].name1;
                 break;
 
-            case INT_READ_MODBUS_ETH:
-            case INT_WRITE_MODBUS_ETH:
             case INT_READ_MODBUS:
             case INT_WRITE_MODBUS:
-				MODBUS_MASTER = 1;
                 intVar1 = IntCode[i].name1;
                 break;
 
@@ -667,22 +664,18 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				fprintf(f, "Yaskawa_Write(\"%s\", \"%s\", &%s);\n", IntCode[i].name3, IntCode[i].name2, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_READ_USS:
-				fprintf(f, "USS_Get_Param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, MapSym(IntCode[i].name1));
+				fprintf(f, "USS_Get_Param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break; 
             case INT_WRITE_USS:
 				fprintf(f, "USS_Set_Param(%d, %d, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), atoi(IntCode[i].name4), IntCode[i].literal, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_READ_MODBUS:
-				fprintf(f, "Modbus_Send(%d, MODBUS_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				if(IntCode[i].literal) MODBUS_TCP_MASTER = 1; else MODBUS_RS485_MASTER = 1;
+				fprintf(f, "Modbus_Send(%d, %uUL, MODBUS_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), IntCode[i].literal, atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_WRITE_MODBUS:
-				fprintf(f, "Modbus_Send(%d, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
-				break;
-            case INT_READ_MODBUS_ETH:
-				fprintf(f, "Modbus_TCP_Send(%d, MODBUS_FC_READ_HOLDING_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
-				break;
-            case INT_WRITE_MODBUS_ETH:
-				fprintf(f, "Modbus_TCP_Send(%d, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				if(IntCode[i].literal) MODBUS_TCP_MASTER = 1; else MODBUS_RS485_MASTER = 1;
+				fprintf(f, "Modbus_Send(%d, %uUL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(IntCode[i].name2), IntCode[i].literal, atoi(IntCode[i].name3), IntCode[i].bit + 1, GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_SET_PWM:
 				fprintf(f, "PWM_Set(%s, %s);\n", IsNumber(IntCode[i].name1) ? IntCode[i].name1 : GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].name2);
@@ -982,7 +975,8 @@ DWORD GenerateCFile(char *filename)
 	    SeenVariablesCount[i] = 0;
 	}
 
-	MODBUS_MASTER      = 0;
+	MODBUS_RS485_MASTER = 0;
+	MODBUS_TCP_MASTER = 0;
 
 	fprintf(f, "/*****************************************************************************\n");
 	fprintf(f, " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n");
@@ -1014,9 +1008,9 @@ DWORD GenerateCFile(char *filename)
 	//fprintf(f, "const volatile unsigned int		TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n", Prog.settings.cycleTime / 1000);
 	
 	fprintf(f, "\n");
-	fprintf(f, "extern volatile unsigned char 	MODBUS_MASTER; // 0 = Slave, 1 = Master\n");
+	fprintf(f, "extern volatile unsigned char 	MODBUS_RS485_MASTER; // 0 = Slave, 1 = Master\n");
+	fprintf(f, "extern volatile unsigned char 	MODBUS_TCP_MASTER; // 0 = Slave, 1 = Master\n");
 	fprintf(f, "extern volatile int 			MODBUS_REGISTER[32];\n");
-	fprintf(f, "extern struct 					MB_Device modbus_master;\n");
 	//fprintf(f, "extern volatile int 			ENCODER1;\n");
 	fprintf(f, "extern struct tm 				RTC_NowTM;\n");
 	fprintf(f, "struct tm 						RTC_StartTM;\n");
@@ -1035,34 +1029,6 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "char 							SNTP_SERVER_ADDRESS[] = \"%s\";\n", Prog.settings.sntp);
 	fprintf(f, "int								SNTP_GMT = %d;\n", Prog.settings.gmt > 12 ? Prog.settings.gmt - 12 : Prog.settings.gmt - 12);
 	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", Prog.settings.dailysave);
-
-	//int j;
-
-	//for(int i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) 
-	//{
-	//	for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) 
-	//	{
-	//		ElemLeaf *l = DisplayMatrix[i][j];
-	//		if ((l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS)
-	//			|| (l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS)
-	//			|| (l && DisplayMatrixWhich[i][j] == ELEM_READ_MODBUS_ETH)
-	//			|| (l && DisplayMatrixWhich[i][j] == ELEM_WRITE_MODBUS_ETH)) 
-	//		{
-	//			fprintf(f, "unsigned char MODBUS_MASTER = 1; // 0=Slave, 1=Master\n\n");
-	//			break;
-	//		}
-	//	}
-	//	if (j < DISPLAY_MATRIX_Y_SIZE)
-	//		break;
-	//}
-
-	//fprintf(f, "extern struct MB_Device modbus_master;\n");
-	/*fprintf(f, "extern unsigned int RS232Write(char c);\n");
-	fprintf(f, "extern void RS485Config(int baudrate, int bits, int parity, int stopbit);\n");
-	fprintf(f, "extern unsigned int ADCRead(unsigned int i);\n");
-	fprintf(f, "extern unsigned int ENCRead(void);\n");
-	fprintf(f, "extern unsigned int ENCReset(void);\n");*/
-	//fprintf(f, "extern volatile unsigned int I_SerialReady;\n\n");
 
 	fprintf(f, "\n");
 	fprintf(f, "// Variaveis PLC\n");
@@ -1083,7 +1049,8 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "void PLC_Init(void)\n");
 	fprintf(f, "{\n");
 	fprintf(f, "	I_SerialReady = 1;\n");
-	fprintf(f, "	MODBUS_MASTER = %d;\n", MODBUS_MASTER);
+	fprintf(f, "	MODBUS_RS485_MASTER = %d;\n", MODBUS_RS485_MASTER);
+	fprintf(f, "	MODBUS_TCP_MASTER = %d;\n", MODBUS_TCP_MASTER);
 	fprintf(f, "	ModBUS_SetID(%d);\n", Prog.settings.ModBUSID);
 	fprintf(f, "\n");
 	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", Prog.settings.baudRate, SerialConfig[Prog.settings.UART].bByteSize,

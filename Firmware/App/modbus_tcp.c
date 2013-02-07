@@ -1,16 +1,20 @@
 #include "modbus_tcp.h"
 
-extern struct MODBUS_Device modbus_rtu_master;
-extern struct MODBUS_Device modbus_rtu_slave;
-extern struct MODBUS_Device modbus_tcp_slave;
+extern struct MODBUS_Device modbus_tcp;
+
+struct strMBTCP_Tansfer MBTCP_Transfer;
 
 extern volatile int * MODBUS_RETURN_VAL;
+extern volatile unsigned char MODBUS_TCP_MASTER;  // 0 = Slave, 1 = Master
 
 struct netconn *current_conn;
 
 OS_STK ModbusTCPStack[MODBUS_TCP_THREAD_STACKSIZE];
 
-unsigned int Modbus_TCP_Tx(unsigned char *data, unsigned int size)
+volatile unsigned int I_TcpReady   = 1;
+volatile unsigned int I_TcpTimeout = 0;
+
+MODBUS_HANDLER_TX(Modbus_TCP_Slave_Tx)
 {
   if (netconn_write(current_conn, data, size, NETCONN_NOCOPY) != ERR_OK)
   {
@@ -19,6 +23,25 @@ unsigned int Modbus_TCP_Tx(unsigned char *data, unsigned int size)
   }
 
   return size;
+}
+
+MODBUS_HANDLER_TX(Modbus_TCP_Master_Tx)
+{
+	if(MBTCP_Transfer.status == MBTCP_STATUS_READY) {
+		I_TcpReady = 0;
+		memcpy(MBTCP_Transfer.buf, data, size);
+
+		IP4_ADDR(&MBTCP_Transfer.RemoteIP,
+				(ip >> 24) & 0xff,
+				(ip >> 16) & 0xff,
+				(ip >>  8) & 0xff,
+				(ip >>  0) & 0xff);
+
+		MBTCP_Transfer.bufsize = size;
+		MBTCP_Transfer.status = MBTCP_STATUS_BUSY;
+	}
+
+	return 0; // Nao podemos comunicar agora ou o ladder sera bloqueado
 }
 
 void Modbus_TCP_Request(struct netconn *conn) {
@@ -39,7 +62,12 @@ void Modbus_TCP_Request(struct netconn *conn) {
 	if ( buflen >= 2 )
 	{
 		current_conn = conn;
-		Modbus_RTU_Receive(&modbus_tcp_slave, Modbus_RTU_Validate((unsigned char*)buf, buflen, TRUE));
+		if(MODBUS_TCP_MASTER) {
+			memcpy(MBTCP_Transfer.buf, buf, buflen);
+			MBTCP_Transfer.bufsize = buflen;
+		} else {
+			Modbus_RTU_Receive(&modbus_tcp, Modbus_RTU_Validate((unsigned char*)buf, buflen, TRUE));
+		}
 
 		//netconn_write(conn, http_html_hdr, sizeof(http_html_hdr)-1, NETCONN_NOCOPY);
 
@@ -56,54 +84,66 @@ void Modbus_TCP_Request(struct netconn *conn) {
   netbuf_delete(inbuf);
 }
 
+int teste = 0;
 void Modbus_TCP_Connect(void *pdata)
 {
 
 	err_t err;
 	struct netconn *conn, *newconn;
 
-	/* Create a new TCP connection handle */
-	conn = netconn_new(NETCONN_TCP);
-	//  LWIP_ERROR("http_server: invalid conn", (conn != NULL), return -1;);
+	if(MODBUS_TCP_MASTER) {
+		while(1) {
+			if(MBTCP_Transfer.status == MBTCP_STATUS_BUSY) {
+				teste = 1;
+				/* Create a new TCP connection handle */
+				conn = netconn_new(NETCONN_TCP);
+				//  LWIP_ERROR("http_server: invalid conn", (conn != NULL), return -1;);
 
-	/* Bind to port 80 (HTTP) with default IP address */
-	netconn_bind(conn, IP_ADDR_ANY, 502);
+				/* Bind to port 80 (HTTP) with default IP address */
+				teste = 2;
+				netconn_bind(conn, IP_ADDR_ANY, 0);
 
-	/* Put the connection into LISTEN state */
-	netconn_listen(conn);
+				// Criar conexao
+				teste = 3;
+				if(netconn_connect(conn, &MBTCP_Transfer.RemoteIP, 502) == ERR_OK) {
+					// Envia pacote
+					teste = 4;
+					netconn_write(conn, MBTCP_Transfer.buf, MBTCP_Transfer.bufsize, NETCONN_NOCOPY);
 
-	while(1)
-	{
-		err = netconn_accept(conn, &newconn);
+					teste = 5;
+					// Repassa conexao para Modbus_TCP_Request que vai receber e tratar a resposta
+					Modbus_TCP_Request(conn);
+				} else {
+					teste = 6;
+					I_TcpTimeout = 1;
+				}
 
-		if (err == ERR_OK)
-			Modbus_TCP_Request(newconn);
+				// Finaliza indicando que terminou a comunicacao
+				netconn_delete(conn);
+				MBTCP_Transfer.status = MBTCP_STATUS_DONE;
+			}
+		}
+	} else {
+		/* Create a new TCP connection handle */
+		conn = netconn_new(NETCONN_TCP);
+		//  LWIP_ERROR("http_server: invalid conn", (conn != NULL), return -1;);
 
-		netconn_delete(newconn);
+		/* Bind to port 80 (HTTP) with default IP address */
+		netconn_bind(conn, IP_ADDR_ANY, 502);
+
+		/* Put the connection into LISTEN state */
+		netconn_listen(conn);
+
+		while(1)
+		{
+			err = netconn_accept(conn, &newconn);
+
+			if (err == ERR_OK)
+				Modbus_TCP_Request(newconn);
+
+			netconn_delete(newconn);
+		}
 	}
-
-  /*struct tcp_pcb* tcpweb;
-  struct tcp_pcb* tcpweb_listen;
-
-  tcpweb = tcp_new();
-  if (tcpweb == NULL)
-    return;
-
-  // Bind to port 502 modbus default
-  if (tcp_bind(tcpweb, IP_ADDR_ANY, 502) != ERR_OK)
-    return;
-
-  tcpweb_listen = tcp_listen(tcpweb);
-  if (tcpweb_listen == NULL)
-  {
-    tcp_abort(tcpweb);
-    tcpweb = NULL;
-    return;
-  }
-
-  tcpweb = tcpweb_listen;
-
-  tcp_accept(tcpweb, Modbus_TCP_Accept_Callback);*/
 }
 
 void Modbus_TCP_Init(void)

@@ -30,6 +30,8 @@ unsigned int rs485_rx_index = 0;
 unsigned int rs485_tx_index = 0;
 unsigned int rs485_tx_count = 0;
 
+extern struct MODBUS_Device modbus_rs485;
+
 void RS485_Init()
 {
 	// Inicializacao RS485
@@ -188,7 +190,7 @@ void RS485_Handler (unsigned int cycle)
 			}
 			else if (WAITING_FOR_YASKAWA == 0) // modbus
 			{
-				Modbus_Request(rs485_rx_buffer, rs485_rx_index);
+				Modbus_Request(&modbus_rs485, rs485_rx_buffer, rs485_rx_index);
 				rs485_rx_index = 0;
 			}
 		}

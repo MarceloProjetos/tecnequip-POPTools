@@ -269,6 +269,7 @@ struct MODBUS_Reply {
 struct MODBUS_Device {
   struct {
     unsigned char  Id;
+    unsigned long int Ip;
     char  *VendorName;
     char  *ProductCode;
     char  *MajorMinorRevision;
@@ -282,17 +283,22 @@ struct MODBUS_Device {
   MODBUS_HANDLER_TX_PTR(TX); // Ponteiro para funcao que faz a transmissao do pacote
 };
 
-extern unsigned int Modbus_ReadCoils(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
-extern unsigned int Modbus_ReadDiscreteInputs(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
-extern unsigned int Modbus_ReadHoldingRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
-extern unsigned int Modbus_ReadInputRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
-extern unsigned int Modbus_WriteSingleCoil(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
-extern unsigned int Modbus_WriteSingleRegister(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
-extern unsigned int Modbus_WriteMultipleCoils(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
-extern unsigned int Modbus_WriteMultipleRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
-extern unsigned int Modbus_Tx(unsigned char *data, unsigned int size);
-extern unsigned int Modbus_Request(unsigned char * buffer, unsigned int sz);
+#define MBTCP_STATUS_READY 0
+#define MBTCP_STATUS_BUSY  1
+#define MBTCP_STATUS_DONE  2
+
+struct strMBTCP_Tansfer {
+	unsigned char status;
+	unsigned int  bufsize;
+	struct ip_addr RemoteIP;
+	unsigned char buf[MODBUS_BUFFER_SIZE];
+};
+
+extern struct strMBTCP_Tansfer MBTCP_Transfer;
+
+extern unsigned int Modbus_Request(struct MODBUS_Device *dev, unsigned char * buffer, unsigned int sz);
 extern void Modbus_Send(unsigned char id,
+                  unsigned long ip,
                   int fc,
                   unsigned short int address,
                   unsigned short int size,

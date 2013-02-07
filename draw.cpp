@@ -75,8 +75,6 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
 		case ELEM_CHECK_BIT:
         case ELEM_READ_MODBUS:
         case ELEM_WRITE_MODBUS:
-        case ELEM_READ_MODBUS_ETH:
-        case ELEM_WRITE_MODBUS_ETH:
             return 1;
 
 		case ELEM_READ_FORMATTED_STRING:
@@ -1037,22 +1035,21 @@ cmp:
             break;
 
         case ELEM_READ_MODBUS:
-        case ELEM_WRITE_MODBUS:
-            CenterWithWires(*cx, *cy,
-                (which == ELEM_READ_MODBUS) ? _("{READ MB 485}") : _("{WRITE MB 485}"),
-                poweredBefore, poweredAfter);
-            CenterWithSpaces(*cx, *cy, (which == ELEM_READ_MODBUS) ? leaf->d.readModbus.name : leaf->d.writeModbus.name, poweredAfter, TRUE);
-            *cx += POS_WIDTH;
-            break;
+        case ELEM_WRITE_MODBUS: {
+			char buf[100];
+			MbNodeList *l = MbNodeList_GetByNodeID(which == ELEM_READ_MODBUS ? leaf->d.readModbus.elem : leaf->d.writeModbus.elem);
 
-        case ELEM_READ_MODBUS_ETH:
-        case ELEM_WRITE_MODBUS_ETH:
-            CenterWithWires(*cx, *cy,
-                (which == ELEM_READ_MODBUS_ETH) ? _("{READ MB ETH}") : _("{WRITE MB ETH}"),
+			CenterWithWires(*cx, *cy,
+				(l->node.iface == MB_IFACE_RS485 ? ((which == ELEM_READ_MODBUS) ? _("{READ MB 485}") : _("{WRITE MB 485}")) :
+				((which == ELEM_READ_MODBUS) ? _("{READ MB ETH}") : _("{WRITE MB ETH}"))),
                 poweredBefore, poweredAfter);
-            CenterWithSpaces(*cx, *cy, (which == ELEM_READ_MODBUS_ETH) ? leaf->d.readModbusEth.name : leaf->d.writeModbusEth.name, poweredAfter, TRUE);
-            *cx += POS_WIDTH;
+
+			sprintf(buf, "%s:%d", l->node.name, which == ELEM_READ_MODBUS ? leaf->d.readModbus.address : leaf->d.writeModbus.address);
+			CenterWithSpaces(*cx, *cy, buf, poweredAfter, TRUE);
+
+			*cx += POS_WIDTH;
             break;
+		}
 
 		case ELEM_UART_RECV:
         case ELEM_UART_SEND:

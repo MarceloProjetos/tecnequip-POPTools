@@ -266,20 +266,16 @@ static BOOL LoadLeafFromFile(char *line, void **any, int *which, int version)
         *which = ELEM_READ_USS;
     } else if(sscanf(line, "WRITE_USS %s %d %d %d %d", l->d.writeUSS.name, &l->d.writeUSS.id, &l->d.writeUSS.parameter, &l->d.writeUSS.parameter_set, &l->d.writeUSS.index)==5) {
         *which = ELEM_WRITE_USS;
-	} else if(sscanf(line, "READ_MODBUS %s %d %d %d %d", l->d.readModbus.name, &l->d.readModbus.id, &l->d.readModbus.address, &l->d.readModbus.int32, &l->d.readModbus.retransmitir)==5) {
+	} else if(sscanf(line, "READ_MODBUS %s %d %d %d %d", l->d.readModbus.name, &l->d.readModbus.elem, &l->d.readModbus.address, &l->d.readModbus.int32, &l->d.readModbus.retransmitir)==5) {
         *which = ELEM_READ_MODBUS;
-	} else if(sscanf(line, "READ_MODBUS %s %d %d %d", l->d.readModbus.name, &l->d.readModbus.id, &l->d.readModbus.address, &l->d.readModbus.int32, &l->d.readModbus.retransmitir)==4) { // old version
+	} else if(sscanf(line, "READ_MODBUS %s %d %d %d", l->d.readModbus.name, &l->d.readModbus.elem, &l->d.readModbus.address, &l->d.readModbus.int32, &l->d.readModbus.retransmitir)==4) { // old version
 		l->d.readModbus.retransmitir = TRUE;
         *which = ELEM_READ_MODBUS;
-	} else if(sscanf(line, "WRITE_MODBUS %s %d %d %d %d", l->d.writeModbus.name, &l->d.writeModbus.id, &l->d.writeModbus.address, &l->d.writeModbus.int32, &l->d.writeModbus.retransmitir)==5) {
+	} else if(sscanf(line, "WRITE_MODBUS %s %d %d %d %d", l->d.writeModbus.name, &l->d.writeModbus.elem, &l->d.writeModbus.address, &l->d.writeModbus.int32, &l->d.writeModbus.retransmitir)==5) {
         *which = ELEM_WRITE_MODBUS;
-	} else if(sscanf(line, "WRITE_MODBUS %s %d %d %d", l->d.writeModbus.name, &l->d.writeModbus.id, &l->d.writeModbus.address, &l->d.writeModbus.int32, &l->d.writeModbus.retransmitir)==4) { // old version
+	} else if(sscanf(line, "WRITE_MODBUS %s %d %d %d", l->d.writeModbus.name, &l->d.writeModbus.elem, &l->d.writeModbus.address, &l->d.writeModbus.int32, &l->d.writeModbus.retransmitir)==4) { // old version
 		l->d.writeModbus.retransmitir = TRUE;
         *which = ELEM_WRITE_MODBUS;
-	} else if(sscanf(line, "READ_MODBUS_ETH %s %d %d %d", l->d.readModbusEth.name, &l->d.readModbusEth.id, &l->d.readModbusEth.address, &l->d.readModbusEth.int32)==4) {
-        *which = ELEM_READ_MODBUS_ETH;
-	} else if(sscanf(line, "WRITE_MODBUS_ETH %s %d %d %d", l->d.writeModbusEth.name, &l->d.writeModbusEth.id, &l->d.writeModbusEth.address, &l->d.writeModbusEth.int32)==4) {
-        *which = ELEM_WRITE_MODBUS_ETH;
     } else if(sscanf(line, "SET_PWM %s %d", l->d.setPwm.name, 
         &(l->d.setPwm.targetFreq))==2)
     {
@@ -953,14 +949,6 @@ cmp:
 
         case ELEM_WRITE_MODBUS:
 			fprintf(f, "WRITE_MODBUS %s %d %d %d %d\n", l->d.writeModbus.name, l->d.writeModbus.id, l->d.writeModbus.address, l->d.writeModbus.int32, l->d.writeModbus.retransmitir);
-            break;
-
-        case ELEM_READ_MODBUS_ETH:
-            fprintf(f, "READ_MODBUS_ETH %s %d %d %d\n", l->d.readModbusEth.name, l->d.readModbusEth.id, l->d.readModbusEth.address, l->d.readModbusEth.int32);
-            break;
-
-        case ELEM_WRITE_MODBUS_ETH:
-			fprintf(f, "WRITE_MODBUS_ETH %s %d %d %d\n", l->d.writeModbusEth.name, l->d.writeModbusEth.id, l->d.writeModbusEth.address, l->d.writeModbusEth.int32);
             break;
 
         case ELEM_SET_PWM:

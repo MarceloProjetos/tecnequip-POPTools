@@ -702,13 +702,14 @@ bool CanInsert(int which)
 	case ELEM_CHECK_BIT:
 	case ELEM_READ_USS:
 	case ELEM_WRITE_USS:
-	case ELEM_READ_MODBUS:
-	case ELEM_WRITE_MODBUS:
-	case ELEM_READ_MODBUS_ETH:
-	case ELEM_WRITE_MODBUS_ETH:
 	case ELEM_UART_RECV:
 	case ELEM_UART_SEND:
 	    if(CanInsertOther) return true;
+		break;
+
+	case ELEM_READ_MODBUS:
+	case ELEM_WRITE_MODBUS:
+		if(CanInsertOther && Prog.settings.mb_list_size) return true;
 		break;
 
 	case ELEM_CTC:
@@ -763,12 +764,38 @@ void CopyLeaf(ElemLeaf *leaf, int which)
 // Paste a previously saved leaf, adding it to cursor's position
 bool PasteLeaf(void)
 {
+	MbNodeList *l;
 	ElemLeaf *PasteLeaf;
 
 	if(SavedLeaf != NULL && CanInsert(SavedWhich)) {
+		if(SavedWhich == ELEM_READ_MODBUS) {
+			l = MbNodeList_GetByNodeID(SavedLeaf->d.readModbus.elem);
+			if(l == NULL) {
+				l = MbNodeList_GetByIndex(0);
+				if(l == NULL) {
+					return false;
+				}
+				SavedLeaf->d.readModbus.elem = 0;
+			}
+
+			MbNodeList_AddRef(SavedLeaf->d.readModbus.elem);
+		} else if(SavedWhich == ELEM_WRITE_MODBUS) {
+			l = MbNodeList_GetByNodeID(SavedLeaf->d.writeModbus.elem);
+			if(l == NULL) {
+				l = MbNodeList_GetByIndex(0);
+				if(l == NULL) {
+					return false;
+				}
+				SavedLeaf->d.writeModbus.elem = 0;
+			}
+
+			MbNodeList_AddRef(SavedLeaf->d.writeModbus.elem);
+		}
+
 		PasteLeaf = SavedLeaf;
 		CopyLeaf(SavedLeaf, SavedWhich);
 	    AddLeaf(SavedWhich, PasteLeaf);
+
 		return true;
 	}
 
@@ -1179,7 +1206,10 @@ bool AddReadModbus(void)
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.readModbus.name, _("new"));
 	t->d.readModbus.retransmitir = TRUE;
-    AddLeaf(ELEM_READ_MODBUS, t);
+	t->d.readModbus.elem = MbNodeList_GetByIndex(0)->NodeID;
+	MbNodeList_AddRef(t->d.readModbus.elem);
+
+	AddLeaf(ELEM_READ_MODBUS, t);
 
 	return true;
 }
@@ -1190,27 +1220,10 @@ bool AddWriteModbus(void)
     ElemLeaf *t = AllocLeaf();
     strcpy(t->d.writeModbus.name, _("new"));
 	t->d.writeModbus.retransmitir = TRUE;
+	t->d.readModbus.elem = MbNodeList_GetByIndex(0)->NodeID;
+	MbNodeList_AddRef(t->d.writeModbus.elem);
+
     AddLeaf(ELEM_WRITE_MODBUS, t);
-
-	return true;
-}
-bool AddReadModbusEth(void)
-{
-    if(!CanInsert(ELEM_READ_MODBUS_ETH)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readModbusEth.name, _("new"));
-    AddLeaf(ELEM_READ_MODBUS_ETH, t);
-
-	return true;
-}
-bool AddWriteModbusEth(void)
-{
-    if(!CanInsert(ELEM_WRITE_MODBUS_ETH)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.writeModbusEth.name, _("new"));
-    AddLeaf(ELEM_WRITE_MODBUS_ETH, t);
 
 	return true;
 }
@@ -1359,7 +1372,13 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
             int i;
             for(i = 0; i < s->count; i++) {
                 if(s->contents[i].d.any == Selected) {
-                    ForgetFromGrid(s->contents[i].d.any);
+					if(s->contents[i].which == ELEM_READ_MODBUS) {
+						MbNodeList_DelRef(s->contents[i].d.leaf->d.readModbus.elem);
+					} else if(s->contents[i].which == ELEM_WRITE_MODBUS) {
+						MbNodeList_DelRef(s->contents[i].d.leaf->d.writeModbus.elem);
+					}
+
+					ForgetFromGrid(s->contents[i].d.any);
                     CheckFree(s->contents[i].d.any);
                     memmove(&s->contents[i], &s->contents[i+1],
                         (s->count - i - 1)*sizeof(s->contents[0]));
@@ -1381,7 +1400,13 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
             int i;
             for(i = 0; i < p->count; i++) {
                 if(p->contents[i].d.any == Selected) {
-                    ForgetFromGrid(p->contents[i].d.any);
+					if(p->contents[i].which == ELEM_READ_MODBUS) {
+						MbNodeList_DelRef(p->contents[i].d.leaf->d.readModbus.elem);
+					} else if(p->contents[i].which == ELEM_WRITE_MODBUS) {
+						MbNodeList_DelRef(p->contents[i].d.leaf->d.writeModbus.elem);
+					}
+
+					ForgetFromGrid(p->contents[i].d.any);
                     CheckFree(p->contents[i].d.any);
                     memmove(&p->contents[i], &p->contents[i+1],
                         (p->count - i - 1)*sizeof(p->contents[0]));
@@ -1420,6 +1445,12 @@ bool DeleteSelectedFromProgram(void)
     if(Prog.rungs[i]->count == 1 && 
         Prog.rungs[i]->contents[0].which != ELEM_PARALLEL_SUBCKT)
     {
+		if(Prog.rungs[i]->contents[0].which == ELEM_READ_MODBUS) {
+			MbNodeList_DelRef(Prog.rungs[i]->contents[0].d.leaf->d.readModbus.elem);
+		} else if(Prog.rungs[i]->contents[0].which == ELEM_WRITE_MODBUS) {
+			MbNodeList_DelRef(Prog.rungs[i]->contents[0].d.leaf->d.writeModbus.elem);
+		}
+
         Prog.rungs[i]->contents[0].which = ELEM_PLACEHOLDER;
         SelectedWhich = ELEM_PLACEHOLDER;
         Selected->selectedState = SELECTED_LEFT;
@@ -1548,6 +1579,8 @@ void FreeEntireProgram(void)
 	Prog.settings.ssi_size = 24;
 
 	Prog.settings.ramp_abort_mode = RAMP_ABORT_LEAVE;
+
+	Prog.settings.mb_list_size = 0;
 
 	for(i = 0; i < MAX_IO; i++)
 	{
@@ -1834,11 +1867,6 @@ BOOL UartFunctionUsed(void)
         }
         if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
             ELEM_READ_MODBUS, ELEM_WRITE_MODBUS, ELEM_FORMATTED_STRING))
-        {
-            return TRUE;
-        }
-        if(ContainsWhich(ELEM_SERIES_SUBCKT, Prog.rungs[i],
-            ELEM_READ_MODBUS_ETH, ELEM_WRITE_MODBUS_ETH, ELEM_FORMATTED_STRING))
         {
             return TRUE;
         }

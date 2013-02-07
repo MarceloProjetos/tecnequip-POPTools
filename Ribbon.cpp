@@ -468,10 +468,8 @@ public:
 			EXEC_OPCODE(cmdInstrReadNS600         , MNU_READ_SERVO_YASKAWA     );
 			EXEC_OPCODE(cmdInstrWriteNS600        , MNU_WRITE_SERVO_YASKAWA    );
 
-			EXEC_OPCODE(cmdInstrReadModBUS485     , MNU_INSERT_READ_MODBUS     );
-			EXEC_OPCODE(cmdInstrWriteModBUS485    , MNU_INSERT_WRITE_MODBUS    );
-			EXEC_OPCODE(cmdInstrReadModBUSEth     , MNU_INSERT_READ_MODBUS_ETH );
-			EXEC_OPCODE(cmdInstrWriteModBUSEth    , MNU_INSERT_WRITE_MODBUS_ETH);
+			EXEC_OPCODE(cmdInstrReadModBUS        , MNU_INSERT_READ_MODBUS     );
+			EXEC_OPCODE(cmdInstrWriteModBUS       , MNU_INSERT_WRITE_MODBUS    );
 
 			EXEC_OPCODE(cmdConfig                 , MNU_MCU_SETTINGS           );
 			EXEC_OPCODE(cmdSettings               , MNU_MCU_PREFERENCES        );
@@ -554,10 +552,8 @@ public:
 			EXEC_OPCODE(cmdExampleReadNS600         , MNU_EXAMPLE_READ_SERVO_YASK );
 			EXEC_OPCODE(cmdExampleWriteNS600        , MNU_EXAMPLE_WRITE_SERVO_YASK);
 
-			EXEC_OPCODE(cmdExampleReadModBUS485     , MNU_EXAMPLE_READ_MODBUS     );
-			EXEC_OPCODE(cmdExampleWriteModBUS485    , MNU_EXAMPLE_WRITE_MODBUS    );
-			EXEC_OPCODE(cmdExampleReadModBUSEth     , MNU_EXAMPLE_READ_MODBUS_ETH );
-			EXEC_OPCODE(cmdExampleWriteModBUSEth    , MNU_EXAMPLE_WRITE_MODBUS_ETH);
+			EXEC_OPCODE(cmdExampleReadModBUS        , MNU_EXAMPLE_READ_MODBUS     );
+			EXEC_OPCODE(cmdExampleWriteModBUS       , MNU_EXAMPLE_WRITE_MODBUS    );
 
 			EXEC_OPCODE(cmdExampleAdcLed            , MNU_EXAMPLE_ADC_LED         );
 			EXEC_OPCODE(cmdExampleSemaphore         , MNU_EXAMPLE_SEMAPHORE       );
@@ -639,7 +635,7 @@ public:
 				{ L"Matemática"     , { cmdExampleMathAdd, cmdExampleMathSub, cmdExampleMathMult, cmdExampleMathDivide, cmdExampleAbs, cmdExampleMathSqrt, cmdExampleShiftRegister, cmdExampleLookUpTable, cmdExamplePieceWiseLinear, cmdExampleRand, 0 } },
 				{ L"Analógicos"     , { cmdExampleReadAD, cmdExampleWriteDA, 0 } },
 				{ L"Motores"        , { cmdExamplePWM, cmdExampleRampDA, cmdExampleReadEnc, cmdExampleResetEnc, 0 } },
-				{ L"ModBUS"         , { cmdExampleReadModBUS485, cmdExampleWriteModBUS485, cmdExampleReadModBUSEth, cmdExampleWriteModBUSEth, 0 } },
+				{ L"ModBUS"         , { cmdExampleReadModBUS, cmdExampleWriteModBUS, 0 } },
 				{ L"RS-485 - Texto" , { cmdExampleReadFormatString, cmdExampleWriteFormatString, cmdExampleReadChar, cmdExampleWriteChar, 0 } },
 				{ L"RS-485 - Outros", { cmdExampleReadNS600, cmdExampleWriteNS600, cmdExampleReadUSS, cmdExampleWriteUSS, 0 } },
 				{ L"Aplicações"     , { cmdExampleAdcLed, cmdExampleSemaphore, cmdExampleTester, 0 } },
@@ -903,10 +899,8 @@ void EnableInterfaceItem(int item, BOOL enabled)
 			RIBBON_UPDATE_CMD_STATE(cmdInstrReadNS600         , MNU_READ_SERVO_YASKAWA     );
 			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteNS600        , MNU_WRITE_SERVO_YASKAWA    );
 
-			RIBBON_UPDATE_CMD_STATE(cmdInstrReadModBUS485     , MNU_INSERT_READ_MODBUS     );
-			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteModBUS485    , MNU_INSERT_WRITE_MODBUS    );
-			RIBBON_UPDATE_CMD_STATE(cmdInstrReadModBUSEth     , MNU_INSERT_READ_MODBUS_ETH );
-			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteModBUSEth    , MNU_INSERT_WRITE_MODBUS_ETH);
+			RIBBON_UPDATE_CMD_STATE(cmdInstrReadModBUS        , MNU_INSERT_READ_MODBUS     );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteModBUS       , MNU_INSERT_WRITE_MODBUS    );
 
 			RIBBON_UPDATE_CMD_STATE(cmdConfig                 , MNU_MCU_SETTINGS           );
 			RIBBON_UPDATE_CMD_STATE(cmdSettings               , MNU_MCU_PREFERENCES        );
@@ -922,8 +916,6 @@ void EnableInterfaceItem(int item, BOOL enabled)
 
 	RibbonSetCmdState(cmdDropDownIO    , TRUE);
 	RibbonSetCmdState(cmdDropDownMath  , TRUE);
-	RibbonSetCmdState(cmdDropDownMBSend, TRUE);
-	RibbonSetCmdState(cmdDropDownMBRecv, TRUE);
 }
 
 void DestroyRibbon(void)

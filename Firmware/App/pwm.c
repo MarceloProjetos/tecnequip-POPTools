@@ -35,6 +35,12 @@ void PWM_Set(int duty_cycle, int frequency)
 {
 	static int PreviousDC = -1, PreviousFreq = -1;
 
+	if(duty_cycle <= 0) {
+		duty_cycle = 100; // Se no limite inferior, duty cycle deve ser 100 para que MR0 = MR1
+	} else if(duty_cycle >= 100) {
+		duty_cycle =   0; // Se no limit superior, duty cycle deve ser 0 para que MR1 = 0
+	}
+
 	if(PreviousDC != duty_cycle || PreviousFreq != frequency) {
 		// Saving Current Values
 		PreviousDC   = duty_cycle;

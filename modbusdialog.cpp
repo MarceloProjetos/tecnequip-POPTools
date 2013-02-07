@@ -18,10 +18,94 @@ static HWND SetBitRadio;
 static HWND ClearBitRadio;
 static HWND NameTextbox;
 static HWND AddressTextbox;
-static HWND IDTextbox;
+static HWND ElemTextbox;
 static HWND RetransmitCheckbox;
 
 static LONG_PTR PrevNameProc;
+
+/*** Helper Functions for MbNodeList ***/
+
+// Get MbNodeList by Index (Position in the list)
+MbNodeList *MbNodeList_GetByIndex(int index)
+{
+	return index < Prog.settings.mb_list_size ? &Prog.settings.mb_list[index] : NULL;
+}
+
+// Get MbNodeList by NodeID
+MbNodeList *MbNodeList_GetByNodeID(int NodeID)
+{
+	int index;
+
+	for(index = 0; index < Prog.settings.mb_list_size; index++) {
+		if(Prog.settings.mb_list[index].NodeID == NodeID) {
+			break;
+		}
+	}
+
+	return index < Prog.settings.mb_list_size ? &Prog.settings.mb_list[index] : NULL;
+}
+
+// Get NodeID by Index (Position in the list)
+int MbNodeList_GetNodeIDByIndex(int index)
+{
+	MbNodeList *l = MbNodeList_GetByIndex(index);
+	return l ? l->NodeID : 0;
+}
+
+// Get Index (Position in the list) by NodeID
+int MbNodeList_GetIndexByNodeID(int NodeID)
+{
+	int index;
+
+	for(index = 0; index < Prog.settings.mb_list_size; index++) {
+		if(Prog.settings.mb_list[index].NodeID == NodeID) {
+			break;
+		}
+	}
+
+	return index < Prog.settings.mb_list_size ? index : 0;
+}
+
+// Increment Reference Count for given NodeID
+void MbNodeList_AddRef(int NodeID)
+{
+	MbNodeList *l = MbNodeList_GetByNodeID(NodeID);
+
+	if(l != NULL) {
+		l->NodeCount++;
+	}
+}
+
+// Decrement Reference Count for given NodeID
+void MbNodeList_DelRef(int NodeID)
+{
+	MbNodeList *l = MbNodeList_GetByNodeID(NodeID);
+
+	if(l != NULL) {
+		l->NodeCount--;
+	}
+}
+
+// Populate a Combobox with the names of current items on ModBUS Node List, including an optional "New" item
+void PopulateModBUSMasterCombobox(HWND h, bool has_new)
+{
+	int index, i = 0;
+	MbNodeList *l = Prog.settings.mb_list;
+
+	SendMessage(h, CB_RESETCONTENT, 0, 0);
+
+	if(has_new) {
+		SendMessage(h, CB_INSERTSTRING, i++, (LPARAM)((LPCTSTR)"< NOVO >"));
+	}
+
+	for(index = 0; index < Prog.settings.mb_list_size; index++) {
+		SendMessage(h, CB_INSERTSTRING, i++, (LPARAM)((LPCTSTR)Prog.settings.mb_list[index].node.name));
+	}
+
+	SendMessage(h, CB_SETCURSEL, 0, 0);
+}
+
+/*** End of Helper Functions for MbNodeList ***/
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than -A-Za-z0-9_ in the box.
@@ -97,15 +181,15 @@ static void MakeControls(void)
 	LoadIOListToComboBox(NameTextbox, IO_TYPE_ALL);
 	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
-    HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("ID:"),
+    HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("Elemento:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         115, 41, 60, 21, SetBitDialog, NULL, Instance, NULL);
     NiceFont(textLabel1);
 
-    IDTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 41, 115, 21, SetBitDialog, NULL, Instance, NULL);
-    FixedFont(IDTextbox);
+    ElemTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        190, 41, 115, 100, SetBitDialog, NULL, Instance, NULL);
+    NiceFont(ElemTextbox);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Endereço:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -141,7 +225,7 @@ static void MakeControls(void)
     //    (LONG_PTR)MyNameProc);
 }
 
-void ShowModbusDialog(char *name, int *id, int *address, bool *set, bool *retransmitir)
+void ShowModbusDialog(char *name, int *elem, int *address, bool *set, bool *retransmitir)
 {
 	char name_temp[MAX_NAME_LEN];
     SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
@@ -150,13 +234,14 @@ void ShowModbusDialog(char *name, int *id, int *address, bool *set, bool *retran
 
     MakeControls();
 
-	char i[100];
-    sprintf(i, "%d", *id);
-
     char addr[100];
     sprintf(addr, "%d", *address);
 
-    if (*set)
+	PopulateModBUSMasterCombobox(ElemTextbox, false);
+	SendMessage(ElemTextbox, CB_SETCURSEL, MbNodeList_GetIndexByNodeID(*elem), 0);
+	SendMessage(ElemTextbox, CB_SETDROPPEDWIDTH, 200, 0);
+
+	if (*set)
         SendMessage(SetBitRadio, BM_SETCHECK, BST_CHECKED, 0);
 	else
         SendMessage(ClearBitRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -167,7 +252,6 @@ void ShowModbusDialog(char *name, int *id, int *address, bool *set, bool *retran
         SendMessage(RetransmitCheckbox, BM_SETCHECK, BST_UNCHECKED, 0);
 
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name));
-	SendMessage(IDTextbox, WM_SETTEXT, 0, (LPARAM)(i));
 	SendMessage(AddressTextbox, WM_SETTEXT, 0, (LPARAM)(addr));
 
     EnableWindow(MainWindow, FALSE);
@@ -210,10 +294,11 @@ void ShowModbusDialog(char *name, int *id, int *address, bool *set, bool *retran
 			else
 				*retransmitir = FALSE;
 
-			SendMessage(IDTextbox, WM_GETTEXT, 16, (LPARAM)(i));
+			MbNodeList_DelRef(*elem);
+			*elem = MbNodeList_GetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
+			MbNodeList_AddRef(*elem);
 			SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
 
-			*id = atoi(i);
 			*address = atoi(addr);
 		}
 	}

@@ -241,8 +241,6 @@ struct strSerialConfig {
 #define MNU_INSERT_READ_MODBUS  0x4d
 #define MNU_INSERT_WRITE_MODBUS 0x4e
 #define MNU_INSERT_SET_BIT		0x4f
-#define MNU_INSERT_READ_MODBUS_ETH	0x50
-#define MNU_INSERT_WRITE_MODBUS_ETH	0x51
 #define MNU_INSERT_CHECK_BIT	0x52
 #define MNU_READ_FMTD_STR		0x53
 #define MNU_WRITE_FMTD_STR		0x54
@@ -317,8 +315,6 @@ struct strSerialConfig {
 #define MNU_EXAMPLE_READ_MODBUS  0x14d
 #define MNU_EXAMPLE_WRITE_MODBUS 0x14e
 #define MNU_EXAMPLE_SET_BIT		0x14f
-#define MNU_EXAMPLE_READ_MODBUS_ETH	0x150
-#define MNU_EXAMPLE_WRITE_MODBUS_ETH	0x151
 #define MNU_EXAMPLE_CHECK_BIT	0x152
 #define MNU_EXAMPLE_READ_FMTD_STR		0x153
 #define MNU_EXAMPLE_WRITE_FMTD_STR		0x154
@@ -403,8 +399,6 @@ struct strSerialConfig {
 #define ELEM_READ_MODBUS		0x37
 #define ELEM_WRITE_MODBUS   	0x38
 #define ELEM_SET_BIT			0x39
-#define ELEM_READ_MODBUS_ETH	0x3a
-#define ELEM_WRITE_MODBUS_ETH  	0x3b
 #define ELEM_CHECK_BIT			0x3c
 #define ELEM_READ_FORMATTED_STRING 0x3d
 #define ELEM_WRITE_FORMATTED_STRING 0x3e
@@ -455,8 +449,6 @@ struct strSerialConfig {
         case ELEM_WRITE_USS: \
         case ELEM_READ_MODBUS: \
         case ELEM_WRITE_MODBUS: \
-        case ELEM_READ_MODBUS_ETH: \
-        case ELEM_WRITE_MODBUS_ETH: \
         case ELEM_SET_PWM: \
         case ELEM_UART_SEND: \
         case ELEM_UART_RECV: \
@@ -598,37 +590,19 @@ typedef struct ElemWriteUSSTag {
 
 typedef struct ElemReadModbusTag {
     char    name[MAX_NAME_LEN];
-	int		id;
+	int		elem;
 	int		address;
 	bool	int32;
 	bool	retransmitir;
-	int		value;
 } ElemReadModbus;
 
 typedef struct ElemWriteModbusTag {
     char    name[MAX_NAME_LEN];
-	int		id;
+	int		elem;
 	int		address;
 	bool	int32;
 	bool	retransmitir;
-	int		value;
 } ElemWriteModbus;
-
-typedef struct ElemReadModbusEthTag {
-    char    name[MAX_NAME_LEN];
-	int		id;
-	int		address;
-	bool	int32;
-	int		value;
-} ElemReadModbusEth;
-
-typedef struct ElemWriteModbusEthTag {
-    char    name[MAX_NAME_LEN];
-	int		id;
-	int		address;
-	bool	int32;
-	int		value;
-} ElemWriteModbusEth;
 
 typedef struct ElemSetPwmTag {
     char    name[MAX_NAME_LEN];
@@ -728,8 +702,6 @@ typedef struct ElemLeafTag {
         ElemWriteUSS        writeUSS;
         ElemReadModbus      readModbus;
         ElemWriteModbus     writeModbus;
-        ElemReadModbusEth   readModbusEth;
-        ElemWriteModbusEth  writeModbusEth;
         ElemSetPwmTag       setPwm;
         ElemUart            uart;
 		ElemSetBit			setBit;
@@ -795,8 +767,6 @@ typedef struct PlcProgramSingleIoTag {
 #define IO_TYPE_SET_DA			 0x00010000
 #define IO_TYPE_READ_MODBUS      0x00020000
 #define IO_TYPE_WRITE_MODBUS     0x00040000
-#define IO_TYPE_READ_MODBUS_ETH  0x00080000
-#define IO_TYPE_WRITE_MODBUS_ETH 0x00100000
 #define IO_TYPE_READ_YASKAWA	 0x00200000
 #define IO_TYPE_WRITE_YASKAWA	 0x00400000
 #define IO_TYPE_INTERNAL_FLAG	 0x80000000
@@ -810,8 +780,6 @@ typedef struct PlcProgramSingleIoTag {
 								 IO_TYPE_SET_DA           | \
 								 IO_TYPE_READ_MODBUS      | \
 								 IO_TYPE_WRITE_MODBUS     | \
-								 IO_TYPE_READ_MODBUS_ETH  | \
-								 IO_TYPE_WRITE_MODBUS_ETH | \
 								 IO_TYPE_READ_YASKAWA     | \
 								 IO_TYPE_WRITE_YASKAWA      \
 								)
@@ -821,6 +789,24 @@ typedef struct PlcProgramSingleIoTag {
     int         pin;
 	unsigned char bit;
 } PlcProgramSingleIo;
+
+typedef struct MbNodeTag {
+	char name[MAX_NAME_LEN];
+	int id;
+	DWORD ip;
+	int iface;
+} MbNode;
+
+#define MB_LIST_MAX 100
+
+#define MB_IFACE_RS485 0
+#define MB_IFACE_ETH   1
+
+typedef struct MbNodeListTag {
+	int NodeID;
+	int NodeCount;
+	MbNode node;
+} MbNodeList;
 
 #define MAX_IO  4096
 typedef struct PlcProgramTag {
@@ -851,6 +837,8 @@ typedef struct PlcProgramTag {
 		int ssi_size;
 		int ssi_mode;
 		int ramp_abort_mode;
+		int mb_list_size;
+		MbNodeList mb_list[MB_LIST_MAX];
 	} settings;
 
 #define MAX_RUNGS 999
@@ -1296,6 +1284,12 @@ void ShowAbsDialog(char *dest, char *src);
 extern struct strSerialConfig SerialConfig[];
 extern char *SerialParityString[];
 bool ShowConfDialog(bool NetworkSection);
+// modbusdialog.cpp
+void PopulateModBUSMasterCombobox(HWND h, bool has_new);
+MbNodeList *MbNodeList_GetByIndex(int index);
+MbNodeList *MbNodeList_GetByNodeID(int NodeID);
+void MbNodeList_AddRef(int NodeID);
+void MbNodeList_DelRef(int NodeID);
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
 void OpenCHM(void);

@@ -32,7 +32,7 @@ char CurrentCompileFile[MAX_PATH];
 #define TXT_PATTERN  _("Arquivos de Texto (*.txt)\0*.txt\0Todos os Arquivos\0*\0\0")
 
 // Internal flags available to the users.
-char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "RampActive", "" };
+char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "RampActive", "TcpReady", "TcpTimeout", "" };
 
 // Everything relating to the PLC's program, I/O configuration, processor
 // choice, and so on--basically everything that would be saved in the
@@ -975,14 +975,6 @@ void ProcessMenu(int code)
             CHANGING_PROGRAM(AddWriteModbus());
             break;
 
-        case MNU_INSERT_READ_MODBUS_ETH:
-            CHANGING_PROGRAM(AddReadModbusEth());
-            break;
-
-        case MNU_INSERT_WRITE_MODBUS_ETH:
-            CHANGING_PROGRAM(AddWriteModbusEth());
-            break;
-
         case MNU_INSERT_UART_SEND:
             CHANGING_PROGRAM(AddUart(ELEM_UART_SEND));
             break;
@@ -1113,6 +1105,7 @@ cmp:
 
         case MNU_MCU_SETTINGS:
             CHANGING_PROGRAM(ShowConfDialog(false));
+			WhatCanWeDoFromCursorAndTopology();
             break;
 
         case MNU_MCU_PREFERENCES:
@@ -1246,8 +1239,6 @@ cmp:
             break;
 		case MNU_EXAMPLE_READ_MODBUS:
 		case MNU_EXAMPLE_WRITE_MODBUS:
-		case MNU_EXAMPLE_READ_MODBUS_ETH:
-		case MNU_EXAMPLE_WRITE_MODBUS_ETH:
             OpenDialog("examples\\modbus.ld");
             break;
 		case MNU_EXAMPLE_READ_FMTD_STR:

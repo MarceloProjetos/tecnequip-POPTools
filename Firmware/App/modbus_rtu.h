@@ -42,6 +42,9 @@ extern "C" {
 // Indica se operando em modo ModBUS/TCP
 #define MODBUS_MODE_IS_TCP(mode) ((mode>>4) & 1UL)
 
+// Indica se operando em modo Master
+#define MODBUS_MODE_IS_MASTER(mode) (!(mode & 1UL))
+
 #define MODBUS_TCP_OVERHEAD 6
 #define MODBUS_BUFFER_SIZE  (260 + MODBUS_TCP_OVERHEAD)
 
@@ -197,8 +200,8 @@ struct MODBUS_Device;
 #define MODBUS_HANDLER_FC_PTR(fnc) unsigned int (*fnc)(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
 #define MODBUS_HANDLER_FC(fnc)     unsigned int   fnc (struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
 
-#define MODBUS_HANDLER_TX_PTR(fnc) unsigned int (*fnc)(unsigned char *data, unsigned int size)
-#define MODBUS_HANDLER_TX(fnc)     unsigned int   fnc (unsigned char *data, unsigned int size)
+#define MODBUS_HANDLER_TX_PTR(fnc) unsigned int (*fnc)(unsigned long ip, unsigned char *data, unsigned int size)
+#define MODBUS_HANDLER_TX(fnc)     unsigned int   fnc (unsigned long ip, unsigned char *data, unsigned int size)
 
 struct MODBUS_Handler {
   unsigned short int FunctionCode;
@@ -209,6 +212,7 @@ struct MODBUS_Handler {
 struct MODBUS_Device {
   struct {
     unsigned char  Id;
+    unsigned long int Ip;
     char  *VendorName;
     char  *ProductCode;
     char  *MajorMinorRevision;

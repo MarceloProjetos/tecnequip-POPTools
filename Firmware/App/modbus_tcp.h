@@ -23,7 +23,21 @@
 
 #include "modbus.h"
 
-unsigned int Modbus_TCP_Tx(unsigned char *data, unsigned int size);
+#define MBTCP_STATUS_READY 0
+#define MBTCP_STATUS_BUSY  1
+#define MBTCP_STATUS_DONE  2
+
+struct strMBTCP_Tansfer {
+	unsigned char status;
+	unsigned int  bufsize;
+	struct ip_addr RemoteIP;
+	unsigned char buf[MODBUS_BUFFER_SIZE];
+};
+
+extern struct strMBTCP_Tansfer MBTCP_Transfer;
+
+MODBUS_HANDLER_TX(Modbus_TCP_Slave_Tx);
+MODBUS_HANDLER_TX(Modbus_TCP_Master_Tx);
 
 void Modbus_TCP_Init(void);
 void Modbus_TCP_Connect(void *pdata);

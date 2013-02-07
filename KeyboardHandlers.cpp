@@ -580,8 +580,8 @@ int KBH_Element_Add_USS_Write(void *user_data)
 	return 1;
 }
 
-// Default for Portuguese: SHIFT + 4
-int KBH_Element_Add_ModBUS_RS485_Read(void *user_data)
+// Default for Portuguese: SHIFT + X
+int KBH_Element_Add_ModBUS_Read(void *user_data)
 {
 	if(InSimulationMode) return 0;
 
@@ -590,32 +590,12 @@ int KBH_Element_Add_ModBUS_RS485_Read(void *user_data)
 	return 1;
 }
 
-// Default for Portuguese: 4
-int KBH_Element_Add_ModBUS_RS485_Write(void *user_data)
+// Default for Portuguese: X
+int KBH_Element_Add_ModBUS_Write(void *user_data)
 {
 	if(InSimulationMode) return 0;
 
 	ProcessMenu(MNU_INSERT_WRITE_MODBUS);
-
-	return 1;
-}
-
-// Default for Portuguese: SHIFT + X
-int KBH_Element_Add_ModBUS_Ethernet_Read(void *user_data)
-{
-	if(InSimulationMode) return 0;
-
-	ProcessMenu(MNU_INSERT_READ_MODBUS_ETH);
-
-	return 1;
-}
-
-// Default for Portuguese: X
-int KBH_Element_Add_ModBUS_Ethernet_Write(void *user_data)
-{
-	if(InSimulationMode) return 0;
-
-	ProcessMenu(MNU_INSERT_WRITE_MODBUS_ETH);
 
 	return 1;
 }
@@ -955,8 +935,8 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey('U'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_USS_Write              , NULL);
 	ShortcutMaps.AddKey('U'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_USS_Read               , NULL);
 	ShortcutMaps.AddKey('V'          , KBM_KEYFLAG_CONTROL, KBH_Element_Paste                      , NULL);
-	ShortcutMaps.AddKey('X'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_ModBUS_Ethernet_Write  , NULL);
-	ShortcutMaps.AddKey('X'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_ModBUS_Ethernet_Read   , NULL);
+	ShortcutMaps.AddKey('X'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_ModBUS_Write           , NULL);
+	ShortcutMaps.AddKey('X'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_ModBUS_Read            , NULL);
 	ShortcutMaps.AddKey('X'          , KBM_KEYFLAG_CONTROL, KBH_Element_Cut                        , NULL);
 	ShortcutMaps.AddKey('Y'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_Yaskawa_Write          , NULL);
 	ShortcutMaps.AddKey('Y'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Yaskawa_Read           , NULL);
@@ -964,8 +944,6 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey('Z'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_Reset                  , NULL);
 	ShortcutMaps.AddKey('Z'          , KBM_KEYFLAG_CONTROL, KBH_Undo                               , NULL);
 	ShortcutMaps.AddKey('1'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Comparison_NotEqual    , NULL);
-	ShortcutMaps.AddKey('4'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_ModBUS_RS485_Write     , NULL);
-	ShortcutMaps.AddKey('4'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_ModBUS_RS485_Read      , NULL);
 	ShortcutMaps.AddKey('8'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Math_Multiply          , NULL);
 	ShortcutMaps.AddKey(VK_OEM_PLUS  , KBM_KEYFLAG_NONE   , KBH_Element_Add_Comparison_Equal       , NULL);
 	ShortcutMaps.AddKey(VK_OEM_PLUS  , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Math_Add               , NULL);
@@ -1045,8 +1023,8 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey('U'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_USS_Write              , NULL);
 	ShortcutMaps.AddKey('U'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_USS_Read               , NULL);
 	ShortcutMaps.AddKey('V'          , KBM_KEYFLAG_CONTROL, KBH_Element_Paste                      , NULL);
-	ShortcutMaps.AddKey('X'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_ModBUS_Ethernet_Write  , NULL);
-	ShortcutMaps.AddKey('X'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_ModBUS_Ethernet_Read   , NULL);
+	ShortcutMaps.AddKey('X'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_ModBUS_Write           , NULL);
+	ShortcutMaps.AddKey('X'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_ModBUS_Read            , NULL);
 	ShortcutMaps.AddKey('X'          , KBM_KEYFLAG_CONTROL, KBH_Element_Cut                        , NULL);
 	ShortcutMaps.AddKey('Y'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_Yaskawa_Write          , NULL);
 	ShortcutMaps.AddKey('Y'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Yaskawa_Read           , NULL);
@@ -1054,8 +1032,6 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey('Z'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_Reset                  , NULL);
 	ShortcutMaps.AddKey('Z'          , KBM_KEYFLAG_CONTROL, KBH_Undo                               , NULL);
 	ShortcutMaps.AddKey('1'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Comparison_NotEqual    , NULL);
-	ShortcutMaps.AddKey('4'          , KBM_KEYFLAG_NONE   , KBH_Element_Add_ModBUS_RS485_Write     , NULL);
-	ShortcutMaps.AddKey('4'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_ModBUS_RS485_Read      , NULL);
 	ShortcutMaps.AddKey('8'          , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Math_Multiply          , NULL);
 	ShortcutMaps.AddKey(VK_OEM_PLUS  , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Math_Add               , NULL);
 	ShortcutMaps.AddKey(VK_OEM_PLUS  , KBM_KEYFLAG_NONE   , KBH_Element_Add_Comparison_Equal       , NULL);

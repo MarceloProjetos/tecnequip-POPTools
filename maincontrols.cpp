@@ -281,10 +281,8 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
 	EnableInterfaceItem(MNU_INSERT_RTC, t);
 	EnableInterfaceItem(MNU_INSERT_CHECK_BIT, t);
 	EnableInterfaceItem(MNU_INSERT_SET_BIT, t);
-	EnableInterfaceItem(MNU_INSERT_READ_MODBUS, t);
-	EnableInterfaceItem(MNU_INSERT_READ_MODBUS_ETH, t);
-	EnableInterfaceItem(MNU_INSERT_WRITE_MODBUS, t);
-	EnableInterfaceItem(MNU_INSERT_WRITE_MODBUS_ETH, t);
+	EnableInterfaceItem(MNU_INSERT_READ_MODBUS, t && Prog.settings.mb_list_size); // Can't be enabled if there is no registered nodes
+	EnableInterfaceItem(MNU_INSERT_WRITE_MODBUS, t && Prog.settings.mb_list_size); // Can't be enabled if there is no registered nodes
 	EnableInterfaceItem(MNU_INSERT_READ_USS, t);
 	EnableInterfaceItem(MNU_INSERT_WRITE_USS, t);
 	EnableInterfaceItem(MNU_READ_SERVO_YASKAWA, t);

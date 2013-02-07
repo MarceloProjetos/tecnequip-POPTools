@@ -366,7 +366,7 @@ struct MODBUS_Reply Modbus_RTU_Send(struct MODBUS_Device *dev, unsigned short in
     buf[size++] = (crc16>>8) & 0xFF;
   }
 
-  size = (*dev->TX)(buf, size);
+  size = (*dev->TX)(dev->identification.Ip, buf, size);
 
   if(size) {
     r = Modbus_RTU_ReceiveReply(dev, Modbus_RTU_Validate(buf, size, mode_tcp));
@@ -512,7 +512,7 @@ unsigned int Modbus_RTU_SendReply(struct MODBUS_Device *dev, struct MODBUS_Reply
     buf[size++] = (crc16>>8) & 0xFF;
   }
 
-  (*dev->TX)(buf, size);
+  (*dev->TX)(dev->identification.Ip, buf, size);
 
   return 0;
 }

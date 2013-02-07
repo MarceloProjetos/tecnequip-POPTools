@@ -1077,91 +1077,72 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 				{
 				char id[10];
 				char addr[10];
+				char *name, *MbReady, *MbTimeout;
+				int int32;
+				int intcode;
+				int retransmitir;
+				MbNodeList *list;
 
-				sprintf(id, "%d", l->d.writeModbus.id);
-				sprintf(addr, "%d", l->d.writeModbus.address);
-
-				// We want to respond to rising edges, so yes we need a one shot.
-				char oneShot[MAX_NAME_LEN];
-				GenSymOneShot(oneShot);
-				char byPass[MAX_NAME_LEN];
-				GenSymOneShot(byPass);
-
-				// OneShot 
-				Op(INT_IF_BIT_SET, stateInOut);
-					Op(INT_IF_BIT_CLEAR, oneShot);
-						Op(INT_IF_BIT_SET, "$SerialReady");
-							if (which == ELEM_READ_MODBUS)
-								Op(INT_READ_MODBUS, l->d.readModbus.name, id, addr, 0, (unsigned char)l->d.readModbus.int32);
-							else
-								Op(INT_WRITE_MODBUS, l->d.writeModbus.name, id, addr, 0, (unsigned char)l->d.writeModbus.int32);
-							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
-						Op(INT_END_IF);
-						Op(INT_CLEAR_BIT, stateInOut);
-						Op(INT_COPY_BIT_TO_BIT, byPass, stateInOut);
-					Op(INT_END_IF);
-					Op(INT_IF_BIT_CLEAR, byPass);
-						Op(INT_IF_BIT_SET, "$SerialReady");
-							Op(INT_SET_BIT, byPass);
-						if(which == ELEM_READ_MODBUS ? l->d.readModbus.retransmitir : l->d.writeModbus.retransmitir) { // Retransmitir?
-							Op(INT_ELSE_IF); Op(INT_IF_BIT_SET, "$SerialTimeout");
-								if (which == ELEM_READ_MODBUS)
-									Op(INT_READ_MODBUS, l->d.readModbus.name, id, addr, 0, (unsigned char)l->d.readModbus.int32);
-								else
-									Op(INT_WRITE_MODBUS, l->d.writeModbus.name, id, addr, 0, (unsigned char)l->d.writeModbus.int32);
-								Op(INT_CLEAR_BIT, "$SerialTimeout");
-						}
-						Op(INT_ELSE);
-							Op(INT_CLEAR_BIT, stateInOut);
-						Op(INT_END_IF);
-					Op(INT_END_IF);
-				Op(INT_ELSE);
-					Op(INT_IF_BIT_SET, oneShot);
-						Op(INT_SET_BIT, "$SerialReady");
-					Op(INT_END_IF);
-					Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
-				Op(INT_END_IF);
-
+				if (which == ELEM_READ_MODBUS) {
+					intcode = INT_READ_MODBUS;
+					list = MbNodeList_GetByNodeID(l->d.readModbus.elem);
+					sprintf(id, "%d", list->node.id);
+					sprintf(addr, "%d", l->d.readModbus.address);
+					name = l->d.readModbus.name;
+					int32 = l->d.readModbus.int32;
+					retransmitir = l->d.readModbus.retransmitir;
+				} else {
+					intcode = INT_WRITE_MODBUS;
+					list = MbNodeList_GetByNodeID(l->d.writeModbus.elem);
+					sprintf(id, "%d", list->node.id);
+					sprintf(addr, "%d", l->d.writeModbus.address);
+					name = l->d.writeModbus.name;
+					int32 = l->d.writeModbus.int32;
+					retransmitir = l->d.writeModbus.retransmitir;
 				}
-                break;
-				
-            case ELEM_READ_MODBUS_ETH:
-            case ELEM_WRITE_MODBUS_ETH:
-				{
-				char id[10];
-				char addr[10];
 
-				sprintf(id, "%d", l->d.writeModbusEth.id);
-				sprintf(addr, "%d", l->d.writeModbusEth.address);
+				if(list->node.iface == MB_IFACE_RS485) {
+					MbReady   = "$SerialReady";
+					MbTimeout = "$SerialTimeout";
+				} else {
+					MbReady   = "$TcpReady";
+					MbTimeout = "$TcpTimeout";
+				}
 
 				// We want to respond to rising edges, so yes we need a one shot.
-				char oneShot[MAX_NAME_LEN];
-				GenSymOneShot(oneShot);
-				char byPass[MAX_NAME_LEN];
-				GenSymOneShot(byPass);
+				char MessageSent[MAX_NAME_LEN];
+				GenSymOneShot(MessageSent);
+				char ReplyReceived[MAX_NAME_LEN];
+				GenSymOneShot(ReplyReceived);
 
 				// OneShot 
 				Op(INT_IF_BIT_SET, stateInOut);
-					Op(INT_IF_BIT_CLEAR, oneShot);
-						Op(INT_IF_BIT_SET, "$SerialReady");
-							if (which == ELEM_READ_MODBUS_ETH)
-								Op(INT_READ_MODBUS_ETH, l->d.readModbusEth.name, id, addr, 0, (unsigned char)l->d.readModbusEth.int32);
-							else
-								Op(INT_WRITE_MODBUS_ETH, l->d.writeModbusEth.name, id, addr, 0, (unsigned char)l->d.writeModbusEth.int32);
-							Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+					Op(INT_IF_BIT_CLEAR, MessageSent);
+						Op(INT_IF_BIT_SET, MbReady);
+							Op(intcode, name, id, addr, list->node.ip, (unsigned char)int32);
+							Op(INT_SET_BIT, MessageSent);
 						Op(INT_END_IF);
 						Op(INT_CLEAR_BIT, stateInOut);
-						Op(INT_COPY_BIT_TO_BIT, byPass, stateInOut);
+						Op(INT_CLEAR_BIT, ReplyReceived);
 					Op(INT_END_IF);
-					Op(INT_IF_BIT_CLEAR, byPass);
-						Op(INT_IF_BIT_SET, "$SerialReady");
-							Op(INT_SET_BIT, byPass);
+					Op(INT_IF_BIT_CLEAR, ReplyReceived);
+						Op(INT_IF_BIT_SET, MbReady);
+							Op(INT_SET_BIT, ReplyReceived);
+					if(retransmitir) { // Retransmitir?
+						Op(INT_ELSE_IF); Op(INT_IF_BIT_SET, MbTimeout);
+							Op(INT_CLEAR_BIT, MbTimeout);
+							Op(intcode, name, id, addr, list->node.ip, (unsigned char)int32);
+					}
 						Op(INT_ELSE);
 							Op(INT_CLEAR_BIT, stateInOut);
 						Op(INT_END_IF);
 					Op(INT_END_IF);
 				Op(INT_ELSE);
-					Op(INT_COPY_BIT_TO_BIT, oneShot, stateInOut);
+//					Op(INT_IF_BIT_SET, MessageSent);
+//						Op(INT_SET_BIT, MbReady);
+//					Op(INT_END_IF);
+					Op(INT_CLEAR_BIT, MessageSent);
+					Op(INT_CLEAR_BIT, ReplyReceived);
 				Op(INT_END_IF);
 
 				}
