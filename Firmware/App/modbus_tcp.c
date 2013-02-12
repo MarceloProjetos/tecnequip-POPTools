@@ -84,9 +84,12 @@ void Modbus_TCP_Request(struct netconn *conn) {
   netbuf_delete(inbuf);
 }
 
-int teste = 0;
+static struct netconn *global_conn;
 void Modbus_TCP_Connect(void *pdata)
 {
+//	Aparentemente seqno em globalconn->pcb->tcp->unacked->tcphdr está sendo corrompido em algum
+// lugar. O valor desta variável é armazenada invertida! (Byte alto no lugar do byte baixo)
+
 
 	err_t err;
 	struct netconn *conn, *newconn;
@@ -94,27 +97,22 @@ void Modbus_TCP_Connect(void *pdata)
 	if(MODBUS_TCP_MASTER) {
 		while(1) {
 			if(MBTCP_Transfer.status == MBTCP_STATUS_BUSY) {
-				teste = 1;
 				/* Create a new TCP connection handle */
 				conn = netconn_new(NETCONN_TCP);
 				//  LWIP_ERROR("http_server: invalid conn", (conn != NULL), return -1;);
 
 				/* Bind to port 80 (HTTP) with default IP address */
-				teste = 2;
 				netconn_bind(conn, IP_ADDR_ANY, 0);
 
 				// Criar conexao
-				teste = 3;
+				global_conn = conn;
 				if(netconn_connect(conn, &MBTCP_Transfer.RemoteIP, 502) == ERR_OK) {
 					// Envia pacote
-					teste = 4;
 					netconn_write(conn, MBTCP_Transfer.buf, MBTCP_Transfer.bufsize, NETCONN_NOCOPY);
 
-					teste = 5;
 					// Repassa conexao para Modbus_TCP_Request que vai receber e tratar a resposta
 					Modbus_TCP_Request(conn);
 				} else {
-					teste = 6;
 					I_TcpTimeout = 1;
 				}
 

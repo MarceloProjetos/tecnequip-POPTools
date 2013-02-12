@@ -71,21 +71,6 @@ int RTC_OutputState(struct tm start, struct tm end, struct tm now, int mode, int
 #endif
 
 /***************************************************************************/
-/* LWIP 1.4.0                                                              */
-/***************************************************************************/
-#ifndef __LWIP_IP_ADDR_H__
-struct ip_addr {
-  unsigned int addr;
-};
-
-#define IP4_ADDR(ipaddr, a,b,c,d) \
-        (ipaddr)->addr = ((unsigned int)((d) & 0xff) << 24) | \
-                         ((unsigned int)((c) & 0xff) << 16) | \
-                         ((unsigned int)((b) & 0xff) << 8)  | \
-                          (unsigned int)((a) & 0xff)
-#endif
-
-/***************************************************************************/
 /* GPIO                                                                    */
 /***************************************************************************/
 extern unsigned int GPIO_Output(void);
@@ -286,13 +271,6 @@ struct MODBUS_Device {
 #define MBTCP_STATUS_READY 0
 #define MBTCP_STATUS_BUSY  1
 #define MBTCP_STATUS_DONE  2
-
-struct strMBTCP_Tansfer {
-	unsigned char status;
-	unsigned int  bufsize;
-	struct ip_addr RemoteIP;
-	unsigned char buf[MODBUS_BUFFER_SIZE];
-};
 
 extern struct strMBTCP_Tansfer MBTCP_Transfer;
 

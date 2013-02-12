@@ -20,6 +20,7 @@
 #include "lwip/udp.h"
 #include "lwip/dns.h"
 #include "lwip/init.h"
+#include "lwip/ip_addr.h"
 
 #include "modbus.h"
 
@@ -30,7 +31,7 @@
 struct strMBTCP_Tansfer {
 	unsigned char status;
 	unsigned int  bufsize;
-	struct ip_addr RemoteIP;
+	ip_addr_t RemoteIP;
 	unsigned char buf[MODBUS_BUFFER_SIZE];
 };
 

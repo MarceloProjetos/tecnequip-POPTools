@@ -1126,6 +1126,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 						Op(INT_CLEAR_BIT, ReplyReceived);
 					Op(INT_END_IF);
 					Op(INT_IF_BIT_CLEAR, ReplyReceived);
+						Op(INT_CLEAR_BIT, stateInOut);
 						Op(INT_IF_BIT_SET, MbReady);
 							Op(INT_SET_BIT, ReplyReceived);
 					if(retransmitir) { // Retransmitir?
@@ -1133,14 +1134,9 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 							Op(INT_CLEAR_BIT, MbTimeout);
 							Op(intcode, name, id, addr, list->node.ip, (unsigned char)int32);
 					}
-						Op(INT_ELSE);
-							Op(INT_CLEAR_BIT, stateInOut);
 						Op(INT_END_IF);
 					Op(INT_END_IF);
 				Op(INT_ELSE);
-//					Op(INT_IF_BIT_SET, MessageSent);
-//						Op(INT_SET_BIT, MbReady);
-//					Op(INT_END_IF);
 					Op(INT_CLEAR_BIT, MessageSent);
 					Op(INT_CLEAR_BIT, ReplyReceived);
 				Op(INT_END_IF);

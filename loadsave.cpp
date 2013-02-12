@@ -19,6 +19,109 @@ static const int current_version = 4;
 #define OLDFMT_MAX_VERSION 4
 
 // Functions to convert savefiles (Ladder Diagram) from older versions
+int ConvReadModbus_v6_v7(ElemLeaf *l)
+{
+	int elem;
+
+	ElemReadModbus mb;
+	typedef struct {
+		char    name[MAX_NAME_LEN];
+		int		id;
+		int		address;
+		bool	int32;
+		bool	retransmitir;
+		int		value;
+	} ElemReadModbus_v6;
+
+	ElemReadModbus_v6 oldmb;
+
+	oldmb = *(ElemReadModbus_v6 *)(&l->d);
+
+	memset(&mb, 0, sizeof(mb));
+
+	for(elem = 0; elem < Prog.settings.mb_list_size; elem++) {
+		if(Prog.settings.mb_list[elem].node.id == oldmb.id) break; // ID Found!
+	}
+
+	if(elem == Prog.settings.mb_list_size) { // ID not found!
+		Prog.settings.mb_list_size++;
+
+		Prog.settings.mb_list[elem].NodeID     = elem ? Prog.settings.mb_list[elem-1].NodeID + 1 : 0;
+		Prog.settings.mb_list[elem].NodeCount  = 1;
+
+		Prog.settings.mb_list[elem].node.id    = oldmb.id;
+		Prog.settings.mb_list[elem].node.iface = 0;
+		Prog.settings.mb_list[elem].node.ip    = 0;
+
+		sprintf(Prog.settings.mb_list[elem].node.name, _("Slave id=%d"), oldmb.id);
+	} else {
+		Prog.settings.mb_list[elem].NodeCount++;
+	}
+
+	mb.elem         = Prog.settings.mb_list[elem].NodeID;
+	mb.int32        = oldmb.int32;
+	mb.address      = oldmb.address;
+	mb.retransmitir = oldmb.retransmitir;
+
+	strcpy(mb.name, oldmb.name);
+
+	l->d.readModbus = mb;
+
+	return 1;
+}
+
+// Functions to convert savefiles (Ladder Diagram) from older versions
+int ConvWriteModbus_v6_v7(ElemLeaf *l)
+{
+	int elem;
+
+	ElemWriteModbus mb;
+	typedef struct {
+		char    name[MAX_NAME_LEN];
+		int		id;
+		int		address;
+		bool	int32;
+		bool	retransmitir;
+		int		value;
+	} ElemWriteModbus_v6;
+
+	ElemWriteModbus_v6 oldmb;
+
+	oldmb = *(ElemWriteModbus_v6 *)(&l->d);
+
+	memset(&mb, 0, sizeof(mb));
+
+	for(elem = 0; elem < Prog.settings.mb_list_size; elem++) {
+		if(Prog.settings.mb_list[elem].node.id == oldmb.id) break; // ID Found!
+	}
+
+	if(elem == Prog.settings.mb_list_size) { // ID not found!
+		Prog.settings.mb_list_size++;
+
+		Prog.settings.mb_list[elem].NodeID     = elem ? Prog.settings.mb_list[elem-1].NodeID + 1 : 0;
+		Prog.settings.mb_list[elem].NodeCount  = 1;
+
+		Prog.settings.mb_list[elem].node.id    = oldmb.id;
+		Prog.settings.mb_list[elem].node.iface = 0;
+		Prog.settings.mb_list[elem].node.ip    = 0;
+
+		sprintf(Prog.settings.mb_list[elem].node.name, _("Slave id=%d"), oldmb.id);
+	} else {
+		Prog.settings.mb_list[elem].NodeCount++;
+	}
+
+	mb.elem         = Prog.settings.mb_list[elem].NodeID;
+	mb.int32        = oldmb.int32;
+	mb.address      = oldmb.address;
+	mb.retransmitir = oldmb.retransmitir;
+
+	strcpy(mb.name, oldmb.name);
+
+	l->d.writeModbus = mb;
+
+	return 1;
+}
+
 int ConvResetEnc_v6_v7(ElemLeaf *l)
 {
 	ElemResetEnc *r = (ElemResetEnc *)(&l->d);
@@ -71,8 +174,10 @@ struct {
 	int maxversion;
 	int (*fnc)(ElemLeaf *);
 } ConvFunctionsList[] = {
-	{ ELEM_RTC      , 5, ConvRTC_v5_v6 },
-	{ ELEM_RESET_ENC, 6, ConvResetEnc_v6_v7 },
+	{ ELEM_RTC         , 5, ConvRTC_v5_v6         },
+	{ ELEM_RESET_ENC   , 6, ConvResetEnc_v6_v7    },
+	{ ELEM_READ_MODBUS , 6, ConvReadModbus_v6_v7  },
+	{ ELEM_WRITE_MODBUS, 6, ConvWriteModbus_v6_v7 },
 	{ 0, 0, NULL },
 };
 

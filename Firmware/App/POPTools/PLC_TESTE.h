@@ -122,7 +122,7 @@ void PLC_Run(void)
 
     /* iniciando serie [ */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (ArrayIntUser[3] < 999) {
+        if (ArrayIntUser[3] < 299) {
             ArrayIntUser[3]++;
             ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
         }
@@ -287,7 +287,7 @@ void PLC_Run(void)
     if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0000
         if (!((ArrayBitSystem[0] >> 14) & 1)) {  // $oneShot_0006
             if (I_TcpReady) {  // $TcpReady
-                Modbus_Send(1, 3232235773UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 0, 1, &ArrayIntUser[5]);
+                Modbus_Send(1, 3232235772UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 0, 1, &ArrayIntUser[5]);
                 ArrayBitSystem[0] |= 1UL << 14; // $oneShot_0006 = 1
             }
             ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0000 = 0
@@ -361,7 +361,7 @@ void PLC_Run(void)
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
         if (!((ArrayBitSystem[0] >> 16) & 1)) {  // $oneShot_0008
             if (I_TcpReady) {  // $TcpReady
-                Modbus_Send(1, 3232235773UL, MODBUS_FC_READ_HOLDING_REGISTERS, 0, 1, &ArrayIntUser[9]);
+                Modbus_Send(1, 3232235772UL, MODBUS_FC_READ_HOLDING_REGISTERS, 0, 1, &ArrayIntUser[9]);
                 ArrayBitSystem[0] |= 1UL << 16; // $oneShot_0008 = 1
             }
             ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0

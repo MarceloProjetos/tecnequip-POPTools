@@ -2,6 +2,16 @@
  * Tecnequip Tecnologia em Equipamentos Ltda                                 *
  *****************************************************************************/
 
+struct ip_addr {
+  unsigned int addr;
+};
+
+#define IP4_ADDR(ipaddr, a,b,c,d) \
+        (ipaddr)->addr = ((unsigned int)((d) & 0xff) << 24) | \
+                         ((unsigned int)((c) & 0xff) << 16) | \
+                         ((unsigned int)((b) & 0xff) << 8)  | \
+                          (unsigned int)((a) & 0xff)
+
 #define PLC_TESTE
 
 #if defined(PLC_NULL)

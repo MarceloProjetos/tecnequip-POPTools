@@ -893,7 +893,7 @@ err_t
 tcp_output(struct tcp_pcb *pcb)
 {
   struct tcp_seg *seg, *useg;
-  u32_t wnd, snd_nxt;
+  u32_t wnd, snd_nxt, seqno;
 #if TCP_CWND_DEBUG
   s16_t i = 0;
 #endif /* TCP_CWND_DEBUG */
@@ -1026,7 +1026,8 @@ tcp_output(struct tcp_pcb *pcb)
   }
 #endif /* TCP_OVERSIZE */
 
-  if (seg != NULL && pcb->persist_backoff == 0 && 
+  seqno = seg ? ntohl(seg->tcphdr->seqno) : 0;
+  if (seg != NULL && pcb->persist_backoff == 0 &&
       ntohl(seg->tcphdr->seqno) - pcb->lastack + seg->len > pcb->snd_wnd) {
     /* prepare for persist timer */
     pcb->persist_cnt = 0;
