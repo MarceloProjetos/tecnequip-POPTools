@@ -117,10 +117,8 @@ static int SimulateUartTxCountdown = 0;
 
 static int SimulateUSSTxCountdown = 0;
 static int SimulateUSSRxCountdown = 0;
-static int SimulateModbusTxCountdown = 0;
-static int SimulateModbusRxCountdown = 0;
-static int SimulateModbusEthTxCountdown = 0;
-static int SimulateModbusEthRxCountdown = 0;
+static int SimulateModbus485Countdown = 0;
+static int SimulateModbusEthCountdown = 0;
 
 unsigned int Simulate_DaConv(int val, unsigned int mode)
 {
@@ -1396,14 +1394,24 @@ math:
                 break;
 
             case INT_READ_MODBUS:
-				SetSingleBit("$ModbusReady", FALSE);
-				SimulateModbusTxCountdown = 0;
+				if(a->literal == 0) { // RS-485
+					SetSingleBit("$SerialReady", FALSE);
+					SimulateModbus485Countdown = 2;
+				} else { // Ethernet
+					SetSingleBit("$TcpReady", FALSE);
+					SimulateModbusEthCountdown = 2;
+				}
 				AppendToModbusSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
                 break;
 
             case INT_WRITE_MODBUS:
-				SetSingleBit("$ModbusReady", FALSE);
-				SimulateModbusTxCountdown = 0;
+				if(a->literal == 0) { // RS-485
+					SetSingleBit("$SerialReady", FALSE);
+					SimulateModbus485Countdown = 2;
+				} else { // Ethernet
+					SetSingleBit("$TcpReady", FALSE);
+					SimulateModbusEthCountdown = 2;
+				}
 				AppendToModbusSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
                 break;
 
@@ -1538,20 +1546,18 @@ void SimulateOneCycle(BOOL forceRefresh)
 		SetSingleBit("$SerialReady", TRUE);
 	}
 
-	if (SimulateModbusTxCountdown >= 0 && !SingleBitOn("$SerialReady"))
-		SimulateModbusTxCountdown++;
-
-	if (SimulateModbusTxCountdown > 2)
-	{
-		SetSingleBit("$SerialReady", TRUE);
+	if (SimulateModbus485Countdown > 0) {
+		SimulateModbus485Countdown--;
+		if (!SimulateModbus485Countdown) {
+			SetSingleBit("$SerialReady", TRUE);
+		}
 	}
 
-	if (SimulateModbusEthTxCountdown >= 0 && !SingleBitOn("$SerialReady"))
-		SimulateModbusEthTxCountdown++;
-
-	if (SimulateModbusEthTxCountdown > 2)
-	{
-		SetSingleBit("$SerialReady", TRUE);
+	if (SimulateModbusEthCountdown > 0) {
+		SimulateModbusEthCountdown--;
+		if (!SimulateModbusEthCountdown) {
+			SetSingleBit("$TcpReady", TRUE);
+		}
 	}
 
 	if (SimulateMultisetDA.Count > 0)	{
@@ -1619,9 +1625,14 @@ void ClearSimulationData(void)
     QueuedUSSCharacter = -1;
     SimulateUartTxCountdown = 0;
     SimulateUSSTxCountdown = -1;
+    SimulateModbus485Countdown = 0;
+    SimulateModbusEthCountdown = 0;
 
 	SetSingleBit("$USSReady", TRUE);
-    CheckVariableNames();
+	SetSingleBit("$SerialReady", TRUE);
+	SetSingleBit("$TcpReady", TRUE);
+
+	CheckVariableNames();
 
     SimulateRedrawAfterNextCycle = TRUE;
 

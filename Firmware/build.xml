@@ -62,14 +62,11 @@
       <includepath path="CoOS/portable"/>
       <includepath path="CoOS"/>
       <includepath path="CoOS/kernel"/>
-      <includepath path="lwip-1.4.0/port/CoOS"/>
-      <includepath path="lwip-1.4.0/port/CoOS/ethernetif/lpc17xx"/>
-      <includepath path="lwip-1.4.0/port/CoOS/arch"/>
-      <includepath path="lwip-1.4.0/src/include"/>
-      <includepath path="lwip-1.4.0/src/core"/>
-      <includepath path="lwip-1.4.0/src/api"/>
-      <includepath path="lwip-1.4.0/src/include/ipv4"/>
       <includepath path="App"/>
+      <includepath path="lwip/src/include"/>
+      <includepath path="lwip/port/CoOS"/>
+      <includepath path="lwip/src/include/ipv4"/>
+      <includepath path="lwip/port/CoOS/ethernetif/LPC17xx"/>
       
       <!-- arm-none-eabi-gcc compiler arguments -->
       <compilerarg value="-mcpu=cortex-m3"/>

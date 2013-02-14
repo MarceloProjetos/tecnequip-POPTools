@@ -25,13 +25,10 @@
 						<entry flags="" kind="includePath" name="CoOS/portable"/>
 						<entry flags="" kind="includePath" name="lpc17xx_lib"/>
 						<entry flags="" kind="includePath" name="lpc17xx_lib/include"/>
-						<entry flags="" kind="includePath" name="lwip-1.4.0/port/CoOS"/>
-						<entry flags="" kind="includePath" name="lwip-1.4.0/port/CoOS/arch"/>
-						<entry flags="" kind="includePath" name="lwip-1.4.0/port/CoOS/ethernetif/lpc17xx"/>
-						<entry flags="" kind="includePath" name="lwip-1.4.0/src/api"/>
-						<entry flags="" kind="includePath" name="lwip-1.4.0/src/core"/>
-						<entry flags="" kind="includePath" name="lwip-1.4.0/src/include"/>
-						<entry flags="" kind="includePath" name="lwip-1.4.0/src/include/ipv4"/>
+						<entry flags="" kind="includePath" name="lwip/port/CoOS"/>
+						<entry flags="" kind="includePath" name="lwip/port/CoOS/ethernetif/LPC17xx"/>
+						<entry flags="" kind="includePath" name="lwip/src/include"/>
+						<entry flags="" kind="includePath" name="lwip/src/include/ipv4"/>
 						<entry flags="" kind="macro" name="__GNUC__" value=""/>
 						<entry flags="" kind="macro" name="LPC1768" value=""/>
 					</externalSetting>
@@ -53,13 +50,10 @@
 				<pathentry include="F:/SVN/POPTools/Firmware/CoOS/portable" kind="inc" path="" system="true"/>
 				<pathentry include="F:/SVN/POPTools/Firmware/lpc17xx_lib" kind="inc" path="" system="true"/>
 				<pathentry include="F:/SVN/POPTools/Firmware/lpc17xx_lib/include" kind="inc" path="" system="true"/>
-				<pathentry include="F:/SVN/POPTools/Firmware/lwip-1.4.0/port/CoOS" kind="inc" path="" system="true"/>
-				<pathentry include="F:/SVN/POPTools/Firmware/lwip-1.4.0/port/CoOS/arch" kind="inc" path="" system="true"/>
-				<pathentry include="F:/SVN/POPTools/Firmware/lwip-1.4.0/port/CoOS/ethernetif/LPC17xx" kind="inc" path="" system="true"/>
-				<pathentry include="F:/SVN/POPTools/Firmware/lwip-1.4.0/src/api" kind="inc" path="" system="true"/>
-				<pathentry include="F:/SVN/POPTools/Firmware/lwip-1.4.0/src/core" kind="inc" path="" system="true"/>
-				<pathentry include="F:/SVN/POPTools/Firmware/lwip-1.4.0/src/include" kind="inc" path="" system="true"/>
-				<pathentry include="F:/SVN/POPTools/Firmware/lwip-1.4.0/src/include/ipv4" kind="inc" path="" system="true"/>
+				<pathentry include="F:/SVN/POPTools/Firmware/lwip/port/CoOS" kind="inc" path="" system="true"/>
+				<pathentry include="F:/SVN/POPTools/Firmware/lwip/port/CoOS/ethernetif/LPC17xx" kind="inc" path="" system="true"/>
+				<pathentry include="F:/SVN/POPTools/Firmware/lwip/src/include" kind="inc" path="" system="true"/>
+				<pathentry include="F:/SVN/POPTools/Firmware/lwip/src/include/ipv4" kind="inc" path="" system="true"/>
 				<pathentry kind="mac" name="__GNUC__" path="" value=""/>
 				<pathentry kind="mac" name="LPC1768" path="" value=""/>
 				<pathentry kind="out" path=""/>

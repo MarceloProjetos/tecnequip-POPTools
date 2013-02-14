@@ -27,8 +27,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,1363,3235
- PRODUCTVERSION 1,5,1363,3235
+ FILEVERSION 1,5,1365,3738
+ PRODUCTVERSION 1,5,1365,3738
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -45,12 +45,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Tecnequip Tecnologia em Equipamentos Ltda"
             VALUE "FileDescription", "POPTools Ladder Program"
-            VALUE "FileVersion", "1.5.1363.3235"
+            VALUE "FileVersion", "1.5.1365.3738"
             VALUE "InternalName", "POPTools"
             VALUE "LegalCopyright", "Copyright © Tecnequip Tecnologia em Equipamentos 2010-2011"
             VALUE "OriginalFilename", "POPTools.exe"
             VALUE "ProductName", "POPTools Ladder Program"
-            VALUE "ProductVersion", "1.5.1363.3235"
+            VALUE "ProductVersion", "1.5.1365.3738"
         END
     END
     BLOCK "VarFileInfo"
