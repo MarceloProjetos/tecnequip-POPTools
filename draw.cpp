@@ -796,7 +796,7 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             case ELEM_EQU:
                 s = "=="; goto cmp;
             case ELEM_NEQ:
-                s = "/="; goto cmp;
+                s = "<>"; goto cmp;
             case ELEM_GRT:
                 s = ">"; goto cmp;
             case ELEM_GEQ:

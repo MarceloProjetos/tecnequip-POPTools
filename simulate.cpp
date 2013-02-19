@@ -1394,16 +1394,6 @@ math:
                 break;
 
             case INT_READ_MODBUS:
-				if(a->literal == 0) { // RS-485
-					SetSingleBit("$SerialReady", FALSE);
-					SimulateModbus485Countdown = 2;
-				} else { // Ethernet
-					SetSingleBit("$TcpReady", FALSE);
-					SimulateModbusEthCountdown = 2;
-				}
-				AppendToModbusSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
-                break;
-
             case INT_WRITE_MODBUS:
 				if(a->literal == 0) { // RS-485
 					SetSingleBit("$SerialReady", FALSE);
