@@ -323,8 +323,10 @@ static void GenerateDeclarations(FILE *f)
 			count = count/32 + (count%32 > 0);
 		}
 
-		fprintf(f, "volatile int %s_Count = %d;\n", NameVarArray[i], count);
-		fprintf(f, "volatile int %s[%d];\n", NameVarArray[i], count);
+		if(count) {
+			fprintf(f, "volatile int %s_Count = %d;\n", NameVarArray[i], count);
+			fprintf(f, "volatile int %s[%d];\n", NameVarArray[i], count);
+		}
 	}
 }
 
@@ -1072,6 +1074,14 @@ DWORD GenerateCFile(char *filename)
 	if(HasPWM) {
 		fprintf(f, "    PWM_Init();\n");
 	}
+
+	fprintf(f, "\n");
+	for(i=0; i != SEENVAR_MODE_OTHERS; i++) {
+		if(SeenVariablesCount[i]) {
+			fprintf(f, "    memset((void*)%s, 0, sizeof(%s));\n", NameVarArray[i], NameVarArray[i]);
+		}
+	}
+
 	fprintf(f, "}\n");
 
 	fclose(f);
