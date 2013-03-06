@@ -4,7 +4,6 @@ Compiling c:\Pessoal\SVN\Help\Ajuda.chm
 
 img\About.png
 img\bottom_line.gif
-img\ConfigPosicionamento.png
 img\ConfigRede.png
 img\ConfigSerial.png
 topics\Default.htm
@@ -75,9 +74,14 @@ topics\DeleteLine.htm
 topics\MoveLineUp.htm
 topics\MoveLineDown.htm
 topics\Config.htm
-topics\ConfigSerial.htm
 topics\ConfigRede.htm
-topics\ConfigPosicionamento.htm
+topics\ConfigHorario.htm
+topics\ConfigSerial.htm
+topics\ConfigSaidaAnalogica.htm
+topics\ConfigEncoderIncremental.htm
+topics\ConfigEncoderAbsoluto.htm
+topics\ConfigModBusMestre.htm
+topics\ConfigModBusEscravo.html
 topics\Settings.htm
 topics\Compile.htm
 topics\CompileAndProgram.htm
@@ -167,13 +171,23 @@ img\Inserir_antes.png
 img\Excluir_linha.png
 img\move_line_up.png
 img\move_line_down.png
+img\Projeto.png
+img\Confighorario.png
+img\ConfigSaidaAnalogica.png
+img\ConfigEncoderIncremental.png
+img\ConfigEncoderAbsoluto.png
+img\ConfigModBusMestre.png
+img\ConfigModBusEscravo.png
+img\Preferencias_do_projeto1.png
+img\Preferencias_do_projeto2.png
+img\Compilar.png
 
 Compile time: 0 minutes, 4 seconds
-108	Topics
-561	Local links
+114	Topics
+604	Local links
 1	Internet link
-15	Graphics
+25	Graphics
 
 
-Created c:\Pessoal\SVN\Help\Ajuda.chm, 920,885 bytes
-Compression decreased file by 266,663 bytes.
+Created c:\Pessoal\SVN\Help\Ajuda.chm, 965,449 bytes
+Compression decreased file by 286,120 bytes.

@@ -168,17 +168,52 @@
                         </OBJECT>
                         <UL>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Serial">
-                              <param name="Local" value="topics\ConfigSerial.htm">
+                              <param name="Name" value="Comunicação">
                             </OBJECT>
+                            <UL>
+                                <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="Rede">
+                                  <param name="Local" value="topics\ConfigRede.htm">
+                                </OBJECT>
+                                <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="Horário">
+                                  <param name="Local" value="topics\ConfigHorario.htm">
+                                </OBJECT>
+                                <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="Serial">
+                                  <param name="Local" value="topics\ConfigSerial.htm">
+                                </OBJECT>
+                            </UL>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Rede">
-                              <param name="Local" value="topics\ConfigRede.htm">
+                              <param name="Name" value="Interfaces">
                             </OBJECT>
+                            <UL>
+                                <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="Saida Analogica">
+                                  <param name="Local" value="topics\ConfigSaidaAnalogica.htm">
+                                </OBJECT>
+                                <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="Encoder Incremental">
+                                  <param name="Local" value="topics\ConfigEncoderIncremental.htm">
+                                </OBJECT>
+                                <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="Encoder Absoluto">
+                                  <param name="Local" value="topics\ConfigEncoderAbsoluto.htm">
+                                </OBJECT>
+                            </UL>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Posicionamento">
-                              <param name="Local" value="topics\ConfigPosicionamento.htm">
+                              <param name="Name" value="ModBus">
                             </OBJECT>
+                            <UL>
+                                <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="ModBUS Mestre">
+                                  <param name="Local" value="topics\ConfigModBusMestre.htm">
+                                </OBJECT>
+                                <LI><OBJECT type="text/sitemap">
+                                  <param name="Name" value="ModBUS Escravo">
+                                  <param name="Local" value="topics\ConfigModBusEscravo.html">
+                                </OBJECT>
+                            </UL>
                         </UL>
                         <LI><OBJECT type="text/sitemap">
                           <param name="Name" value="Preferências">
