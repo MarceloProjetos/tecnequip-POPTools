@@ -390,14 +390,6 @@
           <param name="Local" value="topics\KeyboardManual.htm">
         </OBJECT>
         <LI><OBJECT type="text/sitemap">
-          <param name="Name" value="Barra de Leds - A/D">
-          <param name="Local" value="topics\ExampleAdcLed.htm">
-        </OBJECT>
-        <LI><OBJECT type="text/sitemap">
-          <param name="Name" value="Semáforo">
-          <param name="Local" value="topics\ExampleSemaphore.htm">
-        </OBJECT>
-        <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Raiz Quadrada">
           <param name="Local" value="topics\InstrMathSqrt.htm">
         </OBJECT>
@@ -420,10 +412,6 @@
         <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Bem vindo">
           <param name="Local" value="topics\InstrCoil.htm">
-        </OBJECT>
-        <LI><OBJECT type="text/sitemap">
-          <param name="Name" value="Topic1">
-          <param name="Local" value="topics\Topic1.htm">
         </OBJECT>
         <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Bem vindo">
@@ -480,6 +468,126 @@
         <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Bem vindo">
           <param name="Local" value="topics\Exemplodeaplicacao.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Exportar como Diagrama Ladder">
+          <param name="Local" value="topics\FileSaveAsLadder.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Exportar como arquivo C">
+          <param name="Local" value="topics\FileSaveAsC.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Exportar como arquivo texto">
+          <param name="Local" value="topics\FileSaveAsText.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Bem vindo">
+          <param name="Local" value="topics\Undo.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Bem vindo">
+          <param name="Local" value="topics\Redo.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Vá para o Final">
+          <param name="Local" value="topics\GoEnd.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Bem vindo">
+          <param name="Local" value="topics\CopyInstr.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Bem vindo">
+          <param name="Local" value="topics\PasteInstr.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Bem vindo">
+          <param name="Local" value="topics\DeleteInstr.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Instrução Comentário">
+          <param name="Local" value="topics\InstrComment.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Comando de Localizar Próxima">
+          <param name="Local" value="topics\FindDialog.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Comando de Localizar Próxima">
+          <param name="Local" value="topics\Find.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Comando de Inserir Linha Após">
+          <param name="Local" value="topics\InsertLineAfter.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Comando de Inserir Linha Antes">
+          <param name="Local" value="topics\InsertLineBefore.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Comando de Excluir Linha">
+          <param name="Local" value="topics\DeleteLine.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Comando de Mover Linha Acima">
+          <param name="Local" value="topics\MoveLineUp.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Comando de Mover Linha Abaixo">
+          <param name="Local" value="topics\MoveLineDown.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Configurações do Projeto - Posicionamento">
+          <param name="Local" value="topics\ConfigHorario.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Configurações do Projeto - Saida Analógia">
+          <param name="Local" value="topics\ConfigSaidaAnalogica.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Configurações do Projeto - Interfaces - Encoder Incremental">
+          <param name="Local" value="topics\ConfigEncoderIncremental.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Configurações do Projeto - Interfaces - Encoder Absoluto">
+          <param name="Local" value="topics\ConfigEncoderAbsoluto.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Configurações do Projeto - Interfaces - Encoder Incremental">
+          <param name="Local" value="topics\ConfigModBusMestre.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Configurações do Projeto - Interfaces - Encoder Incremental">
+          <param name="Local" value="topics\ConfigModBusEscravo.html">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Exemplos de Programas">
+          <param name="Local" value="topics\Example.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Instrução de contato ou bobina">
+          <param name="Local" value="topics\InstrCoil.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Valor Absoluto">
+          <param name="Local" value="topics\InstrAbs.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Número Randômico">
+          <param name="Local" value="topics\InstrRand.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Contato">
+          <param name="Local" value="topics\Primeiroladder.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Contato">
+          <param name="Local" value="topics\Exemplodeaplicacao.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Topic1">
+          <param name="Local" value="topics\Topic1.htm">
         </OBJECT>
     </UL>
 </BODY>

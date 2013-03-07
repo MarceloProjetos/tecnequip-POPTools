@@ -3,10 +3,29 @@ Microsoft HTML Help Compiler 4.74.8702
 Compiling c:\Pessoal\SVN\Help\Ajuda.chm
 
 img\About.png
+img\Atalhos-no-teclado-para-windows-7.jpg
+img\Borda_de_Descida.png
+img\Borda_de_Subida.png
 img\bottom_line.gif
+img\Chave_Geral.png
+img\CircuitoAberto.png
+img\CircuitoFechado.png
+img\Compilar.png
+img\CompilarGravar.png
+img\ConfigEncoderAbsoluto.png
+img\ConfigEncoderIncremental.png
+img\Confighoraio.png
+img\Confighorario.png
+img\ConfigModBusEscravo.png
+img\ConfigModBusMestre.png
 img\ConfigRede.png
+img\ConfigSaidaAnalogica.png
 img\ConfigSerial.png
+img\CopyInstr.png
 topics\Default.htm
+img\DeleteInstr.png
+img\Depurar1.png
+img\Depurar2.png
 img\Diagramaladder.png
 img\Diagramaladder10.png
 img\Diagramaladder11.JPG
@@ -24,6 +43,9 @@ img\Diagramaladder6.png
 img\Diagramaladder7.JPG
 img\Diagramaladder8.png
 img\Diagramaladder9.JPG
+img\Excluir_linha.png
+img\ExemplosProgramas1.png
+img\ExemplosProgramas2.png
 img\Exit.png
 img\FileNew.png
 img\FileOpen.png
@@ -32,17 +54,36 @@ img\FileSaveAs.png
 img\FileSaveAsC.png
 img\FileSaveAsC2.png
 img\FileSaveAsTxt.png
+img\GoEnd.png
+img\GoHome.png
 img\icon.jpg
+img\Inserir_antes.png
+img\Inserir_apos.png
 img\InstrBobina.png
 img\InstrBobina2.png
+img\InstrComentario.png
 img\InstrContact.png
 img\InstrContact2.png
 img\licenca1.png
+img\localizar_proxima.png
+img\localizar_substituir.png
+img\Manual1.png
+img\Manual2.png
+img\move_line_down.png
+img\move_line_up.png
+img\PasteInstr.png
+img\Preferencias_do_projeto1.png
+img\Preferencias_do_projeto2.png
+img\Projeto.png
+img\Redo.png
+img\Simulação1.png
+img\Simulação2.png
 css\styles_standard.css
 img\teclado_atalho.jpg
 topics\Topic1.htm
 img\topicbar.gif
 img\topicbar_left.gif
+img\Undo.png
 img\WelcomeLogo.png
 img\WelcomePicture.png
 Contents.hhc
@@ -88,10 +129,8 @@ topics\CompileAndProgram.htm
 topics\Debug.htm
 topics\Simulation.htm
 topics\UserManual.htm
-topics\KeyboardManual.htm
-topics\Examples.htm
-topics\ExampleAdcLed.htm
-topics\ExampleSemaphore.htm
+topics\TeclasAtalho.htm
+topics\Example.htm
 topics\InstrContact.htm
 topics\InstrCoil.htm
 topics\InstrOneShotRising.htm
@@ -151,43 +190,19 @@ topics\SimulationStop.htm
 topics\SimulationPause.htm
 topics\SimulationSingleCycle.htm
 topics\SimulationExit.htm
-topics\TeclasAtalho.htm
 topics\License.htm
 topics\Primeiroladder.htm
 topics\Exemplodeaplicacao.htm
-topics\CompileAs.htm
-img\Undo.png
-img\Redo.png
-img\GoHome.png
-img\GoEnd.png
-img\CopyInstr.png
-img\PasteInstr.png
-img\DeleteInstr.png
-img\InstrComentario.png
-img\localizar_proxima.png
-img\localizar_substituir.png
-img\Inserir_apos.png
-img\Inserir_antes.png
-img\Excluir_linha.png
-img\move_line_up.png
-img\move_line_down.png
-img\Projeto.png
-img\Confighorario.png
-img\ConfigSaidaAnalogica.png
-img\ConfigEncoderIncremental.png
-img\ConfigEncoderAbsoluto.png
-img\ConfigModBusMestre.png
-img\ConfigModBusEscravo.png
-img\Preferencias_do_projeto1.png
-img\Preferencias_do_projeto2.png
-img\Compilar.png
+topics\Examples.htm
+topics\ConfigPosicionamento.htm
+topics\KeyboardManual.htm
 
 Compile time: 0 minutes, 4 seconds
-114	Topics
-604	Local links
+113	Topics
+686	Local links
 1	Internet link
-25	Graphics
+0	Graphics
 
 
-Created c:\Pessoal\SVN\Help\Ajuda.chm, 965,449 bytes
-Compression decreased file by 286,120 bytes.
+Created c:\Pessoal\SVN\Help\Ajuda.chm, 1,319,175 bytes
+Compression decreased file by 338,794 bytes.

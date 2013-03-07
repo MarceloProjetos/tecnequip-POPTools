@@ -256,23 +256,17 @@
                         </OBJECT>
                         <LI><OBJECT type="text/sitemap">
                           <param name="Name" value="Teclado">
-                          <param name="Local" value="topics\KeyboardManual.htm">
+                          <param name="Local" value="topics\TeclasAtalho.htm">
                         </OBJECT>
-                        <LI><OBJECT type="text/sitemap">
-                          <param name="Name" value="Exemplos">
-                          <param name="Local" value="topics\Examples.htm">
-                        </OBJECT>
-                        <UL>
-                            <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Barra de Leds - A/D">
-                              <param name="Local" value="topics\ExampleAdcLed.htm">
-                            </OBJECT>
-                            <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Semáforo">
-                              <param name="Local" value="topics\ExampleSemaphore.htm">
-                            </OBJECT>
-                        </UL>
                     </UL>
+                    <LI><OBJECT type="text/sitemap">
+                      <param name="Name" value="Exemplos">
+                      <param name="Local" value="topics\Example.htm">
+                    </OBJECT>
+                    <LI><OBJECT type="text/sitemap">
+                      <param name="Name" value="Sobre">
+                      <param name="Local" value="topics\About.htm">
+                    </OBJECT>
                 </UL>
                 <LI><OBJECT type="text/sitemap">
                   <param name="Name" value="Instruções">
