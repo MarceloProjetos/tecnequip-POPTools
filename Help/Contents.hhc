@@ -331,12 +331,12 @@
                               <param name="Local" value="topics\InstrTimerONRet.htm">
                             </OBJECT>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Agendador de Tarefa">
-                              <param name="Local" value="topics\InstrSchedule.htm">
-                            </OBJECT>
-                            <LI><OBJECT type="text/sitemap">
                               <param name="Name" value="Zerar">
                               <param name="Local" value="topics\InstrTimerReset.htm">
+                            </OBJECT>
+                            <LI><OBJECT type="text/sitemap">
+                              <param name="Name" value="Agendador de Tarefa">
+                              <param name="Local" value="topics\InstrSchedule.htm">
                             </OBJECT>
                         </UL>
                         <LI><OBJECT type="text/sitemap">
