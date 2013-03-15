@@ -141,8 +141,8 @@ topics\InstrCircuitClosed.htm
 topics\InstrTimerON.htm
 topics\InstrTimerOFF.htm
 topics\InstrTimerONRet.htm
-topics\InstrSchedule.htm
 topics\InstrTimerReset.htm
+topics\InstrSchedule.htm
 topics\InstrCounterInc.htm
 topics\InstrCounterDec.htm
 topics\InstrCounterCirc.htm
@@ -202,13 +202,27 @@ img\Atraso_para_desligar.png
 img\Atraso_para_desligar2.png
 img\Atraso_com_memoria.png
 img\Atraso_com_memoria2.png
+img\zerar_temporizador1.png
+img\zerar_temporizador2.png
+img\Agendador_de_tarefas1.png
+img\Agendador_de_tarefas2.png
+img\contador_incremental1.png
+img\contador_incremental2.png
+img\contador_decremental1.png
+img\contador_decremental2.png
+img\contador_circular1.png
+img\contador_circular2.png
+img\contador_zerar1.png
+img\contador_zerar2.png
+img\mover_valor1.png
+img\mover_valor2.png
 
-Compile time: 0 minutes, 4 seconds
+Compile time: 0 minutes, 6 seconds
 113	Topics
-695	Local links
+716	Local links
 1	Internet link
-6	Graphics
+20	Graphics
 
 
-Created c:\Pessoal\SVN\Help\Ajuda.chm, 1,338,903 bytes
-Compression decreased file by 340,542 bytes.
+Created c:\Pessoal\SVN\Help\Ajuda.chm, 1,393,179 bytes
+Compression decreased file by 345,777 bytes.
