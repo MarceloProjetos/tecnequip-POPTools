@@ -393,6 +393,9 @@ public:
 			EXEC_OPCODE(cmdRedo                   , MNU_REDO                   );
 			EXEC_OPCODE(cmdMoveLineUp             , MNU_PUSH_RUNG_UP           );
 			EXEC_OPCODE(cmdMoveLineDown           , MNU_PUSH_RUNG_DOWN         );
+			EXEC_OPCODE(cmdCopyLine               , MNU_COPY_RUNG              );
+			EXEC_OPCODE(cmdPasteLineBefore        , MNU_PASTE_RUNG_BEFORE      );
+			EXEC_OPCODE(cmdPasteLineAfter         , MNU_PASTE_RUNG_AFTER       );
 			EXEC_OPCODE(cmdInsertLineAfter        , MNU_INSERT_RUNG_AFTER      );
 			EXEC_OPCODE(cmdInsertLineBefore       , MNU_INSERT_RUNG_BEFORE     );
 			EXEC_OPCODE(cmdGoHome                 , MNU_GO_HOME                );

@@ -1077,12 +1077,32 @@ cmp:
 			MoveCursorKeyboard(VK_END, TRUE);
             break;
 
-        case MNU_COPY_ELEMENT:
+        case MNU_COPY_ELEMENT: {
             CopyLeaf(Selected, SelectedWhich);
             break;
+		}
 
         case MNU_PASTE_ELEMENT:
             CHANGING_PROGRAM(PasteLeaf());
+            break;
+
+        case MNU_COPY_RUNG: {
+			int i = RungContainingSelected();
+//            CopyLeaf(Selected, SelectedWhich);
+			if(i >= 0) {
+				CopyRung(Prog.rungs[i]);
+			}
+            break;
+		}
+
+        case MNU_PASTE_RUNG_BEFORE:
+//            CHANGING_PROGRAM(PasteLeaf());
+            CHANGING_PROGRAM(PasteRung(false));
+            break;
+
+        case MNU_PASTE_RUNG_AFTER:
+//            CHANGING_PROGRAM(PasteLeaf());
+            CHANGING_PROGRAM(PasteRung(true));
             break;
 
         case MNU_CUT_ELEMENT:

@@ -323,10 +323,8 @@ static void GenerateDeclarations(FILE *f)
 			count = count/32 + (count%32 > 0);
 		}
 
-		if(count) {
-			fprintf(f, "volatile int %s_Count = %d;\n", NameVarArray[i], count);
-			fprintf(f, "volatile int %s[%d];\n", NameVarArray[i], count);
-		}
+		fprintf(f, "volatile int %s_Count = %d;\n", NameVarArray[i], count);
+		fprintf(f, "volatile int %s[%d];\n", NameVarArray[i], count ? count : 1);
 	}
 }
 

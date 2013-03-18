@@ -23,6 +23,7 @@ IDB_CLOCK_EDIT          BITMAP                  "imgs/clock_edit.bmp"
 IDB_NETWORK_CONFIG      BITMAP                  "imgs/network_config.bmp"
 IDB_RS485_CONFIG        BITMAP                  "imgs/RS485_config.bmp"
 IDB_TIME_CONFIG         BITMAP                  "imgs/time_config.bmp"
+IDB_ARROW_LEFT          BITMAP                  "imgs/ArrowLeft.bmp"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Sound

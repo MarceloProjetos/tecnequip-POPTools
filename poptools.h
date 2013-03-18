@@ -175,6 +175,10 @@ struct strSerialConfig {
 #define MNU_RECENT_CLEAR        0x07
 #define MNU_RECENT_START        0x100
 
+#define MNU_COPY_RUNG           0x09
+#define MNU_PASTE_RUNG_BEFORE   0x0a
+#define MNU_PASTE_RUNG_AFTER    0x0b
+
 #define MNU_UNDO                0x10
 #define MNU_REDO                0x11
 #define MNU_PUSH_RUNG_UP        0x12
@@ -1205,6 +1209,8 @@ int RungContainingSelected(void);
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
 BOOL UartFunctionUsed(void);
 BOOL PwmFunctionUsed(void);
+void CopyRung(ElemSubcktSeries *rung);
+bool PasteRung(bool after);
 void CopyLeaf(ElemLeaf *leaf, int which);
 bool PasteLeaf(void);
 bool PushRung(bool up);
@@ -1253,7 +1259,6 @@ void ShowMultisetDADialog(ElemMultisetDA *l);
 void ShowTimerDialog(int which, int *delay, char *name);
 void ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end);
 void ShowCounterDialog(int which, int *count, char *name);
-void ShowMoveDialog(char *dest, char *src);
 void ShowReadAdcDialog(char *name);
 void ShowSetBitDialog(char *name, int * set, int * bit);
 void ShowCheckBitDialog(char *name, int * set, int * bit);
@@ -1288,6 +1293,7 @@ bool ShowConfDialog(bool NetworkSection);
 void PopulateModBUSMasterCombobox(HWND h, bool has_new);
 MbNodeList *MbNodeList_GetByIndex(int index);
 MbNodeList *MbNodeList_GetByNodeID(int NodeID);
+int  MbNodeList_Create(char *NodeName);
 void MbNodeList_AddRef(int NodeID);
 void MbNodeList_DelRef(int NodeID);
 // helpdialog.cpp
@@ -1487,9 +1493,11 @@ void SimulationServer_Message(WPARAM wParam, LPARAM lParam);
 // mathdialog.cpp
 void ShowMathDialog(int which, char *dest, char *op1, char *op2);
 
-// modbus_usb.h
-bool USB_SetDateTime(struct tm *t);
-bool USB_GetDateTime(struct tm *t);
+// modbus_usb.cpp
+bool          USB_SetDateTime(struct tm *t);
+bool          USB_GetDateTime(struct tm *t);
+unsigned long USB_GetInput   (void);
+unsigned int  USB_GetOutput  (void);
 
 // CommonFileDialog.cpp
 enum FDS_Mode { LoadLadder = 0, SaveLadder, SaveText, SaveC };

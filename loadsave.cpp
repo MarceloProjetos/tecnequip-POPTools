@@ -44,16 +44,14 @@ int ConvReadModbus_v6_v7(ElemLeaf *l)
 	}
 
 	if(elem == Prog.settings.mb_list_size) { // ID not found!
-		Prog.settings.mb_list_size++;
-
-		Prog.settings.mb_list[elem].NodeID     = elem ? Prog.settings.mb_list[elem-1].NodeID + 1 : 0;
-		Prog.settings.mb_list[elem].NodeCount  = 1;
-
-		Prog.settings.mb_list[elem].node.id    = oldmb.id;
-		Prog.settings.mb_list[elem].node.iface = 0;
-		Prog.settings.mb_list[elem].node.ip    = 0;
-
-		sprintf(Prog.settings.mb_list[elem].node.name, _("Slave id=%d"), oldmb.id);
+		elem = MbNodeList_Create("");
+		if(elem >= 0) {
+			Prog.settings.mb_list[elem].NodeCount  = 1;
+			Prog.settings.mb_list[elem].node.id    = oldmb.id;
+			sprintf(Prog.settings.mb_list[elem].node.name, _("Slave id=%d"), oldmb.id);
+		} else {
+			elem = 0;
+		}
 	} else {
 		Prog.settings.mb_list[elem].NodeCount++;
 	}

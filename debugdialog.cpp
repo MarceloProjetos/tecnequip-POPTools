@@ -2,6 +2,9 @@
 
 static HWND DebugDialog;
 
+#define INPUT_SIZE  19
+#define OUTPUT_SIZE 16
+
 static HWND ModeTCPRadio;
 static HWND Mode485Radio;
 static HWND SendRadio;
@@ -20,8 +23,10 @@ static HWND CommList;
 static HWND txtInfoDate;
 static HWND txtInfoTime;
 static HWND SetDateTimeButton;
+static HWND CheckInput[19];
+static HWND CheckOutput[16];
 
-static LONG_PTR PrevNameProc;
+static LONG_PTR PrevIdProc;
 
 static bool DebugDone = false;
 
@@ -313,7 +318,7 @@ void CALLBACK DebugUpdateInfo(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 {
 	struct tm t;
 
-	if(USB_GetDateTime(&t)) {
+	if(USB_GetDateTime(&t)) { // POP Connected and Date/Time retrieved
 		char buf[MAX_NAME_LEN];
 
 		sprintf(buf, "%02d/%02d/%04d", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900);
@@ -321,8 +326,37 @@ void CALLBACK DebugUpdateInfo(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 
 		sprintf(buf, "%02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec);
 		SendMessage(txtInfoTime, WM_SETTEXT, 0, (LPARAM)buf);
+
+		// Now we will update Input/Output state
+		int index;
+		unsigned int io_state;
+
+		// First, Input state
+		io_state = USB_GetInput();
+		for(index = ARRAY_SIZE(CheckInput) - 1; index >= 0; index--)
+			SendMessage(CheckInput[index], BM_SETCHECK, ((io_state >> index) & 1) ? BST_CHECKED : BST_UNCHECKED,  0);
+
+		// Then, Output state
+		io_state = USB_GetOutput();
+		for(index = ARRAY_SIZE(CheckOutput) - 1; index >= 0; index--)
+			SendMessage(CheckOutput[index], BM_SETCHECK, ((io_state >> index) & 1) ? BST_CHECKED : BST_UNCHECKED,  0);
 	}
 
+}
+
+//-----------------------------------------------------------------------------
+// Don't allow any characters other than 0-9. in the text boxes.
+//-----------------------------------------------------------------------------
+static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
+    LPARAM lParam)
+{
+    if(msg == WM_CHAR) {
+        if(!(isdigit(wParam) || wParam == '.' || wParam == '\b')) {
+            return 0;
+        }
+    }
+
+    return CallWindowProc((WNDPROC)PrevIdProc, hwnd, msg, wParam, lParam);
 }
 
 //-----------------------------------------------------------------------------
@@ -395,6 +429,7 @@ LRESULT CALLBACK DebugDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 static void MakeControls(void)
 {
+	int index;
     LVCOLUMN lvc;
 
 	SendRadio = CreateWindowEx(0, WC_BUTTON, _("Escrever"),
@@ -434,7 +469,7 @@ static void MakeControls(void)
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Registrador:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        380, 71, 70, 21, DebugDialog, NULL, Instance, NULL);
+        374, 71, 76, 21, DebugDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
     AddressTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
@@ -494,7 +529,7 @@ static void MakeControls(void)
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Porta de Depuração:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 46, 65, 41, grouper3, NULL, Instance, NULL);
+        2, 46, 73, 41, grouper3, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     txtCOM = CreateWindowEx(0, WC_STATIC, "",
@@ -558,7 +593,7 @@ static void MakeControls(void)
 
     txtInfoDate = CreateWindowEx(0, WC_STATIC, _("--/--/----"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        70, 20, 150, 18, grouper, NULL, Instance, NULL);
+        70, 20, 100, 18, grouper, NULL, Instance, NULL);
     NiceFont(txtInfoDate);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Hora:"),
@@ -568,8 +603,42 @@ static void MakeControls(void)
 
     txtInfoTime = CreateWindowEx(0, WC_STATIC, _("--:--:--"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        70, 40, 150, 18, grouper, NULL, Instance, NULL);
+        70, 40, 100, 18, grouper, NULL, Instance, NULL);
     NiceFont(txtInfoTime);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Entradas:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        200, 40, 60, 18, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Saídas:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        200, 60, 60, 18, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+	for(index = ARRAY_SIZE(CheckInput) - 1; index >= 0; index--) {
+		char buf[3];
+		sprintf(buf, "%d", index+1);
+		textLabel = CreateWindowEx(0, WC_STATIC, buf,
+			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+			270 + index*20, 20, 15, 18, grouper, NULL, Instance, NULL);
+		NiceFont(textLabel);
+
+		CheckInput[index] = CreateWindowEx(0, WC_BUTTON, "",
+			WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
+			270 + index*20, 40, 15, 18, grouper, NULL, Instance, NULL);
+		NiceFont(CheckInput[index]);
+
+		if(index < ARRAY_SIZE(CheckOutput)) {
+			CheckOutput[index] = CreateWindowEx(0, WC_BUTTON, "",
+				WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
+				270 + index*20, 60, 15, 18, grouper, NULL, Instance, NULL);
+			NiceFont(CheckOutput[index]);
+		}
+	}
+
+	PrevIdProc = SetWindowLongPtr(IDTextbox, GWLP_WNDPROC, 
+        (LONG_PTR)MyNumberProc);
 
     SetTimer(DebugDialog, TIMER_DEBUG_INFO, 1000, DebugUpdateInfo);
 }

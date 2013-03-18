@@ -48,19 +48,19 @@ static LONG_PTR PrevBaudProc;
 
 //const LPCTSTR ComboboxPLCItens[] = { _("POP7"), _("POP9") };
 
-const LPCTSTR ComboboxGMTItens[] = { _("(GMT-12:00) Linha de Data Internacional Oeste"), _("(GMT-11:00) Ilhas Midway,Samoa"),
-								_("(GMT-10:00) Hawaí"), _("(GMT-09:00) Alasca"),
-								_("(GMT-08:00) Hora do Pacífico"), _("(GMT-07:00) Hora das Montanhas (EUA e Canadá)"),
-								_("(GMT-06:00) América Central, Hora Central EUA/Canadá"), _("(GMT-05:00) Lima, Bogotá"),
-								_("(GMT-04:00) Rio Branco, Manaus, Caracas, La Paz"), _("(GMT-03:00) Brasilia, Buenos Aires"),
-								_("(GMT-02:00) Atlântico Central"), _("(GMT-01:00) Açores, Cabo Verde"),
-								_("(GMT 00:00) Hora de Greenwich: Londres, Dublin, Lisboa"), _("(GMT+01:00) Berlim, Estocolmo, Roma, Bruxelas"),
-								_("(GMT+02:00) Atenas, Helsinque, Leste Europeu, Jerusalém"), _("(GMT+03:00) Bagdá, Kuwait, Nairóbi, Moscou,Riad"),
-								_("(GMT+04:00) Abu Dhabi, Mascate, Hora Padrão do Cáucaso"), _("(GMT+05:00) Islamabad, Karachi, Ekaterinburgo"),
-								_("(GMT+06:00) Almaty, Dacca"), _("(GMT+07:00) Bangcoc, Jacarta, Hanói"),
-								_("(GMT+08:00) Pequim, Hong Kong, Taiwan, Cingapura"), _("(GMT+09:00) Tóquio, Osaka, Sapporo, Seul, Yakutsk"),
-								_("(GMT+10:00) Brisbane, Camberra, Melbourne, Sydney"), _("(GMT+11:00) Magadã, Ilhas Salomão, Nova Caledônia"),
-								_("(GMT+12:00) Fiji, Kamchatka, Auckland"), _("(GMT+13:00) Nuku'alofa") };
+const LPCTSTR ComboboxGMTItens[] = { _("(GMT-12) Linha de Data Internacional Oeste"), _("(GMT-11) Ilhas Midway,Samoa"),
+								_("(GMT-10) Hawaí"), _("(GMT-09) Alasca"),
+								_("(GMT-08) Hora do Pacífico"), _("(GMT-07) Hora das Montanhas (EUA e Canadá)"),
+								_("(GMT-06) América Central, Hora Central EUA/Canadá"), _("(GMT-05) Lima, Bogotá"),
+								_("(GMT-04) Rio Branco, Manaus, Caracas, La Paz"), _("(GMT-03) Brasilia, Buenos Aires"),
+								_("(GMT-02) Atlântico Central"), _("(GMT-01) Açores, Cabo Verde"),
+								_("(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa"), _("(GMT+01) Berlim, Estocolmo, Roma, Bruxelas"),
+								_("(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém"), _("(GMT+03) Bagdá, Kuwait, Nairóbi, Moscou,Riad"),
+								_("(GMT+04) Abu Dhabi, Mascate, Hora Padrão do Cáucaso"), _("(GMT+05) Islamabad, Karachi, Ekaterinburgo"),
+								_("(GMT+06) Almaty, Dacca"), _("(GMT+07) Bangcoc, Jacarta, Hanói"),
+								_("(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura"), _("(GMT+09) Tóquio, Osaka, Sapporo, Seul, Yakutsk"),
+								_("(GMT+10) Brisbane, Camberra, Melbourne, Sydney"), _("(GMT+11) Magadã, Ilhas Salomão, Nova Caledônia"),
+								_("(GMT+12) Fiji, Kamchatka, Auckland"), _("(GMT+13) Nuku'alofa") };
 
 const LPCTSTR ComboboxBaudRateItens[] = { /*"2400", "4800", "7200",*/ "9600", "14400", "19200"/*, "28800", 
 						"38400", "57600", "115200"*/ };
@@ -283,18 +283,15 @@ static LRESULT CALLBACK ConfDialogProc_ModBusMasterGrouper(HWND hwnd, UINT msg, 
 						if(Prog.settings.mb_list_size == MB_LIST_MAX) {
 							msg = L"Muitos elementos cadastrados!";
 						} else {
-							msg = L"Elemento adicionado com sucesso!";
+							i = MbNodeList_Create(""); // Create the new node
 
-							new_node = &Prog.settings.mb_list[Prog.settings.mb_list_size];
-							new_node->NodeCount = 0;
-
-							if(!Prog.settings.mb_list_size) {
-								new_node->NodeID = 0;
+							if(i < 0) {
+								msg = L"Erro ao criar elemento!";
 							} else {
-								new_node->NodeID = Prog.settings.mb_list[Prog.settings.mb_list_size - 1].NodeID + 1;
-							}
+								msg = L"Elemento adicionado com sucesso!";
 
-							Prog.settings.mb_list_size++;
+								new_node = &Prog.settings.mb_list[i];
+							}
 						}
 					} else { // Updating existent element
 						msg = L"Elemento alterado com sucesso!";
@@ -607,14 +604,19 @@ static void MakeControls(void)
         215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupInterfaceDA);
 
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Este Modo de Abandono será utilizado em todas as rampas de D/A selecionadas para o modo Padrão."),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        5, 5, 195, 74, GroupInterfaceDA, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
     HWND Label = CreateWindowEx(0, WC_STATIC, _("Modo de Abandono:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 2, 140, 21, GroupInterfaceDA, NULL, Instance, NULL);
+        5, 84, 140, 21, GroupInterfaceDA, NULL, Instance, NULL);
     NiceFont(Label);
 
 	AbortModeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        155, 0, 130, 100, GroupInterfaceDA, NULL, Instance, NULL);
+        155, 82, 130, 100, GroupInterfaceDA, NULL, Instance, NULL);
     NiceFont(AbortModeCombobox);
 
 	// Group - Incremental Encoder
@@ -1021,6 +1023,19 @@ bool ShowConfDialog(bool NetworkSection)
 
 		Prog.settings.gmt = SendMessage(GMTCombobox, CB_GETCURSEL, 0, 0);
 		Prog.settings.dailysave = SendMessage(DailySaveCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
+
+        SendMessage(DiameterTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		Prog.settings.diameter = atoi(buf);
+		if(Prog.settings.diameter < 0)
+			Prog.settings.diameter = 0;
+
+        SendMessage(PulsesTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		Prog.settings.pulses = atoi(buf);
+		if(Prog.settings.pulses < 0) {
+			Prog.settings.pulses = 0;
+		} else if(Prog.settings.pulses > 5000) {
+			Prog.settings.pulses = 5000;
+		}
 
 		Prog.settings.x4 = (char)SendMessage(X4Checkbox, BM_GETCHECK, 0, 0);
 

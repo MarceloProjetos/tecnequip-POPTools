@@ -745,6 +745,121 @@ bool CanInsert(int which)
 	return false;
 }
 
+// Saved Rung
+ElemSubcktSeries *SavedRung;
+
+static void *CopyRungWorker(int &dest_which, void *any, int which, bool UsePasteCheck)
+{
+	void *ret = NULL;
+
+	switch(which) {
+        case ELEM_SERIES_SUBCKT: {
+            ElemSubcktSeries *dest, *s = (ElemSubcktSeries *)any;
+            int i;
+			dest = AllocSubcktSeries();
+			dest->count = s->count;
+            for(i = 0; i < s->count; i++) {
+				dest->contents[i].d.any = CopyRungWorker(dest->contents[i].which, s->contents[i].d.any, s->contents[i].which, UsePasteCheck);
+            }
+
+			dest_which = ELEM_SERIES_SUBCKT;
+			ret = dest;
+
+			break;
+        }
+        case ELEM_PARALLEL_SUBCKT: {
+            ElemSubcktParallel *dest, *p = (ElemSubcktParallel *)any;
+            int i;
+			dest = AllocSubcktParallel();
+			dest->count = p->count;
+            for(i = 0; i < p->count; i++) {
+				dest->contents[i].d.any = CopyRungWorker(dest->contents[i].which, p->contents[i].d.any, p->contents[i].which, UsePasteCheck);
+            }
+
+			dest_which = ELEM_PARALLEL_SUBCKT;
+			ret = dest;
+
+			break;
+        }
+        CASE_LEAF {
+			MbNodeList *l;
+			ElemLeaf *leaf = AllocLeaf();
+			memcpy(leaf, any, sizeof(ElemLeaf));
+
+			if(UsePasteCheck) {
+				if(which == ELEM_READ_MODBUS) {
+					l = MbNodeList_GetByNodeID(leaf->d.readModbus.elem);
+					if(l == NULL) {
+						l = MbNodeList_GetByIndex(0);
+						if(l == NULL) {
+							l = &Prog.settings.mb_list[MbNodeList_Create("Default")];
+						}
+						leaf->d.readModbus.elem = l->NodeID;
+					}
+
+					MbNodeList_AddRef(leaf->d.readModbus.elem);
+				} else if(which == ELEM_WRITE_MODBUS) {
+					l = MbNodeList_GetByNodeID(leaf->d.writeModbus.elem);
+					if(l == NULL) {
+						l = MbNodeList_GetByIndex(0);
+						if(l == NULL) {
+							l = &Prog.settings.mb_list[MbNodeList_Create("Default")];
+						}
+						leaf->d.writeModbus.elem = l->NodeID;
+					}
+
+					MbNodeList_AddRef(leaf->d.writeModbus.elem);
+				}
+			}
+
+			dest_which = which;
+			ret = leaf;
+
+			break;
+		}
+
+        default:
+            oops();
+            break;
+    }
+
+	return ret;
+}
+
+// Copy current rung to memory
+void CopyRung(ElemSubcktSeries *rung)
+{
+	int dummy;
+
+	if(rung == NULL) return;
+
+	if(SavedRung != NULL && SavedRung != rung) { // If not NULL nor the same, free rung
+		FreeCircuit(ELEM_SERIES_SUBCKT, SavedRung);
+	}
+
+	SavedRung = (ElemSubcktSeries *)CopyRungWorker(dummy, rung, ELEM_SERIES_SUBCKT, SavedRung == rung);
+}
+
+// Paste a previously saved rung, adding it to an empty rung
+bool PasteRung(bool after)
+{
+	int i;
+
+	InsertRung(after);
+	i = RungContainingSelected();
+
+	if(SavedRung != NULL && i >= 0 && Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which == ELEM_PLACEHOLDER) {
+		FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+
+		Prog.rungs[i] = SavedRung;
+		CopyRung(SavedRung);
+
+		return true;
+	}
+
+	return false;
+}
+
 // Saved leaf
 int SavedWhich = 0;
 ElemLeaf *SavedLeaf = NULL;
@@ -756,7 +871,9 @@ void CopyLeaf(ElemLeaf *leaf, int which)
 
 	if(which != ELEM_PLACEHOLDER) {
 		SavedWhich = which;
-		SavedLeaf = AllocLeaf();
+		if(SavedLeaf == NULL || SavedLeaf == leaf) { // If NULL or the same, allocate a leaf for copy
+			SavedLeaf = AllocLeaf();
+		}
 		memcpy(SavedLeaf, leaf, sizeof(ElemLeaf));
 	}
 }
@@ -773,9 +890,9 @@ bool PasteLeaf(void)
 			if(l == NULL) {
 				l = MbNodeList_GetByIndex(0);
 				if(l == NULL) {
-					return false;
+					l = &Prog.settings.mb_list[MbNodeList_Create("Default")];
 				}
-				SavedLeaf->d.readModbus.elem = 0;
+				SavedLeaf->d.readModbus.elem = l->NodeID;
 			}
 
 			MbNodeList_AddRef(SavedLeaf->d.readModbus.elem);
@@ -784,9 +901,9 @@ bool PasteLeaf(void)
 			if(l == NULL) {
 				l = MbNodeList_GetByIndex(0);
 				if(l == NULL) {
-					return false;
+					l = &Prog.settings.mb_list[MbNodeList_Create("Default")];
 				}
-				SavedLeaf->d.writeModbus.elem = 0;
+				SavedLeaf->d.writeModbus.elem = l->NodeID;
 			}
 
 			MbNodeList_AddRef(SavedLeaf->d.writeModbus.elem);

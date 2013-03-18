@@ -68,7 +68,7 @@ static ElemMultisetDA current;
 static vector<D2D1_POINT_2F>	DAPoints;
 
 const LPCTSTR ResollTypeItens[] = { _("(12 bits)[2047 ~ -2048]"), _("(mV)[10000 ~ -10000]"), _("(%)[0 ~ 100]") };
-const LPCTSTR RampAbortModes [] = { _("Default"), _("Leave"), _("Stop"), _("Deceleration") };
+const LPCTSTR RampAbortModes [] = { _("Default"), _("Leave"), _("Stop"), _("Decelerate") };
 
 void CalcLinearUp(int calc_tempo, int calc_initval)
 {

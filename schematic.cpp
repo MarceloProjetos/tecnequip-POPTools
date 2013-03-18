@@ -759,7 +759,7 @@ bool EditSelectedElement(void)
             break;
 
         case ELEM_MOVE:
-            ShowMoveDialog(Selected->d.move.dest, Selected->d.move.src);
+            ShowMathDialog(SelectedWhich, Selected->d.move.dest, Selected->d.move.src, NULL);
             break;
 
         case ELEM_SQRT:

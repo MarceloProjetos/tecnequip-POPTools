@@ -526,6 +526,7 @@ int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto)
     }
 
     ++nIndex;
+	nPort = 0;
   }
 
   if((!iPortMatch || !iDefaultPort) && ComboBox) {

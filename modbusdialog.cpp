@@ -25,6 +25,27 @@ static LONG_PTR PrevNameProc;
 
 /*** Helper Functions for MbNodeList ***/
 
+// Create a new node in the list
+int MbNodeList_Create(char *NodeName)
+{
+	int elem = Prog.settings.mb_list_size;
+
+	if(NodeName == NULL || Prog.settings.mb_list_size == MB_LIST_MAX) return -1;
+
+	Prog.settings.mb_list[elem].NodeID     = elem ? Prog.settings.mb_list[elem-1].NodeID + 1 : 0;
+	Prog.settings.mb_list[elem].NodeCount  = 0;
+
+	Prog.settings.mb_list[elem].node.id    = 0;
+	Prog.settings.mb_list[elem].node.iface = 0;
+	Prog.settings.mb_list[elem].node.ip    = 0;
+
+	strcpy(Prog.settings.mb_list[elem].node.name, NodeName);
+
+	Prog.settings.mb_list_size++;
+
+	return elem;
+}
+
 // Get MbNodeList by Index (Position in the list)
 MbNodeList *MbNodeList_GetByIndex(int index)
 {

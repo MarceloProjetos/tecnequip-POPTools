@@ -340,24 +340,6 @@ void ShowCmpDialog(int which, char *op1, char *op2)
 	}
 }
 
-void ShowMoveDialog(char *dest, char *src)
-{
-	char dest_tmp[MAX_NAME_LEN], src_tmp[MAX_NAME_LEN];
-    char *labels[] = { _("Destination:"), _("Source:") };
-    char *dests[] = { dest_tmp, src_tmp };
-
-	strcpy(src_tmp , src );
-	strcpy(dest_tmp, dest);
-
-	if(ShowSimpleDialog(_("Move"), 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
-		if(IsValidNameAndType(dest, dest_tmp, _("Destino"), VALIDATE_IS_VAR          , GetTypeFromName(dest_tmp), 0, 0) &&
-		   IsValidNameAndType(src , src_tmp , _("Origem") , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(src_tmp ), 0, 0)) {
-			strcpy(src , src_tmp );
-			strcpy(dest, dest_tmp);
-		}
-	}
-}
-
 void ShowSqrtDialog(char *dest, char *src)
 {
 	char dest_tmp[MAX_NAME_LEN], src_tmp[MAX_NAME_LEN];

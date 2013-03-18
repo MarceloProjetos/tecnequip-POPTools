@@ -7,6 +7,7 @@
 #define IDB_NETWORK_CONFIG              202
 #define IDB_RS485_CONFIG                203
 #define IDB_TIME_CONFIG                 204
+#define IDB_ARROW_LEFT                  205
 
 #define IDB_WAVE_REC_OK                5000
 #define IDB_WAVE_REC_ERRO              5001

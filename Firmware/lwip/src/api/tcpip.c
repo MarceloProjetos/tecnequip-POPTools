@@ -54,6 +54,9 @@ static tcpip_init_done_fn tcpip_init_done;
 static void *tcpip_init_done_arg;
 static sys_mbox_t mbox;
 
+// Stack for tcpip_thread
+OS_STK stkTcpipThread[TCPIP_THREAD_STACKSIZE];
+
 #if LWIP_TCPIP_CORE_LOCKING
 /** The global semaphore to lock the stack. */
 sys_mutex_t lock_tcpip_core;
@@ -117,6 +120,12 @@ tcpip_thread(void *arg)
       break;
 #endif /* LWIP_NETIF_API */
 
+    case TCPIP_MSG_CALLBACK:
+      LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: CALLBACK %p\n", (void *)msg));
+      msg->msg.cb.function(msg->msg.cb.ctx);
+      memp_free(MEMP_TCPIP_MSG_API, msg);
+      break;
+
 #if LWIP_TCPIP_TIMEOUT
     case TCPIP_MSG_TIMEOUT:
       LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: TIMEOUT %p\n", (void *)msg));
@@ -129,17 +138,6 @@ tcpip_thread(void *arg)
       memp_free(MEMP_TCPIP_MSG_API, msg);
       break;
 #endif /* LWIP_TCPIP_TIMEOUT */
-
-    case TCPIP_MSG_CALLBACK:
-      LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: CALLBACK %p\n", (void *)msg));
-      msg->msg.cb.function(msg->msg.cb.ctx);
-      memp_free(MEMP_TCPIP_MSG_API, msg);
-      break;
-
-    case TCPIP_MSG_CALLBACK_STATIC:
-      LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: CALLBACK_STATIC %p\n", (void *)msg));
-      msg->msg.cb.function(msg->msg.cb.ctx);
-      break;
 
     default:
       LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip_thread: invalid message: %d\n", msg->type));
@@ -177,22 +175,22 @@ tcpip_input(struct pbuf *p, struct netif *inp)
 #else /* LWIP_TCPIP_CORE_LOCKING_INPUT */
   struct tcpip_msg *msg;
 
-  if (!sys_mbox_valid(&mbox)) {
-    return ERR_VAL;
-  }
-  msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_INPKT);
-  if (msg == NULL) {
-    return ERR_MEM;
-  }
+  if (sys_mbox_valid(&mbox)) {
+    msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_INPKT);
+    if (msg == NULL) {
+      return ERR_MEM;
+    }
 
-  msg->type = TCPIP_MSG_INPKT;
-  msg->msg.inp.p = p;
-  msg->msg.inp.netif = inp;
-  if (sys_mbox_trypost(&mbox, msg) != ERR_OK) {
-    memp_free(MEMP_TCPIP_MSG_INPKT, msg);
-    return ERR_MEM;
+    msg->type = TCPIP_MSG_INPKT;
+    msg->msg.inp.p = p;
+    msg->msg.inp.netif = inp;
+    if (sys_mbox_trypost(&mbox, msg) != ERR_OK) {
+      memp_free(MEMP_TCPIP_MSG_INPKT, msg);
+      return ERR_MEM;
+    }
+    return ERR_OK;
   }
-  return ERR_OK;
+  return ERR_VAL;
 #endif /* LWIP_TCPIP_CORE_LOCKING_INPUT */
 }
 
@@ -398,52 +396,6 @@ tcpip_netifapi_lock(struct netifapi_msg* netifapimsg)
 #endif /* LWIP_NETIF_API */
 
 /**
- * Allocate a structure for a static callback message and initialize it.
- * This is intended to be used to send "static" messages from interrupt context.
- *
- * @param function the function to call
- * @param ctx parameter passed to function
- * @return a struct pointer to pass to tcpip_trycallback().
- */
-struct tcpip_callback_msg* tcpip_callbackmsg_new(tcpip_callback_fn function, void *ctx)
-{
-  struct tcpip_msg *msg = (struct tcpip_msg *)memp_malloc(MEMP_TCPIP_MSG_API);
-  if (msg == NULL) {
-    return NULL;
-  }
-  msg->type = TCPIP_MSG_CALLBACK_STATIC;
-  msg->msg.cb.function = function;
-  msg->msg.cb.ctx = ctx;
-  return (struct tcpip_callback_msg*)msg;
-}
-
-/**
- * Free a callback message allocated by tcpip_callbackmsg_new().
- *
- * @param msg the message to free
- */
-void tcpip_callbackmsg_delete(struct tcpip_callback_msg* msg)
-{
-  memp_free(MEMP_TCPIP_MSG_API, msg);
-}
-
-/**
- * Try to post a callback-message to the tcpip_thread mbox
- * This is intended to be used to send "static" messages from interrupt context.
- *
- * @param msg pointer to the message to post
- * @return sys_mbox_trypost() return code
- */
-err_t
-tcpip_trycallback(struct tcpip_callback_msg* msg)
-{
-  if (!sys_mbox_valid(&mbox)) {
-    return ERR_VAL;
-  }
-  return sys_mbox_trypost(&mbox, msg);
-}
-
-/**
  * Initialize this module:
  * - initialize all sub modules
  * - start the tcpip_thread
@@ -451,8 +403,6 @@ tcpip_trycallback(struct tcpip_callback_msg* msg)
  * @param initfunc a function to call when tcpip_thread is running and finished initializing
  * @param arg argument to pass to initfunc
  */
-// Stack for tcpip_thread
-OS_STK stkTcpipThread[TCPIP_THREAD_STACKSIZE];
 void
 tcpip_init(tcpip_init_done_fn initfunc, void *arg)
 {

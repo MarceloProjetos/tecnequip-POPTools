@@ -1215,7 +1215,7 @@ static LangTable LangPtTable[] = {
     { "If Less Than", "Se Menor Que" },
     { "If Less Than or Equal To", "Se Menor ou Igual Que" },
     { "'Closed' if:", "'Fechado' se:" },
-    { "Move", "Mover" },
+    { "Move", "Mover Valor" },
     { "Read A/D Converter", "Ler Conversor A/D" },
     { "Duty cycle var:", "% Ciclo Trabalho:" },
     { "Frequency (Hz):", "Frequencia (Hz):" },
@@ -1667,6 +1667,10 @@ static LangTable LangPtTable[] = {
 	{ "start series [", "iniciando serie [" },
 	{ "SMTWTFS", "DSTQQSS" },
 	{ "Debug", "Depurar" },
+	{ "Default", "Padrão" },
+	{ "Leave", "Manter" },
+	{ "Stop", "Parar" },
+	{ "Decelerate", "Desacelerar" },
 };
 static Lang LangPt = {
     LangPtTable, sizeof(LangPtTable)/sizeof(LangPtTable[0])

@@ -87,24 +87,6 @@
     <Command Name="GroupComment"    Symbol="cmdGroupComment"    Id="30027" LabelTitle="Documentação"    />
     <Command Name="GroupNavigate"   Symbol="cmdGroupNavigate"   Id="30029" LabelTitle="Navegação"       />
 
-    <Command Name="DropDownMBSend"    Symbol="cmdDropDownMBSend"    Id="30030" LabelTitle="ModBUS - Escrita">
-      <Command.LargeImages>
-        <Image Source="imgs/DropDownMBSendHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/DropDownMBSendHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
-    <Command Name="DropDownMBRecv"    Symbol="cmdDropDownMBRecv"    Id="30031" LabelTitle="ModBUS - Leitura">
-      <Command.LargeImages>
-        <Image Source="imgs/DropDownMBRecvHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/DropDownMBRecvHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
     <!-- Comandos relacionados ao menu da aplicação -->
     <Command Name       = "FileNew"
              Symbol     = "cmdFileNew"
@@ -1768,85 +1750,30 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name       = "InstrWriteEnc"
-             Symbol     = "cmdInstrWriteEnc"
-             Id         = "30557"
-             LabelTitle = "Escrita no Encoder">
-      <Command.TooltipTitle>Escrita no Encoder (Q)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir Escrita no encoder na posição do cursor.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrWriteEncHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrWriteEncHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-    <Command Name         = "ExampleWriteEnc"
-               Symbol     = "cmdExampleWriteEnc"
-               Id         = "31557"
-               LabelTitle = "Escrita no Encoder">
-      <Command.TooltipTitle      >Leitura de Encoder (Q)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução Escrita no encoder.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrWriteEncHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrWriteEncHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
     <Command Name         = "InstrResetEnc"
                Symbol     = "cmdInstrResetEnc"
                Id         = "30536"
-               LabelTitle = "Reset de Encoder">
-      <Command.TooltipTitle      >Reset de Encoder (Ctrl+Q)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir reset de encoder na posição do cursor.</Command.TooltipDescription>
+               LabelTitle = "Escrita no Encoder">
+      <Command.TooltipTitle      >Escrita no Encoder (Ctrl+Q)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir escrita no encoder na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrResetEncHH.bmp"/>
+        <Image Source="imgs/InstrWriteEncHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrResetEncHS.bmp"/>
+        <Image Source="imgs/InstrWriteEncHS.bmp"/>
       </Command.SmallImages>
     </Command>
     <Command Name         = "ExampleResetEnc"
                Symbol     = "cmdExampleResetEnc"
                Id         = "31536"
                LabelTitle = "Reset de Encoder">
-      <Command.TooltipTitle      >Reset de Encoder (Ctrl+Q)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução reset de encoder.</Command.TooltipDescription>
+      <Command.TooltipTitle      >Escrita no Encoder (Ctrl+Q)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrita no encoder.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrResetEncHH.bmp"/>
+        <Image Source="imgs/InstrWriteEncHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrResetEncHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
-    <!-- Comandos para Encoder SSI no Diagrama Ladder -->
-    <Command Name         = "InstrSSIEnc"
-               Symbol     = "cmdInstrSSIEnc"
-               Id         = "30558"
-               LabelTitle = "Encoder SSI">
-      <Command.TooltipTitle      >Encoder SSI</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir um comando de leitura na porta SSI.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrSsiHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrSsiHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-    <Command Name         = "ExampleSSIEnc"
-               Symbol     = "cmdExampleSSIEnc"
-               Id         = "31558"
-               LabelTitle = "Encoder SSI">
-      <Command.TooltipTitle      >Encoder SSI</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de leitura na porta SSI.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrSsiHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrSsiHS.bmp"/>
+        <Image Source="imgs/InstrWriteEncHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
@@ -2066,111 +1993,57 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name         = "InstrReadModBUS485"
-               Symbol     = "cmdInstrReadModBUS485"
+    <Command Name         = "InstrReadModBUS"
+               Symbol     = "cmdInstrReadModBUS"
                Id         = "30546"
-               LabelTitle = "Ler Registrador RS-485">
-      <Command.TooltipTitle      >Ler Registrador ModBUS RS-485 (Shift+4)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir ler registrador modbus rs-485 na posição do cursor.</Command.TooltipDescription>
+               LabelTitle = "Ler Registrador ModBUS">
+      <Command.TooltipTitle      >Ler Registrador ModBUS (Shift+X)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir ler registrador modbus na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrReadModBUS485HH.bmp"/>
+        <Image Source="imgs/InstrReadModBUSHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrReadModBUS485HS.bmp"/>
+        <Image Source="imgs/InstrReadModBUSHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    <Command Name         = "ExampleReadModBUS485"
-               Symbol     = "cmdExampleReadModBUS485"
+    <Command Name         = "ExampleReadModBUS"
+               Symbol     = "cmdExampleReadModBUS"
                Id         = "31546"
-               LabelTitle = "Ler Registrador RS-485">
-      <Command.TooltipTitle      >Ler Registrador ModBUS RS-485 (Shift+4)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução ler registrador modbus rs-485.</Command.TooltipDescription>
+               LabelTitle = "Ler Registrador ModBUS">
+      <Command.TooltipTitle      >Ler Registrador ModBUS (Shift+X)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução ler registrador modbus.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrReadModBUS485HH.bmp"/>
+        <Image Source="imgs/InstrReadModBUSHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrReadModBUS485HS.bmp"/>
+        <Image Source="imgs/InstrReadModBUSHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
-    <Command Name         = "InstrWriteModBUS485"
-               Symbol     = "cmdInstrWriteModBUS485"
+    <Command Name         = "InstrWriteModBUS"
+               Symbol     = "cmdInstrWriteModBUS"
                Id         = "30547"
-               LabelTitle = "Escrever Registrador RS-485">
-      <Command.TooltipTitle      >Escrever Registrador RS-485 (Ctrl+4)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir escrever registrador modbus rs-485 na posição do cursor.</Command.TooltipDescription>
+               LabelTitle = "Escrever Registrador ModBUS">
+      <Command.TooltipTitle      >Escrever Registrador ModBUS (X)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir escrever registrador modbus na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrWriteModBUS485HH.bmp"/>
+        <Image Source="imgs/InstrWriteModBUSHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrWriteModBUS485HS.bmp"/>
+        <Image Source="imgs/InstrWriteModBUSHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    <Command Name         = "ExampleWriteModBUS485"
-               Symbol     = "cmdExampleWriteModBUS485"
+    <Command Name         = "ExampleWriteModBUS"
+               Symbol     = "cmdExampleWriteModBUS"
                Id         = "31547"
-               LabelTitle = "Escrever Registrador RS-485">
-      <Command.TooltipTitle      >Escrever Registrador RS-485 (Ctrl+4)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução escrever registrador modbus rs-485.</Command.TooltipDescription>
+               LabelTitle = "Escrever Registrador ModBUS">
+      <Command.TooltipTitle      >Escrever Registrador ModBUS (X)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrever registrador modbus.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrWriteModBUS485HH.bmp"/>
+        <Image Source="imgs/InstrWriteModBUSHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrWriteModBUS485HS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
-    <Command Name         = "InstrReadModBUSEth"
-               Symbol     = "cmdInstrReadModBUSEth"
-               Id         = "30548"
-               LabelTitle = "Ler Registrador Ethernet">
-      <Command.TooltipTitle      >Ler Registrador Ethernet (Shift+X)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir ler registrador modbus ethernet na posição do cursor.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrReadModBUSEthHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrReadModBUSEthHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-    <Command Name         = "ExampleReadModBUSEth"
-               Symbol     = "cmdExampleReadModBUSEth"
-               Id         = "31548"
-               LabelTitle = "Ler Registrador Ethernet">
-      <Command.TooltipTitle      >Ler Registrador Ethernet (Shift+X)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução ler registrador modbus ethernet.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrReadModBUSEthHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrReadModBUSEthHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-
-    <Command Name         = "InstrWriteModBUSEth"
-               Symbol     = "cmdInstrWriteModBUSEth"
-               Id         = "30549"
-               LabelTitle = "Escrever Registrador Ethernet">
-      <Command.TooltipTitle      >Escrever Registrador Ethernet (Ctrl+X)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir escrever registrador modbus ethernet na posição do cursor.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrWriteModBUSEthHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrWriteModBUSEthHS.bmp"/>
-      </Command.SmallImages>
-    </Command>
-    <Command Name         = "ExampleWriteModBUSEth"
-               Symbol     = "cmdExampleWriteModBUSEth"
-               Id         = "31549"
-               LabelTitle = "Escrever Registrador Ethernet">
-      <Command.TooltipTitle      >Escrever Registrador Ethernet (Ctrl+X)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução escrever registrador modbus ethernet.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/InstrWriteModBUSEthHH.bmp"/>
-      </Command.LargeImages>
-      <Command.SmallImages>
-        <Image Source="imgs/InstrWriteModBUSEthHS.bmp"/>
+        <Image Source="imgs/InstrWriteModBUSHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
@@ -2532,7 +2405,6 @@
                 <Scale Group ="GroupAnalog"     Size="Large"  />
                 <Scale Group ="GroupMotors"     Size="Large"  />
                 <Scale Group ="GroupEnc"        Size="Large"  />
-                <Scale Group ="GroupSSIEnc"     Size="Large"  />
                 <Scale Group ="GroupCommText"   Size="Large"  />
                 <Scale Group ="GroupCommModBUS" Size="Large"  />
                 <Scale Group ="GroupCommOthers" Size="Large"  />
@@ -2540,7 +2412,6 @@
               <Scale Group ="GroupCommOthers" Size="Medium" />
               <Scale Group ="GroupCommText"   Size="Medium" />
               <Scale Group ="GroupCommModBUS" Size="Popup"  />
-              <Scale Group ="GroupEnc"        Size="Medium" />
               <Scale Group ="GroupCommOthers" Size="Small"  />
               <Scale Group ="GroupCommText"   Size="Small"  />
               <Scale Group ="GroupMotors"     Size="Medium" />
@@ -2557,27 +2428,13 @@
             <Button CommandName="InstrPWM"/>
             <Button CommandName="InstrPos"/>
           </Group>
-          <Group CommandName="GroupEnc" SizeDefinition="ThreeButtons">
+          <Group CommandName="GroupEnc" SizeDefinition="TwoButtons">
             <Button CommandName="InstrReadEnc"/>
-            <Button CommandName="InstrWriteEnc"/>
             <Button CommandName="InstrResetEnc"/>
           </Group>
-          <Group CommandName="GroupSSIEnc" SizeDefinition="OneButton">
-            <Button CommandName="InstrSSIEnc"/>
-          </Group>
           <Group CommandName="GroupCommModBUS" SizeDefinition="TwoButtons">
-            <DropDownButton CommandName="DropDownMBRecv">
-              <MenuGroup Class="MajorItems">
-                <Button CommandName="InstrReadModBUS485"/>
-                <Button CommandName="InstrReadModBUSEth"/>
-              </MenuGroup>
-            </DropDownButton>
-            <DropDownButton CommandName="DropDownMBSend">
-              <MenuGroup Class="MajorItems">
-                <Button CommandName="InstrWriteModBUS485"/>
-                <Button CommandName="InstrWriteModBUSEth"/>
-              </MenuGroup>
-            </DropDownButton>
+            <Button CommandName="InstrReadModBUS"/>
+            <Button CommandName="InstrWriteModBUS"/>
           </Group>
           <Group CommandName="GroupCommText" SizeDefinition="FourButtons">
             <Button CommandName="InstrReadFormatString"/>
