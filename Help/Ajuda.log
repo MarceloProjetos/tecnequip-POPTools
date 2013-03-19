@@ -145,8 +145,8 @@ topics\InstrTimerReset.htm
 topics\InstrSchedule.htm
 topics\InstrCounterInc.htm
 topics\InstrCounterDec.htm
-topics\InstrCounterCirc.htm
 topics\InstrCounterReset.htm
+topics\InstrCounterCirc.htm
 topics\InstrMov.htm
 topics\InstrSetBit.htm
 topics\InstrCheckBit.htm
@@ -210,19 +210,39 @@ img\contador_incremental1.png
 img\contador_incremental2.png
 img\contador_decremental1.png
 img\contador_decremental2.png
-img\contador_circular1.png
-img\contador_circular2.png
 img\contador_zerar1.png
 img\contador_zerar2.png
+img\contador_circular1.png
+img\contador_circular2.png
 img\mover_valor1.png
 img\mover_valor2.png
+img\LigarBit1.png
+img\LigarBit2.png
+img\ChecarBit1.png
+img\ChecarBit2.png
+img\Persistente1.png
+img\Persistente2.png
+img\Igual1.png
+img\Igual2.png
+img\Diferente1.png
+img\Diferente2.png
+img\Maior1.png
+img\Maior2.png
+img\Maior_ou_Igual1.png
+img\Maior_ou_Igual2.png
+img\Menor1.png
+img\Menor2.png
+img\Menor_ou_Igual1.png
+img\Menor_ou_Igual2.png
+img\Somar1.png
+img\Somar2.png
 
 Compile time: 0 minutes, 6 seconds
 113	Topics
-716	Local links
+746	Local links
 1	Internet link
-20	Graphics
+40	Graphics
 
 
-Created c:\Pessoal\SVN\Help\Ajuda.chm, 1,393,179 bytes
-Compression decreased file by 345,777 bytes.
+Created c:\Pessoal\SVN\Help\Ajuda.chm, 1,450,963 bytes
+Compression decreased file by 354,207 bytes.

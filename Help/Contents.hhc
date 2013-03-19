@@ -352,12 +352,12 @@
                               <param name="Local" value="topics\InstrCounterDec.htm">
                             </OBJECT>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Contador Circular">
-                              <param name="Local" value="topics\InstrCounterCirc.htm">
-                            </OBJECT>
-                            <LI><OBJECT type="text/sitemap">
                               <param name="Name" value="Zerar">
                               <param name="Local" value="topics\InstrCounterReset.htm">
+                            </OBJECT>
+                            <LI><OBJECT type="text/sitemap">
+                              <param name="Name" value="Contador Circular">
+                              <param name="Local" value="topics\InstrCounterCirc.htm">
                             </OBJECT>
                         </UL>
                         <LI><OBJECT type="text/sitemap">
