@@ -166,6 +166,7 @@ topics\InstrAbs.htm
 topics\InstrShiftRegister.htm
 topics\InstrLookUpTable.htm
 topics\InstrPieceWiseLinear.htm
+HHC3004: Warning: InstrRand.htm : The HTML tag ": </b" is not a valid HTML tag (it does not begin with an alphanumeric character).
 topics\InstrRand.htm
 topics\InstrReadAD.htm
 topics\InstrWriteDA.htm
@@ -236,13 +237,33 @@ img\Menor_ou_Igual1.png
 img\Menor_ou_Igual2.png
 img\Somar1.png
 img\Somar2.png
+img\Subtrair1.png
+img\Subtrair2.png
+img\Multiplicar1.png
+img\Multiplicar2.png
+img\Dividir1.png
+img\Dividir2.png
+img\Raiz_Quadrada1.png
+img\Raiz_Quadrada2.png
+img\ABS1.png
+img\ABS2.png
+img\Fila_de_Variaveis1.png
+img\Fila_de_Variaveis2.png
+img\Tabela_de_Busca1.png
+img\Tabela_de_Busca2.png
+img\Tabela_de_Busca3.png
+img\LinearizacaoPorSeguimento1.png
+img\LinearizacaoPorSeguimento2.png
+img\NumeroRandomico1.png
+img\NumeroRandomico2.png
+img\NumeroRandomico3.png
 
-Compile time: 0 minutes, 6 seconds
+Compile time: 0 minutes, 5 seconds
 113	Topics
-746	Local links
+773	Local links
 1	Internet link
-40	Graphics
+60	Graphics
 
 
-Created c:\Pessoal\SVN\Help\Ajuda.chm, 1,450,963 bytes
-Compression decreased file by 354,207 bytes.
+Created c:\Pessoal\SVN\Help\Ajuda.chm, 1,596,371 bytes
+Compression decreased file by 359,645 bytes.
