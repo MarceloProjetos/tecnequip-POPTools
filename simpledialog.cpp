@@ -299,7 +299,7 @@ void ShowCmpDialog(int which, char *op1, char *op2)
 
         case ELEM_NEQ:
             title = _("If Not Equals");
-            l2 = "/= :";
+            l2 = "<> :";
             break;
 
         case ELEM_GRT:

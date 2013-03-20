@@ -1074,6 +1074,15 @@ DWORD GenerateCFile(char *filename)
 	}
 
 	fprintf(f, "\n");
+	// Incremental Encoder
+	fprintf(f, "    ENC_Config(%d, %d, %d, %f, %d);\n", 0, Prog.settings.enc_inc_conv_mode,
+		Prog.settings.perimeter, Prog.settings.factor, Prog.settings.pulses * (Prog.settings.x4 ? 4 : 2));
+
+	// Absolute Encoder
+	fprintf(f, "    ENC_Config(%d, %d, %d, %f, %d);\n", 1, Prog.settings.enc_ssi_conv_mode,
+		Prog.settings.ssi_perimeter, Prog.settings.ssi_factor, Prog.settings.ssi_size_bpr);
+
+	fprintf(f, "\n");
 	for(i=0; i != SEENVAR_MODE_OTHERS; i++) {
 		if(SeenVariablesCount[i]) {
 			fprintf(f, "    memset((void*)%s, 0, sizeof(%s));\n", NameVarArray[i], NameVarArray[i]);

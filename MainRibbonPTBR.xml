@@ -386,7 +386,7 @@
         <Image Source="imgs/CopyLineHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/CopyLineHH.bmp"/>
+        <Image Source="imgs/CopyLineHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
@@ -411,10 +411,10 @@
       <Command.TooltipTitle      >Colar Antes (Shift+INS)</Command.TooltipTitle>
       <Command.TooltipDescription>Colar a linha previamente copiada antes da linha atualmente selecionada.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/PasteLineHH.bmp"/>
+        <Image Source="imgs/PasteLineUpHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/PasteLineHH.bmp"/>
+        <Image Source="imgs/PasteLineUpHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
@@ -426,10 +426,10 @@
       <Command.TooltipTitle      >Colar Após (INS)</Command.TooltipTitle>
       <Command.TooltipDescription>Colar a linha previamente copiada após a linha atualmente selecionada.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/PasteLineHH.bmp"/>
+        <Image Source="imgs/PasteLineDownHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/PasteLineHH.bmp"/>
+        <Image Source="imgs/PasteLineDownHS.bmp"/>
       </Command.SmallImages>
     </Command>
 

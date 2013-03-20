@@ -24,8 +24,9 @@ void         SSI_SetPosition(int offset);
 * Encoder Wrapper
 ******************************************************************************/
 #ifndef __ENCODER_H__
-int  ENC_Read (unsigned int device);
-void ENC_Reset(unsigned int device, int offset);
+int  ENC_Read  (unsigned int device);
+void ENC_Reset (unsigned int device, int offset);
+void ENC_Config(unsigned int device, int mode, int perimeter, float factor, int ppr);
 #endif
 
 /***************************************************************************/

@@ -142,6 +142,11 @@ typedef SDWORD SWORD;
 #define DA_VOLTAGE			10000.0f	// voltagem DA em mV (-10V +10V)
 #define DA_CYCLE_INTERVAL	10			// miliseconds
 
+#define ENCODER_MODE_RAW    0 // No Conversion
+#define ENCODER_MODE_M      1 // Convert to Meter
+#define ENCODER_MODE_MM     2 // Convert to Milimeter
+#define ENCODER_MODE_TMM    3 // Convert to Milimeter / 10
+
 #define RAMP_ABORT_DEFAULT 0
 #define RAMP_ABORT_LEAVE   1
 #define RAMP_ABORT_STOP    2
@@ -833,7 +838,7 @@ typedef struct PlcProgramTag {
 		char		sntp[126];
 		int			gmt;
 		unsigned char dailysave;
-		int			diameter;
+		int			perimeter;
 		int			pulses;
 		float		factor;
 		unsigned char x4;
@@ -843,6 +848,11 @@ typedef struct PlcProgramTag {
 		int ramp_abort_mode;
 		int mb_list_size;
 		MbNodeList mb_list[MB_LIST_MAX];
+		int enc_inc_conv_mode;
+		int enc_ssi_conv_mode;
+		int ssi_perimeter;
+		float ssi_factor;
+		int ssi_size_bpr;
 	} settings;
 
 #define MAX_RUNGS 999

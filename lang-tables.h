@@ -1671,6 +1671,8 @@ static LangTable LangPtTable[] = {
 	{ "Leave", "Manter" },
 	{ "Stop", "Parar" },
 	{ "Decelerate", "Desacelerar" },
+	{ "RTC - Mode Fixed", "RTC: Data Específica" },
+	{ "{\x01SHIFT REG\x02   }", "{\x01 Fila de Variáveis\x02}" },
 };
 static Lang LangPt = {
     LangPtTable, sizeof(LangPtTable)/sizeof(LangPtTable[0])

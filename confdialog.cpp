@@ -20,8 +20,6 @@ static HWND ParityCombobox;
 static HWND SNTPCombobox;
 static HWND GMTCombobox;
 static HWND DailySaveCheckbox;
-static HWND SSISizeTextbox;
-static HWND SSIModeCombobox;
 static HWND AbortModeCombobox;
 static HWND MBelem;
 static HWND MBok;
@@ -35,11 +33,19 @@ static HWND mask;
 static HWND gw;
 static HWND dns;
 
-static HWND DiameterTextbox;
+static HWND IncConvModeCombobox;
+static HWND PerimeterTextbox;
 static HWND PulsesTextbox;
 static HWND FactorTextbox;
 static HWND X4Checkbox;
 static HWND X2Checkbox;
+
+static HWND SSISizeTextbox;
+static HWND SSISizeRevTextbox;
+static HWND SSIModeCombobox;
+static HWND SSIConvModeCombobox;
+static HWND SSIPerimeterTextbox;
+static HWND SSIFactorTextbox;
 
 static LONG_PTR PrevConfDialogProc;
 static LONG_PTR PrevCrystalProc;
@@ -86,6 +92,8 @@ char *EncAbsConfig[] = { _("Leitura Gray"), _("Leitura Binário") };
 char *SerialParityString[] = { _("Sem Paridade"), _("Paridade Ímpar"), _("Paridade Par") };
 
 char *ModBUSInterfaces[] = { _("RS-485"), _("Ethernet") };
+
+char *EncoderConvModes[] = { _("Sem conversão"), _("Metros"), _("Milímetros"), _("Décimos de milímetro") };
 
 #define CONFTVI_ID_COMM              0
 #define CONFTVI_ID_COMM_NETWORK      1
@@ -625,49 +633,59 @@ static void MakeControls(void)
         215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupInterfaceEncInc);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Diametro Roda:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Modo de Conversão:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 0, 140, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    DiameterTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,   
-        155, 0, 85, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
-    NiceFont(DiameterTextbox);
+	IncConvModeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        155, 0, 130, 100, GroupInterfaceEncInc, NULL, Instance, NULL);
+    NiceFont(IncConvModeCombobox);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Número Pulsos:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Perímetro Roda:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 30, 140, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    PulsesTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+    PerimeterTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,   
         155, 30, 85, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
-    NiceFont(PulsesTextbox);
+    NiceFont(PerimeterTextbox);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Fator Correção:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Número Pulsos:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 60, 140, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    FactorTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+    PulsesTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         155, 60, 85, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
-    NiceFont(FactorTextbox);
+    NiceFont(PulsesTextbox);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Fator Multiplicação:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Fator Correção:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 90, 140, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(textLabel);
 
+    FactorTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 90, 85, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
+    NiceFont(FactorTextbox);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Fator Multiplicação:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 120, 140, 21, GroupInterfaceEncInc, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
 	X2Checkbox = CreateWindowEx(0, WC_BUTTON, _("x 2"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        155, 90, 45, 20, GroupInterfaceEncInc, NULL, Instance, NULL);
+        155, 120, 45, 20, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(X2Checkbox);
 
 	X4Checkbox = CreateWindowEx(0, WC_BUTTON, _("x 4"),
         WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        200, 90, 40, 20, GroupInterfaceEncInc, NULL, Instance, NULL);
+        200, 120, 40, 20, GroupInterfaceEncInc, NULL, Instance, NULL);
     NiceFont(X4Checkbox);
 
 	// Group - Absolute Encoder
@@ -676,25 +694,65 @@ static void MakeControls(void)
         215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupInterfaceEncAbs);
 
-	textLabel = CreateWindowEx(0, WC_STATIC, _("Modo de Leitura:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Modo de Conversão:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 0, 140, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-	SSIModeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+	SSIConvModeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
         155, 0, 130, 100, GroupInterfaceEncAbs, NULL, Instance, NULL);
-    NiceFont(SSIModeCombobox);
+    NiceFont(SSIConvModeCombobox);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Resolução em bits:"),
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Modo de Leitura:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 30, 140, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
     NiceFont(textLabel);
 
+	SSIModeCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        155, 30, 130, 100, GroupInterfaceEncAbs, NULL, Instance, NULL);
+    NiceFont(SSIModeCombobox);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Resolução total em bits:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 60, 140, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
     SSISizeTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 30, 85, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
+        155, 60, 85, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
     NiceFont(SSISizeTextbox);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Sendo bits por volta:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 90, 140, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    SSISizeRevTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 90, 85, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
+    NiceFont(SSISizeRevTextbox);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Perímetro Roda:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 120, 140, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+   SSIPerimeterTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,   
+        155, 120, 85, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
+    NiceFont(SSIPerimeterTextbox);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Fator Correção:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 150, 140, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    SSIFactorTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 150, 85, 21, GroupInterfaceEncAbs, NULL, Instance, NULL);
+    NiceFont(SSIFactorTextbox);
 
 	// Group - ModBUS Master
     GroupModBUSMaster = CreateWindowEx(0, WC_STATIC, "",
@@ -784,39 +842,6 @@ static void MakeControls(void)
         155, 0, 140, 21, GroupModBUSSlave, NULL, Instance, NULL);
     NiceFont(ModBUSIDTextbox);
 
-	/*** Properties Tab - Start ***
-    HWND textLabel20 = CreateWindowEx(0, WC_STATIC, _("Diametro Roda:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 90, 140, 21,  TabChild[1], NULL, Instance, NULL);
-    NiceFont(textLabel20);
-
-    DiameterTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,   
-        205, 90, 85, 21, TabChild[1], NULL, Instance, NULL);
-    NiceFont(DiameterTextbox);
-
-    HWND textLabel21 = CreateWindowEx(0, WC_STATIC, _("Número Pulsos:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 120, 140, 21, TabChild[1], NULL, Instance, NULL);
-    NiceFont(textLabel21);
-
-    PulsesTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        205, 120, 85, 21, TabChild[1], NULL, Instance, NULL);
-    NiceFont(PulsesTextbox);
-
-    HWND textLabel22 = CreateWindowEx(0, WC_STATIC, _("Fator Correção:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        55, 150, 140, 21, TabChild[1], NULL, Instance, NULL);
-    NiceFont(textLabel22);
-
-    FactorTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        205, 150, 85, 21, TabChild[1], NULL, Instance, NULL);
-    NiceFont(FactorTextbox);
-*/
-	/*** Properties Tab - End ***/
-
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         365, 207, 69, 23, ConfDialog, NULL, Instance, NULL); 
@@ -874,6 +899,13 @@ bool ShowConfDialog(bool NetworkSection)
 	for (i = 0; i < sizeof(ModBUSInterfaces) / sizeof(ModBUSInterfaces[0]); i++)
 		SendMessage(MBiface, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ModBUSInterfaces[i]));
 
+	for (i = 0; i < sizeof(EncoderConvModes) / sizeof(EncoderConvModes[0]); i++) {
+		SendMessage(IncConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)EncoderConvModes[i]));
+		SendMessage(SSIConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)EncoderConvModes[i]));
+	}
+	SendMessage(IncConvModeCombobox, CB_SETCURSEL, Prog.settings.enc_inc_conv_mode, 0);
+	SendMessage(SSIConvModeCombobox, CB_SETCURSEL, Prog.settings.enc_ssi_conv_mode, 0);
+
 	PopulateModBUSMasterCombobox(MBelem, true);
 	LoadMBMasterControls(0);
 
@@ -913,8 +945,8 @@ bool ShowConfDialog(bool NetworkSection)
 	if (Prog.settings.dailysave)
 		SendMessage(DailySaveCheckbox, BM_SETCHECK, BST_CHECKED, 0);
 
-	sprintf(buf, "%d", Prog.settings.diameter);
-	SendMessage(DiameterTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+	sprintf(buf, "%d", Prog.settings.perimeter);
+	SendMessage(PerimeterTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
 	sprintf(buf, "%d", Prog.settings.pulses);
 	SendMessage(PulsesTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -936,8 +968,17 @@ bool ShowConfDialog(bool NetworkSection)
     //sprintf(buf, "%d", Prog.settings.baudRate);
     //SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
+	sprintf(buf, "%d", Prog.settings.ssi_perimeter);
+	SendMessage(SSIPerimeterTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+
+	sprintf(buf, "%05f", Prog.settings.ssi_factor);
+	SendMessage(SSIFactorTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+
 	sprintf(buf, "%d", Prog.settings.ssi_size);
 	SendMessage(SSISizeTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+
+	sprintf(buf, "%d", Prog.settings.ssi_size_bpr);
+	SendMessage(SSISizeRevTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(ConfDialog, TRUE);
@@ -1024,10 +1065,12 @@ bool ShowConfDialog(bool NetworkSection)
 		Prog.settings.gmt = SendMessage(GMTCombobox, CB_GETCURSEL, 0, 0);
 		Prog.settings.dailysave = SendMessage(DailySaveCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
 
-        SendMessage(DiameterTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		Prog.settings.diameter = atoi(buf);
-		if(Prog.settings.diameter < 0)
-			Prog.settings.diameter = 0;
+		Prog.settings.enc_inc_conv_mode = SendMessage(IncConvModeCombobox, CB_GETCURSEL, 0, 0);
+
+		SendMessage(PerimeterTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		Prog.settings.perimeter = atoi(buf);
+		if(Prog.settings.perimeter < 0)
+			Prog.settings.perimeter = 0;
 
         SendMessage(PulsesTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
 		Prog.settings.pulses = atoi(buf);
@@ -1036,6 +1079,11 @@ bool ShowConfDialog(bool NetworkSection)
 		} else if(Prog.settings.pulses > 5000) {
 			Prog.settings.pulses = 5000;
 		}
+
+        SendMessage(FactorTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		Prog.settings.factor = (float)atof(buf);
+		if(Prog.settings.factor < 0)
+			Prog.settings.factor = 1;
 
 		Prog.settings.x4 = (char)SendMessage(X4Checkbox, BM_GETCHECK, 0, 0);
 
@@ -1047,7 +1095,27 @@ bool ShowConfDialog(bool NetworkSection)
 			Prog.settings.ssi_size = 32;
 		}
 
+		SendMessage(SSISizeRevTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		Prog.settings.ssi_size_bpr = atoi(buf);
+		if(Prog.settings.ssi_size_bpr < 1) {
+			Prog.settings.ssi_size_bpr = 1;
+		} else if(Prog.settings.ssi_size_bpr > Prog.settings.ssi_size) {
+			Prog.settings.ssi_size_bpr = Prog.settings.ssi_size;
+		}
+
 		Prog.settings.ssi_mode = SendMessage(SSIModeCombobox, CB_GETCURSEL, 0, 0);
+
+        SendMessage(SSIPerimeterTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		Prog.settings.ssi_perimeter = atoi(buf);
+		if(Prog.settings.ssi_perimeter < 0)
+			Prog.settings.ssi_perimeter = 0;
+
+        SendMessage(SSIFactorTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		Prog.settings.ssi_factor = (float)atof(buf);
+		if(Prog.settings.ssi_factor < 0)
+			Prog.settings.ssi_factor = 1;
+
+		Prog.settings.enc_ssi_conv_mode = SendMessage(SSIConvModeCombobox, CB_GETCURSEL, 0, 0);
 
 		Prog.settings.ramp_abort_mode = SendMessage(AbortModeCombobox, CB_GETCURSEL, 0, 0) + 1;
 

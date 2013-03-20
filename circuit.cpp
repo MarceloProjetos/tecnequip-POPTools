@@ -347,10 +347,15 @@ void InsertParallel(int newWhich, ElemLeaf *newElem)
 			ElemSubcktParallel *p = AllocSubcktParallel();
 			p->count = 2;
 
-			p->contents[0].which = ELEM_SERIES_SUBCKT;
-			p->contents[0].d.series = s;
-			p->contents[1].which = newWhich;
-			p->contents[1].d.leaf = newElem;
+			int pos_series = 0;
+			if(Selected->selectedState == SELECTED_ABOVE) {
+				pos_series = 1;
+			}
+
+			p->contents[ pos_series].which = ELEM_SERIES_SUBCKT;
+			p->contents[ pos_series].d.series = s;
+			p->contents[!pos_series].which = newWhich;
+			p->contents[!pos_series].d.leaf = newElem;
 
 			StartPoint.series->contents[StartPoint.point].which = ELEM_PARALLEL_SUBCKT;
 			StartPoint.series->contents[StartPoint.point].d.parallel = p;
@@ -359,8 +364,15 @@ void InsertParallel(int newWhich, ElemLeaf *newElem)
                 Error(_("Too many elements in subcircuit!"));
 				CheckFree(newElem);
             } else {
-				StartPoint.parallel->contents[StartPoint.parallel->count].which = newWhich;
-				StartPoint.parallel->contents[StartPoint.parallel->count].d.leaf = newElem;
+				int pos_series = StartPoint.parallel->count;
+				if(Selected->selectedState == SELECTED_ABOVE) {
+					pos_series = 0;
+                    memmove(&StartPoint.parallel->contents[1], &StartPoint.parallel->contents[0],
+						(StartPoint.parallel->count)*sizeof(StartPoint.parallel->contents[0]));
+				}
+
+				StartPoint.parallel->contents[pos_series].which = newWhich;
+				StartPoint.parallel->contents[pos_series].d.leaf = newElem;
 				StartPoint.parallel->count++;
 			}
 		}
@@ -1685,8 +1697,9 @@ void FreeEntireProgram(void)
 	Prog.settings.dns[2] = 0;
 	Prog.settings.dns[3] = 1;
 
-	Prog.settings.diameter = 0;
-	Prog.settings.pulses = 0;
+	Prog.settings.enc_inc_conv_mode = ENCODER_MODE_RAW;
+	Prog.settings.perimeter = 400;
+	Prog.settings.pulses = 1024;
 	Prog.settings.factor = 1;
 	Prog.settings.x4 = 1;
 
@@ -1694,6 +1707,10 @@ void FreeEntireProgram(void)
 
 	Prog.settings.ssi_mode = 0;
 	Prog.settings.ssi_size = 24;
+	Prog.settings.enc_ssi_conv_mode = ENCODER_MODE_RAW;
+	Prog.settings.ssi_perimeter = 400;
+	Prog.settings.ssi_factor = 1;
+	Prog.settings.ssi_size_bpr = 12;
 
 	Prog.settings.ramp_abort_mode = RAMP_ABORT_LEAVE;
 

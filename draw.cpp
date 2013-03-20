@@ -933,11 +933,13 @@ cmp:
 					sprintf(linha ? bufe : bufs, "[\x01%s %02d:%02d:%02d\x02]", _("SMTWTFS"),
 						ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 
-					for(i=0; i<7 && linha; i++) {
-						if(!(t->wday & (1<<i))) {
-							(linha ? bufe : bufs)[i+2] = ' ';
-						} else {
-							(linha ? bufe : bufs)[i+2] = '*';
+					if(linha || t->mode == ELEM_RTC_MODE_FIXED) {
+						for(i=0; i<7; i++) {
+							if(!(t->wday & (1<<i))) {
+								(linha ? bufe : bufs)[i+2] = ' ';
+							} else if(linha) {
+								bufe[i+2] = '*';
+							}
 						}
 					}
 				} else {
@@ -960,8 +962,8 @@ cmp:
 				} 
 			}
 
-            CenterWithSpaces(*cx, *cy, bufs, poweredAfter, TRUE);
-            CenterWithWires(*cx, *cy, bufe, poweredBefore, poweredAfter);
+			CenterWithSpaces(*cx, *cy, t->mode == ELEM_RTC_MODE_FIXED ? _("RTC - Mode Fixed") : bufs, poweredAfter, TRUE);
+            CenterWithWires(*cx, *cy, t->mode == ELEM_RTC_MODE_FIXED ? bufs : bufe, poweredBefore, poweredAfter);
 
             *cx += POS_WIDTH;
             break;
