@@ -643,8 +643,12 @@ static void MakeControls(void)
     SetTimer(DebugDialog, TIMER_DEBUG_INFO, 1000, DebugUpdateInfo);
 }
 
+extern unsigned char USB_GetInfo(int ObjectID, char *ObjectText);
+
 void ShowDebugDialog(void)
 {
+	char InfoVendor[MODBUS_BUFFER_SIZE] = "", InfoProduct[MODBUS_BUFFER_SIZE] = "", InfoVersion[MODBUS_BUFFER_SIZE] = "";
+
 	RotateList_Init(&RotateLog);
 
 	DebugDialog = CreateWindowClient(0, "POPDebugDialog",
@@ -662,7 +666,13 @@ void ShowDebugDialog(void)
 	SendMessage(ModeTCPRadio      , BM_SETCHECK, BST_CHECKED,  0);
 	SendMessage(RetransmitCheckbox, BM_SETCHECK, BST_CHECKED,  0);
 
-    MSG msg;
+	USB_GetInfo(MODBUS_DEVID_VENDORNAME, InfoVendor);
+	USB_GetInfo(MODBUS_DEVID_PRODUCTCODE, InfoProduct);
+	USB_GetInfo(MODBUS_DEVID_MAJORMINORREVISION, InfoVersion);
+
+	Error("Fabricante: '%s'\nCódigo do Produto: '%s'\nVersão: '%s'", InfoVendor, InfoProduct, InfoVersion);
+
+	MSG msg;
     DWORD ret;
     DebugDone = FALSE;
     while((ret = GetMessage(&msg, NULL, 0, 0)) && !DebugDone) {

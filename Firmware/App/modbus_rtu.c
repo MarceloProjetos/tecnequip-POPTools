@@ -207,7 +207,10 @@ struct MODBUS_Reply Modbus_RTU_ReceiveReply(struct MODBUS_Device *dev, struct MO
       break;
 
     case MODBUS_FC_READ_DEVICE_IDENTIFICATION:
-      memcpy(r.reply.reply_buffer, &msg.Data[4], msg.ds - 4);
+	  r.reply.read_device_identification.id_code   = msg.Data[0];
+	  r.reply.read_device_identification.object_id = msg.Data[5];
+	  memcpy(r.reply.read_device_identification.data, &msg.Data[7], msg.Data[6]);
+	  r.reply.read_device_identification.data[msg.Data[6]] = 0;
       break;
 
     default:
@@ -646,31 +649,31 @@ unsigned int Modbus_RTU_Receive(struct MODBUS_Device *dev, struct MODBUS_PDU msg
       reply.reply.read_device_identification.object_id = msg.Data[1];
 
       switch(reply.reply.read_device_identification.object_id) {
-      case 0x00:
+      case MODBUS_DEVID_VENDORNAME:
         strcpy(reply.reply.read_device_identification.data, dev->identification.VendorName);
         break;
 
-      case 0x01:
+      case MODBUS_DEVID_PRODUCTCODE:
         strcpy(reply.reply.read_device_identification.data, dev->identification.ProductCode);
         break;
 
-      case 0x02:
+      case MODBUS_DEVID_MAJORMINORREVISION:
         strcpy(reply.reply.read_device_identification.data, dev->identification.MajorMinorRevision);
         break;
 
-      case 0x03:
+      case MODBUS_DEVID_VENDORURL:
         strcpy(reply.reply.read_device_identification.data, dev->identification.VendorURL);
         break;
 
-      case 0x04:
+      case MODBUS_DEVID_PRODUCTNAME:
         strcpy(reply.reply.read_device_identification.data, dev->identification.ProductName);
         break;
 
-      case 0x05:
+      case MODBUS_DEVID_MODELNAME:
         strcpy(reply.reply.read_device_identification.data, dev->identification.ModelName);
         break;
 
-      case 0x06:
+      case MODBUS_DEVID_USERAPPLICATIONNAME:
         strcpy(reply.reply.read_device_identification.data, dev->identification.UserApplicationName);
         break;
       }

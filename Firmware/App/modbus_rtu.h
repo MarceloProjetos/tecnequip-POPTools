@@ -29,6 +29,15 @@ extern "C" {
 #define MODBUS_FC_RW_MULTIPLE_REGISTERS      0x0017
 #define MODBUS_FC_READ_DEVICE_IDENTIFICATION 0x2B0E
 
+// Indices para os identificadores do dispositivo
+#define MODBUS_DEVID_VENDORNAME          0x00
+#define MODBUS_DEVID_PRODUCTCODE         0x01
+#define MODBUS_DEVID_MAJORMINORREVISION  0x02
+#define MODBUS_DEVID_VENDORURL           0x03
+#define MODBUS_DEVID_PRODUCTNAME         0x04
+#define MODBUS_DEVID_MODELNAME           0x05
+#define MODBUS_DEVID_USERAPPLICATIONNAME 0x06
+
 // Modos de operacao do ModBus
 #define MODBUS_MODE_MASTER     0x00
 #define MODBUS_MODE_SLAVE      0x01

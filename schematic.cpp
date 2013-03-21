@@ -817,12 +817,12 @@ bool EditSelectedElement(void)
 
         case ELEM_READ_MODBUS:
 			//ShowReadModbusDialog(Selected->d.readModbus.name, &Selected->d.readModbus.id, &Selected->d.readModbus.address);
-			ShowModbusDialog(Selected->d.readModbus.name, &Selected->d.readModbus.elem, &Selected->d.readModbus.address, &Selected->d.readModbus.int32, &Selected->d.readModbus.retransmitir);
+			ShowModbusDialog(0, Selected->d.readModbus.name, &Selected->d.readModbus.elem, &Selected->d.readModbus.address, &Selected->d.readModbus.int32, &Selected->d.readModbus.retransmitir);
             break;
 
         case ELEM_WRITE_MODBUS:
 			//ShowWriteModbusDialog(Selected->d.writeModbus.name, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address);
-			ShowModbusDialog(Selected->d.writeModbus.name, &Selected->d.writeModbus.elem, &Selected->d.writeModbus.address, &Selected->d.writeModbus.int32, &Selected->d.readModbus.retransmitir);
+			ShowModbusDialog(1, Selected->d.writeModbus.name, &Selected->d.writeModbus.elem, &Selected->d.writeModbus.address, &Selected->d.writeModbus.int32, &Selected->d.readModbus.retransmitir);
             break;
 
         case ELEM_UART_RECV:

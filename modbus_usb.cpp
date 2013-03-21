@@ -128,3 +128,19 @@ unsigned int USB_GetOutput(void)
 
 	return ret;
 }
+
+unsigned char USB_GetInfo(int ObjectID, char *ObjectText)
+{
+	struct MODBUS_Reply reply;
+	MODBUS_FCD_Data mbdata1;
+
+	mbdata1.read_device_identification.id_code   = 0;
+	mbdata1.read_device_identification.object_id = ObjectID;
+
+	reply = USB_Send(MODBUS_FC_READ_DEVICE_IDENTIFICATION, &mbdata1);
+	if(reply.ExceptionCode == MODBUS_EXCEPTION_NONE) {
+		strcpy(ObjectText, reply.reply.read_device_identification.data);
+	}
+
+	return reply.ExceptionCode;
+}

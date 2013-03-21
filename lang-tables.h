@@ -1577,7 +1577,8 @@ static LangTable LangPtTable[] = {
 	{ "", "Rampa de Aceleração/Desaceleração" },
 	{ "", "READ" },
 	{ "", "Read A/D Converter" },
-	{ "", "Read Encoder" },
+	{ "Read Encoder", "Ler do Encoder" },
+	{ "Write Encoder", "Escrever no Encoder" },
 	{ "", "read USS" },
 	{ "", "Recuar" },
 	{ "", "Rede" },
@@ -1673,6 +1674,8 @@ static LangTable LangPtTable[] = {
 	{ "Decelerate", "Desacelerar" },
 	{ "RTC - Mode Fixed", "RTC: Data Específica" },
 	{ "{\x01SHIFT REG\x02   }", "{\x01 Fila de Variáveis\x02}" },
+	{ "Write ModBUS", "Escrever Registrador do ModBUS" },
+	{ "Read ModBUS", "Ler Registrador do ModBUS" },
 };
 static Lang LangPt = {
     LangPtTable, sizeof(LangPtTable)/sizeof(LangPtTable[0])

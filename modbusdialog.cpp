@@ -246,11 +246,11 @@ static void MakeControls(void)
     //    (LONG_PTR)MyNameProc);
 }
 
-void ShowModbusDialog(char *name, int *elem, int *address, bool *set, bool *retransmitir)
+void ShowModbusDialog(int mode_write, char *name, int *elem, int *address, bool *set, bool *retransmitir)
 {
 	char name_temp[MAX_NAME_LEN];
     SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
-        _("Modbus"), WS_OVERLAPPED | WS_SYSMENU,
+        mode_write ? _("Write ModBUS") : _("Read ModBUS"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 404, 115, MainWindow, NULL, Instance, NULL);
 
     MakeControls();

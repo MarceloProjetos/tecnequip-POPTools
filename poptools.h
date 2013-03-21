@@ -1278,7 +1278,7 @@ void ShowReadEncDialog(char *name);
 void ShowResetEncDialog(char *name);
 void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
 void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
-void ShowModbusDialog(char *name, int *id, int *address, bool *set, bool *retransmitir);
+void ShowModbusDialog(int mode_write, char *name, int *id, int *address, bool *set, bool *retransmitir);
 void ShowReadModbusEthDialog(char *name, int *id, int *address);
 void ShowWriteModbusEthDialog(char *name, int *id, int *address);
 void ShowSetPwmDialog(char *name, int *targetFreq);
