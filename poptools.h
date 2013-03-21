@@ -1104,6 +1104,7 @@ int ProgCountWidestRow(void);
 int CountHeightOfElement(int which, void *elem);
 BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore);
 void DrawEndRung(int cx, int cy);
+void DummyPaint(void);
 extern int ColsAvailable;
 extern BOOL SelectionActive;
 extern BOOL ThisHighlighted;
@@ -1482,6 +1483,7 @@ extern int ValidateDiagram(void);
 void IntDumpListing(char *outFile);
 BOOL GenerateIntermediateCode(void);
 // gcc.cpp
+extern char OutputLog[MAX_PATH + MAX_NAME_LEN + 1];
 void GenerateDeclarations(FILE *f);
 void CompileAnsiC(char *outFile);
 DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage);

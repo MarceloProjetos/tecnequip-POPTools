@@ -1313,3 +1313,30 @@ void DrawEndRung(int cx, int cy)
         DrawChars(cx + i, cy + (POS_HEIGHT/2), "-");
     }
 }
+
+// Dummy function
+void DrawCharsToNothing(int x, int y, char *txt) {}
+
+//-----------------------------------------------------------------------------
+// Do a fake paint, just to update DisplayMatrix and DisplayMatrixWhich
+//-----------------------------------------------------------------------------
+void DummyPaint(void)
+{
+    int i;
+    int thisHeight, cx, cy = 0;
+
+	memset(DisplayMatrix, 0, sizeof(DisplayMatrix));
+    memset(&Cursor, 0, sizeof(Cursor));
+
+    DrawChars = DrawCharsToNothing;
+
+    for(i = 0; i < Prog.numRungs; i++) {
+		cx = 0;
+		thisHeight = POS_HEIGHT*CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+
+		DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, 0);
+
+        cy += thisHeight;
+        cy += POS_HEIGHT;
+    }
+}

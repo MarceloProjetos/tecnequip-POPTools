@@ -17,6 +17,9 @@ static int MODBUS_RS485_MASTER = 0, MODBUS_TCP_MASTER = 0;
 // Control variables
 int HasPWM = 0;
 
+// Output log
+char OutputLog[MAX_PATH + MAX_NAME_LEN + 1];
+
 //#define INT_UNSIGNED	
 
 //-----------------------------------------------------------------------------
@@ -574,7 +577,7 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				char randbuf[1024];
 				min = IsNumber(IntCode[i].name2) ? IntCode[i].name2 : GenVarCode(buf , MapSym(IntCode[i].name2), NULL, GENVARCODE_MODE_READ);
 				max = IsNumber(IntCode[i].name3) ? IntCode[i].name3 : GenVarCode(buf2, MapSym(IntCode[i].name3), NULL, GENVARCODE_MODE_READ);
-				sprintf(randbuf, "%s + (rand() %% (%s - %s + 1))", min, max, min);
+				sprintf(randbuf, "(%s <= %s ? %s + (rand() %% (%s - %s + 1)) : %s + (rand() %% (%s - %s + 1)))", min, max, min, max, min, max, min, max);
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name1), randbuf, GENVARCODE_MODE_WRITE));
 				break;
 			}
@@ -891,9 +894,10 @@ DWORD InvokeGCC(char* dest)
 
 	//output the application being run from the command window to the log file.
 
+	sprintf(OutputLog, "%s\\POPTools\\output.log", szAppOutputDir);
 	strcat(szArgs, "> \"");
-	strcat(szArgs, szAppOutputDir);
-	strcat(szArgs, "\\POPTools\\output.log\" 2>&1");
+	strcat(szArgs, OutputLog);
+	strcat(szArgs, "\" 2>&1");
 
 	strcat(szArgs, "\"");
 

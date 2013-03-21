@@ -309,11 +309,11 @@ void PaintWindow(void)
             }
 
             int cx = 0;
-			// If DrawElement returned TRUE ans has breakpoint for this line, pause simulation.
+			// If DrawElement returned TRUE and has breakpoint for this line, pause simulation.
             if(DrawElement(ELEM_SERIES_SUBCKT, Prog.rungs[i], &cx, &cy, 
                 Prog.rungPowered[i]) && RealTimeSimulationRunning && Prog.rungHasBreakPoint[i]) {
 					PauseSimulation();
-					Error("Simulação interrompida na linha %d", i+1);
+					Error(_("Simulação interrompida na linha %d"), i+1);
 			}
         }
 

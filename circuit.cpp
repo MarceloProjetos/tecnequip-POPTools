@@ -665,6 +665,7 @@ static BOOL AddLeaf(int newWhich, ElemLeaf *newElem)
 			if(newWhich == ELEM_COIL) {
 //				MoveCoilsOutside(Prog.rungs[i]);
 			}
+			DummyPaint();
             WhatCanWeDoFromCursorAndTopology();
             return TRUE;
         }

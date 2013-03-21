@@ -343,6 +343,77 @@ int UpdateProgressWindow(ProgressStatus *ps)
 				Static_SetText(hProgressLabels[ps->iCurrentStage], _("ERRO"));
 				SendMessage(hProgressBars[ps->iCurrentStage], PBM_SETSTATE, PBST_ERROR, 0);
 				SendMessage(hProgressBars[ps->iCurrentStage], PBM_SETPOS, ps->iStagePercent, 0);
+				if(ps->iCurrentStage == PROGRESS_STAGE_COMPILING) {
+					RECT rMain, rProgress, rButton;
+					int offset = 200, width, height;
+
+					// Resize Progress Window
+					GetWindowRect(MainWindow     , &rMain);
+					GetWindowRect(hProgressWindow, &rProgress);
+
+					width  = rProgress.right  - rProgress.left;
+					height = rProgress.bottom - rProgress.top + offset;
+
+					rProgress.top  = rMain.top  + (rMain.bottom - rMain.top  - height)/2;
+					rProgress.left = rMain.left + (rMain.right  - rMain.left - width )/2;
+
+					MoveWindow(hProgressWindow, rProgress.left, rProgress.top, width, height, TRUE);
+
+					// Move OK/Cancel Button
+					GetWindowRect(CancelButton   , &rButton);
+					GetClientRect(hProgressWindow, &rProgress);
+
+					width  = rButton.right  - rButton.left;
+					height = rButton.bottom - rButton.top;
+
+					rButton.top  = rProgress.bottom - height - 5;
+					rButton.left = (rProgress.right - width)/2;
+
+					MoveWindow(CancelButton, rButton.left, rButton.top, width, height, TRUE);
+
+					// Create the object that will hold the Log text
+					HWND LogTextBox = CreateWindowEx(0, WC_EDIT, "",
+						WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE,
+						5, rButton.top - offset, rProgress.right - 10, offset - 5, hProgressWindow, NULL, Instance, NULL);
+					NiceFont(LogTextBox);
+
+					// Load log text into LogTextBox
+					char *buf, linebuf[1024];
+					int pos, first = 1;
+					FILE *f = fopen(OutputLog, "r");
+
+					if(f == NULL) {
+						Edit_SetText(LogTextBox, _("Log indisponível"));
+					} else {
+						fseek(f, 0, SEEK_END);
+						buf = (char *)malloc(ftell(f) + 100);
+						buf[0] = 0;
+						fseek(f, 0, SEEK_SET);
+
+						while(fgets(linebuf, sizeof(linebuf), f)) {
+							char *inbuf = strstr(linebuf, "ld.c");
+							if(inbuf != NULL) {
+								if(first) {
+									first = 0;
+								} else {
+									pos = strlen(inbuf);
+									if(inbuf[pos-1] == 10) {
+										inbuf[pos-1] = 13; // CR
+										inbuf[pos  ] = 10; // LF
+										inbuf[pos+1] = 0;
+									}
+									strcat(buf, inbuf);
+								}
+							}
+						}
+						fclose(f);
+
+						Edit_SetText(LogTextBox, buf);
+	//					free(buf);
+					}
+
+					ShowWindow(LogTextBox, TRUE);
+				}
 			}
 		}
 
@@ -547,11 +618,18 @@ static BOOL CompileProgram(BOOL ShowSuccessMessage)
 	StatusBarSetText(0, "");
 
 	if(ShowSuccessMessage) {
-		ps.iCurrentStage = PROGRESS_STAGE_FINISHED;
-		ps.bStageState   = ret ? PROGRESS_STAGE_STATE_OK : PROGRESS_STAGE_STATE_FAILED;
-		ps.iStagePercent = 0;
-		sprintf(text, _("Erro durante Compilação! Código de erro: %d"), err);
-		ps.szMsg = ret ? _("Compilado com sucesso!") : text;
+		if(ret) {
+			ps.iCurrentStage = PROGRESS_STAGE_FINISHED;
+			ps.bStageState   = PROGRESS_STAGE_STATE_OK;
+			ps.iStagePercent = 0;
+			ps.szMsg = _("Compilado com sucesso!");
+		} else {
+			ps.iCurrentStage = PROGRESS_STAGE_COMPILING;
+			ps.bStageState   = PROGRESS_STAGE_STATE_FAILED;
+			ps.iStagePercent = 0;
+			sprintf(text, _("Erro durante Compilação! Código de erro: %d"), err);
+			ps.szMsg = text;
+		}
 
 		while(UpdateProgressWindow(&ps) != PROGRESS_STATUS_DONE);
 
