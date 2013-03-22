@@ -60,7 +60,6 @@
 #define IDH_InstrReadEnc 30535
 #define IDH_InstrReadFormatString 30538
 #define IDH_InstrReadModBUS485 30546
-#define IDH_InstrReadModBUSEth 30548
 #define IDH_InstrReadNS600 30540
 #define IDH_InstrReadUSS 30544
 #define IDH_InstrResetEnc 30536
@@ -75,7 +74,6 @@
 #define IDH_InstrWriteDA 30534
 #define IDH_InstrWriteFormatString 30539
 #define IDH_InstrWriteModBUS485 30547
-#define IDH_InstrWriteModBUSEth 30549
 #define IDH_InstrWriteNS600 30541
 #define IDH_InstrWriteUSS 30545
 #define IDH_KeyboardManual 30412

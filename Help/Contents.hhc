@@ -483,19 +483,19 @@
                         </OBJECT>
                         <UL>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Saída PWM">
-                              <param name="Local" value="topics\InstrPWM.htm">
-                            </OBJECT>
-                            <LI><OBJECT type="text/sitemap">
                               <param name="Name" value="Rampa de Aceleração / Desaceleração">
                               <param name="Local" value="topics\InstrRampDA.htm">
+                            </OBJECT>
+                            <LI><OBJECT type="text/sitemap">
+                              <param name="Name" value="Saída PWM">
+                              <param name="Local" value="topics\InstrPWM.htm">
                             </OBJECT>
                             <LI><OBJECT type="text/sitemap">
                               <param name="Name" value="Leitura de Encoder">
                               <param name="Local" value="topics\InstrReadEnc.htm">
                             </OBJECT>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Reset de Encoder">
+                              <param name="Name" value="Escrita no Encoder">
                               <param name="Local" value="topics\InstrResetEnc.htm">
                             </OBJECT>
                         </UL>
@@ -504,20 +504,12 @@
                         </OBJECT>
                         <UL>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Ler Registrador - RS-485">
+                              <param name="Name" value="Ler Registrador">
                               <param name="Local" value="topics\InstrReadModBUS485.htm">
                             </OBJECT>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Escrever Registrador - RS-485">
+                              <param name="Name" value="Escrever Registrador">
                               <param name="Local" value="topics\InstrWriteModBUS485.htm">
-                            </OBJECT>
-                            <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Ler Registrador - Ethernet">
-                              <param name="Local" value="topics\InstrReadModBUSEth.htm">
-                            </OBJECT>
-                            <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Escrever Registrador - Ethernet">
-                              <param name="Local" value="topics\InstrWriteModBUSEth.htm">
                             </OBJECT>
                         </UL>
                         <LI><OBJECT type="text/sitemap">
@@ -546,20 +538,20 @@
                         </OBJECT>
                         <UL>
                             <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Leitura de NS-600 Yaskawa">
-                              <param name="Local" value="topics\InstrReadNS600.htm">
-                            </OBJECT>
-                            <LI><OBJECT type="text/sitemap">
-                              <param name="Name" value="Escrita de NS-600 Yaskawa">
-                              <param name="Local" value="topics\InstrWriteNS600.htm">
-                            </OBJECT>
-                            <LI><OBJECT type="text/sitemap">
                               <param name="Name" value="Leitura USS">
                               <param name="Local" value="topics\InstrReadUSS.htm">
                             </OBJECT>
                             <LI><OBJECT type="text/sitemap">
                               <param name="Name" value="Escrita USS">
                               <param name="Local" value="topics\InstrWriteUSS.htm">
+                            </OBJECT>
+                            <LI><OBJECT type="text/sitemap">
+                              <param name="Name" value="Leitura de NS-600 Yaskawa">
+                              <param name="Local" value="topics\InstrReadNS600.htm">
+                            </OBJECT>
+                            <LI><OBJECT type="text/sitemap">
+                              <param name="Name" value="Escrita de NS-600 Yaskawa">
+                              <param name="Local" value="topics\InstrWriteNS600.htm">
                             </OBJECT>
                         </UL>
                     </UL>
