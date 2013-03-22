@@ -631,13 +631,23 @@ void AddPlaceHolderIfNoEOL(ElemSubcktSeries *s)
 						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_MOVE, ELEM_MASTER_RELAY, ELEM_SHIFT_REGISTER) ||
 						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_PIECEWISE_LINEAR, ELEM_LOOK_UP_TABLE, ELEM_COIL) ||
 						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_DIV, ELEM_MUL, ELEM_SUB) ||
-						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_ADD, ELEM_SQRT, 0);
+						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_RAND, 0, 0) ||
+						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_ADD, ELEM_SQRT, ELEM_ABS);
 
 		if(!HasEOL) {
 			s->contents[s->count].d.leaf = AllocLeaf();
 			s->contents[s->count].which  = ELEM_PLACEHOLDER;
 			s->count++;
 		}
+	}
+}
+
+void RemovePlaceHolderIfNoParallel(ElemSubcktSeries *s)
+{
+	if(s->count > 1 && s->contents[s->count-1].which == ELEM_PLACEHOLDER && s->contents[s->count-1].which != ELEM_PARALLEL_SUBCKT) {
+		ForgetFromGrid(s->contents[s->count-1].d.any);
+		CheckFree(s->contents[s->count-1].d.any);
+		s->count--;
 	}
 }
 
@@ -1566,11 +1576,15 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
 //-----------------------------------------------------------------------------
 bool DeleteSelectedFromProgram(void)
 {
+	bool SelectedIsParallelStart = Prog.ParallelStart == Selected;
 	if(!Selected || Selected->selectedState == SELECTED_NONE) return false;
     int i = RungContainingSelected();
     if(i < 0) return false;
 
 	RemoveParallelStart(0, NULL);
+	if(SelectedIsParallelStart) {
+		return true;
+	}
 
     if(Prog.rungs[i]->count == 1 && 
         Prog.rungs[i]->contents[0].which != ELEM_PARALLEL_SUBCKT)
@@ -1594,8 +1608,9 @@ bool DeleteSelectedFromProgram(void)
         gy = 0;
     }
 
-    if(DeleteSelectedFromSubckt(ELEM_SERIES_SUBCKT, Prog.rungs[i])) {
+    if(SelectedWhich != ELEM_PLACEHOLDER && DeleteSelectedFromSubckt(ELEM_SERIES_SUBCKT, Prog.rungs[i])) {
 		AddPlaceHolderIfNoEOL(Prog.rungs[i]);
+		RemovePlaceHolderIfNoParallel(Prog.rungs[i]);
         while(CollapseUnnecessarySubckts(ELEM_SERIES_SUBCKT, Prog.rungs[i]))
             ;
         WhatCanWeDoFromCursorAndTopology();

@@ -840,15 +840,23 @@ bool EditSelectedElement(void)
             break;
 
 		case ELEM_READ_FORMATTED_STRING:
+            ShowFormattedStringDialog(0, Selected->d.fmtdStr.var,
+                Selected->d.fmtdStr.string);
+            break;
+
 		case ELEM_WRITE_FORMATTED_STRING:
         case ELEM_FORMATTED_STRING:
-            ShowFormattedStringDialog(Selected->d.fmtdStr.var,
+            ShowFormattedStringDialog(1, Selected->d.fmtdStr.var,
                 Selected->d.fmtdStr.string);
             break;
 
 		case ELEM_READ_SERVO_YASKAWA:
+            ShowServoYaskawaDialog(0, Selected->d.servoYaskawa.id, Selected->d.servoYaskawa.var,
+                Selected->d.servoYaskawa.string);
+            break;
+
 		case ELEM_WRITE_SERVO_YASKAWA:
-            ShowServoYaskawaDialog(Selected->d.servoYaskawa.id, Selected->d.servoYaskawa.var,
+            ShowServoYaskawaDialog(1, Selected->d.servoYaskawa.id, Selected->d.servoYaskawa.var,
                 Selected->d.servoYaskawa.string);
             break;
 

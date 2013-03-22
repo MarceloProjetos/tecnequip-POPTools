@@ -1676,6 +1676,9 @@ static LangTable LangPtTable[] = {
 	{ "{\x01SHIFT REG\x02   }", "{\x01 Fila de Variáveis\x02}" },
 	{ "Write ModBUS", "Escrever Registrador do ModBUS" },
 	{ "Read ModBUS", "Ler Registrador do ModBUS" },
+	{ "Write Servo Yaskawa", "Escrever no Servo Yaskawa" },
+	{ "Read Servo Yaskawa", "Ler do Servo Yaskawa" },
+	{ "Progress", "Progresso" },
 };
 static Lang LangPt = {
     LangPtTable, sizeof(LangPtTable)/sizeof(LangPtTable[0])

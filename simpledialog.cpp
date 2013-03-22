@@ -571,7 +571,7 @@ void ShowShiftRegisterDialog(char *name, int *stages)
 	}
 }
 
-void ShowFormattedStringDialog(char *var, char *string)
+void ShowFormattedStringDialog(int mode_write, char *var, char *string)
 {
 	char var_tmp[MAX_NAME_LEN], string_tmp[MAX_LOOK_UP_TABLE_LEN];
     char *labels[] = { _("Destination:"), _("String:") };
@@ -582,7 +582,7 @@ void ShowFormattedStringDialog(char *var, char *string)
 
 	NoCheckingOnBox[0] = TRUE;
     NoCheckingOnBox[1] = TRUE;
-    if(ShowSimpleDialog(_("Formatted String Over UART"), 2, labels, 0x0, 0x1, 0x3, 0x1, dests)) {
+    if(ShowSimpleDialog(mode_write ? _("Send Formatted String Over UART") : _("Receive Formatted String Over UART"), 2, labels, 0x0, 0x1, 0x3, 0x1, dests)) {
 		if(IsValidNameAndType(var, var_tmp , _("Variável"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(var_tmp ), 0, 0)) {
 				strcpy(var   , var_tmp   );
 				strcpy(string, string_tmp);
@@ -593,7 +593,7 @@ void ShowFormattedStringDialog(char *var, char *string)
     NoCheckingOnBox[1] = FALSE;
 }
 
-void ShowServoYaskawaDialog(char * id, char *var, char *string)
+void ShowServoYaskawaDialog(int mode_write, char * id, char *var, char *string)
 {
 	char var_tmp[MAX_NAME_LEN], string_tmp[MAX_LOOK_UP_TABLE_LEN], id_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Id:"), _("Variable:"), _("String:") };
@@ -604,7 +604,7 @@ void ShowServoYaskawaDialog(char * id, char *var, char *string)
 	strcpy(var_tmp   , var   );
 	strcpy(string_tmp, string);
 
-    if(ShowSimpleDialog(_("Servo Yaskawa"), 3, labels, 0x1, 0x2, 0x7, 0x2, dests)) {
+    if(ShowSimpleDialog(mode_write ? _("Write Servo Yaskawa") : _("Read Servo Yaskawa"), 3, labels, 0x1, 0x2, 0x7, 0x2, dests)) {
 		if(IsValidNameAndType(var, var_tmp, _("Variável"), VALIDATE_IS_VAR   , GetTypeFromName(var_tmp ), 0, 0) &&
 		   IsValidNameAndType(id , id_tmp , _("ID"      ), VALIDATE_IS_NUMBER, GetTypeFromName(id_tmp  ), 0, 0)) {
 				strcpy(id    , id_tmp    );
