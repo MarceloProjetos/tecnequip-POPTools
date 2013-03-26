@@ -28,96 +28,139 @@ int								SNTP_DAILY_SAVE = 0;
 
 // Variaveis PLC
 volatile unsigned char GPIO_INPUT_PORT1 = 0;
-volatile unsigned char GPIO_INPUT_PORT6 = 0;
 volatile unsigned char GPIO_INPUT_PORT4 = 0;
-volatile unsigned char GPIO_INPUT_PORT2 = 0;
-volatile int A6 = 0;
-volatile unsigned char GPIO_OUTPUT_PORT14 = 0;
-volatile unsigned char GPIO_INPUT_PORT11 = 0;
-volatile unsigned char GPIO_INPUT_PORT12 = 0;
-volatile unsigned char GPIO_INPUT_PORT13 = 0;
-volatile unsigned char GPIO_INPUT_PORT14 = 0;
-volatile unsigned char GPIO_INPUT_PORT15 = 0;
-volatile unsigned char GPIO_OUTPUT_PORT1 = 0;
+volatile int VAR_NULL = 0;
+volatile unsigned char GPIO_INPUT_PORT18 = 0;
+volatile unsigned char GPIO_INPUT_PORT5 = 0;
+volatile unsigned char GPIO_INPUT_PORT3 = 0;
+volatile unsigned char GPIO_INPUT_PORT8 = 0;
 volatile unsigned char GPIO_OUTPUT_PORT11 = 0;
-volatile unsigned char GPIO_OUTPUT_PORT12 = 0;
+volatile unsigned char GPIO_INPUT_PORT6 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT1 = 0;
+volatile unsigned char GPIO_INPUT_PORT13 = 0;
+volatile unsigned char GPIO_INPUT_PORT2 = 0;
 volatile unsigned char GPIO_OUTPUT_PORT3 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT2 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT9 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT10 = 0;
 volatile unsigned char GPIO_OUTPUT_PORT4 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT5 = 0;
 volatile unsigned char GPIO_OUTPUT_PORT6 = 0;
 volatile unsigned char GPIO_OUTPUT_PORT7 = 0;
-volatile unsigned char GPIO_OUTPUT_PORT5 = 0;
-volatile unsigned char GPIO_INPUT_PORT16 = 0;
+volatile unsigned char GPIO_INPUT_PORT7 = 0;
+volatile unsigned char GPIO_INPUT_PORT9 = 0;
+volatile unsigned char GPIO_INPUT_PORT10 = 0;
+volatile unsigned char GPIO_INPUT_PORT12 = 0;
+volatile unsigned char GPIO_INPUT_PORT11 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT14 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT13 = 0;
+volatile unsigned char GPIO_INPUT_PORT14 = 0;
 volatile unsigned char GPIO_INPUT_PORT17 = 0;
-volatile unsigned char GPIO_INPUT_PORT18 = 0;
-volatile int VAR_NULL = 0;
-volatile int ArrayBitUser_Count = 2;
-volatile int ArrayBitUser[2];
-volatile int ArrayBitSystem_Count = 3;
-volatile int ArrayBitSystem[3];
-volatile int ArrayIntUser_Count = 90;
-volatile int ArrayIntUser[90];
+volatile unsigned char GPIO_OUTPUT_PORT16 = 0;
+volatile unsigned char GPIO_INPUT_PORT15 = 0;
+volatile unsigned char GPIO_INPUT_PORT16 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT12 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT8 = 0;
+volatile unsigned char GPIO_INPUT_PORT19 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT15 = 0;
+volatile int ArrayBitUser_Count = 3;
+volatile int ArrayBitUser[3];
+volatile int ArrayBitSystem_Count = 5;
+volatile int ArrayBitSystem[5];
+volatile int ArrayIntUser_Count = 62;
+volatile int ArrayIntUser[62];
 
 void PLC_Run(void)
 {
     ArrayBitSystem[0] |= 1UL << 0; // $mcr = 1
 
-    /* start rung 61 */
+    /* start rung 52 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 0) & 1)) {  // YLedUser
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[0] < 99) {
+            ArrayIntUser[0]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[0] = 0; // TEsperaLedON
+    }
+
+    if (!((ArrayBitSystem[0] >> 2) & 1)) {  // $TEsperaLedOFF_antiglitch
+        ArrayIntUser[1] = 99; // TEsperaLedOFF
+    }
+    ArrayBitSystem[0] |= 1UL << 2; // $TEsperaLedOFF_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[1] < 99) {
+            ArrayIntUser[1]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayIntUser[1] = 0; // TEsperaLedOFF
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 0; else ArrayBitUser[0] &= ~(1UL << 0); // YLedUser = $rung_top
+
+    /* ] finish series */
+
+    /* start rung 54 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     if (GPIO_INPUT_PORT1) {  // XEmergencia
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (GPIO_INPUT_PORT6) {  // XFaltaFase
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (GPIO_INPUT_PORT4) {  // XFaltaFase
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitUser[0] |= 1UL << 0; else ArrayBitUser[0] &= ~(1UL << 0); // RErroGeral = $parThis_0001
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitUser[0] |= 1UL << 1; else ArrayBitUser[0] &= ~(1UL << 1); // RErroGeral = $parThis_0001
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
     /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0001
-    if (!((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        if (((ArrayBitSystem[0] >> 7) & 1)) {  // $oneShot_0000
-            ArrayBitSystem[0] |= 1UL << 5; // $parThis_0001 = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0001
+    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $oneShot_0000
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $oneShot_0000 = $scratch
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $oneShot_0000 = $scratch
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] |= 1UL << 1; // ZerarEncServo = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] &= ~(1UL << 2); // RMaqInitOK = 0
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
     /* ] finish parallel */
     /* ] finish series */
 
-    /* start rung 62 */
+    /* start rung 55 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
@@ -125,15 +168,359 @@ void PLC_Run(void)
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $oneShot_0001
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        MODBUS_REGISTER[2] |= (1 << 1);  // YMbMaqLib = 1
+    }
+
+    /* ] finish series */
+
+    /* start rung 56 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!(MODBUS_REGISTER[3] & (1 << 5))) {  // XDbgValErro48
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $oneShot_0001 = $scratch
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        MODBUS_REGISTER[2] |= (1 << 6);  // YMbMaqLib = 1
+        ArrayIntUser[2] = 48; // PrsValErro
     }
+
+    /* ] finish series */
+
+    /* start rung 57 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!(MODBUS_REGISTER[3] & (1 << 4))) {  // XDbgValErro0
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[2] = 0; // PrsValErro
+    }
+
+    /* ] finish series */
+
+    /* start rung 58 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 3) & 1)) {  // RPrsPausaSrvOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 6) & 1)) {  // RMaqSerialBusy
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[3] < 199) {
+            ArrayIntUser[3]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[3] = 0; // TEspChecarSrvOK
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[0] >> 9) & 1)) {  // $oneShot_0001
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 9; else ArrayBitSystem[0] &= ~(1UL << 9); // $oneShot_0001 = $scratch
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 7; // RPrsChecarSrvOK = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 6; // RMaqSerialBusy = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 59 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 7) & 1)) {  // RPrsChecarSrvOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (!((ArrayBitSystem[0] >> 10) & 1)) {  // $oneShot_0002
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "ERR", &VAR_NULL);
+                if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $oneShot_0002 = $rung_top
+            }
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 11; else ArrayBitSystem[0] &= ~(1UL << 11); // $oneShot_0003 = $rung_top
+        }
+        if (!((ArrayBitSystem[0] >> 11) & 1)) {  // $oneShot_0003
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[0] |= 1UL << 11; // $oneShot_0003 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $oneShot_0002 = $rung_top
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[4] < 4) {
+            ArrayIntUser[4]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[4] = 0; // TEspRespChecar
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (!((ArrayBitSystem[0] >> 12) & 1)) {  // $oneShot_0004
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Read("0", "ERR NONE", &ArrayIntUser[2]);
+                if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 12; else ArrayBitSystem[0] &= ~(1UL << 12); // $oneShot_0004 = $rung_top
+            }
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 13; else ArrayBitSystem[0] &= ~(1UL << 13); // $oneShot_0005 = $rung_top
+        }
+        if (!((ArrayBitSystem[0] >> 13) & 1)) {  // $oneShot_0005
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[0] |= 1UL << 13; // $oneShot_0005 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 12; else ArrayBitSystem[0] &= ~(1UL << 12); // $oneShot_0004 = $rung_top
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 8); // RServoOK = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 6); // RMaqSerialBusy = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 7); // RPrsChecarSrvOK = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    ArrayIntUser[5] = 0; // $scratch2
+    if (ArrayIntUser[2] == ArrayIntUser[5]) {
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 8; // RServoOK = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 60 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 9) & 1)) {  // RCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[0] >> 14) & 1)) {  // $oneShot_0006
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 14; else ArrayBitSystem[0] &= ~(1UL << 14); // $oneShot_0006 = $scratch
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 6); // RMaqSerialBusy = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 10); // RSerialReservada = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 11); // RMaqLerOKSerial = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 12); // RStartDesabSrv = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 13); // RStartZerarEnc = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 14); // RStartCorrigeEnc = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 15); // RStartCfgSrvJog = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 16); // RStartCfgSrv = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 61 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!GPIO_INPUT_PORT18) {  // XPressaoArOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitSystem[0] >> 15) & 1)) {  // $TEspPressaoAr_antiglitch
+        ArrayIntUser[6] = 49; // TEspPressaoAr
+    }
+    ArrayBitSystem[0] |= 1UL << 15; // $TEspPressaoAr_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[6] < 49) {
+            ArrayIntUser[6]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayIntUser[6] = 0; // TEspPressaoAr
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 17; else ArrayBitUser[0] &= ~(1UL << 17); // RPressaoArOK = $rung_top
+
+    /* ] finish series */
+
+    /* start rung 62 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 1) & 1)) {  // RErroGeral
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!GPIO_INPUT_PORT5) {  // XInversorOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 18) & 1)) {  // RErroBombaHidr
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!GPIO_INPUT_PORT3) {  // XTermMartelo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitUser[0] >> 17) & 1)) {  // RPressaoArOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!GPIO_INPUT_PORT8) {  // XDesbobOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    if (!((ArrayBitUser[0] >> 8) & 1)) {  // RServoOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!(MODBUS_REGISTER[2] & (1 << 1))) {  // YMbMaqLib
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 19; else ArrayBitUser[0] &= ~(1UL << 19); // RMaqOK = $rung_top
 
     /* ] finish series */
 
@@ -141,82 +528,71 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitUser[0] >> 0) & 1)) {  // RErroGeral
+    if (!((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!GPIO_INPUT_PORT4) {  // ServoOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    if (!GPIO_INPUT_PORT2) {  // XTermBombaHidr
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (!(MODBUS_REGISTER[2] & (1 << 6))) {  // YMbMaqLib
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitUser[0] |= 1UL << 2; else ArrayBitUser[0] &= ~(1UL << 2); // RMaqOK = $parThis_0001
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 9); // $parOut_0002 = 0
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parThis_0001
-    if(((ArrayBitSystem[0] >> 10) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0002
-    if (((ArrayBitSystem[0] >> 11) & 1)) {  // $oneShot_0002
-        ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 11; else ArrayBitSystem[0] &= ~(1UL << 11); // $oneShot_0002 = $scratch
-
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parThis_0001
-    if(((ArrayBitSystem[0] >> 10) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0002
-    if (!((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        if (((ArrayBitSystem[0] >> 12) & 1)) {  // $oneShot_0003
-            ArrayBitSystem[0] |= 1UL << 10; // $parThis_0002 = 1
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (((ArrayBitSystem[0] >> 16) & 1)) {  // $oneShot_0007
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
         }
     } else {
-        ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = 0
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 12; else ArrayBitSystem[0] &= ~(1UL << 12); // $oneShot_0003 = $scratch
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 16; else ArrayBitSystem[0] &= ~(1UL << 16); // $oneShot_0007 = $scratch
 
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 9) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parOut_0002
-    /* ] finish parallel */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] |= 1UL << 3; // ConfigServo = 1
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[2] &= ~(1 << 1);  // YMbMaqLib = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 20); // RAplanLigarMotor = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 21; // RMaqDesabSrv = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 22); // RMaqCfgSrvOK = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        GPIO_OUTPUT_PORT11 = 0; // YPrsEmbreagem = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 23); // PrsAtivarLub = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* ] finish series */
 
@@ -224,22 +600,18 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
+    if (!((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (((ArrayBitSystem[0] >> 13) & 1)) {  // $oneShot_0004
-            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
-        }
-    } else {
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[0] >> 17) & 1)) {  // $oneShot_0008
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 13; else ArrayBitSystem[0] &= ~(1UL << 13); // $oneShot_0004 = $scratch
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 17; else ArrayBitSystem[0] &= ~(1UL << 17); // $oneShot_0008 = $scratch
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        MODBUS_REGISTER[2] &= ~(1 << 6);  // YMbMaqLib = 0
+        ArrayBitUser[0] |= 1UL << 21; // RMaqDesabSrv = 1
     }
 
     /* ] finish series */
@@ -248,129 +620,87 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (ArrayIntUser[0] < 499) {
-            ArrayIntUser[0]++;
-            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-        }
-    } else {
-        ArrayIntUser[0] = 0; // EspServoInit
-    }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[0] >> 14) & 1)) {  // $oneShot_0005
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 14; else ArrayBitSystem[0] &= ~(1UL << 14); // $oneShot_0005 = $scratch
-
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] |= 1UL << 3; // ConfigServo = 1
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] |= 1UL << 1; // ZerarEncServo = 1
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 24; else ArrayBitUser[0] &= ~(1UL << 24); // YLedErro = $rung_top
+
     /* ] finish series */
 
     /* start rung 66 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 3) & 1)) {  // ConfigServo
+    if (!((ArrayBitUser[0] >> 22) & 1)) {  // RMaqCfgSrvOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[1] = 0; // EstadoServo
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[1] = 1; // EstadoServo
-    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 25; else ArrayBitUser[0] &= ~(1UL << 25); // RMaqConfigOK = $rung_top
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+
+    /* start rung 67 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[0] >> 15) & 1)) {  // $oneShot_0006
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 809, 1, &ArrayIntUser[1]);
-                ArrayBitSystem[0] |= 1UL << 15; // $oneShot_0006 = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[0] &= ~(1UL << 16); // $oneShot_0007 = 0
-        }
-        if (!((ArrayBitSystem[0] >> 16) & 1)) {  // $oneShot_0007
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[0] |= 1UL << 16; // $oneShot_0007 = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 809, 1, &ArrayIntUser[1]);
-            }
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 15); // $oneShot_0006 = 0
-        ArrayBitSystem[0] &= ~(1UL << 16); // $oneShot_0007 = 0
+    if (!((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] &= ~(1UL << 3); // ConfigServo = 0
+    if (!((ArrayBitUser[0] >> 25) & 1)) {  // RMaqConfigOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 26; else ArrayBitUser[0] &= ~(1UL << 26); // RMaqPronta = $rung_top
+
     /* ] finish series */
 
     /* start rung 68 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        A6 = ADC_Read(6);
+    if (!((ArrayBitUser[0] >> 26) & 1)) {  // RMaqPronta
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* ] finish series */
-
-    /* start rung 69 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        MODBUS_REGISTER[4] = A6; // MbTemp = Temperatura
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitUser[0] >> 27) & 1)) {  // RModoAuto
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[0] >> 28) & 1)) {  // RMaqStartProd
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 29; else ArrayBitUser[0] &= ~(1UL << 29); // RMaqManualOK = $rung_top
 
     /* ] finish series */
 
@@ -378,12 +708,12 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (MODBUS_REGISTER[3] & (1 << 2)) {  // XDbgDeslReadEnc
+    if (MODBUS_REGISTER[3] & (1 << 1)) {  // XDbgDeslReadEnc
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[2] = ENC_Read(0);
+        ArrayIntUser[7] = ENC_Read(0);
     }
 
     /* ] finish series */
@@ -392,13 +722,13 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!(MODBUS_REGISTER[3] & (1 << 3))) {  // XDbgSimulaEnc
+    if (!(MODBUS_REGISTER[3] & (1 << 2))) {  // XDbgSimulaEnc
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 25; // $scratch2
-        ArrayIntUser[2] = ArrayIntUser[2] + ArrayIntUser[3]; // EMaqPosAtual = EMaqPosAtual + $scratch2
+        ArrayIntUser[5] = 25; // $scratch2
+        ArrayIntUser[7] = ArrayIntUser[7] + ArrayIntUser[5]; // EMaqPosAtual = EMaqPosAtual + $scratch2
     }
 
     /* ] finish series */
@@ -407,13 +737,13 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!(MODBUS_REGISTER[3] & (1 << 4))) {  // XDbgSimulaEncNeg
+    if (!(MODBUS_REGISTER[3] & (1 << 0))) {  // XDbgSimulaEncNeg
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 20; // $scratch2
-        ArrayIntUser[2] = ArrayIntUser[2] - ArrayIntUser[3]; // EMaqPosAtual = EMaqPosAtual - $scratch2
+        ArrayIntUser[5] = 20; // $scratch2
+        ArrayIntUser[7] = ArrayIntUser[7] - ArrayIntUser[5]; // EMaqPosAtual = EMaqPosAtual - $scratch2
     }
 
     /* ] finish series */
@@ -423,7 +753,7 @@ void PLC_Run(void)
 
     /* iniciando serie [ */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[4] = ArrayIntUser[2] * MODBUS_REGISTER[22]; // MaqPosAtual = EMaqPosAtual * YMbEncPerim
+        ArrayIntUser[8] = ArrayIntUser[7] * MODBUS_REGISTER[22]; // MaqPosAtual = EMaqPosAtual * YMbEncPerim
     }
 
     /* ] finish series */
@@ -433,8 +763,8 @@ void PLC_Run(void)
 
     /* iniciando serie [ */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 100; // $scratch2
-        ArrayIntUser[4] = ArrayIntUser[4] * ArrayIntUser[3]; // MaqPosAtual = MaqPosAtual * $scratch2
+        ArrayIntUser[5] = 100; // $scratch2
+        ArrayIntUser[8] = ArrayIntUser[8] * ArrayIntUser[5]; // MaqPosAtual = MaqPosAtual * $scratch2
     }
 
     /* ] finish series */
@@ -444,8 +774,8 @@ void PLC_Run(void)
 
     /* iniciando serie [ */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 4; // $scratch2
-        if(ArrayIntUser[3]) ArrayIntUser[4] = ArrayIntUser[4] / ArrayIntUser[3]; // MaqPosAtual = MaqPosAtual / $scratch2
+        ArrayIntUser[5] = 4; // $scratch2
+        if(ArrayIntUser[5]) ArrayIntUser[8] = ArrayIntUser[8] / ArrayIntUser[5]; // MaqPosAtual = MaqPosAtual / $scratch2
     }
 
     /* ] finish series */
@@ -454,14 +784,14 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    ArrayIntUser[3] = 0; // $scratch2
-    if (MODBUS_REGISTER[21] > ArrayIntUser[3]) {
+    ArrayIntUser[5] = 0; // $scratch2
+    if (MODBUS_REGISTER[21] > ArrayIntUser[5]) {
     } else {
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if(MODBUS_REGISTER[21]) ArrayIntUser[4] = ArrayIntUser[4] / MODBUS_REGISTER[21]; // MaqPosAtual = MaqPosAtual / YMbEncResol
+        if(MODBUS_REGISTER[21]) ArrayIntUser[8] = ArrayIntUser[8] / MODBUS_REGISTER[21]; // MaqPosAtual = MaqPosAtual / YMbEncResol
     }
 
     /* ] finish series */
@@ -471,7 +801,7 @@ void PLC_Run(void)
 
     /* iniciando serie [ */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[4] = ArrayIntUser[4] * MODBUS_REGISTER[20]; // MaqPosAtual = MaqPosAtual * YMbEncFator
+        ArrayIntUser[8] = ArrayIntUser[8] * MODBUS_REGISTER[20]; // MaqPosAtual = MaqPosAtual * YMbEncFator
     }
 
     /* ] finish series */
@@ -481,8 +811,8 @@ void PLC_Run(void)
 
     /* iniciando serie [ */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 1000; // $scratch2
-        if(ArrayIntUser[3]) ArrayIntUser[4] = ArrayIntUser[4] / ArrayIntUser[3]; // MaqPosAtual = MaqPosAtual / $scratch2
+        ArrayIntUser[5] = 10000; // $scratch2
+        if(ArrayIntUser[5]) ArrayIntUser[8] = ArrayIntUser[8] / ArrayIntUser[5]; // MaqPosAtual = MaqPosAtual / $scratch2
     }
 
     /* ] finish series */
@@ -492,8 +822,7 @@ void PLC_Run(void)
 
     /* iniciando serie [ */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 10; // $scratch2
-        if(ArrayIntUser[3]) MODBUS_REGISTER[29] = ArrayIntUser[4] / ArrayIntUser[3]; // YMbPosAtual = MaqPosAtual / $scratch2
+        MODBUS_REGISTER[5] = ArrayIntUser[8]; // YMbPosAtual = MaqPosAtual
     }
 
     /* ] finish series */
@@ -502,221 +831,124 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 1) & 1)) {  // ZerarEncServo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (!((ArrayBitUser[0] >> 4) & 1)) {  // RSrvMotorParado
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 5) & 1)) {  // RMaqCfgSrvErro
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 6) & 1)) {  // ZerarEncPerfil
+    if (!GPIO_INPUT_PORT6) {  // XAplanFechada
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (ArrayIntUser[5] < 9) {
-            ArrayIntUser[5]++;
+        if (ArrayIntUser[9] < 19) {
+            ArrayIntUser[9]++;
             ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
         }
     } else {
-        ArrayIntUser[5] = 0; // EspZerarEncServo
+        ArrayIntUser[9] = 0; // TEspAplanFechar
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (ArrayIntUser[6] < 499) {
-            ArrayIntUser[6]++;
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-        }
-    } else {
-        ArrayIntUser[6] = 0; // ZerarEncServoTO
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitUser[0] |= 1UL << 30; else ArrayBitUser[0] &= ~(1UL << 30); // RAplanFechada = $parThis_0000
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[0] >> 18) & 1)) {  // $oneShot_0009
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 18; else ArrayBitSystem[0] &= ~(1UL << 18); // $oneShot_0009 = $scratch
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] |= 1UL << 5; // RMaqCfgSrvErro = 1
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        MODBUS_REGISTER[4] &= ~(1 << 0);  // YAplanManAvcIHM = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        GPIO_OUTPUT_PORT14 = 0; // YInvResetPos = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        MODBUS_REGISTER[4] &= ~(1 << 1);  // YAplanManRecIHM = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
     /* ] finish parallel */
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 87 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
     /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[0] >> 17) & 1)) {  // $oneShot_0008
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 17; else ArrayBitSystem[0] &= ~(1UL << 17); // $oneShot_0008 = $scratch
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        GPIO_OUTPUT_PORT14 = 1; // YInvResetPos = 1
+    if (!((ArrayBitUser[0] >> 30) & 1)) {  // RAplanFechada
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[0] >> 18) & 1)) {  // $oneShot_0009
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 800, 1, &ArrayIntUser[7]);
-                ArrayBitSystem[0] |= 1UL << 18; // $oneShot_0009 = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[0] &= ~(1UL << 19); // $oneShot_000a = 0
-        }
-        if (!((ArrayBitSystem[0] >> 19) & 1)) {  // $oneShot_000a
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[0] |= 1UL << 19; // $oneShot_000a = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 800, 1, &ArrayIntUser[7]);
-            }
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 18); // $oneShot_0009 = 0
-        ArrayBitSystem[0] &= ~(1UL << 19); // $oneShot_000a = 0
+    if (!((ArrayBitUser[0] >> 31) & 1)) {  // RPrsAvancoOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[0] >> 20) & 1)) {  // $oneShot_000b
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 801, 1, &ArrayIntUser[8]);
-                ArrayBitSystem[0] |= 1UL << 20; // $oneShot_000b = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[0] &= ~(1UL << 21); // $oneShot_000c = 0
-        }
-        if (!((ArrayBitSystem[0] >> 21) & 1)) {  // $oneShot_000c
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[0] |= 1UL << 21; // $oneShot_000c = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 801, 1, &ArrayIntUser[8]);
-            }
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 20); // $oneShot_000b = 0
-        ArrayBitSystem[0] &= ~(1UL << 21); // $oneShot_000c = 0
-    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 0; else ArrayBitUser[1] &= ~(1UL << 0); // RAplanAvancoOK = $rung_top
 
-    if (GPIO_INPUT_PORT11) {  // XInvFimPosic
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 9); // $parOut_0002 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitUser[0] &= ~(1UL << 1); // ZerarEncServo = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        GPIO_OUTPUT_PORT14 = 0; // YInvResetPos = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 9) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0002
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 88 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 6) & 1)) {  // ZerarEncPerfil
+    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RMaqManualOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (!((ArrayBitUser[0] >> 4) & 1)) {  // RSrvMotorParado
+    if (!(MODBUS_REGISTER[4] & (1 << 2))) {  // YMbAplanAbre
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] &= ~(1UL << 6); // ZerarEncPerfil = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ENC_Reset(0, ArrayIntUser[9]);
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!(MODBUS_REGISTER[3] & (1 << 2))) {  // XDbgDeslReadEnc
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[2] = 0; // EMaqPosAtual
-    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 1; else ArrayBitUser[1] &= ~(1UL << 1); // RAplanAbre = $rung_top
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+
+    /* start rung 89 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RMaqManualOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
+
+    if (!(MODBUS_REGISTER[4] & (1 << 3))) {  // YMbAplanFecha
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 2; else ArrayBitUser[1] &= ~(1UL << 2); // RAplanFecha = $rung_top
+
     /* ] finish series */
 
     /* start rung 90 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!GPIO_INPUT_PORT12) {  // XSnsSupHidr
+    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RMaqManualOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 7; else ArrayBitUser[0] &= ~(1UL << 7); // RSnsSupCortePerf = $rung_top
+    if (!(MODBUS_REGISTER[4] & (1 << 4))) {  // YMbAplanSobe
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 3; else ArrayBitUser[1] &= ~(1UL << 3); // RAplanSobe = $rung_top
 
     /* ] finish series */
 
@@ -724,11 +956,15 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!GPIO_INPUT_PORT13) {  // XSnsInfHidr
+    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RMaqManualOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 8; else ArrayBitUser[0] &= ~(1UL << 8); // RSnsInfCortePerf = $rung_top
+    if (!(MODBUS_REGISTER[4] & (1 << 5))) {  // YMbAplanDesce
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 4; else ArrayBitUser[1] &= ~(1UL << 4); // RAplanDesce = $rung_top
 
     /* ] finish series */
 
@@ -736,128 +972,229 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!GPIO_INPUT_PORT14) {  // SnsSupPrensa
+    if (!(MODBUS_REGISTER[4] & (1 << 6))) {  // YMbAplanExtSubir
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 9; else ArrayBitUser[0] &= ~(1UL << 9); // SnsSupPrensaPerf = $rung_top
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[0] >> 19) & 1)) {  // $oneShot_000a
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 19; else ArrayBitSystem[0] &= ~(1UL << 19); // $oneShot_000a = $scratch
 
+    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RMaqManualOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] |= 1UL << 5; // RAplanExtSubir = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[0] >> 20) & 1)) {  // $oneShot_000b
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 20; else ArrayBitSystem[0] &= ~(1UL << 20); // $oneShot_000b = $scratch
+
+    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RMaqManualOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] &= ~(1UL << 5); // RAplanExtSubir = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 93 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!GPIO_INPUT_PORT15) {  // SnsInfPrensa
+    if (!(MODBUS_REGISTER[4] & (1 << 7))) {  // YMbAplanExpandir
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 10; else ArrayBitUser[0] &= ~(1UL << 10); // SnsInfPrensaPerf = $rung_top
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[0] >> 21) & 1)) {  // $oneShot_000c
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 21; else ArrayBitSystem[0] &= ~(1UL << 21); // $oneShot_000c = $scratch
+
+    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RMaqManualOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] |= 1UL << 6; // RAplanExpandir = 1
+    }
 
     /* ] finish series */
-
-    /* start rung 94 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 11) & 1)) {  // RBombaHidrOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[0] >> 22) & 1)) {  // $oneShot_000d
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 22; else ArrayBitSystem[0] &= ~(1UL << 22); // $oneShot_000d = $scratch
+
+    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RMaqManualOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 12; else ArrayBitUser[0] &= ~(1UL << 12); // RCortePronto = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] &= ~(1UL << 6); // RAplanExpandir = 0
+    }
 
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 95 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 7) & 1)) {  // RSnsSupCortePerf
+    if (!((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[0] >> 8) & 1)) {  // RSnsInfCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[10] < 4) {
+            ArrayIntUser[10]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[10] = 0; // TEspRetSerial
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 13; else ArrayBitUser[0] &= ~(1UL << 13); // RFerramCorteCima = $rung_top
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (!((ArrayBitSystem[0] >> 23) & 1)) {  // $oneShot_000e
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Read("0", "OK", &ArrayIntUser[11]);
+                if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 23; else ArrayBitSystem[0] &= ~(1UL << 23); // $oneShot_000e = $rung_top
+            }
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 24; else ArrayBitSystem[0] &= ~(1UL << 24); // $oneShot_000f = $rung_top
+        }
+        if (!((ArrayBitSystem[0] >> 24) & 1)) {  // $oneShot_000f
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[0] |= 1UL << 24; // $oneShot_000f = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 23; else ArrayBitSystem[0] &= ~(1UL << 23); // $oneShot_000e = $rung_top
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 11); // RMaqLerOKSerial = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    ArrayIntUser[5] = 0; // $scratch2
+    if (ArrayIntUser[5] > ArrayIntUser[11]) {
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 4; // RMaqCfgSrvErro = 1
+    }
 
     /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
 
-    /* start rung 96 */
+    /* start rung 97 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 9) & 1)) {  // SnsSupPrensaPerf
+    if (!((ArrayBitUser[1] >> 7) & 1)) {  // RAplanCorrigeEnc
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[0] >> 10) & 1)) {  // SnsInfPrensaPerf
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 14; else ArrayBitUser[0] &= ~(1UL << 14); // FerramPrensaCima = $rung_top
+    if (((ArrayBitUser[0] >> 6) & 1)) {  // RMaqSerialBusy
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
 
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 14; // RStartCorrigeEnc = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 6; // RMaqSerialBusy = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 98 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (GPIO_OUTPUT_PORT1) {  // YLigarBombaHidr
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 17) & 1)) {  // RForcaRecuoCorte
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[0] >> 22) & 1)) {  // $oneShot_000d
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 22; else ArrayBitSystem[0] &= ~(1UL << 22); // $oneShot_000d = $scratch
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        GPIO_OUTPUT_PORT1 = 1; // YLigarBombaHidr = 1
+        ArrayIntUser[12] = ArrayIntUser[8] * ArrayIntUser[13]; // MaqPosAtualCorr = MaqPosAtual * FatorCorrServo
     }
 
     /* ] finish series */
@@ -866,47 +1203,9 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 11) & 1)) {  // RBombaHidrOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (ArrayIntUser[10] < 29999) {
-            ArrayIntUser[10]++;
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-        }
-    } else {
-        ArrayIntUser[10] = 0; // TBombaHidrInat
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        GPIO_OUTPUT_PORT1 = 0; // YLigarBombaHidr = 0
+        ArrayIntUser[5] = 10000; // $scratch2
+        if(ArrayIntUser[5]) ArrayIntUser[12] = ArrayIntUser[12] / ArrayIntUser[5]; // MaqPosAtualCorr = MaqPosAtualCorr / $scratch2
     }
 
     /* ] finish series */
@@ -915,78 +1214,137 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!GPIO_OUTPUT_PORT1) {  // YLigarBombaHidr
+    if (!((ArrayBitUser[0] >> 14) & 1)) {  // RStartCorrigeEnc
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (ArrayIntUser[11] < 499) {
-            ArrayIntUser[11]++;
+        if (!((ArrayBitSystem[0] >> 25) & 1)) {  // $oneShot_0010
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "ZSET%d", &ArrayIntUser[12]);
+                if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 25; else ArrayBitSystem[0] &= ~(1UL << 25); // $oneShot_0010 = $rung_top
+            }
             ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 26; else ArrayBitSystem[0] &= ~(1UL << 26); // $oneShot_0011 = $rung_top
+        }
+        if (!((ArrayBitSystem[0] >> 26) & 1)) {  // $oneShot_0011
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[0] |= 1UL << 26; // $oneShot_0011 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            }
         }
     } else {
-        ArrayIntUser[11] = 0; // TBombaHidrEstab
+        if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 25; else ArrayBitSystem[0] &= ~(1UL << 25); // $oneShot_0010 = $rung_top
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 11; else ArrayBitUser[0] &= ~(1UL << 11); // RBombaHidrOK = $rung_top
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[0] >> 27) & 1)) {  // $oneShot_0012
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 27; else ArrayBitSystem[0] &= ~(1UL << 27); // $oneShot_0012 = $scratch
 
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] &= ~(1UL << 14); // RStartCorrigeEnc = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] &= ~(1UL << 7); // RAplanCorrigeEnc = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] &= ~(1UL << 6); // RMaqSerialBusy = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 102 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
+    if (!((ArrayBitUser[0] >> 21) & 1)) {  // RMaqDesabSrv
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[0] >> 19) & 1)) {  // ErroPrensaPerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (!((ArrayBitUser[0] >> 20) & 1)) {  // PrensarPerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (GPIO_OUTPUT_PORT11) {  // YAvancarPerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (GPIO_OUTPUT_PORT12) {  // YRecuarPerf
+    if (((ArrayBitUser[0] >> 6) & 1)) {  // RMaqSerialBusy
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] |= 1UL << 16; // PrensaPerfAtiva = 1
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 12; // RStartDesabSrv = 1
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] &= ~(1UL << 20); // PrensarPerf = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[2] &= ~(1 << 8);  // MbPrensaIHM = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 21); // RMaqDesabSrv = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] &= ~(1UL << 8); // RStartDesabSVOFF = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 6; // RMaqSerialBusy = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* ] finish series */
 
@@ -994,161 +1352,277 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
+    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RStartDesabSrv
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (ArrayIntUser[12] < 499) {
-            ArrayIntUser[12]++;
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[14] < 199) {
+            ArrayIntUser[14]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
         }
     } else {
-        ArrayIntUser[12] = 0; // MaxPrensaPerf
+        ArrayIntUser[14] = 0; // TEspFimDesabSrv
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] &= ~(1UL << 16); // PrensaPerfAtiva = 0
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] |= 1UL << 4; // RMaqCfgSrvErro = 1
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] |= 1UL << 19; // ErroPrensaPerf = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] &= ~(1UL << 21); // PrensaPerfDesce = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] &= ~(1UL << 12); // RStartDesabSrv = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
     /* ] finish parallel */
     /* ] finish series */
-
-    /* start rung 104 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitUser[1] >> 8) & 1)) {  // RStartDesabSVOFF
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[0] >> 28) & 1)) {  // $oneShot_0013
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "SKIP", &VAR_NULL);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 28; else ArrayBitSystem[0] &= ~(1UL << 28); // $oneShot_0013 = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 29; else ArrayBitSystem[0] &= ~(1UL << 29); // $oneShot_0014 = $parThis_0000
+        }
+        if (!((ArrayBitSystem[0] >> 29) & 1)) {  // $oneShot_0014
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[0] |= 1UL << 29; // $oneShot_0014 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 28; else ArrayBitSystem[0] &= ~(1UL << 28); // $oneShot_0013 = $parThis_0000
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[0] >> 23) & 1)) {  // $oneShot_000e
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 31) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0002
+    if (((ArrayBitSystem[1] >> 0) & 1)) {  // $oneShot_0015
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 23; else ArrayBitSystem[0] &= ~(1UL << 23); // $oneShot_000e = $scratch
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 0; else ArrayBitSystem[1] &= ~(1UL << 0); // $oneShot_0015 = $scratch
 
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] |= 1UL << 21; // PrensaPerfDesce = 1
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
     }
 
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[1] |= 1UL << 8; // RStartDesabSVOFF = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 8) & 1)) {  // RStartDesabSVOFF
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[1] >> 1) & 1)) {  // $oneShot_0016
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "SVOFF", &VAR_NULL);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 1; else ArrayBitSystem[1] &= ~(1UL << 1); // $oneShot_0016 = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 2; else ArrayBitSystem[1] &= ~(1UL << 2); // $oneShot_0017 = $parThis_0000
+        }
+        if (!((ArrayBitSystem[1] >> 2) & 1)) {  // $oneShot_0017
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[1] |= 1UL << 2; // $oneShot_0017 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 1; else ArrayBitSystem[1] &= ~(1UL << 1); // $oneShot_0016 = $parThis_0000
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[1] &= ~(1UL << 3); // $parOut_0003 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[1] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0003
+    if (((ArrayBitSystem[1] >> 5) & 1)) {  // $oneShot_0018
+        ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 5; else ArrayBitSystem[1] &= ~(1UL << 5); // $oneShot_0018 = $scratch
+
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitSystem[1] |= 1UL << 3; // $parOut_0003 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[1] &= ~(1UL << 6); // $parOut_0004 = 0
+    if(((ArrayBitSystem[1] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 7; else ArrayBitSystem[1] &= ~(1UL << 7); // $parThis_0004 = $parThis_0003
+    if (((ArrayBitSystem[1] >> 7) & 1)) {  // $parThis_0004
+        ArrayBitUser[0] &= ~(1UL << 12); // RStartDesabSrv = 0
+    }
+
+    if (((ArrayBitSystem[1] >> 7) & 1)) {  // $parThis_0004
+        ArrayBitSystem[1] |= 1UL << 6; // $parOut_0004 = 1
+    }
+    if(((ArrayBitSystem[1] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 7; else ArrayBitSystem[1] &= ~(1UL << 7); // $parThis_0004 = $parThis_0003
+    if (((ArrayBitSystem[1] >> 7) & 1)) {  // $parThis_0004
+        ArrayBitUser[0] &= ~(1UL << 22); // RMaqCfgSrvOK = 0
+    }
+
+    if (((ArrayBitSystem[1] >> 7) & 1)) {  // $parThis_0004
+        ArrayBitSystem[1] |= 1UL << 6; // $parOut_0004 = 1
+    }
+    if(((ArrayBitSystem[1] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 7; else ArrayBitSystem[1] &= ~(1UL << 7); // $parThis_0004 = $parThis_0003
+    if (((ArrayBitSystem[1] >> 7) & 1)) {  // $parThis_0004
+        ArrayBitUser[0] &= ~(1UL << 6); // RMaqSerialBusy = 0
+    }
+
+    if (((ArrayBitSystem[1] >> 7) & 1)) {  // $parThis_0004
+        ArrayBitSystem[1] |= 1UL << 6; // $parOut_0004 = 1
+    }
+    if(((ArrayBitSystem[1] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $parOut_0004
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitSystem[1] |= 1UL << 3; // $parOut_0003 = 1
+    }
+    if(((ArrayBitSystem[1] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0003
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 105 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
+    if (!((ArrayBitUser[1] >> 9) & 1)) {  // RAplanZerarEnc
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
+    if (!((ArrayBitUser[1] >> 10) & 1)) {  // RSrvMotorParado
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (!((ArrayBitUser[0] >> 21) & 1)) {  // PrensaPerfDesce
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (!((ArrayBitUser[0] >> 10) & 1)) {  // SnsInfPrensaPerf
+    if (((ArrayBitUser[0] >> 6) & 1)) {  // RMaqSerialBusy
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] &= ~(1UL << 21); // PrensaPerfDesce = 0
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 13; // RStartZerarEnc = 1
     }
 
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 6; // RMaqSerialBusy = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[15] = 0; // EncPosZero
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 106 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitUser[0] >> 21) & 1)) {  // PrensaPerfDesce
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 19) & 1)) {  // ErroPrensaPerf
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    if (!((ArrayBitUser[0] >> 9) & 1)) {  // SnsSupPrensaPerf
+    if (!((ArrayBitUser[0] >> 13) & 1)) {  // RStartZerarEnc
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[0] >> 24) & 1)) {  // $oneShot_000f
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[1] >> 8) & 1)) {  // $oneShot_0019
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 24; else ArrayBitSystem[0] &= ~(1UL << 24); // $oneShot_000f = $scratch
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 8; else ArrayBitSystem[1] &= ~(1UL << 8); // $oneShot_0019 = $scratch
 
-    if (!((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[1] >> 11) & 1)) {  // RMaqForaPosic
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] &= ~(1UL << 16); // PrensaPerfAtiva = 0
+        ArrayIntUser[15] = ArrayIntUser[16]; // EncPosZero = DifPosic
     }
 
     /* ] finish series */
@@ -1157,174 +1631,241 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
+    if (!((ArrayBitUser[0] >> 13) & 1)) {  // RStartZerarEnc
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (((ArrayBitSystem[0] >> 25) & 1)) {  // $oneShot_0010
-            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 25; else ArrayBitSystem[0] &= ~(1UL << 25); // $oneShot_0010 = $scratch
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] &= ~(1UL << 21); // PrensaPerfDesce = 0
+        if (!((ArrayBitSystem[1] >> 9) & 1)) {  // $oneShot_001a
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "ZSET%d", &ArrayIntUser[15]);
+                if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[1] |= 1UL << 9; else ArrayBitSystem[1] &= ~(1UL << 9); // $oneShot_001a = $rung_top
+            }
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[1] |= 1UL << 10; else ArrayBitSystem[1] &= ~(1UL << 10); // $oneShot_001b = $rung_top
+        }
+        if (!((ArrayBitSystem[1] >> 10) & 1)) {  // $oneShot_001b
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[1] |= 1UL << 10; // $oneShot_001b = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[1] |= 1UL << 9; else ArrayBitSystem[1] &= ~(1UL << 9); // $oneShot_001a = $rung_top
     }
 
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[1] >> 11) & 1)) {  // $oneShot_001c
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 11; else ArrayBitSystem[1] &= ~(1UL << 11); // $oneShot_001c = $scratch
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] &= ~(1UL << 9); // RAplanZerarEnc = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] &= ~(1UL << 13); // RStartZerarEnc = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] &= ~(1UL << 6); // RMaqSerialBusy = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ENC_Reset(0, ArrayIntUser[17]);
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    /* iniciando serie [ */
+    if (!(MODBUS_REGISTER[3] & (1 << 1))) {  // XDbgDeslReadEnc
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayIntUser[7] = 0; // EMaqPosAtual
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 109 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
+    if (!((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[0] >> 22) & 1)) {  // RErroCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (!((ArrayBitUser[0] >> 23) & 1)) {  // RCortarPerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (GPIO_OUTPUT_PORT11) {  // YAvancarPerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (GPIO_OUTPUT_PORT12) {  // YRecuarPerf
+    if (GPIO_OUTPUT_PORT1) {  // YLigarBombaHidr
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] |= 1UL << 15; // RCortePerfAtivo = 1
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[1] >> 1) & 1)) {  // RAplanAbre
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] &= ~(1UL << 23); // RCortarPerf = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[2] &= ~(1 << 1);  // YMbCorteIHM = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[1] >> 2) & 1)) {  // RAplanFecha
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[1] >> 3) & 1)) {  // RAplanSobe
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[1] >> 4) & 1)) {  // RAplanDesce
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        GPIO_OUTPUT_PORT1 = 1; // YLigarBombaHidr = 1
+    }
+
     /* ] finish series */
 
     /* start rung 110 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (!GPIO_OUTPUT_PORT1) {  // YLigarBombaHidr
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (ArrayIntUser[13] < 499) {
-            ArrayIntUser[13]++;
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (GPIO_INPUT_PORT13) {  // XBombaHidrLigada
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[18] < 499) {
+            ArrayIntUser[18]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
         }
     } else {
-        ArrayIntUser[13] = 0; // TMaxCortePerf
+        ArrayIntUser[18] = 0; // TBombaHidrTO
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (GPIO_INPUT_PORT2) {  // XTermBombaHidr
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] &= ~(1UL << 15); // RCortePerfAtivo = 0
-    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 18; else ArrayBitUser[0] &= ~(1UL << 18); // RErroBombaHidr = $rung_top
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] |= 1UL << 22; // RErroCortePerf = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] &= ~(1UL << 24); // RCortePerfDesce = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
-    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 111 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
+    if (!GPIO_OUTPUT_PORT1) {  // YLigarBombaHidr
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[0] >> 26) & 1)) {  // $oneShot_0011
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 26; else ArrayBitSystem[0] &= ~(1UL << 26); // $oneShot_0011 = $scratch
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] |= 1UL << 24; // RCortePerfDesce = 1
+        if (ArrayIntUser[19] < 299) {
+            ArrayIntUser[19]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[19] = 0; // TBombaHidrEstab
     }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 12; else ArrayBitUser[1] &= ~(1UL << 12); // RBombaHidrOK = $rung_top
 
     /* ] finish series */
 
@@ -1332,68 +1873,55 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 12) & 1)) {  // RBombaHidrOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitUser[1] >> 3) & 1)) {  // RAplanSobe
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (!((ArrayBitUser[0] >> 24) & 1)) {  // RCortePerfDesce
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitUser[1] >> 4) & 1)) {  // RAplanDesce
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (!((ArrayBitUser[0] >> 8) & 1)) {  // RSnsInfCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitUser[1] >> 1) & 1)) {  // RAplanAbre
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] &= ~(1UL << 24); // RCortePerfDesce = 0
+    if (((ArrayBitUser[1] >> 2) & 1)) {  // RAplanFecha
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[20] < 29999) {
+            ArrayIntUser[20]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+        }
+    } else {
+        ArrayIntUser[20] = 0; // TBombaHidrInat
     }
 
     /* ] finish series */
-
-    /* start rung 113 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitUser[0] >> 24) & 1)) {  // RCortePerfDesce
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 22) & 1)) {  // RErroCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
-    if (!((ArrayBitUser[0] >> 7) & 1)) {  // RSnsSupCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[0] >> 27) & 1)) {  // $oneShot_0012
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 27; else ArrayBitSystem[0] &= ~(1UL << 27); // $oneShot_0012 = $scratch
-
-    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] &= ~(1UL << 15); // RCortePerfAtivo = 0
+        GPIO_OUTPUT_PORT1 = 0; // YLigarBombaHidr = 0
     }
 
     /* ] finish series */
@@ -1402,43 +1930,83 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
+    if (!((ArrayBitUser[1] >> 12) & 1)) {  // RBombaHidrOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (((ArrayBitSystem[0] >> 28) & 1)) {  // $oneShot_0013
-            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
-        }
-    } else {
+    if (!((ArrayBitUser[1] >> 1) & 1)) {  // RAplanAbre
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 28; else ArrayBitSystem[0] &= ~(1UL << 28); // $oneShot_0013 = $scratch
 
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] &= ~(1UL << 24); // RCortePerfDesce = 0
+    if (GPIO_OUTPUT_PORT3) {  // YHidrFecha
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
+    GPIO_OUTPUT_PORT2 = ((ArrayBitSystem[0] >> 1) & 1); // YHidrAbre = $rung_top
+
+    /* ] finish series */
+
+    /* start rung 115 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 12) & 1)) {  // RBombaHidrOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitUser[1] >> 2) & 1)) {  // RAplanFecha
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 30) & 1)) {  // RAplanFechada
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    GPIO_OUTPUT_PORT3 = ((ArrayBitSystem[0] >> 4) & 1); // YHidrFecha = $parThis_0000
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 30) & 1)) {  // RAplanFechada
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[4] &= ~(1 << 3);  // YMbAplanFecha = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 116 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
+    if (!((ArrayBitUser[1] >> 12) & 1)) {  // RBombaHidrOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
+    if (!((ArrayBitUser[1] >> 3) & 1)) {  // RAplanSobe
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (!((ArrayBitUser[0] >> 24) & 1)) {  // RCortePerfDesce
+    if (GPIO_OUTPUT_PORT9) {  // YHidrDesce
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    GPIO_OUTPUT_PORT3 = ((ArrayBitSystem[0] >> 1) & 1); // YHidrDesce = $rung_top
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 13; else ArrayBitUser[1] &= ~(1UL << 13); // YHidrSobe = $rung_top
 
     /* ] finish series */
 
@@ -1446,39 +2014,15 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 17) & 1)) {  // RForcaRecuoCorte
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
+    if (!((ArrayBitUser[1] >> 12) & 1)) {  // RBombaHidrOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[0] >> 24) & 1)) {  // RCortePerfDesce
+    if (!((ArrayBitUser[1] >> 4) & 1)) {  // RAplanDesce
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[0] >> 7) & 1)) {  // RSnsSupCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    GPIO_OUTPUT_PORT4 = ((ArrayBitSystem[0] >> 1) & 1); // YHidrSobe = $rung_top
+    GPIO_OUTPUT_PORT9 = ((ArrayBitSystem[0] >> 1) & 1); // YHidrDesce = $rung_top
 
     /* ] finish series */
 
@@ -1486,19 +2030,43 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!GPIO_OUTPUT_PORT2) {  // YHidrAbre
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!GPIO_OUTPUT_PORT3) {  // YHidrFecha
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (!((ArrayBitUser[0] >> 21) & 1)) {  // PrensaPerfDesce
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!GPIO_OUTPUT_PORT9) {  // YHidrDesce
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    GPIO_OUTPUT_PORT6 = ((ArrayBitSystem[0] >> 1) & 1); // PrensaDesce = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[1] >> 13) & 1)) {  // YHidrSobe
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    GPIO_OUTPUT_PORT10 = ((ArrayBitSystem[0] >> 1) & 1); // YHidrVentagem = $rung_top
 
     /* ] finish series */
 
@@ -1506,40 +2074,82 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 5) & 1)) {  // RAplanExtSubir
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[1] >> 12) & 1)) {  // $oneShot_001d
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 12; else ArrayBitSystem[1] &= ~(1UL << 12); // $oneShot_001d = $scratch
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        GPIO_OUTPUT_PORT4 = 1; // YAplanExtSobe = 1
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 17) & 1)) {  // RForcaRecuoCorte
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        GPIO_OUTPUT_PORT5 = 0; // YAplanExtDesce = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
     /* ] finish parallel */
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[1] >> 13) & 1)) {  // $oneShot_001e
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 13; else ArrayBitSystem[1] &= ~(1UL << 13); // $oneShot_001e = $scratch
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        GPIO_OUTPUT_PORT4 = 0; // YAplanExtSobe = 0
     }
 
-    if (((ArrayBitUser[0] >> 21) & 1)) {  // PrensaPerfDesce
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        GPIO_OUTPUT_PORT5 = 1; // YAplanExtDesce = 1
     }
 
-    if (((ArrayBitUser[0] >> 9) & 1)) {  // SnsSupPrensaPerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
     }
-
-    GPIO_OUTPUT_PORT7 = ((ArrayBitSystem[0] >> 1) & 1); // PrensaSobe = $rung_top
-
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 120 */
@@ -1547,218 +2157,193 @@ void PLC_Run(void)
 
     /* iniciando serie [ */
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!GPIO_OUTPUT_PORT3) {  // YHidrDesce
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!GPIO_OUTPUT_PORT4) {  // YAplanExtSobe
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!GPIO_OUTPUT_PORT4) {  // YHidrSobe
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!GPIO_OUTPUT_PORT6) {  // PrensaDesce
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!GPIO_OUTPUT_PORT5) {  // YAplanExtDesce
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!GPIO_OUTPUT_PORT7) {  // PrensaSobe
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
-    GPIO_OUTPUT_PORT5 = ((ArrayBitSystem[0] >> 1) & 1); // HidrVentagem = $rung_top
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[21] < 99) {
+            ArrayIntUser[21]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[21] = 0; // TEspAtuarExt
+    }
 
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        GPIO_OUTPUT_PORT4 = 0; // YAplanExtSobe = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        GPIO_OUTPUT_PORT5 = 0; // YAplanExtDesce = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 121 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 22) & 1)) {  // RErroCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 19) & 1)) {  // ErroPrensaPerf
+    if (!((ArrayBitUser[1] >> 6) & 1)) {  // RAplanExpandir
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitUser[0] >> 7) & 1)) {  // RSnsSupCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[1] >> 14) & 1)) {  // $oneShot_001f
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 14; else ArrayBitSystem[1] &= ~(1UL << 14); // $oneShot_001f = $scratch
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        GPIO_OUTPUT_PORT6 = 1; // YAplanAvancaMesa = 1
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitUser[0] >> 9) & 1)) {  // SnsSupPrensaPerf
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        GPIO_OUTPUT_PORT7 = 0; // YAplanRecuaMesa = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
     /* ] finish parallel */
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 17; else ArrayBitUser[0] &= ~(1UL << 17); // RForcaRecuoCorte = $rung_top
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[1] >> 15) & 1)) {  // $oneShot_0020
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 15; else ArrayBitSystem[1] &= ~(1UL << 15); // $oneShot_0020 = $scratch
 
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        GPIO_OUTPUT_PORT6 = 0; // YAplanAvancaMesa = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        GPIO_OUTPUT_PORT7 = 1; // YAplanRecuaMesa = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 122 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 22) & 1)) {  // RErroCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 23) & 1)) {  // RCortarPerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] &= ~(1UL << 22); // RErroCortePerf = 0
-    }
-
-    /* ] finish series */
-
-    /* start rung 123 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
+    if (!GPIO_INPUT_PORT7) {  // XAplanExtRecuada
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (MODBUS_REGISTER[1] & (1 << 0)) {  // YMbModoAutoAtivo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[1] >> 16) & 1)) {  // $oneShot_0021
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 16; else ArrayBitSystem[1] &= ~(1UL << 16); // $oneShot_0021 = $scratch
 
-    if (GPIO_INPUT_PORT16) {  // XPerfManAvanca
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[1] >> 17) & 1)) {  // $oneShot_0022
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 17; else ArrayBitSystem[1] &= ~(1UL << 17); // $oneShot_0022 = $scratch
 
-    if (GPIO_INPUT_PORT17) {  // XPerfManRecua
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    if (!GPIO_INPUT_PORT18) {  // XCortePerfManual
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0001
-    if (((ArrayBitSystem[0] >> 29) & 1)) {  // $oneShot_0014
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 29; else ArrayBitSystem[0] &= ~(1UL << 29); // $oneShot_0014 = $scratch
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (!(MODBUS_REGISTER[2] & (1 << 1))) {  // YMbCorteIHM
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (!((ArrayBitUser[0] >> 25) & 1)) {  // RCortarPerfAuto
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 9); // $parOut_0002 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $rung_top
-    /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 10) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0002
-    if (((ArrayBitSystem[0] >> 30) & 1)) {  // $oneShot_0015
-        ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 30; else ArrayBitSystem[0] &= ~(1UL << 30); // $oneShot_0015 = $scratch
-
-    if (((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = 0
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        GPIO_OUTPUT_PORT6 = 0; // YAplanAvancaMesa = 0
     }
 
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitUser[0] |= 1UL << 23; // RCortarPerf = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        GPIO_OUTPUT_PORT7 = 0; // YAplanRecuaMesa = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $rung_top
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        MODBUS_REGISTER[2] &= ~(1 << 1);  // YMbCorteIHM = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 9) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0002
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
     /* ] finish parallel */
     /* ] finish series */
 
@@ -1766,25 +2351,54 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 19) & 1)) {  // ErroPrensaPerf
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RMaqManualOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RStartCfgSrvJog
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (!((ArrayBitSystem[1] >> 18) & 1)) {  // $TEspFimCfgJog_antiglitch
+        ArrayIntUser[22] = 4; // TEspFimCfgJog
+    }
+    ArrayBitSystem[1] |= 1UL << 18; // $TEspFimCfgJog_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[22] < 4) {
+            ArrayIntUser[22]++;
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayIntUser[22] = 0; // TEspFimCfgJog
+    }
+
+    if (!((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    if (!((ArrayBitUser[1] >> 0) & 1)) {  // RAplanAvancoOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[0] >> 20) & 1)) {  // PrensarPerf
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] &= ~(1UL << 19); // ErroPrensaPerf = 0
-    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 14; else ArrayBitUser[1] &= ~(1UL << 14); // RAplanManualOK = $rung_top
 
     /* ] finish series */
 
@@ -1792,81 +2406,127 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
+    if (!((ArrayBitUser[1] >> 14) & 1)) {  // RAplanManualOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!GPIO_INPUT_PORT9) {  // XAplanManAvanca
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!(MODBUS_REGISTER[4] & (1 << 0))) {  // YAplanManAvcIHM
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    if (GPIO_INPUT_PORT10) {  // XAplanManRecua
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (MODBUS_REGISTER[4] & (1 << 1)) {  // YAplanManRecIHM
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitUser[1] |= 1UL << 15; else ArrayBitUser[1] &= ~(1UL << 15); // RAplanAvancarMan = $parThis_0001
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
     /* iniciando serie [ */
-    if (MODBUS_REGISTER[1] & (1 << 0)) {  // YMbModoAutoAtivo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0001
+    if (((ArrayBitSystem[1] >> 19) & 1)) {  // $oneShot_0023
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
     }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 19; else ArrayBitSystem[1] &= ~(1UL << 19); // $oneShot_0023 = $scratch
 
-    if (GPIO_INPUT_PORT16) {  // XPerfManAvanca
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (GPIO_INPUT_PORT17) {  // XPerfManRecua
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (!(MODBUS_REGISTER[2] & (1 << 8))) {  // MbPrensaIHM
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] |= 1UL << 16; // RMaqCfgSrvJog = 1
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (!((ArrayBitUser[0] >> 26) & 1)) {  // PrensaPerfAuto
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    /* ] finish parallel */
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+
+    /* start rung 126 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 14) & 1)) {  // RAplanManualOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+
+    if (GPIO_INPUT_PORT9) {  // XAplanManAvanca
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (MODBUS_REGISTER[4] & (1 << 0)) {  // YAplanManAvcIHM
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!GPIO_INPUT_PORT10) {  // XAplanManRecua
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!(MODBUS_REGISTER[4] & (1 << 1))) {  // YAplanManRecIHM
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitUser[1] |= 1UL << 17; else ArrayBitUser[1] &= ~(1UL << 17); // RAplanRecuarMan = $parThis_0001
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
     /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0001
-    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $oneShot_0016
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0001
+    if (((ArrayBitSystem[1] >> 20) & 1)) {  // $oneShot_0024
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $oneShot_0016 = $scratch
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 20; else ArrayBitSystem[1] &= ~(1UL << 20); // $oneShot_0024 = $scratch
 
-    if (((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] |= 1UL << 20; // PrensarPerf = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] |= 1UL << 16; // RMaqCfgSrvJog = 1
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[2] &= ~(1 << 8);  // MbPrensaIHM = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
     /* ] finish parallel */
     /* ] finish series */
 
@@ -1875,69 +2535,60 @@ void PLC_Run(void)
 
     /* iniciando serie [ */
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 27) & 1)) {  // RMaqIniciarPosic
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (!((ArrayBitUser[0] >> 28) & 1)) {  // RAvancarPerfMan
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if (!((ArrayBitUser[1] >> 15) & 1)) {  // RAplanAvancarMan
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RRecuarPerfMan
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    if (!((ArrayBitSystem[1] >> 0) & 1)) {  // $TMantemFreioLib_antiglitch
-        ArrayIntUser[14] = 199; // TMantemFreioLib
-    }
-    ArrayBitSystem[1] |= 1UL << 0; // $TMantemFreioLib_antiglitch = 1
-    if (!((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (ArrayIntUser[14] < 199) {
-            ArrayIntUser[14]++;
-            ArrayBitSystem[0] |= 1UL << 3; // $parThis_0000 = 1
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[1] >> 21) & 1)) {  // $oneShot_0025
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
         }
     } else {
-        ArrayIntUser[14] = 0; // TMantemFreioLib
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 21; else ArrayBitSystem[1] &= ~(1UL << 21); // $oneShot_0025 = $scratch
+
+    if (((ArrayBitUser[1] >> 17) & 1)) {  // RAplanRecuarMan
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 17) & 1)) {  // RAplanRecuarMan
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[1] >> 22) & 1)) {  // $oneShot_0026
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 22; else ArrayBitSystem[1] &= ~(1UL << 22); // $oneShot_0026 = $scratch
+
+    if (((ArrayBitUser[1] >> 18) & 1)) {  // RAplanAvancaMan
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayBitUser[1] |= 1UL << 16; // RMaqCfgSrvJog = 1
     }
-
-    if (((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 30; else ArrayBitUser[0] &= ~(1UL << 30); // RInvFreioLib = $rung_top
 
     /* ] finish series */
 
@@ -1945,414 +2596,582 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 30) & 1)) {  // RInvFreioLib
+    if (!((ArrayBitUser[1] >> 16) & 1)) {  // RMaqCfgSrvJog
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 6) & 1)) {  // RMaqSerialBusy
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 15) & 1)) {  // RStartCfgSrvJog
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 28) & 1)) {  // RAvancarPerfMan
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 15; // RStartCfgSrvJog = 1
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] &= ~(1UL << 16); // RMaqCfgSrvJog = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 6; // RMaqSerialBusy = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] &= ~(1UL << 19); // RCfgJogFrente = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] &= ~(1UL << 20); // RCfgJogRecua = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] &= ~(1UL << 21); // RCfgJogParar = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 27) & 1)) {  // RMaqIniciarPosic
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (!((ArrayBitUser[1] >> 15) & 1)) {  // RAplanAvancarMan
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (!((ArrayBitUser[0] >> 31) & 1)) {  // SentidoAvancar
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitUser[1] >> 17) & 1)) {  // RAplanRecuarMan
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] |= 1UL << 19; // RCfgJogFrente = 1
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 17) & 1)) {  // RAplanRecuarMan
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitUser[1] >> 15) & 1)) {  // RAplanAvancarMan
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] |= 1UL << 20; // RCfgJogRecua = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitUser[1] >> 19) & 1)) {  // RCfgJogFrente
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitUser[1] >> 20) & 1)) {  // RCfgJogRecua
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] |= 1UL << 21; // RCfgJogParar = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
-    if (!((ArrayBitUser[0] >> 14) & 1)) {  // FerramPrensaCima
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (!((ArrayBitUser[0] >> 13) & 1)) {  // RFerramCorteCima
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    GPIO_OUTPUT_PORT11 = ((ArrayBitSystem[0] >> 1) & 1); // YAvancarPerf = $rung_top
-
     /* ] finish series */
 
     /* start rung 129 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 30) & 1)) {  // RInvFreioLib
+    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RStartCfgSrvJog
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitUser[1] >> 19) & 1)) {  // RCfgJogFrente
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 29) & 1)) {  // RRecuarPerfMan
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 27) & 1)) {  // RMaqIniciarPosic
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[1] >> 23) & 1)) {  // $oneShot_0027
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 23; else ArrayBitSystem[1] &= ~(1UL << 23); // $oneShot_0027 = $scratch
 
-    if (((ArrayBitUser[0] >> 31) & 1)) {  // SentidoAvancar
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 22); // RMaqCfgSrvOK = 0
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[23] < 99) {
+            ArrayIntUser[23]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+        }
+    } else {
+        ArrayIntUser[23] = 0; // TCfgSrvJogAvcTO
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 4; // RMaqCfgSrvErro = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[1] >> 24) & 1)) {  // $oneShot_0028
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "JOGP%d", &ArrayIntUser[24]);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 24; else ArrayBitSystem[1] &= ~(1UL << 24); // $oneShot_0028 = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 25; else ArrayBitSystem[1] &= ~(1UL << 25); // $oneShot_0029 = $parThis_0000
+        }
+        if (!((ArrayBitSystem[1] >> 25) & 1)) {  // $oneShot_0029
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[1] |= 1UL << 25; // $oneShot_0029 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 24; else ArrayBitSystem[1] &= ~(1UL << 24); // $oneShot_0028 = $parThis_0000
+    }
+
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0001
+    if (((ArrayBitSystem[1] >> 26) & 1)) {  // $oneShot_002a
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 26; else ArrayBitSystem[1] &= ~(1UL << 26); // $oneShot_002a = $scratch
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] &= ~(1UL << 15); // RStartCfgSrvJog = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] |= 1UL << 22; // RMaqCfgSrvOK = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parOut_0002
     /* ] finish parallel */
-    if (!((ArrayBitUser[0] >> 14) & 1)) {  // FerramPrensaCima
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 130 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RStartCfgSrvJog
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (GPIO_OUTPUT_PORT11) {  // YAvancarPerf
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    GPIO_OUTPUT_PORT12 = ((ArrayBitSystem[0] >> 1) & 1); // YRecuarPerf = $rung_top
+    if (!((ArrayBitUser[1] >> 20) & 1)) {  // RCfgJogRecua
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
 
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[1] >> 27) & 1)) {  // $oneShot_002b
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 27; else ArrayBitSystem[1] &= ~(1UL << 27); // $oneShot_002b = $scratch
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 22); // RMaqCfgSrvOK = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[25] < 99) {
+            ArrayIntUser[25]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+        }
+    } else {
+        ArrayIntUser[25] = 0; // TCfgSrvJogRecTO
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 4; // RMaqCfgSrvErro = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[1] >> 28) & 1)) {  // $oneShot_002c
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "JOGN%d", &ArrayIntUser[24]);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 28; else ArrayBitSystem[1] &= ~(1UL << 28); // $oneShot_002c = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 29; else ArrayBitSystem[1] &= ~(1UL << 29); // $oneShot_002d = $parThis_0000
+        }
+        if (!((ArrayBitSystem[1] >> 29) & 1)) {  // $oneShot_002d
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[1] |= 1UL << 29; // $oneShot_002d = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 28; else ArrayBitSystem[1] &= ~(1UL << 28); // $oneShot_002c = $parThis_0000
+    }
+
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0001
+    if (((ArrayBitSystem[1] >> 30) & 1)) {  // $oneShot_002e
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 30; else ArrayBitSystem[1] &= ~(1UL << 30); // $oneShot_002e = $scratch
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] &= ~(1UL << 15); // RStartCfgSrvJog = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] |= 1UL << 22; // RMaqCfgSrvOK = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 131 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
+    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RStartCfgSrvJog
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (MODBUS_REGISTER[1] & (1 << 0)) {  // YMbModoAutoAtivo
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (!((ArrayBitUser[0] >> 13) & 1)) {  // RFerramCorteCima
+    if (!((ArrayBitUser[1] >> 21) & 1)) {  // RCfgJogParar
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (!((ArrayBitUser[0] >> 14) & 1)) {  // FerramPrensaCima
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[1] >> 31) & 1)) {  // $oneShot_002f
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[1] |= 1UL << 31; else ArrayBitSystem[1] &= ~(1UL << 31); // $oneShot_002f = $scratch
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 22); // RMaqCfgSrvOK = 0
     }
 
-    if (((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[26] < 99) {
+            ArrayIntUser[26]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+        }
+    } else {
+        ArrayIntUser[26] = 0; // TCfgSrvJogDesTO
     }
 
-    if (((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 4; // RMaqCfgSrvErro = 1
     }
 
-    if (!((ArrayBitUser[1] >> 0) & 1)) {  // RMaqConfigOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[2] >> 0) & 1)) {  // $oneShot_0030
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "SKIP", &VAR_NULL);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[2] |= 1UL << 0; else ArrayBitSystem[2] &= ~(1UL << 0); // $oneShot_0030 = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[2] |= 1UL << 1; else ArrayBitSystem[2] &= ~(1UL << 1); // $oneShot_0031 = $parThis_0000
+        }
+        if (!((ArrayBitSystem[2] >> 1) & 1)) {  // $oneShot_0031
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[2] |= 1UL << 1; // $oneShot_0031 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[2] |= 1UL << 0; else ArrayBitSystem[2] &= ~(1UL << 0); // $oneShot_0030 = $parThis_0000
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 1; else ArrayBitUser[1] &= ~(1UL << 1); // RPerfManualOK = $rung_top
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
 
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0001
+    if (((ArrayBitSystem[2] >> 2) & 1)) {  // $oneShot_0032
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 2; else ArrayBitSystem[2] &= ~(1UL << 2); // $oneShot_0032 = $scratch
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] &= ~(1UL << 15); // RStartCfgSrvJog = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] |= 1UL << 22; // RMaqCfgSrvOK = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 132 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 1) & 1)) {  // RPerfManualOK
+    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RStartCfgSrvJog
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!GPIO_INPUT_PORT16) {  // XPerfManAvanca
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!(MODBUS_REGISTER[2] & (1 << 3))) {  // YPerfManAvcIHM
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    if (GPIO_INPUT_PORT17) {  // XPerfManRecua
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (MODBUS_REGISTER[2] & (1 << 4)) {  // YPerfManRecIHM
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 28; else ArrayBitUser[0] &= ~(1UL << 28); // RAvancarPerfMan = $rung_top
-
-    /* ] finish series */
-
-    /* start rung 133 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 1) & 1)) {  // RPerfManualOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (GPIO_INPUT_PORT16) {  // XPerfManAvanca
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (MODBUS_REGISTER[2] & (1 << 3)) {  // YPerfManAvcIHM
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!GPIO_INPUT_PORT17) {  // XPerfManRecua
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!(MODBUS_REGISTER[2] & (1 << 4))) {  // YPerfManRecIHM
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitUser[1] >> 2) & 1)) {  // RBloqueiaRecuo
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitUser[0] |= 1UL << 29; else ArrayBitUser[0] &= ~(1UL << 29); // RRecuarPerfMan = $parThis_0001
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 9); // $parOut_0002 = 0
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parThis_0001
-    if (!((ArrayBitUser[0] >> 30) & 1)) {  // RInvFreioLib
-        ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parThis_0001
-    if (!((ArrayBitUser[1] >> 2) & 1)) {  // RBloqueiaRecuo
-        ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 9) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parOut_0002
-    /* ] finish parallel */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        if (ArrayIntUser[15] < 299) {
-            ArrayIntUser[15]++;
-            ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (((ArrayBitSystem[2] >> 3) & 1)) {  // $oneShot_0033
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
         }
     } else {
-        ArrayIntUser[15] = 0; // TMaxPerfRecua
-    }
-
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitUser[1] |= 1UL << 2; else ArrayBitUser[1] &= ~(1UL << 2); // RBloqueiaRecuo = $parThis_0001
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 135 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-    
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 3) & 1)) {  // RStartConfigAuto
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-
-    if (((ArrayBitUser[1] >> 4) & 1)) {  // RMaqConfigErro
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 3; else ArrayBitSystem[2] &= ~(1UL << 3); // $oneShot_0033 = $scratch
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[1] >> 1) & 1)) {  // $oneShot_0017
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 1; else ArrayBitSystem[1] &= ~(1UL << 1); // $oneShot_0017 = $scratch
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] &= ~(1UL << 0); // RMaqConfigOK = 0
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 15); // RStartCfgSrvJog = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (ArrayIntUser[16] < 499) {
-            ArrayIntUser[16]++;
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-        }
-    } else {
-        ArrayIntUser[16] = 0; // TConfigAutoTO
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 6); // RMaqSerialBusy = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] |= 1UL << 4; // RMaqConfigErro = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 2) & 1)) {  // $oneShot_0018
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 808, 1, &ArrayIntUser[17]);
-                ArrayBitSystem[1] |= 1UL << 2; // $oneShot_0018 = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[1] &= ~(1UL << 3); // $oneShot_0019 = 0
-        }
-        if (!((ArrayBitSystem[1] >> 3) & 1)) {  // $oneShot_0019
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[1] |= 1UL << 3; // $oneShot_0019 = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 808, 1, &ArrayIntUser[17]);
-            }
-        }
-    } else {
-        ArrayBitSystem[1] &= ~(1UL << 2); // $oneShot_0018 = 0
-        ArrayBitSystem[1] &= ~(1UL << 3); // $oneShot_0019 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 4) & 1)) {  // $oneShot_001a
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 804, 1, &ArrayIntUser[18]);
-                ArrayBitSystem[1] |= 1UL << 4; // $oneShot_001a = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[1] &= ~(1UL << 5); // $oneShot_001b = 0
-        }
-        if (!((ArrayBitSystem[1] >> 5) & 1)) {  // $oneShot_001b
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[1] |= 1UL << 5; // $oneShot_001b = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 804, 1, &ArrayIntUser[18]);
-            }
-        }
-    } else {
-        ArrayBitSystem[1] &= ~(1UL << 4); // $oneShot_001a = 0
-        ArrayBitSystem[1] &= ~(1UL << 5); // $oneShot_001b = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 6) & 1)) {  // $oneShot_001c
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 805, 1, &ArrayIntUser[19]);
-                ArrayBitSystem[1] |= 1UL << 6; // $oneShot_001c = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[1] &= ~(1UL << 7); // $oneShot_001d = 0
-        }
-        if (!((ArrayBitSystem[1] >> 7) & 1)) {  // $oneShot_001d
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[1] |= 1UL << 7; // $oneShot_001d = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 805, 1, &ArrayIntUser[19]);
-            }
-        }
-    } else {
-        ArrayBitSystem[1] &= ~(1UL << 6); // $oneShot_001c = 0
-        ArrayBitSystem[1] &= ~(1UL << 7); // $oneShot_001d = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] &= ~(1UL << 3); // RStartConfigAuto = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] |= 1UL << 0; // RMaqConfigOK = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] |= 1UL << 5; // MaqConfigDesl = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* ] finish series */
 
@@ -2360,330 +3179,138 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 6) & 1)) {  // RStartConfigMan
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[1] >> 4) & 1)) {  // RMaqConfigErro
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[1] >> 8) & 1)) {  // $oneShot_001e
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 8; else ArrayBitSystem[1] &= ~(1UL << 8); // $oneShot_001e = $scratch
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] &= ~(1UL << 0); // RMaqConfigOK = 0
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (ArrayIntUser[20] < 499) {
-            ArrayIntUser[20]++;
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-        }
-    } else {
-        ArrayIntUser[20] = 0; // TConfigManTO
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] |= 1UL << 4; // RMaqConfigErro = 1
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 9) & 1)) {  // $oneShot_001f
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 808, 1, &ArrayIntUser[21]);
-                ArrayBitSystem[1] |= 1UL << 9; // $oneShot_001f = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[1] &= ~(1UL << 10); // $oneShot_0020 = 0
-        }
-        if (!((ArrayBitSystem[1] >> 10) & 1)) {  // $oneShot_0020
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[1] |= 1UL << 10; // $oneShot_0020 = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 808, 1, &ArrayIntUser[21]);
-            }
-        }
-    } else {
-        ArrayBitSystem[1] &= ~(1UL << 9); // $oneShot_001f = 0
-        ArrayBitSystem[1] &= ~(1UL << 10); // $oneShot_0020 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 11) & 1)) {  // $oneShot_0021
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 804, 1, &ArrayIntUser[22]);
-                ArrayBitSystem[1] |= 1UL << 11; // $oneShot_0021 = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[1] &= ~(1UL << 12); // $oneShot_0022 = 0
-        }
-        if (!((ArrayBitSystem[1] >> 12) & 1)) {  // $oneShot_0022
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[1] |= 1UL << 12; // $oneShot_0022 = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 804, 1, &ArrayIntUser[22]);
-            }
-        }
-    } else {
-        ArrayBitSystem[1] &= ~(1UL << 11); // $oneShot_0021 = 0
-        ArrayBitSystem[1] &= ~(1UL << 12); // $oneShot_0022 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 13) & 1)) {  // $oneShot_0023
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 805, 1, &ArrayIntUser[23]);
-                ArrayBitSystem[1] |= 1UL << 13; // $oneShot_0023 = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[1] &= ~(1UL << 14); // $oneShot_0024 = 0
-        }
-        if (!((ArrayBitSystem[1] >> 14) & 1)) {  // $oneShot_0024
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[1] |= 1UL << 14; // $oneShot_0024 = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, 805, 1, &ArrayIntUser[23]);
-            }
-        }
-    } else {
-        ArrayBitSystem[1] &= ~(1UL << 13); // $oneShot_0023 = 0
-        ArrayBitSystem[1] &= ~(1UL << 14); // $oneShot_0024 = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] &= ~(1UL << 6); // RStartConfigMan = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] |= 1UL << 0; // RMaqConfigOK = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 138 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 7) & 1)) {  // InvSyncAtivo
+    if (!GPIO_INPUT_PORT12) {  // XPrsCameParar
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (ArrayIntUser[24] < 1) {
-            ArrayIntUser[24]++;
+        if (ArrayIntUser[27] < 4) {
+            ArrayIntUser[27]++;
             ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
         }
     } else {
-        ArrayIntUser[24] = 0; // EspInvSyncAtivo
+        ArrayIntUser[27] = 0; // TEspCameON
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!I_SerialAborted) {  // $SerialAborted
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (!((ArrayBitSystem[2] >> 4) & 1)) {  // $TEspCameOFF_antiglitch
+        ArrayIntUser[28] = 4; // TEspCameOFF
     }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] |= 1UL << 4; // RMaqConfigErro = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] &= ~(1UL << 7); // InvSyncAtivo = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 15) & 1)) {  // $oneShot_0025
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_READ_HOLDING_REGISTERS, 4, 1, &ArrayIntUser[25]);
-                ArrayBitSystem[1] |= 1UL << 15; // $oneShot_0025 = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[1] &= ~(1UL << 16); // $oneShot_0026 = 0
-        }
-        if (!((ArrayBitSystem[1] >> 16) & 1)) {  // $oneShot_0026
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[1] |= 1UL << 16; // $oneShot_0026 = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_READ_HOLDING_REGISTERS, 4, 1, &ArrayIntUser[25]);
-            }
+    ArrayBitSystem[2] |= 1UL << 4; // $TEspCameOFF_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[28] < 4) {
+            ArrayIntUser[28]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
         }
     } else {
-        ArrayBitSystem[1] &= ~(1UL << 15); // $oneShot_0025 = 0
-        ArrayBitSystem[1] &= ~(1UL << 16); // $oneShot_0026 = 0
+        ArrayIntUser[28] = 0; // TEspCameOFF
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 17) & 1)) {  // $oneShot_0027
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_READ_HOLDING_REGISTERS, 3, 1, &ArrayIntUser[26]);
-                ArrayBitSystem[1] |= 1UL << 17; // $oneShot_0027 = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[1] &= ~(1UL << 18); // $oneShot_0028 = 0
-        }
-        if (!((ArrayBitSystem[1] >> 18) & 1)) {  // $oneShot_0028
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[1] |= 1UL << 18; // $oneShot_0028 = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_READ_HOLDING_REGISTERS, 3, 1, &ArrayIntUser[26]);
-            }
-        }
-    } else {
-        ArrayBitSystem[1] &= ~(1UL << 17); // $oneShot_0027 = 0
-        ArrayBitSystem[1] &= ~(1UL << 18); // $oneShot_0028 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 19) & 1)) {  // $oneShot_0029
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_READ_HOLDING_REGISTERS, 12, 1, &ArrayIntUser[27]);
-                ArrayBitSystem[1] |= 1UL << 19; // $oneShot_0029 = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[1] &= ~(1UL << 20); // $oneShot_002a = 0
-        }
-        if (!((ArrayBitSystem[1] >> 20) & 1)) {  // $oneShot_002a
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[1] |= 1UL << 20; // $oneShot_002a = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_READ_HOLDING_REGISTERS, 12, 1, &ArrayIntUser[27]);
-            }
-        }
-    } else {
-        ArrayBitSystem[1] &= ~(1UL << 19); // $oneShot_0029 = 0
-        ArrayBitSystem[1] &= ~(1UL << 20); // $oneShot_002a = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 21) & 1)) {  // $oneShot_002b
-            if (I_SerialReady) {  // $SerialReady
-                Modbus_Send(1, 0UL, MODBUS_FC_READ_HOLDING_REGISTERS, 13, 1, &ArrayIntUser[28]);
-                ArrayBitSystem[1] |= 1UL << 21; // $oneShot_002b = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            ArrayBitSystem[1] &= ~(1UL << 22); // $oneShot_002c = 0
-        }
-        if (!((ArrayBitSystem[1] >> 22) & 1)) {  // $oneShot_002c
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-            if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[1] |= 1UL << 22; // $oneShot_002c = 1
-            } else if (I_SerialTimeout) {  // $SerialTimeout
-                I_SerialTimeout = 0; // $SerialTimeout = 0
-                Modbus_Send(1, 0UL, MODBUS_FC_READ_HOLDING_REGISTERS, 13, 1, &ArrayIntUser[28]);
-            }
-        }
-    } else {
-        ArrayBitSystem[1] &= ~(1UL << 21); // $oneShot_002b = 0
-        ArrayBitSystem[1] &= ~(1UL << 22); // $oneShot_002c = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] &= ~(1UL << 7); // InvSyncAtivo = 0
-    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 22; else ArrayBitUser[1] &= ~(1UL << 22); // RPrsCameParar = $rung_top
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+
+    /* start rung 137 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!GPIO_INPUT_PORT11) {  // XPrsAvancoOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[29] < 4) {
+            ArrayIntUser[29]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[29] = 0; // TEspAvancoON
+    }
+
+    if (!((ArrayBitSystem[2] >> 5) & 1)) {  // $TEspAvancoOFF_antiglitch
+        ArrayIntUser[30] = 4; // TEspAvancoOFF
+    }
+    ArrayBitSystem[2] |= 1UL << 5; // $TEspAvancoOFF_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[30] < 4) {
+            ArrayIntUser[30]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayIntUser[30] = 0; // TEspAvancoOFF
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 31; else ArrayBitUser[0] &= ~(1UL << 31); // RPrsAvancoOK = $rung_top
+
     /* ] finish series */
 
     /* start rung 139 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 7) & 1)) {  // InvSyncAtivo
+    if (!(MODBUS_REGISTER[3] & (1 << 3))) {  // XDbgPrsLigaMotor
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (((ArrayBitSystem[1] >> 23) & 1)) {  // $oneShot_002d
-            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
-        }
-    } else {
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[2] >> 6) & 1)) {  // $oneShot_0034
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 23; else ArrayBitSystem[1] &= ~(1UL << 23); // $oneShot_002d = $scratch
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 6; else ArrayBitSystem[2] &= ~(1UL << 6); // $oneShot_0034 = $scratch
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        MODBUS_REGISTER[2] &= ~(1 << 7);  // InvSync = 0
+        MODBUS_REGISTER[4] |= (1 << 8);  // YMbPrsLigaMotor = 1
     }
+
+    /* ] finish series */
+
+    /* start rung 140 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[0] >> 1) & 1)) {  // RErroGeral
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (GPIO_INPUT_PORT5) {  // XInversorOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        MODBUS_REGISTER[4] &= ~(1 << 8);  // YMbPrsLigaMotor = 0
+    }
+
+    /* ] finish series */
+
+    /* start rung 141 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitUser[1] >> 23) & 1)) {  // RPrsMotorLigado
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[31] < 11999) {
+            ArrayIntUser[31]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[31] = 0; // TEspMotorParar
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 24; else ArrayBitUser[1] &= ~(1UL << 24); // RPrsMotorParado = $rung_top
 
     /* ] finish series */
 
@@ -2691,111 +3318,127 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (((ArrayBitSystem[1] >> 24) & 1)) {  // $oneShot_002e
-            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 24; else ArrayBitSystem[1] &= ~(1UL << 24); // $oneShot_002e = $scratch
-
-    if (((ArrayBitUser[0] >> 19) & 1)) {  // ErroPrensaPerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
+    if (!(MODBUS_REGISTER[2] & (1 << 4))) {  // YMbPrsSentidoInv
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[3] = 1; // $scratch2
-        ArrayIntUser[29] = ArrayIntUser[29] + ArrayIntUser[3]; // QtdPecasFila = QtdPecasFila + $scratch2
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[2] >> 7) & 1)) {  // $oneShot_0035
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 7; else ArrayBitSystem[2] &= ~(1UL << 7); // $oneShot_0035 = $scratch
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (!((ArrayBitSystem[1] >> 25) & 1)) {  // $oneShot_002f
-            ArrayIntUser[30] = ArrayIntUser[31]; // PecasFila39 = PecasFila38
-            ArrayIntUser[31] = ArrayIntUser[32]; // PecasFila38 = PecasFila37
-            ArrayIntUser[32] = ArrayIntUser[33]; // PecasFila37 = PecasFila36
-            ArrayIntUser[33] = ArrayIntUser[34]; // PecasFila36 = PecasFila35
-            ArrayIntUser[34] = ArrayIntUser[35]; // PecasFila35 = PecasFila34
-            ArrayIntUser[35] = ArrayIntUser[36]; // PecasFila34 = PecasFila33
-            ArrayIntUser[36] = ArrayIntUser[37]; // PecasFila33 = PecasFila32
-            ArrayIntUser[37] = ArrayIntUser[38]; // PecasFila32 = PecasFila31
-            ArrayIntUser[38] = ArrayIntUser[39]; // PecasFila31 = PecasFila30
-            ArrayIntUser[39] = ArrayIntUser[40]; // PecasFila30 = PecasFila29
-            ArrayIntUser[40] = ArrayIntUser[41]; // PecasFila29 = PecasFila28
-            ArrayIntUser[41] = ArrayIntUser[42]; // PecasFila28 = PecasFila27
-            ArrayIntUser[42] = ArrayIntUser[43]; // PecasFila27 = PecasFila26
-            ArrayIntUser[43] = ArrayIntUser[44]; // PecasFila26 = PecasFila25
-            ArrayIntUser[44] = ArrayIntUser[45]; // PecasFila25 = PecasFila24
-            ArrayIntUser[45] = ArrayIntUser[46]; // PecasFila24 = PecasFila23
-            ArrayIntUser[46] = ArrayIntUser[47]; // PecasFila23 = PecasFila22
-            ArrayIntUser[47] = ArrayIntUser[48]; // PecasFila22 = PecasFila21
-            ArrayIntUser[48] = ArrayIntUser[49]; // PecasFila21 = PecasFila20
-            ArrayIntUser[49] = ArrayIntUser[50]; // PecasFila20 = PecasFila19
-            ArrayIntUser[50] = ArrayIntUser[51]; // PecasFila19 = PecasFila18
-            ArrayIntUser[51] = ArrayIntUser[52]; // PecasFila18 = PecasFila17
-            ArrayIntUser[52] = ArrayIntUser[53]; // PecasFila17 = PecasFila16
-            ArrayIntUser[53] = ArrayIntUser[54]; // PecasFila16 = PecasFila15
-            ArrayIntUser[54] = ArrayIntUser[55]; // PecasFila15 = PecasFila14
-            ArrayIntUser[55] = ArrayIntUser[56]; // PecasFila14 = PecasFila13
-            ArrayIntUser[56] = ArrayIntUser[57]; // PecasFila13 = PecasFila12
-            ArrayIntUser[57] = ArrayIntUser[58]; // PecasFila12 = PecasFila11
-            ArrayIntUser[58] = ArrayIntUser[59]; // PecasFila11 = PecasFila10
-            ArrayIntUser[59] = ArrayIntUser[60]; // PecasFila10 = PecasFila9
-            ArrayIntUser[60] = ArrayIntUser[61]; // PecasFila9 = PecasFila8
-            ArrayIntUser[61] = ArrayIntUser[62]; // PecasFila8 = PecasFila7
-            ArrayIntUser[62] = ArrayIntUser[63]; // PecasFila7 = PecasFila6
-            ArrayIntUser[63] = ArrayIntUser[64]; // PecasFila6 = PecasFila5
-            ArrayIntUser[64] = ArrayIntUser[65]; // PecasFila5 = PecasFila4
-            ArrayIntUser[65] = ArrayIntUser[66]; // PecasFila4 = PecasFila3
-            ArrayIntUser[66] = ArrayIntUser[67]; // PecasFila3 = PecasFila2
-            ArrayIntUser[67] = ArrayIntUser[68]; // PecasFila2 = PecasFila1
-            ArrayIntUser[68] = ArrayIntUser[69]; // PecasFila1 = PecasFila0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[2] >> 8) & 1)) {  // $oneShot_0036
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
         }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[1] |= 1UL << 25; else ArrayBitSystem[1] &= ~(1UL << 25); // $oneShot_002f = $parThis_0000
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 8; else ArrayBitSystem[2] &= ~(1UL << 8); // $oneShot_0036 = $scratch
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[69] = MODBUS_REGISTER[24]; // PecasFila0 = DistPrensaCorte
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[70] = ArrayIntUser[71]; // DistanciaPrensa = PecaTam
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayBitUser[1] |= 1UL << 25; // RPrsNovoSentido = 1
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitUser[1] |= 1UL << 8; else ArrayBitUser[1] &= ~(1UL << 8); // Prensa = $parThis_0000
+    /* ] finish series */
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    /* start rung 143 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[0] >> 26) & 1)) {  // RMaqPronta
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[1] >> 23) & 1)) {  // RPrsMotorLigado
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    if (!(MODBUS_REGISTER[4] & (1 << 8))) {  // YMbPrsLigaMotor
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (!((ArrayBitUser[1] >> 24) & 1)) {  // RPrsMotorParado
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitUser[1] >> 25) & 1)) {  // RPrsNovoSentido
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    /* ] finish parallel */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $rung_top
+    /* iniciando serie [ */
+    if (MODBUS_REGISTER[2] & (1 << 4)) {  // YMbPrsSentidoInv
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    GPIO_OUTPUT_PORT14 = ((ArrayBitSystem[0] >> 31) & 1); // YPrsLigaNormal = $parThis_0002
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $rung_top
+    /* iniciando serie [ */
+    if (!(MODBUS_REGISTER[2] & (1 << 4))) {  // YMbPrsSentidoInv
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    GPIO_OUTPUT_PORT13 = ((ArrayBitSystem[0] >> 31) & 1); // YPrsLigaInv = $parThis_0002
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $rung_top
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[1] &= ~(1UL << 25); // RPrsNovoSentido = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0002
     /* ] finish parallel */
     /* ] finish series */
 
@@ -2803,1076 +3446,381 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!GPIO_OUTPUT_PORT14) {  // YPrsLigaNormal
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (((ArrayBitSystem[1] >> 26) & 1)) {  // $oneShot_0030
-            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 26; else ArrayBitSystem[1] &= ~(1UL << 26); // $oneShot_0030 = $scratch
-
-    if (((ArrayBitUser[0] >> 22) & 1)) {  // RErroCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!GPIO_OUTPUT_PORT13) {  // YPrsLigaInv
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitUser[1] |= 1UL << 23; else ArrayBitUser[1] &= ~(1UL << 23); // RPrsMotorLigado = $parThis_0001
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0001
+    if (((ArrayBitSystem[2] >> 9) & 1)) {  // $oneShot_0037
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 9; else ArrayBitSystem[2] &= ~(1UL << 9); // $oneShot_0037 = $scratch
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[3] = 1; // $scratch2
-        ArrayIntUser[29] = ArrayIntUser[29] - ArrayIntUser[3]; // QtdPecasFila = QtdPecasFila - $scratch2
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        MODBUS_REGISTER[4] &= ~(1 << 9);  // YMbPrsIniciar = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitUser[1] |= 1UL << 9; else ArrayBitUser[1] &= ~(1UL << 9); // Corte = $parThis_0000
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[1] &= ~(1UL << 26); // RPrsIniciarCiclo = 0
+    }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
     /* ] finish parallel */
     /* ] finish series */
 
-    /* start rung 146 */
+    /* start rung 145 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[1] >> 8) & 1)) {  // Prensa
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[1] >> 9) & 1)) {  // Corte
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[1] >> 27) & 1)) {  // $oneShot_0031
+    if (!((ArrayBitUser[1] >> 23) & 1)) {  // RPrsMotorLigado
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 27; else ArrayBitSystem[1] &= ~(1UL << 27); // $oneShot_0031 = $scratch
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 10; else ArrayBitUser[1] &= ~(1UL << 10); // AtualizarFila = $rung_top
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[32] < 1499) {
+            ArrayIntUser[32]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[32] = 0; // TEspPrsMotorOK
+    }
 
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 27; else ArrayBitUser[1] &= ~(1UL << 27); // RPrsMotorOK = $rung_top
+
+    /* ] finish series */
+
+    /* start rung 147 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 26) & 1)) {  // RMaqPronta
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitUser[1] >> 27) & 1)) {  // RPrsMotorOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!GPIO_OUTPUT_PORT14) {  // YPrsLigaNormal
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (!((ArrayBitUser[1] >> 26) & 1)) {  // RPrsIniciarCiclo
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!GPIO_INPUT_PORT14) {  // XPrsCmdAjuste
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        MODBUS_REGISTER[4] &= ~(1 << 10);  // YMbPrsParar = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] &= ~(1UL << 26); // RPrsIniciarCiclo = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    /* iniciando serie [ */
+    if (!GPIO_INPUT_PORT17) {  // XPrsDeslContinuo
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    if (((ArrayBitUser[1] >> 28) & 1)) {  // RBloquearPrensa
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[1] |= 1UL << 29; // RPrsPararMartelo = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0001
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        GPIO_OUTPUT_PORT11 = 1; // YPrsEmbreagem = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 148 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 11) & 1)) {  // AtualizarPosFila
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 22) & 1)) {  // RPrsCameParar
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
+
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[2] >> 10) & 1)) {  // $oneShot_0038
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 10; else ArrayBitSystem[2] &= ~(1UL << 10); // $oneShot_0038 = $scratch
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] &= ~(1UL << 11); // AtualizarPosFila = 0
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (!((ArrayBitUser[1] >> 29) & 1)) {  // RPrsPararMartelo
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[70] = ArrayIntUser[70] - MODBUS_REGISTER[23]; // DistanciaPrensa = DistanciaPrensa - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[69] = ArrayIntUser[69] - MODBUS_REGISTER[23]; // PecasFila0 = PecasFila0 - Deslocamento
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 20) & 1)) {  // RAplanLigarMotor
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[68] = ArrayIntUser[68] - MODBUS_REGISTER[23]; // PecasFila1 = PecasFila1 - Deslocamento
+    if (GPIO_OUTPUT_PORT16) {  // YSrvHabilita
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[67] = ArrayIntUser[67] - MODBUS_REGISTER[23]; // PecasFila2 = PecasFila2 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[66] = ArrayIntUser[66] - MODBUS_REGISTER[23]; // PecasFila3 = PecasFila3 - Deslocamento
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
+    /* ] finish parallel */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    if (GPIO_INPUT_PORT14) {  // XPrsCmdAjuste
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[65] = ArrayIntUser[65] - MODBUS_REGISTER[23]; // PecasFila4 = PecasFila4 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[64] = ArrayIntUser[64] - MODBUS_REGISTER[23]; // PecasFila5 = PecasFila5 - Deslocamento
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[63] = ArrayIntUser[63] - MODBUS_REGISTER[23]; // PecasFila6 = PecasFila6 - Deslocamento
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[62] = ArrayIntUser[62] - MODBUS_REGISTER[23]; // PecasFila7 = PecasFila7 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[61] = ArrayIntUser[61] - MODBUS_REGISTER[23]; // PecasFila8 = PecasFila8 - Deslocamento
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!GPIO_INPUT_PORT14) {  // XPrsCmdAjuste
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[2] >> 11) & 1)) {  // $oneShot_0039
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[60] = ArrayIntUser[60] - MODBUS_REGISTER[23]; // PecasFila9 = PecasFila9 - Deslocamento
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 11; else ArrayBitSystem[2] &= ~(1UL << 11); // $oneShot_0039 = $scratch
+
+    if (((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[59] = ArrayIntUser[59] - MODBUS_REGISTER[23]; // PecasFila10 = PecasFila10 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[58] = ArrayIntUser[58] - MODBUS_REGISTER[23]; // PecasFila11 = PecasFila11 - Deslocamento
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* start parallel [ */
+    ArrayBitSystem[1] &= ~(1UL << 3); // $parOut_0003 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $rung_top
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        GPIO_OUTPUT_PORT11 = 0; // YPrsEmbreagem = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitSystem[1] |= 1UL << 3; // $parOut_0003 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[57] = ArrayIntUser[57] - MODBUS_REGISTER[23]; // PecasFila12 = PecasFila12 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[56] = ArrayIntUser[56] - MODBUS_REGISTER[23]; // PecasFila13 = PecasFila13 - Deslocamento
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $rung_top
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitUser[1] &= ~(1UL << 29); // RPrsPararMartelo = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitSystem[1] |= 1UL << 3; // $parOut_0003 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[55] = ArrayIntUser[55] - MODBUS_REGISTER[23]; // PecasFila14 = PecasFila14 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[54] = ArrayIntUser[54] - MODBUS_REGISTER[23]; // PecasFila15 = PecasFila15 - Deslocamento
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $rung_top
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitUser[1] &= ~(1UL << 26); // RPrsIniciarCiclo = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitSystem[1] |= 1UL << 3; // $parOut_0003 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[53] = ArrayIntUser[53] - MODBUS_REGISTER[23]; // PecasFila16 = PecasFila16 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[52] = ArrayIntUser[52] - MODBUS_REGISTER[23]; // PecasFila17 = PecasFila17 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[51] = ArrayIntUser[51] - MODBUS_REGISTER[23]; // PecasFila18 = PecasFila18 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[50] = ArrayIntUser[50] - MODBUS_REGISTER[23]; // PecasFila19 = PecasFila19 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[49] = ArrayIntUser[49] - MODBUS_REGISTER[23]; // PecasFila20 = PecasFila20 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[48] = ArrayIntUser[48] - MODBUS_REGISTER[23]; // PecasFila21 = PecasFila21 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[47] = ArrayIntUser[47] - MODBUS_REGISTER[23]; // PecasFila22 = PecasFila22 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[46] = ArrayIntUser[46] - MODBUS_REGISTER[23]; // PecasFila23 = PecasFila23 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[45] = ArrayIntUser[45] - MODBUS_REGISTER[23]; // PecasFila24 = PecasFila24 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[44] = ArrayIntUser[44] - MODBUS_REGISTER[23]; // PecasFila25 = PecasFila25 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[43] = ArrayIntUser[43] - MODBUS_REGISTER[23]; // PecasFila26 = PecasFila26 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[42] = ArrayIntUser[42] - MODBUS_REGISTER[23]; // PecasFila27 = PecasFila27 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[41] = ArrayIntUser[41] - MODBUS_REGISTER[23]; // PecasFila28 = PecasFila28 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[40] = ArrayIntUser[40] - MODBUS_REGISTER[23]; // PecasFila29 = PecasFila29 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[39] = ArrayIntUser[39] - MODBUS_REGISTER[23]; // PecasFila30 = PecasFila30 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[38] = ArrayIntUser[38] - MODBUS_REGISTER[23]; // PecasFila31 = PecasFila31 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[37] = ArrayIntUser[37] - MODBUS_REGISTER[23]; // PecasFila32 = PecasFila32 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[36] = ArrayIntUser[36] - MODBUS_REGISTER[23]; // PecasFila33 = PecasFila33 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[35] = ArrayIntUser[35] - MODBUS_REGISTER[23]; // PecasFila34 = PecasFila34 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[34] = ArrayIntUser[34] - MODBUS_REGISTER[23]; // PecasFila35 = PecasFila35 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[33] = ArrayIntUser[33] - MODBUS_REGISTER[23]; // PecasFila36 = PecasFila36 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[32] = ArrayIntUser[32] - MODBUS_REGISTER[23]; // PecasFila37 = PecasFila37 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[31] = ArrayIntUser[31] - MODBUS_REGISTER[23]; // PecasFila38 = PecasFila38 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[30] = ArrayIntUser[30] - MODBUS_REGISTER[23]; // PecasFila39 = PecasFila39 - Deslocamento
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[1] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0003
     /* ] finish parallel */
     /* ] finish series */
 
-    /* start rung 150 */
+    /* start rung 149 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 10) & 1)) {  // AtualizarFila
+    if (!((ArrayBitUser[1] >> 23) & 1)) {  // RPrsMotorLigado
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (((ArrayBitSystem[2] >> 12) & 1)) {  // $oneShot_003a
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 12; else ArrayBitSystem[2] &= ~(1UL << 12); // $oneShot_003a = $scratch
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        GPIO_OUTPUT_PORT11 = 0; // YPrsEmbreagem = 0
+    }
+
+    /* ] finish series */
+
+    /* start rung 151 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!(MODBUS_REGISTER[2] & (1 << 5))) {  // YMbPrsCiclosNovo
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[69]; // DistanciaCorte = PecasFila0
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[2] &= ~(1 << 5);  // YMbPrsCiclosNovo = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 2; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[5] = 1000; // $scratch2
+        ArrayIntUser[33] = MODBUS_REGISTER[18] * ArrayIntUser[5]; // PrsCiclos = YMbNovoCiclosMil * $scratch2
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[68]; // DistanciaCorte = PecasFila1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 3; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[67]; // DistanciaCorte = PecasFila2
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 4; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[66]; // DistanciaCorte = PecasFila3
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 5; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[65]; // DistanciaCorte = PecasFila4
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 6; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[64]; // DistanciaCorte = PecasFila5
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 7; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[63]; // DistanciaCorte = PecasFila6
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 8; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[62]; // DistanciaCorte = PecasFila7
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 9; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[61]; // DistanciaCorte = PecasFila8
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 10; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[60]; // DistanciaCorte = PecasFila9
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 11; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[59]; // DistanciaCorte = PecasFila10
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 12; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[58]; // DistanciaCorte = PecasFila11
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 13; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[57]; // DistanciaCorte = PecasFila12
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 14; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[56]; // DistanciaCorte = PecasFila13
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 15; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[55]; // DistanciaCorte = PecasFila14
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 16; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[54]; // DistanciaCorte = PecasFila15
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 17; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[53]; // DistanciaCorte = PecasFila16
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 18; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[52]; // DistanciaCorte = PecasFila17
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 19; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[51]; // DistanciaCorte = PecasFila18
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 20; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[50]; // DistanciaCorte = PecasFila19
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 21; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[49]; // DistanciaCorte = PecasFila20
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 22; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[48]; // DistanciaCorte = PecasFila21
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 23; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[47]; // DistanciaCorte = PecasFila22
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 24; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[46]; // DistanciaCorte = PecasFila23
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 25; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[45]; // DistanciaCorte = PecasFila24
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 26; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[44]; // DistanciaCorte = PecasFila25
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 27; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[43]; // DistanciaCorte = PecasFila26
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 28; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[42]; // DistanciaCorte = PecasFila27
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 29; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[41]; // DistanciaCorte = PecasFila28
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 30; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[40]; // DistanciaCorte = PecasFila29
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 31; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[39]; // DistanciaCorte = PecasFila30
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 32; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[38]; // DistanciaCorte = PecasFila31
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 33; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[37]; // DistanciaCorte = PecasFila32
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 34; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[36]; // DistanciaCorte = PecasFila33
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 35; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[35]; // DistanciaCorte = PecasFila34
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 36; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[34]; // DistanciaCorte = PecasFila35
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 37; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[33]; // DistanciaCorte = PecasFila36
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 38; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[32]; // DistanciaCorte = PecasFila37
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 39; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[31]; // DistanciaCorte = PecasFila38
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 40; // $scratch2
-    if (ArrayIntUser[29] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[72] = ArrayIntUser[30]; // DistanciaCorte = PecasFila39
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[33] = ArrayIntUser[33] + MODBUS_REGISTER[17]; // PrsCiclos = PrsCiclos + YMbNovoCiclosUnd
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* ] finish series */
 
@@ -3880,101 +3828,42 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[1] >> 10) & 1)) {  // AtualizarFila
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (!((ArrayBitUser[1] >> 22) & 1)) {  // RPrsCameParar
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[2] >> 13) & 1)) {  // $oneShot_003b
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[1] >> 12) & 1)) {  // PecaTamAlterado
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 13; else ArrayBitSystem[2] &= ~(1UL << 13); // $oneShot_003b = $scratch
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 13) & 1)) {  // RModoAuto
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[1] >> 28) & 1)) {  // $oneShot_0032
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 28; else ArrayBitSystem[1] &= ~(1UL << 28); // $oneShot_0032 = $scratch
-
-    if (((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[5] = 1; // $scratch2
+        ArrayIntUser[33] = ArrayIntUser[33] + ArrayIntUser[5]; // PrsCiclos = PrsCiclos + $scratch2
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[23] = ArrayIntUser[70]; // Deslocamento = DistanciaPrensa
-    }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
+    /* start rung 153 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
     /* iniciando serie [ */
-    if (ArrayIntUser[70] > ArrayIntUser[72]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[5] = 1000; // $scratch2
+        if(ArrayIntUser[5]) MODBUS_REGISTER[16] = ArrayIntUser[33] / ArrayIntUser[5]; // YMbPrsCiclosMil = PrsCiclos / $scratch2
     }
 
-    ArrayIntUser[3] = 1; // $scratch2
-    if (ArrayIntUser[3] > ArrayIntUser[29]) {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[23] = ArrayIntUser[72]; // Deslocamento = DistanciaCorte
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] &= ~(1UL << 12); // PecaTamAlterado = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
-    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 154 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[5] = 1000; // $scratch2
+        ArrayIntUser[34] = MODBUS_REGISTER[16] * ArrayIntUser[5]; // PrsCiclosMil = YMbPrsCiclosMil * $scratch2
     }
-
-    if (!((ArrayBitUser[1] >> 13) & 1)) {  // RModoAuto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 14; else ArrayBitUser[1] &= ~(1UL << 14); // RModoAutoOK = $rung_top
 
     /* ] finish series */
 
@@ -3982,233 +3871,121 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 13) & 1)) {  // RModoAuto
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        MODBUS_REGISTER[15] = ArrayIntUser[33] - ArrayIntUser[34]; // YMbPrsCiclosUnid = PrsCiclos - PrsCiclosMil
     }
 
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (!((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (((ArrayBitSystem[1] >> 29) & 1)) {  // $oneShot_0033
-            ArrayBitSystem[0] |= 1UL << 3; // $parThis_0000 = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 29; else ArrayBitSystem[1] &= ~(1UL << 29); // $oneShot_0033 = $scratch
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (ArrayIntUser[73] < 999) {
-            ArrayIntUser[73]++;
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-        }
-    } else {
-        ArrayIntUser[73] = 0; // TEsperaInit
-    }
-
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[1] >> 30) & 1)) {  // $oneShot_0034
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 30; else ArrayBitSystem[1] &= ~(1UL << 30); // $oneShot_0034 = $scratch
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] |= 1UL << 6; // RStartConfigMan = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] &= ~(1UL << 3); // RStartConfigAuto = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[1] &= ~(1 << 0);  // YMbModoAutoAtivo = 0
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 156 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 13) & 1)) {  // RModoAuto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[1] >> 31) & 1)) {  // $oneShot_0035
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[1] |= 1UL << 31; else ArrayBitSystem[1] &= ~(1UL << 31); // $oneShot_0035 = $scratch
-
-    if (((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] |= 1UL << 3; // RStartConfigAuto = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] &= ~(1UL << 6); // RStartConfigMan = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[74] = MODBUS_REGISTER[30]; // CQtdProd = YMbQtd
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 157 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 0) & 1)) {  // RMaqConfigOK
+    if (!GPIO_INPUT_PORT15) {  // XPrsCmdBM1
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[2] >> 0) & 1)) {  // $oneShot_0036
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (!((ArrayBitSystem[2] >> 14) & 1)) {  // $TEspCmdBM1_antiglitch
+        ArrayIntUser[35] = 49; // TEspCmdBM1
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 0; else ArrayBitSystem[2] &= ~(1UL << 0); // $oneShot_0036 = $scratch
-
-    if (((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (!((ArrayBitUser[1] >> 14) & 1)) {  // RModoAutoOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    ArrayIntUser[3] = 0; // $scratch2
-    if (ArrayIntUser[74] > ArrayIntUser[3]) {
+    ArrayBitSystem[2] |= 1UL << 14; // $TEspCmdBM1_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[35] < 49) {
+            ArrayIntUser[35]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
     } else {
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        ArrayIntUser[35] = 0; // TEspCmdBM1
     }
 
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] |= 1UL << 18; // RMaqProduzindo = 1
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitUser[1] >> 30) & 1)) {  // RPrsCmdBM1Blq
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitUser[1] |= 1UL << 31; else ArrayBitUser[1] &= ~(1UL << 31); // RPrsCmdBM1OK = $parThis_0000
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[36] < 49) {
+            ArrayIntUser[36]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+        }
+    } else {
+        ArrayIntUser[36] = 0; // TTOCmdBM1
+    }
+
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitUser[1] |= 1UL << 30; else ArrayBitUser[1] &= ~(1UL << 30); // RPrsCmdBM1Blq = $parThis_0000
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 158 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!GPIO_INPUT_PORT11) {  // XInvFimPosic
+    if (!GPIO_INPUT_PORT16) {  // XPrsCmdBM2
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (ArrayIntUser[75] < 9) {
-            ArrayIntUser[75]++;
-            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (!((ArrayBitSystem[2] >> 15) & 1)) {  // $TEspCmdBM2_antiglitch
+        ArrayIntUser[37] = 49; // TEspCmdBM2
+    }
+    ArrayBitSystem[2] |= 1UL << 15; // $TEspCmdBM2_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[37] < 49) {
+            ArrayIntUser[37]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
         }
     } else {
-        ArrayIntUser[75] = 0; // TFimPosicEstab
-    }
-
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        ArrayIntUser[37] = 0; // TEspCmdBM2
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[2] >> 1) & 1)) {  // $oneShot_0037
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 1; else ArrayBitSystem[2] &= ~(1UL << 1); // $oneShot_0037 = $scratch
-
-    if (!((ArrayBitUser[0] >> 27) & 1)) {  // RMaqIniciarPosic
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitUser[2] >> 0) & 1)) {  // RPrsCmdBM2Blq
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] |= 1UL << 15; // MaqInPos = 1
-    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitUser[2] |= 1UL << 1; else ArrayBitUser[2] &= ~(1UL << 1); // RPrsCmdBM2OK = $parThis_0000
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (!((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (((ArrayBitSystem[2] >> 2) & 1)) {  // $oneShot_0038
-            ArrayBitSystem[0] |= 1UL << 3; // $parThis_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[38] < 49) {
+            ArrayIntUser[38]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
         }
     } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+        ArrayIntUser[38] = 0; // TTOCmdBM2
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 2; else ArrayBitSystem[2] &= ~(1UL << 2); // $oneShot_0038 = $scratch
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] &= ~(1UL << 15); // MaqInPos = 0
-    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitUser[2] |= 1UL << 0; else ArrayBitUser[2] &= ~(1UL << 0); // RPrsCmdBM2Blq = $parThis_0000
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* ] finish series */
 
@@ -4216,357 +3993,168 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 22) & 1)) {  // RErroCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 19) & 1)) {  // ErroPrensaPerf
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
+    if (!((ArrayBitUser[1] >> 31) & 1)) {  // RPrsCmdBM1OK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] &= ~(1UL << 18); // RMaqProduzindo = 0
+    if (!((ArrayBitUser[2] >> 1) & 1)) {  // RPrsCmdBM2OK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    if (!GPIO_INPUT_PORT17) {  // XPrsDeslContinuo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[2] |= 1UL << 2; else ArrayBitUser[2] &= ~(1UL << 2); // RPrsCmdBMOK = $rung_top
 
     /* ] finish series */
 
-    /* start rung 160 */
+    /* start rung 161 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 26) & 1)) {  // RMaqPronta
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitUser[1] >> 27) & 1)) {  // RPrsMotorOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!GPIO_OUTPUT_PORT14) {  // YPrsLigaNormal
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (!(MODBUS_REGISTER[4] & (1 << 9))) {  // YMbPrsIniciar
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (!((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (((ArrayBitSystem[2] >> 3) & 1)) {  // $oneShot_0039
-            ArrayBitSystem[0] |= 1UL << 3; // $parThis_0000 = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 3; else ArrayBitSystem[2] &= ~(1UL << 3); // $oneShot_0039 = $scratch
+    ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (!((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (((ArrayBitSystem[2] >> 4) & 1)) {  // $oneShot_003a
-            ArrayBitSystem[0] |= 1UL << 3; // $parThis_0000 = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 4; else ArrayBitSystem[2] &= ~(1UL << 4); // $oneShot_003a = $scratch
-
-    if (((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[2] >> 2) & 1)) {  // RPrsCmdBMOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    if (!(MODBUS_REGISTER[1] & (1 << 0))) {  // YMbModoAutoAtivo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 0) & 1)) {  // RMaqConfigOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[2] >> 5) & 1)) {  // $oneShot_003b
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 5; else ArrayBitSystem[2] &= ~(1UL << 5); // $oneShot_003b = $scratch
-
-    if (((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] &= ~(1UL << 25); // RCortarPerfAuto = 0
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] |= 1UL << 26; // RPrsIniciarCiclo = 1
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] &= ~(1UL << 26); // PrensaPerfAuto = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] &= ~(1UL << 16); // SrvLigaMotor = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        MODBUS_REGISTER[4] &= ~(1 << 9);  // YMbPrsIniciar = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[1] &= ~(1 << 0);  // YMbModoAutoAtivo = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] &= ~(1UL << 17); // PecaProduzida = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] &= ~(1UL << 28); // RBloquearPrensa = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] &= ~(1UL << 15); // MaqInPos = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] &= ~(1UL << 16); // SrvLigaMotor = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
     /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 162 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[76] = ArrayIntUser[4] - MODBUS_REGISTER[23]; // DifPosic = MaqPosAtual - Deslocamento
-    }
-
     /* ] finish series */
 
     /* start rung 163 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
+    if (!GPIO_OUTPUT_PORT11) {  // YPrsEmbreagem
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-
-    ArrayIntUser[3] = 50; // $scratch2
-    if (ArrayIntUser[3] > ArrayIntUser[76]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (GPIO_INPUT_PORT17) {  // XPrsDeslContinuo
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    ArrayIntUser[3] = -50; // $scratch2
-    if (ArrayIntUser[76] > ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!(MODBUS_REGISTER[4] & (1 << 10))) {  // YMbPrsParar
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-
-    ArrayIntUser[3] = 50000; // $scratch2
-    if (ArrayIntUser[3] > ArrayIntUser[76]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    ArrayIntUser[3] = -50000; // $scratch2
-    if (ArrayIntUser[76] > ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 18; else ArrayBitUser[1] &= ~(1UL << 18); // RMaqPosicOK = $rung_top
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[2] >> 16) & 1)) {  // $oneShot_003c
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 16; else ArrayBitSystem[2] &= ~(1UL << 16); // $oneShot_003c = $scratch
 
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] |= 1UL << 29; // RPrsPararMartelo = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        MODBUS_REGISTER[4] &= ~(1 << 10);  // YMbPrsParar = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 164 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 19) & 1)) {  // MaqPosicionar
+    if (!GPIO_INPUT_PORT17) {  // XPrsDeslContinuo
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[2] >> 6) & 1)) {  // $oneShot_003c
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 6; else ArrayBitSystem[2] &= ~(1UL << 6); // $oneShot_003c = $scratch
-
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitUser[1] >> 20) & 1)) {  // RMaqErroPosic
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] |= 1UL << 6; // ZerarEncPerfil = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] |= 1UL << 1; // ZerarEncServo = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[77] = 10; // MaqQtdTent
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (!((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (((ArrayBitSystem[2] >> 7) & 1)) {  // $oneShot_003d
-            ArrayBitSystem[0] |= 1UL << 3; // $parThis_0000 = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 7; else ArrayBitSystem[2] &= ~(1UL << 7); // $oneShot_003d = $scratch
-
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] &= ~(1UL << 16); // SrvLigaMotor = 0
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 165 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 20) & 1)) {  // RMaqErroPosic
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
     if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (((ArrayBitSystem[2] >> 8) & 1)) {  // $oneShot_003e
+        if (((ArrayBitSystem[2] >> 17) & 1)) {  // $oneShot_003d
             ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
         }
     } else {
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 8; else ArrayBitSystem[2] &= ~(1UL << 8); // $oneShot_003e = $scratch
-
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (!((ArrayBitUser[0] >> 4) & 1)) {  // RSrvMotorParado
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 17; else ArrayBitSystem[2] &= ~(1UL << 17); // $oneShot_003d = $scratch
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] |= 1UL << 1; // ZerarEncServo = 1
+        ArrayBitUser[1] |= 1UL << 28; // RBloquearPrensa = 1
     }
 
     /* ] finish series */
@@ -4575,155 +4163,19 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 15) & 1)) {  // MaqInPos
+    if (MODBUS_REGISTER[1] & (1 << 0)) {  // YMbModoAutoAtivo
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[2] >> 9) & 1)) {  // $oneShot_003f
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 9; else ArrayBitSystem[2] &= ~(1UL << 9); // $oneShot_003f = $scratch
-
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
+    if (!((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] &= ~(1UL << 16); // SrvLigaMotor = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 18) & 1)) {  // RMaqPosicOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] |= 1UL << 21; // RMaqFimPosic = 1
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitUser[1] >> 18) & 1)) {  // RMaqPosicOK
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        if (!((ArrayBitSystem[2] >> 10) & 1)) {  // $oneShot_0040
-            ArrayBitSystem[0] |= 1UL << 6; // $scratch
-            ArrayIntUser[77] = ArrayIntUser[77] - ((ArrayBitSystem[0] >> 6) & 1); // MaqQtdTent = MaqQtdTent - $scratch
-        }
-    }
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[2] |= 1UL << 10; else ArrayBitSystem[2] &= ~(1UL << 10); // $oneShot_0040 = $parThis_0001
-    if (ArrayIntUser[77] > VAR_NULL) {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    } else {
-        ArrayBitSystem[0] |= 1UL << 5; // $parThis_0001 = 1
-    }
-
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0001
-    if (((ArrayBitSystem[2] >> 11) & 1)) {  // $oneShot_0041
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 11; else ArrayBitSystem[2] &= ~(1UL << 11); // $oneShot_0041 = $scratch
-
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 9); // $parOut_0002 = 0
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parThis_0001
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitUser[1] |= 1UL << 20; // RMaqErroPosic = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parThis_0001
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayIntUser[3] = 10; // $scratch2
-        if(ArrayIntUser[3]) ArrayIntUser[78] = ArrayIntUser[76] / ArrayIntUser[3]; // YMbMaqErroPos = DifPosic / $scratch2
-    }
-
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 9) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parOut_0002
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    if (((ArrayBitUser[1] >> 20) & 1)) {  // RMaqErroPosic
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] |= 1UL << 1; // ZerarEncServo = 1
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 167 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 1) & 1)) {  // ZerarEncServo
+    if (GPIO_OUTPUT_PORT11) {  // YPrsEmbreagem
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (((ArrayBitSystem[2] >> 12) & 1)) {  // $oneShot_0042
-            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 12; else ArrayBitSystem[2] &= ~(1UL << 12); // $oneShot_0042 = $scratch
-
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (!((ArrayBitUser[1] >> 19) & 1)) {  // MaqPosicionar
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[1] |= 1UL << 16; // SrvLigaMotor = 1
-    }
+    GPIO_OUTPUT_PORT12 = ((ArrayBitSystem[0] >> 1) & 1); // YPrsAjMartelo = $rung_top
 
     /* ] finish series */
 
@@ -4731,52 +4183,118 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 16) & 1)) {  // SrvLigaMotor
+    if (!((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[0] >> 1) & 1)) {  // ZerarEncServo
+    if (ArrayIntUser[39] > ArrayIntUser[33]) {
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[0] >> 6) & 1)) {  // ZerarEncPerfil
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[2] >> 18) & 1)) {  // $oneShot_003e
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 18; else ArrayBitSystem[2] &= ~(1UL << 18); // $oneShot_003e = $scratch
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 23; // PrsAtivarLub = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[40] = ArrayIntUser[41]; // PrsContPulsosLub = PrsQtdPulsosLub
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 169 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 23) & 1)) {  // PrsAtivarLub
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (GPIO_OUTPUT_PORT8) {  // PrsLigaLubrif
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[42] < 49) {
+            ArrayIntUser[42]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[42] = 0; // EspLubON
+    }
+
+    if (!((ArrayBitSystem[2] >> 19) & 1)) {  // $EspLubOFF_antiglitch
+        ArrayIntUser[43] = 49; // EspLubOFF
+    }
+    ArrayBitSystem[2] |= 1UL << 19; // $EspLubOFF_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[43] < 49) {
+            ArrayIntUser[43]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayIntUser[43] = 0; // EspLubOFF
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitUser[0] |= 1UL << 27; else ArrayBitUser[0] &= ~(1UL << 27); // RMaqIniciarPosic = $parThis_0000
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    GPIO_OUTPUT_PORT8 = ((ArrayBitSystem[0] >> 4) & 1); // PrsLigaLubrif = $parThis_0000
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
     /* iniciando serie [ */
-    if (!((ArrayBitSystem[2] >> 13) & 1)) {  // $TEspSrvParar_antiglitch
-        ArrayIntUser[79] = 9; // TEspSrvParar
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[2] >> 20) & 1)) {  // $oneShot_003f
+            ArrayBitSystem[0] |= 1UL << 7; // $scratch
+            ArrayIntUser[40] = ArrayIntUser[40] - ((ArrayBitSystem[0] >> 7) & 1); // PrsContPulsosLub = PrsContPulsosLub - $scratch
+        }
     }
-    ArrayBitSystem[2] |= 1UL << 13; // $TEspSrvParar_antiglitch = 1
-    if (!((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (ArrayIntUser[79] < 9) {
-            ArrayIntUser[79]++;
-            ArrayBitSystem[0] |= 1UL << 3; // $parThis_0000 = 1
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[2] |= 1UL << 20; else ArrayBitSystem[2] &= ~(1UL << 20); // $oneShot_003f = $parThis_0000
+    if (ArrayIntUser[40] > VAR_NULL) {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    } else {
+        ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+    }
+
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[2] >> 21) & 1)) {  // $oneShot_0040
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
         }
     } else {
-        ArrayIntUser[79] = 0; // TEspSrvParar
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 21; else ArrayBitSystem[2] &= ~(1UL << 21); // $oneShot_0040 = $scratch
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] &= ~(1UL << 4); // RSrvMotorParado = 0
-    } else {
-        ArrayBitUser[0] |= 1UL << 4; // RSrvMotorParado = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 23); // PrsAtivarLub = 0
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* ] finish series */
 
@@ -4784,349 +4302,101 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
+    if (!((ArrayBitUser[0] >> 23) & 1)) {  // PrsAtivarLub
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitUser[1] >> 21) & 1)) {  // RMaqFimPosic
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (((ArrayBitSystem[2] >> 22) & 1)) {  // $oneShot_0041
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 22; else ArrayBitSystem[2] &= ~(1UL << 22); // $oneShot_0041 = $scratch
 
-    if (!((ArrayBitUser[1] >> 0) & 1)) {  // RMaqConfigOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[39] = ArrayIntUser[33] + ArrayIntUser[44]; // PrsCiclosProxLub = PrsCiclos + PrsIntervaloLub
     }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 19; else ArrayBitUser[1] &= ~(1UL << 19); // MaqPosicionar = $rung_top
 
     /* ] finish series */
 
-    /* start rung 171 */
+    /* start rung 173 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
+    if (!(MODBUS_REGISTER[3] & (1 << 6))) {  // XDbgParamSync
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (!((ArrayBitUser[1] >> 21) & 1)) {  // RMaqFimPosic
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[2] >> 23) & 1)) {  // $oneShot_0042
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 23; else ArrayBitSystem[2] &= ~(1UL << 23); // $oneShot_0042 = $scratch
 
-    if (((ArrayBitUser[0] >> 30) & 1)) {  // RInvFreioLib
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[2] >> 14) & 1)) {  // $oneShot_0043
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 14; else ArrayBitSystem[2] &= ~(1UL << 14); // $oneShot_0043 = $scratch
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (ArrayIntUser[72] == MODBUS_REGISTER[23]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        MODBUS_REGISTER[2] |= (1 << 3);  // YMbParamSync = 1
     }
 
-    ArrayIntUser[3] = 0; // $scratch2
-    if (ArrayIntUser[29] > ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] |= 1UL << 25; // RCortarPerfAuto = 1
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (ArrayIntUser[70] == MODBUS_REGISTER[23]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] |= 1UL << 26; // PrensaPerfAuto = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] |= 1UL << 17; // PecaProduzida = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] |= 1UL << 11; // AtualizarPosFila = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 172 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (!((ArrayBitUser[1] >> 21) & 1)) {  // RMaqFimPosic
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 15) & 1)) {  // RCortePerfAtivo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (!((ArrayBitUser[0] >> 16) & 1)) {  // PrensaPerfAtiva
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] &= ~(1UL << 25); // RCortarPerfAuto = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] &= ~(1UL << 26); // PrensaPerfAuto = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $rung_top
-    /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0001
-    if (!((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        if (((ArrayBitSystem[2] >> 15) & 1)) {  // $oneShot_0044
-            ArrayBitSystem[0] |= 1UL << 5; // $parThis_0001 = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 15; else ArrayBitSystem[2] &= ~(1UL << 15); // $oneShot_0044 = $scratch
-
-    if (((ArrayBitUser[0] >> 22) & 1)) {  // RErroCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitUser[0] >> 19) & 1)) {  // ErroPrensaPerf
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 9); // $parOut_0002 = 0
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parThis_0001
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitUser[1] &= ~(1UL << 21); // RMaqFimPosic = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parThis_0001
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 17) & 1)) {  // PecaProduzida
-        ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[2] &= ~(1UL << 16); // $parOut_0003 = 0
-    if(((ArrayBitSystem[0] >> 10) & 1)) ArrayBitSystem[2] |= 1UL << 17; else ArrayBitSystem[2] &= ~(1UL << 17); // $parThis_0003 = $parThis_0002
-    if (((ArrayBitSystem[2] >> 17) & 1)) {  // $parThis_0003
-        ArrayBitUser[1] &= ~(1UL << 17); // PecaProduzida = 0
-    }
-
-    if (((ArrayBitSystem[2] >> 17) & 1)) {  // $parThis_0003
-        ArrayBitSystem[2] |= 1UL << 16; // $parOut_0003 = 1
-    }
-    if(((ArrayBitSystem[0] >> 10) & 1)) ArrayBitSystem[2] |= 1UL << 17; else ArrayBitSystem[2] &= ~(1UL << 17); // $parThis_0003 = $parThis_0002
-    if (((ArrayBitSystem[2] >> 17) & 1)) {  // $parThis_0003
-        ArrayIntUser[3] = 1; // $scratch2
-        MODBUS_REGISTER[30] = MODBUS_REGISTER[30] - ArrayIntUser[3]; // YMbQtd = YMbQtd - $scratch2
-    }
-
-    if (((ArrayBitSystem[2] >> 17) & 1)) {  // $parThis_0003
-        ArrayBitSystem[2] |= 1UL << 16; // $parOut_0003 = 1
-    }
-    if(((ArrayBitSystem[0] >> 10) & 1)) ArrayBitSystem[2] |= 1UL << 17; else ArrayBitSystem[2] &= ~(1UL << 17); // $parThis_0003 = $parThis_0002
-    /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[2] &= ~(1UL << 18); // $parOut_0004 = 0
-    if(((ArrayBitSystem[2] >> 17) & 1)) ArrayBitSystem[2] |= 1UL << 19; else ArrayBitSystem[2] &= ~(1UL << 19); // $parThis_0004 = $parThis_0003
-    if (((ArrayBitSystem[2] >> 19) & 1)) {  // $parThis_0004
-        if (!((ArrayBitSystem[2] >> 20) & 1)) {  // $oneShot_0045
-            ArrayBitSystem[0] |= 1UL << 6; // $scratch
-            ArrayIntUser[74] = ArrayIntUser[74] - ((ArrayBitSystem[0] >> 6) & 1); // CQtdProd = CQtdProd - $scratch
-        }
-    }
-    if(((ArrayBitSystem[2] >> 19) & 1)) ArrayBitSystem[2] |= 1UL << 20; else ArrayBitSystem[2] &= ~(1UL << 20); // $oneShot_0045 = $parThis_0004
-    if (ArrayIntUser[74] > VAR_NULL) {
-        ArrayBitSystem[2] &= ~(1UL << 19); // $parThis_0004 = 0
-    } else {
-        ArrayBitSystem[2] |= 1UL << 19; // $parThis_0004 = 1
-    }
-
-    if (((ArrayBitSystem[2] >> 19) & 1)) {  // $parThis_0004
-        ArrayBitSystem[2] |= 1UL << 18; // $parOut_0004 = 1
-    }
-    if(((ArrayBitSystem[2] >> 17) & 1)) ArrayBitSystem[2] |= 1UL << 19; else ArrayBitSystem[2] &= ~(1UL << 19); // $parThis_0004 = $parThis_0003
-    if (((ArrayBitUser[1] >> 13) & 1)) {  // RModoAuto
-        ArrayBitSystem[2] &= ~(1UL << 19); // $parThis_0004 = 0
-    }
-
-    if (((ArrayBitSystem[2] >> 19) & 1)) {  // $parThis_0004
-        ArrayBitSystem[2] |= 1UL << 18; // $parOut_0004 = 1
-    }
-    if(((ArrayBitSystem[2] >> 18) & 1)) ArrayBitSystem[2] |= 1UL << 17; else ArrayBitSystem[2] &= ~(1UL << 17); // $parThis_0003 = $parOut_0004
-    /* ] finish parallel */
-    if (((ArrayBitSystem[2] >> 17) & 1)) {  // $parThis_0003
-        ArrayBitUser[0] &= ~(1UL << 18); // RMaqProduzindo = 0
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[2] >> 17) & 1)) {  // $parThis_0003
-        ArrayBitSystem[2] |= 1UL << 16; // $parOut_0003 = 1
-    }
-    if(((ArrayBitSystem[2] >> 16) & 1)) ArrayBitSystem[0] |= 1UL << 10; else ArrayBitSystem[0] &= ~(1UL << 10); // $parThis_0002 = $parOut_0003
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 10) & 1)) {  // $parThis_0002
-        ArrayBitSystem[0] |= 1UL << 9; // $parOut_0002 = 1
-    }
-    if(((ArrayBitSystem[0] >> 9) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parOut_0002
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
-    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 174 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!(MODBUS_REGISTER[3] & (1 << 0))) {  // XDbgModoAuto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[2] >> 21) & 1)) {  // $oneShot_0046
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!(MODBUS_REGISTER[2] & (1 << 3))) {  // YMbParamSync
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 21; else ArrayBitSystem[2] &= ~(1UL << 21); // $oneShot_0046 = $scratch
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[2] |= (1 << 0);  // YMbModoAuto = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[2] >> 24) & 1)) {  // $oneShot_0043
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 24; else ArrayBitSystem[2] &= ~(1UL << 24); // $oneShot_0043 = $scratch
+
+    if (((ArrayBitUser[0] >> 22) & 1)) {  // RMaqCfgSrvOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (!((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        if (((ArrayBitSystem[2] >> 22) & 1)) {  // $oneShot_0047
-            ArrayBitSystem[0] |= 1UL << 3; // $parThis_0000 = 1
-        }
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 22; else ArrayBitSystem[2] &= ~(1UL << 22); // $oneShot_0047 = $scratch
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[2] &= ~(1 << 0);  // YMbModoAuto = 0
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0000
-    if (((ArrayBitSystem[2] >> 23) & 1)) {  // $oneShot_0048
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 23; else ArrayBitSystem[2] &= ~(1UL << 23); // $oneShot_0048 = $scratch
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[30] = 3; // YMbQtd
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[31] = 1000; // YMbTam
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[2] |= 1UL << 3; // RMaqCfgSrv = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        MODBUS_REGISTER[2] &= ~(1 << 3);  // YMbParamSync = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
     /* ] finish parallel */
     /* ] finish series */
 
@@ -5134,35 +4404,1893 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!(MODBUS_REGISTER[2] & (1 << 0))) {  // YMbModoAuto
+    if (!((ArrayBitUser[2] >> 3) & 1)) {  // RMaqCfgSrv
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 13; else ArrayBitUser[1] &= ~(1UL << 13); // RModoAuto = $rung_top
+    if (((ArrayBitUser[0] >> 6) & 1)) {  // RMaqSerialBusy
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
 
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 16; // RStartCfgSrv = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[2] &= ~(1UL << 3); // RMaqCfgSrv = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 6; // RMaqSerialBusy = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 176 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 13) & 1)) {  // RModoAuto
+    if (!((ArrayBitUser[0] >> 16) & 1)) {  // RStartCfgSrv
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[2] >> 24) & 1)) {  // $oneShot_0049
+    if (((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 24; else ArrayBitSystem[2] &= ~(1UL << 24); // $oneShot_0049 = $scratch
+
+    if (((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[2] >> 25) & 1)) {  // $oneShot_0044
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 25; else ArrayBitSystem[2] &= ~(1UL << 25); // $oneShot_0044 = $scratch
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 22); // RMaqCfgSrvOK = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[2] >> 26) & 1)) {  // $oneShot_0045
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 26; else ArrayBitSystem[2] &= ~(1UL << 26); // $oneShot_0045 = $scratch
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[2] &= ~(1UL << 4); // RCfgSrvParP1OK = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[2] &= ~(1UL << 5); // RCfgSrvParP2OK = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[2] &= ~(1UL << 6); // RCfgSrvParP3OK = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[2] &= ~(1UL << 7); // RCfgSrvParP4OK = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[2] &= ~(1UL << 8); // RCfgSrvParP5OK = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[2] &= ~(1UL << 9); // RCfgSrvParP6OK = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[2] &= ~(1UL << 10); // RCfgSrvParP7OK = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] &= ~(1UL << 6); // RMaqSerialBusy = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[45] < 1499) {
+            ArrayIntUser[45]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+        }
+    } else {
+        ArrayIntUser[45] = 0; // TCfgSrvIniTO
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 4; // RMaqCfgSrvErro = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitUser[2] >> 4) & 1)) {  // RCfgSrvParP1OK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[2] >> 27) & 1)) {  // $oneShot_0046
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "RES", &VAR_NULL);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[2] |= 1UL << 27; else ArrayBitSystem[2] &= ~(1UL << 27); // $oneShot_0046 = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[2] |= 1UL << 28; else ArrayBitSystem[2] &= ~(1UL << 28); // $oneShot_0047 = $parThis_0000
+        }
+        if (!((ArrayBitSystem[2] >> 28) & 1)) {  // $oneShot_0047
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[2] |= 1UL << 28; // $oneShot_0047 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[2] |= 1UL << 27; else ArrayBitSystem[2] &= ~(1UL << 27); // $oneShot_0046 = $parThis_0000
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[46] < 499) {
+            ArrayIntUser[46]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+        }
+    } else {
+        ArrayIntUser[46] = 0; // TCfgSrvParP1Fim
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 31) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0002
+    if (((ArrayBitSystem[2] >> 29) & 1)) {  // $oneShot_0048
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[2] |= 1UL << 29; else ArrayBitSystem[2] &= ~(1UL << 29); // $oneShot_0048 = $scratch
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[2] |= 1UL << 4; // RCfgSrvParP1OK = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 4) & 1)) {  // RCfgSrvParP1OK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[2] >> 30) & 1)) {  // $oneShot_0049
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "ARES", &VAR_NULL);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[2] |= 1UL << 30; else ArrayBitSystem[2] &= ~(1UL << 30); // $oneShot_0049 = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[2] |= 1UL << 31; else ArrayBitSystem[2] &= ~(1UL << 31); // $oneShot_004a = $parThis_0000
+        }
+        if (!((ArrayBitSystem[2] >> 31) & 1)) {  // $oneShot_004a
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[2] |= 1UL << 31; // $oneShot_004a = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[2] |= 1UL << 30; else ArrayBitSystem[2] &= ~(1UL << 30); // $oneShot_0049 = $parThis_0000
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[1] &= ~(1UL << 3); // $parOut_0003 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[1] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0003
+    if (((ArrayBitSystem[3] >> 0) & 1)) {  // $oneShot_004b
+        ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[3] |= 1UL << 0; else ArrayBitSystem[3] &= ~(1UL << 0); // $oneShot_004b = $scratch
+
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitSystem[1] |= 1UL << 3; // $parOut_0003 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = 0
+    }
+
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitUser[2] |= 1UL << 5; // RCfgSrvParP2OK = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitSystem[1] |= 1UL << 3; // $parOut_0003 = 1
+    }
+    if(((ArrayBitSystem[1] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0003
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 5) & 1)) {  // RCfgSrvParP2OK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[3] >> 1) & 1)) {  // $oneShot_004c
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "SPD%d", &ArrayIntUser[47]);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 1; else ArrayBitSystem[3] &= ~(1UL << 1); // $oneShot_004c = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 2; else ArrayBitSystem[3] &= ~(1UL << 2); // $oneShot_004d = $parThis_0000
+        }
+        if (!((ArrayBitSystem[3] >> 2) & 1)) {  // $oneShot_004d
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[3] |= 1UL << 2; // $oneShot_004d = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 1; else ArrayBitSystem[3] &= ~(1UL << 1); // $oneShot_004c = $parThis_0000
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[1] &= ~(1UL << 6); // $parOut_0004 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 7; else ArrayBitSystem[1] &= ~(1UL << 7); // $parThis_0004 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[1] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0004
+    if (((ArrayBitSystem[3] >> 3) & 1)) {  // $oneShot_004e
+        ArrayBitSystem[1] &= ~(1UL << 7); // $parThis_0004 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[3] |= 1UL << 3; else ArrayBitSystem[3] &= ~(1UL << 3); // $oneShot_004e = $scratch
+
+    if (((ArrayBitSystem[1] >> 7) & 1)) {  // $parThis_0004
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[1] >> 7) & 1)) {  // $parThis_0004
+        ArrayBitSystem[1] |= 1UL << 6; // $parOut_0004 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[1] |= 1UL << 7; else ArrayBitSystem[1] &= ~(1UL << 7); // $parThis_0004 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[1] &= ~(1UL << 7); // $parThis_0004 = 0
+    }
+
+    if (((ArrayBitSystem[1] >> 7) & 1)) {  // $parThis_0004
+        ArrayBitUser[2] |= 1UL << 6; // RCfgSrvParP3OK = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[1] >> 7) & 1)) {  // $parThis_0004
+        ArrayBitSystem[1] |= 1UL << 6; // $parOut_0004 = 1
+    }
+    if(((ArrayBitSystem[1] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0004
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 6) & 1)) {  // RCfgSrvParP3OK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[3] >> 4) & 1)) {  // $oneShot_004f
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "ACC%d", &ArrayIntUser[48]);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 4; else ArrayBitSystem[3] &= ~(1UL << 4); // $oneShot_004f = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 5; else ArrayBitSystem[3] &= ~(1UL << 5); // $oneShot_0050 = $parThis_0000
+        }
+        if (!((ArrayBitSystem[3] >> 5) & 1)) {  // $oneShot_0050
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[3] |= 1UL << 5; // $oneShot_0050 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 4; else ArrayBitSystem[3] &= ~(1UL << 4); // $oneShot_004f = $parThis_0000
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[3] &= ~(1UL << 6); // $parOut_0005 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 7; else ArrayBitSystem[3] &= ~(1UL << 7); // $parThis_0005 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[3] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0005
+    if (((ArrayBitSystem[3] >> 8) & 1)) {  // $oneShot_0051
+        ArrayBitSystem[3] &= ~(1UL << 7); // $parThis_0005 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[3] |= 1UL << 8; else ArrayBitSystem[3] &= ~(1UL << 8); // $oneShot_0051 = $scratch
+
+    if (((ArrayBitSystem[3] >> 7) & 1)) {  // $parThis_0005
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[3] >> 7) & 1)) {  // $parThis_0005
+        ArrayBitSystem[3] |= 1UL << 6; // $parOut_0005 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 7; else ArrayBitSystem[3] &= ~(1UL << 7); // $parThis_0005 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[3] &= ~(1UL << 7); // $parThis_0005 = 0
+    }
+
+    if (((ArrayBitSystem[3] >> 7) & 1)) {  // $parThis_0005
+        ArrayBitUser[2] |= 1UL << 7; // RCfgSrvParP4OK = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[3] >> 7) & 1)) {  // $parThis_0005
+        ArrayBitSystem[3] |= 1UL << 6; // $parOut_0005 = 1
+    }
+    if(((ArrayBitSystem[3] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0005
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 7) & 1)) {  // RCfgSrvParP4OK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[3] >> 9) & 1)) {  // $oneShot_0052
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "DEC%d", &ArrayIntUser[48]);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 9; else ArrayBitSystem[3] &= ~(1UL << 9); // $oneShot_0052 = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 10; else ArrayBitSystem[3] &= ~(1UL << 10); // $oneShot_0053 = $parThis_0000
+        }
+        if (!((ArrayBitSystem[3] >> 10) & 1)) {  // $oneShot_0053
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[3] |= 1UL << 10; // $oneShot_0053 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 9; else ArrayBitSystem[3] &= ~(1UL << 9); // $oneShot_0052 = $parThis_0000
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[3] &= ~(1UL << 11); // $parOut_0006 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 12; else ArrayBitSystem[3] &= ~(1UL << 12); // $parThis_0006 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[3] >> 12) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0006
+    if (((ArrayBitSystem[3] >> 13) & 1)) {  // $oneShot_0054
+        ArrayBitSystem[3] &= ~(1UL << 12); // $parThis_0006 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[3] |= 1UL << 13; else ArrayBitSystem[3] &= ~(1UL << 13); // $oneShot_0054 = $scratch
+
+    if (((ArrayBitSystem[3] >> 12) & 1)) {  // $parThis_0006
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[3] >> 12) & 1)) {  // $parThis_0006
+        ArrayBitSystem[3] |= 1UL << 11; // $parOut_0006 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 12; else ArrayBitSystem[3] &= ~(1UL << 12); // $parThis_0006 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[3] &= ~(1UL << 12); // $parThis_0006 = 0
+    }
+
+    if (((ArrayBitSystem[3] >> 12) & 1)) {  // $parThis_0006
+        ArrayBitUser[2] |= 1UL << 8; // RCfgSrvParP5OK = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[3] >> 12) & 1)) {  // $parThis_0006
+        ArrayBitSystem[3] |= 1UL << 11; // $parOut_0006 = 1
+    }
+    if(((ArrayBitSystem[3] >> 11) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0006
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 8) & 1)) {  // RCfgSrvParP5OK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[3] >> 14) & 1)) {  // $oneShot_0055
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "POST000=%d", &ArrayIntUser[49]);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 14; else ArrayBitSystem[3] &= ~(1UL << 14); // $oneShot_0055 = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 15; else ArrayBitSystem[3] &= ~(1UL << 15); // $oneShot_0056 = $parThis_0000
+        }
+        if (!((ArrayBitSystem[3] >> 15) & 1)) {  // $oneShot_0056
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[3] |= 1UL << 15; // $oneShot_0056 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 14; else ArrayBitSystem[3] &= ~(1UL << 14); // $oneShot_0055 = $parThis_0000
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[50] < 19) {
+            ArrayIntUser[50]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+        }
+    } else {
+        ArrayIntUser[50] = 0; // TEspCfgSrvPar5
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[3] &= ~(1UL << 16); // $parOut_0007 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 17; else ArrayBitSystem[3] &= ~(1UL << 17); // $parThis_0007 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[3] >> 17) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0007
+    if (((ArrayBitSystem[3] >> 18) & 1)) {  // $oneShot_0057
+        ArrayBitSystem[3] &= ~(1UL << 17); // $parThis_0007 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[3] |= 1UL << 18; else ArrayBitSystem[3] &= ~(1UL << 18); // $oneShot_0057 = $scratch
+
+    if (((ArrayBitSystem[3] >> 17) & 1)) {  // $parThis_0007
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[3] >> 17) & 1)) {  // $parThis_0007
+        ArrayBitSystem[3] |= 1UL << 16; // $parOut_0007 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 17; else ArrayBitSystem[3] &= ~(1UL << 17); // $parThis_0007 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[3] &= ~(1UL << 17); // $parThis_0007 = 0
+    }
+
+    if (((ArrayBitSystem[3] >> 17) & 1)) {  // $parThis_0007
+        ArrayBitUser[2] |= 1UL << 9; // RCfgSrvParP6OK = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[3] >> 17) & 1)) {  // $parThis_0007
+        ArrayBitSystem[3] |= 1UL << 16; // $parOut_0007 = 1
+    }
+    if(((ArrayBitSystem[3] >> 16) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0007
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 9) & 1)) {  // RCfgSrvParP6OK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[3] >> 19) & 1)) {  // $oneShot_0058
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "SPDT000=%d", &ArrayIntUser[51]);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 19; else ArrayBitSystem[3] &= ~(1UL << 19); // $oneShot_0058 = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 20; else ArrayBitSystem[3] &= ~(1UL << 20); // $oneShot_0059 = $parThis_0000
+        }
+        if (!((ArrayBitSystem[3] >> 20) & 1)) {  // $oneShot_0059
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[3] |= 1UL << 20; // $oneShot_0059 = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 19; else ArrayBitSystem[3] &= ~(1UL << 19); // $oneShot_0058 = $parThis_0000
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[52] < 19) {
+            ArrayIntUser[52]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+        }
+    } else {
+        ArrayIntUser[52] = 0; // TEspCfgSrvPar6
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[3] &= ~(1UL << 21); // $parOut_0008 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 22; else ArrayBitSystem[3] &= ~(1UL << 22); // $parThis_0008 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[3] >> 22) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0008
+    if (((ArrayBitSystem[3] >> 23) & 1)) {  // $oneShot_005a
+        ArrayBitSystem[3] &= ~(1UL << 22); // $parThis_0008 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[3] |= 1UL << 23; else ArrayBitSystem[3] &= ~(1UL << 23); // $oneShot_005a = $scratch
+
+    if (((ArrayBitSystem[3] >> 22) & 1)) {  // $parThis_0008
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[3] >> 22) & 1)) {  // $parThis_0008
+        ArrayBitSystem[3] |= 1UL << 21; // $parOut_0008 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 22; else ArrayBitSystem[3] &= ~(1UL << 22); // $parThis_0008 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[3] &= ~(1UL << 22); // $parThis_0008 = 0
+    }
+
+    if (((ArrayBitSystem[3] >> 22) & 1)) {  // $parThis_0008
+        ArrayBitUser[2] |= 1UL << 10; // RCfgSrvParP7OK = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[3] >> 22) & 1)) {  // $parThis_0008
+        ArrayBitSystem[3] |= 1UL << 21; // $parOut_0008 = 1
+    }
+    if(((ArrayBitSystem[3] >> 21) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0008
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 10) & 1)) {  // RCfgSrvParP7OK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (!((ArrayBitSystem[3] >> 24) & 1)) {  // $oneShot_005b
+            if (I_SerialReady) {  // $SerialReady
+                Yaskawa_Write("0", "SVON", &VAR_NULL);
+                if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 24; else ArrayBitSystem[3] &= ~(1UL << 24); // $oneShot_005b = $parThis_0000
+            }
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 25; else ArrayBitSystem[3] &= ~(1UL << 25); // $oneShot_005c = $parThis_0000
+        }
+        if (!((ArrayBitSystem[3] >> 25) & 1)) {  // $oneShot_005c
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[3] |= 1UL << 25; // $oneShot_005c = 1
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+            }
+        }
+    } else {
+        if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 24; else ArrayBitSystem[3] &= ~(1UL << 24); // $oneShot_005b = $parThis_0000
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[3] &= ~(1UL << 26); // $parOut_0009 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 27; else ArrayBitSystem[3] &= ~(1UL << 27); // $parThis_0009 = $parThis_0000
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[3] >> 27) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0009
+    if (((ArrayBitSystem[3] >> 28) & 1)) {  // $oneShot_005d
+        ArrayBitSystem[3] &= ~(1UL << 27); // $parThis_0009 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[3] |= 1UL << 28; else ArrayBitSystem[3] &= ~(1UL << 28); // $oneShot_005d = $scratch
+
+    if (((ArrayBitSystem[3] >> 27) & 1)) {  // $parThis_0009
+        ArrayBitUser[0] |= 1UL << 11; // RMaqLerOKSerial = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[3] >> 27) & 1)) {  // $parThis_0009
+        ArrayBitSystem[3] |= 1UL << 26; // $parOut_0009 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[3] |= 1UL << 27; else ArrayBitSystem[3] &= ~(1UL << 27); // $parThis_0009 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 11) & 1)) {  // RMaqLerOKSerial
+        ArrayBitSystem[3] &= ~(1UL << 27); // $parThis_0009 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[3] &= ~(1UL << 29); // $parOut_000a = 0
+    if(((ArrayBitSystem[3] >> 27) & 1)) ArrayBitSystem[3] |= 1UL << 30; else ArrayBitSystem[3] &= ~(1UL << 30); // $parThis_000a = $parThis_0009
+    if (((ArrayBitSystem[3] >> 30) & 1)) {  // $parThis_000a
+        ArrayBitUser[0] &= ~(1UL << 16); // RStartCfgSrv = 0
+    }
+
+    if (((ArrayBitSystem[3] >> 30) & 1)) {  // $parThis_000a
+        ArrayBitSystem[3] |= 1UL << 29; // $parOut_000a = 1
+    }
+    if(((ArrayBitSystem[3] >> 27) & 1)) ArrayBitSystem[3] |= 1UL << 30; else ArrayBitSystem[3] &= ~(1UL << 30); // $parThis_000a = $parThis_0009
+    if (((ArrayBitSystem[3] >> 30) & 1)) {  // $parThis_000a
+        ArrayBitUser[0] |= 1UL << 22; // RMaqCfgSrvOK = 1
+    }
+
+    if (((ArrayBitSystem[3] >> 30) & 1)) {  // $parThis_000a
+        ArrayBitSystem[3] |= 1UL << 29; // $parOut_000a = 1
+    }
+    if(((ArrayBitSystem[3] >> 27) & 1)) ArrayBitSystem[3] |= 1UL << 30; else ArrayBitSystem[3] &= ~(1UL << 30); // $parThis_000a = $parThis_0009
+    if (((ArrayBitSystem[3] >> 30) & 1)) {  // $parThis_000a
+        ArrayBitUser[1] |= 1UL << 9; // RAplanZerarEnc = 1
+    }
+
+    if (((ArrayBitSystem[3] >> 30) & 1)) {  // $parThis_000a
+        ArrayBitSystem[3] |= 1UL << 29; // $parOut_000a = 1
+    }
+    if(((ArrayBitSystem[3] >> 29) & 1)) ArrayBitSystem[3] |= 1UL << 27; else ArrayBitSystem[3] &= ~(1UL << 27); // $parThis_0009 = $parOut_000a
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[3] >> 27) & 1)) {  // $parThis_0009
+        ArrayBitSystem[3] |= 1UL << 26; // $parOut_0009 = 1
+    }
+    if(((ArrayBitSystem[3] >> 26) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0009
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 178 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitUser[0] >> 27) & 1)) {  // RModoAuto
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (MODBUS_REGISTER[2] & (1 << 4)) {  // YMbPrsSentidoInv
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[2] |= 1UL << 11; else ArrayBitUser[2] &= ~(1UL << 11); // RModoAutoOK = $rung_top
+
+    /* ] finish series */
+
+    /* start rung 179 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (!((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!GPIO_OUTPUT_PORT16) {  // YSrvHabilita
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (!GPIO_INPUT_PORT19) {  // XSrvInPos
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[53] < 299) {
+            ArrayIntUser[53]++;
+            ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+        }
+    } else {
+        ArrayIntUser[53] = 0; // TEspDeslSrvInPos
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (GPIO_INPUT_PORT6) {  // XAplanFechada
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (!((ArrayBitUser[0] >> 28) & 1)) {  // RMaqStartProd
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    /* ] finish parallel */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $rung_top
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] &= ~(1UL << 5); // RMaqProduzindo = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $rung_top
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] &= ~(1UL << 28); // RMaqStartProd = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $rung_top
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        MODBUS_REGISTER[1] &= ~(1 << 0);  // YMbModoAutoAtivo = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $rung_top
+    /* iniciando serie [ */
+    if (!GPIO_OUTPUT_PORT16) {  // YSrvHabilita
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    if (!GPIO_INPUT_PORT19) {  // XSrvInPos
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[2] |= 1UL << 12; // RMaqErroPosic = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 180 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 27) & 1)) {  // RModoAuto
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 28) & 1)) {  // RMaqStartProd
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!(MODBUS_REGISTER[1] & (1 << 0))) {  // YMbModoAutoAtivo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        MODBUS_REGISTER[1] |= (1 << 0);  // YMbModoAutoAtivo = 1
+        MODBUS_REGISTER[1] &= ~(1 << 0);  // YMbModoAutoAtivo = 0
     }
 
     /* ] finish series */
 
-    /* start rung 177 */
+    /* start rung 181 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (((ArrayBitSystem[3] >> 31) & 1)) {  // $oneShot_005e
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[3] |= 1UL << 31; else ArrayBitSystem[3] &= ~(1UL << 31); // $oneShot_005e = $scratch
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[1] &= ~(1 << 0);  // YMbModoAutoAtivo = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] |= 1UL << 29; // RPrsPararMartelo = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 20); // RAplanLigarMotor = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[2] &= ~(1UL << 13); // RMaqInicioAuto = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[2] &= ~(1UL << 14); // RMaqPosicionando = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 183 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 27) & 1)) {  // RModoAuto
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[4] >> 0) & 1)) {  // $oneShot_005f
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 0; else ArrayBitSystem[4] &= ~(1UL << 0); // $oneShot_005f = $scratch
+
+    if (((ArrayBitUser[0] >> 28) & 1)) {  // RMaqStartProd
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[2] >> 12) & 1)) {  // RMaqErroPosic
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitUser[0] >> 25) & 1)) {  // RMaqConfigOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (MODBUS_REGISTER[2] & (1 << 4)) {  // YMbPrsSentidoInv
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] |= 1UL << 28; // RMaqStartProd = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[4] &= ~(1 << 6);  // YMbAplanExtSubir = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[4] &= ~(1 << 7);  // YMbAplanExpandir = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] |= 1UL << 9; // RAplanZerarEnc = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 184 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 28) & 1)) {  // RMaqStartProd
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[1] >> 23) & 1)) {  // RPrsMotorLigado
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        MODBUS_REGISTER[4] |= (1 << 8);  // YMbPrsLigaMotor = 1
+    }
+
+    /* ] finish series */
+
+    /* start rung 185 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 28) & 1)) {  // RMaqStartProd
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (GPIO_INPUT_PORT6) {  // XAplanFechada
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        MODBUS_REGISTER[4] |= (1 << 3);  // YMbAplanFecha = 1
+    }
+
+    /* ] finish series */
+
+    /* start rung 186 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 28) & 1)) {  // RMaqStartProd
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[54] < 299) {
+            ArrayIntUser[54]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[54] = 0; // TEspExtRepouso
+    }
+
+    if (!((ArrayBitUser[1] >> 27) & 1)) {  // RPrsMotorOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!GPIO_INPUT_PORT6) {  // XAplanFechada
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[4] >> 1) & 1)) {  // $oneShot_0060
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 1; else ArrayBitSystem[4] &= ~(1UL << 1); // $oneShot_0060 = $scratch
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayBitUser[0] &= ~(1UL << 28); // RMaqStartProd = 0
+    }
+
+    /* ] finish series */
+
+    /* start rung 187 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 28) & 1)) {  // RMaqStartProd
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (((ArrayBitSystem[4] >> 2) & 1)) {  // $oneShot_0061
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 2; else ArrayBitSystem[4] &= ~(1UL << 2); // $oneShot_0061 = $scratch
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 11) & 1)) {  // RModoAutoOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] |= 1UL << 5; // RMaqProduzindo = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    /* iniciando serie [ */
+    ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] |= 1UL << 26; // RPrsIniciarCiclo = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[2] |= 1UL << 13; // RMaqInicioAuto = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] &= ~(1UL << 28); // RBloquearPrensa = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitUser[2] >> 11) & 1)) {  // RModoAutoOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[1] &= ~(1 << 0);  // YMbModoAutoAtivo = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 189 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[16] = ArrayIntUser[8] - ArrayIntUser[55]; // DifPosic = MaqPosAtual - AplanPasso
+    }
+
+    /* ] finish series */
+
+    /* start rung 190 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    ArrayIntUser[5] = -75; // $scratch2
+    if (ArrayIntUser[5] > ArrayIntUser[16]) {
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    ArrayIntUser[5] = 75; // $scratch2
+    if (ArrayIntUser[16] > ArrayIntUser[5]) {
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[1] |= 1UL << 11; else ArrayBitUser[1] &= ~(1UL << 11); // RMaqForaPosic = $rung_top
+
+    /* ] finish series */
+
+    /* start rung 191 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    ArrayIntUser[5] = 30; // $scratch2
+    if (ArrayIntUser[5] > ArrayIntUser[16]) {
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    ArrayIntUser[5] = -30; // $scratch2
+    if (ArrayIntUser[16] > ArrayIntUser[5]) {
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[2] |= 1UL << 15; else ArrayBitUser[2] &= ~(1UL << 15); // RMaqPosicOK = $rung_top
+
+    /* ] finish series */
+
+    /* start rung 192 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 31) & 1)) {  // RPrsAvancoOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[4] >> 3) & 1)) {  // $oneShot_0062
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 3; else ArrayBitSystem[4] &= ~(1UL << 3); // $oneShot_0062 = $scratch
+
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (((ArrayBitUser[2] >> 12) & 1)) {  // RMaqErroPosic
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] |= 1UL << 20; // RAplanLigarMotor = 1
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[2] &= ~(1UL << 13); // RMaqInicioAuto = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0001
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[4] >> 4) & 1)) {  // $oneShot_0063
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 4; else ArrayBitSystem[4] &= ~(1UL << 4); // $oneShot_0063 = $scratch
+
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 30); // $parOut_0002 = 0
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 11) & 1)) {  // RMaqForaPosic
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    if (((ArrayBitUser[2] >> 13) & 1)) {  // RMaqInicioAuto
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[1] &= ~(1UL << 3); // $parOut_0003 = 0
+    if(((ArrayBitSystem[0] >> 31) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $parThis_0002
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitUser[2] |= 1UL << 12; // RMaqErroPosic = 1
+    }
+
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitSystem[1] |= 1UL << 3; // $parOut_0003 = 1
+    }
+    if(((ArrayBitSystem[0] >> 31) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $parThis_0002
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitUser[1] |= 1UL << 29; // RPrsPararMartelo = 1
+    }
+
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitSystem[1] |= 1UL << 3; // $parOut_0003 = 1
+    }
+    if(((ArrayBitSystem[0] >> 31) & 1)) ArrayBitSystem[1] |= 1UL << 4; else ArrayBitSystem[1] &= ~(1UL << 4); // $parThis_0003 = $parThis_0002
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayIntUser[5] = 10; // $scratch2
+        if(ArrayIntUser[5]) MODBUS_REGISTER[14] = ArrayIntUser[16] / ArrayIntUser[5]; // YMbMaqErroPos = DifPosic / $scratch2
+    }
+
+    if (((ArrayBitSystem[1] >> 4) & 1)) {  // $parThis_0003
+        ArrayBitSystem[1] |= 1UL << 3; // $parOut_0003 = 1
+    }
+    if(((ArrayBitSystem[1] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parOut_0003
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    /* iniciando serie [ */
+    if (((ArrayBitUser[2] >> 12) & 1)) {  // RMaqErroPosic
+        ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[1] |= 1UL << 9; // RAplanZerarEnc = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[0] &= ~(1UL << 20); // RAplanLigarMotor = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 31; else ArrayBitSystem[0] &= ~(1UL << 31); // $parThis_0002 = $parThis_0000
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitUser[2] &= ~(1UL << 14); // RMaqPosicionando = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 31) & 1)) {  // $parThis_0002
+        ArrayBitSystem[0] |= 1UL << 30; // $parOut_0002 = 1
+    }
+    if(((ArrayBitSystem[0] >> 30) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $parOut_0002
+    /* ] finish parallel */
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 193 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 12) & 1)) {  // RMaqErroPosic
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (((ArrayBitSystem[4] >> 5) & 1)) {  // $oneShot_0064
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 5; else ArrayBitSystem[4] &= ~(1UL << 5); // $oneShot_0064 = $scratch
+
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitUser[1] >> 0) & 1)) {  // RAplanAvancoOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayBitUser[0] |= 1UL << 20; // RAplanLigarMotor = 1
+    }
+
+    /* ] finish series */
+
+    /* start rung 194 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!GPIO_INPUT_PORT19) {  // XSrvInPos
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[4] >> 6) & 1)) {  // $oneShot_0065
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 6; else ArrayBitSystem[4] &= ~(1UL << 6); // $oneShot_0065 = $scratch
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 15) & 1)) {  // RMaqPosicOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[4] >> 7) & 1)) {  // $oneShot_0066
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 7; else ArrayBitSystem[4] &= ~(1UL << 7); // $oneShot_0066 = $scratch
+
+    if (!GPIO_INPUT_PORT19) {  // XSrvInPos
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if (!((ArrayBitUser[2] >> 14) & 1)) {  // RMaqPosicionando
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 5); // $parOut_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[0] &= ~(1UL << 20); // RAplanLigarMotor = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[2] >> 15) & 1)) {  // RMaqPosicOK
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    if (GPIO_OUTPUT_PORT11) {  // YPrsEmbreagem
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] |= 1UL << 26; // RPrsIniciarCiclo = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitUser[2] >> 15) & 1)) {  // RMaqPosicOK
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    if (!((ArrayBitUser[1] >> 0) & 1)) {  // RAplanAvancoOK
+        ArrayBitSystem[0] &= ~(1UL << 6); // $parThis_0001 = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitUser[1] |= 1UL << 7; // RAplanCorrigeEnc = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 6) & 1)) {  // $parThis_0001
+        ArrayBitSystem[0] |= 1UL << 5; // $parOut_0001 = 1
+    }
+    if(((ArrayBitSystem[0] >> 5) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0001
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 195 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 7) & 1)) {  // RAplanCorrigeEnc
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (((ArrayBitSystem[4] >> 8) & 1)) {  // $oneShot_0067
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 8; else ArrayBitSystem[4] &= ~(1UL << 8); // $oneShot_0067 = $scratch
+
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitUser[1] >> 0) & 1)) {  // RAplanAvancoOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayBitUser[0] |= 1UL << 20; // RAplanLigarMotor = 1
+    }
+
+    /* ] finish series */
+
+    /* start rung 197 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!GPIO_INPUT_PORT19) {  // XSrvInPos
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (((ArrayBitSystem[4] >> 9) & 1)) {  // $oneShot_0068
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 9; else ArrayBitSystem[4] &= ~(1UL << 9); // $oneShot_0068 = $scratch
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayBitUser[2] |= 1UL << 16; // SrvMotorPartiu = 1
+    }
+
+    /* ] finish series */
+
+    /* start rung 198 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 20) & 1)) {  // RAplanLigarMotor
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[4] >> 10) & 1)) {  // $oneShot_0069
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 10; else ArrayBitSystem[4] &= ~(1UL << 10); // $oneShot_0069 = $scratch
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayBitUser[2] &= ~(1UL << 16); // SrvMotorPartiu = 0
+    }
+
+    /* ] finish series */
+
+    /* start rung 199 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitUser[0] >> 20) & 1)) {  // RAplanLigarMotor
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[2] >> 17) & 1)) {  // SrvReligarMotor
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[56] < 4) {
+            ArrayIntUser[56]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[56] = 0; // EspSrvPartir
+    }
+
+    if (((ArrayBitUser[2] >> 16) & 1)) {  // SrvMotorPartiu
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (!((ArrayBitSystem[4] >> 11) & 1)) {  // $EspSrvReligar_antiglitch
+        ArrayIntUser[57] = 4; // EspSrvReligar
+    }
+    ArrayBitSystem[4] |= 1UL << 11; // $EspSrvReligar_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[57] < 4) {
+            ArrayIntUser[57]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayIntUser[57] = 0; // EspSrvReligar
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[2] |= 1UL << 17; else ArrayBitUser[2] &= ~(1UL << 17); // SrvReligarMotor = $rung_top
+
+    /* ] finish series */
+
+    /* start rung 200 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 20) & 1)) {  // RAplanLigarMotor
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[1] >> 7) & 1)) {  // RAplanCorrigeEnc
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[1] >> 9) & 1)) {  // RAplanZerarEnc
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (((ArrayBitUser[2] >> 17) & 1)) {  // SrvReligarMotor
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    GPIO_OUTPUT_PORT16 = ((ArrayBitSystem[0] >> 4) & 1); // YSrvHabilita = $parThis_0000
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[4] >> 12) & 1)) {  // $oneShot_006a
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 12; else ArrayBitSystem[4] &= ~(1UL << 12); // $oneShot_006a = $scratch
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[2] |= 1UL << 14; // RMaqPosicionando = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitSystem[4] >> 13) & 1)) {  // $TEspSrvParar_antiglitch
+        ArrayIntUser[58] = 9; // TEspSrvParar
+    }
+    ArrayBitSystem[4] |= 1UL << 13; // $TEspSrvParar_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[58] < 9) {
+            ArrayIntUser[58]++;
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayIntUser[58] = 0; // TEspSrvParar
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[1] &= ~(1UL << 10); // RSrvMotorParado = 0
+    } else {
+        ArrayBitUser[1] |= 1UL << 10; // RSrvMotorParado = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 202 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 31) & 1)) {  // RPrsAvancoOK
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[4] >> 14) & 1)) {  // $oneShot_006b
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 14; else ArrayBitSystem[4] &= ~(1UL << 14); // $oneShot_006b = $scratch
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[0] >> 27) & 1)) {  // RModoAuto
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (((ArrayBitSystem[4] >> 15) & 1)) {  // $oneShot_006c
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 15; else ArrayBitSystem[4] &= ~(1UL << 15); // $oneShot_006c = $scratch
+
+    if (GPIO_OUTPUT_PORT11) {  // YPrsEmbreagem
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitUser[0] >> 27) & 1)) {  // RModoAuto
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayBitUser[0] &= ~(1UL << 5); // RMaqProduzindo = 0
+    }
+
+    /* ] finish series */
+
+    /* start rung 204 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!(MODBUS_REGISTER[2] & (1 << 0))) {  // XMbModoAuto
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitUser[0] |= 1UL << 27; else ArrayBitUser[0] &= ~(1UL << 27); // RModoAuto = $parThis_0000
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $parThis_0000
+    if (((ArrayBitSystem[4] >> 16) & 1)) {  // $oneShot_006d
+        ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 16; else ArrayBitSystem[4] &= ~(1UL << 16); // $oneShot_006d = $scratch
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[1] |= (1 << 0);  // YMbModoAutoAtivo = 1
+    }
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 205 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!(MODBUS_REGISTER[3] & (1 << 0))) {  // XDbgLimpaErro
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[4] >> 17) & 1)) {  // $oneShot_006e
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 17; else ArrayBitSystem[4] &= ~(1UL << 17); // $oneShot_006e = $scratch
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        MODBUS_REGISTER[2] |= (1 << 2);  // YMbLimpaErro = 1
+    }
+
+    /* ] finish series */
+
+    /* start rung 206 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
@@ -5171,122 +6299,57 @@ void PLC_Run(void)
     }
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[0] &= ~(1UL << 4); // RMaqCfgSrvErro = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitUser[2] &= ~(1UL << 12); // RMaqErroPosic = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    /* iniciando serie [ */
+    if (!((ArrayBitSystem[4] >> 18) & 1)) {  // $TEspInvLimpaErr_antiglitch
+        ArrayIntUser[59] = 9; // TEspInvLimpaErr
+    }
+    ArrayBitSystem[4] |= 1UL << 18; // $TEspInvLimpaErr_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        if (ArrayIntUser[59] < 9) {
+            ArrayIntUser[59]++;
+            ArrayBitSystem[0] |= 1UL << 4; // $parThis_0000 = 1
+        }
+    } else {
+        ArrayIntUser[59] = 0; // TEspInvLimpaErr
+    }
+
+    GPIO_OUTPUT_PORT15 = ((ArrayBitSystem[0] >> 4) & 1); // YInvLimpaErro = $parThis_0000
+
+    /* ] finish series */
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
         MODBUS_REGISTER[2] &= ~(1 << 2);  // YMbLimpaErro = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[0] &= ~(1 << 7);  // ErroTamPeca = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] &= ~(1UL << 4); // RMaqConfigErro = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] &= ~(1UL << 22); // RErroCortePerf = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[0] &= ~(1UL << 19); // ErroPrensaPerf = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* ] finish series */
 
-    /* start rung 178 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!(MODBUS_REGISTER[2] & (1 << 5))) {  // YMbPerfSync
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[1] >> 13) & 1)) {  // RModoAuto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[1] |= 1UL << 6; // RStartConfigMan = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[2] &= ~(1 << 5);  // YMbPerfSync = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 179 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!(MODBUS_REGISTER[2] & (1 << 7))) {  // InvSync
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[1] >> 3) & 1)) {  // RStartConfigAuto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitUser[1] >> 6) & 1)) {  // RStartConfigMan
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[1] |= 1UL << 7; // InvSyncAtivo = 1
-    }
-
-    /* ] finish series */
-
-    /* start rung 181 */
+    /* start rung 208 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
@@ -5298,11 +6361,11 @@ void PLC_Run(void)
 
     /* ] finish series */
 
-    /* start rung 182 */
+    /* start rung 209 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (GPIO_INPUT_PORT6) {  // XFaltaFase
+    if (GPIO_INPUT_PORT4) {  // XFaltaFase
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
@@ -5310,11 +6373,11 @@ void PLC_Run(void)
 
     /* ] finish series */
 
-    /* start rung 183 */
+    /* start rung 210 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (GPIO_INPUT_PORT2) {  // XTermBombaHidr
+    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RErroBombaHidr
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
@@ -5322,571 +6385,15 @@ void PLC_Run(void)
 
     /* ] finish series */
 
-    /* start rung 184 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (GPIO_INPUT_PORT4) {  // ServoOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    MODBUS_REGISTER[0] &= ~(1 << 3); MODBUS_REGISTER[0] |= ((ArrayBitSystem[0] >> 1) & 1) << 3;  // YMbErrInversor = $rung_top
-
-    /* ] finish series */
-
-    /* start rung 185 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 4) & 1)) {  // RMaqConfigErro
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    MODBUS_REGISTER[0] &= ~(1 << 5); MODBUS_REGISTER[0] |= ((ArrayBitSystem[0] >> 1) & 1) << 5;  // YMbErrInvComunic = $rung_top
-
-    /* ] finish series */
-
-    /* start rung 186 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 22) & 1)) {  // RErroCortePerf
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    MODBUS_REGISTER[0] &= ~(1 << 6); MODBUS_REGISTER[0] |= ((ArrayBitSystem[0] >> 1) & 1) << 6;  // YMbErrCortePerf = $rung_top
-
-    /* ] finish series */
-
-    /* start rung 188 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 2) & 1)) {  // RMaqOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    MODBUS_REGISTER[1] &= ~(1 << 1); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 1;  // YMbMaqOK = $rung_top
-
-    /* ] finish series */
-
-    /* start rung 189 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 0) & 1)) {  // RMaqConfigOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    MODBUS_REGISTER[1] &= ~(1 << 2); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 2;  // YMbMaqConfigOK = $rung_top
-
-    /* ] finish series */
-
-    /* start rung 190 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 12) & 1)) {  // RCortePronto
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    MODBUS_REGISTER[1] &= ~(1 << 3); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 3;  // YMbCortePronto = $rung_top
-
-    /* ] finish series */
-
-    /* start rung 191 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 13) & 1)) {  // RFerramCorteCima
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    MODBUS_REGISTER[1] &= ~(1 << 4); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 4;  // YMbFerrCorteCima = $rung_top
-
-    /* ] finish series */
-
-    /* start rung 192 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[1] >> 1) & 1)) {  // RPerfManualOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    MODBUS_REGISTER[1] &= ~(1 << 5); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 5;  // YMbPerfManualOK = $rung_top
-
-    /* ] finish series */
-
-    /* start rung 193 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (!((ArrayBitUser[0] >> 18) & 1)) {  // RMaqProduzindo
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    MODBUS_REGISTER[1] &= ~(1 << 7); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 7;  // YMbMaqProduzindo = $rung_top
-
-    /* ] finish series */
-
-    /* start rung 195 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $rung_top
-    if (((ArrayBitSystem[2] >> 25) & 1)) {  // $oneShot_004a
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[2] |= 1UL << 25; else ArrayBitSystem[2] &= ~(1UL << 25); // $oneShot_004a = $scratch
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[10] = 1000; // YMbPerfFatorL
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[11] = 0; // YMbPerfFatorH
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[31] = 0; // YMbTam
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[14] = 100; // YMbAutoVel
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[12] = 200; // YMbAutoAcel
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[13] = 150; // YMbAutoDesac
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[17] = 30; // YMbManVel
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[15] = 400; // YMbManAcel
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[16] = 100; // YMbManDesac
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[25] = 5; // YMbFacaTam
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[17] = 1; // WInvModoAuto
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[21] = 0; // WInvModoMan
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[20] = 1000; // YMbEncFator
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[29] = 0; // QtdPecasFila
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[24] = 450000; // DistPrensaCorte
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[71] = 0; // PecaTam
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[70] = ArrayIntUser[71]; // DistanciaPrensa = PecaTam
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[80] = 1000; // YMbSrvFator
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[9] = 0; // ValResetEnc
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[21] = 2500; // YMbEncResol
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[22] = 400; // YMbEncPerim
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 198 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 65536; // $scratch2
-        ArrayIntUser[81] = MODBUS_REGISTER[11] * ArrayIntUser[3]; // WMbPerfFator = YMbPerfFatorH * $scratch2
-    }
-
-    /* ] finish series */
-
-    /* start rung 199 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[81] = ArrayIntUser[81] + MODBUS_REGISTER[10]; // WMbPerfFator = WMbPerfFator + YMbPerfFatorL
-    }
-
-    /* ] finish series */
-
-    /* start rung 201 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 0; // $scratch2
-    if (ArrayIntUser[3] > ArrayIntUser[76]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[3] = -1; // $scratch2
-        ArrayIntUser[82] = ArrayIntUser[76] * ArrayIntUser[3]; // Posicao = DifPosic * $scratch2
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] |= 1UL << 31; // SentidoAvancar = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 202 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 0; // $scratch2
-    if (ArrayIntUser[3] > ArrayIntUser[76]) {
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[82] = ArrayIntUser[76]; // Posicao = DifPosic
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitUser[0] &= ~(1UL << 31); // SentidoAvancar = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 203 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[83] = ArrayIntUser[82] * ArrayIntUser[80]; // WInvTam = Posicao * YMbSrvFator
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[3] = 1000; // $scratch2
-        if(ArrayIntUser[3]) ArrayIntUser[83] = ArrayIntUser[83] / ArrayIntUser[3]; // WInvTam = WInvTam / $scratch2
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 204 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[84] = ArrayIntUser[83]; // WInvTamIntegral = WInvTam
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[3] = 100; // $scratch2
-        if(ArrayIntUser[3]) ArrayIntUser[83] = ArrayIntUser[83] / ArrayIntUser[3]; // WInvTam = WInvTam / $scratch2
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 205 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[3] = 100; // $scratch2
-        ArrayIntUser[85] = ArrayIntUser[83] * ArrayIntUser[3]; // WInvTamCent = WInvTam * $scratch2
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[85] = ArrayIntUser[84] - ArrayIntUser[85]; // WInvTamCent = WInvTamIntegral - WInvTamCent
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 206 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[83] = ArrayIntUser[83] * ArrayIntUser[81]; // WInvTam = WInvTam * WMbPerfFator
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[3] = 1000; // $scratch2
-        if(ArrayIntUser[3]) ArrayIntUser[83] = ArrayIntUser[83] / ArrayIntUser[3]; // WInvTam = WInvTam / $scratch2
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 207 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[85] = ArrayIntUser[85] * ArrayIntUser[81]; // WInvTamCent = WInvTamCent * WMbPerfFator
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[3] = 100000; // $scratch2
-        if(ArrayIntUser[3]) ArrayIntUser[85] = ArrayIntUser[85] / ArrayIntUser[3]; // WInvTamCent = WInvTamCent / $scratch2
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
-    /* start rung 208 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[83] = ArrayIntUser[83] + ArrayIntUser[85]; // WInvTam = WInvTam + WInvTamCent
-    }
-
-    /* ] finish series */
-
-    /* start rung 209 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[3] = 65536; // $scratch2
-        if(ArrayIntUser[3]) ArrayIntUser[7] = ArrayIntUser[83] / ArrayIntUser[3]; // DeslocamentoH = WInvTam / $scratch2
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[3] = 65536; // $scratch2
-        ArrayIntUser[8] = ArrayIntUser[7] * ArrayIntUser[3]; // DeslocamentoL = DeslocamentoH * $scratch2
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[8] = ArrayIntUser[83] - ArrayIntUser[8]; // DeslocamentoL = WInvTam - DeslocamentoL
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
-    /* ] finish series */
-
     /* start rung 211 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[86] = MODBUS_REGISTER[31] + MODBUS_REGISTER[25]; // NovoPecaTam = YMbTam + YMbFacaTam
+    if (GPIO_INPUT_PORT3) {  // XTermMartelo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[0] &= ~(1 << 3); MODBUS_REGISTER[0] |= ((ArrayBitSystem[0] >> 1) & 1) << 3;  // YMbErrMartelo = $rung_top
 
     /* ] finish series */
 
@@ -5894,10 +6401,11 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 100; // $scratch2
-        ArrayIntUser[86] = ArrayIntUser[86] * ArrayIntUser[3]; // NovoPecaTam = NovoPecaTam * $scratch2
+    if (((ArrayBitUser[0] >> 17) & 1)) {  // RPressaoArOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[0] &= ~(1 << 4); MODBUS_REGISTER[0] |= ((ArrayBitSystem[0] >> 1) & 1) << 4;  // YMbErrPressaoAr = $rung_top
 
     /* ] finish series */
 
@@ -5905,94 +6413,37 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (ArrayIntUser[86] == ArrayIntUser[71]) {
+    if (GPIO_INPUT_PORT5) {  // XInversorOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[87] = ArrayIntUser[71] - ArrayIntUser[70]; // NovoDistancia = PecaTam - DistanciaPrensa
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[87] = ArrayIntUser[86] - ArrayIntUser[87]; // NovoDistancia = NovoPecaTam - NovoDistancia
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 0; // $scratch2
-    if (ArrayIntUser[3] > ArrayIntUser[87]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[0] |= (1 << 7);  // ErroTamPeca = 1
-    }
+    MODBUS_REGISTER[0] &= ~(1 << 5); MODBUS_REGISTER[0] |= ((ArrayBitSystem[0] >> 1) & 1) << 5;  // YMbErrInversor = $rung_top
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+
+    /* start rung 214 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
     /* iniciando serie [ */
-    if (MODBUS_REGISTER[0] & (1 << 7)) {  // ErroTamPeca
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if (((ArrayBitUser[0] >> 8) & 1)) {  // RServoOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[70] = ArrayIntUser[87]; // DistanciaPrensa = NovoDistancia
-    }
+    MODBUS_REGISTER[0] &= ~(1 << 6); MODBUS_REGISTER[0] |= ((ArrayBitSystem[0] >> 1) & 1) << 6;  // YMbErrServo = $rung_top
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[71] = ArrayIntUser[86]; // PecaTam = NovoPecaTam
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitUser[1] |= 1UL << 12; // PecaTamAlterado = 1
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
     /* ] finish series */
 
     /* start rung 215 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 60; // $scratch2
-        ArrayIntUser[18] = MODBUS_REGISTER[14] * ArrayIntUser[3]; // WInvAutoVel = YMbAutoVel * $scratch2
+    if (GPIO_INPUT_PORT8) {  // XDesbobOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+
+    MODBUS_REGISTER[0] &= ~(1 << 7); MODBUS_REGISTER[0] |= ((ArrayBitSystem[0] >> 1) & 1) << 7;  // YMbErrDesbob = $rung_top
 
     /* ] finish series */
 
@@ -6000,10 +6451,11 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 10; // $scratch2
-        if(ArrayIntUser[3]) ArrayIntUser[18] = ArrayIntUser[18] / ArrayIntUser[3]; // WInvAutoVel = WInvAutoVel / $scratch2
+    if (!((ArrayBitUser[0] >> 4) & 1)) {  // RMaqCfgSrvErro
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[0] &= ~(1 << 8); MODBUS_REGISTER[0] |= ((ArrayBitSystem[0] >> 1) & 1) << 8;  // YMbErrSrvComunic = $rung_top
 
     /* ] finish series */
 
@@ -6011,21 +6463,23 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 60; // $scratch2
-        ArrayIntUser[22] = MODBUS_REGISTER[17] * ArrayIntUser[3]; // WInvManVel = YMbManVel * $scratch2
+    if (!((ArrayBitUser[2] >> 12) & 1)) {  // RMaqErroPosic
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[0] &= ~(1 << 9); MODBUS_REGISTER[0] |= ((ArrayBitSystem[0] >> 1) & 1) << 9;  // YMbErrPosic = $rung_top
 
     /* ] finish series */
 
-    /* start rung 218 */
+    /* start rung 219 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[3] = 10; // $scratch2
-        if(ArrayIntUser[3]) ArrayIntUser[22] = ArrayIntUser[22] / ArrayIntUser[3]; // WInvManVel = WInvManVel / $scratch2
+    if (!((ArrayBitUser[0] >> 19) & 1)) {  // RMaqOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[1] &= ~(1 << 1); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 1;  // YMbMaqOK = $rung_top
 
     /* ] finish series */
 
@@ -6033,9 +6487,11 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[19] = MODBUS_REGISTER[12]; // WInvAutoAcel = YMbAutoAcel
+    if (!((ArrayBitUser[0] >> 26) & 1)) {  // RMaqPronta
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[1] &= ~(1 << 2); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 2;  // YMbMaqPronta = $rung_top
 
     /* ] finish series */
 
@@ -6043,9 +6499,11 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[88] = MODBUS_REGISTER[13]; // WInvAutoDesac = YMbAutoDesac
+    if (!((ArrayBitUser[0] >> 22) & 1)) {  // RMaqCfgSrvOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[1] &= ~(1 << 3); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 3;  // YMbMaqCfgSrvOK = $rung_top
 
     /* ] finish series */
 
@@ -6053,9 +6511,11 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[23] = MODBUS_REGISTER[15]; // WInvManAcel = YMbManAcel
+    if (!((ArrayBitUser[1] >> 0) & 1)) {  // RAplanAvancoOK
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[1] &= ~(1 << 4); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 4;  // YMbAplanAvancoOK = $rung_top
 
     /* ] finish series */
 
@@ -6063,9 +6523,23 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[89] = MODBUS_REGISTER[16]; // WInvManDesac = YMbManDesac
+    if (!((ArrayBitUser[1] >> 24) & 1)) {  // RPrsMotorParado
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[1] &= ~(1 << 5); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 5;  // YMbPrsParado = $rung_top
+
+    /* ] finish series */
+
+    /* start rung 224 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (!((ArrayBitUser[1] >> 23) & 1)) {  // RPrsMotorLigado
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    MODBUS_REGISTER[1] &= ~(1 << 6); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 6;  // YMbPrsLigado = $rung_top
 
     /* ] finish series */
 
@@ -6073,9 +6547,11 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        MODBUS_REGISTER[5] = ArrayIntUser[25]; // MbInvTensao = WInvTensao
+    if (!((ArrayBitUser[0] >> 5) & 1)) {  // RMaqProduzindo
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[1] &= ~(1 << 7); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 7;  // YMbMaqProduzindo = $rung_top
 
     /* ] finish series */
 
@@ -6083,9 +6559,11 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        MODBUS_REGISTER[6] = ArrayIntUser[26]; // MbInvCorrente = WInvCorrente
+    if (!((ArrayBitUser[0] >> 28) & 1)) {  // RMaqStartProd
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[1] &= ~(1 << 8); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 8;  // YMbMaqStartProd = $rung_top
 
     /* ] finish series */
 
@@ -6093,9 +6571,11 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        MODBUS_REGISTER[7] = 0; // MbInvTorque
+    if (!((ArrayBitUser[1] >> 11) & 1)) {  // RMaqForaPosic
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[1] &= ~(1 << 9); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 9;  // YMbMaqForaPosic = $rung_top
 
     /* ] finish series */
 
@@ -6103,9 +6583,11 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        MODBUS_REGISTER[8] = ArrayIntUser[27]; // MbInvDigIn = WInvDigIn
+    if (GPIO_INPUT_PORT6) {  // XAplanFechada
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[1] &= ~(1 << 12); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 12;  // YMbAplanAberta = $rung_top
 
     /* ] finish series */
 
@@ -6113,9 +6595,23 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        MODBUS_REGISTER[9] = ArrayIntUser[28]; // MbInvDigOut = WInvDigOut
+    if (!((ArrayBitUser[1] >> 5) & 1)) {  // RAplanExtSubir
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    MODBUS_REGISTER[1] &= ~(1 << 11); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 11;  // YMbAplanExtCima = $rung_top
+
+    /* ] finish series */
+
+    /* start rung 230 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (GPIO_INPUT_PORT7) {  // XAplanExtRecuada
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    MODBUS_REGISTER[1] &= ~(1 << 10); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 10;  // YMbAplanExtAvanc = $rung_top
 
     /* ] finish series */
 
@@ -6123,722 +6619,159 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!(MODBUS_REGISTER[2] & (1 << 9))) {  // MbTamanhoLista
+    if (!GPIO_INPUT_PORT19) {  // XSrvInPos
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[2] &= ~(1 << 9);  // MbTamanhoLista = 0
-    }
+    MODBUS_REGISTER[1] &= ~(1 << 13); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 13;  // YMbSrvInPos = $rung_top
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayIntUser[29] = MODBUS_REGISTER[18]; // QtdPecasFila = MbIndiceLista
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
     /* ] finish series */
 
-    /* start rung 233 */
+    /* start rung 232 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!(MODBUS_REGISTER[2] & (1 << 10))) {  // MbLerPeca
+    if (!((ArrayBitUser[2] >> 15) & 1)) {  // RMaqPosicOK
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[2] &= ~(1 << 10);  // MbLerPeca = 0
-    }
+    MODBUS_REGISTER[1] &= ~(1 << 14); MODBUS_REGISTER[1] |= ((ArrayBitSystem[0] >> 1) & 1) << 14;  // YMbPosicOK = $rung_top
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[19] = 0; // MbPecaLista
-    }
+    /* ] finish series */
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
+    /* start rung 234 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
     /* iniciando serie [ */
-    if (ArrayIntUser[29] > MODBUS_REGISTER[18]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[4] >> 19) & 1)) {  // $oneShot_006f
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 19; else ArrayBitSystem[4] &= ~(1UL << 19); // $oneShot_006f = $scratch
 
     /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 0; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[17] = 0; // ValZero
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[69]; // MbPecaLista = PecasFila0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 1; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[68]; // MbPecaLista = PecasFila1
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 2; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[67]; // MbPecaLista = PecasFila2
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 3; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[66]; // MbPecaLista = PecasFila3
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 4; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[65]; // MbPecaLista = PecasFila4
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 5; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[64]; // MbPecaLista = PecasFila5
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 6; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[63]; // MbPecaLista = PecasFila6
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 7; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[62]; // MbPecaLista = PecasFila7
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 8; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[61]; // MbPecaLista = PecasFila8
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 9; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[60]; // MbPecaLista = PecasFila9
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 10; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[59]; // MbPecaLista = PecasFila10
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 11; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[58]; // MbPecaLista = PecasFila11
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 12; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[57]; // MbPecaLista = PecasFila12
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 13; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[56]; // MbPecaLista = PecasFila13
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 14; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[55]; // MbPecaLista = PecasFila14
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 15; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[54]; // MbPecaLista = PecasFila15
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 16; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[53]; // MbPecaLista = PecasFila16
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ENC_Reset(0, ArrayIntUser[17]);
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 17; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[11] &= ~(1 << 0);  // YMbAplanAcelMS = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[52]; // MbPecaLista = PecasFila17
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 18; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[51]; // MbPecaLista = PecasFila18
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 19; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[50]; // MbPecaLista = PecasFila19
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 20; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[49]; // MbPecaLista = PecasFila20
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 21; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[48]; // MbPecaLista = PecasFila21
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 22; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[47]; // MbPecaLista = PecasFila22
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 23; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[46]; // MbPecaLista = PecasFila23
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 24; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[45]; // MbPecaLista = PecasFila24
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 25; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[44]; // MbPecaLista = PecasFila25
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 26; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[43]; // MbPecaLista = PecasFila26
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 27; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[42]; // MbPecaLista = PecasFila27
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 28; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[41]; // MbPecaLista = PecasFila28
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 29; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[12] &= ~(1 << 0);  // YMbAplanVelAuto = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[40]; // MbPecaLista = PecasFila29
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 30; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[39]; // MbPecaLista = PecasFila30
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[13] &= ~(1 << 0);  // YMbAplanVelMan = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 31; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[38]; // MbPecaLista = PecasFila31
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[10] &= ~(1 << 0);  // YMbAplanPasso = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 32; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[37]; // MbPecaLista = PecasFila32
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[20] &= ~(1 << 0);  // YMbEncFator = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 33; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[21] &= ~(1 << 0);  // YMbEncResol = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[36]; // MbPecaLista = PecasFila33
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 34; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[22] &= ~(1 << 0);  // YMbEncPerim = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[35]; // MbPecaLista = PecasFila34
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 35; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[34]; // MbPecaLista = PecasFila35
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[18] &= ~(1 << 0);  // YMbNovoCiclosMil = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 36; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[33]; // MbPecaLista = PecasFila36
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[17] &= ~(1 << 0);  // YMbNovoCiclosUnd = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 37; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[32]; // MbPecaLista = PecasFila37
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[16] &= ~(1 << 0);  // YMbPrsCiclosMil = 0
     }
 
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 38; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[15] &= ~(1 << 0);  // YMbPrsCiclosUnid = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[31]; // MbPecaLista = PecasFila38
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 39; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[14] &= ~(1 << 0);  // YMbMaqErroPos = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        MODBUS_REGISTER[19] = ArrayIntUser[30]; // MbPecaLista = PecasFila39
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[18] = ArrayIntUser[29]; // MbIndiceLista = QtdPecasFila
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[5] &= ~(1 << 0);  // YMbPosAtual = 0
     }
 
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
     }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
     /* ] finish parallel */
     /* ] finish series */
 
@@ -6846,705 +6779,273 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (!(MODBUS_REGISTER[2] & (1 << 11))) {  // MbGravarPeca
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $scratch = $rung_top
+    if (((ArrayBitSystem[4] >> 20) & 1)) {  // $oneShot_0070
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[4] |= 1UL << 20; else ArrayBitSystem[4] &= ~(1UL << 20); // $oneShot_0070 = $scratch
+
+    /* start parallel [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0000 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[47] = 5934; // AplanVelMax
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[13] = 10875; // FatorCorrServo
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[12] = 100; // YMbAplanVelAuto
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[13] = 30; // YMbAplanVelMan
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[11] = 100; // YMbAplanAcelMS
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[10] = 320; // YMbAplanPasso
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[20] = 10000; // YMbEncFator
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[21] = 2500; // YMbEncResol
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[22] = 400; // YMbEncPerim
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[33] = 0; // PrsCiclos
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[41] = 3; // PrsQtdPulsosLub
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[44] = 1000; // PrsIntervaloLub
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[39] = ArrayIntUser[33] + ArrayIntUser[44]; // PrsCiclosProxLub = PrsCiclos + PrsIntervaloLub
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[18] = 0; // YMbNovoCiclosMil
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        MODBUS_REGISTER[17] = 0; // YMbNovoCiclosUnd
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0000 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayIntUser[60] = ArrayIntUser[61]; // dest = src
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0000
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0000 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
+    /* ] finish parallel */
+    /* ] finish series */
+
+    /* start rung 238 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[51] = ArrayIntUser[47] * MODBUS_REGISTER[12]; // AplanVelAuto = AplanVelMax * YMbAplanVelAuto
+    }
+
+    /* ] finish series */
+
+    /* start rung 239 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[5] = 100; // $scratch2
+        if(ArrayIntUser[5]) ArrayIntUser[51] = ArrayIntUser[51] / ArrayIntUser[5]; // AplanVelAuto = AplanVelAuto / $scratch2
+    }
+
+    /* ] finish series */
+
+    /* start rung 240 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[24] = ArrayIntUser[47] * MODBUS_REGISTER[13]; // AplanVelManual = AplanVelMax * YMbAplanVelMan
+    }
+
+    /* ] finish series */
+
+    /* start rung 241 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[5] = 100; // $scratch2
+        if(ArrayIntUser[5]) ArrayIntUser[24] = ArrayIntUser[24] / ArrayIntUser[5]; // AplanVelManual = AplanVelManual / $scratch2
+    }
+
+    /* ] finish series */
+
+    /* start rung 242 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    ArrayIntUser[5] = 0; // $scratch2
+    if (MODBUS_REGISTER[11] > ArrayIntUser[5]) {
+    } else {
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0000 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    /* iniciando serie [ */
-    if (ArrayIntUser[29] > MODBUS_REGISTER[18]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = 0
-    }
-
-    /* start parallel [ */
-    ArrayBitSystem[0] &= ~(1UL << 4); // $parOut_0001 = 0
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 0; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[69] = MODBUS_REGISTER[19]; // PecasFila0 = MbPecaLista
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if(MODBUS_REGISTER[11]) ArrayIntUser[48] = ArrayIntUser[47] / MODBUS_REGISTER[11]; // AplanRampa = AplanVelMax / YMbAplanAcelMS
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
+
+    /* start rung 243 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
     /* iniciando serie [ */
-    ArrayIntUser[3] = 1; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
+    ArrayIntUser[5] = 0; // $scratch2
+    if (ArrayIntUser[48] == ArrayIntUser[5]) {
     } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[68] = MODBUS_REGISTER[19]; // PecasFila1 = MbPecaLista
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[48] = 1; // AplanRampa
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
+
+    /* start rung 244 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
     /* iniciando serie [ */
-    ArrayIntUser[3] = 2; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[67] = MODBUS_REGISTER[19]; // PecasFila2 = MbPecaLista
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[5] = 100; // $scratch2
+        ArrayIntUser[55] = MODBUS_REGISTER[10] * ArrayIntUser[5]; // AplanPasso = YMbAplanPasso * $scratch2
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
+
+    /* start rung 245 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
     /* iniciando serie [ */
-    ArrayIntUser[3] = 3; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[66] = MODBUS_REGISTER[19]; // PecasFila3 = MbPecaLista
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[49] = ArrayIntUser[55] * ArrayIntUser[13]; // AplanPassoCorr = AplanPasso * FatorCorrServo
     }
 
     /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
+
+    /* start rung 246 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+    
     /* iniciando serie [ */
-    ArrayIntUser[3] = 4; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayIntUser[5] = 10000; // $scratch2
+        if(ArrayIntUser[5]) ArrayIntUser[49] = ArrayIntUser[49] / ArrayIntUser[5]; // AplanPassoCorr = AplanPassoCorr / $scratch2
     }
 
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[65] = MODBUS_REGISTER[19]; // PecasFila4 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 5; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[64] = MODBUS_REGISTER[19]; // PecasFila5 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 6; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[63] = MODBUS_REGISTER[19]; // PecasFila6 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 7; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[62] = MODBUS_REGISTER[19]; // PecasFila7 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 8; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[61] = MODBUS_REGISTER[19]; // PecasFila8 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 9; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[60] = MODBUS_REGISTER[19]; // PecasFila9 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 10; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[59] = MODBUS_REGISTER[19]; // PecasFila10 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 11; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[58] = MODBUS_REGISTER[19]; // PecasFila11 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 12; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[57] = MODBUS_REGISTER[19]; // PecasFila12 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 13; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[56] = MODBUS_REGISTER[19]; // PecasFila13 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 14; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[55] = MODBUS_REGISTER[19]; // PecasFila14 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 15; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[54] = MODBUS_REGISTER[19]; // PecasFila15 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 16; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[53] = MODBUS_REGISTER[19]; // PecasFila16 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 17; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[52] = MODBUS_REGISTER[19]; // PecasFila17 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 18; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[51] = MODBUS_REGISTER[19]; // PecasFila18 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 19; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[50] = MODBUS_REGISTER[19]; // PecasFila19 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 20; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[49] = MODBUS_REGISTER[19]; // PecasFila20 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 21; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[48] = MODBUS_REGISTER[19]; // PecasFila21 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 22; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[47] = MODBUS_REGISTER[19]; // PecasFila22 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 23; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[46] = MODBUS_REGISTER[19]; // PecasFila23 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 24; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[45] = MODBUS_REGISTER[19]; // PecasFila24 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 25; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[44] = MODBUS_REGISTER[19]; // PecasFila25 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 26; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[43] = MODBUS_REGISTER[19]; // PecasFila26 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 27; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[42] = MODBUS_REGISTER[19]; // PecasFila27 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 28; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[41] = MODBUS_REGISTER[19]; // PecasFila28 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 29; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[40] = MODBUS_REGISTER[19]; // PecasFila29 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 30; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[39] = MODBUS_REGISTER[19]; // PecasFila30 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 31; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[38] = MODBUS_REGISTER[19]; // PecasFila31 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 32; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[37] = MODBUS_REGISTER[19]; // PecasFila32 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 33; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[36] = MODBUS_REGISTER[19]; // PecasFila33 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 34; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[35] = MODBUS_REGISTER[19]; // PecasFila34 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 35; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[34] = MODBUS_REGISTER[19]; // PecasFila35 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 36; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[33] = MODBUS_REGISTER[19]; // PecasFila36 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 37; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[32] = MODBUS_REGISTER[19]; // PecasFila37 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 38; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[31] = MODBUS_REGISTER[19]; // PecasFila38 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = $parThis_0000
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 39; // $scratch2
-    if (MODBUS_REGISTER[18] == ArrayIntUser[3]) {
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 5); // $parThis_0001 = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayIntUser[30] = MODBUS_REGISTER[19]; // PecasFila39 = MbPecaLista
-    }
-
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 5) & 1)) {  // $parThis_0001
-        ArrayBitSystem[0] |= 1UL << 4; // $parOut_0001 = 1
-    }
-    if(((ArrayBitSystem[0] >> 4) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $parOut_0001
-    /* ] finish parallel */
-    /* ] finish series */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[18] = ArrayIntUser[29]; // MbIndiceLista = QtdPecasFila
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0000 = $rung_top
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        MODBUS_REGISTER[2] &= ~(1 << 11);  // MbGravarPeca = 0
-    }
-
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0000
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0000 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0000
-    /* ] finish parallel */
     /* ] finish series */
 }
 
 void PLC_Init(void)
 {
 	I_SerialReady = 1;
-	MODBUS_RS485_MASTER = 1;
+	MODBUS_RS485_MASTER = 0;
 	MODBUS_TCP_MASTER = 0;
 	ModBUS_SetID(0);
 
-	RS485_Config(9600, 8, 2, 1);
+	RS485_Config(19200, 7, 2, 1);
 
-	IP4_ADDR(&IP_ADDRESS, 192,168,2,243);
+	IP4_ADDR(&IP_ADDRESS, 192,168,0,235);
 	IP4_ADDR(&IP_NETMASK, 255,255,255,0);
-	IP4_ADDR(&IP_GATEWAY, 192,168,2,1);
-	IP4_ADDR(&IP_DNS, 192,168,0,10);
+	IP4_ADDR(&IP_GATEWAY, 192,168,0,10);
+	IP4_ADDR(&IP_DNS, 192,168,0,1);
 
     QEIConfig.CaptureMode = QEI_CAPMODE_4X;
-    ADC_SetMask(32);
+    ADC_SetMask(0);
     SSI_Init(24, 0);
+
+//    ENC_Config(0, 0, 400, 1.000000, 4096);
+//    ENC_Config(1, 0, 400, 1.000000, 12);
 
     memset((void*)ArrayBitUser, 0, sizeof(ArrayBitUser));
     memset((void*)ArrayBitSystem, 0, sizeof(ArrayBitSystem));

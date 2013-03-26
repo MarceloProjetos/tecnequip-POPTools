@@ -202,10 +202,11 @@ void RS485_Handler (unsigned int cycle)
     I_SerialAborted = 0;
     rs485_reset_timeout = cycle + 50;
   } else {
-    if(cycle >= rs485_reset_timeout && !I_SerialTimeout && retries++ < MAX_RETRIES) {
+    if(cycle >= rs485_reset_timeout && !I_SerialTimeout && retries < MAX_RETRIES) {
+      retries++;
       I_SerialTimeout = 1;
 	  rs485_reset_timeout = cycle + 50;
-    } else if (cycle >= rs485_reset_timeout && I_SerialTimeout && !I_SerialAborted) {
+    } else if (cycle >= rs485_reset_timeout && retries >= MAX_RETRIES && !I_SerialAborted) {
     	I_SerialAborted = 1;
     } else if (cycle >= (rs485_reset_timeout + 250)) {
       retries = 0;
