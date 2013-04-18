@@ -15,6 +15,8 @@ void LWIPDebug(const char *pcString, ...)
 	printf(pcString);
 }
 
+extern void PLC_Net_Init(void);
+
 void Net_Init(void)
 {
 	//struct ip_addr ipaddr, netmask, gw, dns1, dns2;
@@ -33,8 +35,8 @@ void Net_Init(void)
 	dns_setserver(0, &IP_DNS);
 	dns_init();
 
-	//HTTP_Init();
-	SNTP_Init();
+	PLC_Net_Init();
+
 	Modbus_TCP_Init();
 
 	netif_set_up(lpc17xx_netif);

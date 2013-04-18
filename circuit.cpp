@@ -1688,7 +1688,15 @@ void FreeEntireProgram(void)
 
 	memset(&Prog.rungHasBreakPoint, 0, sizeof(Prog.rungHasBreakPoint));
 
-	strncpy(Prog.settings.sntp, "br.pool.ntp.org", sizeof(Prog.settings.sntp));
+	strcpy(Prog.settings.InfoName, "");
+	strcpy(Prog.settings.InfoDeveloper, "");
+	strcpy(Prog.settings.InfoDescription, "");
+	strcpy(Prog.settings.InfoFWVersion, "1.5");
+	Prog.settings.InfoBuildNumber = 0;
+	Prog.settings.InfoCompileDate = 0;
+	Prog.settings.InfoProgramDate = 0;
+
+	strcpy(Prog.settings.sntp, "br.pool.ntp.org");
 
 	Prog.settings.gmt = 9;
 	Prog.settings.dailysave = 0;

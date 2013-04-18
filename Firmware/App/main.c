@@ -9,10 +9,6 @@
 #include "i2c.h"
 #include "ssp.h"
 #include "gpio.h"
-#include "adc.h"
-#include "dac.h"
-#include "qei.h"
-#include "ld.h"
 
 #include <time.h>
 #include <stdlib.h>
@@ -22,15 +18,8 @@ void Devices_Init(void)
 	RTC_Init();
 	RTC_Start();
 
-	//RTC_Time t;
-	//memset(&t, 0, sizeof(t));
-	//RTC_SetTime(t);
-
 	I2C_Init( (unsigned int)I2CMASTER );
 
-	ADC_Init();
-	DAC_Init();
-	QEI_Init();
 	GPIO_Init();
 }
 
@@ -59,7 +48,6 @@ unsigned int					PLC_CycleStack[PLC_CYCLE_THREAD_STACKSIZE];
 
 extern void PLC_Run   (void);
 extern void PLC_Init  (void);
-extern void ADC_Update(void);
 
 volatile unsigned int 			PLC_ERROR = 0;
 
@@ -80,7 +68,6 @@ void PLC_Cycle(void *pdata)
 		end_tick = (cycle+1)*CYCLE_TIME;
 
 		// Etapa de Aquisicao
-		ADC_Update();
 		RTC_NowTM = RTC_GetTM();
 		GPIO_Input();
 
@@ -114,9 +101,9 @@ int main()
 
 	CoInitOS();
 
-	PLC_Init();
-
 	Devices_Init();
+
+	PLC_Init();
 
 	Modbus_Init();
 

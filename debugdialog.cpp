@@ -22,6 +22,10 @@ static HWND OkButton;
 static HWND CommList;
 static HWND txtInfoDate;
 static HWND txtInfoTime;
+static HWND txtInfoVendor;
+static HWND txtInfoProduct;
+static HWND txtInfoVersion;
+static HWND txtInfoProject;
 static HWND SetDateTimeButton;
 static HWND CheckInput[19];
 static HWND CheckOutput[16];
@@ -479,7 +483,7 @@ static void MakeControls(void)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("Sair"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        589, 520, 70, 30, DebugDialog, NULL, Instance, NULL); 
+        589, 555, 70, 30, DebugDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     ClearButton = CreateWindowEx(0, WC_BUTTON, _("Limpar Registro"),
@@ -489,7 +493,7 @@ static void MakeControls(void)
 
     ConfigButton = CreateWindowEx(0, WC_BUTTON, _("Configurações"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        7, 520, 120, 30, DebugDialog, NULL, Instance, NULL); 
+        7, 555, 120, 30, DebugDialog, NULL, Instance, NULL); 
     NiceFont(ConfigButton);
 
     SendButton = CreateWindowEx(0, WC_BUTTON, _("Executar"),
@@ -583,7 +587,7 @@ static void MakeControls(void)
 
     grouper = CreateWindowEx(0, WC_BUTTON, _("Informações da POP-7 (Lido a partir da interface USB)"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        7, 410, 650, 100, DebugDialog, NULL, Instance, NULL);
+        7, 410, 650, 138, DebugDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Data:"),
@@ -637,6 +641,46 @@ static void MakeControls(void)
 		}
 	}
 
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Fabricante:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        10, 95, 70, 18, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    txtInfoVendor = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        10, 113, 150, 18, grouper, NULL, Instance, NULL);
+    NiceFont(txtInfoVendor);
+
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Produto:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        160, 95, 70, 18, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    txtInfoProduct = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        160, 113, 150, 18, grouper, NULL, Instance, NULL);
+    NiceFont(txtInfoProduct);
+
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Versão:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        320, 95, 70, 18, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    txtInfoVersion = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        320, 113, 150, 18, grouper, NULL, Instance, NULL);
+    NiceFont(txtInfoVersion);
+
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Projeto:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        480, 95, 70, 18, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    txtInfoProject = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        480, 113, 150, 18, grouper, NULL, Instance, NULL);
+    NiceFont(txtInfoProject);
+
 	PrevIdProc = SetWindowLongPtr(IDTextbox, GWLP_WNDPROC, 
         (LONG_PTR)MyNumberProc);
 
@@ -647,13 +691,13 @@ extern unsigned char USB_GetInfo(int ObjectID, char *ObjectText);
 
 void ShowDebugDialog(void)
 {
-	char InfoVendor[MODBUS_BUFFER_SIZE] = "", InfoProduct[MODBUS_BUFFER_SIZE] = "", InfoVersion[MODBUS_BUFFER_SIZE] = "";
+	char InfoVendor[MODBUS_BUFFER_SIZE] = "", InfoProduct[MODBUS_BUFFER_SIZE] = "", InfoVersion[MODBUS_BUFFER_SIZE] = "", InfoProject[MODBUS_BUFFER_SIZE] = "";
 
 	RotateList_Init(&RotateLog);
 
 	DebugDialog = CreateWindowClient(0, "POPDebugDialog",
         _("Debug"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 664, 555, MainWindow, NULL, Instance, NULL);
+        100, 100, 664, 590, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
 	SyncConfigToScreen();
@@ -669,8 +713,12 @@ void ShowDebugDialog(void)
 	USB_GetInfo(MODBUS_DEVID_VENDORNAME, InfoVendor);
 	USB_GetInfo(MODBUS_DEVID_PRODUCTCODE, InfoProduct);
 	USB_GetInfo(MODBUS_DEVID_MAJORMINORREVISION, InfoVersion);
+	USB_GetInfo(MODBUS_DEVID_USERAPPLICATIONNAME, InfoProject);
 
-	Error("Fabricante: '%s'\nCódigo do Produto: '%s'\nVersão: '%s'", InfoVendor, InfoProduct, InfoVersion);
+	SendMessage(txtInfoVendor , WM_SETTEXT, 0, (LPARAM)InfoVendor );
+	SendMessage(txtInfoProduct, WM_SETTEXT, 0, (LPARAM)InfoProduct);
+	SendMessage(txtInfoVersion, WM_SETTEXT, 0, (LPARAM)InfoVersion);
+	SendMessage(txtInfoProject, WM_SETTEXT, 0, (LPARAM)InfoProject);
 
 	MSG msg;
     DWORD ret;

@@ -853,6 +853,15 @@ typedef struct PlcProgramTag {
 		int ssi_perimeter;
 		float ssi_factor;
 		int ssi_size_bpr;
+		int sntp_enable;
+		// Project Information
+		char   InfoName       [MAX_NAME_LEN];
+		char   InfoDeveloper  [MAX_NAME_LEN];
+		char   InfoDescription[MAX_NAME_LEN];
+		char   InfoFWVersion  [MAX_NAME_LEN];
+		long   InfoBuildNumber;
+		time_t InfoCompileDate;
+		time_t InfoProgramDate;
 	} settings;
 
 #define MAX_RUNGS 999

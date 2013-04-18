@@ -16,6 +16,8 @@ extern volatile unsigned char MODBUS_MASTER; // __attribute__((weak)) = 0;
 * Prototipos de Funções
 ******************************************************************************/
 
+void         ModBUS_SetID(unsigned int id);
+void         ModBUS_SetAppName(char *appname);
 void 		 Modbus_Init(void);
 unsigned int Modbus_Request(struct MODBUS_Device *dev, unsigned char * buffer, unsigned int sz);
 void Modbus_Send(unsigned char id,

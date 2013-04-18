@@ -109,6 +109,10 @@ void PLC_Run(void)
     I_mcr = 1;
 }
 
+void PLC_Net_Init(void)
+{
+}
+
 void PLC_Init(void)
 {
 	I_SerialReady = 1;

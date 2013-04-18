@@ -16,6 +16,10 @@ static int MODBUS_RS485_MASTER = 0, MODBUS_TCP_MASTER = 0;
 
 // Control variables
 int HasPWM = 0;
+int HasADC = 0;
+int HasDAC = 0;
+int HasQEI = 0;
+int HasSSI = 0;
 
 // Output log
 char OutputLog[MAX_PATH + MAX_NAME_LEN + 1];
@@ -404,6 +408,9 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 	char buf[1024], buf2[1024];
 
 	ad_mask = 0;
+	if(HasADC) {
+		fprintf(f, "    ADC_Update();\n\n");
+	}
 	
 	for(i = 0; i < IntCodeLen; i++) {
 
@@ -562,11 +569,15 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				fprintf(f, "E2P_Write((void *)&%s, %d, 2);\n", GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].literal);
 				break;
             case INT_READ_ADC:
+				HasADC = 1;
+
 				ad_mask |= 1 << (atoi(MapSym(IntCode[i].name1)+1) - 1);
 				sprintf(buf2, "ADC_Read(%d)", atoi(MapSym(IntCode[i].name1) + 1));
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name1), buf2, GENVARCODE_MODE_WRITE));
 				break;
             case INT_SET_DA:
+				HasDAC = 1;
+
 				fprintf(f, "DAC_Write(DAC_Conv(%s, %d));\n", IsNumber(IntCode[i].name1) ? IntCode[i].name1 : GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ), IntCode[i].literal);
 				break;
             case INT_SQRT:
@@ -582,6 +593,8 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				break;
 			}
 			case INT_MULTISET_DA:
+				HasDAC = 1;
+
 				if(strlen(IntCode[i].name1)) {
 					fprintf(f, "DAC_Start(%d, %d, %s, %s, %s, DAC_Conv(%s, %s));\n", IntCode[i].bit, IntCode[i].literal, IntCode[i].name3, IntCode[i].name4,
 						IsNumber(IntCode[i].name1) ? IntCode[i].name1 : GenVarCode(buf , MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ),
@@ -641,6 +654,12 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
             case INT_READ_ENC: {
 				int ch = GetPinEnc(IntCode[i].name1);
 				if(ch != NO_PIN_ASSIGNED) {
+					if(ch == 1) {
+						HasQEI = 1;
+					} else {
+						HasSSI = 1;
+					}
+
 					sprintf(buf2, "ENC_Read(%d)", ch - 1);
 					fprintf(f, "%s\n", GenVarCode(buf, MapSym(IntCode[i].name1), buf2, GENVARCODE_MODE_WRITE));
 				}
@@ -650,6 +669,12 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				int ch = GetPinEnc(IntCode[i].name1);
 				char *name = GenVarCode(buf, MapSym(IntCode[i].name1), NULL, GENVARCODE_MODE_READ);
 				if(ch != NO_PIN_ASSIGNED) {
+					if(ch == 1) {
+						HasQEI = 1;
+					} else {
+						HasSSI = 1;
+					}
+
 					fprintf(f, "ENC_Reset(%d, %s);\n", ch-1, name);
 				}
 				break;
@@ -968,6 +993,10 @@ DWORD GenerateCFile(char *filename)
     }
 
 	HasPWM = 0;
+	HasADC = 0;
+	HasDAC = 0;
+	HasQEI = 0;
+	HasSSI = 0;
 
 	// Set up the TRISx registers (direction). 1 means tri-stated (input).
     BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
@@ -1050,12 +1079,23 @@ DWORD GenerateCFile(char *filename)
 
 	fprintf(f, "\n");
 
+	fprintf(f, "void PLC_Net_Init(void)\n");
+	fprintf(f, "{\n");
+
+	if(Prog.settings.sntp_enable) {
+		fprintf(f, "    SNTP_Init();\n");
+	}
+
+	fprintf(f, "}\n");
+
+	fprintf(f, "\n");
+
 	fprintf(f, "void PLC_Init(void)\n");
 	fprintf(f, "{\n");
-	fprintf(f, "	I_SerialReady = 1;\n");
 	fprintf(f, "	MODBUS_RS485_MASTER = %d;\n", MODBUS_RS485_MASTER);
 	fprintf(f, "	MODBUS_TCP_MASTER = %d;\n", MODBUS_TCP_MASTER);
 	fprintf(f, "	ModBUS_SetID(%d);\n", Prog.settings.ModBUSID);
+	fprintf(f, "	ModBUS_SetAppName(\"%s\");\n", Prog.settings.InfoName);
 	fprintf(f, "\n");
 	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", Prog.settings.baudRate, SerialConfig[Prog.settings.UART].bByteSize,
 		SerialConfig[Prog.settings.UART].bParity, SerialConfig[Prog.settings.UART].bStopBits == ONESTOPBIT ? 1 : 2);
@@ -1064,27 +1104,43 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "	IP4_ADDR(&IP_NETMASK, %d,%d,%d,%d);\n", Prog.settings.mask[0], Prog.settings.mask[1], Prog.settings.mask[2], Prog.settings.mask[3]);
 	fprintf(f, "	IP4_ADDR(&IP_GATEWAY, %d,%d,%d,%d);\n", Prog.settings.gw[0], Prog.settings.gw[1], Prog.settings.gw[2], Prog.settings.gw[3]);
 	fprintf(f, "	IP4_ADDR(&IP_DNS, %d,%d,%d,%d);\n", Prog.settings.dns[0], Prog.settings.dns[1], Prog.settings.dns[2], Prog.settings.dns[3]);
-	fprintf(f, "\n");
-	if(Prog.settings.x4) {
-		fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_4X;\n");
-	} else {
-		fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_2X;\n");
+
+	if(HasQEI) {
+		fprintf(f, "\n");
+		// Incremental Encoder
+		fprintf(f, "    ENC_Config(%d, %d, %d, %f, %d);\n", 0, Prog.settings.enc_inc_conv_mode,
+			Prog.settings.perimeter, Prog.settings.factor, Prog.settings.pulses * (Prog.settings.x4 ? 4 : 2));
+
+		if(Prog.settings.x4) {
+			fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_4X;\n");
+		} else {
+			fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_2X;\n");
+		}
+
+		fprintf(f, "\n    QEI_Init();\n");
 	}
 
-	fprintf(f, "    ADC_SetMask(%d);\n", ad_mask);
-	fprintf(f, "    SSI_Init(%d, %d);\n", Prog.settings.ssi_size, Prog.settings.ssi_mode);
+	if(HasSSI) {
+		fprintf(f, "\n");
+		// Absolute Encoder
+		fprintf(f, "    ENC_Config(%d, %d, %d, %f, %d);\n", 1, Prog.settings.enc_ssi_conv_mode,
+			Prog.settings.ssi_perimeter, Prog.settings.ssi_factor, Prog.settings.ssi_size_bpr);
+
+		fprintf(f, "    SSI_Init(%d, %d);\n", Prog.settings.ssi_size, Prog.settings.ssi_mode);
+	}
+
+	if(HasADC) {
+		fprintf(f, "\n    ADC_Init();\n");
+		fprintf(f, "\n    ADC_SetMask(%d);\n", ad_mask);
+	}
+
+	if(HasDAC) {
+		fprintf(f, "\n    DAC_Init();\n");
+	}
+
 	if(HasPWM) {
-		fprintf(f, "    PWM_Init();\n");
+		fprintf(f, "\n    PWM_Init();\n");
 	}
-
-	fprintf(f, "\n");
-	// Incremental Encoder
-	fprintf(f, "    ENC_Config(%d, %d, %d, %f, %d);\n", 0, Prog.settings.enc_inc_conv_mode,
-		Prog.settings.perimeter, Prog.settings.factor, Prog.settings.pulses * (Prog.settings.x4 ? 4 : 2));
-
-	// Absolute Encoder
-	fprintf(f, "    ENC_Config(%d, %d, %d, %f, %d);\n", 1, Prog.settings.enc_ssi_conv_mode,
-		Prog.settings.ssi_perimeter, Prog.settings.ssi_factor, Prog.settings.ssi_size_bpr);
 
 	fprintf(f, "\n");
 	for(i=0; i != SEENVAR_MODE_OTHERS; i++) {
@@ -1140,16 +1196,12 @@ DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 
 	if(!GenerateCFile(szAppSourceFile))
 		return 1;
-	
-	char str[MAX_PATH+500];
+
 	DWORD err = 0;
 
-	if ((err = InvokeGCC(CurrentCompileFile))) {
-		sprintf(str, _("A compilação retornou erro. O código do erro é %d. O arquivo com o log do erro esta na pasta \"C:\\Users\\<User>\\AppData\\Temp\\POPTools\\output.log\"\n"), err);
-//		CompileSuccessfulMessage(str);
-	} else if(ShowSuccessMessage) {
-		sprintf(str, _("Compilado com sucesso. O arquivo binário foi criado em '%s'.\r\n\r\n"), CurrentCompileFile);
-//		CompileSuccessfulMessage(str);
+	if (!(err = InvokeGCC(CurrentCompileFile))) {
+		Prog.settings.InfoBuildNumber++;
+		Prog.settings.InfoCompileDate = time(NULL);
 	}
 
 	return err;

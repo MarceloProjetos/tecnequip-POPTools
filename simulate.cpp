@@ -370,14 +370,14 @@ void HardwareRegisters_Sync(HardwareRegisters *hwr)
 		if(Prog.io.assignment[i].pin != NO_PIN_ASSIGNED) {
 			index = IoMap_GetIndex(&Prog.io.assignment[i]);
 			ismb  = IoMap_IsModBUS(&Prog.io.assignment[i]);
-				mask = 1UL << Prog.io.assignment[i].bit;
+			mask  = 1UL << Prog.io.assignment[i].bit;
 
 			// Now we have to update register associated to name
 			switch(Prog.io.assignment[i].type) {
 			case IO_TYPE_DIG_INPUT:
 //				HardwareRegisters_SetBit(hwr, ismb ? HWR_REG_MODBUS : HWR_REG_INPUT,
 //					index, ismb ? Prog.io.assignment[i].bit : index, val);
-				break;
+//				break;
 
 			case IO_TYPE_DIG_OUTPUT:
 				if(ismb)

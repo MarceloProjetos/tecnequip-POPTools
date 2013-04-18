@@ -275,6 +275,8 @@ struct MODBUS_Device {
 
 extern struct strMBTCP_Tansfer MBTCP_Transfer;
 
+extern void         ModBUS_SetID(unsigned int id);
+extern void         ModBUS_SetAppName(char *appname);
 extern unsigned int Modbus_Request(struct MODBUS_Device *dev, unsigned char * buffer, unsigned int sz);
 extern void Modbus_Send(unsigned char id,
                   unsigned long ip,

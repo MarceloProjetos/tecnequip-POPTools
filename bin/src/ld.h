@@ -117,7 +117,8 @@ extern void RS232_Console(void);
 /* Modbus  RTU                                                             */
 /***************************************************************************/
 #ifndef __MODBUS_TCP_H__
-void ModBUS_SetID(unsigned int id);
+void         ModBUS_SetID(unsigned int id);
+void         ModBUS_SetAppName(char *appname);
 
 void Modbus_TCP_Send(unsigned char id,
                   int fc,

@@ -8,6 +8,8 @@ extern volatile unsigned int GPIO_INPUT;
 extern volatile unsigned int I_TcpReady;
 extern volatile unsigned int I_SerialReady;
 
+static char *AppName;
+
 // Declaracao do ID do ModBUS e funcao para configura-lo
 static unsigned int ModBUSID = 0;
 
@@ -40,6 +42,11 @@ volatile int * MODBUS_RETURN_VAL = NULL;
 struct MODBUS_Device modbus_rs485;
 struct MODBUS_Device modbus_rs232;
 struct MODBUS_Device modbus_tcp;
+
+void ModBUS_SetAppName(char *appname)
+{
+	AppName = appname;
+}
 
 /*** ModBUS Handlers ***/
 
@@ -204,10 +211,11 @@ void Modbus_Init(void)
 {
 	Modbus_RTU_Init(&modbus_rs485);
 
-	modbus_rs485.identification.Id                 = ModBUSID;
-	modbus_rs485.identification.VendorName         = "Tecnequip";
-	modbus_rs485.identification.ProductCode        = "POP7";
-	modbus_rs485.identification.MajorMinorRevision = "V1 Rev1";
+	modbus_rs485.identification.Id                  = ModBUSID;
+	modbus_rs485.identification.VendorName          = "Tecnequip";
+	modbus_rs485.identification.ProductCode         = "POP7";
+	modbus_rs485.identification.MajorMinorRevision  = "V1 Rev1";
+	modbus_rs485.identification.UserApplicationName = AppName;
 
 	modbus_rs485.hl      = ModbusHandlers;
 	modbus_rs485.hl_size = ARRAY_SIZE(ModbusHandlers);
@@ -216,10 +224,11 @@ void Modbus_Init(void)
 
 	Modbus_RTU_Init(&modbus_rs232);
 
-	modbus_rs232.identification.Id                 = 0x01;
-	modbus_rs232.identification.VendorName         = "Tecnequip";
-	modbus_rs232.identification.ProductCode        = "POP7";
-	modbus_rs232.identification.MajorMinorRevision = "V1 Rev1";
+	modbus_rs232.identification.Id                  = 0x01;
+	modbus_rs232.identification.VendorName          = "Tecnequip";
+	modbus_rs232.identification.ProductCode         = "POP7";
+	modbus_rs232.identification.MajorMinorRevision  = "V1 Rev1";
+	modbus_rs232.identification.UserApplicationName = AppName;
 
 	modbus_rs232.hl      = ModbusHandlers;
 	modbus_rs232.hl_size = ARRAY_SIZE(ModbusHandlers);
@@ -228,10 +237,11 @@ void Modbus_Init(void)
 
 	Modbus_RTU_Init(&modbus_tcp);
 
-	modbus_tcp.identification.Id                 = ModBUSID;
-	modbus_tcp.identification.VendorName         = "Tecnequip";
-	modbus_tcp.identification.ProductCode        = "POP7";
-	modbus_tcp.identification.MajorMinorRevision = "V1 Rev1";
+	modbus_tcp.identification.Id                  = ModBUSID;
+	modbus_tcp.identification.VendorName          = "Tecnequip";
+	modbus_tcp.identification.ProductCode         = "POP7";
+	modbus_tcp.identification.MajorMinorRevision  = "V1 Rev1";
+	modbus_tcp.identification.UserApplicationName = AppName;
 
 	modbus_tcp.hl      = ModbusHandlers;
 	modbus_tcp.hl_size = ARRAY_SIZE(ModbusHandlers);

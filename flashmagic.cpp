@@ -367,6 +367,8 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	ps.iCurrentStage = PROGRESS_STAGE_FINISHED;
 	ps.szMsg = _("Gravação concluída com sucesso");
 
+	Prog.settings.InfoProgramDate = time(NULL);
+
 	UpdateProgressWindow(&ps);
 	StatusBarSetText(0, ps.szMsg);
 

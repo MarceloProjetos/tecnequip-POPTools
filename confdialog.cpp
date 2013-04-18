@@ -2,6 +2,8 @@
 
 static HWND ConfDialog;
 static HWND ConfigTreeView;
+static HWND GroupInfoProject;
+static HWND GroupInfoDetails;
 static HWND GroupCommNetwork;
 static HWND GroupCommTimeZone;
 static HWND GroupCommSerial;
@@ -11,12 +13,17 @@ static HWND GroupInterfaceEncAbs;
 static HWND GroupModBUSSlave;
 static HWND GroupModBUSMaster;
 
-static HWND CrystalTextbox;
-static HWND CycleTextbox;
-static HWND BaudTextbox;
+static HWND InfoProjectTextbox;
+static HWND InfoDeveloperTextbox;
+static HWND InfoDescriptionTextbox;
+static HWND InfoFWVersionLabel;
+static HWND InfoBuildNumberLabel;
+static HWND InfoCompileDateLabel;
+static HWND InfoProgramDateLabel;
 static HWND ModBUSIDTextbox;
 static HWND BaudRateCombobox;
 static HWND ParityCombobox;
+static HWND SNTPEnableCheckbox;
 static HWND SNTPCombobox;
 static HWND GMTCombobox;
 static HWND DailySaveCheckbox;
@@ -48,8 +55,6 @@ static HWND SSIPerimeterTextbox;
 static HWND SSIFactorTextbox;
 
 static LONG_PTR PrevConfDialogProc;
-static LONG_PTR PrevCrystalProc;
-static LONG_PTR PrevCycleProc;
 static LONG_PTR PrevBaudProc;
 
 //const LPCTSTR ComboboxPLCItens[] = { _("POP7"), _("POP9") };
@@ -95,25 +100,37 @@ char *ModBUSInterfaces[] = { _("RS-485"), _("Ethernet") };
 
 char *EncoderConvModes[] = { _("Sem conversão"), _("Metros"), _("Milímetros"), _("Décimos de milímetro") };
 
-#define CONFTVI_ID_COMM              0
-#define CONFTVI_ID_COMM_NETWORK      1
-#define CONFTVI_ID_COMM_FUSE         2
-#define CONFTVI_ID_COMM_SERIAL       3
-#define CONFTVI_ID_INTERFACE         4
-#define CONFTVI_ID_INTERFACE_DA      5
-#define CONFTVI_ID_INTERFACE_ENCINC  6
-#define CONFTVI_ID_INTERFACE_ENCABS  7
-#define CONFTVI_ID_MODBUS            8
-#define CONFTVI_ID_MODBUS_MASTER     9
-#define CONFTVI_ID_MODBUS_SLAVE     10
+#define CONFTVI_ID_INFO              0
+#define CONFTVI_ID_INFO_PROJECT      1
+#define CONFTVI_ID_INFO_DETAILS      2
+#define CONFTVI_ID_COMM              3
+#define CONFTVI_ID_COMM_NETWORK      4
+#define CONFTVI_ID_COMM_FUSE         5
+#define CONFTVI_ID_COMM_SERIAL       6
+#define CONFTVI_ID_INTERFACE         7
+#define CONFTVI_ID_INTERFACE_DA      8
+#define CONFTVI_ID_INTERFACE_ENCINC  9
+#define CONFTVI_ID_INTERFACE_ENCABS 10
+#define CONFTVI_ID_MODBUS           11
+#define CONFTVI_ID_MODBUS_MASTER    12
+#define CONFTVI_ID_MODBUS_SLAVE     13
 
 void OnSelChanged(int ID)
 {
 	int i;
-	HWND group, groups[] = { GroupCommNetwork, GroupCommTimeZone, GroupCommSerial, GroupInterfaceDA,
-							GroupInterfaceEncInc, GroupInterfaceEncAbs, GroupModBUSMaster, GroupModBUSSlave };
+	HWND group, groups[] = { GroupInfoProject, GroupInfoDetails, GroupCommNetwork, GroupCommTimeZone, GroupCommSerial,
+							GroupInterfaceDA, GroupInterfaceEncInc, GroupInterfaceEncAbs, GroupModBUSMaster, GroupModBUSSlave };
 
 	switch(ID) {
+		case CONFTVI_ID_INFO:
+		case CONFTVI_ID_INFO_PROJECT:
+			group = GroupInfoProject;
+			break;
+
+		case CONFTVI_ID_INFO_DETAILS:
+			group = GroupInfoDetails;
+			break;
+
 		case CONFTVI_ID_COMM:
 		case CONFTVI_ID_COMM_NETWORK:
 			group = GroupCommNetwork;
@@ -157,31 +174,6 @@ void OnSelChanged(int ID)
 		EnableWindow(groups[i], groups[i] == group ? TRUE          : FALSE  );
 		ShowWindow  (groups[i], groups[i] == group ? SW_SHOWNORMAL : SW_HIDE);
 	}
-}
-
-//-----------------------------------------------------------------------------
-// Don't allow any characters other than 0-9. in the text boxes.
-//-----------------------------------------------------------------------------
-static LRESULT CALLBACK MyNumberProc(HWND hwnd, UINT msg, WPARAM wParam,
-    LPARAM lParam)
-{
-    if(msg == WM_CHAR) {
-        if(!(isdigit(wParam) || wParam == '.' || wParam == '\b')) {
-            return 0;
-        }
-    }
-
-	LONG_PTR t;
-    if(hwnd == CrystalTextbox)
-        t = PrevCrystalProc;
-    else if(hwnd == CycleTextbox)
-        t = PrevCycleProc;
-    else if(hwnd == BaudTextbox)
-        t = PrevBaudProc;
-    else
-        oops();
-
-    return CallWindowProc((WNDPROC)t, hwnd, msg, wParam, lParam);
 }
 
 //-----------------------------------------------------------------------------
@@ -419,6 +411,9 @@ struct {
 	int tchLevel;
 	int tchID;
 } g_rgDocHeadings[] = {
+	{ "Informações"            , 1, CONFTVI_ID_INFO             },
+		{ "Projeto"            , 2, CONFTVI_ID_INFO_PROJECT     },
+		{ "Detalhes"           , 2, CONFTVI_ID_INFO_DETAILS     },
 	{ "Comunicação"            , 1, CONFTVI_ID_COMM             },
 		{ "Rede"               , 2, CONFTVI_ID_COMM_NETWORK     },
 		{ "Fuso Horário"       , 2, CONFTVI_ID_COMM_FUSE        },
@@ -466,6 +461,98 @@ static void MakeControls(void)
     NiceFont(ConfigTreeView);
 
 	InitTreeViewItems(ConfigTreeView);
+
+	// Group - Project Details
+	GroupInfoProject = CreateWindowEx(0, WC_STATIC, "",
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupInfoProject);
+
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Preencha abaixo os dados referentes ao projeto para sua referência."),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        5, 5, 195, 54, GroupInfoProject, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Nome do Projeto:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 67, 140, 21, GroupInfoProject, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    InfoProjectTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 67, 140, 21, GroupInfoProject, NULL, Instance, NULL);
+    NiceFont(InfoProjectTextbox);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Autor do Projeto:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 97, 140, 21, GroupInfoProject, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    InfoDeveloperTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 97, 140, 21, GroupInfoProject, NULL, Instance, NULL);
+    NiceFont(InfoDeveloperTextbox);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Observações:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 127, 140, 21, GroupInfoProject, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    InfoDescriptionTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | ES_AUTOVSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | ES_MULTILINE | ES_WANTRETURN,
+        155, 127, 140, 70, GroupInfoProject, NULL, Instance, NULL);
+    NiceFont(InfoDescriptionTextbox);
+
+	// Group - Project Stats
+	GroupInfoDetails = CreateWindowEx(0, WC_STATIC, "",
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupInfoDetails);
+
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Abaixo são exibidas informações sobre o projeto."),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        5, 5, 195, 54, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Versão do Firmware:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 67, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    InfoFWVersionLabel = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 67, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(InfoFWVersionLabel);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Número da Compilação:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 97, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    InfoBuildNumberLabel = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 97, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(InfoBuildNumberLabel);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Data de Compilação:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 127, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    InfoCompileDateLabel = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 127, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(InfoCompileDateLabel);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Data de Gravação:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 157, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    InfoProgramDateLabel = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 157, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(InfoProgramDateLabel);
 
 	// Group - Network Communication
 	GroupCommNetwork = CreateWindowEx(0, WC_STATIC, "",
@@ -543,29 +630,34 @@ static void MakeControls(void)
 	HBITMAP hBmp2 = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(IDB_TIME_CONFIG),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
 	SendMessage(textLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp2);
 
+	SNTPEnableCheckbox = CreateWindowEx(0, WC_BUTTON, _("Ativar sincronização"),
+        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
+        155, 75, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
+    NiceFont(SNTPEnableCheckbox);
+
     textLabel = CreateWindowEx(0, WC_STATIC, _("Servidor de Tempo:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 75, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
-    NiceFont(textLabel);
-
-	SNTPCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
-        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWN,
-        155, 75, 140, 145, GroupCommTimeZone, NULL, Instance, NULL);
-    NiceFont(SNTPCombobox);
-
-	textLabel = CreateWindowEx(0, WC_STATIC, _("Fuso Horário:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 105, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(textLabel);
 
+	SNTPCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWN,
+        155, 105, 140, 145, GroupCommTimeZone, NULL, Instance, NULL);
+    NiceFont(SNTPCombobox);
+
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Fuso Horário:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 135, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
 	GMTCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        155, 105, 140, 145, GroupCommTimeZone, NULL, Instance, NULL);
+        155, 135, 140, 145, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(GMTCombobox);
 
 	DailySaveCheckbox = CreateWindowEx(0, WC_BUTTON, _("Horário de verão"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        155, 133, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
+        155, 165, 140, 21, GroupCommTimeZone, NULL, Instance, NULL);
     NiceFont(DailySaveCheckbox);
 
 	// Group - Serial Communication
@@ -843,7 +935,7 @@ static void MakeControls(void)
     NiceFont(ModBUSIDTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
-        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,// | BS_DEFPUSHBUTTON,
         365, 207, 69, 23, ConfDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
@@ -851,14 +943,6 @@ static void MakeControls(void)
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         441, 207, 69, 23, ConfDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
-
-//    PrevCrystalProc = SetWindowLongPtr(CrystalTextbox, GWLP_WNDPROC, 
-//        (LONG_PTR)MyNumberProc);
-
-    PrevBaudProc = SetWindowLongPtr(BaudTextbox, GWLP_WNDPROC, 
-        (LONG_PTR)MyNumberProc);
-
-//	OnTabChange();
 }
 
 bool ShowConfDialog(bool NetworkSection)
@@ -876,11 +960,40 @@ bool ShowConfDialog(bool NetworkSection)
 
     MakeControls();
 	if(NetworkSection) {
-//		TabCtrl_SetCurSel(TabCtrl, 1);
-//		OnTabChange();
+		OnSelChanged(CONFTVI_ID_COMM);
+	} else {
+		OnSelChanged(0); // Initial Group
 	}
 
-    char buf[16];
+    char buf[160];
+	time_t rawtime;
+	struct tm * timeinfo;
+
+	SendMessage(InfoProjectTextbox    , WM_SETTEXT, 0, (LPARAM)Prog.settings.InfoName       );
+	SendMessage(InfoDeveloperTextbox  , WM_SETTEXT, 0, (LPARAM)Prog.settings.InfoDeveloper  );
+	SendMessage(InfoDescriptionTextbox, WM_SETTEXT, 0, (LPARAM)Prog.settings.InfoDescription);
+	SendMessage(InfoFWVersionLabel    , WM_SETTEXT, 0, (LPARAM)Prog.settings.InfoFWVersion  );
+
+	sprintf(buf, "%d", Prog.settings.InfoBuildNumber);
+	SendMessage(InfoBuildNumberLabel, WM_SETTEXT, 0, (LPARAM)buf);
+
+	if(Prog.settings.InfoCompileDate) {
+		rawtime = Prog.settings.InfoCompileDate;
+		timeinfo = localtime(&rawtime);
+		strftime(buf, sizeof(buf), "%H:%M:%S %d/%m/%Y", timeinfo);
+	} else {
+		strcpy(buf, _("Indefinido"));
+	}
+	SendMessage(InfoCompileDateLabel, WM_SETTEXT, 0, (LPARAM)buf);
+
+	if(Prog.settings.InfoProgramDate) {
+		rawtime = Prog.settings.InfoProgramDate;
+		timeinfo = localtime(&rawtime);
+		strftime(buf, sizeof(buf), "%H:%M:%S %d/%m/%Y", timeinfo);
+	} else {
+		strcpy(buf, _("Indefinido"));
+	}
+	SendMessage(InfoProgramDateLabel, WM_SETTEXT, 0, (LPARAM)buf);
 
 	SendMessage(ip  , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.ip  [0], Prog.settings.ip  [1], Prog.settings.ip  [2], Prog.settings.ip  [3]));
 	SendMessage(mask, IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.mask[0], Prog.settings.mask[1], Prog.settings.mask[2], Prog.settings.mask[3]));
@@ -889,12 +1002,6 @@ bool ShowConfDialog(bool NetworkSection)
 
 	PopulateAbortModeCombobox(AbortModeCombobox, false);
 	SendMessage(AbortModeCombobox, CB_SETCURSEL, Prog.settings.ramp_abort_mode-1, 0);
-
-	/*for (i = 0; i < sizeof(ComboboxPLCItens) / sizeof(ComboboxPLCItens[0]); i++)
-		SendMessage(PLCCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxPLCItens[i]));*/
-
-	/*SendMessage(PLCCombobox, CB_SETCURSEL, 0, 0);
-	SendMessage(PLCCombobox, CB_SETDROPPEDWIDTH, 100, 0);*/
 
 	for (i = 0; i < sizeof(ModBUSInterfaces) / sizeof(ModBUSInterfaces[0]); i++)
 		SendMessage(MBiface, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ModBUSInterfaces[i]));
@@ -945,6 +1052,9 @@ bool ShowConfDialog(bool NetworkSection)
 	if (Prog.settings.dailysave)
 		SendMessage(DailySaveCheckbox, BM_SETCHECK, BST_CHECKED, 0);
 
+	if (Prog.settings.sntp_enable)
+		SendMessage(SNTPEnableCheckbox, BM_SETCHECK, BST_CHECKED, 0);
+
 	sprintf(buf, "%d", Prog.settings.perimeter);
 	SendMessage(PerimeterTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
@@ -961,12 +1071,6 @@ bool ShowConfDialog(bool NetworkSection)
 
 	//SendMessage(BaudRateCombobox, CB_SETCURSEL, 0, 0);
 	SendMessage(BaudRateCombobox, CB_SETDROPPEDWIDTH, 100, 0);
-
-	//sprintf(buf, "%.6f", Prog.settings.mcuClock / 1e6);
-    //SendMessage(CrystalTextbox, WM_SETTEXT, 0, (LPARAM)buf);
-
-    //sprintf(buf, "%d", Prog.settings.baudRate);
-    //SendMessage(BaudTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
 	sprintf(buf, "%d", Prog.settings.ssi_perimeter);
 	SendMessage(SSIPerimeterTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -990,9 +1094,9 @@ bool ShowConfDialog(bool NetworkSection)
     DialogCancel = FALSE;
     while((ret = GetMessage(&msg, NULL, 0, 0)) && !DialogDone) {
         if(msg.message == WM_KEYDOWN) {
-            if(msg.wParam == VK_RETURN) {
-                DialogDone = TRUE;
-                break;
+            if(msg.wParam == VK_RETURN && GetFocus() != InfoDescriptionTextbox) {
+//                DialogDone = TRUE;
+//                break;
             } else if(msg.wParam == VK_ESCAPE) {
                 DialogDone = TRUE;
                 DialogCancel = TRUE;
@@ -1006,17 +1110,9 @@ bool ShowConfDialog(bool NetworkSection)
     }
 
     if(!DialogCancel) {
-        char buf[16];
-/*        SendMessage(CycleTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-        Prog.settings.cycleTime = (int)(1000*atof(buf) + 0.5);
-        if(Prog.settings.cycleTime == 0) {
-            Error(_("Zero cycle time not valid; resetting to 10 ms."));
-            Prog.settings.cycleTime = 10000;
-        }*/
-
-        /*SendMessage(CrystalTextbox, WM_GETTEXT, (WPARAM)sizeof(buf),
-            (LPARAM)(buf));*/
-        //Prog.settings.mcuClock = (int)(1e6*atof(buf) + 0.5);
+        SendMessage(InfoProjectTextbox    , WM_GETTEXT, (WPARAM)sizeof(Prog.settings.InfoName       ), (LPARAM)Prog.settings.InfoName       );
+        SendMessage(InfoDeveloperTextbox  , WM_GETTEXT, (WPARAM)sizeof(Prog.settings.InfoDeveloper  ), (LPARAM)Prog.settings.InfoDeveloper  );
+		SendMessage(InfoDescriptionTextbox, WM_GETTEXT, (WPARAM)sizeof(Prog.settings.InfoDescription), (LPARAM)Prog.settings.InfoDescription);
 
 		// Recebe dados de rede configurados
 		SendMessage(ip  , IPM_GETADDRESS, 0, (LPARAM)&ipaddress);
@@ -1064,6 +1160,7 @@ bool ShowConfDialog(bool NetworkSection)
 
 		Prog.settings.gmt = SendMessage(GMTCombobox, CB_GETCURSEL, 0, 0);
 		Prog.settings.dailysave = SendMessage(DailySaveCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
+		Prog.settings.sntp_enable = SendMessage(SNTPEnableCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
 
 		Prog.settings.enc_inc_conv_mode = SendMessage(IncConvModeCombobox, CB_GETCURSEL, 0, 0);
 

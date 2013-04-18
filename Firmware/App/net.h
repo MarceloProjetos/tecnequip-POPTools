@@ -21,7 +21,6 @@
 #include "lwip/dns.h"
 #include "netif/etharp.h"
 
-#include "http.h"
 #include "sntp.h"
 #include "modbus.h"
 
