@@ -408,10 +408,9 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 	char buf[1024], buf2[1024];
 
 	ad_mask = 0;
-	if(HasADC) {
-		fprintf(f, "    ADC_Update();\n\n");
-	}
-	
+
+	fprintf(f, "    Cycle_Init();\n\n");
+
 	for(i = 0; i < IntCodeLen; i++) {
 
         if(IntCode[i].op == INT_ELSE_IF) indent--;
@@ -1149,6 +1148,14 @@ DWORD GenerateCFile(char *filename)
 		}
 	}
 
+	fprintf(f, "}\n");
+	fprintf(f, "\n");
+
+	fprintf(f, "void Cycle_Init(void)\n");
+	fprintf(f, "{\n");
+	if(HasADC) {
+		fprintf(f, "	ADC_Update();\n");
+	}
 	fprintf(f, "}\n");
 
 	fclose(f);
