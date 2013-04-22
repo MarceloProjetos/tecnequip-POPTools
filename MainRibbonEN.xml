@@ -375,6 +375,64 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name       = "CopyLine"
+             Symbol     = "cmdCopyLine"
+             Id         = "30213"
+             LabelTitle = "Copiar Linha"
+             LabelDescription = "Copia a linha atualmente selecionada para a memória.">
+      <Command.TooltipTitle      >Copiar Linha (Shift+INS)</Command.TooltipTitle>
+      <Command.TooltipDescription>Copia a linha atualmente selecionada para a memória.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/CopyLineHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/CopyLineHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name       = "PasteLine"
+             Symbol     = "cmdPasteLine"
+             Id         = "30214">
+      <Command.TooltipTitle      >Colar Linha</Command.TooltipTitle>
+      <Command.TooltipDescription>Obter outras formas para colar uma linha</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/PasteLineHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/PasteLineHH.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name       = "PasteLineBefore"
+             Symbol     = "cmdPasteLineBefore"
+             Id         = "30215"
+             LabelTitle = "Colar Antes"
+             LabelDescription = "Colar a linha previamente copiada antes da linha atualmente selecionada.">
+      <Command.TooltipTitle      >Colar Antes (Shift+INS)</Command.TooltipTitle>
+      <Command.TooltipDescription>Colar a linha previamente copiada antes da linha atualmente selecionada.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/PasteLineUpHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/PasteLineUpHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name       = "PasteLineAfter"
+             Symbol     = "cmdPasteLineAfter"
+             Id         = "30216"
+             LabelTitle = "Colar Após"
+             LabelDescription = "Colar a linha previamente copiada após a linha atualmente selecionada.">
+      <Command.TooltipTitle      >Colar Após (INS)</Command.TooltipTitle>
+      <Command.TooltipDescription>Colar a linha previamente copiada após a linha atualmente selecionada.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/PasteLineDownHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/PasteLineDownHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
     <!-- Comandos para busca -->
     <Command Name       = "FindDialog"
              Symbol     = "cmdFindDialog"
@@ -1419,6 +1477,33 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name         = "InstrMathModulo"
+               Symbol     = "cmdInstrMathModulo"
+               Id         = "30548"
+               LabelTitle = "Resto da Divisão">
+      <Command.TooltipTitle      >Resto da Divisão (Shift+/)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir instrução matemática resto de divisão na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMathModuloHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathModuloHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleMathModulo"
+               Symbol     = "cmdExampleMathModulo"
+               Id         = "31548"
+               LabelTitle = "Resto da Divisão">
+      <Command.TooltipTitle      >Resto da Divisão (Shift+/)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução matemática resto de divisão.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMathModuloHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathModuloHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
     <Command Name         = "InstrMathSqrt"
                Symbol     = "cmdInstrMathSqrt"
                Id         = "30553"
@@ -2267,15 +2352,27 @@
             <Button CommandName="FindDialog"/>
             <Button CommandName="Find"/>
           </Group>
-          <Group CommandName="GroupLine" SizeDefinition="FourButtons">
+          <Group CommandName="GroupLine" SizeDefinition="SixButtons">
             <SplitButton CommandName="InsertLine">
               <SplitButton.ButtonItem>
                 <Button CommandName="InsertLineAfter"/>
               </SplitButton.ButtonItem>
               <SplitButton.MenuGroups>
                 <MenuGroup Class="MajorItems">
-                  <Button CommandName="InsertLineAfter"/>
                   <Button CommandName="InsertLineBefore"/>
+                  <Button CommandName="InsertLineAfter"/>
+                </MenuGroup>
+              </SplitButton.MenuGroups>
+            </SplitButton>
+            <Button CommandName="CopyLine"/>
+            <SplitButton CommandName="PasteLine">
+              <SplitButton.ButtonItem>
+                <Button CommandName="PasteLineAfter"/>
+              </SplitButton.ButtonItem>
+              <SplitButton.MenuGroups>
+                <MenuGroup Class="MajorItems">
+                  <Button CommandName="PasteLineBefore"/>
+                  <Button CommandName="PasteLineAfter"/>
                 </MenuGroup>
               </SplitButton.MenuGroups>
             </SplitButton>
@@ -2358,14 +2455,14 @@
             <Button CommandName="InstrTimerON"/>
             <Button CommandName="InstrTimerOFF"/>
             <Button CommandName="InstrTimerONRet"/>
-            <Button CommandName="InstrSchedule"/>
             <Button CommandName="InstrTimerReset"/>
+            <Button CommandName="InstrSchedule"/>
           </Group>
           <Group CommandName="GroupCounter" SizeDefinition="FourButtons">
             <Button CommandName="InstrCounterInc"/>
             <Button CommandName="InstrCounterDec"/>
-            <Button CommandName="InstrCounterCirc"/>
             <Button CommandName="InstrCounterReset"/>
+            <Button CommandName="InstrCounterCirc"/>
           </Group>
           <Group CommandName="GroupVar" SizeDefinition="FourButtons">
             <Button CommandName="InstrMov"/>
@@ -2388,6 +2485,7 @@
             <Button CommandName="InstrMathDivide"/>
             <DropDownButton CommandName="DropDownMath">
               <MenuGroup Class="MajorItems">
+                <Button CommandName="InstrMathModulo"/>
                 <Button CommandName="InstrMathSqrt"/>
                 <Button CommandName="InstrAbs"/>
                 <Button CommandName="InstrShiftRegister"/>

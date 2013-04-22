@@ -140,6 +140,7 @@ unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
 				case ELEM_SUB:
 				case ELEM_MUL:
 				case ELEM_DIV:
+				case ELEM_MOD:
 					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.math.dest);
 					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.math.op1);
 					FAR_EXEC_ACTION(DisplayMatrix[x][y]->d.math.op2);
@@ -364,6 +365,7 @@ void WhatCanWeDoFromCursorAndTopology(void)
          SelectedWhich == ELEM_SUB ||
          SelectedWhich == ELEM_MUL ||
          SelectedWhich == ELEM_DIV ||
+         SelectedWhich == ELEM_MOD ||
          SelectedWhich == ELEM_CTC ||
          SelectedWhich == ELEM_READ_ADC ||
 		 SelectedWhich == ELEM_READ_ENC ||
@@ -750,6 +752,7 @@ bool EditSelectedElement(void)
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+        case ELEM_MOD:
             ShowMathDialog(SelectedWhich, Selected->d.math.dest, 
                 Selected->d.math.op1, Selected->d.math.op2);
             break;

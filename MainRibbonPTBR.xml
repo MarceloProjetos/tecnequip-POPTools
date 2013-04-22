@@ -1477,6 +1477,33 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name         = "InstrMathModulo"
+               Symbol     = "cmdInstrMathModulo"
+               Id         = "30548"
+               LabelTitle = "Resto da Divisão">
+      <Command.TooltipTitle      >Resto da Divisão (Shift+/)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir instrução matemática resto de divisão na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMathModuloHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathModuloHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleMathModulo"
+               Symbol     = "cmdExampleMathModulo"
+               Id         = "31548"
+               LabelTitle = "Resto da Divisão">
+      <Command.TooltipTitle      >Resto da Divisão (Shift+/)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução matemática resto de divisão.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrMathModuloHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrMathModuloHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
     <Command Name         = "InstrMathSqrt"
                Symbol     = "cmdInstrMathSqrt"
                Id         = "30553"
@@ -2458,6 +2485,7 @@
             <Button CommandName="InstrMathDivide"/>
             <DropDownButton CommandName="DropDownMath">
               <MenuGroup Class="MajorItems">
+                <Button CommandName="InstrMathModulo"/>
                 <Button CommandName="InstrMathSqrt"/>
                 <Button CommandName="InstrAbs"/>
                 <Button CommandName="InstrShiftRegister"/>

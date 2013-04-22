@@ -26,6 +26,7 @@
 #include <limits.h>
 #include <atlcom.h>
 #include <initguid.h>
+#include <winspool.h>
 
 
 // Direct2D Header Files
@@ -177,6 +178,7 @@ struct strSerialConfig {
 #define MNU_SAVE_AS_C           0x08
 #define MNU_EXPORT              0x05
 #define MNU_EXIT                0x06
+#define MNU_PRINT               0x0c
 #define MNU_RECENT_CLEAR        0x07
 #define MNU_RECENT_START        0x100
 
@@ -216,6 +218,7 @@ struct strSerialConfig {
 #define MNU_INSERT_SUB          0x2d
 #define MNU_INSERT_MUL          0x2e
 #define MNU_INSERT_DIV          0x2f
+#define MNU_INSERT_MOD          0x40
 #define MNU_INSERT_SQRT         0x5c
 #define MNU_INSERT_RAND         0x5d
 #define MNU_INSERT_ABS          0x5e
@@ -294,6 +297,7 @@ struct strSerialConfig {
 #define MNU_EXAMPLE_SUB          0x12d
 #define MNU_EXAMPLE_MUL          0x12e
 #define MNU_EXAMPLE_DIV          0x12f
+#define MNU_EXAMPLE_MOD          0x140
 #define MNU_EXAMPLE_SQRT         0x15c
 #define MNU_EXAMPLE_RAND         0x15d
 #define MNU_EXAMPLE_ABS          0x15e
@@ -376,6 +380,7 @@ struct strSerialConfig {
 #define ELEM_SUB                0x1a
 #define ELEM_MUL                0x1b
 #define ELEM_DIV                0x1c
+#define ELEM_MOD                0x3a
 #define ELEM_SQRT               0x43
 #define ELEM_RAND               0x44
 #define ELEM_ABS                0x45
@@ -441,6 +446,7 @@ struct strSerialConfig {
         case ELEM_SUB: \
         case ELEM_MUL: \
         case ELEM_DIV: \
+        case ELEM_MOD: \
         case ELEM_SQRT: \
         case ELEM_RAND: \
         case ELEM_ABS: \
@@ -1021,6 +1027,15 @@ extern char CurrentCompileFile[MAX_PATH];
 extern McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS];
 extern char *InternalFlags[]; // Internal flags available to the users.
 
+// Internal variables available to the users.
+extern char *InternalVars[][MAX_NAME_LEN];
+
+#define INTVAR_INC_PERIMRODA 0
+#define INTVAR_INC_PULSOS    1
+#define INTVAR_INC_FATOR     2
+#define INTVAR_ABS_PERIMRODA 3
+#define INTVAR_ABS_FATOR     4
+
 #define PROGRESS_MODE_COMPILE 0
 #define PROGRESS_MODE_PROGRAM 1
 
@@ -1363,6 +1378,7 @@ void LoadIOListToComboBox(HWND ComboBox, unsigned int mask);
 int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto);
 unsigned int GetTypeFromName(char *name);
 bool IsInternalFlag(char *name);
+bool IsInternalVar(char *name);
 bool IsValidNumber(char *number);
 void ChangeFileExtension(char *name, char *ext);
 char *GetPinADC(char *name);

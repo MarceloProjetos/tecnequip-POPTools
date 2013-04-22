@@ -5,7 +5,7 @@ int   INC_Mode     , ABS_Mode;
 int   INC_Offset   ;
 int   INC_Perimeter, ABS_Perimeter;
 int   INC_PPR      , ABS_PPR;
-float INC_Factor   , ABS_Factor;
+int   INC_Factor10k, ABS_Factor10k;
 
 int ENC_Read(unsigned int device)
 {
@@ -18,7 +18,7 @@ int ENC_Read(unsigned int device)
 		case ENC_DEVICE_INC:
 			mode      = INC_Mode;
 			perimeter = INC_Perimeter;
-			factor    = INC_Factor;
+			factor    = (float)(INC_Factor10k)/10000;
 			ppr       = INC_PPR;
 			offset    = INC_Offset;
 			val = QEI_GetPosition(QEI) + INC_Offset;
@@ -27,7 +27,7 @@ int ENC_Read(unsigned int device)
 		case ENC_DEVICE_ABS:
 			mode      = ABS_Mode;
 			perimeter = ABS_Perimeter;
-			factor    = ABS_Factor;
+			factor    = (float)(ABS_Factor10k)/10000;
 			ppr       = ABS_PPR;
 			val = (int)SSI_Read(); break;
 	}
@@ -62,14 +62,14 @@ void ENC_Reset(unsigned int device, int offset)
 		case ENC_DEVICE_INC:
 			mode      = INC_Mode;
 			perimeter = INC_Perimeter;
-			factor    = INC_Factor;
+			factor    = (float)(INC_Factor10k)/10000;
 			ppr       = INC_PPR;
 			break;
 
 		case ENC_DEVICE_ABS:
 			mode      = ABS_Mode;
 			perimeter = ABS_Perimeter;
-			factor    = ABS_Factor;
+			factor    = (float)(ABS_Factor10k)/10000;
 			ppr       = ABS_PPR;
 	}
 
@@ -109,14 +109,14 @@ void ENC_Config(unsigned int device, int mode, int perimeter, float factor, int 
 		case ENC_DEVICE_INC:
 			INC_Mode      = mode;
 			INC_Perimeter = perimeter;
-			INC_Factor    = factor;
+			INC_Factor10k = (int)(factor*10000);
 			INC_PPR       = ppr;
 			break;
 
 		case ENC_DEVICE_ABS:
 			ABS_Mode      = mode;
 			ABS_Perimeter = perimeter;
-			ABS_Factor    = factor;
+			ABS_Factor10k = (int)(factor*10000);
 			ABS_PPR       = 1UL << ppr;
 			break;
 	}

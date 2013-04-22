@@ -561,11 +561,24 @@ bool IsInternalFlag(char *name)
 
 	for(i=0; *InternalFlags[i]; i++) {
 		if(!_stricmp(name, InternalFlags[i])) {
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;	
+	return false;	
+}
+
+bool IsInternalVar(char *name)
+{
+	unsigned int i;
+
+	for(i=0; *InternalVars[0][i]; i++) {
+		if(!_stricmp(name, InternalVars[0][i])) {
+			return true;
+		}
+	}
+
+	return false;	
 }
 
 bool IsReservedName(char *name)

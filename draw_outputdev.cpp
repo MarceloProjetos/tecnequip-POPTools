@@ -375,7 +375,6 @@ void PaintWindow(void)
 //-----------------------------------------------------------------------------
 static void SetSyntaxHighlightingColours(void)
 {
-#if CORES_CONSOLE
      static const SyntaxHighlightingColours Schemes[] = {
         {
 			RGB(0, 0, 0),           // bg
@@ -398,8 +397,6 @@ static void SetSyntaxHighlightingColours(void)
             RGB(255, 150, 150),     // simBusLeft
             RGB(150, 150, 255),     // simBusRight
         },
-#else  
-	static const SyntaxHighlightingColours Schemes[] = {
         {
 			 RGB(250, 250, 255),    // bg
             RGB(0, 0, 255),         // def
@@ -421,10 +418,13 @@ static void SetSyntaxHighlightingColours(void)
             RGB(255, 150, 150),     // simBusLeft
             RGB(150, 150, 255),     // simBusRight            
         },
-#endif
     };
 
+#if CORES_CONSOLE
     memcpy(&HighlightColours, &Schemes[0], sizeof(Schemes[0]));
+#else
+    memcpy(&HighlightColours, &Schemes[1], sizeof(Schemes[1]));
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -562,7 +562,7 @@ void ExportDrawingAsText(char *file)
         return;
     }
 
-    fprintf(f, _("POPTools - Texto exportado\n"));
+    fprintf(f, _("POPTools - Diagrama Ladder exportado\n"));
 
     if(Prog.mcu) {
         fprintf(f, _("Para '%s', cristal de %.6f MHz, tempo de ciclo de %.1f ms\n\n"),

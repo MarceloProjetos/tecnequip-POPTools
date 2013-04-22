@@ -100,6 +100,9 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
     } else if(which == ELEM_DIV) {
         l2 = "/";
         title = _("Divide");
+    } else if(which == ELEM_MOD) {
+        l2 = "%";
+        title = _("Modulo");
     } else if(which == ELEM_MOVE) {
         l2 = NULL;
 		width -= 117;

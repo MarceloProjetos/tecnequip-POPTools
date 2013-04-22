@@ -79,6 +79,11 @@ void IntDumpListing(char *outFile)
                     IntCode[i].name2, IntCode[i].name3);
                 break;
 
+            case INT_SET_VARIABLE_MODULO:
+                fprintf(f, "let var '%s' := '%s' %% '%s'", IntCode[i].name1,
+                    IntCode[i].name2, IntCode[i].name3);
+                break;
+
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "increment '%s'", IntCode[i].name1);
                 break;
@@ -283,6 +288,9 @@ static void Op(int op, char *name1, char *name2, char *name3, char *name4, char 
 		break;
 	case INT_SET_VARIABLE_DIVIDE:
 		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_DIVIDE");
+		break;
+	case INT_SET_VARIABLE_MODULO:
+		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_MODULO");
 		break;
 	case INT_READ_ADC:
 		strcpy(IntCode[IntCodeLen].desc, "READ_ADC");
@@ -1231,6 +1239,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 			}
         }
 
+        case ELEM_MOD:
         case ELEM_DIV: {
 			if(IsNumber(l->d.math.op2) && !atol(l->d.math.op2)) {
                 Error(_("Math instruction: '%s' divided by zero!"),
@@ -1259,6 +1268,8 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
                 intOp = INT_SET_VARIABLE_MULTIPLY;
             } else if(which == ELEM_DIV) {
                 intOp = INT_SET_VARIABLE_DIVIDE;
+            } else if(which == ELEM_MOD) {
+                intOp = INT_SET_VARIABLE_MODULO;
             } else oops();
 
             Op(intOp, l->d.math.dest, op1, op2, 0, 0);

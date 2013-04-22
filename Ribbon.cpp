@@ -386,6 +386,7 @@ public:
 			EXEC_OPCODE(cmdFileSaveAsLadder       , MNU_SAVE_AS                );
 			EXEC_OPCODE(cmdFileSaveAsC            , MNU_SAVE_AS_C              );
 			EXEC_OPCODE(cmdFileSaveAsText         , MNU_EXPORT                 );
+			EXEC_OPCODE(cmdPrint                  , MNU_PRINT                  );
 			EXEC_OPCODE(cmdAbout                  , MNU_ABOUT                  );
 			EXEC_OPCODE(cmdExit                   , MNU_EXIT                   );
 
@@ -433,6 +434,7 @@ public:
 			EXEC_OPCODE(cmdInstrMathSub           , MNU_INSERT_SUB             );
 			EXEC_OPCODE(cmdInstrMathMult          , MNU_INSERT_MUL             );
 			EXEC_OPCODE(cmdInstrMathDivide        , MNU_INSERT_DIV             );
+			EXEC_OPCODE(cmdInstrMathModulo        , MNU_INSERT_MOD             );
 			EXEC_OPCODE(cmdInstrMathSqrt          , MNU_INSERT_SQRT            );
 			EXEC_OPCODE(cmdInstrShiftRegister     , MNU_INSERT_SHIFT_REG       );
 			EXEC_OPCODE(cmdInstrLookUpTable       , MNU_INSERT_LUT             );
@@ -518,6 +520,7 @@ public:
 			EXEC_OPCODE(cmdExampleMathSub           , MNU_EXAMPLE_SUB             );
 			EXEC_OPCODE(cmdExampleMathMult          , MNU_EXAMPLE_MUL             );
 			EXEC_OPCODE(cmdExampleMathDivide        , MNU_EXAMPLE_DIV             );
+			EXEC_OPCODE(cmdExampleMathModulo        , MNU_EXAMPLE_MOD             );
 			EXEC_OPCODE(cmdExampleMathSqrt          , MNU_EXAMPLE_SQRT            );
 			EXEC_OPCODE(cmdExampleAbs               , MNU_EXAMPLE_ABS             );
 			EXEC_OPCODE(cmdExampleShiftRegister     , MNU_EXAMPLE_SHIFT_REG       );
@@ -635,7 +638,7 @@ public:
 				{ L"Contadores"     , { cmdExampleCounterInc, cmdExampleCounterDec, cmdExampleCounterCirc, cmdExampleCounterReset, 0 } },
 				{ L"Variáveis"      , { cmdExampleMov, cmdExampleSetBit, cmdExampleCheckBit, cmdExamplePersist, 0 } },
 				{ L"Condicionais"   , { cmdExampleCondEqual, cmdExampleCondGreater, cmdExampleCondLesser, cmdExampleCondNotEqual, cmdExampleCondGreaterEqual, cmdExampleCondLesserEqual, 0 } },
-				{ L"Matemática"     , { cmdExampleMathAdd, cmdExampleMathSub, cmdExampleMathMult, cmdExampleMathDivide, cmdExampleAbs, cmdExampleMathSqrt, cmdExampleShiftRegister, cmdExampleLookUpTable, cmdExamplePieceWiseLinear, cmdExampleRand, 0 } },
+				{ L"Matemática"     , { cmdExampleMathAdd, cmdExampleMathSub, cmdExampleMathMult, cmdExampleMathDivide, cmdExampleMathModulo, cmdExampleAbs, cmdExampleMathSqrt, cmdExampleShiftRegister, cmdExampleLookUpTable, cmdExamplePieceWiseLinear, cmdExampleRand, 0 } },
 				{ L"Analógicos"     , { cmdExampleReadAD, cmdExampleWriteDA, 0 } },
 				{ L"Motores"        , { cmdExamplePWM, cmdExampleRampDA, cmdExampleReadEnc, cmdExampleResetEnc, 0 } },
 				{ L"ModBUS"         , { cmdExampleReadModBUS, cmdExampleWriteModBUS, 0 } },
@@ -864,6 +867,7 @@ void EnableInterfaceItem(int item, BOOL enabled)
 			RIBBON_UPDATE_CMD_STATE(cmdInstrMathSub           , MNU_INSERT_SUB             );
 			RIBBON_UPDATE_CMD_STATE(cmdInstrMathMult          , MNU_INSERT_MUL             );
 			RIBBON_UPDATE_CMD_STATE(cmdInstrMathDivide        , MNU_INSERT_DIV             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrMathModulo        , MNU_INSERT_MOD             );
 			RIBBON_UPDATE_CMD_STATE(cmdInstrMathSqrt          , MNU_INSERT_SQRT            );
 			RIBBON_UPDATE_CMD_STATE(cmdInstrShiftRegister     , MNU_INSERT_SHIFT_REG       );
 			RIBBON_UPDATE_CMD_STATE(cmdInstrLookUpTable       , MNU_INSERT_LUT             );

@@ -1012,6 +1012,7 @@ static void CheckVariableNamesCircuit(int which, void *elem)
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+        case ELEM_MOD:
             MarkWithCheck(l->d.math.dest, VAR_FLAG_ANY);
             break;
 
@@ -1209,6 +1210,16 @@ static void SimulateIntCode(void)
                 case INT_SET_VARIABLE_ADD:
                     v = GetSimulationVariable(a->name2) +
                         GetSimulationVariable(a->name3);
+                    goto math;
+                case INT_SET_VARIABLE_MODULO:
+                    if(GetSimulationVariable(a->name3) != 0) {
+                        v = GetSimulationVariable(a->name2) %
+                            GetSimulationVariable(a->name3);
+                    } else {
+                        v = 0;
+                        Error(_("Divisão por zero na variavel: '%s', a simulação será interrompida."), a->name3);
+                        StopSimulation();
+                    }
                     goto math;
                 case INT_SET_VARIABLE_SUBTRACT:
                     v = GetSimulationVariable(a->name2) -

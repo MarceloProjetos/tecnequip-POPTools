@@ -87,6 +87,13 @@ static char *MapSym(char *str)
     char *ret = AllRets[RetCnt];
     
 	int i;
+    for(i = 0; InternalVars[0][i][0]; i++) {
+		if(!strcmp(str, InternalVars[0][i])) {
+			strcpy(ret, InternalVars[1][i]);
+			return ret;
+		}
+	}
+
     for(i = 0; i < Prog.io.count; i++) 
 	{
 		if (_stricmp(Prog.io.assignment[i].name, str) == 0)
@@ -148,21 +155,24 @@ static char *MapSym(char *str)
 static void DeclareInt(FILE *f, char *rawstr)
 {
 	int mode;
+	bool intvar;
 	char *str = MapSym(rawstr);
 	if (isdigit(*rawstr) || *rawstr == '-')
 	{
 		return;
 	}
 
-	// The following line is really necessary? Apparently not, but ...
-	if (_stricmp(rawstr, "I_SerialReady") == 0) return;
-
-	mode = (!strncmp(str, "U_", 2) || !strncmp(str, "I_", 2)) ? SEENVAR_MODE_USERINT : SEENVAR_MODE_OTHERS;
+	intvar = IsInternalVar(rawstr);
+	mode = ((!strncmp(str, "U_", 2) || !strncmp(str, "I_", 2)) && !intvar) ? SEENVAR_MODE_USERINT : SEENVAR_MODE_OTHERS;
 	if(!SeenVariable(str, mode) && mode == SEENVAR_MODE_OTHERS && strncmp(str, "M", 1)) {
 #ifdef INT_UNSIGNED
 		fprintf(f, "volatile unsigned int %s = 0;\n", str);
 #else
-		fprintf(f, "volatile int %s = 0;\n", str);
+		if(intvar) {
+			fprintf(f, "extern volatile int %s;\n", str);
+		} else {
+			fprintf(f, "volatile int %s = 0;\n", str);
+		}
 #endif
 	}
 }
@@ -228,6 +238,7 @@ static void GenerateDeclarations(FILE *f)
                 intVar2 = IntCode[i].name2;
                 break;
 
+            case INT_SET_VARIABLE_MODULO:
             case INT_SET_VARIABLE_DIVIDE:
             case INT_SET_VARIABLE_MULTIPLY:
             case INT_SET_VARIABLE_SUBTRACT:
@@ -423,6 +434,7 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 		}
 
 		char *str = MapSym(IntCode[i].name1);
+        char op = 0;
 
         switch(IntCode[i].op) {
             case INT_SET_BIT:
@@ -465,11 +477,11 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
                 break;
 
             {
-                char op;
                 case INT_SET_VARIABLE_ADD: op = '+'; goto arith;
                 case INT_SET_VARIABLE_SUBTRACT: op = '-'; goto arith;
                 case INT_SET_VARIABLE_MULTIPLY: op = '*'; goto arith;
-                case INT_SET_VARIABLE_DIVIDE: op = '/'; fprintf(f, "if(%s) ", GenVarCode(buf , MapSym(IntCode[i].name3), NULL, GENVARCODE_MODE_READ)); goto arith;
+                case INT_SET_VARIABLE_MODULO: op = '%';
+				case INT_SET_VARIABLE_DIVIDE: op = op ? op : '/'; fprintf(f, "if(%s) ", GenVarCode(buf , MapSym(IntCode[i].name3), NULL, GENVARCODE_MODE_READ)); goto arith;
                 arith:
 					char mathstr[1024];
 					sprintf(mathstr, "%s %c %s",

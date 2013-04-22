@@ -11,6 +11,7 @@
 #define INT_SET_VARIABLE_SUBTRACT                8
 #define INT_SET_VARIABLE_MULTIPLY                9
 #define INT_SET_VARIABLE_DIVIDE                 10
+#define INT_SET_VARIABLE_MODULO                 39
 
 #define INT_READ_ADC                            11
 #define INT_SET_PWM                             12

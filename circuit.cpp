@@ -631,7 +631,7 @@ void AddPlaceHolderIfNoEOL(ElemSubcktSeries *s)
 						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_MOVE, ELEM_MASTER_RELAY, ELEM_SHIFT_REGISTER) ||
 						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_PIECEWISE_LINEAR, ELEM_LOOK_UP_TABLE, ELEM_COIL) ||
 						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_DIV, ELEM_MUL, ELEM_SUB) ||
-						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_RAND, 0, 0) ||
+						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_RAND, ELEM_MOD, 0) ||
 						ContainsWhich(ELEM_SERIES_SUBCKT, s, ELEM_ADD, ELEM_SQRT, ELEM_ABS);
 
 		if(!HasEOL) {
@@ -751,6 +751,7 @@ bool CanInsert(int which)
 	case ELEM_LOOK_UP_TABLE:
 	case ELEM_COIL:
 	case ELEM_DIV:
+	case ELEM_MOD:
 	case ELEM_MUL:
 	case ELEM_SUB:
 	case ELEM_ADD:

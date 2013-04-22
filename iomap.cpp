@@ -201,6 +201,7 @@ void ExtractNamesFromCircuit(int which, void *any)
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+        case ELEM_MOD:
             AppendIo(l->d.math.dest, IO_TYPE_GENERAL, 0);
 			if(!IsNumber(l->d.math.op1))
 	            AppendIo(l->d.math.op1, IO_TYPE_GENERAL, 0);
@@ -277,6 +278,17 @@ void ExtractNamesFromCircuit(int which, void *any)
 
         case ELEM_READ_ENC:
             AppendIo(l->d.readEnc.name, IO_TYPE_READ_ENC, 0);
+//			switch(GetPinEnc(l->d.readEnc.name)) {
+//			case 1:
+				AppendIo(InternalVars[0][INTVAR_INC_PERIMRODA], IO_TYPE_GENERAL, 0);
+				AppendIo(InternalVars[0][INTVAR_INC_PULSOS   ], IO_TYPE_GENERAL, 0);
+				AppendIo(InternalVars[0][INTVAR_INC_FATOR    ], IO_TYPE_GENERAL, 0);
+//				break;
+//			case 2:
+				AppendIo(InternalVars[0][INTVAR_ABS_PERIMRODA], IO_TYPE_GENERAL, 0);
+				AppendIo(InternalVars[0][INTVAR_ABS_FATOR    ], IO_TYPE_GENERAL, 0);
+//				break;
+//			}
             break;
 
         case ELEM_RESET_ENC:
@@ -1036,6 +1048,11 @@ void ShowIoMapDialog(int item)
 		_stricmp(Prog.io.assignment[item].name, _("new"))==0) {
         Error(_("Rename I/O from default name ('%s') before assigning "
             "MCU pin."), Prog.io.assignment[item].name);
+        return;
+    }
+
+	if(IsInternalVar(Prog.io.assignment[item].name)) {
+        Error(_("Variáveis internas não podem ser atribuídas."));
         return;
     }
 

@@ -242,6 +242,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
     EnableInterfaceItem(MNU_INSERT_SUB, t);
     EnableInterfaceItem(MNU_INSERT_MUL, t);
     EnableInterfaceItem(MNU_INSERT_DIV, t);
+    EnableInterfaceItem(MNU_INSERT_MOD, t);
     EnableInterfaceItem(MNU_INSERT_CTC, t);
     EnableInterfaceItem(MNU_INSERT_PERSIST, t);
     EnableInterfaceItem(MNU_INSERT_READ_ADC, t);

@@ -13,8 +13,6 @@ BOOL SelectionActive;
 // If so we must not do further syntax highlighting.
 BOOL ThisHighlighted;
 
-#define TOO_LONG _("!!!too long!!!")
-
 #define DM_BOUNDS(gx, gy) { \
         if((gx) >= DISPLAY_MATRIX_X_SIZE || (gx) < 0) oops(); \
         if((gy) >= DISPLAY_MATRIX_Y_SIZE || (gy) < 0) oops(); \
@@ -132,6 +130,7 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+        case ELEM_MOD:
             if(ColsAvailable - soFar > 2) {
                 return ColsAvailable - soFar;
             } else {
@@ -368,6 +367,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+        case ELEM_MOD:
             thisWidth = 2;
             break;
 
@@ -501,22 +501,6 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             char bot[256];
             ElemMove *m = &leaf->d.move;
 
-            /*if((strlen(m->dest) > (POS_WIDTH - 9)) ||
-               (strlen(m->src) > (POS_WIDTH - 9)))
-            {
-                CenterWithWires(*cx, *cy, TOO_LONG, poweredBefore,
-                    poweredAfter);
-                break;
-            }*/
-
-            //strcpy(top, "{               }");
-            //memcpy(top+1, m->dest, strlen(m->dest));
-            //top[strlen(m->dest) + 3] = ':';
-            //top[strlen(m->dest) + 4] = '=';
-
-            //strcpy(bot, "{            \x01MOV\x02}");
-            //memcpy(bot+2, m->src, strlen(m->src));
-
 			sprintf(top, "{%s :=}", m->dest);
 			sprintf(bot, _("{%s MOV}"), m->src);
 
@@ -600,6 +584,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
             break;
         }
+        case ELEM_MOD:
         case ELEM_DIV:
         case ELEM_MUL:
         case ELEM_SUB:
@@ -623,6 +608,8 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
                 memcpy(top+lt, _("MUL\x02"), 4);
             } else if(which == ELEM_DIV) {
                 memcpy(top+lt, _("DIV\x02"), 4);
+            } else if(which == ELEM_MOD) {
+                memcpy(top+lt, _("MOD\x02"), 4);
             } else oops();
 
             lt += 6;
@@ -642,6 +629,8 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
                 bot[lb++] = '*';
             } else if(which == ELEM_DIV) {
                 bot[lb++] = '/';
+            } else if(which == ELEM_MOD) {
+                bot[lb++] = '%';
             } else oops();
             lb++;
             memcpy(bot+lb, leaf->d.math.op2, strlen(leaf->d.math.op2));
@@ -813,19 +802,14 @@ cmp:
                 l2 = 2 + 1 + strlen(leaf->d.cmp.op2);
                 lmax = max(l1, l2);
 
-                //if(lmax < POS_WIDTH) {
-                    memset(s1, ' ', sizeof(s1));
-                    s1[0] = '[';
-                    s1[lmax-1] = ']';
-                    s1[lmax] = '\0';
-                    strcpy(s2, s1);
-                    memcpy(s1+1, leaf->d.cmp.op1, strlen(leaf->d.cmp.op1));
-                    memcpy(s1+strlen(leaf->d.cmp.op1)+2, s, strlen(s));
-                    memcpy(s2+2, leaf->d.cmp.op2, strlen(leaf->d.cmp.op2));
-                /*} else {
-                    strcpy(s1, "");
-                    strcpy(s2, TOO_LONG);
-                }*/
+                memset(s1, ' ', sizeof(s1));
+                s1[0] = '[';
+                s1[lmax-1] = ']';
+                s1[lmax] = '\0';
+                strcpy(s2, s1);
+                memcpy(s1+1, leaf->d.cmp.op1, strlen(leaf->d.cmp.op1));
+                memcpy(s1+strlen(leaf->d.cmp.op1)+2, s, strlen(s));
+                memcpy(s2+2, leaf->d.cmp.op2, strlen(leaf->d.cmp.op2));
 
                 CenterWithSpaces(*cx, *cy, s1, poweredAfter, FALSE);
                 CenterWithWires(*cx, *cy, s2, poweredBefore, poweredAfter);
@@ -1092,6 +1076,7 @@ cmp:
         case ELEM_SUB:
         case ELEM_MUL:
         case ELEM_DIV:
+        case ELEM_MOD:
 		case ELEM_READ_FORMATTED_STRING:
 		case ELEM_WRITE_FORMATTED_STRING:
 		case ELEM_READ_SERVO_YASKAWA:

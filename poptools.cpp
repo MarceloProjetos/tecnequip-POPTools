@@ -34,6 +34,10 @@ char CurrentCompileFile[MAX_PATH];
 // Internal flags available to the users.
 char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "RampActive", "TcpReady", "TcpTimeout", "" };
 
+// Internal variables available to the users.
+char *InternalVars[][MAX_NAME_LEN] = { { "IncPerimRoda" , "IncPulsosVolta", "IncFatorCorr" , "AbsPerimRoda" , "AbsFatorCorr" , "" },
+									   { "INC_Perimeter", "INC_PPR"       , "INC_Factor10k", "ABS_Perimeter", "ABS_Factor10k", "" } };
+
 // Everything relating to the PLC's program, I/O configuration, processor
 // choice, and so on--basically everything that would be saved in the
 // project file.
@@ -222,6 +226,90 @@ static BOOL SaveAsDialog(void)
         ProgramChangedNotSaved = FALSE;
         return TRUE;
     }
+}
+
+//-----------------------------------------------------------------------------
+// Get a filename with a common dialog box and then export the program as
+// an ASCII art drawing.
+//-----------------------------------------------------------------------------
+static void PrintDocument(void)
+{
+	char szTempPath[MAX_PATH];
+
+	GetTempPath(sizeof(szTempPath), szTempPath);
+
+	strcat(szTempPath, "POPTools\\");
+	if (!CreateDirectory(szTempPath, NULL))
+	{
+		DWORD err = GetLastError();	
+		if (err != ERROR_ALREADY_EXISTS) {
+			Error(_("Erro durante a impressão!"));
+			return;
+		}
+	}
+
+	strcat(szTempPath, "ld.txt");
+	ExportDrawingAsText(szTempPath);
+
+	PRINTDLG pd;
+
+	// Initialize PRINTDLG
+	ZeroMemory(&pd, sizeof(pd));
+	pd.lStructSize = sizeof(pd);
+	pd.hwndOwner   = MainWindow;
+	pd.hDevMode    = NULL;     // Don't forget to free or store hDevMode.
+	pd.hDevNames   = NULL;     // Don't forget to free or store hDevNames.
+	pd.Flags       = PD_USEDEVMODECOPIESANDCOLLATE | PD_RETURNDC; 
+	pd.nCopies     = 1;
+	pd.nFromPage   = 0xFFFF; 
+	pd.nToPage     = 0xFFFF; 
+	pd.nMinPage    = 1; 
+	pd.nMaxPage    = 0xFFFF; 
+
+	if (PrintDlg(&pd)==TRUE) {
+		DWORD bytes_written;
+		DOC_INFO_1 docinfo1;
+		LPDEVMODE  dm = (LPDEVMODE )GlobalLock(pd.hDevMode);
+		LPDEVNAMES dn = (LPDEVNAMES)GlobalLock(pd.hDevNames);
+		HANDLE print_handle = NULL;
+		FILE *file_handle;
+		char buf[1024];
+
+		OpenPrinter((char *)dm->dmDeviceName, &print_handle, NULL);
+		if(print_handle == NULL){
+			Error(_("Erro abrindo impressora!\n"));
+		} else {
+			file_handle = fopen(szTempPath, "r");
+			if(file_handle == NULL) {
+				Error(_("Erro iniciando impressão!\n"));
+			} else {
+				docinfo1.pDocName = "POPTools";
+				docinfo1.pOutputFile = NULL;
+				docinfo1.pDatatype = "text";
+
+				StartDocPrinter(print_handle, 1, (LPBYTE)&docinfo1);
+				StartPagePrinter(print_handle);
+
+				while(fgets(buf, sizeof(buf), file_handle) != NULL) {
+					WritePrinter(print_handle, buf, strlen(buf), &bytes_written);
+				}
+
+				EndPagePrinter(print_handle);
+				EndDocPrinter(print_handle);
+
+				fclose(file_handle);
+			}
+
+			ClosePrinter(print_handle);
+		}
+
+		// Free DEVMODE and DEVNAMES
+		GlobalFree(pd.hDevMode);
+		GlobalFree(pd.hDevNames);
+
+		// Delete DC when done.
+		DeleteDC(pd.hDC);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -895,6 +983,10 @@ void ProcessMenu(int code)
             ExportDialog();
             break;
 
+        case MNU_PRINT:
+            PrintDocument();
+            break;
+
         case MNU_EXIT:
 			if(InSimulationMode) {
 				ToggleSimulationMode();
@@ -1083,6 +1175,7 @@ void ProcessMenu(int code)
             case MNU_INSERT_SUB: elem = ELEM_SUB; goto math;
             case MNU_INSERT_MUL: elem = ELEM_MUL; goto math;
             case MNU_INSERT_DIV: elem = ELEM_DIV; goto math;
+            case MNU_INSERT_MOD: elem = ELEM_MOD; goto math;
 math:
                 CHANGING_PROGRAM(AddMath(elem));
                 break;
