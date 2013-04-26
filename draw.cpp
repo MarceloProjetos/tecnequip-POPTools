@@ -251,30 +251,10 @@ static void VerticalWire(int cx, int cy)
 //-----------------------------------------------------------------------------
 // Convenience functions for making the text colors pretty, for DrawElement.
 //-----------------------------------------------------------------------------
-static void NormText(void)
-{
-    SetTextColor(Hdc, InSimulationMode ? HighlightColours.simOff :
-        HighlightColours.def);
-    SelectObject(Hdc, FixedWidthFont);
-}
-static void EmphText(void)
-{
-    SetTextColor(Hdc, InSimulationMode ? HighlightColours.simOn :
-        HighlightColours.selected);
-    SelectObject(Hdc, FixedWidthFontBold);
-}
-static void NameText(void)
-{
-    if(!InSimulationMode && !ThisHighlighted) {
-        SetTextColor(Hdc, HighlightColours.name);
-    }
-}
-static void BodyText(void)
-{
-    if(!InSimulationMode && !ThisHighlighted) {
-        SetTextColor(Hdc, HighlightColours.def);
-    }
-}
+extern void NormText(void);
+extern void EmphText(void);
+extern void NameText(void);
+extern void BodyText(void);
 static void PoweredText(BOOL powered)
 {
     if(InSimulationMode) {

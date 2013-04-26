@@ -1356,9 +1356,6 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 	PrevMultisetDADialogProc = SetWindowLongPtr(MultisetDADialog, GWLP_WNDPROC, 
         (LONG_PTR)MultisetDADialogProc);
 
-    RECT r;
-    GetClientRect(MultisetDADialog, &r);
-
     MakeControls();
 
 	PopulateAbortModeCombobox(AbortModeCombobox, true);

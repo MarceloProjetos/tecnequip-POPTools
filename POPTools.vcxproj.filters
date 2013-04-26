@@ -37,6 +37,9 @@
     <Filter Include="Resource Files\GCC">
       <UniqueIdentifier>{82afc936-8037-49e8-8eb2-27351d33f8c2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\EngineGUI">
+      <UniqueIdentifier>{f83a0bd3-d4fe-4cad-a0c8-ab85950e8886}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="checkbitdialog.cpp">
@@ -177,6 +180,15 @@
     <ClCompile Include="CommonFileDialog.cpp">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
+    <ClCompile Include="EngineGUI.cpp">
+      <Filter>Source Files\EngineGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineRenderD2D.cpp">
+      <Filter>Source Files\EngineGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="draw_EngineGUI.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -228,6 +240,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Firmware\App\intreg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineGUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineRender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineRenderD2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

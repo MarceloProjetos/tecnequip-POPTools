@@ -136,7 +136,7 @@ typedef SDWORD SWORD;
 #define PLC_CYCLE 10 // miliseconds
 
 // Size of the font that we will use to draw the ladder diagrams, in pixels
-#define FONT_WIDTH   7
+#define FONT_WIDTH   8
 #define FONT_HEIGHT 13
 
 #define DA_RESOLUTION		2048		// DA resolution 12 bits (4096 / 2) 
@@ -932,7 +932,9 @@ typedef struct SyntaxHighlightingColoursTag {
 
     COLORREF    bus;            // the `bus' at the right and left of screen
 
-    COLORREF    simBg;          // background, simulation mode
+    COLORREF    breakpoint;     // the breakpoint circle
+
+	COLORREF    simBg;          // background, simulation mode
     COLORREF    simRungNum;     // rung number, simulation mode
     COLORREF    simOff;         // de-energized element, simulation mode
     COLORREF    simOn;          // energzied element, simulation mode

@@ -306,6 +306,9 @@
     <ClCompile Include="compilecommon.cpp" />
     <ClCompile Include="confdialog.cpp" />
     <ClCompile Include="contactsdialog.cpp" />
+    <ClCompile Include="draw_EngineGUI.cpp" />
+    <ClCompile Include="EngineGUI.cpp" />
+    <ClCompile Include="EngineRenderD2D.cpp" />
     <ClCompile Include="Firmware\App\modbus_rtu.c" />
     <ClCompile Include="KeyboardHandlers.cpp" />
     <ClCompile Include="KeyboardMap.cpp" />
@@ -346,6 +349,10 @@
     <ClCompile Include="XMLWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EngineGUI.h" />
+    <ClInclude Include="EngineRender.h" />
+    <ClInclude Include="EngineRenderD2D.h" />
+    <ClInclude Include="EngineUtils.h" />
     <ClInclude Include="Firmware\App\intreg.h" />
     <ClInclude Include="Firmware\App\modbus_rtu.h" />
     <ClInclude Include="KeyboardHandlers.h" />

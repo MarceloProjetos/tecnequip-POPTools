@@ -1,6 +1,10 @@
 #include "poptools.h"
 #include "mcutable.h"
 
+extern void Draw_Init(void);
+extern void Draw_Start(void);
+extern void Draw_End(void);
+
 HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
@@ -1494,7 +1498,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             Hdc = BeginPaint(DrawWindow, &ps);
 
             // This draws the schematic.
+			Draw_Start();
             PaintWindow();
+			Draw_End();
 
 			RECT r;
             // Fill around the scroll bars
@@ -1962,6 +1968,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// Initialize ModBUS protocol and devices
 	Init_MBDev();
 	Init_MBDev_Slave();
+
+	Draw_Init();
 
 	MSG msg;
     DWORD ret;

@@ -1,6 +1,7 @@
 #include "poptools.h"
 
 void (*DrawChars)(int, int, char *);
+void DrawCharsToEngineGUI(int cx, int cy, char *str);
 
 // After an undo all the memory addresses change but make an effort to put
 // the cursor roughly where it should be.
@@ -36,7 +37,7 @@ int ScrollXOffsetMax;
 int ScrollYOffsetMax;
 
 // Is the cursor currently drawn? We XOR it so this gets toggled.
-static BOOL CursorDrawn;
+BOOL CursorDrawn;
 
 // Colours with which to do syntax highlighting, configurable
 SyntaxHighlightingColours HighlightColours;
@@ -214,7 +215,7 @@ HRESULT UpdateRibbonHeight(void);
 // cursor should go and fill in coordinates for BlinkCursor. Not allowed to
 // draw deeper than IoListTop, as we would run in to the I/O listbox.
 //-----------------------------------------------------------------------------
-void PaintWindow(void)
+/*void PaintWindow(void)
 {
 	static bool first = true;
     static HBITMAP BackBitmap;
@@ -367,7 +368,7 @@ void PaintWindow(void)
 
     Hdc = paintDc;
     ok();
-}
+}*/
 
 //-----------------------------------------------------------------------------
 // Set up the syntax highlighting colours, according to the currently selected
@@ -389,6 +390,8 @@ static void SetSyntaxHighlightingColours(void)
 
             RGB(255, 255, 255),     // bus
 
+            RGB(255, 0, 0),         // breakpoint
+
             RGB(0, 0, 0),           // simBg
             RGB(130, 130, 255),     // simRungNum
             RGB(100, 130, 130),     // simOff
@@ -409,6 +412,8 @@ static void SetSyntaxHighlightingColours(void)
             RGB(40, 200, 0),        // comment
 
             RGB(0, 0, 255),         // bus
+
+            RGB(255, 0, 0),         // breakpoint
 
             RGB(10, 10, 38),        // simBg
             RGB(44, 231, 148),      // simRungNum
