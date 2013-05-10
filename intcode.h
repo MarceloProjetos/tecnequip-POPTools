@@ -78,10 +78,59 @@
 		unsigned char bit;
     } IntOp;
 
-    #define MAX_INT_OPS     (1024*16)
-    extern IntOp IntCode[MAX_INT_OPS];
-    extern int IntCodeLen;
+//    #define MAX_INT_OPS     (1024*16)
+//    extern IntOp IntCode[MAX_INT_OPS];
+//    extern int IntCodeLen;
 #endif
 
+class IntCode {
+private:
+	DWORD GenSymCountParThis;
+	DWORD GenSymCountParOut;
+	DWORD GenSymCountOneShot;
+	DWORD GenSymCountFormattedString;
+	WORD EepromAddrFree;
+
+	vector<IntOp> arrayIntCode;
+
+	string StateInOut;
+
+public:
+	IntCode(void);
+
+	void Clear(void);
+	void ClearParallelCount(void);
+	void DumpListing(string outFile);
+
+	vector<IntOp> getVectorIntCode(void);
+
+	string GenSymParThis        (void);
+	string GenSymParOut         (void);
+	string GenSymOneShot        (void);
+	string GenSymFormattedString(void);
+
+	int getEepromAddr(void);
+
+	const char *getStateInOut(void);
+	void        setStateInOut(string s);
+
+	void Op(int op, const char *name1, const char *name2, const char *name3, const char *name4, const char *name5, const char *name6, const char *name7, SWORD lit, unsigned char bit);
+	void Op(int op, const char *name1, const char *name2, const char *name3, const char *name4,                                                          SWORD lit, unsigned char bit) {
+		Op(op, name1, name2, name3, name4, NULL, NULL, NULL, lit, bit);
+	}
+	void Op   (int op, const char *name1, const char *name2, const char *name3, SWORD lit, unsigned char bit) { Op(op, name1, name2, name3, NULL, lit, bit); }
+	void Op   (int op, const char *name1, const char *name2,                    SWORD lit                   ) { Op(op, name1, name2,  NULL,       lit,   0); }
+	void Op   (int op, const char *name1,                                       SWORD lit                   ) { Op(op, name1,  NULL,  NULL,       lit,   0); }
+	void Op   (int op, const char *name1, const char *name2                                                 ) { Op(op, name1, name2,  NULL,         0,   0); }
+	void Op   (int op, const char *name1                                                                    ) { Op(op, name1,  NULL,  NULL,         0,   0); }
+	void OpBit(int op, const char *name1,                                                  unsigned char bit) { Op(op, name1,  NULL,  NULL,         0, bit); }
+	void OpBit(int op, const char *name1, const char *name2,                               unsigned char bit) { Op(op, name1, name2,  NULL,         0, bit); }
+	void Op   (int op                                                                                       ) { Op(op,  NULL,  NULL,  NULL,         0,   0); }
+
+	void SimState(BOOL *b, char *name);
+	void Comment (char *str, ...);
+
+	const char *VarFromExpr(const char *expr, char *tempName);
+};
 
 #endif

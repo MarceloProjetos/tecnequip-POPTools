@@ -358,7 +358,7 @@ void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
 //-----------------------------------------------------------------------------
 // Is an expression that could be either a variable name or a number a number?
 //-----------------------------------------------------------------------------
-bool IsNumber(char *str)
+bool IsNumber(const char *str)
 {
     if(*str == '-' || isdigit(*str)) {
         return TRUE;
@@ -764,7 +764,7 @@ void ChangeFileExtension(char *name, char *ext)
 	sprintf(name, "%s.%s", name, ext);
 }
 
-char *GetPinADC(char *name)
+const char *GetPinADC(const char *name)
 {
 	int i;
 	for(i=0; i < Prog.io.count; i++) {

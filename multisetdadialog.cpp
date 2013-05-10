@@ -870,16 +870,14 @@ void UpdateWindow(void)
 			MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Tempo (ms) !"), MB_OK | MB_ICONEXCLAMATION);
 		}
 
-		current.time = max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num))));
-		_itoa(current.time, num, 10);
-		_itoa(current.time, current.name, 10);
+		tempo = max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num))));
+		_itoa(tempo, num, 10);
+		_itoa(tempo, current.name, 10);
 		SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 	} else {
-		current.time = 600;
+		tempo = 600;
 		strcpy(current.name, num);
 	}
-
-	tempo = current.time;
 
 	current.type            = SendMessage(ResolTypeCombobox, CB_GETCURSEL, 0, 0);
 	current.ramp_abort_mode = SendMessage(AbortModeCombobox, CB_GETCURSEL, 0, 0);
@@ -1343,7 +1341,7 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
 	char initval_tmp[MAX_NAME_LEN];
 
 	current = *l;
-	tempo = current.time;
+	tempo = IsNumber(current.name) ? atoi(current.name) : 600;
 	//initval = current.initval;
 
 	strcpy(time_tmp   , l->name );

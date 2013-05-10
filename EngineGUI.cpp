@@ -94,7 +94,7 @@ HRESULT EngineGUI::StartDraw(void)
 		}
 
 		pRender->StartDraw();
-		pRender->Clear(Brushes[0]);
+		pRender->Clear(BrushOffset);
 		hr = S_OK;
 	}
 
@@ -132,7 +132,7 @@ unsigned int EngineGUI::CreateBrush(COLORREF rgb)
 	return Brushes.size() - 1;
 }
 
-HRESULT EngineGUI::DrawRectangle(RECT r, unsigned int brush, bool filled)
+HRESULT EngineGUI::DrawRectangle(RECT r, unsigned int brush, bool filled, unsigned int radiusX, unsigned int radiusY)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
@@ -141,7 +141,7 @@ HRESULT EngineGUI::DrawRectangle(RECT r, unsigned int brush, bool filled)
 		r.right  += DrawOffset.x;
 		r.top    += DrawOffset.y;
 		r.bottom += DrawOffset.y;
-		pRender->DrawRectangle(r, brush + BrushOffset, filled);
+		pRender->DrawRectangle(r, brush + BrushOffset, filled, radiusX, radiusY);
 		hr = S_OK;
 	}
 

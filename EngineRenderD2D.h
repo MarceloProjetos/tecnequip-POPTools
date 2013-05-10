@@ -37,7 +37,7 @@ public:
 	void    Clear(unsigned int brush);
 	HRESULT EndDraw(void);
 
-	void DrawRectangle(RECT r, unsigned int brush, bool filled = true);
+	void DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned int radiusY = 0);
 	HRESULT DrawEllipse(POINT center, float rx, float ry, unsigned int brush, bool filled = true);
 	void DrawText(char *txt, RECT r, unsigned int format, unsigned int brush);
 	HRESULT DrawLine(POINT start, POINT end, unsigned int brush);

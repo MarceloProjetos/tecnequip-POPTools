@@ -1,8 +1,10 @@
 #include "poptools.h"
 #include "mcutable.h"
+#include "LadderObjects.h"
 
 extern void Draw_Init(void);
 extern void Draw_Start(void);
+extern void PaintScrollAndSplitter(void);
 extern void Draw_End(void);
 
 HINSTANCE   Instance;
@@ -46,6 +48,7 @@ char *InternalVars[][MAX_NAME_LEN] = { { "IncPerimRoda" , "IncPulsosVolta", "Inc
 // choice, and so on--basically everything that would be saved in the
 // project file.
 PlcProgram Prog;
+LadderDiagram ladder;
 
 // Settings structure
 Settings POPSettings;
@@ -1494,42 +1497,42 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case WM_PAINT: {
             PAINTSTRUCT ps;
-		    InvalidateRect(DrawWindow, NULL, FALSE);
             Hdc = BeginPaint(DrawWindow, &ps);
+			Draw_Start();
 
             // This draws the schematic.
-			Draw_Start();
             PaintWindow();
-			Draw_End();
 
+			PaintScrollAndSplitter();
+/*
 			RECT r;
             // Fill around the scroll bars
             if(NeedHoriz) {
                 r.top = IoListTop - ScrollHeight - 2;
                 r.bottom = IoListTop - 2;
-                FillRect(Hdc, &r, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
+                FillRect(Hdc, &r, GetSysColorBrush(COLOR_BTNFACE));
             }
             GetClientRect(MainWindow, &r);
             r.left = r.right - ScrollWidth - 2;
-            FillRect(Hdc, &r, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
+            FillRect(Hdc, &r, GetSysColorBrush(COLOR_BTNFACE));
 
             // Draw the splitter thing to grab to resize the I/O listview.
             GetClientRect(DrawWindow, &r);
             r.top = IoListTop - 2 - RibbonHeight;
             r.bottom = IoListTop - RibbonHeight;
-            FillRect(Hdc, &r, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
+			FillRect(Hdc, &r, GetSysColorBrush(COLOR_3DFACE));
             r.top = IoListTop - 2 - RibbonHeight;
             r.bottom = IoListTop - 1 - RibbonHeight;
-            FillRect(Hdc, &r, (HBRUSH)GetStockObject(WHITE_BRUSH));
+            FillRect(Hdc, &r, GetSysColorBrush(COLOR_3DLIGHT));
             r.top = IoListTop - RibbonHeight;
             r.bottom = IoListTop + 1 - RibbonHeight;
-            FillRect(Hdc, &r, (HBRUSH)GetStockObject(DKGRAY_BRUSH));
-
+            FillRect(Hdc, &r, GetSysColorBrush(COLOR_3DDKSHADOW));
+*/
+			Draw_End();
             EndPaint(DrawWindow, &ps);
 
 			Hdc = BeginPaint(hwnd, &ps);
-
-//            EndPaint(hwnd, &ps);
+            EndPaint(hwnd, &ps);
             return 1;
         }
 
@@ -1946,7 +1949,40 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
 	SetAutoSaveInterval(POPSettings.AutoSaveInterval);
 
-    if(strlen(lpCmdLine) > 0) {
+	// Teste LadderObjects
+	ladder.AddElement(new LadderElemContact);
+	ladder.AddElement(new LadderElemContact);
+	ladder.AddElement(new LadderElemContact);
+
+	LadderElem *elem = new LadderElemContact;
+	ladder.AddElement(elem);
+	ladder.SelectElement(elem, SELECTED_BELOW);
+
+	ladder.AddElement(new LadderElemContact);
+	ladder.AddElement(new LadderElemContact);
+
+	elem = new LadderElemContact;
+	ladder.AddElement(elem);
+	ladder.SelectElement(elem, SELECTED_BELOW);
+
+	ladder.AddElement(new LadderElemContact);
+
+	ladder.NewRung(true);
+	ladder.AddElement(new LadderElemContact);
+	LadderElemCoil *coil = new LadderElemCoil;
+	coil->setProperties("teste", true, false, false, IO_TYPE_DIG_OUTPUT, 3);
+	ladder.AddElement(coil);
+	ladder.SelectElement(coil, SELECTED_ABOVE);
+	bool ok = ladder.AddElement(new LadderElemCoil);
+	ok = ladder.AddElement(new LadderElemMove);
+	ladder.AddElement(new LadderElemContact);
+	ladder.AddElement(new LadderElemTimer(ELEM_TOF));
+
+	ladder.NewRung(false);
+	ladder.AddElement(new LadderElemComment);
+	// Fim do Teste
+
+	if(strlen(lpCmdLine) > 0) {
         char line[MAX_PATH];
         if(*lpCmdLine == '"') { 
             strcpy(line, lpCmdLine+1);

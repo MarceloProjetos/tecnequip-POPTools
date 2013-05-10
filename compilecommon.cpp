@@ -349,17 +349,20 @@ int ValidateDiagram(void)
 
 	// Validate Generated IntCode
 	if(ret != DIAGRAM_VALIDATION_ERROR) {
+		vector<IntOp> vectorIntCode = ladder.getVectorIntCode();
+		vector<IntOp>::size_type IntCodeLen = vectorIntCode.size(), i;
+
 		for(i = 0; i < IntCodeLen; i++) {
-			if(IntCode[i].op == INT_READ_ADC && GetTypeFromName(IntCode[i].name1) != IO_TYPE_READ_ADC) {
-				sprintf(msg_error, _("Variável A/D '%s' usada em lógica incompatível!"), IntCode[i].name1);
+			if(vectorIntCode[i].op == INT_READ_ADC && GetTypeFromName(vectorIntCode[i].name1) != IO_TYPE_READ_ADC) {
+				sprintf(msg_error, _("Variável A/D '%s' usada em lógica incompatível!"), vectorIntCode[i].name1);
 			}
 
-			if(IntCode[i].op == INT_EEPROM_READ && !WarningPersist) {
+			if(vectorIntCode[i].op == INT_EEPROM_READ && !WarningPersist) {
 				WarningPersist = 1;
 				sprintf(msg_warning, _("Atenção: variáveis persistentes devem ser usadas cautelosamente. Excesso no uso pode interferir no desempenho da execução do diagrama ladder e reduzir a vida útil do CLP.\nA memória interna possui um limite no número de gravações."));
 			}
 
-			if(IntCode[i].op == INT_SET_PWM) {
+			if(vectorIntCode[i].op == INT_SET_PWM) {
 				CountPWM++;
 				if(CountPWM == 4) // Each ELEM_PWM generates two INT_SET_PWM
 					sprintf(msg_warning, _("Atenção: cuidado ao utilizar mais de uma instrução PWM em sua lógica.\nSe duas instruções PWM forem ativadas ao mesmo tempo, o PWM não funcionará corretamente."));

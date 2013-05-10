@@ -1,5 +1,7 @@
 #include "poptools.h"
 
+extern void DrawLine(RECT r);
+
 // Number of drawing columns (leaf element units) available. We want to
 // know this so that we can right-justify the coils.
 int ColsAvailable;
@@ -255,7 +257,7 @@ extern void NormText(void);
 extern void EmphText(void);
 extern void NameText(void);
 extern void BodyText(void);
-static void PoweredText(BOOL powered)
+void PoweredText(BOOL powered)
 {
     if(InSimulationMode) {
         if(powered)
@@ -270,7 +272,7 @@ static void PoweredText(BOOL powered)
 // string may contain special characters to indicate formatting (syntax
 // highlighting).
 //-----------------------------------------------------------------------------
-static int FormattedStrlen(char *str)
+int FormattedStrlen(char *str)
 {
     int l = 0;
     while(*str) {
@@ -286,7 +288,7 @@ static int FormattedStrlen(char *str)
 // Draw a string, centred in the space of a single position, with spaces on
 // the left and right. Draws on the upper line of the position.
 //-----------------------------------------------------------------------------
-static void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
+void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
     BOOL isName)
 {
     int extra = POS_WIDTH - FormattedStrlen(str);
@@ -300,7 +302,7 @@ static void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
 // Like CenterWithWires, but for an arbitrary width position (e.g. for ADD
 // and SUB, which are double-width).
 //-----------------------------------------------------------------------------
-static void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before,
+void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before,
     BOOL after, int totalWidth)
 {
     int extra = totalWidth - FormattedStrlen(str);
@@ -324,7 +326,7 @@ static void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before,
 // the left and right coloured according to the powered state. Draws on the
 // middle line.
 //-----------------------------------------------------------------------------
-static void CenterWithWires(int cx, int cy, char *str, BOOL before, BOOL after)
+void CenterWithWires(int cx, int cy, char *str, BOOL before, BOOL after)
 {
     CenterWithWiresWidth(cx, cy, str, before, after, POS_WIDTH);
 }
@@ -358,6 +360,11 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 
     NormText();
     PoweredText(poweredBefore);
+
+	RECT r;
+	r.left = *cx;
+	r.bottom = r.top = *cy + (POS_HEIGHT/2);
+
     while(*cx < (ColsAvailable-thisWidth)*POS_WIDTH) {
         int gx = *cx/POS_WIDTH;
         int gy = *cy/POS_HEIGHT;
@@ -371,11 +378,14 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 
         int i;
         for(i = 0; i < POS_WIDTH; i++) {
-            DrawChars(*cx + i, *cy + (POS_HEIGHT/2), "-");
+//            DrawChars(*cx + i, *cy + (POS_HEIGHT/2), "-");
         }
         *cx += POS_WIDTH;
         cx0 += POS_WIDTH;
     }
+
+	r.right = *cx;
+	DrawLine(r);
 
     if(leaf == Selected && !InSimulationMode) {
         EmphText();
@@ -1267,7 +1277,7 @@ void DrawEndRung(int cx, int cy)
 {
     int i;
     char *str = _("[END]");
-    int lead = (POS_WIDTH - strlen(str))/2;
+    int lead = (ColsAvailable*POS_WIDTH - strlen(str))/2;
     ThisHighlighted = TRUE;
     for(i = 0; i < lead; i++) {
         DrawChars(cx + i, cy + (POS_HEIGHT/2), "-");

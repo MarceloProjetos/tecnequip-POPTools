@@ -189,6 +189,9 @@
     <ClCompile Include="draw_EngineGUI.cpp">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
+    <ClCompile Include="LadderObjects.cpp">
+      <Filter>Source Files\Diagrama Ladder</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -252,6 +255,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EngineRenderD2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LadderObjects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

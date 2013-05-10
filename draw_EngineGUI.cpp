@@ -12,6 +12,12 @@ extern BOOL CursorDrawn;
 extern SyntaxHighlightingColours HighlightColours;
 SyntaxHighlightingColours HighlightColoursBrush;
 
+#define INTERF_COLOR_3DLIGHT  0
+#define INTERF_COLOR_3DFACE   1
+#define INTERF_COLOR_3DSHADOW 2
+
+unsigned int InterfaceColors[3];
+
 void Draw_Init(void)
 {
 	gui.SetTarget(DrawWindow);
@@ -32,6 +38,10 @@ void Draw_Init(void)
 	HighlightColoursBrush.simOff      = gui.CreateBrush(HighlightColours.simOff     );
 	HighlightColoursBrush.simOn       = gui.CreateBrush(HighlightColours.simOn      );
 	HighlightColoursBrush.simRungNum  = gui.CreateBrush(HighlightColours.simRungNum );
+
+	InterfaceColors[INTERF_COLOR_3DLIGHT ] = gui.CreateBrush(GetSysColor(COLOR_3DLIGHT   ));
+	InterfaceColors[INTERF_COLOR_3DFACE  ] = gui.CreateBrush(GetSysColor(COLOR_3DFACE    ));
+	InterfaceColors[INTERF_COLOR_3DSHADOW] = gui.CreateBrush(GetSysColor(COLOR_3DDKSHADOW));
 }
 
 void Draw_Start(void)
@@ -101,13 +111,11 @@ void NormText(void)
 {
     currColor = InSimulationMode ? HighlightColoursBrush.simOff :
         HighlightColoursBrush.def;
-//    SelectObject(Hdc, FixedWidthFont);
 }
 void EmphText(void)
 {
     currColor = InSimulationMode ? HighlightColoursBrush.simOn :
         HighlightColoursBrush.selected;
-//    SelectObject(Hdc, FixedWidthFontBold);
 }
 void NameText(void)
 {
@@ -121,6 +129,22 @@ void BodyText(void)
         currColor = HighlightColoursBrush.def;
     }
 }
+
+void DrawLine(RECT r)
+{
+	int x, y;
+
+    x = r.left*FONT_WIDTH + X_PADDING;
+    y = (r.top - ScrollYOffset*POS_HEIGHT)*FONT_HEIGHT + Y_PADDING;
+	POINT start = { x, y + FONT_HEIGHT / 2 };
+
+    x = r.right*FONT_WIDTH + X_PADDING;
+    y = (r.bottom - ScrollYOffset*POS_HEIGHT)*FONT_HEIGHT + Y_PADDING;
+	POINT end = { x + FONT_WIDTH, y + FONT_HEIGHT / 2 };
+
+	gui.DrawLine(start, end, currColor);
+}
+
 //-----------------------------------------------------------------------------
 // Output a string to the screen at a particular location, in character-
 // sized units.
@@ -260,7 +284,7 @@ void PaintWindow(void)
 		UpdateRibbonHeight();
 	}
 
-	gui.SetBackgroundColor(InSimulationMode ? HighlightColoursBrush.simBg : HighlightColoursBrush.bg);
+	gui.SetBackgroundColor(InSimulationMode ? HighlightColours.simBg : HighlightColours.bg);
 
     // now figure out how we should draw the ladder logic
     ColsAvailable = ProgCountWidestRow();
@@ -284,8 +308,8 @@ void PaintWindow(void)
         // we still must draw a bit above and below so that the DisplayMatrix
         // is filled in enough to make it possible to reselect using the
         // cursor keys.
-//        if(((cy + thisHeight) >= (ScrollYOffset - 8)*POS_HEIGHT) &&
-//            (cy < (ScrollYOffset + rowsAvailable + 8)*POS_HEIGHT))
+        if(((cy + thisHeight) >= (ScrollYOffset - 8)*POS_HEIGHT) &&
+            (cy < (ScrollYOffset + rowsAvailable + 8)*POS_HEIGHT))
         {
             int rung = i + 1;
             int y = Y_PADDING + FONT_HEIGHT*cy;
@@ -372,4 +396,34 @@ void PaintWindow(void)
     }
 
     ok();
+}
+
+void PaintScrollAndSplitter(void)
+{
+	RECT r;
+	// Fill around the scroll bars
+	if(NeedHoriz) {
+		r.top = IoListTop - ScrollHeight - 2;
+		r.bottom = IoListTop - 2;
+		gui.DrawRectangle(r, InterfaceColors[INTERF_COLOR_3DFACE]);
+	}
+	GetClientRect(MainWindow, &r);
+	r.right += ScrollXOffset;
+	r.left = r.right - ScrollWidth - 2;
+	gui.DrawRectangle(r, InterfaceColors[INTERF_COLOR_3DFACE]);
+
+	// Draw the splitter thing to grab to resize the I/O listview.
+	GetClientRect(DrawWindow, &r);
+	r.left  += ScrollXOffset;
+	r.right += ScrollXOffset;
+
+	r.top = IoListTop - 2 - RibbonHeight;
+	r.bottom = IoListTop - RibbonHeight;
+	gui.DrawRectangle(r, InterfaceColors[INTERF_COLOR_3DFACE  ]);
+	r.top = IoListTop - 2 - RibbonHeight;
+	r.bottom = IoListTop - 1 - RibbonHeight;
+	gui.DrawRectangle(r, InterfaceColors[INTERF_COLOR_3DLIGHT ]);
+	r.top = IoListTop - RibbonHeight;
+	r.bottom = IoListTop + 1 - RibbonHeight;
+	gui.DrawRectangle(r, InterfaceColors[INTERF_COLOR_3DSHADOW]);
 }

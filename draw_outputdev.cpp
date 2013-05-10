@@ -401,7 +401,7 @@ static void SetSyntaxHighlightingColours(void)
             RGB(150, 150, 255),     // simBusRight
         },
         {
-			 RGB(250, 250, 255),    // bg
+			RGB(250, 250, 255),     // bg
             RGB(0, 0, 255),         // def
             RGB(255, 0, 0),         // selected
             RGB(255, 0, 0),         // op

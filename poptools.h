@@ -755,6 +755,7 @@ typedef struct ElemSubckParallelTag {
 } ElemSubcktParallel;
 
 #include "intcode.h"
+#include "LadderObjects.h"
 
 typedef struct McuIoInfoTag McuIoInfo;
 
@@ -1022,6 +1023,7 @@ extern HINSTANCE Instance;
 extern HWND MainWindow;
 extern HDC Hdc;
 extern PlcProgram Prog;
+extern LadderDiagram ladder;
 extern Settings POPSettings;
 extern XMLWrapper XmlSettings;
 extern char CurrentSaveFile[MAX_PATH];
@@ -1134,6 +1136,12 @@ void DummyPaint(void);
 extern int ColsAvailable;
 extern BOOL SelectionActive;
 extern BOOL ThisHighlighted;
+
+void PoweredText(BOOL powered);
+int FormattedStrlen(char *str);
+void CenterWithSpaces(int cx, int cy, char *str, BOOL powered, BOOL isName);
+void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before, BOOL after, int totalWidth);
+void CenterWithWires(int cx, int cy, char *str, BOOL before, BOOL after);
 
 // draw_outputdev.cpp
 extern void (*DrawChars)(int, int, char *);
@@ -1375,7 +1383,7 @@ void NiceFont(HWND h);
 void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str);
 void ProgramSuccessfulMessage(char *str);
-bool IsNumber(char *str);
+bool IsNumber(const char *str);
 void LoadIOListToComboBox(HWND ComboBox, unsigned int mask);
 int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto);
 unsigned int GetTypeFromName(char *name);
@@ -1383,7 +1391,7 @@ bool IsInternalFlag(char *name);
 bool IsInternalVar(char *name);
 bool IsValidNumber(char *number);
 void ChangeFileExtension(char *name, char *ext);
-char *GetPinADC(char *name);
+const char *GetPinADC(const char *name);
 int GetPinEnc(char *name);
 unsigned short int CRC16(unsigned char *puchMsg, unsigned int usDataLen);
 extern HFONT MyNiceFont;
@@ -1509,6 +1517,7 @@ extern int ValidateDiagram(void);
 // intcode.cpp
 void IntDumpListing(char *outFile);
 BOOL GenerateIntermediateCode(void);
+SWORD CheckMakeNumber(const char *str);
 // gcc.cpp
 extern char OutputLog[MAX_PATH + MAX_NAME_LEN + 1];
 void GenerateDeclarations(FILE *f);

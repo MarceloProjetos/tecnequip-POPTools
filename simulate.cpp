@@ -1,5 +1,10 @@
 #include "poptools.h"
 
+#include <vector>
+
+static vector<IntOp>::size_type IntCodeLen;
+static vector<IntOp> vectorIntCode;
+
 static struct {
     char name[MAX_NAME_LEN];
     BOOL powered;
@@ -101,7 +106,7 @@ BOOL SimulateRedrawAfterNextCycle;
 static int CyclesPerTimerTick;
 
 // Program counter as we evaluate the intermediate code.
-static int IntPc;
+static vector<IntOp>::size_type IntPc;
 
 // A window to allow simulation with the UART stuff (insert keystrokes into
 // the program, view the output, like a terminal window).
@@ -1083,19 +1088,19 @@ static void IfConditionTrue(void)
     // now PC is on the first statement of the IF body
     SimulateIntCode();
     // now PC is on the ELSE or the END IF
-    if(INT_ELSE_GROUP(IntCode[IntPc].op)) {
+    if(INT_ELSE_GROUP(vectorIntCode[IntPc].op)) {
         int nesting = 1;
         for(; ; IntPc++) {
             if(IntPc >= IntCodeLen) oops();
 
-            if(IntCode[IntPc].op == INT_END_IF) {
+            if(vectorIntCode[IntPc].op == INT_END_IF) {
                 nesting--;
-            } else if(INT_IF_GROUP(IntCode[IntPc].op) && IntCode[IntPc-1].op != INT_ELSE_IF) {
+            } else if(INT_IF_GROUP(vectorIntCode[IntPc].op) && vectorIntCode[IntPc-1].op != INT_ELSE_IF) {
                 nesting++;
             }
             if(nesting == 0) break;
         }
-    } else if(IntCode[IntPc].op == INT_END_IF) {
+    } else if(vectorIntCode[IntPc].op == INT_END_IF) {
         return;
     } else {
         oops();
@@ -1110,29 +1115,29 @@ static void IfConditionTrue(void)
 static void IfConditionFalse(void)
 {
     int nesting = 1;
-	bool is_elseif = IntCode[IntPc-1].op == INT_ELSE_IF;
+	bool is_elseif = vectorIntCode[IntPc-1].op == INT_ELSE_IF;
 
 	IntPc++;
 
 	for(; ; IntPc++) {
         if(IntPc >= IntCodeLen) oops();
 
-        if(IntCode[IntPc].op == INT_END_IF) {
+        if(vectorIntCode[IntPc].op == INT_END_IF) {
             nesting--;
-        } else if(INT_IF_GROUP(IntCode[IntPc].op)) {
-			if(IntCode[IntPc-1].op != INT_ELSE_IF) // when else if, no nesting!
+        } else if(INT_IF_GROUP(vectorIntCode[IntPc].op)) {
+			if(vectorIntCode[IntPc-1].op != INT_ELSE_IF) // when else if, no nesting!
 				nesting++;
-        } else if(INT_ELSE_GROUP(IntCode[IntPc].op) && nesting == 1) {
+        } else if(INT_ELSE_GROUP(vectorIntCode[IntPc].op) && nesting == 1) {
             break;
         }
 		if(nesting == 0) break;
     }
 
     // now PC is on the ELSE, ELSE IF or the END IF
-    if(INT_ELSE_GROUP(IntCode[IntPc].op)) {
+    if(INT_ELSE_GROUP(vectorIntCode[IntPc].op)) {
         IntPc++;
         SimulateIntCode();
-    } else if(IntCode[IntPc].op == INT_END_IF) {
+    } else if(vectorIntCode[IntPc].op == INT_END_IF) {
 		if(is_elseif) IntPc--; // I am elseif, this endif is for upper level
         return;
     } else {
@@ -1151,7 +1156,7 @@ static void IfConditionFalse(void)
 static void SimulateIntCode(void)
 {
     for(; IntPc < IntCodeLen; IntPc++) {
-        IntOp *a = &IntCode[IntPc];
+        IntOp *a = &vectorIntCode[IntPc];
         switch(a->op) {
             case INT_SIMULATE_NODE_STATE:
                 if(*(a->poweredAfter) != SingleBitOn(a->name1))
@@ -1641,6 +1646,9 @@ void ClearSimulationData(void)
         ToggleSimulationMode();
         return;
     }
+
+	vectorIntCode = ladder.getVectorIntCode();
+	IntCodeLen = vectorIntCode.size();
 
 	HardwareRegisters_Init(&hwreg);
 

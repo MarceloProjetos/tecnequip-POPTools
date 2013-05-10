@@ -151,15 +151,20 @@ HRESULT EngineRenderD2D::EndDraw(void)
 	return hr;
 }
 
-void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled)
+void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled, unsigned int radiusX, unsigned int radiusY)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
 	if(pRT != NULL && brush < Brushes.size()) {
+		D2D1_ROUNDED_RECT rf;
+		rf.rect = D2D1::RectF((float)r.left, (float)r.top, (float)r.right, (float)r.bottom);
+		rf.radiusX = (float)radiusX;
+		rf.radiusY = (float)(radiusY ? radiusY : radiusX);
+
 		if(filled) {
-			pRT->FillRectangle(D2D1::RectF((float)r.left, (float)r.top, (float)r.right, (float)r.bottom), Brushes[brush]);
+			rf.radiusX == 0.0 ? pRT->FillRectangle(rf.rect, Brushes[brush]) : pRT->FillRoundedRectangle(rf, Brushes[brush]);
 		} else {
-			pRT->DrawRectangle(D2D1::RectF((float)r.left, (float)r.top, (float)r.right, (float)r.bottom), Brushes[brush]);
+			rf.radiusX == 0.0 ? pRT->DrawRectangle(rf.rect, Brushes[brush]) : pRT->DrawRoundedRectangle(rf, Brushes[brush], 10.0);
 		}
 	}
 }
@@ -167,11 +172,14 @@ void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled)
 void EngineRenderD2D::DrawText(char *txt, RECT r, unsigned int format, unsigned int brush)
 {
 	if(pRT != NULL && brush < Brushes.size() && format < TextFormats.size()) {
-		WCHAR wtxt[100];
+		int size = strlen(txt) * 2 + 1;
+		WCHAR *wtxt = new WCHAR[size];
 		D2D1_RECT_F rf = D2D1::RectF((float)r.left, (float)r.top, (float)r.right, (float)r.bottom);
 
-		swprintf(wtxt, wcslen(wtxt), L"%S", txt);
+		swprintf(wtxt, size, L"%S", txt);
 		pRT->DrawText(wtxt, static_cast<UINT>(wcslen(wtxt)), TextFormats[format], &rf, Brushes[brush]);
+
+		delete [] wtxt;
 	}
 }
 
@@ -181,7 +189,7 @@ HRESULT EngineRenderD2D::DrawLine(POINT start, POINT end, unsigned int brush)
 
 	if(pRT != NULL && brush < Brushes.size()) {
 		pRT->DrawLine(D2D1::Point2F((float)start.x, (float)start.y),
-					  D2D1::Point2F((float)  end.x, (float)  end.y), Brushes[brush]);
+					  D2D1::Point2F((float)  end.x, (float)  end.y), Brushes[brush], 2);
 		hr = S_OK;
 	}
 

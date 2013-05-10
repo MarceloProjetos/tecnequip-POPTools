@@ -1,175 +1,219 @@
 #include "poptools.h"
 
-IntOp IntCode[MAX_INT_OPS];
-int IntCodeLen;
+#include <sstream>
 
-static DWORD GenSymCountParThis;
-static DWORD GenSymCountParOut;
-static DWORD GenSymCountOneShot;
-static DWORD GenSymCountFormattedString;
+using namespace std;
 
-static WORD EepromAddrFree;
+IntCode::IntCode(void)
+{
+	Clear();
+}
+
+void IntCode::ClearParallelCount(void)
+{
+	GenSymCountParThis = 0;
+	GenSymCountParOut  = 0;
+}
+
+int IntCode::getEepromAddr(void)
+{
+	if(EepromAddrFree > EEPROM_SIZE) return -1;
+
+	EepromAddrFree += 2;
+	return EepromAddrFree - 2;
+}
+
+void IntCode::Clear(void)
+{
+	ClearParallelCount();
+
+	GenSymCountOneShot         = 0;
+	GenSymCountFormattedString = 0;
+
+    // The EEPROM addresses for the `Make Persistent' op are assigned at
+    // int code generation time.
+	EepromAddrFree             = 0;
+
+	arrayIntCode.clear();
+
+	StateInOut = "";
+}
+
+const char *IntCode::getStateInOut(void)
+{
+	return StateInOut.c_str();
+}
+
+void  IntCode::setStateInOut(string s)
+{
+	StateInOut = s;
+}
+
+vector<IntOp> IntCode::getVectorIntCode(void)
+{
+	return arrayIntCode;
+}
 
 //-----------------------------------------------------------------------------
 // Pretty-print the intermediate code to a file, for debugging purposes.
 //-----------------------------------------------------------------------------
-void IntDumpListing(char *outFile)
+void IntCode::DumpListing(string outFile)
 {
-    FILE *f = fopen(outFile, "w");
+	FILE *f = fopen(outFile.c_str(), "w");
     if(!f) {
         Error("Couldn't dump intermediate code to '%s'.", outFile);
     }
 
-    int i;
+    unsigned int i;
     int indent = 0;
-    for(i = 0; i < IntCodeLen; i++) {
+	for(i = 0; i < arrayIntCode.size(); i++) {
 
-        if(IntCode[i].op == INT_END_IF) indent--;
-        if(IntCode[i].op == INT_ELSE) indent--;
+        if(arrayIntCode[i].op == INT_END_IF) indent--;
+        if(arrayIntCode[i].op == INT_ELSE) indent--;
     
         fprintf(f, "%3d:", i);
         int j;
         for(j = 0; j < indent; j++) fprintf(f, "    ");
 
-        switch(IntCode[i].op) {
+        switch(arrayIntCode[i].op) {
             case INT_SET_BIT:
-                fprintf(f, "set bit '%s'", IntCode[i].name1);
+                fprintf(f, "set bit '%s'", arrayIntCode[i].name1);
                 break;
 
             case INT_CLEAR_BIT:
-                fprintf(f, "clear bit '%s'", IntCode[i].name1);
+                fprintf(f, "clear bit '%s'", arrayIntCode[i].name1);
                 break;
 
             case INT_CHECK_BIT:
-                fprintf(f, "check bit '%s'", IntCode[i].name1);
+                fprintf(f, "check bit '%s'", arrayIntCode[i].name1);
                 break;
 
             case INT_COPY_BIT_TO_BIT:
-                fprintf(f, "let bit '%s' := '%s'", IntCode[i].name1,
-                    IntCode[i].name2);
+                fprintf(f, "let bit '%s' := '%s'", arrayIntCode[i].name1,
+                    arrayIntCode[i].name2);
                 break;
 
             case INT_SET_VARIABLE_TO_LITERAL:
-                fprintf(f, "let var '%s' := %d", IntCode[i].name1,
-                    IntCode[i].literal);
+                fprintf(f, "let var '%s' := %d", arrayIntCode[i].name1,
+                    arrayIntCode[i].literal);
                 break;
 
             case INT_SET_VARIABLE_TO_VARIABLE:
-                fprintf(f, "let var '%s' := '%s'", IntCode[i].name1,
-                    IntCode[i].name2);
+                fprintf(f, "let var '%s' := '%s'", arrayIntCode[i].name1,
+                    arrayIntCode[i].name2);
                 break;
 
             case INT_SET_VARIABLE_ADD:
-                fprintf(f, "let var '%s' := '%s' + '%s'", IntCode[i].name1,
-                    IntCode[i].name2, IntCode[i].name3);
+                fprintf(f, "let var '%s' := '%s' + '%s'", arrayIntCode[i].name1,
+                    arrayIntCode[i].name2, arrayIntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_SUBTRACT:
-                fprintf(f, "let var '%s' := '%s' - '%s'", IntCode[i].name1,
-                    IntCode[i].name2, IntCode[i].name3);
+                fprintf(f, "let var '%s' := '%s' - '%s'", arrayIntCode[i].name1,
+                    arrayIntCode[i].name2, arrayIntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_MULTIPLY:
-                fprintf(f, "let var '%s' := '%s' * '%s'", IntCode[i].name1,
-                    IntCode[i].name2, IntCode[i].name3);
+                fprintf(f, "let var '%s' := '%s' * '%s'", arrayIntCode[i].name1,
+                    arrayIntCode[i].name2, arrayIntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_DIVIDE:
-                fprintf(f, "let var '%s' := '%s' / '%s'", IntCode[i].name1,
-                    IntCode[i].name2, IntCode[i].name3);
+                fprintf(f, "let var '%s' := '%s' / '%s'", arrayIntCode[i].name1,
+                    arrayIntCode[i].name2, arrayIntCode[i].name3);
                 break;
 
             case INT_SET_VARIABLE_MODULO:
-                fprintf(f, "let var '%s' := '%s' %% '%s'", IntCode[i].name1,
-                    IntCode[i].name2, IntCode[i].name3);
+                fprintf(f, "let var '%s' := '%s' %% '%s'", arrayIntCode[i].name1,
+                    arrayIntCode[i].name2, arrayIntCode[i].name3);
                 break;
 
             case INT_INCREMENT_VARIABLE:
-                fprintf(f, "increment '%s'", IntCode[i].name1);
+                fprintf(f, "increment '%s'", arrayIntCode[i].name1);
                 break;
 
             case INT_READ_ADC:
-                fprintf(f, "read adc '%s'", IntCode[i].name1);
+                fprintf(f, "read adc '%s'", arrayIntCode[i].name1);
                 break;
 
             case INT_READ_ENC:
-                fprintf(f, "read enc '%s'", IntCode[i].name1);
+                fprintf(f, "read enc '%s'", arrayIntCode[i].name1);
                 break;
 
 			case INT_READ_FORMATTED_STRING:
-                fprintf(f, "read format string '%s'", IntCode[i].name1);
+                fprintf(f, "read format string '%s'", arrayIntCode[i].name1);
                 break;
 
 			case INT_WRITE_FORMATTED_STRING:
-                fprintf(f, "write format string '%s'", IntCode[i].name1);
+                fprintf(f, "write format string '%s'", arrayIntCode[i].name1);
                 break;
 
 			case INT_READ_SERVO_YASKAWA:
-                fprintf(f, "read servo yaskawa '%s'", IntCode[i].name1);
+                fprintf(f, "read servo yaskawa '%s'", arrayIntCode[i].name1);
                 break;
 
 			case INT_WRITE_SERVO_YASKAWA:
-                fprintf(f, "write servo yaskawa '%s'", IntCode[i].name1);
+                fprintf(f, "write servo yaskawa '%s'", arrayIntCode[i].name1);
                 break;
 
             case INT_READ_USS:
-                fprintf(f, "read uss '%s'", IntCode[i].name1);
+                fprintf(f, "read uss '%s'", arrayIntCode[i].name1);
                 break;
 
             case INT_WRITE_USS:
-                fprintf(f, "write uss '%s'", IntCode[i].name1);
+                fprintf(f, "write uss '%s'", arrayIntCode[i].name1);
                 break;
 
             case INT_SET_PWM:
-                fprintf(f, "set pwm '%s' %s Hz", IntCode[i].name1,
-                    IntCode[i].name2);
+                fprintf(f, "set pwm '%s' %s Hz", arrayIntCode[i].name1,
+                    arrayIntCode[i].name2);
                 break;
 
             case INT_EEPROM_BUSY_CHECK:
-                fprintf(f, "set bit '%s' if EEPROM busy", IntCode[i].name1);
+                fprintf(f, "set bit '%s' if EEPROM busy", arrayIntCode[i].name1);
                 break;
             
             case INT_EEPROM_READ:
                 fprintf(f, "read EEPROM[%d,%d+1] into '%s'",
-                    IntCode[i].literal, IntCode[i].literal, IntCode[i].name1);
+                    arrayIntCode[i].literal, arrayIntCode[i].literal, arrayIntCode[i].name1);
                 break;
 
             case INT_EEPROM_WRITE:
                 fprintf(f, "write '%s' into EEPROM[%d,%d+1]",
-                    IntCode[i].name1, IntCode[i].literal, IntCode[i].literal);
+                    arrayIntCode[i].name1, arrayIntCode[i].literal, arrayIntCode[i].literal);
                 break;
 
             case INT_UART_SEND:
                 fprintf(f, "uart send from '%s', done? into '%s'",
-                    IntCode[i].name1, IntCode[i].name2);
+                    arrayIntCode[i].name1, arrayIntCode[i].name2);
                 break;
 
             case INT_UART_RECV:
                 fprintf(f, "uart recv int '%s', have? into '%s'", 
-                    IntCode[i].name1, IntCode[i].name2);
+                    arrayIntCode[i].name1, arrayIntCode[i].name2);
                 break;
 
             case INT_IF_BIT_SET:
-                fprintf(f, "if '%s' {", IntCode[i].name1); indent++;
+                fprintf(f, "if '%s' {", arrayIntCode[i].name1); indent++;
                 break;
 
             case INT_IF_BIT_CLEAR:
-                fprintf(f, "if not '%s' {", IntCode[i].name1); indent++;
+                fprintf(f, "if not '%s' {", arrayIntCode[i].name1); indent++;
                 break;
 
             case INT_IF_VARIABLE_LES_LITERAL:
-                fprintf(f, "if '%s' < %d {", IntCode[i].name1,
-                    IntCode[i].literal); indent++;
+                fprintf(f, "if '%s' < %d {", arrayIntCode[i].name1,
+                    arrayIntCode[i].literal); indent++;
                 break;
 
             case INT_IF_VARIABLE_EQUALS_VARIABLE:
-                fprintf(f, "if '%s' == '%s' {", IntCode[i].name1,
-                    IntCode[i].name2); indent++;
+                fprintf(f, "if '%s' == '%s' {", arrayIntCode[i].name1,
+                    arrayIntCode[i].name2); indent++;
                 break;
 
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                fprintf(f, "if '%s' > '%s' {", IntCode[i].name1,
-                    IntCode[i].name2); indent++;
+                fprintf(f, "if '%s' > '%s' {", arrayIntCode[i].name1,
+                    arrayIntCode[i].name2); indent++;
                 break;
 
             case INT_END_IF:
@@ -185,7 +229,7 @@ void IntDumpListing(char *outFile)
                 break;
 
             case INT_COMMENT:
-                fprintf(f, "# %s", IntCode[i].name1);
+                fprintf(f, "# %s", arrayIntCode[i].name1);
                 break;
 
             default:
@@ -217,202 +261,176 @@ int HexDigit(int c)
 // Generate a unique symbol (unique with each call) having the given prefix
 // guaranteed not to conflict with any user symbols.
 //-----------------------------------------------------------------------------
-static void GenSymParThis(char *dest)
+string IntCode::GenSymParThis(void)
 {
-    sprintf(dest, "$parThis_%04x", GenSymCountParThis);
-    GenSymCountParThis++;
+	ostringstream oss;
+    oss << "$parThis_" << GenSymCountParOut++;
+	return oss.str();
 }
-static void GenSymParOut(char *dest)
+
+string IntCode::GenSymParOut(void)
 {
-    sprintf(dest, "$parOut_%04x", GenSymCountParOut);
-    GenSymCountParOut++;
+	ostringstream oss;
+    oss << "$parOut_" << GenSymCountParOut++;
+	return oss.str();
 }
-static void GenSymOneShot(char *dest)
+
+string IntCode::GenSymOneShot(void)
 {
-    sprintf(dest, "$oneShot_%04x", GenSymCountOneShot);
-    GenSymCountOneShot++;
+	ostringstream oss;
+    oss << "$oneShot_" << GenSymCountParOut++;
+	return oss.str();
 }
-static void GenSymFormattedString(char *dest)
+
+string IntCode::GenSymFormattedString(void)
 {
-    sprintf(dest, "$formattedString_%04x", GenSymCountFormattedString);
-    GenSymCountFormattedString++;
+	ostringstream oss;
+    oss << "formattedString_" << GenSymCountParOut++;
+	return oss.str();
 }
 
 //-----------------------------------------------------------------------------
 // Compile an instruction to the program.
 //-----------------------------------------------------------------------------
-static void Op(int op, char *name1, char *name2, char *name3, char *name4, char *name5, char *name6, char *name7, SWORD lit, unsigned char bit)
+void IntCode::Op(int op, const char *name1, const char *name2, const char *name3, const char *name4, const char *name5, const char *name6, const char *name7, SWORD lit, unsigned char bit)
 {
-    IntCode[IntCodeLen].op = op;
-    if(name1) strcpy(IntCode[IntCodeLen].name1, name1);
-    if(name2) strcpy(IntCode[IntCodeLen].name2, name2);
-    if(name3) strcpy(IntCode[IntCodeLen].name3, name3);
-    if(name4) strcpy(IntCode[IntCodeLen].name4, name4);
-    if(name5) strcpy(IntCode[IntCodeLen].name5, name5);
-    if(name6) strcpy(IntCode[IntCodeLen].name6, name6);
-	if(name7) strcpy(IntCode[IntCodeLen].name7, name7);
-    IntCode[IntCodeLen].literal = lit;
-	IntCode[IntCodeLen].bit = bit;
+	IntOp iop;
+    iop.op = op;
+
+	if(name1) strcpy(iop.name1, name1);
+    if(name2) strcpy(iop.name2, name2);
+    if(name3) strcpy(iop.name3, name3);
+    if(name4) strcpy(iop.name4, name4);
+    if(name5) strcpy(iop.name5, name5);
+    if(name6) strcpy(iop.name6, name6);
+	if(name7) strcpy(iop.name7, name7);
+
+	iop.literal = lit;
+	iop.bit = bit;
 
 	switch (op)
 	{
 	case INT_SET_BIT:
-		strcpy(IntCode[IntCodeLen].desc, "SET_BIT");
+		strcpy(iop.desc, "SET_BIT");
 		break;
 	case INT_CHECK_BIT:
-		strcpy(IntCode[IntCodeLen].desc, "CHECK_BIT");
+		strcpy(iop.desc, "CHECK_BIT");
 		break;
 	case INT_CLEAR_BIT:
-		strcpy(IntCode[IntCodeLen].desc, "CLEAR_BIT");
+		strcpy(iop.desc, "CLEAR_BIT");
 		break;
 	case INT_COPY_BIT_TO_BIT:
-		strcpy(IntCode[IntCodeLen].desc, "COPY_BIT_TO_BIT");
+		strcpy(iop.desc, "COPY_BIT_TO_BIT");
 		break;
 	case INT_SET_VARIABLE_TO_LITERAL:
-		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_TO_LITERAL");
+		strcpy(iop.desc, "SET_VARIABLE_TO_LITERAL");
 		break;
 	case INT_SET_VARIABLE_TO_VARIABLE:
-		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_TO_VARIABLE");
+		strcpy(iop.desc, "SET_VARIABLE_TO_VARIABLE");
 		break;
 	case INT_INCREMENT_VARIABLE:
-		strcpy(IntCode[IntCodeLen].desc, "INCREMENT_VARIABLE");
+		strcpy(iop.desc, "INCREMENT_VARIABLE");
 		break;
 	case INT_SET_VARIABLE_ADD:
-		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_ADD");
+		strcpy(iop.desc, "SET_VARIABLE_ADD");
 		break;
 	case INT_SET_VARIABLE_SUBTRACT:
-		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_SUBTRACT");
+		strcpy(iop.desc, "SET_VARIABLE_SUBTRACT");
 		break;
 	case INT_SET_VARIABLE_MULTIPLY:
-		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_MULTIPLY");
+		strcpy(iop.desc, "SET_VARIABLE_MULTIPLY");
 		break;
 	case INT_SET_VARIABLE_DIVIDE:
-		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_DIVIDE");
+		strcpy(iop.desc, "SET_VARIABLE_DIVIDE");
 		break;
 	case INT_SET_VARIABLE_MODULO:
-		strcpy(IntCode[IntCodeLen].desc, "SET_VARIABLE_MODULO");
+		strcpy(iop.desc, "SET_VARIABLE_MODULO");
 		break;
 	case INT_READ_ADC:
-		strcpy(IntCode[IntCodeLen].desc, "READ_ADC");
+		strcpy(iop.desc, "READ_ADC");
 		break;
 	case INT_SET_PWM:
-		strcpy(IntCode[IntCodeLen].desc, "SET_PWM");
+		strcpy(iop.desc, "SET_PWM");
 		break;
 	case INT_UART_SEND:
-		strcpy(IntCode[IntCodeLen].desc, "UART_SEND");
+		strcpy(iop.desc, "UART_SEND");
 		break;
 	case INT_UART_RECV:
-		strcpy(IntCode[IntCodeLen].desc, "UART_RECV");
+		strcpy(iop.desc, "UART_RECV");
 		break;
 	case INT_EEPROM_BUSY_CHECK:
-		strcpy(IntCode[IntCodeLen].desc, "EEPROM_BUSY_CHECK");
+		strcpy(iop.desc, "EEPROM_BUSY_CHECK");
 		break;
 	case INT_EEPROM_READ:
-		strcpy(IntCode[IntCodeLen].desc, "EEPROM_READ");
+		strcpy(iop.desc, "EEPROM_READ");
 		break;
 	case INT_EEPROM_WRITE:
-		strcpy(IntCode[IntCodeLen].desc, "EEPROM_WRITE");
+		strcpy(iop.desc, "EEPROM_WRITE");
 		break;
 	case INT_READ_FORMATTED_STRING:
-		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_STRING_READ");
+		strcpy(iop.desc, "FORMATTED_STRING_READ");
 		break;
 	case INT_WRITE_FORMATTED_STRING:
-		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_STRING_WRITE");
+		strcpy(iop.desc, "FORMATTED_STRING_WRITE");
 		break;
 	case INT_READ_SERVO_YASKAWA:
-		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_SERVO_YASKAWA_READ");
+		strcpy(iop.desc, "FORMATTED_SERVO_YASKAWA_READ");
 		break;
 	case INT_WRITE_SERVO_YASKAWA:
-		strcpy(IntCode[IntCodeLen].desc, "FORMATTED_SERVO_YASKAWA_WRITE");
+		strcpy(iop.desc, "FORMATTED_SERVO_YASKAWA_WRITE");
 		break;
 	case INT_READ_ENC:
-		strcpy(IntCode[IntCodeLen].desc, "READ_ENC");
+		strcpy(iop.desc, "READ_ENC");
 		break;
 	case INT_RESET_ENC:
-		strcpy(IntCode[IntCodeLen].desc, "RESET_ENC");
+		strcpy(iop.desc, "RESET_ENC");
 		break;
 	case INT_READ_USS:
-		strcpy(IntCode[IntCodeLen].desc, "READ_USS");
+		strcpy(iop.desc, "READ_USS");
 		break;
 	case INT_WRITE_USS:
-		strcpy(IntCode[IntCodeLen].desc, "WRITE_USS");
+		strcpy(iop.desc, "WRITE_USS");
 		break;
 	/*case INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 		strcpy(IntCode[IntCodeLen].desc, "???");
 		break;*/
 	case INT_IF_BIT_SET:
-		strcpy(IntCode[IntCodeLen].desc, "IF_BIT_SET");
+		strcpy(iop.desc, "IF_BIT_SET");
 		break;
 	case INT_IF_BIT_CLEAR:
-		strcpy(IntCode[IntCodeLen].desc, "IF_BIT_CLEAR");
+		strcpy(iop.desc, "IF_BIT_CLEAR");
 		break;
 	case INT_IF_VARIABLE_LES_LITERAL:
-		strcpy(IntCode[IntCodeLen].desc, "IF_VARIABLE_LES_LITERAL");
+		strcpy(iop.desc, "IF_VARIABLE_LES_LITERAL");
 		break;
 	case INT_IF_VARIABLE_EQUALS_VARIABLE:
-		strcpy(IntCode[IntCodeLen].desc, "IF_VARIABLE_EQUALS_VARIABLE");
+		strcpy(iop.desc, "IF_VARIABLE_EQUALS_VARIABLE");
 		break;
 	case INT_IF_VARIABLE_GRT_VARIABLE:
-		strcpy(IntCode[IntCodeLen].desc, "IF_VARIABLE_GRT_VARIABLE");
+		strcpy(iop.desc, "IF_VARIABLE_GRT_VARIABLE");
 		break;
 	case INT_ELSE:
-		strcpy(IntCode[IntCodeLen].desc, "ELSE");
+		strcpy(iop.desc, "ELSE");
 		break;
 	case INT_ELSE_IF:
-		strcpy(IntCode[IntCodeLen].desc, "ELSE IF");
+		strcpy(iop.desc, "ELSE IF");
 		break;
 	case INT_END_IF:
-		strcpy(IntCode[IntCodeLen].desc, "END_IF");
+		strcpy(iop.desc, "END_IF");
 		break;
 	case INT_SIMULATE_NODE_STATE:
-		strcpy(IntCode[IntCodeLen].desc, "SIMULATE_NODE_STATE");
+		strcpy(iop.desc, "SIMULATE_NODE_STATE");
 		break;
 	case INT_COMMENT:
-		strcpy(IntCode[IntCodeLen].desc, "COMMENT");
+		strcpy(iop.desc, "COMMENT");
 		break;
 	// Only used for the interpretable code.
 	//#define INT_END_OF_PROGRAM                     255
 	default:
-		strcpy(IntCode[IntCodeLen].desc, "???");
+		strcpy(iop.desc, "???");
 	}
 
-    IntCodeLen++;
-}
-static void Op(int op, char *name1, char *name2, char *name3, char *name4, SWORD lit, unsigned char bit)
-{
-	Op(op, name1, name2, name3, name4, NULL, NULL, NULL, lit, bit);
-}
-static void Op(int op, char *name1, char *name2, char *name3, SWORD lit, unsigned char bit)
-{
-	Op(op, name1, name2, name3, NULL, lit, bit);
-}
-static void Op(int op, char *name1, char *name2, SWORD lit)
-{
-    Op(op, name1, name2, NULL, lit, 0);
-}
-static void Op(int op, char *name1, SWORD lit)
-{
-    Op(op, name1, NULL, NULL, lit, 0);
-}
-static void Op(int op, char *name1, char *name2)
-{
-    Op(op, name1, name2, NULL, 0, 0);
-}
-static void Op(int op, char *name1)
-{
-    Op(op, name1, NULL, NULL, 0, 0);
-}
-static void OpBit(int op, char *name1, unsigned char bit)
-{
-    Op(op, name1, NULL, NULL, 0, bit);
-}
-static void OpBit(int op, char *name1, char *name2, unsigned char bit)
-{
-    Op(op, name1, name2, NULL, 0, bit);
-}
-static void Op(int op)
-{
-    Op(op, NULL, NULL, NULL, 0, 0);
+	arrayIntCode.push_back(iop);
 }
 
 //-----------------------------------------------------------------------------
@@ -420,18 +438,21 @@ static void Op(int op)
 // nodes are energized (so that it can display which branches of the circuit
 // are energized onscreen). The MCU code generators ignore this, of course.
 //-----------------------------------------------------------------------------
-static void SimState(BOOL *b, char *name)
+void IntCode::SimState(BOOL *b, char *name)
 {
-    IntCode[IntCodeLen].op = INT_SIMULATE_NODE_STATE;
-    strcpy(IntCode[IntCodeLen].name1, name);
-    IntCode[IntCodeLen].poweredAfter = b;
-    IntCodeLen++;
+	IntOp iop;
+
+	iop.op = INT_SIMULATE_NODE_STATE;
+    strcpy(iop.name1, name);
+    iop.poweredAfter = b;
+
+	arrayIntCode.push_back(iop);
 }
 
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-void Comment(char *str, ...)
+void IntCode::Comment(char *str, ...)
 {
     va_list f;
     char buf[MAX_NAME_LEN];
@@ -465,7 +486,7 @@ static int TimerPeriod(ElemLeaf *l)
 // Try to turn a string into a 16-bit constant, and raise an error if
 // something bad happens when we do so (e.g. out of range).
 //-----------------------------------------------------------------------------
-SWORD CheckMakeNumber(char *str)
+SWORD CheckMakeNumber(const char *str)
 {
     int val;
 
@@ -501,7 +522,7 @@ static int TenToThe(int x)
 // state is in stateInOut before calling and will be in stateInOut after
 // calling.
 //-----------------------------------------------------------------------------
-static char *VarFromExpr(char *expr, char *tempName)
+const char *IntCode::VarFromExpr(const char *expr, char *tempName)
 {
     if(IsNumber(expr)) {
         Op(INT_SET_VARIABLE_TO_LITERAL, tempName, CheckMakeNumber(expr));
@@ -510,6 +531,7 @@ static char *VarFromExpr(char *expr, char *tempName)
         return expr;
     }
 }
+/*
 static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 {
     ElemLeaf *l = (ElemLeaf *)any;
@@ -1670,7 +1692,7 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
 				Op(INT_ELSE);
 					Op(INT_CLEAR_BIT, oneShot);
 				Op(INT_END_IF);
-			Op(INT_END_IF);*/
+			Op(INT_END_IF);*//*
             break;
         }
         case ELEM_OPEN:
@@ -1698,47 +1720,18 @@ static void IntCodeFromCircuit(int which, void *any, char *stateInOut)
         SimState(&(l->poweredAfter), stateInOut);
     }
 }
-
+*/
 //-----------------------------------------------------------------------------
 // Generate intermediate code for the entire program. Return TRUE if it worked,
 // else FALSE.
 //-----------------------------------------------------------------------------
 BOOL GenerateIntermediateCode(void)
 {
-    GenSymCountParThis = 0;
-    GenSymCountParOut = 0;
-    GenSymCountOneShot = 0;
-    GenSymCountFormattedString = 0;
-
-    // The EEPROM addresses for the `Make Persistent' op are assigned at
-    // int code generation time.
-    EepromAddrFree = 0;
-    
-    IntCodeLen = 0;
-    memset(IntCode, 0, sizeof(IntCode));
-
     if(setjmp(CompileErrorBuf) != 0) {
         return FALSE;
     }
 
-    Op(INT_SET_BIT, "$mcr");
-
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        if(Prog.rungs[i]->count == 1 && 
-            Prog.rungs[i]->contents[0].which == ELEM_COMMENT)
-        {
-            // nothing to do for this one
-            continue;
-        }
-        Comment("");
-        Comment(_("start rung %d"), i+1);
-		GenSymCountParThis = 0;
-		GenSymCountParOut  = 0;
-        Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");
-        SimState(&(Prog.rungPowered[i]), "$rung_top");
-        IntCodeFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i], "$rung_top");
-    }
+	ladder.GenerateIntCode();
 
     return TRUE;
 }

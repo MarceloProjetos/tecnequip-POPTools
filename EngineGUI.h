@@ -43,7 +43,7 @@ public:
 	HRESULT SetDrawOffset(POINT Offset);
 	HRESULT EndDraw(void);
 
-	HRESULT DrawRectangle(RECT r, unsigned int brush, bool filled = true);
+	HRESULT DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned radiusY = 0);
 	HRESULT DrawEllipse(RECT r, unsigned int brush, bool filled = true);
 	HRESULT DrawEllipse(POINT center, float rx, float ry, unsigned int brush, bool filled = true);
 	HRESULT DrawText(char *txt, RECT r, unsigned int format, unsigned int brush);
