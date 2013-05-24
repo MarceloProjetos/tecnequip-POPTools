@@ -135,8 +135,10 @@ static LRESULT CALLBACK ContactsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	return CallWindowProc((WNDPROC)PrevContactsDialogProc, hwnd, msg, wParam, lParam);
 }
 
-void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
+bool ShowContactsDialog(bool *negated, char *name, unsigned char * bit)
 {
+	bool changed = false;
+
 	char name_tmp[MAX_NAME_LEN];
 	unsigned int type;
 
@@ -218,6 +220,8 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 		}
 
 		if(IsValidNameAndType(name, name_tmp, type)) {
+		   changed = true;
+
 			strcpy(name, name_tmp);
 			UpdateTypeInCircuit(name, type);
 
@@ -244,5 +248,6 @@ void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit)
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(ContactsDialog);
-    return;
+
+	return changed;
 }

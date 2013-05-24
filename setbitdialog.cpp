@@ -85,8 +85,10 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
-void ShowSetBitDialog(char *name, int * set, int * bit)
+bool ShowSetBitDialog(char *name, bool * set, int * bit)
 {
+	bool changed = false;
+
 	char name_tmp[MAX_NAME_LEN];
 
     SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
@@ -138,12 +140,14 @@ void ShowSetBitDialog(char *name, int * set, int * bit)
     if(!DialogCancel) {
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_tmp));
 		if(IsValidNameAndType(name, name_tmp, _("Nome"), VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
+			changed = true;
+
 			strcpy(name, name_tmp);
 
 	        if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-		        *set = TRUE;
+		        *set = true;
 			else
-				*set = FALSE;
+				*set = false;
 
 			char buf[20];
 		    SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
@@ -154,5 +158,6 @@ void ShowSetBitDialog(char *name, int * set, int * bit)
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(SetBitDialog);
-    return;
+
+	return changed;
 }

@@ -83,8 +83,10 @@ static void MakeControls(char *op) // op: text for current operator
     NiceFont(CancelButton);
 }
 
-void ShowMathDialog(int which, char *dest, char *op1, char *op2)
+bool ShowMathDialog(int which, char *dest, char *op1, char *op2)
 {
+	bool changed = false;
+
 	int width = 352;
     char *l2, *title;
 
@@ -160,6 +162,8 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
 		if(IsValidNameAndType(dest, dest_tmp, _("Destino"), VALIDATE_IS_VAR          , GetTypeFromName(dest_tmp), 0, 0) &&
 		   IsValidNameAndType(op1 , op1_tmp , NULL        , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op1_tmp ), 0, 0) &&
 		   (l2 ? IsValidNameAndType(op2 , op2_tmp , NULL        , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op2_tmp ), 0, 0) : true)) {
+			changed = true;
+
 			strcpy(dest, dest_tmp);
 			strcpy(op1 , op1_tmp );
 			if(l2) {
@@ -170,5 +174,6 @@ void ShowMathDialog(int which, char *dest, char *op1, char *op2)
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(MathDialog);
-    return;
+
+	return changed;
 }

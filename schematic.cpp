@@ -700,7 +700,7 @@ void MoveCursorKeyboard(int keyCode, BOOL shiftPressed)
 // this.
 //-----------------------------------------------------------------------------
 bool EditSelectedElement(void)
-{
+{/*
     if(!Selected || Selected->selectedState == SELECTED_NONE) return false;
 
     switch(SelectedWhich) {
@@ -871,7 +871,7 @@ bool EditSelectedElement(void)
             ShowLookUpTableDialog(Selected);
             break;
     }
-
+*/
 	return true;
 }
 

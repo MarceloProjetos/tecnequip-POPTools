@@ -318,8 +318,10 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
-void ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end)
+bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end)
 {
+	bool changed = false;
+
 	time_t now;
 	struct tm *t;
 	char buf[10];
@@ -616,6 +618,8 @@ void ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *
 
 			if (valid)
 			{
+				changed = true;
+
 				*mode = m;
 
 				/*
@@ -660,5 +664,6 @@ void ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *
 
 	EnableWindow(MainWindow, TRUE);
 	DestroyWindow(RTCDialog);
-	return;
+
+	return changed;
 }

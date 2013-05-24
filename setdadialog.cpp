@@ -53,8 +53,10 @@ static void MakeControls(void)
     NiceFont(CancelButton);
 }
 
-void ShowSetDADialog(char *name, int *mode)
+bool ShowSetDADialog(char *name, int *mode)
 {
+	bool changed = false;
+
 	int mode_tmp, min, max;
 	char name_tmp[MAX_NAME_LEN];
 
@@ -118,6 +120,8 @@ void ShowSetDADialog(char *name, int *mode)
 		}
 
 		if(IsValidNameAndType(name, name_tmp, _("Origem"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(name_tmp), min, max)) {
+			changed = true;
+
 			strcpy(name, name_tmp);
 			name[16] = '\0';
 
@@ -127,5 +131,6 @@ void ShowSetDADialog(char *name, int *mode)
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(SetDADialog);
-    return;
+
+	return changed;
 }

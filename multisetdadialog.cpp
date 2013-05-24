@@ -1334,8 +1334,10 @@ void PopulateAbortModeCombobox(HWND AbortModeCombobox, bool IncludeDefault)
 		SendMessage(AbortModeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)RampAbortModes[i]));
 }
 
-void ShowMultisetDADialog(ElemMultisetDA *l)
+bool ShowMultisetDADialog(ElemMultisetDA *l)
 {
+	bool changed = false;
+
 	char num[12];
 	char time_tmp   [MAX_NAME_LEN];
 	char initval_tmp[MAX_NAME_LEN];
@@ -1433,6 +1435,8 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
     if(!DialogCancel &&
 			IsValidNameAndType(time_tmp   , current.name , _("Tempo"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(current.name), 0, 0) &&
 			IsValidNameAndType(initval_tmp, current.name1, _("Valor"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(current.name), 0, 0)) {
+		changed = true;
+
 		*l = current;
 	}
 
@@ -1440,5 +1444,5 @@ void ShowMultisetDADialog(ElemMultisetDA *l)
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(MultisetDADialog);
 
-    return;
+    return changed;
 }

@@ -1,7 +1,5 @@
 #include "poptools.h"
 
-extern void DrawLine(RECT r);
-
 // Number of drawing columns (leaf element units) available. We want to
 // know this so that we can right-justify the coils.
 int ColsAvailable;
@@ -251,28 +249,11 @@ static void VerticalWire(int cx, int cy)
 }
 
 //-----------------------------------------------------------------------------
-// Convenience functions for making the text colors pretty, for DrawElement.
-//-----------------------------------------------------------------------------
-extern void NormText(void);
-extern void EmphText(void);
-extern void NameText(void);
-extern void BodyText(void);
-void PoweredText(BOOL powered)
-{
-    if(InSimulationMode) {
-        if(powered)
-            EmphText();
-        else
-            NormText();
-    }
-}
-
-//-----------------------------------------------------------------------------
 // Count the length of a string, in characters. Nonstandard because the
 // string may contain special characters to indicate formatting (syntax
 // highlighting).
 //-----------------------------------------------------------------------------
-int FormattedStrlen(char *str)
+int FormattedStrlen(const char *str)
 {
     int l = 0;
     while(*str) {
@@ -289,13 +270,19 @@ int FormattedStrlen(char *str)
 // the left and right. Draws on the upper line of the position.
 //-----------------------------------------------------------------------------
 void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
+    BOOL isName, int extra)
+{
+    if(extra < 0) {
+		extra = POS_WIDTH - FormattedStrlen(str);
+	}
+
+    DrawChars(cx + (extra/2), cy + (POS_HEIGHT/2) - 1, str);
+}
+
+void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
     BOOL isName)
 {
-    int extra = POS_WIDTH - FormattedStrlen(str);
-    PoweredText(powered);
-    if(isName) NameText();
-    DrawChars(cx + (extra/2), cy + (POS_HEIGHT/2) - 1, str);
-    if(isName) BodyText();
+     CenterWithSpaces(cx, cy, str, powered, isName, -1);
 }
 
 //-----------------------------------------------------------------------------
@@ -307,15 +294,12 @@ void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before,
 {
     int extra = totalWidth - FormattedStrlen(str);
 
-    PoweredText(after);
     DrawChars(cx + (extra/2), cy + (POS_HEIGHT/2), str);
 
-    PoweredText(before);
     int i;
     for(i = 0; i < (extra/2); i++) {
         DrawChars(cx + i, cy + (POS_HEIGHT/2), "-");
     }
-    PoweredText(after);
     for(i = FormattedStrlen(str)+(extra/2); i < totalWidth; i++) {
         DrawChars(cx + i, cy + (POS_HEIGHT/2), "-");
     }
@@ -358,13 +342,6 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
     }
 
-    NormText();
-    PoweredText(poweredBefore);
-
-	RECT r;
-	r.left = *cx;
-	r.bottom = r.top = *cy + (POS_HEIGHT/2);
-
     while(*cx < (ColsAvailable-thisWidth)*POS_WIDTH) {
         int gx = *cx/POS_WIDTH;
         int gy = *cy/POS_HEIGHT;
@@ -378,17 +355,13 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 
         int i;
         for(i = 0; i < POS_WIDTH; i++) {
-//            DrawChars(*cx + i, *cy + (POS_HEIGHT/2), "-");
+            DrawChars(*cx + i, *cy + (POS_HEIGHT/2), "-");
         }
         *cx += POS_WIDTH;
         cx0 += POS_WIDTH;
     }
 
-	r.right = *cx;
-	DrawLine(r);
-
     if(leaf == Selected && !InSimulationMode) {
-        EmphText();
         ThisHighlighted = TRUE;
     } else {
         ThisHighlighted = FALSE;
@@ -631,7 +604,6 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
             bot[l] = '}'; bot[l+1] = '\0';
 
             int extra = 2*POS_WIDTH - FormattedStrlen(top);
-            PoweredText(poweredAfter);
             DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1, top);
             CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter,
                 2*POS_WIDTH);
@@ -726,7 +698,6 @@ static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
             break;
         }
         case ELEM_PLACEHOLDER: {
-            NormText();
             CenterWithWiresWidth(*cx, *cy, "--", FALSE, FALSE, 2);
             *cx += POS_WIDTH;
             break;
@@ -950,11 +921,8 @@ cmp:
 										leaf->d.fmtdStr.var);
 
             int extra = 2*POS_WIDTH - strlen(bot);
-            PoweredText(poweredAfter);
-            NameText();
             DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1,
                 bot);
-            BodyText();
 
 			sprintf(bot, "{\"%s\"}", leaf->d.fmtdStr.string);
 
@@ -970,11 +938,8 @@ cmp:
 										leaf->d.servoYaskawa.var);
 
             int extra = 2*POS_WIDTH - strlen(bot);
-            PoweredText(poweredAfter);
-            NameText();
             DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1,
                 bot);
-            BodyText();
 
 			sprintf(bot, "{\"%s\"}", leaf->d.servoYaskawa.string);
 
@@ -1150,10 +1115,8 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
 
     SetBkColor(Hdc, InSimulationMode ? HighlightColours.simBg :
         HighlightColours.bg);
-    NormText();
 
     if(elem == Selected && !InSimulationMode) {
-        EmphText();
         ThisHighlighted = TRUE;
     } else {
         ThisHighlighted = FALSE;
@@ -1188,7 +1151,6 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
 
                 if(InSimulationMode) {
                     if(poweredThis) poweredAfter = TRUE;
-                    PoweredText(poweredThis);
                 }
 
                 while((*cx - cx0) < widthMax*POS_WIDTH) {
@@ -1235,7 +1197,6 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
 
                 needWire = FALSE;
                 for(j = heightMax - 1; j >= 1; j--) {
-                    if(j <= lowestPowered) PoweredText(poweredAfter);
                     if(DisplayMatrix[gx - 1][gy + j] && DisplayMatrixWhich[gx - 1][gy + j] != ELEM_PLACEHOLDER) {
                         needWire = TRUE;
                     }
@@ -1243,12 +1204,10 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
                 }
                 // stupid special case
                 if(lowestPowered == 0 && InSimulationMode) {
-                    EmphText();
                     DrawChars(*cx - 1, *cy + (POS_HEIGHT/2), "+");
                 }
             }
 
-            PoweredText(poweredBefore);
             needWire = FALSE;
             for(j = heightMax - 1; j >= 1; j--) {
                 if(DisplayMatrix[cx0/POS_WIDTH][*cy/POS_HEIGHT + j]) {
@@ -1265,7 +1224,6 @@ BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore)
     }
 
 
-    NormText();
     return poweredAfter;
 }
 

@@ -246,8 +246,10 @@ static void MakeControls(void)
     //    (LONG_PTR)MyNameProc);
 }
 
-void ShowModbusDialog(int mode_write, char *name, int *elem, int *address, bool *set, bool *retransmitir)
+bool ShowModbusDialog(int mode_write, char *name, int *elem, int *address, bool *set, bool *retransmitir)
 {
+	bool changed = false;
+
 	char name_temp[MAX_NAME_LEN];
     SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
         mode_write ? _("Write ModBUS") : _("Read ModBUS"), WS_OVERLAPPED | WS_SYSMENU,
@@ -304,6 +306,8 @@ void ShowModbusDialog(int mode_write, char *name, int *elem, int *address, bool 
     if(!DialogCancel) {
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_temp));
 		if(IsValidNameAndType(name, name_temp, GetTypeFromName(name_temp))) {
+			changed = true;
+
 			strcpy(name, name_temp);
 	        if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
 		        *set = TRUE;
@@ -326,5 +330,6 @@ void ShowModbusDialog(int mode_write, char *name, int *elem, int *address, bool 
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(SetBitDialog);
-    return;
+
+	return changed;
 }

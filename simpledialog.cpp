@@ -224,9 +224,11 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     return !didCancel;
 }
 
-void ShowTimerDialog(int which, int *delay, char *name)
+bool ShowTimerDialog(int which, int *delay, char *name)
 {
-    char *s;
+	bool changed = false;
+
+	char *s;
     switch(which) 
 	{ 
         case ELEM_TON: s = _("Turn-On Delay"); break;
@@ -246,6 +248,8 @@ void ShowTimerDialog(int which, int *delay, char *name)
     if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), (1 << 0), dests)) {
 		if(IsValidNameAndType(name  , nameBuf, _("Nome") , VALIDATE_IS_VAR   , GetTypeFromName(nameBuf), 0, 0) &&
 		   IsValidNameAndType(delBuf, delBuf , _("Tempo"), VALIDATE_IS_NUMBER, GetTypeFromName(delBuf ), 1, 2147483)) {
+			   changed = true;
+
 			   *delay = 1000*atoi(delBuf);
 			   if(*delay % Prog.settings.cycleTime) {
 				   *delay = (1 + *delay / Prog.settings.cycleTime) * Prog.settings.cycleTime;
@@ -256,11 +260,15 @@ void ShowTimerDialog(int which, int *delay, char *name)
 				name[16] = '\0';
 		}
     }
+
+	return changed;
 }
 
-void ShowCounterDialog(int which, int *maxV, char *name)
+bool ShowCounterDialog(int which, int *maxV, char *name)
 {
-    char *title;
+	bool changed = false;
+
+	char *title;
 
     switch(which) {
         case ELEM_CTU:  title = _("Count Up"); break;
@@ -279,15 +287,21 @@ void ShowCounterDialog(int which, int *maxV, char *name)
     if(ShowSimpleDialog(title, 2, labels, 0x2, 0x1, 0x1, 0x1, dests)) {
 		if(IsValidNameAndType(name, name_tmp, _("Nome") , VALIDATE_IS_VAR   , GetTypeFromName(name_tmp), 0, 0) &&
 		   IsValidNameAndType(maxS, maxS    , _("Valor"), VALIDATE_IS_NUMBER, GetTypeFromName(maxS    ), 0, 0)) {
+				changed = true;
+				
 				strncpy(name, name_tmp, 16);
 				name[16] = '\0';
 				*maxV = atoi(maxS);
 		}
 	}
+
+	return changed;
 }
 
-void ShowCmpDialog(int which, char *op1, char *op2)
+bool ShowCmpDialog(int which, char *op1, char *op2)
 {
+	bool changed = false;
+
 	char op1_tmp[MAX_NAME_LEN], op2_tmp[MAX_NAME_LEN];
     char *title;
     char *l2;
@@ -334,14 +348,20 @@ void ShowCmpDialog(int which, char *op1, char *op2)
 	if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
 		if(IsValidNameAndType(op1, op1_tmp, NULL, VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op1_tmp), 0, 0) &&
 		   IsValidNameAndType(op2, op2_tmp, NULL, VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op2_tmp), 0, 0)) {
+			   changed = true;
+
 			   strcpy(op1, op1_tmp);
 			   strcpy(op2, op2_tmp);
 		}
 	}
+
+	return changed;
 }
 
-void ShowSqrtDialog(char *dest, char *src)
+bool ShowSqrtDialog(char *dest, char *src)
 {
+	bool changed = false;
+
 	char dest_tmp[MAX_NAME_LEN], src_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Destination:"), _("Source:") };
     char *dests[] = { dest_tmp, src_tmp };
@@ -352,14 +372,20 @@ void ShowSqrtDialog(char *dest, char *src)
 	if(ShowSimpleDialog(_("Square Root"), 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
 		if(IsValidNameAndType(dest, dest_tmp, _("Destino"), VALIDATE_IS_VAR          , GetTypeFromName(dest_tmp), 0, 0) &&
 		   IsValidNameAndType(src , src_tmp , _("Origem") , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(src_tmp ), 0, 0)) {
+			changed = true;
+
 			strcpy(src , src_tmp );
 			strcpy(dest, dest_tmp);
 		}
 	}
+
+	return changed;
 }
 
-void ShowRandDialog(char *var, char *min, char *max)
+bool ShowRandDialog(char *var, char *min, char *max)
 {
+	bool changed = false;
+
 	char var_tmp[MAX_NAME_LEN], min_tmp[MAX_NAME_LEN], max_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Destination:"), _("Mínimo:"), _("Máximo:") };
     char *dests [] = { var_tmp, min_tmp, max_tmp };
@@ -372,15 +398,21 @@ void ShowRandDialog(char *var, char *min, char *max)
 		if(IsValidNameAndType(var, var_tmp, _("Destino"), VALIDATE_IS_VAR          , GetTypeFromName(var_tmp), 0, 0) &&
 		   IsValidNameAndType(min, min_tmp, _("Mínimo") , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(min_tmp), 0, 0) &&
 		   IsValidNameAndType(min, max_tmp, _("Máximo") , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(max_tmp), 0, 0)) {
+			changed = true;
+
 			strcpy(var, var_tmp);
 			strcpy(min, min_tmp);
 			strcpy(max, max_tmp);
 		}
 	}
+
+	return changed;
 }
 
-void ShowAbsDialog(char *dest, char *src)
+bool ShowAbsDialog(char *dest, char *src)
 {
+	bool changed = false;
+
 	char dest_tmp[MAX_NAME_LEN], src_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Destination:"), _("Source:") };
     char *dests[] = { dest_tmp, src_tmp };
@@ -391,14 +423,20 @@ void ShowAbsDialog(char *dest, char *src)
 	if(ShowSimpleDialog(_("Abs"), 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
 		if(IsValidNameAndType(dest, dest_tmp, _("Destino"), VALIDATE_IS_VAR          , GetTypeFromName(dest_tmp), 0, 0) &&
 		   IsValidNameAndType(src , src_tmp , _("Origem") , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(src_tmp ), 0, 0)) {
+			changed = true;
+
 			strcpy(src , src_tmp );
 			strcpy(dest, dest_tmp);
 		}
 	}
+
+	return changed;
 }
 
-void ShowReadAdcDialog(char *name)
+bool ShowReadAdcDialog(char *name)
 {
+	bool changed = false;
+
 	char name_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Destination:") };
     char *dests[] = { name_tmp };
@@ -407,14 +445,20 @@ void ShowReadAdcDialog(char *name)
 
 	if(ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
 		if(IsValidNameAndType(name, name_tmp, _("Destino"), VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
+			changed = true;
+
 			strcpy(name, name_tmp);
 			name[16] = '\0';
 		}
 	}
+
+	return changed;
 }
 
-void ShowReadEncDialog(char *name)
+bool ShowReadEncDialog(char *name)
 {
+	bool changed = false;
+
 	char name_tmp[MAX_NAME_LEN];
 
     char *labels[] = { _("Destination:") };
@@ -424,14 +468,20 @@ void ShowReadEncDialog(char *name)
 
 	if(ShowSimpleDialog(_("Read Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
 		if(IsValidNameAndType(name, name_tmp, _("Destino"), VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
+			changed = true;
+
 			strcpy(name, name_tmp);
 			name[16] = '\0';
 		}
 	}
+
+	return changed;
 }
 
-void ShowResetEncDialog(char *name)
+bool ShowResetEncDialog(char *name)
 {
+	bool changed = false;
+
 	char name_tmp[MAX_NAME_LEN];
 
     char *labels[] = { _("Destination:") };
@@ -441,14 +491,20 @@ void ShowResetEncDialog(char *name)
 
 	if(ShowSimpleDialog(_("Write Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
 		if(IsValidNameAndType(name, name_tmp, _("Destino"), VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
+			changed = true;
+
 			strcpy(name, name_tmp);
 			name[16] = '\0';
 		}
 	}
+
+	return changed;
 }
 
-void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index)
+bool ShowUSSDialog(int which, char *name, int *id, int *parameter, int *parameter_set, int *index)
 {
+	bool changed = false;
+
 	char name_temp[100];
 	strcpy(name_temp, name);
 
@@ -464,14 +520,27 @@ void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, 
     char idx[100];
     sprintf(idx, "%d", *index);
 
-	char *labels[] = { _("Destination:"), _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
+	char *DialogName;
+	char *VarName;
+
+	if(which == ELEM_READ_USS) {
+		DialogName = _("Ler Parâmetro por USS");
+		VarName    = _("Destination:");
+	} else if(which == ELEM_WRITE_USS) {
+		DialogName = _("Escrever Parâmetro por USS");
+		VarName    = _("Origem:");
+	} else oops();
+
+	char *labels[] = { VarName, _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
     char *dests[] = { name_temp, i, param, param_set, idx };
-    if(ShowSimpleDialog(_("Ler Parâmetro por USS"), 5, labels, 0x1E, 0x1, 0x1E, 0x1, dests)) {
+    if(ShowSimpleDialog(DialogName, 5, labels, 0x1E, 0x1, 0x1E, 0x1, dests)) {
 		if(IsValidNameAndType(name     , name_temp, _("Nome"            ), VALIDATE_IS_VAR   , GetTypeFromName(name_temp), 0, 0) &&
 		   IsValidNameAndType(i        , i        , _("ID"              ), VALIDATE_IS_NUMBER, GetTypeFromName(i        ), 0, 0) &&
 		   IsValidNameAndType(param    , param    , _("Parâmetro"       ), VALIDATE_IS_NUMBER, GetTypeFromName(param    ), 0, 0) &&
 		   IsValidNameAndType(param_set, param_set, _("Set de Parâmetro"), VALIDATE_IS_NUMBER, GetTypeFromName(param_set), 0, 3) &&
 		   IsValidNameAndType(idx      , idx      , _("Índice"          ), VALIDATE_IS_NUMBER, GetTypeFromName(idx      ), 0, 0)) {
+				changed = true;
+
 				strcpy(name, name_temp);
 				*id = atoi(i);
 				*parameter = atoi(param);
@@ -479,46 +548,15 @@ void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, 
 				*index = atoi(idx);
 		}
 	}
+
+	return changed;
 }
 
-void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index)
+bool ShowSetPwmDialog(char *name, int *targetFreq)
 {
-	char name_temp[100];
-	strcpy(name_temp, name);
+	bool changed = false;
 
-    char i[100];
-    sprintf(i, "%d", *id);
-
-    char param[100];
-    sprintf(param, "%d", *parameter);
-
-    char param_set[100];
-    sprintf(param_set, "%d", *parameter_set);
-
-    char idx[100];
-    sprintf(idx, "%d", *index);
-
-	char *labels[] = { _("Origem:"), _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
-    char *dests[] = { name_temp, i, param, param_set, idx };
-
-	if(ShowSimpleDialog(_("Escrever Parâmetro por USS"), 5, labels, 0x1E, 0x1, 0x1E, 0x1, dests)) {
-		if(IsValidNameAndType(name     , name_temp, _("Nome"            ), VALIDATE_IS_VAR   , GetTypeFromName(name_temp), 0, 0) &&
-		   IsValidNameAndType(i        , i        , _("ID"              ), VALIDATE_IS_NUMBER, GetTypeFromName(i        ), 0, 0) &&
-		   IsValidNameAndType(param    , param    , _("Parâmetro"       ), VALIDATE_IS_NUMBER, GetTypeFromName(param    ), 0, 0) &&
-		   IsValidNameAndType(param_set, param_set, _("Set de Parâmetro"), VALIDATE_IS_NUMBER, GetTypeFromName(param_set), 0, 3) &&
-		   IsValidNameAndType(idx      , idx      , _("Índice"          ), VALIDATE_IS_NUMBER, GetTypeFromName(idx      ), 0, 0)) {
-				strcpy(name, name_temp);
-				*id = atoi(i);
-				*parameter = atoi(param);
-				*parameter_set = atoi(param_set);
-				*index = atoi(idx);
-		}
-	}
-}
-
-void ShowSetPwmDialog(char *name, int *targetFreq)
-{
-    char freq[100], name_tmp[MAX_NAME_LEN];
+	char freq[100], name_tmp[MAX_NAME_LEN];
     sprintf(freq, "%d", *targetFreq);
 
     char *labels[] = { _("Duty cycle var:"), _("Frequency (Hz):") };
@@ -529,14 +567,20 @@ void ShowSetPwmDialog(char *name, int *targetFreq)
 	if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 2, labels, 0x2, 0x1, 0x1, 0x1, dests)) {
 		if(IsValidNameAndType(name, name_tmp, _("Variável"  ), VALIDATE_IS_VAR   , GetTypeFromName(name_tmp), 0,    0) &&
 		   IsValidNameAndType(freq, freq    , _("Frequência"), VALIDATE_IS_NUMBER, GetTypeFromName(freq    ), 1, 2000)) {
+				changed = true;
+
 			   strcpy(name, name_tmp);
 				*targetFreq = atoi(freq);
 		}
 	}
+
+	return changed;
 }
 
-void ShowUartDialog(int which, char *name)
+bool ShowUartDialog(int which, char *name)
 {
+	bool changed = false;
+
 	char name_tmp[MAX_NAME_LEN];
     char *labels[] = { (which == ELEM_UART_RECV) ? _("Destination:") :
         _("Source:") };
@@ -547,14 +591,20 @@ void ShowUartDialog(int which, char *name)
     if(ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") :
 	        _("Send to UART"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
 		if(IsValidNameAndType(name, name_tmp, (which == ELEM_UART_RECV) ? _("Destino") : _("Origem"), (which == ELEM_UART_RECV) ? VALIDATE_IS_VAR : VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(name_tmp), 0, 0)) {
+			changed = true;
+
 			strcpy(name, name_tmp);
 		}
 	}
+
+	return changed;
 }
 
-void ShowShiftRegisterDialog(char *name, int *stages)
+bool ShowShiftRegisterDialog(char *name, int *stages)
 {
-    char stagesStr[20], name_tmp[MAX_NAME_LEN];
+	bool changed = false;
+
+	char stagesStr[20], name_tmp[MAX_NAME_LEN];
     sprintf(stagesStr, "%d", *stages);
 
     char *labels[] = { _("Name:"), _("Stages:") };
@@ -565,14 +615,20 @@ void ShowShiftRegisterDialog(char *name, int *stages)
 	if(ShowSimpleDialog(_("Shift Register"), 2, labels, 0x2, 0x1, 0x1, 0x1, dests)) {
 		if(IsValidNameAndType(name     , name_tmp , _("Nome"    ), VALIDATE_IS_VAR          , GetTypeFromName(name_tmp ), 0,   0) &&
 		   IsValidNameAndType(stagesStr, stagesStr, _("Estágios"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(stagesStr), 1, 200)) {
+				changed = true;
+
 				*stages = atoi(stagesStr);
 				strcpy(name, name_tmp);
 		}
 	}
+
+	return changed;
 }
 
-void ShowFormattedStringDialog(int mode_write, char *var, char *string)
+bool ShowFormattedStringDialog(int mode_write, char *var, char *string)
 {
+	bool changed = false;
+
 	char var_tmp[MAX_NAME_LEN], string_tmp[MAX_LOOK_UP_TABLE_LEN];
     char *labels[] = { _("Destination:"), _("String:") };
     char *dests[] = { var_tmp, string_tmp };
@@ -584,6 +640,8 @@ void ShowFormattedStringDialog(int mode_write, char *var, char *string)
     NoCheckingOnBox[1] = TRUE;
     if(ShowSimpleDialog(mode_write ? _("Send Formatted String Over UART") : _("Receive Formatted String Over UART"), 2, labels, 0x0, 0x1, 0x3, 0x1, dests)) {
 		if(IsValidNameAndType(var, var_tmp , _("Variável"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(var_tmp ), 0, 0)) {
+				changed = true;
+
 				strcpy(var   , var_tmp   );
 				strcpy(string, string_tmp);
 		}
@@ -591,10 +649,14 @@ void ShowFormattedStringDialog(int mode_write, char *var, char *string)
 
 	NoCheckingOnBox[0] = FALSE;
     NoCheckingOnBox[1] = FALSE;
+
+	return changed;
 }
 
-void ShowServoYaskawaDialog(int mode_write, char * id, char *var, char *string)
+bool ShowServoYaskawaDialog(int mode_write, char * id, char *var, char *string)
 {
+	bool changed = false;
+
 	char var_tmp[MAX_NAME_LEN], string_tmp[MAX_LOOK_UP_TABLE_LEN], id_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Id:"), _("Variable:"), _("String:") };
     char *dests[] = { id_tmp, var_tmp, string_tmp };
@@ -607,6 +669,8 @@ void ShowServoYaskawaDialog(int mode_write, char * id, char *var, char *string)
     if(ShowSimpleDialog(mode_write ? _("Write Servo Yaskawa") : _("Read Servo Yaskawa"), 3, labels, 0x1, 0x2, 0x7, 0x2, dests)) {
 		if(IsValidNameAndType(var, var_tmp, _("Variável"), VALIDATE_IS_VAR   , GetTypeFromName(var_tmp ), 0, 0) &&
 		   IsValidNameAndType(id , id_tmp , _("ID"      ), VALIDATE_IS_NUMBER, GetTypeFromName(id_tmp  ), 0, 0)) {
+				changed = true;
+
 				strcpy(id    , id_tmp    );
 				strcpy(var   , var_tmp   );
 				strcpy(string, string_tmp);
@@ -614,6 +678,8 @@ void ShowServoYaskawaDialog(int mode_write, char * id, char *var, char *string)
 	}
 
 	NoCheckingOnBox[1] = FALSE;
+
+	return changed;
 }
 
 void ShowSimulationVarSetDialog(char *name, char *val)
@@ -631,8 +697,10 @@ void ShowSimulationVarSetDialog(char *name, char *val)
 	}
 }
 
-void ShowPersistDialog(char *var)
+bool ShowPersistDialog(char *var)
 {
+	bool changed = false;
+
 	char var_tmp[MAX_NAME_LEN];
     char *labels[] = { _("Variable:") };
     char *dests[] = { var_tmp };
@@ -641,7 +709,11 @@ void ShowPersistDialog(char *var)
 
 	if(ShowSimpleDialog(_("Make Persistent"), 1, labels, 0, 1, 1, 1, dests)) {
 		if(IsValidNameAndType(var, var_tmp, _("Variável"), VALIDATE_IS_VAR, GetTypeFromName(var_tmp), 0, 0)) {
+			changed = true;
+
 			strcpy(var, var_tmp);
 		}
 	}
+
+	return changed;
 }

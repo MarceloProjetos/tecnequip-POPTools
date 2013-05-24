@@ -186,11 +186,11 @@
     <ClCompile Include="EngineRenderD2D.cpp">
       <Filter>Source Files\EngineGUI</Filter>
     </ClCompile>
-    <ClCompile Include="draw_EngineGUI.cpp">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
     <ClCompile Include="LadderObjects.cpp">
       <Filter>Source Files\Diagrama Ladder</Filter>
+    </ClCompile>
+    <ClCompile Include="LadderGUI.cpp">
+      <Filter>Source Files\EngineGUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

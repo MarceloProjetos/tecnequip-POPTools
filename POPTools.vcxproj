@@ -306,12 +306,12 @@
     <ClCompile Include="compilecommon.cpp" />
     <ClCompile Include="confdialog.cpp" />
     <ClCompile Include="contactsdialog.cpp" />
-    <ClCompile Include="draw_EngineGUI.cpp" />
     <ClCompile Include="EngineGUI.cpp" />
     <ClCompile Include="EngineRenderD2D.cpp" />
     <ClCompile Include="Firmware\App\modbus_rtu.c" />
     <ClCompile Include="KeyboardHandlers.cpp" />
     <ClCompile Include="KeyboardMap.cpp" />
+    <ClCompile Include="LadderGUI.cpp" />
     <ClCompile Include="LadderObjects.cpp" />
     <ClCompile Include="mathdialog.cpp" />
     <ClCompile Include="modbus_master.cpp" />

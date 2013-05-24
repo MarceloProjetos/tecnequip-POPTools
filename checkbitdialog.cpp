@@ -85,8 +85,10 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
-void ShowCheckBitDialog(char *name, int * set, int * bit)
+bool ShowCheckBitDialog(char *name, bool * set, int * bit)
 {
+	bool changed = false;
+
 	char name_tmp[MAX_NAME_LEN];
 
 	CheckBitDialog = CreateWindowClient(0, "POPToolsDialog",
@@ -139,6 +141,8 @@ void ShowCheckBitDialog(char *name, int * set, int * bit)
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_tmp));
 
 		if(IsValidNameAndType(name, name_tmp, GetTypeFromName(name))) {
+			changed = true;
+
 			strcpy(name, name_tmp);
 
 			if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
@@ -155,5 +159,6 @@ void ShowCheckBitDialog(char *name, int * set, int * bit)
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(CheckBitDialog);
-    return;
+
+	return changed;
 }

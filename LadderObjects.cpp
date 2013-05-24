@@ -13,30 +13,25 @@ LadderElem::LadderElem(void)
 	Init();
 }
 
-LadderElem::LadderElem(bool EOL, bool Comment, int elemWhich)
+LadderElem::LadderElem(bool EOL, bool Comment, bool Formatted, bool Name, int elemWhich)
 {
 	Init();
 
 	which       = elemWhich;
 	isEndOfLine = EOL;
+	isName      = Name;
 	isComment   = Comment;
+	isFormatted = Formatted;
 }
 
 // Classe LadderElemPlaceHolder
-LadderElemPlaceHolder::LadderElemPlaceHolder(void) : LadderElem(false, false, ELEM_PLACEHOLDER)
+LadderElemPlaceHolder::LadderElemPlaceHolder(void) : LadderElem(false, false, false, true, ELEM_PLACEHOLDER)
 {
 }
 
-pair<string, string> LadderElemPlaceHolder::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemPlaceHolder::DrawTXT(void)
 {
-    CenterWithWiresWidth(*cx, *cy, "--", FALSE, FALSE, 2);
-    *cx += POS_WIDTH;
-
 	return pair<string, string>("", "--");
-}
-
-void LadderElemPlaceHolder::DrawGUI(void)
-{
 }
 
 bool LadderElemPlaceHolder::GenerateIntCode(IntCode &ic)
@@ -46,16 +41,17 @@ bool LadderElemPlaceHolder::GenerateIntCode(IntCode &ic)
 
 bool LadderElemPlaceHolder::CanInsert(LadderContext context)
 {
-	return context.canInsertOther;
+	return context.canInsertOther &&
+		(context.SelectedElem == nullptr || context.SelectedElem->getWhich() != ELEM_PLACEHOLDER);
 }
 
 // Classe LadderElemComment
-LadderElemComment::LadderElemComment(void) : LadderElem(false, true, ELEM_COMMENT)
+LadderElemComment::LadderElemComment(void) : LadderElem(false, true, false, true, ELEM_COMMENT)
 {
 	str = _("--add comment here--");
 }
 
-pair<string, string> LadderElemComment::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemComment::DrawTXT(void)
 {
 	string first, second = "";
 
@@ -70,21 +66,13 @@ pair<string, string> LadderElemComment::DrawTXT(int *cx, int *cy, bool poweredBe
 		*b = '\0';
 
 		sprintf(tlbuf, "\x03 ; %s\x02", b+1);
-		DrawChars(*cx, *cy + (POS_HEIGHT/2), tlbuf);
 		second = tlbuf;
 	}
 
 	sprintf(tlbuf, "\x03 ; %s\x02", tbuf);
-	DrawChars(*cx, *cy + (POS_HEIGHT/2) - 1, tlbuf);
 	first = tlbuf;
 
-	*cx += ColsAvailable*POS_WIDTH;
-
 	return pair<string, string>(first, second);
-}
-
-void LadderElemComment::DrawGUI(void)
-{
 }
 
 bool LadderElemComment::GenerateIntCode(IntCode &ic)
@@ -102,8 +90,26 @@ void LadderElemComment::setProperties(string newStr)
 	str = newStr;
 }
 
+inline int LadderElemComment::getWidthTXT(void)
+{
+	char tbuf[MAX_COMMENT_LEN];
+
+	strcpy(tbuf, str.c_str());
+	char *b = strchr(tbuf, '\n');
+
+	int len;
+	if(b) {
+		*b = '\0';
+		len = max(strlen(tbuf)-1, strlen(b+1));
+	} else {
+		len = strlen(tbuf);
+	}
+	// round up, and allow space for lead-in
+	return  (len + 7 + (POS_WIDTH-1)) / POS_WIDTH;
+}
+
 // Classe LadderElemContact
-LadderElemContact::LadderElemContact(void) : LadderElem(false, false, ELEM_CONTACTS)
+LadderElemContact::LadderElemContact(void) : LadderElem(false, false, false, true, ELEM_CONTACTS)
 {
 	name    = _("in");
 	negated = false;
@@ -111,7 +117,7 @@ LadderElemContact::LadderElemContact(void) : LadderElem(false, false, ELEM_CONTA
 	bit     = 0;
 }
 
-pair<string, string> LadderElemContact::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemContact::DrawTXT(void)
 {
 	char ch, buf[4], name_with_type[MAX_NAME_LEN+4];
 
@@ -142,18 +148,9 @@ pair<string, string> LadderElemContact::DrawTXT(int *cx, int *cy, bool poweredBe
 		ch = '?';
 		break;
 	}
-	sprintf(name_with_type, "%s (%c)", name, ch);
+	sprintf(name_with_type, "%s (%c)", name.c_str(), ch);
 
-	CenterWithSpaces(*cx, *cy, name_with_type, poweredAfter, TRUE);
-	CenterWithWires (*cx, *cy, buf, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
-
-	return pair<string, string>(buf, name_with_type);
-}
-
-void LadderElemContact::DrawGUI(void)
-{
+	return pair<string, string>(name_with_type, buf);
 }
 
 bool LadderElemContact::GenerateIntCode(IntCode &ic)
@@ -177,6 +174,14 @@ bool LadderElemContact::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
+void LadderElemContact::getProperties(string &curName, bool &curNegated, unsigned int &curType, unsigned char &curBit)
+{
+	curName    = name;
+	curNegated = negated;
+	curType    = type;
+	curBit     = bit;
+}
+
 void LadderElemContact::setProperties(string newName, bool newNegated, unsigned int newType, unsigned char newBit)
 {
 	name    = newName;
@@ -186,7 +191,7 @@ void LadderElemContact::setProperties(string newName, bool newNegated, unsigned 
 }
 
 // Classe LadderElemCoil
-LadderElemCoil::LadderElemCoil(void) : LadderElem(true, false, ELEM_COIL)
+LadderElemCoil::LadderElemCoil(void) : LadderElem(true, false, false, true, ELEM_COIL)
 {
 	name      = _("out");
 	negated   = false;
@@ -196,7 +201,7 @@ LadderElemCoil::LadderElemCoil(void) : LadderElem(true, false, ELEM_COIL)
 	bit       = 0;
 }
 
-pair<string, string> LadderElemCoil::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemCoil::DrawTXT(void)
 {
 	char buf[4], name_with_type[MAX_NAME_LEN+4];
 
@@ -214,16 +219,9 @@ pair<string, string> LadderElemCoil::DrawTXT(int *cx, int *cy, bool poweredBefor
     buf[3] = '\0';
 
 	// TODO: Internacionalizar
-	sprintf(name_with_type, "%s (%c)", name, type == IO_TYPE_DIG_OUTPUT ? 'S' : 'R');
+	sprintf(name_with_type, "%s (%c)", name.c_str(), type == IO_TYPE_DIG_OUTPUT ? 'S' : 'R');
 
-	CenterWithSpaces(*cx, *cy, name_with_type, poweredAfter, TRUE);
-    CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
-
-	return pair<string, string>(buf, name_with_type);
-}
-
-void LadderElemCoil::DrawGUI(void)
-{
+	return pair<string, string>(name_with_type, buf);
 }
 
 bool LadderElemCoil::GenerateIntCode(IntCode &ic)
@@ -267,7 +265,7 @@ void LadderElemCoil::setProperties(string newName, bool newNegated, bool newSetO
 }
 
 // Classe LadderElemTimer
-LadderElemTimer::LadderElemTimer(int which) : LadderElem(which == ELEM_RTO ? true : false, false, which)
+LadderElemTimer::LadderElemTimer(int which) : LadderElem(which == ELEM_RTO ? true : false, false, false, true, which)
 {
 	name  = _("new");
 	delay = 100000;
@@ -294,7 +292,7 @@ int LadderElemTimer::TimerPeriod(void)
     return period;
 }
 
-pair<string, string> LadderElemTimer::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemTimer::DrawTXT(void)
 {
 	char *s;
 	int which = getWhich();
@@ -307,9 +305,7 @@ pair<string, string> LadderElemTimer::DrawTXT(int *cx, int *cy, bool poweredBefo
 		s = _("RTO");
 	else oops();
 
-	char buf[256], buf_name[256];
-
-	strcpy(buf_name, name.c_str());
+	char buf[256];
 
 	if(delay >= 1000*1000) {
 		sprintf(buf, "[\x01%s\x02 %.3f s]", s, delay/1000000.0);
@@ -319,16 +315,7 @@ pair<string, string> LadderElemTimer::DrawTXT(int *cx, int *cy, bool poweredBefo
 		sprintf(buf, "[\x01%s\x02 %.2f ms]", s, delay/1000.0);
 	}
 
-	CenterWithSpaces(*cx, *cy, buf_name, poweredAfter, TRUE);
-	CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
-
 	return pair<string, string>(name, buf);
-}
-
-void LadderElemTimer::DrawGUI(void)
-{
 }
 
 bool LadderElemTimer::GenerateIntCode(IntCode &ic)
@@ -419,7 +406,7 @@ void LadderElemTimer::setProperties(string newName, int newDelay)
 }
 
 // Classe LadderElemRTC
-LadderElemRTC::LadderElemRTC(void) : LadderElem(false, false, ELEM_RTC)
+LadderElemRTC::LadderElemRTC(void) : LadderElem(false, false, false, true, ELEM_RTC)
 {
 	time_t rawtime;
 	struct tm * t;
@@ -449,7 +436,7 @@ LadderElemRTC::LadderElemRTC(void) : LadderElem(false, false, ELEM_RTC)
 	end.tm_sec    = t->tm_sec;
 }
 
-pair<string, string> LadderElemRTC::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemRTC::DrawTXT(void)
 {
 	int linha;
 	char bufs[256], bufe[256];
@@ -505,16 +492,7 @@ pair<string, string> LadderElemRTC::DrawTXT(int *cx, int *cy, bool poweredBefore
 		strcpy(bufs, _("RTC - Mode Fixed"));
 	}
 
-	CenterWithSpaces(*cx, *cy, bufs, poweredAfter , TRUE);
-	CenterWithWires (*cx, *cy, bufe, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
-
 	return pair<string, string>(bufs, bufe);
-}
-
-void LadderElemRTC::DrawGUI(void)
-{
 }
 
 bool LadderElemRTC::GenerateIntCode(IntCode &ic)
@@ -536,19 +514,16 @@ void LadderElemRTC::setProperties(int newMode, unsigned char newWday, struct tm 
 }
 
 // Classe LadderElemCounter
-LadderElemCounter::LadderElemCounter(int which) : LadderElem(which == ELEM_CTC ? true : false, false, which)
+LadderElemCounter::LadderElemCounter(int which) : LadderElem(which == ELEM_CTC ? true : false, false, false, true, which)
 {
 	name = _("new");
 	max  = 0;
 }
 
-pair<string, string> LadderElemCounter::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemCounter::DrawTXT(void)
 {
 	int which = getWhich();
 	char *s, op, buf[256];
-
-	strcpy(buf, name.c_str());
-	CenterWithSpaces(*cx, *cy, buf, poweredAfter, TRUE);
 
 	if(which == ELEM_CTC) {
 		sprintf(buf, _("{\x01""CTC\x02 0:%d}"), max);
@@ -564,15 +539,7 @@ pair<string, string> LadderElemCounter::DrawTXT(int *cx, int *cy, bool poweredBe
 		sprintf(buf, "[\x01%s\x02 %c=%d]", s, op, max);
 	}
 
-	CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
-
 	return pair<string, string>(name, buf);
-}
-
-void LadderElemCounter::DrawGUI(void)
-{
 }
 
 bool LadderElemCounter::GenerateIntCode(IntCode &ic)
@@ -643,26 +610,14 @@ void LadderElemCounter::setProperties(string newName, int newMax)
 }
 
 // Classe LadderElemReset
-LadderElemReset::LadderElemReset(void) : LadderElem(true, false, ELEM_RES)
+LadderElemReset::LadderElemReset(void) : LadderElem(true, false, false, true, ELEM_RES)
 {
 	name = _("new");
 }
 
-pair<string, string> LadderElemReset::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemReset::DrawTXT(void)
 {
-	char buf[256];
-
-	strcpy(buf, name.c_str());
-	CenterWithSpaces(*cx, *cy, buf, poweredAfter, TRUE);
-
-	strcpy(buf, name.c_str());
-	CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
-
-	return pair<string, string>(name, buf);
-}
-
-void LadderElemReset::DrawGUI(void)
-{
+	return pair<string, string>(name, _("{RES}"));
 }
 
 bool LadderElemReset::GenerateIntCode(IntCode &ic)
@@ -687,33 +642,21 @@ void LadderElemReset::setProperties(string newName)
 }
 
 // Classe LadderElemOneShot
-LadderElemOneShot::LadderElemOneShot(int which) : LadderElem(false, false, which)
+LadderElemOneShot::LadderElemOneShot(int which) : LadderElem(false, false, false, false, which)
 {
 }
 
-pair<string, string> LadderElemOneShot::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemOneShot::DrawTXT(void)
 {
-	char *s1, *s2;
 	int which = getWhich();
 
 	if(which == ELEM_ONE_SHOT_RISING) {
-		s1 = "      _ ";
-		s2 = _("[\x01OSR\x02_/ ]");
+		return pair<string, string>("      _ ", _("[\x01OSR\x02_/ ]"));
 	} else if(which == ELEM_ONE_SHOT_FALLING) {
-		s1 = "    _   ";
-		s2 = _("[\x01OSF\x02 \\_]");
+		return pair<string, string>("    _   ", _("[\x01OSF\x02 \\_]"));
 	} else oops();
 
-	CenterWithSpaces(*cx, *cy, s1, poweredAfter , FALSE);
-	CenterWithWires (*cx, *cy, s2, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
-
-	return pair<string, string>(s1, s2);
-}
-
-void LadderElemOneShot::DrawGUI(void)
-{
+	return pair<string, string>("", "");
 }
 
 bool LadderElemOneShot::GenerateIntCode(IntCode &ic)
@@ -758,13 +701,13 @@ bool LadderElemOneShot::CanInsert(LadderContext context)
 }
 
 // Classe LadderElemCmp
-LadderElemCmp::LadderElemCmp(int which) : LadderElem(false, false, which)
+LadderElemCmp::LadderElemCmp(int which) : LadderElem(false, false, false, false, which)
 {
 	op1 = _("var");
 	op2 = "1";
 }
 
-pair<string, string> LadderElemCmp::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemCmp::DrawTXT(void)
 {
 	char *s;
 
@@ -795,16 +738,7 @@ pair<string, string> LadderElemCmp::DrawTXT(int *cx, int *cy, bool poweredBefore
 	memcpy(s1+op1.size()+2, s, strlen(s));
 	memcpy(s2+2, op2.c_str(), op2.size());
 
-	CenterWithSpaces(*cx, *cy, s1, poweredAfter , FALSE);
-	CenterWithWires (*cx, *cy, s2, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
-
 	return pair<string, string>(s1, s2);
-}
-
-void LadderElemCmp::DrawGUI(void)
-{
 }
 
 bool LadderElemCmp::GenerateIntCode(IntCode &ic)
@@ -855,14 +789,14 @@ void LadderElemCmp::setProperties(string newOp1, string newOp2)
 }
 
 // Classe LadderElemMath
-LadderElemMath::LadderElemMath(int which) : LadderElem(true, false, which)
+LadderElemMath::LadderElemMath(int which) : LadderElem(true, false, false, true, which)
 {
 	dest = _("dest");
 	op1  = _("src");
 	op2 = "1";
 }
 
-pair<string, string> LadderElemMath::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemMath::DrawTXT(void)
 {
 	char op;
 	char top[POS_WIDTH*2-3+2+10];
@@ -903,19 +837,7 @@ pair<string, string> LadderElemMath::DrawTXT(int *cx, int *cy, bool poweredBefor
 	top[l+2] = '}'; top[l+3] = '\0';
 	bot[l] = '}'; bot[l+1] = '\0';
 
-	int extra = 2*POS_WIDTH - FormattedStrlen(top);
-	PoweredText(poweredAfter);
-	DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1, top);
-	CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter,
-	2*POS_WIDTH);
-
-	*cx += POS_WIDTH;
-
 	return pair<string, string>(top, bot);
-}
-
-void LadderElemMath::DrawGUI(void)
-{
 }
 
 bool LadderElemMath::GenerateIntCode(IntCode &ic)
@@ -959,28 +881,21 @@ void LadderElemMath::setProperties(string newOp1, string newOp2, string newDest)
 }
 
 // Classe LadderElemSqrt
-LadderElemSqrt::LadderElemSqrt(void) : LadderElem(true, false, ELEM_SQRT)
+LadderElemSqrt::LadderElemSqrt(void) : LadderElem(true, false, false, false, ELEM_SQRT)
 {
 	dest = _("dest");
 	src  = _("src");
 }
 
-pair<string, string> LadderElemSqrt::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemSqrt::DrawTXT(void)
 {
 	char top[256];
 	char bot[256];
 
-	sprintf(top, "{%s :=}", dest);
-	sprintf(bot, _("{%s SQRT}"), src);
-
-	CenterWithSpaces(*cx, *cy, top, poweredAfter , FALSE);
-	CenterWithWires (*cx, *cy, bot, poweredBefore, poweredAfter);
+	sprintf(top, "{%s :=}", dest.c_str());
+	sprintf(bot, _("{%s SQRT}"), src.c_str());
 
 	return pair<string, string>(top, bot);
-}
-
-void LadderElemSqrt::DrawGUI(void)
-{
 }
 
 bool LadderElemSqrt::GenerateIntCode(IntCode &ic)
@@ -1016,31 +931,22 @@ void LadderElemSqrt::setProperties(string newSrc, string newDest)
 }
 
 // Classe LadderElemRand
-LadderElemRand::LadderElemRand(void) : LadderElem(true, false, ELEM_RAND)
+LadderElemRand::LadderElemRand(void) : LadderElem(true, false, false, true, ELEM_RAND)
 {
 	var = _("var");
 	min = "0";
 	max = "100";
 }
 
-pair<string, string> LadderElemRand::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemRand::DrawTXT(void)
 {
 	char top[256];
 	char bot[256];
 
-	sprintf(top, "{ %s := }", var);
-	sprintf(bot, "{%s <= ? <= %s}", min, max);
-
-	int extra = 2*POS_WIDTH - FormattedStrlen(top);
-	DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1, top);
-	CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2*POS_WIDTH);
-	*cx += POS_WIDTH;
+	sprintf(top, "{ %s := }", var.c_str());
+	sprintf(bot, "{%s <= ? <= %s}", min.c_str(), max.c_str());
 
 	return pair<string, string>(top, bot);
-}
-
-void LadderElemRand::DrawGUI(void)
-{
 }
 
 bool LadderElemRand::GenerateIntCode(IntCode &ic)
@@ -1070,28 +976,21 @@ void LadderElemRand::setProperties(string newVar, string newMin, string newMax)
 }
 
 // Classe LadderElemAbs
-LadderElemAbs::LadderElemAbs(void) : LadderElem(true, false, ELEM_ABS)
+LadderElemAbs::LadderElemAbs(void) : LadderElem(true, false, false, false, ELEM_ABS)
 {
 	src  = _("src");
 	dest = _("dest");
 }
 
-pair<string, string> LadderElemAbs::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemAbs::DrawTXT(void)
 {
-    char top[256];
-    char bot[256];
+	char top[256];
+	char bot[256];
 
 	sprintf(top, "{ %s :=}", dest.c_str());
 	sprintf(bot, "{ |%s| }", src.c_str());
 
-    CenterWithSpaces(*cx, *cy, top, poweredAfter , FALSE);
-    CenterWithWires (*cx, *cy, bot, poweredBefore, poweredAfter);
-
 	return pair<string, string>(top, bot);
-}
-
-void LadderElemAbs::DrawGUI(void)
-{
 }
 
 bool LadderElemAbs::GenerateIntCode(IntCode &ic)
@@ -1129,13 +1028,13 @@ void LadderElemAbs::setProperties(string newSrc, string newDest)
 }
 
 // Classe LadderElemMove
-LadderElemMove::LadderElemMove(void) : LadderElem(true, false, ELEM_MOVE)
+LadderElemMove::LadderElemMove(void) : LadderElem(true, false, false, false, ELEM_MOVE)
 {
 	src  = _("src");
 	dest = _("dest");
 }
 
-pair<string, string> LadderElemMove::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemMove::DrawTXT(void)
 {
 	char top[256];
 	char bot[256];
@@ -1143,14 +1042,7 @@ pair<string, string> LadderElemMove::DrawTXT(int *cx, int *cy, bool poweredBefor
 	sprintf(top, "{%s :=}", dest.c_str());
 	sprintf(bot, _("{%s MOV}"), src.c_str());
 
-	CenterWithSpaces(*cx, *cy, top, poweredAfter , FALSE);
-	CenterWithWires (*cx, *cy, bot, poweredBefore, poweredAfter);
-
 	return pair<string, string>(top, bot);
-}
-
-void LadderElemMove::DrawGUI(void)
-{
 }
 
 bool LadderElemMove::GenerateIntCode(IntCode &ic)
@@ -1185,29 +1077,19 @@ void LadderElemMove::setProperties(string newSrc, string newDest)
 }
 
 // Classe LadderElemOpenShort
-LadderElemOpenShort::LadderElemOpenShort(int which) : LadderElem(false, false, which)
+LadderElemOpenShort::LadderElemOpenShort(int which) : LadderElem(false, false, false, true, which)
 {
 }
 
-pair<string, string> LadderElemOpenShort::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemOpenShort::DrawTXT(void)
 {
-	char *s;
-
 	switch(getWhich()) {
-		case ELEM_OPEN : s = "+      +"; break;
-		case ELEM_SHORT: s = "+------+"; break;
+		case ELEM_OPEN : return pair<string, string>("", "+      +");
+		case ELEM_SHORT: return pair<string, string>("", "+------+");
 		default: oops();
 	}
 
-	CenterWithWires(*cx, *cy, s, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
-
-	return pair<string, string>("", s);
-}
-
-void LadderElemOpenShort::DrawGUI(void)
-{
+	return pair<string, string>("", "");
 }
 
 bool LadderElemOpenShort::GenerateIntCode(IntCode &ic)
@@ -1225,30 +1107,20 @@ bool LadderElemOpenShort::CanInsert(LadderContext context)
 }
 
 // Classe LadderElemSetBit
-LadderElemSetBit::LadderElemSetBit(void) : LadderElem(false, false, ELEM_PADDING)
+LadderElemSetBit::LadderElemSetBit(void) : LadderElem(false, false, false, true, ELEM_PADDING)
 {
 	name = _("new");
 	bit  = 0;
 	set  = false;
 }
 
-pair<string, string> LadderElemSetBit::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemSetBit::DrawTXT(void)
 {
 	char str[100];
 
-	strcpy(str, name.c_str());
-	CenterWithSpaces(*cx, *cy, str, poweredAfter, TRUE);
-
 	sprintf(str, _("{%s BIT:%d}"), set ? _("SET") : _("RST"), bit);
-	CenterWithWires(*cx, *cy, str, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
 
 	return pair<string, string>(name, str);
-}
-
-void LadderElemSetBit::DrawGUI(void)
-{
 }
 
 bool LadderElemSetBit::GenerateIntCode(IntCode &ic)
@@ -1279,30 +1151,20 @@ void LadderElemSetBit::setProperties(string newName, int newBit, bool newSet)
 }
 
 // Classe LadderElemCheckBit
-LadderElemCheckBit::LadderElemCheckBit(void) : LadderElem(false, false, ELEM_CHECK_BIT)
+LadderElemCheckBit::LadderElemCheckBit(void) : LadderElem(false, false, false, true, ELEM_CHECK_BIT)
 {
 	name = _("new");
 	bit  = 0;
 	set  = false;
 }
 
-pair<string, string> LadderElemCheckBit::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemCheckBit::DrawTXT(void)
 {
 	char str[100];
 
-	strcpy(str, name.c_str());
-	CenterWithSpaces(*cx, *cy, str, poweredAfter, TRUE);
-
 	sprintf(str, _("{CHECK %s:%d}"), set ? _("ON") : _("OFF"), bit);
-	CenterWithWires(*cx, *cy, str, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
 
 	return pair<string, string>(name, str);
-}
-
-void LadderElemCheckBit::DrawGUI(void)
-{
 }
 
 bool LadderElemCheckBit::GenerateIntCode(IntCode &ic)
@@ -1335,26 +1197,18 @@ void LadderElemCheckBit::setProperties(string newName, int newBit, bool newSet)
 }
 
 // Classe LadderElemReadAdc
-LadderElemReadAdc::LadderElemReadAdc(void) : LadderElem(true, false, ELEM_READ_ADC)
+LadderElemReadAdc::LadderElemReadAdc(void) : LadderElem(true, false, false, true, ELEM_READ_ADC)
 {
 	name = _("new");
 }
 
-pair<string, string> LadderElemReadAdc::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemReadAdc::DrawTXT(void)
 {
 	char txt[50];
 
-	strcpy(txt, name.c_str());
-	CenterWithSpaces(*cx, *cy, txt, poweredAfter, TRUE);
-
 	sprintf(txt, _("{READ ADC %s }"), GetPinADC(name.c_str()));
-	CenterWithWires(*cx, *cy, txt, poweredBefore, poweredAfter);
 
 	return pair<string, string>(name, txt);
-}
-
-void LadderElemReadAdc::DrawGUI(void)
-{
 }
 
 bool LadderElemReadAdc::GenerateIntCode(IntCode &ic)
@@ -1377,13 +1231,13 @@ void LadderElemReadAdc::setProperties(string newName)
 }
 
 // Classe LadderElemSetDa
-LadderElemSetDa::LadderElemSetDa(void) : LadderElem(true, false, ELEM_SET_DA)
+LadderElemSetDa::LadderElemSetDa(void) : LadderElem(true, false, false, true, ELEM_SET_DA)
 {
 	name  = _("new");
 	mode  = ELEM_SET_DA_MODE_RAW;
 }
 
-pair<string, string> LadderElemSetDa::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemSetDa::DrawTXT(void)
 {
 	char cname[50];
 
@@ -1401,14 +1255,7 @@ pair<string, string> LadderElemSetDa::DrawTXT(int *cx, int *cy, bool poweredBefo
 		break;
 	}
 
-	CenterWithSpaces(*cx, *cy, cname        , poweredAfter , TRUE);
-	CenterWithWires (*cx, *cy, _("{SET DA}"), poweredBefore, poweredAfter);
-
 	return pair<string, string>(cname, _("{SET DA}"));
-}
-
-void LadderElemSetDa::DrawGUI(void)
-{
 }
 
 bool LadderElemSetDa::GenerateIntCode(IntCode &ic)
@@ -1432,25 +1279,14 @@ void LadderElemSetDa::setProperties(string newName, int newMode)
 }
 
 // Classe LadderElemReadEnc
-LadderElemReadEnc::LadderElemReadEnc(void) : LadderElem(true, false, ELEM_READ_ENC)
+LadderElemReadEnc::LadderElemReadEnc(void) : LadderElem(true, false, false, true, ELEM_READ_ENC)
 {
 	name = _("new");
 }
 
-pair<string, string> LadderElemReadEnc::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemReadEnc::DrawTXT(void)
 {
-	char cname[MAX_NAME_LEN];
-
-	strcpy(cname, name.c_str());
-
-	CenterWithSpaces(*cx, *cy, cname          , poweredAfter , TRUE);
-	CenterWithWires (*cx, *cy, _("{READ ENC}"), poweredBefore, poweredAfter);
-
 	return pair<string, string>(name, _("{READ ENC}"));
-}
-
-void LadderElemReadEnc::DrawGUI(void)
-{
 }
 
 bool LadderElemReadEnc::GenerateIntCode(IntCode &ic)
@@ -1473,25 +1309,14 @@ void LadderElemReadEnc::setProperties(string newName)
 }
 
 // Classe LadderElemResetEnc
-LadderElemResetEnc::LadderElemResetEnc(void) : LadderElem(true, false, ELEM_RESET_ENC)
+LadderElemResetEnc::LadderElemResetEnc(void) : LadderElem(true, false, false, true, ELEM_RESET_ENC)
 {
 	name = _("new");
 }
 
-pair<string, string> LadderElemResetEnc::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemResetEnc::DrawTXT(void)
 {
-	char cname[MAX_NAME_LEN];
-
-	strcpy(cname, name.c_str());
-
-	CenterWithSpaces(*cx, *cy, cname           , poweredAfter , TRUE);
-	CenterWithWires (*cx, *cy, _("{WRITE ENC}"), poweredBefore, poweredAfter);
-
 	return pair<string, string>(name, _("{WRITE ENC}"));
-}
-
-void LadderElemResetEnc::DrawGUI(void)
-{
 }
 
 bool LadderElemResetEnc::GenerateIntCode(IntCode &ic)
@@ -1514,7 +1339,7 @@ void LadderElemResetEnc::setProperties(string newName)
 }
 
 // Classe LadderElemMultisetDA
-LadderElemMultisetDA::LadderElemMultisetDA(void) : LadderElem(true, false, ELEM_MULTISET_DA)
+LadderElemMultisetDA::LadderElemMultisetDA(void) : LadderElem(true, false, false, true, ELEM_MULTISET_DA)
 {
     name                  = "600";
 	name1                 = "2047";
@@ -1527,21 +1352,12 @@ LadderElemMultisetDA::LadderElemMultisetDA(void) : LadderElem(true, false, ELEM_
 	StartFromCurrentValue = false; // false = Iniciar ou ir para zero, conforme speedup. true = partir do valor atual até o valor configurado
 }
 
-pair<string, string> LadderElemMultisetDA::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemMultisetDA::DrawTXT(void)
 {
-	char *top, *bot;
-
-	top = linear ? _("RAMPA LINEAR") : _("RAMPA CURVA");
-	bot = StartFromCurrentValue ? "{COINCIDIR}": (speedup ? _("{ACELERACAO}") : _("{DESACELERACAO}"));
-
-	CenterWithSpaces(*cx, *cy, top, poweredAfter , TRUE);
-	CenterWithWires (*cx, *cy, bot, poweredBefore, poweredAfter);
-
-	return pair<string, string>(top, bot);
-}
-
-void LadderElemMultisetDA::DrawGUI(void)
-{
+	return pair<string, string>(
+		linear ? _("RAMPA LINEAR") : _("RAMPA CURVA"),
+		StartFromCurrentValue ? "{COINCIDIR}": (speedup ? _("{ACELERACAO}") : _("{DESACELERACAO}"))
+		);
 }
 
 bool LadderElemMultisetDA::GenerateIntCode(IntCode &ic)
@@ -1602,7 +1418,7 @@ void LadderElemMultisetDA::setProperties(string newName, string newName1, int ne
 }
 
 // Classe LadderElemUSS
-LadderElemUSS::LadderElemUSS(int which) : LadderElem(false, false, which)
+LadderElemUSS::LadderElemUSS(int which) : LadderElem(false, false, false, true, which)
 {
 	name          = _("new");
 	id            = 0;
@@ -1611,23 +1427,9 @@ LadderElemUSS::LadderElemUSS(int which) : LadderElem(false, false, which)
 	index         = 0;
 }
 
-pair<string, string> LadderElemUSS::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemUSS::DrawTXT(void)
 {
-	char top[MAX_NAME_LEN];
-
-	strcpy(top, name.c_str());
-	CenterWithSpaces(*cx, *cy, top, poweredAfter, TRUE);
-
-	char *bot = (getWhich() == ELEM_READ_USS) ? _("{READ USS}") : _("{WRITE USS}");
-	CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
-
-	return pair<string, string>(name, bot);
-}
-
-void LadderElemUSS::DrawGUI(void)
-{
+	return pair<string, string>(name, (getWhich() == ELEM_READ_USS) ? _("{READ USS}") : _("{WRITE USS}"));
 }
 
 bool LadderElemUSS::GenerateIntCode(IntCode &ic)
@@ -1687,7 +1489,7 @@ void LadderElemUSS::setProperties(string newName, int newId, int newParameter, i
 }
 
 // Classe LadderElemModBUS
-LadderElemModBUS::LadderElemModBUS(int which) : LadderElem(false, false, which)
+LadderElemModBUS::LadderElemModBUS(int which) : LadderElem(false, false, false, true, which)
 {
     name         = _("new");
 	retransmitir = true;
@@ -1696,14 +1498,13 @@ LadderElemModBUS::LadderElemModBUS(int which) : LadderElem(false, false, which)
 	MbNodeList_AddRef(elem);
 }
 
-pair<string, string> LadderElemModBUS::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemModBUS::DrawTXT(void)
 {
 	char *bot;
 	char buf[100];
 	MbNodeList *l = MbNodeList_GetByNodeID(elem);
 
 	sprintf(buf, "%s:%d", l->node.name, address);
-	CenterWithSpaces(*cx, *cy, buf, poweredAfter, TRUE);
 
 	if(getWhich() == ELEM_READ_MODBUS) {
 		bot = l->node.iface == MB_IFACE_RS485 ? _("{READ MB 485}")  : _("{READ MB ETH}");
@@ -1711,15 +1512,7 @@ pair<string, string> LadderElemModBUS::DrawTXT(int *cx, int *cy, bool poweredBef
 		bot = l->node.iface == MB_IFACE_RS485 ? _("{WRITE MB 485}") : _("{WRITE MB ETH}");
 	}
 
-	CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
-
 	return pair<string, string>(buf, bot);
-}
-
-void LadderElemModBUS::DrawGUI(void)
-{
 }
 
 bool LadderElemModBUS::GenerateIntCode(IntCode &ic)
@@ -1779,7 +1572,7 @@ bool LadderElemModBUS::GenerateIntCode(IntCode &ic)
 
 bool LadderElemModBUS::CanInsert(LadderContext context)
 {
-	return context.canInsertOther;
+	return context.canInsertOther && Prog.settings.mb_list_size;
 }
 
 void LadderElemModBUS::setProperties()
@@ -1787,18 +1580,14 @@ void LadderElemModBUS::setProperties()
 }
 
 // Classe LadderElemSetPWM
-LadderElemSetPWM::LadderElemSetPWM(void) : LadderElem(true, false, ELEM_SET_PWM)
+LadderElemSetPWM::LadderElemSetPWM(void) : LadderElem(true, false, false, true, ELEM_SET_PWM)
 {
 	name       = _("duty_cycle");
 	targetFreq = 1000;
 }
 
-pair<string, string> LadderElemSetPWM::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemSetPWM::DrawTXT(void)
 {
-	char top[MAX_NAME_LEN];
-	strcpy(top, name.c_str());
-	CenterWithSpaces(*cx, *cy, top, poweredAfter, TRUE);
-
 	char l[50];
 	if(targetFreq >= 100000) {
 		sprintf(l, _("{PWM %d kHz}"), (targetFreq+500)/1000);
@@ -1809,13 +1598,8 @@ pair<string, string> LadderElemSetPWM::DrawTXT(int *cx, int *cy, bool poweredBef
 	} else {
 		sprintf(l, _("{PWM %d Hz}"), targetFreq);
 	}
-	CenterWithWires(*cx, *cy, l, poweredBefore, poweredAfter);
 
 	return pair<string, string>(name, l);
-}
-
-void LadderElemSetPWM::DrawGUI(void)
-{
 }
 
 bool LadderElemSetPWM::GenerateIntCode(IntCode &ic)
@@ -1848,28 +1632,14 @@ void LadderElemSetPWM::setProperties()
 }
 
 // Classe LadderElemUART
-LadderElemUART::LadderElemUART(int which) : LadderElem(false, false, which)
+LadderElemUART::LadderElemUART(int which) : LadderElem(false, false, false, true, which)
 {
 	name = _("char");
 }
 
-pair<string, string> LadderElemUART::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemUART::DrawTXT(void)
 {
-	char buf[MAX_NAME_LEN];
-
-	strcpy(buf, name.c_str());
-	CenterWithSpaces(*cx, *cy, buf, poweredAfter, TRUE);
-
-	strcpy(buf, (getWhich() == ELEM_UART_RECV) ? _("{UART RECV}") : _("{UART SEND}"));
-	CenterWithWires(*cx, *cy, buf, poweredBefore, poweredAfter);
-
-	*cx += POS_WIDTH;
-
-	return pair<string, string>(name, buf);
-}
-
-void LadderElemUART::DrawGUI(void)
-{
+	return pair<string, string>(name, (getWhich() == ELEM_UART_RECV) ? _("{UART RECV}") : _("{UART SEND}"));
 }
 
 bool LadderElemUART::GenerateIntCode(IntCode &ic)
@@ -1900,19 +1670,13 @@ void LadderElemUART::setProperties(string newName)
 }
 
 // Classe LadderElemMasterRelay
-LadderElemMasterRelay::LadderElemMasterRelay(void) : LadderElem(true, false, ELEM_MASTER_RELAY)
+LadderElemMasterRelay::LadderElemMasterRelay(void) : LadderElem(true, false, false, true, ELEM_MASTER_RELAY)
 {
 }
 
-pair<string, string> LadderElemMasterRelay::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemMasterRelay::DrawTXT(void)
 {
-	CenterWithWires(*cx, *cy, _("{MASTER RLY}"), poweredBefore, poweredAfter);
-
 	return pair<string, string>("", _("{MASTER RLY}"));
-}
-
-void LadderElemMasterRelay::DrawGUI(void)
-{
 }
 
 bool LadderElemMasterRelay::GenerateIntCode(IntCode &ic)
@@ -1936,13 +1700,13 @@ bool LadderElemMasterRelay::CanInsert(LadderContext context)
 }
 
 // Classe LadderElemShiftRegister
-LadderElemShiftRegister::LadderElemShiftRegister(void) : LadderElem(true, false, ELEM_SHIFT_REGISTER)
+LadderElemShiftRegister::LadderElemShiftRegister(void) : LadderElem(true, false, false, false, ELEM_SHIFT_REGISTER)
 {
 	name   = _("reg");
 	stages = 7;
 }
 
-pair<string, string> LadderElemShiftRegister::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemShiftRegister::DrawTXT(void)
 {
 	char bot[MAX_NAME_LEN+20];
 	memset(bot, ' ', sizeof(bot));
@@ -1952,14 +1716,7 @@ pair<string, string> LadderElemShiftRegister::DrawTXT(int *cx, int *cy, bool pow
 	bot[19] = '}';
 	bot[20] = '\0';
 
-	CenterWithSpaces(*cx, *cy, _("{\x01SHIFT REG\x02   }"), poweredAfter, FALSE);
-	CenterWithWires (*cx, *cy, bot                        , poweredBefore, poweredAfter);
-
 	return pair<string, string>(_("{\x01SHIFT REG\x02   }"), bot);
-}
-
-void LadderElemShiftRegister::DrawGUI(void)
-{
 }
 
 bool LadderElemShiftRegister::GenerateIntCode(IntCode &ic)
@@ -1994,7 +1751,7 @@ void LadderElemShiftRegister::setProperties(string newName, int newStages)
 }
 
 // Classe LadderElemLUT
-LadderElemLUT::LadderElemLUT(void) : LadderElem(true, false, ELEM_LOOK_UP_TABLE)
+LadderElemLUT::LadderElemLUT(void) : LadderElem(true, false, false, false, ELEM_LOOK_UP_TABLE)
 {
 	dest         = _("dest");
 	index        = _("index");
@@ -2004,7 +1761,7 @@ LadderElemLUT::LadderElemLUT(void) : LadderElem(true, false, ELEM_LOOK_UP_TABLE)
 	vals.fill(0);
 }
 
-pair<string, string> LadderElemLUT::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemLUT::DrawTXT(void)
 {
 	char top[MAX_NAME_LEN+20], bot[MAX_NAME_LEN+20];
 
@@ -2014,7 +1771,6 @@ pair<string, string> LadderElemLUT::DrawTXT(int *cx, int *cy, bool poweredBefore
 	top[strlen(top)] = ' ';
 	top[19] = '}';
 	top[20] = '\0';
-	CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
 
 	memset(bot, ' ', sizeof(bot));
 	bot[0] = '{';
@@ -2022,13 +1778,8 @@ pair<string, string> LadderElemLUT::DrawTXT(int *cx, int *cy, bool poweredBefore
 	bot[strlen(bot)] = ' ';
 	bot[19] = '}';
 	bot[20] = '\0';
-	CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
 	return pair<string, string>(top, bot);
-}
-
-void LadderElemLUT::DrawGUI(void)
-{
 }
 
 bool LadderElemLUT::GenerateIntCode(IntCode &ic)
@@ -2067,7 +1818,7 @@ void LadderElemLUT::setProperties(string newDest, string newIndex, int newCount,
 }
 
 // Classe LadderElemPiecewise
-LadderElemPiecewise::LadderElemPiecewise(void) : LadderElem(false, false, ELEM_PADDING)
+LadderElemPiecewise::LadderElemPiecewise(void) : LadderElem(false, false, false, false, ELEM_PADDING)
 {
 	dest  = _("yvar");
 	index = _("xvar");
@@ -2076,7 +1827,7 @@ LadderElemPiecewise::LadderElemPiecewise(void) : LadderElem(false, false, ELEM_P
 	vals.fill(0);
 }
 
-pair<string, string> LadderElemPiecewise::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemPiecewise::DrawTXT(void)
 {
 	char top[MAX_NAME_LEN+20], bot[MAX_NAME_LEN+20];
 
@@ -2086,7 +1837,6 @@ pair<string, string> LadderElemPiecewise::DrawTXT(int *cx, int *cy, bool powered
 	top[strlen(top)] = ' ';
 	top[19] = '}';
 	top[20] = '\0';
-	CenterWithSpaces(*cx, *cy, top, poweredAfter, FALSE);
 
 	memset(bot, ' ', sizeof(bot));
 	bot[0] = '{';
@@ -2094,13 +1844,8 @@ pair<string, string> LadderElemPiecewise::DrawTXT(int *cx, int *cy, bool powered
 	bot[strlen(bot)] = ' ';
 	bot[19] = '}';
 	bot[20] = '\0';
-	CenterWithWires(*cx, *cy, bot, poweredBefore, poweredAfter);
 
 	return pair<string, string>(top, bot);
-}
-
-void LadderElemPiecewise::DrawGUI(void)
-{
 }
 
 bool LadderElemPiecewise::GenerateIntCode(IntCode &ic)
@@ -2179,33 +1924,20 @@ void LadderElemPiecewise::setProperties(string newDest, string newIndex, int new
 }
 
 // Classe LadderElemFmtString
-LadderElemFmtString::LadderElemFmtString(int which) : LadderElem(false, false, which)
+LadderElemFmtString::LadderElemFmtString(int which) : LadderElem(false, false, true, true, which)
 {
 	var = _("var");
 	txt = _("value: %d\\r\\n");
 }
 
-pair<string, string> LadderElemFmtString::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemFmtString::DrawTXT(void)
 {
 	char top[100], bot[100];
+
 	sprintf(top, "%s: %s", getWhich() == ELEM_READ_FORMATTED_STRING ? _("READ") : _("WRITE"), var.c_str());
-
-	int extra = 2*POS_WIDTH - strlen(bot);
-	PoweredText(poweredAfter);
-//	NameText();
-	DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1, top);
-//	BodyText();
-
 	sprintf(bot, "{\"%s\"}", txt.c_str());
-	CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2*POS_WIDTH);
-
-	*cx += 2*POS_WIDTH;
 
 	return pair<string, string>(top, bot);
-}
-
-void LadderElemFmtString::DrawGUI(void)
-{
 }
 
 bool LadderElemFmtString::GenerateIntCode(IntCode &ic)
@@ -2254,34 +1986,21 @@ void LadderElemFmtString::setProperties(string newVar, string newTxt)
 }
 
 // Classe LadderElemYaskawa
-LadderElemYaskawa::LadderElemYaskawa(int which) : LadderElem(false, false, which)
+LadderElemYaskawa::LadderElemYaskawa(int which) : LadderElem(false, false, true, true, which)
 {
 	id  = "0";
 	var = "var";
 	txt = _("0ZSET%d");
 }
 
-pair<string, string> LadderElemYaskawa::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemYaskawa::DrawTXT(void)
 {
 	char top[100], bot[100];
+
 	sprintf(top, "%s: %s", getWhich() == ELEM_READ_SERVO_YASKAWA ? _("RX NS600") : _("TX NS600"), var.c_str());
-
-	int extra = 2*POS_WIDTH - strlen(top);
-	PoweredText(poweredAfter);
-//	NameText();
-	DrawChars(*cx + (extra/2), *cy + (POS_HEIGHT/2) - 1, top);
-//	BodyText();
-
 	sprintf(bot, "{\"%s\"}", txt.c_str());
-	CenterWithWiresWidth(*cx, *cy, bot, poweredBefore, poweredAfter, 2*POS_WIDTH);
-
-	*cx += 2*POS_WIDTH;
 
 	return pair<string, string>(top, bot);
-}
-
-void LadderElemYaskawa::DrawGUI(void)
-{
 }
 
 bool LadderElemYaskawa::GenerateIntCode(IntCode &ic)
@@ -2332,25 +2051,14 @@ void LadderElemYaskawa::setProperties(string newId, string newVar, string newTxt
 }
 
 // Classe LadderElemPersist
-LadderElemPersist::LadderElemPersist(void) : LadderElem(true, false, ELEM_PERSIST)
+LadderElemPersist::LadderElemPersist(void) : LadderElem(true, false, false, true, ELEM_PERSIST)
 {
 	var = _("saved");
 }
 
-pair<string, string> LadderElemPersist::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemPersist::DrawTXT(void)
 {
-	char top[MAX_NAME_LEN];
-
-	strcpy(top, var.c_str());
-
-	CenterWithSpaces(*cx, *cy, top           , poweredAfter , TRUE);
-	CenterWithWires (*cx, *cy, _("{PERSIST}"), poweredBefore, poweredAfter);
-
-	return pair<string, string>(top, _("{PERSIST}"));
-}
-
-void LadderElemPersist::DrawGUI(void)
-{
+	return pair<string, string>(var, _("{PERSIST}"));
 }
 
 bool LadderElemPersist::GenerateIntCode(IntCode &ic)
@@ -2403,17 +2111,13 @@ void LadderElemPersist::setProperties(string newVar)
 }
 
 // Classe LadderElemX
-LadderElemX::LadderElemX(void) : LadderElem(false, false, ELEM_PADDING)
+LadderElemX::LadderElemX(void) : LadderElem(false, false, false, true, ELEM_PADDING)
 {
 }
 
-pair<string, string> LadderElemX::DrawTXT(int *cx, int *cy, bool poweredBefore)
+pair<string, string> LadderElemX::DrawTXT(void)
 {
 	return pair<string, string>("", "");
-}
-
-void LadderElemX::DrawGUI(void)
-{
 }
 
 bool LadderElemX::GenerateIntCode(IntCode &ic)
@@ -2443,7 +2147,82 @@ LadderCircuit::LadderCircuit(bool newSeries)
 	vectorSubckt.clear();
 }
 
-bool LadderCircuit::DrawTXT(int *cx, int *cy, bool poweredBefore)
+bool LadderCircuit::DrawElementTXT(vector< vector<int> > &DisplayMatrix, LadderElem *elem, int *cx, int *cy, bool poweredBefore)
+{
+	if(elem == nullptr) return false;
+
+	int width                = elem->getWidthTXT();
+	bool poweredAfter        = elem->IsPoweredAfter();
+	bool isPlaceHolder       = elem->getWhich() == ELEM_PLACEHOLDER;
+	pair<string, string> txt = elem->DrawTXT();
+
+	int extra = width*POS_WIDTH - (elem->IsFormatted() ? FormattedStrlen(txt.first.c_str()) : txt.first.size());
+
+	if(elem->IsComment()) {
+		DrawChars(*cx, *cy + (POS_HEIGHT/2)    , (char *)txt.first .c_str());
+		DrawChars(*cx, *cy + (POS_HEIGHT/2) - 1, (char *)txt.second.c_str());
+	} else {
+		if(elem->IsEOL()) {
+			while(*cx < (ColsAvailable - width)*POS_WIDTH) {
+				int gx = *cx/POS_WIDTH;
+				int gy = *cy/POS_HEIGHT;
+
+//				if(CheckBoundsUndoIfFails(gx, gy)) return FALSE;
+
+//				DM_BOUNDS(gx, gy);
+				DisplayMatrix[gx][gy] = ELEM_PADDING;
+
+				char buf[256];
+				int j;
+				for(j = 0; j < POS_WIDTH; j++) {
+					buf[j] = '-';
+				}
+				buf[j] = '\0';
+				DrawChars(*cx, *cy + (POS_HEIGHT/2), buf);
+				*cx += POS_WIDTH;
+			}
+		}
+
+		CenterWithSpaces    (*cx, *cy, (char *)txt.first .c_str(), poweredAfter , elem->IsName(), extra);
+		CenterWithWiresWidth(*cx, *cy, (char *)txt.second.c_str(), poweredBefore, poweredAfter  ,
+			isPlaceHolder ? 2 : width*POS_WIDTH);
+	}
+
+	*cx += width*POS_WIDTH;
+
+    // And now we can enter the element into the display matrix so that the
+    // UI routines know what element is at position (gx, gy) when the user
+    // clicks there, and so that we know where to put the cursor if this
+    // element is selected.
+
+    int gx = *cx/POS_WIDTH;
+    int gy = *cy/POS_HEIGHT;
+//    if(CheckBoundsUndoIfFails(gx, gy)) 
+//		return FALSE;
+//    DM_BOUNDS(gx, gy);
+
+	for(int i = width; i > 0; i--) {
+		DisplayMatrix[gx - i][gy] = elem->getWhich();
+	}
+
+	return poweredAfter;
+}
+
+//-----------------------------------------------------------------------------
+// Draw a vertical wire one leaf element unit high up from (cx, cy), where cx
+// and cy are in charcter units.
+//-----------------------------------------------------------------------------
+void LadderCircuit::VerticalWireTXT(int cx, int cy)
+{
+    int j;
+    for(j = 1; j < POS_HEIGHT; j++) {
+        DrawChars(cx, cy + (POS_HEIGHT/2 - j), "|");
+    }
+    DrawChars(cx, cy + (POS_HEIGHT/2), "+");
+    DrawChars(cx, cy + (POS_HEIGHT/2 - POS_HEIGHT), "+");
+}
+
+bool LadderCircuit::DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *cy, bool poweredBefore, int ColsAvailable)
 {
     int cx0 = *cx, cy0 = *cy;
 
@@ -2462,16 +2241,16 @@ bool LadderCircuit::DrawTXT(int *cx, int *cy, bool poweredBefore)
 	if(isSeries) {
 		for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
 			if(it->elem != nullptr) {
-				it->elem->DrawTXT(cx, cy, poweredAfter);
-				poweredAfter = it->elem->IsPoweredAfter();
+				poweredAfter = DrawElementTXT(DisplayMatrix, it->elem, cx, cy, poweredAfter);
 			} else {
-				poweredAfter = it->subckt->DrawTXT(cx, cy, poweredAfter);
+				poweredAfter = it->subckt->DrawTXT(DisplayMatrix, cx, cy, poweredAfter, ColsAvailable);
 			}
 		}
 	} else {
-		int widthMax = 1;//CountWidthOfElement(which, elem, (*cx)/POS_WIDTH);
-		int heightMax = 1;//CountHeightOfElement(which, elem);
+		int widthMax = getWidthTXT(ColsAvailable - (*cx / POS_WIDTH));
+		int heightMax = getHeightTXT();
 		int lowestPowered = -1;
+		int justDrewHeight;
 		int downBy = 0;
 
 		poweredAfter = false;
@@ -2480,15 +2259,15 @@ bool LadderCircuit::DrawTXT(int *cx, int *cy, bool poweredBefore)
 			bool poweredThis;
 
 			if(it->elem != nullptr) {
-				it->elem->DrawTXT(cx, cy, poweredBefore);
-				poweredThis = it->elem->IsPoweredAfter();
+				poweredThis = DrawElementTXT(DisplayMatrix, it->elem, cx, cy, poweredBefore);
+				justDrewHeight = 1;
 			} else {
-				poweredThis = it->subckt->DrawTXT(cx, cy, poweredBefore);
+				poweredThis = it->subckt->DrawTXT(DisplayMatrix, cx, cy, poweredBefore, ColsAvailable);
+				justDrewHeight = it->subckt->getHeightTXT();
 			}
 
 			if(InSimulationMode) {
 				if(poweredThis) poweredAfter = true;
-				PoweredText(poweredThis);
 			}
 
 			while((*cx - cx0) < widthMax*POS_WIDTH) {
@@ -2498,10 +2277,9 @@ bool LadderCircuit::DrawTXT(int *cx, int *cy, bool poweredBefore)
 //				if(CheckBoundsUndoIfFails(gx, gy)) return FALSE;
 
 //				DM_BOUNDS(gx, gy);
-				if(gx>0 && DisplayMatrixWhich[gx-1][gy] == ELEM_PLACEHOLDER)
+				if(gx>0 && DisplayMatrix[gx-1][gy] == ELEM_PLACEHOLDER)
 					break;
-				DisplayMatrix     [gx][gy] = PADDING_IN_DISPLAY_MATRIX;
-				DisplayMatrixWhich[gx][gy] = ELEM_PADDING;
+				DisplayMatrix[gx][gy] = ELEM_PADDING;
 
 				char buf[256];
 				int j;
@@ -2514,8 +2292,6 @@ bool LadderCircuit::DrawTXT(int *cx, int *cy, bool poweredBefore)
 			}
 
 			*cx = cx0;
-			int justDrewHeight = 1;/*CountHeightOfElement(it->elem->getWhich(),
-				p->contents[i].d.any);*/
 			*cy += POS_HEIGHT*justDrewHeight;
 
 			downBy += justDrewHeight;
@@ -2535,11 +2311,10 @@ bool LadderCircuit::DrawTXT(int *cx, int *cy, bool poweredBefore)
 
 			needWire = false;
 			for(j = heightMax - 1; j >= 1; j--) {
-				if(j <= lowestPowered) PoweredText(poweredAfter);
-				if(DisplayMatrix[gx - 1][gy + j] && DisplayMatrixWhich[gx - 1][gy + j] != ELEM_PLACEHOLDER) {
+				if(DisplayMatrix[gx - 1][gy + j] != ELEM_PLACEHOLDER) {
 					needWire = true;
 				}
-//				if(needWire) VerticalWire(*cx - 1, *cy + j*POS_HEIGHT);
+				if(needWire) VerticalWireTXT(*cx - 1, *cy + j*POS_HEIGHT);
 			}
 			// stupid special case
 			if(lowestPowered == 0 && InSimulationMode) {
@@ -2548,13 +2323,12 @@ bool LadderCircuit::DrawTXT(int *cx, int *cy, bool poweredBefore)
 			}
 		}
 
-		PoweredText(poweredBefore);
 		needWire = false;
 		for(j = heightMax - 1; j >= 1; j--) {
 			if(DisplayMatrix[cx0/POS_WIDTH][*cy/POS_HEIGHT + j]) {
 				needWire = true;
 			}
-//			if(needWire) VerticalWire(cx0 - 1, *cy + j*POS_HEIGHT);
+			if(needWire) VerticalWireTXT(cx0 - 1, *cy + j*POS_HEIGHT);
 		}
 	}
 
@@ -2577,6 +2351,23 @@ bool LadderCircuit::IsEmpty(void)
 bool LadderCircuit::IsLast(LadderElem *elem)
 {
 	return !vectorSubckt.empty() && vectorSubckt[vectorSubckt.size() - 1].elem == elem;
+}
+
+bool LadderCircuit::HasEOL(void)
+{
+	vector<Subckt>::iterator it;
+
+	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
+		if(it->elem != nullptr) {
+			if(it->elem->IsEOL()) {
+				return true;
+			}
+		} else if(it->subckt->HasEOL()) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool LadderCircuit::GenerateIntCode(IntCode &ic)
@@ -2649,6 +2440,87 @@ LadderCircuit *LadderCircuit::getSubcktForElement(LadderElem *elem)
 	return subckt;
 }
 
+//-----------------------------------------------------------------------------
+// Determine the height, in leaf element units, of a particular subcircuit.
+// The height of a leaf is 1, the height of a parallel circuit is the sum of
+// of the heights of its members, and the height of a series circuit is the
+// maximum of the heights of its members. (This is the dual of the width
+// case.)
+//-----------------------------------------------------------------------------
+int LadderCircuit::getHeightTXT(void)
+{
+	int thisHeight, height = 0;
+
+	vector<Subckt>::size_type i;
+
+	for(i = 0; i < vectorSubckt.size(); i++) {
+		if(isSeries) {
+			if(vectorSubckt[i].elem != nullptr) {
+				thisHeight = 1;
+			} else {
+				thisHeight = vectorSubckt[i].subckt->getHeightTXT();
+			}
+
+			if(thisHeight > height) {
+				height = thisHeight;
+			}
+		} else {
+			height += vectorSubckt[i].elem != nullptr ? 1 : vectorSubckt[i].subckt->getHeightTXT();
+		}
+	}
+
+	return height;
+}
+
+//-----------------------------------------------------------------------------
+// Determine the width, in leaf element units, of a particular subcircuit.
+// The width of a leaf is 1, the width of a series circuit is the sum of
+// of the widths of its members, and the width of a parallel circuit is
+// the maximum of the widths of its members.
+//-----------------------------------------------------------------------------
+int LadderCircuit::getWidthTXT(int ColsAvailable)
+{
+	int thisWidth, width = 0;
+
+	vector<Subckt>::size_type i;
+
+	for(i = 0; i < vectorSubckt.size(); i++) {
+		if(vectorSubckt[i].elem != nullptr) {
+			thisWidth = vectorSubckt[i].elem->getWidthTXT();
+			if(vectorSubckt[i].elem->IsEOL()) {
+				thisWidth = max(ColsAvailable - (isSeries ? width : 0), thisWidth);
+			}
+		} else {
+			thisWidth = vectorSubckt[i].subckt->getWidthTXT(ColsAvailable - (isSeries ? width : 0));
+		}
+
+		if(isSeries) {
+			width += thisWidth;
+		} else {
+			if(thisWidth > width) {
+				width = thisWidth;
+			}
+		}
+	}
+
+	return width;
+}
+
+void LadderCircuit::AddPlaceHolderIfNoEOL(void)
+{
+	vector<Subckt>::iterator it;
+
+	if(!HasEOL()) {
+		it = vectorSubckt.begin() + vectorSubckt.size();
+		if(vectorSubckt.empty() || ((it-1)->elem == nullptr && !(it-1)->subckt->IsSeries())) {
+			// Se o circuito estiver vazio ou se adicionamos um paralelo e for o ultimo elemento,
+			// devemos adicionar o elemento de final de linha (PlaceHolder)
+			Subckt s = { new LadderElemPlaceHolder, this };
+			vectorSubckt.push_back(s);
+		}
+	}
+}
+
 bool LadderCircuit::AddElement(LadderElem *elem, LadderContext &context)
 {
 	int state;
@@ -2663,18 +2535,17 @@ bool LadderCircuit::AddElement(LadderElem *elem, LadderContext &context)
 
 		return true;
 	} else if(context.SelectedElem != nullptr) {
-		if((vectorSubckt.size() == 1 && vectorSubckt[0].elem->getWhich() == ELEM_PLACEHOLDER)) {
-			// Existe placeholder, removendo...
-			delete vectorSubckt[0].elem;
-			context.SelectedElem = nullptr;
+		for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
+			if(context.SelectedElem == it->elem) {
+				// Encontrada posicao de insercao
+				if(it->elem->getWhich() == ELEM_PLACEHOLDER) {
+					// Existe placeholder, removendo...
+					delete it->elem;
+					context.SelectedElem = nullptr;
 
-			vectorSubckt[0].elem = elem;
-
-			return true;
-		} else {
-			for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
-				if(context.SelectedElem == it->elem) {
-					// Encontrada posicao de insercao, cria o subcircuito para insercao.
+					it->elem = elem;
+				} else {
+					// Agora criamos o subcircuito para insercao.
 					state = context.SelectedElem->getSelectedState();
 					if((isSeries && (state == SELECTED_LEFT || state == SELECTED_RIGHT)) ||
 						(!isSeries && (state == SELECTED_ABOVE || state == SELECTED_BELOW))) {
@@ -2720,10 +2591,10 @@ bool LadderCircuit::AddElement(LadderElem *elem, LadderContext &context)
 							it->elem = nullptr;
 							it->subckt = new_subckt;
 					}
-
-					// Inserido com sucesso, retorna true!
-					return true;
 				}
+
+				// Inserido com sucesso, retorna true!
+				return true;
 			}
 		}
 	}
@@ -2731,11 +2602,97 @@ bool LadderCircuit::AddElement(LadderElem *elem, LadderContext &context)
 	return false;
 }
 
+bool LadderCircuit::DelElement(LadderElem *elem, LadderContext &context)
+{
+	// Se elemento a ser removido for nulo, o circuito for vazio ou nao puder excluir, retorna false
+	if(elem == nullptr || vectorSubckt.empty() || !context.canDelete) return false;
+
+	vector<Subckt>::iterator it;
+	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
+		if(elem == it->elem) {
+			// Encontrado elemento a ser removido
+			delete it->elem;
+
+			if(context.SelectedElem == elem) {
+				context.SelectedElem = nullptr;
+			}
+
+			vectorSubckt.erase(it);
+			AddPlaceHolderIfNoEOL();
+
+			// Removido com sucesso, retorna true!
+			return true;
+		} else if(it->elem == nullptr && it->subckt->DelElement(elem, context)) { // Removido em subcircuito
+			return true;
+		}
+	}
+
+	return false;
+}
+
+Subckt LadderCircuit::getSubckt(unsigned int pos)
+{
+	Subckt ret = { nullptr, nullptr };
+
+	if(pos < vectorSubckt.size()) {
+		vector<Subckt>::iterator it = vectorSubckt.begin() + pos;
+		ret = *it;
+		vectorSubckt.erase(it);
+	}
+
+	return ret;
+}
+
+void LadderCircuit::RemoveUnnecessarySubckts(void)
+{
+	vector<Subckt>::iterator it, itnext;
+
+	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
+		if(it->elem == nullptr) {
+			it->subckt->RemoveUnnecessarySubckts();
+			if(it->subckt->getSize() == 1) {
+				// Recupera o unico elemento do subcircuito
+				Subckt s = it->subckt->getSubckt(0);
+
+				// Desaloca o subcircuito
+				delete it->subckt;
+
+				// Adiciona o elemento ao circuito atual
+				if(s.elem != nullptr) { // Se for um elemento
+					it->elem   = s.elem;
+					it->subckt = this; // Agora este elemento pertence ao circuito atual
+				} else if(s.subckt->IsSeries() != isSeries) { // Se for um tipo diferente de circuito
+					it->elem   = nullptr;
+					it->subckt = s.subckt;
+				} else { // Caso mais complicado: restou um circuito do mesmo tipo do nosso!
+					Subckt ss;
+
+					// Primeiro adiciona todos os itens do subcircuito na posicao atual deste circuito
+					itnext = it;
+					while(s.subckt->getSize() > 0) {
+						ss = s.subckt->getSubckt(0);
+						if(ss.elem != nullptr) {
+							ss.subckt = this; // Este elemento passa a fazer pate do circuito atual
+						}
+						it = vectorSubckt.insert(itnext, ss);
+						itnext = it + 1;
+					}
+
+					// Exclui o circuito vazio
+					vectorSubckt.erase(itnext);
+				}
+			}
+		}
+	}
+}
+
 // Classe LadderDiagram
 void LadderDiagram::Init(void)
 {
 	context.SelectedElem    = nullptr;
 	context.SelectedCircuit = nullptr;
+
+	NeedScrollSelectedIntoView = false;
 
 	NewRung(false);
 }
@@ -2760,7 +2717,7 @@ bool LadderDiagram::GenerateIntCode(void)
     ic.Op(INT_SET_BIT, "$mcr");
 
 	for(i = 0; i < rungs.size() && ret; i++) {
-		if(rungs[i].IsComment()) continue;
+		if(rungs[i]->IsComment()) continue;
 
 		ic.Comment("");
         ic.Comment(_("start rung %d"), i+1);
@@ -2768,7 +2725,7 @@ bool LadderDiagram::GenerateIntCode(void)
         ic.Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");
         ic.SimState(&(Prog.rungPowered[i]), "$rung_top");
 
-		ret = rungs[i].GenerateIntCode(ic);
+		ret = rungs[i]->GenerateIntCode(ic);
 	}
 
 	return ret;
@@ -2776,18 +2733,33 @@ bool LadderDiagram::GenerateIntCode(void)
 
 void LadderDiagram::SelectElement(LadderElem *elem, int state)
 {
-	if(elem) {
+	if(elem == nullptr) return;
+
+	if(elem != context.SelectedElem) {
 		if(context.SelectedElem != nullptr) {
 			context.SelectedElem->Select(SELECTED_NONE);
 		}
 
 		context.SelectedElem    = elem;
 		context.SelectedCircuit = getSubcktForElement(elem);
-
-		elem->Select(state);
-
-		updateContext();
 	}
+
+	elem->Select(state);
+
+	if(!IsSelectedVisible()) {
+		NeedScrollSelectedIntoView = true;
+	}
+
+	updateContext();
+}
+
+bool LadderDiagram::EditSelectedElement(void)
+{
+	if(context.SelectedElem != nullptr) {
+		return context.SelectedElem->ShowDialog();
+	}
+
+	return false;
 }
 
 LadderCircuit *LadderDiagram::getSubcktForElement(LadderElem *elem)
@@ -2796,7 +2768,7 @@ LadderCircuit *LadderDiagram::getSubcktForElement(LadderElem *elem)
 	vector<LadderCircuit>::size_type i;
 
 	for(i = 0; i < rungs.size() && subckt == nullptr; i++) {
-		subckt = rungs[i].getSubcktForElement(elem);
+		subckt = rungs[i]->getSubcktForElement(elem);
 	}
 
 	return subckt;
@@ -2849,9 +2821,19 @@ void LadderDiagram::updateContext(void)
 				context.canInsertOther = false;
 			}
 		} else {
+			if(context.SelectedElem->getWhich() == ELEM_PLACEHOLDER) {
+				context.canDelete = false;
+			}
+
 			if(context.SelectedElem->getSelectedState() == SELECTED_RIGHT || 
 				context.SelectedElem->getWhich() == ELEM_PLACEHOLDER) {
-					context.canInsertEnd = context.SelectedCircuit->IsLast(context.SelectedElem);
+					vector<LadderCircuit *>::iterator it;
+					if(i >= 0) {
+						it = rungs.begin() + i;
+						context.canInsertEnd = (*it)->IsLast(context.SelectedElem);
+					} else {
+						context.canInsertEnd = false;
+					}
 			}
 
 			if(context.SelectedElem->getWhich() == ELEM_CONTACTS) {
@@ -2878,13 +2860,40 @@ void LadderDiagram::updateContext(void)
 //        CanInsertEnd, CanInsertOther, context.canPushDown, context.canPushUp, CanInsertComment);
 }
 
-int LadderDiagram::RungContainingSelected(void)
+int LadderDiagram::getWidthTXT(void)
+{
+	int thisWidth, width = 0;
+	vector<LadderCircuit>::size_type i;
+
+	for(i = 0; i < rungs.size(); i++) {
+		thisWidth = rungs[i]->getWidthTXT(0);
+		if(thisWidth > width) {
+			width = thisWidth;
+		}
+	}
+
+	return width;
+}
+
+int LadderDiagram::getHeightTXT(void)
+{
+	int height = 0;
+	vector<LadderCircuit>::size_type i;
+
+	for(i = 0; i < rungs.size(); i++) {
+		height += rungs[i]->getHeightTXT() + 1;
+	}
+
+	return height;
+}
+
+int  LadderDiagram::RungContainingElement(LadderElem *elem)
 {
 	vector<LadderCircuit>::size_type i;
 
-	if(context.SelectedElem != nullptr) {
+	if(elem != nullptr) {
 		for(i = 0; i < rungs.size(); i++) {
-			if(rungs[i].getSubcktForElement(context.SelectedElem) != nullptr)
+			if(rungs[i]->getSubcktForElement(elem) != nullptr)
 				return i;
 		}
 	}
@@ -2892,9 +2901,19 @@ int LadderDiagram::RungContainingSelected(void)
 	return -1;
 }
 
+int LadderDiagram::RungContainingSelected(void)
+{
+	return RungContainingElement(context.SelectedElem);
+}
+
+bool LadderDiagram::IsRungEmpty(unsigned int n)
+{
+	return (n < rungs.size()) ? rungs[n]->IsEmpty() : true;
+}
+
 void LadderDiagram::NewRung(bool isAfter)
 {
-	vector<LadderCircuit>::iterator it;
+	vector<LadderCircuit *>::iterator it;
 	int position = RungContainingSelected();
 
 	if(position < 0) { // Se posicao menor que zero, insere no final
@@ -2906,13 +2925,48 @@ void LadderDiagram::NewRung(bool isAfter)
 	}
 
 	// Adiciona a linha na posicao calculada
-	it = rungs.insert(it, LadderCircuit(true));
+	it = rungs.insert(it, new LadderCircuit(true));
 
 	// Adiciona o padding
 	LadderElem *elem = new LadderElemPlaceHolder;
-	it->AddElement(elem, context);
+	(*it)->AddElement(elem, context);
 
 	SelectElement(elem, SELECTED_RIGHT);
+}
+
+bool LadderDiagram::PushRung(int rung, bool up)
+{
+	int QtdRungs = rungs.size();
+
+	if(rung < 0) {
+		rung = RungContainingSelected();
+	}
+
+	if(QtdRungs == 1                  || // Existe apenas 1 linha! Impossivel movimenta-la
+		(rung >= QtdRungs)            || // Linha inexistente!
+		(rung == (QtdRungs-1) && !up) || // Tentando mover ultima linha para baixo...
+		(rung == 0 && up)) {             // Tentando mover primeira linha para cima...
+			return false; // Impossivel executar a operacao solicitada
+	}
+
+	int offset;
+	if(up) {
+		offset = -1;
+	} else {
+		offset = +1;
+	}
+
+	LadderCircuit *tmp = rungs[rung];
+	rungs[rung] = rungs[rung + offset];
+	rungs[rung + offset] = tmp;
+
+	if(!IsSelectedVisible()) {
+		NeedScrollSelectedIntoView = true;
+	}
+
+	updateContext();
+
+	return true;
 }
 
 bool LadderDiagram::AddElement(LadderElem *elem)
@@ -2924,6 +2978,12 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 
 	// Se adicionado com sucesso, atualiza o contexto
 	if(ret == true) {
+		int position = RungContainingSelected();
+		if(position >= 0) { // Se posicao menor que zero, insere no final
+			vector<LadderCircuit *>::iterator it = rungs.begin() + position;
+			(*it)->AddPlaceHolderIfNoEOL();
+		}
+
 		SelectElement(elem, elem->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT);
 		updateContext();
 	} else {
@@ -2934,4 +2994,64 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 	}
 
 	return ret;
+}
+
+bool LadderDiagram::DelElement(LadderElem *elem)
+{
+	if(elem == nullptr) {
+		if(context.SelectedElem == nullptr) return false; // Sem elemento para remover
+		elem = context.SelectedElem;
+	}
+
+	int rung = RungContainingElement(elem);
+
+	if(rungs[rung]->DelElement(elem, context)) {
+		rungs[rung]->RemoveUnnecessarySubckts();
+		updateContext();
+		return true;
+	}
+
+	return false;
+}
+
+void LadderDiagram::DrawTXT(int OffsetX)
+{
+    int i;
+	int cx = OffsetX, cy = 0;
+	int ColsAvailable = getWidthTXT();
+	int RowsAvailable = getHeightTXT();
+
+	vector< vector<int> > DisplayMatrix(ColsAvailable, vector<int>(RowsAvailable, 0));
+
+	vector<LadderCircuit>::size_type it;
+
+	for(it = 0; it < rungs.size(); it++) {
+		char ch[4] = { ' ', ' ', ' ', 0 };
+        if(it < 10) {
+            ch[2] = it + '0';
+		} else if(it < 100) {
+            ch[1] = (it / 10) + '0';
+			ch[2] = (it % 10) + '0';
+        } else {
+			_itoa(it, ch, 10);
+        }
+		DrawChars(0, cy, ch);
+
+		rungs[it]->DrawTXT(DisplayMatrix, &cx, &cy, true, ColsAvailable);
+
+		cx  = OffsetX;
+		cy += (rungs[it]->getHeightTXT() + 1) * POS_HEIGHT;
+	}
+
+	// Desenha a linha final
+    char *str = _("[END]");
+    int lead = (ColsAvailable*POS_WIDTH - strlen(str))/2;
+    for(i = 0; i < lead; i++) {
+        DrawChars(cx + i, cy + (POS_HEIGHT/2), "-");
+    }
+    DrawChars(cx + i, cy + (POS_HEIGHT/2), str);
+    i += strlen(str);
+    for(; i < ColsAvailable*POS_WIDTH; i++) {
+        DrawChars(cx + i, cy + (POS_HEIGHT/2), "-");
+    }
 }

@@ -1138,8 +1138,9 @@ extern BOOL SelectionActive;
 extern BOOL ThisHighlighted;
 
 void PoweredText(BOOL powered);
-int FormattedStrlen(char *str);
+int FormattedStrlen(const char *str);
 void CenterWithSpaces(int cx, int cy, char *str, BOOL powered, BOOL isName);
+void CenterWithSpaces(int cx, int cy, char *str, BOOL powered, BOOL isName, int extra);
 void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before, BOOL after, int totalWidth);
 void CenterWithWires(int cx, int cy, char *str, BOOL before, BOOL after);
 
@@ -1249,7 +1250,7 @@ bool AddParallelStart(void);
 int RemoveParallelStart(int which, void *any);
 bool DeleteSelectedFromProgram(void);
 bool DeleteSelectedRung(void);
-bool InsertRung(BOOL afterCursor);
+bool InsertRung(bool afterCursor);
 int RungContainingSelected(void);
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
 BOOL UartFunctionUsed(void);
@@ -1294,42 +1295,38 @@ void ShowAnalogSliderPopup(char *name);
 void ShowEncoderSliderPopup(char *name);
 
 // commentdialog.cpp
-void ShowCommentDialog(char *comment);
+bool ShowCommentDialog(char *comment);
 // contactsdialog.cpp
-void ShowContactsDialog(BOOL *negated, char *name, unsigned char * bit);
+bool ShowContactsDialog(bool *negated, char *name, unsigned char * bit);
 // coildialog.cpp
-void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, unsigned char *bit);
-void ShowMultisetDADialog(ElemMultisetDA *l);
+bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, char *name, unsigned char *bit);
+bool ShowMultisetDADialog(ElemMultisetDA *l);
 // simpledialog.cpp
-void ShowTimerDialog(int which, int *delay, char *name);
-void ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end);
-void ShowCounterDialog(int which, int *count, char *name);
-void ShowReadAdcDialog(char *name);
-void ShowSetBitDialog(char *name, int * set, int * bit);
-void ShowCheckBitDialog(char *name, int * set, int * bit);
-void ShowSetDADialog(char *name, int *mode);
-void ShowReadEncDialog(char *name);
-void ShowResetEncDialog(char *name);
-void ShowReadUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
-void ShowWriteUSSDialog(char *name, int *id, int *parameter, int *parameter_set, int *index);
-void ShowModbusDialog(int mode_write, char *name, int *id, int *address, bool *set, bool *retransmitir);
-void ShowReadModbusEthDialog(char *name, int *id, int *address);
-void ShowWriteModbusEthDialog(char *name, int *id, int *address);
-void ShowSetPwmDialog(char *name, int *targetFreq);
-void ShowPersistDialog(char *var);
-void ShowUartDialog(int which, char *name);
-void ShowCmpDialog(int which, char *op1, char *op2);
-void ShowMathDialog(int which, char *dest, char *op1, char *op2);
-void ShowShiftRegisterDialog(char *name, int *stages);
-void ShowFormattedStringDialog(int mode_write, char *var, char *string);
-void ShowServoYaskawaDialog(int mode_write, char *id, char *var, char *string);
+bool ShowTimerDialog(int which, int *delay, char *name);
+bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end);
+bool ShowCounterDialog(int which, int *count, char *name);
+bool ShowReadAdcDialog(char *name);
+bool ShowSetBitDialog(char *name, bool * set, int * bit);
+bool ShowCheckBitDialog(char *name, bool * set, int * bit);
+bool ShowSetDADialog(char *name, int *mode);
+bool ShowReadEncDialog(char *name);
+bool ShowResetEncDialog(char *name);
+bool ShowUSSDialog(int which, char *name, int *id, int *parameter, int *parameter_set, int *index);
+bool ShowModbusDialog(int mode_write, char *name, int *id, int *address, bool *set, bool *retransmitir);
+bool ShowSetPwmDialog(char *name, int *targetFreq);
+bool ShowPersistDialog(char *var);
+bool ShowUartDialog(int which, char *name);
+bool ShowCmpDialog(int which, char *op1, char *op2);
+bool ShowShiftRegisterDialog(char *name, int *stages);
+bool ShowFormattedStringDialog(int mode_write, char *var, char *string);
+bool ShowServoYaskawaDialog(int mode_write, char *id, char *var, char *string);
 void ShowSimulationVarSetDialog(char *name, char *val);
-void ShowLookUpTableDialog(ElemLeaf *l);
-void ShowPiecewiseLinearDialog(ElemLeaf *l);
-void ShowResetDialog(char *name);
-void ShowSqrtDialog(char *dest, char *src);
-void ShowRandDialog(char *var, char *min, char *max);
-void ShowAbsDialog(char *dest, char *src);
+bool ShowLookUpTableDialog(ElemLookUpTable *t);
+bool ShowPiecewiseLinearDialog(ElemPiecewiseLinear *t);
+bool ShowResetDialog(char *name);
+bool ShowSqrtDialog(char *dest, char *src);
+bool ShowRandDialog(char *var, char *min, char *max);
+bool ShowAbsDialog(char *dest, char *src);
 // confdialog.cpp
 extern struct strSerialConfig SerialConfig[];
 extern char *SerialParityString[];
@@ -1539,7 +1536,7 @@ void SimulationServer_Stop   (void);
 void SimulationServer_Message(WPARAM wParam, LPARAM lParam);
 
 // mathdialog.cpp
-void ShowMathDialog(int which, char *dest, char *op1, char *op2);
+bool ShowMathDialog(int which, char *dest, char *op1, char *op2);
 
 // modbus_usb.cpp
 bool          USB_SetDateTime(struct tm *t);

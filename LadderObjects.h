@@ -34,8 +34,10 @@ typedef struct {
 // Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base
 class LadderElem {
 private:
+	bool isName;
 	bool isEndOfLine;
 	bool isComment;
+	bool isFormatted;
 	int  selectedState;
 	int  which;
 
@@ -46,22 +48,28 @@ protected:
 
 public:
 	LadderElem(void);
-	LadderElem(bool EOL, bool Comment, int elemWhich);
+	LadderElem(bool EOL, bool Comment, bool Formatted, bool Name, int elemWhich);
 
-	virtual pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore) = 0;
-	virtual void DrawGUI(void) = 0;
+	virtual pair<string, string> DrawTXT(void) = 0;
+	virtual void DrawGUI(void *data) = 0;
+
+	virtual bool ShowDialog(void) = 0;
 
 	virtual bool GenerateIntCode(IntCode &ic) = 0;
 
-	bool IsComment     (void) { return isComment; }
-	bool IsEOL         (void) { return isEndOfLine; }
-	bool IsPoweredAfter(void) { return poweredAfter; }
-	int  getWhich      (void) { return which; }
+	inline bool IsComment     (void) { return isComment;    }
+	inline bool IsEOL         (void) { return isEndOfLine;  }
+	inline bool IsPoweredAfter(void) { return poweredAfter; }
+	inline bool IsFormatted   (void) { return isFormatted;  }
+	inline bool IsName        (void) { return isName;       }
+	inline int  getWhich      (void) { return which;        }
 
 	void Select          (int state) { selectedState = state; }
 	int  getSelectedState(void)      { return selectedState; }
 
 	virtual bool CanInsert(LadderContext context) = 0;
+
+	virtual inline int getWidthTXT(void) = 0;
 };
 
 // Classe do elemento PlaceHolder
@@ -71,12 +79,16 @@ class LadderElemPlaceHolder : public LadderElem {
 public:
 	LadderElemPlaceHolder(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Comment
@@ -87,14 +99,18 @@ private:
 public:
 	LadderElemComment(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newStr);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void);
 };
 
 // Classe do elemento Contato
@@ -108,14 +124,19 @@ private:
 public:
 	LadderElemContact(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName, bool newNegated, unsigned int newType, unsigned char newBit);
+	void getProperties(string &curName, bool &curNegated, unsigned int &curType, unsigned char &curBit);
+	void setProperties(string  newName, bool  newNegated, unsigned int  newType, unsigned char  newBit);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Bobina
@@ -131,8 +152,10 @@ private:
 public:
 	LadderElemCoil(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
@@ -140,6 +163,8 @@ public:
 		unsigned int newType, unsigned char newBit);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Timer
@@ -153,14 +178,18 @@ private:
 public:
 	LadderElemTimer(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName, int newDelay);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento RTC
@@ -174,14 +203,18 @@ private:
 public:
 	LadderElemRTC(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(int newMode, unsigned char newWday, struct tm newStart, struct tm newEnd);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Counter
@@ -193,14 +226,18 @@ private:
 public:
 	LadderElemCounter(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName, int newMax);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Reset Timer / Counter
@@ -211,14 +248,18 @@ private:
 public:
 	LadderElemReset(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento One Shot
@@ -228,12 +269,16 @@ class LadderElemOneShot : public LadderElem {
 public:
 	LadderElemOneShot(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Cmp
@@ -245,14 +290,18 @@ private:
 public:
 	LadderElemCmp(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newOp1, string newOp2);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Math
@@ -265,14 +314,18 @@ private:
 public:
 	LadderElemMath(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newOp1, string newOp2, string newDest);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 2; }
 };
 
 // Classe do elemento Sqrt
@@ -284,14 +337,18 @@ private:
 public:
 	LadderElemSqrt(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newSrc, string newDest);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Rand
@@ -304,14 +361,18 @@ private:
 public:
 	LadderElemRand(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newVar, string newMin, string newMax);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 2; }
 };
 
 // Classe do elemento Abs
@@ -323,14 +384,18 @@ private:
 public:
 	LadderElemAbs(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newSrc, string newDest);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Move
@@ -342,14 +407,18 @@ private:
 public:
 	LadderElemMove(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newSrc, string newDest);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Open & Short
@@ -359,12 +428,16 @@ class LadderElemOpenShort : public LadderElem {
 public:
 	LadderElemOpenShort(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Set Bit
@@ -377,14 +450,18 @@ private:
 public:
 	LadderElemSetBit(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName, int newBit, bool newSet);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Check Bit
@@ -397,14 +474,18 @@ private:
 public:
 	LadderElemCheckBit(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName, int newBit, bool newSet);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Read A/D
@@ -415,14 +496,18 @@ private:
 public:
 	LadderElemReadAdc(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Set D/A
@@ -434,14 +519,18 @@ private:
 public:
 	LadderElemSetDa(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName, int newMode);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Read Encoder
@@ -452,14 +541,18 @@ private:
 public:
 	LadderElemReadEnc(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Reset Encoder
@@ -470,14 +563,18 @@ private:
 public:
 	LadderElemResetEnc(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Multiset D/A
@@ -498,8 +595,10 @@ private:
 public:
 	LadderElemMultisetDA(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
@@ -507,6 +606,8 @@ public:
 		bool newLinear, bool newForward, bool newSpeedup, bool newStartFromCurrentValue);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Read / Write USS
@@ -521,14 +622,18 @@ private:
 public:
 	LadderElemUSS(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName, int newId, int newParameter, int newParameter_set, int newIndex);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento ModBUS
@@ -543,14 +648,18 @@ private:
 public:
 	LadderElemModBUS(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties();
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Set PWM
@@ -562,14 +671,18 @@ private:
 public:
 	LadderElemSetPWM(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties();
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Send / Receive UART
@@ -580,14 +693,18 @@ private:
 public:
 	LadderElemUART(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Master Relay
@@ -597,12 +714,16 @@ class LadderElemMasterRelay : public LadderElem {
 public:
 	LadderElemMasterRelay(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Shift Register
@@ -614,14 +735,18 @@ private:
 public:
 	LadderElemShiftRegister(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newName, int newStages);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Look Up Table
@@ -636,8 +761,10 @@ private:
 public:
 	LadderElemLUT(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
@@ -645,6 +772,8 @@ public:
 		bool newEditAsString, array<long, MAX_LOOK_UP_TABLE_LEN> newVals);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Piecewise Linear
@@ -658,14 +787,18 @@ private:
 public:
 	LadderElemPiecewise(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newDest, string newIndex, int newCount, array<long, MAX_LOOK_UP_TABLE_LEN> newVals);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento Formatted String
@@ -677,14 +810,18 @@ private:
 public:
 	LadderElemFmtString(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newVar, string newTxt);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 2; }
 };
 
 // Classe do elemento Read / Write Yaskawa
@@ -697,14 +834,18 @@ private:
 public:
 	LadderElemYaskawa(int which);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newId, string newVar, string newTxt);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 2; }
 };
 
 // Classe do elemento Persist
@@ -715,14 +856,18 @@ private:
 public:
 	LadderElemPersist(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties(string newVar);
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 // Classe do elemento X
@@ -732,44 +877,64 @@ private:
 public:
 	LadderElemX(void);
 
-	pair<string, string> DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void);
+	pair<string, string> DrawTXT(void);
+	void DrawGUI(void *data);
+
+	bool ShowDialog(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
 	void setProperties();
 
 	bool CanInsert(LadderContext context);
+
+	inline int getWidthTXT(void) { return 1; }
 };
 
 /*** Classe representando os circuitos (Serie / Paralelo) ***/
+
+// Estrutura auxiliar que representa um subcircuito
+typedef struct {
+	LadderElem    *elem;
+	LadderCircuit *subckt;
+} Subckt;
+
 class LadderCircuit {
 private:
 	bool isSeries;
 
-	typedef struct {
-		LadderElem    *elem;
-		LadderCircuit *subckt;
-	} Subckt;
-
 	vector<Subckt> vectorSubckt;
+
+	bool DrawElementTXT(vector< vector<int> > &DisplayMatrix, LadderElem *elem, int *cx, int *cy, bool poweredBefore);
+	void VerticalWireTXT(int cx, int cy);
 
 public:
 	LadderCircuit(void);
 	LadderCircuit(bool newSeries);
 
-	bool DrawTXT(int *cx, int *cy, bool poweredBefore);
-	void DrawGUI(void) { }
+	bool DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *cy, bool poweredBefore, int ColsAvailable);
+	void DrawGUI(void *data);
 
 	bool IsComment(void);
 	bool IsEmpty(void);
 	bool IsLast(LadderElem *elem);
+	bool IsSeries(void) { return isSeries; }
+	bool HasEOL(void);
 
 	bool GenerateIntCode(IntCode &ic);
 
+	unsigned int   getSize(void) { return vectorSubckt.size(); }
 	LadderCircuit *getSubcktForElement(LadderElem *elem);
+	Subckt         getSubckt(unsigned int pos);
 
+	int            getWidthTXT (int ColsAvailable);
+	int            getHeightTXT(void);
+
+	void AddPlaceHolderIfNoEOL(void);
 	bool AddElement(LadderElem *elem, LadderContext &context);
+	bool DelElement(LadderElem *elem, LadderContext &context);
+
+	void RemoveUnnecessarySubckts(void);
 };
 
 /*** Classe representando o Diagrama Ladder ***/
@@ -779,7 +944,9 @@ private:
 	LadderContext context;
 
 	// list of rungs
-	vector<LadderCircuit> rungs;
+	vector<LadderCircuit *> rungs;
+
+	bool NeedScrollSelectedIntoView;
 
 	IntCode ic;
 
@@ -789,17 +956,34 @@ private:
 
 	void updateContext(void);
 
+	bool IsSelectedVisible(void);
+
 public:
 	LadderDiagram(void);
 
 	vector<IntOp> getVectorIntCode(void);
 	bool GenerateIntCode(void);
 
-	void SelectElement(LadderElem *elem, int state);
-	bool AddElement   (LadderElem *elem);
+	int getWidthTXT (void);
+	int getHeightTXT(void);
 
-	int RungContainingSelected(void);
+	void SelectElement(LadderElem *elem, int state);
+
+	bool AddElement   (LadderElem *elem);
+	bool DelElement   (LadderElem *elem = nullptr);
+	bool EditSelectedElement(void);
+
+	int  RungContainingElement (LadderElem *elem);
+	int  RungContainingSelected(void);
+
+	bool IsRungEmpty(unsigned int n);
 	void NewRung(bool isAfter);
+	bool PushRung(int rung, bool up);
+
+	void DrawTXT(int OffsetX);
+	void DrawGUI(void);
+
+	void MouseClick(int x, int y, bool isDown, bool isDouble);
 };
 
 #endif

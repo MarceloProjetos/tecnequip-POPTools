@@ -43,6 +43,7 @@ void EngineRenderD2D::FreeAll(void)
 {
 	FreeRenderTarget();
 	SafeRelease(&pD2DFactory);
+	SafeRelease(&pWriteFactory);
 }
 
 HRESULT EngineRenderD2D::CreateRenderTarget(HWND hwnd)
@@ -151,25 +152,34 @@ HRESULT EngineRenderD2D::EndDraw(void)
 	return hr;
 }
 
-void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled, unsigned int radiusX, unsigned int radiusY)
+void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled, unsigned int radiusX, unsigned int radiusY, unsigned int angle)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
 	if(pRT != NULL && brush < Brushes.size()) {
 		D2D1_ROUNDED_RECT rf;
+		D2D1_POINT_2F xy;
 		rf.rect = D2D1::RectF((float)r.left, (float)r.top, (float)r.right, (float)r.bottom);
 		rf.radiusX = (float)radiusX;
 		rf.radiusY = (float)(radiusY ? radiusY : radiusX);
 
+		if(angle) {
+			xy.x = rf.rect.left + (rf.rect.right  - rf.rect.left)/2;
+			xy.y = rf.rect.top  + (rf.rect.bottom - rf.rect.top )/2;
+			pRT->SetTransform(D2D1::Matrix3x2F::Rotation(angle, xy));
+		}
+
 		if(filled) {
 			rf.radiusX == 0.0 ? pRT->FillRectangle(rf.rect, Brushes[brush]) : pRT->FillRoundedRectangle(rf, Brushes[brush]);
 		} else {
-			rf.radiusX == 0.0 ? pRT->DrawRectangle(rf.rect, Brushes[brush]) : pRT->DrawRoundedRectangle(rf, Brushes[brush], 10.0);
+			rf.radiusX == 0.0 ? pRT->DrawRectangle(rf.rect, Brushes[brush]) : pRT->DrawRoundedRectangle(rf, Brushes[brush], 5);
 		}
+
+		if(angle) pRT->SetTransform(D2D1::Matrix3x2F::Rotation(0.0f, xy));
 	}
 }
 
-void EngineRenderD2D::DrawText(char *txt, RECT r, unsigned int format, unsigned int brush)
+void EngineRenderD2D::DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush)
 {
 	if(pRT != NULL && brush < Brushes.size() && format < TextFormats.size()) {
 		int size = strlen(txt) * 2 + 1;

@@ -962,442 +962,157 @@ bool AddParallelStart(void)
 }
 bool AddComment(char *str)
 {
-    if(!CanInsert(ELEM_COMMENT)) return false;
-
-    ElemLeaf *c = AllocLeaf();
-    strcpy(c->d.comment.str, str);
-
-    AddLeaf(ELEM_COMMENT, c);
-
-	return true;
+	return ladder.AddElement(new LadderElemComment);
 }
 bool AddContact(void)
 {
-    if(!CanInsert(ELEM_CONTACTS)) return false;
-
-    ElemLeaf *c = AllocLeaf();
-    strcpy(c->d.contacts.name, _("in"));
-    c->d.contacts.negated = FALSE;
-	c->d.contacts.type = IO_TYPE_DIG_INPUT;
-
-    AddLeaf(ELEM_CONTACTS, c);
-
-	return true;
+	return ladder.AddElement(new LadderElemContact);
 }
 bool AddCoil(void)
 {
-    if(!CanInsert(ELEM_COIL)) return false;
-
-    ElemLeaf *c = AllocLeaf();
-    strcpy(c->d.coil.name, _("out"));
-    c->d.coil.negated = FALSE;
-    c->d.coil.setOnly = FALSE;
-    c->d.coil.resetOnly = FALSE;
-	c->d.coil.bit = 0;
-	c->d.coil.type = IO_TYPE_DIG_OUTPUT;
-
-    AddLeaf(ELEM_COIL, c);
-
-	return true;
+	return ladder.AddElement(new LadderElemCoil);
 }
 bool AddTimer(int which)
 {
-    if(!CanInsert(which)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.timer.name, _("new"));
-    t->d.timer.delay = 100000;
-
-    AddLeaf(which, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemTimer(which));
 }
 bool AddRTC(int which)
 {
-    if(!CanInsert(which)) return false;
-
-	time_t rawtime;
-	struct tm * t;
-
-	time ( &rawtime );
-	t = localtime ( &rawtime );
-
-	t->tm_year += 1900;
-	t->tm_mon++;
-	t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
-
-    ElemLeaf *l = AllocLeaf();
-
-	l->d.rtc.mode = ELEM_RTC_MODE_FIXED;
-	l->d.rtc.wday = 255;
-
-	l->d.rtc.start.tm_mday = 0;
-	l->d.rtc.start.tm_mon = 0;
-	l->d.rtc.start.tm_year = 0;
-	l->d.rtc.start.tm_hour = t->tm_hour;
-	l->d.rtc.start.tm_min = t->tm_min;
-	l->d.rtc.start.tm_sec = t->tm_sec;
-
-	l->d.rtc.end.tm_mday = 0;
-	l->d.rtc.end.tm_mon = 0;
-	l->d.rtc.end.tm_year = 0;
-	l->d.rtc.end.tm_hour = t->tm_hour;
-	l->d.rtc.end.tm_min = t->tm_min;
-	l->d.rtc.end.tm_sec = t->tm_sec;
-
-    AddLeaf(which, l);
-
-	return true;
+	return ladder.AddElement(new LadderElemRTC);
 }
 bool AddEmpty(int which)
 {
-    if(!CanInsert(which)) return false;
+	switch(which) {
+	case ELEM_OPEN:
+	case ELEM_SHORT:
+		return ladder.AddElement(new LadderElemOpenShort(which));
 
-    ElemLeaf *t = AllocLeaf();
-    AddLeaf(which, t);
+	case ELEM_ONE_SHOT_RISING:
+	case ELEM_ONE_SHOT_FALLING:
+		return ladder.AddElement(new LadderElemOneShot(which));
+	}
 
-	return true;
+	return false;
 }
 bool AddReset(void)
 {
-    if(!CanInsert(ELEM_RES)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.reset.name, _("new"));
-    AddLeaf(ELEM_RES, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemReset);
 }
 bool AddMasterRelay(void)
 {
-    if(!CanInsert(ELEM_MASTER_RELAY)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    AddLeaf(ELEM_MASTER_RELAY, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemMasterRelay);
 }
 bool AddSetBit(void)
 {
-    if(!CanInsert(ELEM_SET_BIT)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.setBit.name, _("new"));
-    AddLeaf(ELEM_SET_BIT, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemSetBit);
 }
 bool AddCheckBit(void)
 {
-    if(!CanInsert(ELEM_CHECK_BIT)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.checkBit.name, _("new"));
-    AddLeaf(ELEM_CHECK_BIT, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemCheckBit);
 }
 bool AddShiftRegister(void)
 {
-    if(!CanInsert(ELEM_SHIFT_REGISTER)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.shiftRegister.name, _("reg"));
-    t->d.shiftRegister.stages = 7;
-    AddLeaf(ELEM_SHIFT_REGISTER, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemShiftRegister);
 }
 bool AddLookUpTable(void)
 {
-    if(!CanInsert(ELEM_LOOK_UP_TABLE)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.lookUpTable.dest, _("dest"));
-    strcpy(t->d.lookUpTable.index, _("index"));
-    t->d.lookUpTable.count = 0;
-    t->d.lookUpTable.editAsString = 0;
-    AddLeaf(ELEM_LOOK_UP_TABLE, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemLUT);
 }
 bool AddPiecewiseLinear(void)
 {
-    if(!CanInsert(ELEM_PIECEWISE_LINEAR)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.piecewiseLinear.dest, _("yvar"));
-    strcpy(t->d.piecewiseLinear.index, _("xvar"));
-    t->d.piecewiseLinear.count = 0;
-    AddLeaf(ELEM_PIECEWISE_LINEAR, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemPiecewise);
 }
 bool AddMove(void)
 {
-    if(!CanInsert(ELEM_MOVE)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.move.dest, _("dest"));
-    strcpy(t->d.move.src, _("src"));
-    AddLeaf(ELEM_MOVE, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemMove);
 }
 bool AddSqrt(void)
 {
-    if(!CanInsert(ELEM_SQRT)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.sqrt.dest, _("dest"));
-    strcpy(t->d.sqrt.src, _("src"));
-    AddLeaf(ELEM_SQRT, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemSqrt);
 }
 bool AddMath(int which)
 {
-    if(!CanInsert(which)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.math.dest, _("dest"));
-    strcpy(t->d.math.op1, _("src"));
-    strcpy(t->d.math.op2, "1");
-    AddLeaf(which, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemMath(which));
 }
 bool AddRand(void)
 {
-    if(!CanInsert(ELEM_RAND)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-	strcpy(t->d.rand.var, _("var"));
-	strcpy(t->d.rand.min, "0");
-	strcpy(t->d.rand.max, "100");
-    AddLeaf(ELEM_RAND, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemRand);
 }
 bool AddAbs(void)
 {
-    if(!CanInsert(ELEM_ABS)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-	strcpy(t->d.abs.dest, _("dest"));
-	strcpy(t->d.abs.src, _("src"));
-    AddLeaf(ELEM_ABS, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemAbs);
 }
 bool AddCmp(int which)
 {
-    if(!CanInsert(which)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.cmp.op1, _("var"));
-    strcpy(t->d.cmp.op2, "1");
-    AddLeaf(which, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemCmp(which));
 }
 bool AddCounter(int which)
 {
-    if(!CanInsert(which)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.counter.name, _("new"));
-    t->d.counter.max = 0;
-    AddLeaf(which, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemCounter(which));
 }
 bool AddSetDA(void)
 {
-    if(!CanInsert(ELEM_SET_DA)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-
-	strcpy(t->d.setDA.name, _("new"));
-	t->d.setDA.mode = ELEM_SET_DA_MODE_RAW;
-
-	AddLeaf(ELEM_SET_DA, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemSetDa);
 }
 bool AddReadAdc(void)
 {
-    if(!CanInsert(ELEM_READ_ADC)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readAdc.name, _("new"));
-    AddLeaf(ELEM_READ_ADC, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemReadAdc);
 }
 bool AddReadEnc(void)
 {
-    if(!CanInsert(ELEM_READ_ENC)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readEnc.name, _("new"));
-    AddLeaf(ELEM_READ_ENC, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemReadEnc);
 }
 bool AddResetEnc(void)
 {
-    if(!CanInsert(ELEM_RESET_ENC)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.resetEnc.name, _("new"));
-    AddLeaf(ELEM_RESET_ENC, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemResetEnc);
 }
 bool AddMultisetDA(void)
 {
-    if(!CanInsert(ELEM_MULTISET_DA)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.multisetDA.name, "600");
-	strcpy(t->d.multisetDA.name1, "2047");
-	t->d.multisetDA.time = 600;
-	t->d.multisetDA.gaint = 10;
-	t->d.multisetDA.gainr = 5;
-	t->d.multisetDA.initval = DA_RESOLUTION - 1;
-	t->d.multisetDA.linear = 1; // 1 linear, 0 curva
-	t->d.multisetDA.forward = 1; // 1 avanço, 0 recuo
-	t->d.multisetDA.speedup = 0; // ' aceleração, 0 desaceleração
-	
-    AddLeaf(ELEM_MULTISET_DA, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemMultisetDA);
 }
 bool AddReadFormatString(void)
 {
-    if(!CanInsert(ELEM_READ_FORMATTED_STRING)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.fmtdStr.var, _("var"));
-    strcpy(t->d.fmtdStr.string, _("value: %d\\r\\n"));
-    AddLeaf(ELEM_READ_FORMATTED_STRING, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemFmtString(ELEM_READ_FORMATTED_STRING));
 }
 bool AddWriteFormatString(void)
 {
-    if(!CanInsert(ELEM_WRITE_FORMATTED_STRING)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.fmtdStr.var, _("var"));
-    strcpy(t->d.fmtdStr.string, _("value: %d\\r\\n"));
-    AddLeaf(ELEM_WRITE_FORMATTED_STRING, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemFmtString(ELEM_WRITE_FORMATTED_STRING));
 }
 bool AddReadServoYaskawa(void)
 {
-    if(!CanInsert(ELEM_READ_SERVO_YASKAWA)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.servoYaskawa.id, "0");
-    strcpy(t->d.servoYaskawa.var, _("var"));
-    strcpy(t->d.servoYaskawa.string, _("0ZSET%d"));
-    AddLeaf(ELEM_READ_SERVO_YASKAWA, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemYaskawa(ELEM_READ_SERVO_YASKAWA));
 }
 bool AddWriteServoYaskawa(void)
 {
-    if(!CanInsert(ELEM_WRITE_SERVO_YASKAWA)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.servoYaskawa.id, "0");
-    strcpy(t->d.servoYaskawa.var, _("var"));
-    strcpy(t->d.servoYaskawa.string, _("value: %d"));
-    AddLeaf(ELEM_WRITE_SERVO_YASKAWA, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemYaskawa(ELEM_WRITE_SERVO_YASKAWA));
 }
 bool AddReadUSS(void)
 {
-    if(!CanInsert(ELEM_READ_USS)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readUSS.name, _("new"));
-    AddLeaf(ELEM_READ_USS, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemUSS(ELEM_READ_USS));
 }
 bool AddWriteUSS(void)
 {
-    if(!CanInsert(ELEM_WRITE_USS)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.writeUSS.name, _("new"));
-    AddLeaf(ELEM_WRITE_USS, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemUSS(ELEM_WRITE_USS));
 }
 bool AddReadModbus(void)
 {
-    if(!CanInsert(ELEM_READ_MODBUS)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.readModbus.name, _("new"));
-	t->d.readModbus.retransmitir = TRUE;
-	t->d.readModbus.elem = MbNodeList_GetByIndex(0)->NodeID;
-	MbNodeList_AddRef(t->d.readModbus.elem);
-
-	AddLeaf(ELEM_READ_MODBUS, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemModBUS(ELEM_READ_MODBUS));
 }
 bool AddWriteModbus(void)
 {
-    if(!CanInsert(ELEM_WRITE_MODBUS)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.writeModbus.name, _("new"));
-	t->d.writeModbus.retransmitir = TRUE;
-	t->d.readModbus.elem = MbNodeList_GetByIndex(0)->NodeID;
-	MbNodeList_AddRef(t->d.writeModbus.elem);
-
-    AddLeaf(ELEM_WRITE_MODBUS, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemModBUS(ELEM_WRITE_MODBUS));
 }
 bool AddSetPwm(void)
 {
-    if(!CanInsert(ELEM_SET_PWM)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.setPwm.name, _("duty_cycle"));
-    t->d.setPwm.targetFreq = 1000;
-    AddLeaf(ELEM_SET_PWM, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemSetPWM);
 }
 bool AddUart(int which)
 {
-    if(!CanInsert(which)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.uart.name, _("char"));
-    AddLeaf(which, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemUART(which));
 }
 bool AddPersist(void)
 {
-    if(!CanInsert(ELEM_PERSIST)) return false;
-
-    ElemLeaf *t = AllocLeaf();
-    strcpy(t->d.persist.var, _("saved"));
-    AddLeaf(ELEM_PERSIST, t);
-
-	return true;
+	return ladder.AddElement(new LadderElemPersist);
 }
 
 //-----------------------------------------------------------------------------
@@ -1869,34 +1584,11 @@ static ElemSubcktSeries *AllocEmptyRung(void)
 //-----------------------------------------------------------------------------
 // Insert a rung either before or after the rung that contains the cursor.
 //-----------------------------------------------------------------------------
-bool InsertRung(BOOL afterCursor)
+bool InsertRung(bool afterCursor)
 {
-    if(Prog.numRungs >= (MAX_RUNGS - 1)) {
-        Error(_("Too many rungs!"));
-        return false;
-    }
+	ladder.NewRung(afterCursor);
 
-    int i = RungContainingSelected();
-    if(i < 0) return false;
-
-    if(afterCursor) i++;
-    memmove(&Prog.rungs[i+1], &Prog.rungs[i],
-        (Prog.numRungs - i)*sizeof(Prog.rungs[0]));
-	memmove(&Prog.rungHasBreakPoint[i+1], &Prog.rungHasBreakPoint[i], 
-        (Prog.numRungs - i)*sizeof(Prog.rungHasBreakPoint[0]));
-    Prog.rungs[i] = AllocEmptyRung();
-	Prog.rungHasBreakPoint[i] = FALSE;
-
-	Selected->selectedState = SELECTED_NONE;
-	SelectedWhich = Prog.rungs[i]->contents->which;
-	Selected = Prog.rungs[i]->contents->d.leaf;
-	Selected->selectedState = SELECTED_LEFT;
-
-	(Prog.numRungs)++;
-
-    WhatCanWeDoFromCursorAndTopology();
-
-	return true;
+	return true; // Sempre insere uma nova linha!
 }
 
 //-----------------------------------------------------------------------------
@@ -1909,23 +1601,7 @@ bool InsertRung(BOOL afterCursor)
 //-----------------------------------------------------------------------------
 bool PushRung(bool up)
 {
-    int offset, i = RungContainingSelected();
-    if(up ? i==0 : i == (Prog.numRungs-1)) return false;
-
-	if(up) {
-		offset = -1;
-	} else {
-		offset = +1;
-	}
-
-    ElemSubcktSeries *temp = Prog.rungs[i];
-    Prog.rungs[i] = Prog.rungs[i+offset];
-    Prog.rungs[i+offset] = temp;
-
-    WhatCanWeDoFromCursorAndTopology();
-    ScrollSelectedIntoViewAfterNextPaint = TRUE;
-
-	return true;
+	return ladder.PushRung(-1, up);
 }
 
 //-----------------------------------------------------------------------------

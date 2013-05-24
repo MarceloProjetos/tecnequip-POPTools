@@ -143,8 +143,10 @@ static LRESULT CALLBACK CoilDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	return CallWindowProc((WNDPROC)PrevCoilDialogProc, hwnd, msg, wParam, lParam);
 }
 
-void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, unsigned char * bit)
+bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, char *name, unsigned char * bit)
 {
+	bool changed = false;
+
 	unsigned int type;
 	char name_tmp[MAX_NAME_LEN];
 
@@ -221,25 +223,27 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
         }
 
 		if(IsValidNameAndType(name, name_tmp, type)) {
+			changed = true;
+
 			strcpy(name, name_tmp);
             UpdateTypeInCircuit(name, type);
 
 	        if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-		        *negated = FALSE;
-			    *setOnly = FALSE;
-				*resetOnly = FALSE;
+		        *negated = false;
+			    *setOnly = false;
+				*resetOnly = false;
 	        } else if(SendMessage(NegatedRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-		        *negated = TRUE;
-			    *setOnly = FALSE;
-				*resetOnly = FALSE;
+		        *negated = true;
+			    *setOnly = false;
+				*resetOnly = false;
 	        } else if(SendMessage(SetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-		        *negated = FALSE;
-			    *setOnly = TRUE;
-				*resetOnly = FALSE;
+		        *negated = false;
+			    *setOnly = true;
+				*resetOnly = false;
 	        } else if(SendMessage(ResetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-	            *negated = FALSE;
-		        *setOnly = FALSE;
-			    *resetOnly = TRUE;
+	            *negated = false;
+		        *setOnly = false;
+			    *resetOnly = true;
 	        }
 
 			int i;
@@ -258,5 +262,6 @@ void ShowCoilDialog(BOOL *negated, BOOL *setOnly, BOOL *resetOnly, char *name, u
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(CoilDialog);
-    return;
+
+	return changed;
 }

@@ -15,6 +15,8 @@ private:
 
 	void CreateBackgroundBrush(void);
 
+	void InvalidateTarget(void);
+
 	EngineRender *pRender;
 
 	std::vector<COLORREF> Brushes;
@@ -23,6 +25,9 @@ private:
 	POINT DrawOffset;
 
 	HWND Target;
+	RECT LastTargetRect;
+
+	bool TargetInvalid;
 
 public:
 	EngineGUI(void);
@@ -43,10 +48,10 @@ public:
 	HRESULT SetDrawOffset(POINT Offset);
 	HRESULT EndDraw(void);
 
-	HRESULT DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned radiusY = 0);
+	HRESULT DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned radiusY = 0, unsigned int angle = 0);
 	HRESULT DrawEllipse(RECT r, unsigned int brush, bool filled = true);
 	HRESULT DrawEllipse(POINT center, float rx, float ry, unsigned int brush, bool filled = true);
-	HRESULT DrawText(char *txt, RECT r, unsigned int format, unsigned int brush);
+	HRESULT DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush);
 	HRESULT DrawLine(POINT start, POINT end, unsigned int brush);
 };
 

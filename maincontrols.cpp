@@ -331,7 +331,7 @@ void RefreshScrollbars(void)
 //    MoveWindow(VertScrollBar, main.right - ScrollWidth - 2, 1, ScrollWidth,
 //        NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3), TRUE);
 
-    InvalidateRect(MainWindow, NULL, FALSE);
+//    InvalidateRect(MainWindow, NULL, FALSE);
 }
 
 //-----------------------------------------------------------------------------
@@ -376,7 +376,7 @@ void VscrollProc(WPARAM wParam)
         si.nPos = ScrollYOffset;
         SetScrollInfo(VertScrollBar, SB_CTL, &si, TRUE);
 
-        InvalidateRect(MainWindow, NULL, FALSE);
+        InvalidateRect(DrawWindow, NULL, FALSE);
     }
 }
 
@@ -428,7 +428,7 @@ void HscrollProc(WPARAM wParam)
         si.nPos = ScrollXOffset;
         SetScrollInfo(HorizScrollBar, SB_CTL, &si, TRUE);
 
-        InvalidateRect(MainWindow, NULL, FALSE);
+        InvalidateRect(DrawWindow, NULL, FALSE);
     }
 }
 

@@ -23,8 +23,10 @@ static void MakeControls(void)
     NiceFont(CancelButton);
 }
 
-void ShowCommentDialog(char *comment)
+bool ShowCommentDialog(char *comment)
 {
+	bool changed = false;
+
     CommentDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Comment"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 700, 65, MainWindow, NULL, Instance, NULL);
@@ -60,11 +62,14 @@ void ShowCommentDialog(char *comment)
     }
 
     if(!DialogCancel) {
+	   changed = true;
+
         SendMessage(CommentTextbox, WM_GETTEXT, (WPARAM)(MAX_COMMENT_LEN-1),
             (LPARAM)comment);
     }
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(CommentDialog);
-    return;
+
+	return changed;
 }

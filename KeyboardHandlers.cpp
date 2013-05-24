@@ -15,7 +15,6 @@ int KBH_Simulation_Toggle(void *user_data)
 int KBH_SetFocus_IoList(void *user_data)
 {
 	SetFocus(IoList);
-	BlinkCursor(0, 0, 0, 0);
 
 	return 1;
 }
@@ -286,7 +285,7 @@ int KBH_Element_Edit(void *user_data)
 {
 	if(InSimulationMode) return 0;
 
-	CHANGING_PROGRAM(EditSelectedElement());
+	CHANGING_PROGRAM(ladder.EditSelectedElement());
 
 	return 1;
 }
@@ -294,14 +293,9 @@ int KBH_Element_Edit(void *user_data)
 // Default for Portuguese: DEL or BACKSPACE
 int KBH_Element_Delete(void *user_data)
 {
-	int i, emptyRung;
-
 	if(InSimulationMode) return 0;
 
-	i = RungContainingSelected();
-	emptyRung = i<0 ? 0 : Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which == ELEM_PLACEHOLDER;
-
-	if(emptyRung) {
+	if(ladder.IsRungEmpty(ladder.RungContainingSelected())) {
 		ProcessMenu(MNU_DELETE_RUNG);
 	} else {
 		ProcessMenu(MNU_DELETE_ELEMENT);

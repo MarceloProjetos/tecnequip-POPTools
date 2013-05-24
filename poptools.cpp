@@ -2,10 +2,10 @@
 #include "mcutable.h"
 #include "LadderObjects.h"
 
-extern void Draw_Init(void);
-extern void Draw_Start(void);
-extern void PaintScrollAndSplitter(void);
-extern void Draw_End(void);
+//extern void Draw_Init(void);
+//extern void Draw_Start(void);
+//extern void PaintScrollAndSplitter(void);
+//extern void Draw_End(void);
 
 HINSTANCE   Instance;
 HWND        MainWindow;
@@ -1004,8 +1004,7 @@ void ProcessMenu(int code)
             break;
 
         case MNU_INSERT_COMMENT:
-			if(CanInsertComment)
-				CHANGING_PROGRAM(AddComment(_("--add comment here--")));
+			CHANGING_PROGRAM(AddComment(_("--add comment here--")));
             break;
 
         case MNU_INSERT_PARALLEL:
@@ -1228,11 +1227,11 @@ cmp:
             break;
 
         case MNU_INSERT_RUNG_BEFORE:
-            CHANGING_PROGRAM(InsertRung(FALSE));
+            CHANGING_PROGRAM(InsertRung(false));
             break;
 
         case MNU_INSERT_RUNG_AFTER:
-            CHANGING_PROGRAM(InsertRung(TRUE));
+            CHANGING_PROGRAM(InsertRung(true));
             break;
 
         case MNU_DELETE_RUNG:
@@ -1289,7 +1288,7 @@ cmp:
             break;
 
         case MNU_DELETE_ELEMENT:
-            CHANGING_PROGRAM(DeleteSelectedFromProgram());
+			CHANGING_PROGRAM(ladder.DelElement());
             break;
 
         case MNU_FIND_AND_REPLACE:
@@ -1498,37 +1497,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_PAINT: {
             PAINTSTRUCT ps;
             Hdc = BeginPaint(DrawWindow, &ps);
-			Draw_Start();
 
             // This draws the schematic.
             PaintWindow();
 
-			PaintScrollAndSplitter();
-/*
-			RECT r;
-            // Fill around the scroll bars
-            if(NeedHoriz) {
-                r.top = IoListTop - ScrollHeight - 2;
-                r.bottom = IoListTop - 2;
-                FillRect(Hdc, &r, GetSysColorBrush(COLOR_BTNFACE));
-            }
-            GetClientRect(MainWindow, &r);
-            r.left = r.right - ScrollWidth - 2;
-            FillRect(Hdc, &r, GetSysColorBrush(COLOR_BTNFACE));
-
-            // Draw the splitter thing to grab to resize the I/O listview.
-            GetClientRect(DrawWindow, &r);
-            r.top = IoListTop - 2 - RibbonHeight;
-            r.bottom = IoListTop - RibbonHeight;
-			FillRect(Hdc, &r, GetSysColorBrush(COLOR_3DFACE));
-            r.top = IoListTop - 2 - RibbonHeight;
-            r.bottom = IoListTop - 1 - RibbonHeight;
-            FillRect(Hdc, &r, GetSysColorBrush(COLOR_3DLIGHT));
-            r.top = IoListTop - RibbonHeight;
-            r.bottom = IoListTop + 1 - RibbonHeight;
-            FillRect(Hdc, &r, GetSysColorBrush(COLOR_3DDKSHADOW));
-*/
-			Draw_End();
             EndPaint(DrawWindow, &ps);
 
 			Hdc = BeginPaint(hwnd, &ps);
@@ -1543,12 +1515,21 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_KEYDOWN: {
 			if(wParam != VK_SHIFT && wParam != VK_CONTROL) {
 				KeyboardHandlers_Execute(wParam);
-                InvalidateRect(MainWindow, NULL, FALSE);
+                InvalidateRect(DrawWindow, NULL, FALSE);
             }
             break;
         }
 
-        case WM_LBUTTONDBLCLK: {
+		case WM_LBUTTONUP: {
+            int x = LOWORD(lParam);
+            int y = HIWORD(lParam) - RibbonHeight;
+
+			ladder.MouseClick(x, y, false, false);
+
+			break;
+		}
+
+		case WM_LBUTTONDBLCLK: {
             int x = LOWORD(lParam);
             int y = HIWORD(lParam) - RibbonHeight;
 
@@ -1560,7 +1541,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 CHANGING_PROGRAM(EditElementMouseDoubleclick(x, y));
             }
             InvalidateRect(MainWindow, NULL, FALSE);
-            break;
+
+			ladder.MouseClick(x, y, false, true);
+
+			break;
         }
 
         case WM_LBUTTONDOWN: {
@@ -1576,8 +1560,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 MouseY = pt.y;
                 MouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL,
                         (HOOKPROC)MouseHook, Instance, 0);
-            }
-            if(!InSimulationMode) MoveCursorMouseClick(x, y);
+            } else {
+				ladder.MouseClick(x, y - RibbonHeight, true, false);
+			}
 
             SetFocus(MainWindow);
             InvalidateRect(MainWindow, NULL, FALSE);
@@ -1593,6 +1578,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SetCursor(LoadCursor(NULL, IDC_ARROW));
             }
             
+            InvalidateRect(MainWindow, NULL, FALSE);
             break;
         }
         case WM_MOUSEWHEEL: {
@@ -1949,7 +1935,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
 	SetAutoSaveInterval(POPSettings.AutoSaveInterval);
 
-	// Teste LadderObjects
+	/*/ Teste LadderObjects
 	ladder.AddElement(new LadderElemContact);
 	ladder.AddElement(new LadderElemContact);
 	ladder.AddElement(new LadderElemContact);
@@ -1965,22 +1951,45 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ladder.AddElement(elem);
 	ladder.SelectElement(elem, SELECTED_BELOW);
 
+	elem = new LadderElemTimer(ELEM_TON);
+	ladder.AddElement(elem);
+	ladder.SelectElement(elem, SELECTED_BELOW);
+
 	ladder.AddElement(new LadderElemContact);
+	ladder.AddElement(new LadderElemContact);
+
+	ladder.NewRung(true);
+
+	ladder.AddElement(new LadderElemContact);
+
+	elem = new LadderElemContact;
+	ladder.AddElement(elem);
+	ladder.SelectElement(elem, SELECTED_BELOW);
+
+	ladder.AddElement(new LadderElemContact);
+	ladder.AddElement(new LadderElemCoil);
+
+	ladder.NewRung(false);
+	ladder.AddElement(new LadderElemComment);
 
 	ladder.NewRung(true);
 	ladder.AddElement(new LadderElemContact);
 	LadderElemCoil *coil = new LadderElemCoil;
-	coil->setProperties("teste", true, false, false, IO_TYPE_DIG_OUTPUT, 3);
+	coil->setProperties("teste", true, false, false, IO_TYPE_INTERNAL_RELAY, 3);
 	ladder.AddElement(coil);
 	ladder.SelectElement(coil, SELECTED_ABOVE);
-	bool ok = ladder.AddElement(new LadderElemCoil);
-	ok = ladder.AddElement(new LadderElemMove);
+	ladder.AddElement(new LadderElemCoil);
 	ladder.AddElement(new LadderElemContact);
 	ladder.AddElement(new LadderElemTimer(ELEM_TOF));
 
-	ladder.NewRung(false);
-	ladder.AddElement(new LadderElemComment);
-	// Fim do Teste
+	elem = new LadderElemContact;
+	ladder.AddElement(elem);
+	ladder.SelectElement(elem, SELECTED_BELOW);
+
+	elem = new LadderElemContact;
+	ladder.AddElement(elem);
+	ladder.SelectElement(elem, SELECTED_LEFT);
+	// Fim do Teste */
 
 	if(strlen(lpCmdLine) > 0) {
         char line[MAX_PATH];
@@ -2005,7 +2014,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	Init_MBDev();
 	Init_MBDev_Slave();
 
-	Draw_Init();
+//	Draw_Init();
 
 	MSG msg;
     DWORD ret;

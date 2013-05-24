@@ -325,11 +325,11 @@ BOOL StringToValuesCache(char *str, int *c)
 // I should convert between those two representations on the fly, as the user
 // edit things, so I do.
 //-----------------------------------------------------------------------------
-void ShowLookUpTableDialog(ElemLeaf *l)
+bool ShowLookUpTableDialog(ElemLookUpTable *t)
 {
-	char dest_tmp[MAX_NAME_LEN], index_tmp[MAX_NAME_LEN];
+	bool changed = false;
 
-    ElemLookUpTable *t = &(l->d.lookUpTable);
+	char dest_tmp[MAX_NAME_LEN], index_tmp[MAX_NAME_LEN];
 
     // First copy over all the stuff from the leaf structure; in particular,
     // we need our own local copy of the table entries, because it would be
@@ -437,6 +437,8 @@ void ShowLookUpTableDialog(ElemLeaf *l)
         DestroyLutControls();
 		if(IsValidNameAndType(t->dest , dest_tmp , _("Destino"), VALIDATE_IS_VAR           , GetTypeFromName(dest_tmp ), 0, 0) &&
 		   IsValidNameAndType(t->index, index_tmp, _("Indice" ), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(index_tmp), -10, 50)) {
+			changed = true;
+
 			// The call to DestroyLutControls updated ValuesCache, so just read
 			// them out of there (whichever mode we were in before).
 		    int i;
@@ -454,15 +456,17 @@ void ShowLookUpTableDialog(ElemLeaf *l)
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(LutDialog);
+
+	return changed;
 }
 
 //-----------------------------------------------------------------------------
 // Show the piecewise linear table dialog. This one can only be edited in
 // only a single format, which makes things easier than before.
 //-----------------------------------------------------------------------------
-void ShowPiecewiseLinearDialog(ElemLeaf *l)
+bool ShowPiecewiseLinearDialog(ElemPiecewiseLinear *t)
 {
-    ElemPiecewiseLinear *t = &(l->d.piecewiseLinear);
+	bool changed = false;
 
     // First copy over all the stuff from the leaf structure; in particular,
     // we need our own local copy of the table entries, because it would be
@@ -536,7 +540,10 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
         SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(t->dest));
         SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(t->index));
         DestroyLutControls();
-        // The call to DestroyLutControls updated ValuesCache, so just read
+
+		changed = true;
+
+		// The call to DestroyLutControls updated ValuesCache, so just read
         // them out of there.
         int i;
         for(i = 0; i < count*2; i++) {
@@ -547,4 +554,6 @@ void ShowPiecewiseLinearDialog(ElemLeaf *l)
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(LutDialog);
+
+	return changed;
 }

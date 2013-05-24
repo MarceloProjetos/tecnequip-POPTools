@@ -52,8 +52,10 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
-void ShowResetDialog(char *name)
+bool ShowResetDialog(char *name)
 {
+	bool changed = false;
+
 	char name_tmp[MAX_NAME_LEN];
 
     ResetDialog = CreateWindowClient(0, "POPToolsDialog",
@@ -93,10 +95,14 @@ void ShowResetDialog(char *name)
     if(!DialogCancel) {
 		SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_tmp));
 		if(IsValidNameAndType(name, name_tmp, _("Destino"), VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
-	        strcpy(name, name_tmp);
+	        changed = true;
+
+			strcpy(name, name_tmp);
 		}
     }
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(ResetDialog);
+
+	return changed;
 }
