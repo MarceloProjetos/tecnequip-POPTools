@@ -1014,9 +1014,7 @@ typedef struct McuIoInfoTag {
 // poptools.cpp
 void ProcessMenu(int code);
 void ProgramChanged(void);
-void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
-    BOOL canSetOnly, BOOL canDelete, BOOL canInsertEnd, BOOL canInsertOther,
-    BOOL canPushRungDown, BOOL canPushRungUp, BOOL canInsertComment);
+void SetMenusEnabled(LadderContext *context);
 void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled);
 void RefreshScrollbars(void);
 extern HINSTANCE Instance;
@@ -1251,7 +1249,6 @@ int RemoveParallelStart(int which, void *any);
 bool DeleteSelectedFromProgram(void);
 bool DeleteSelectedRung(void);
 bool InsertRung(bool afterCursor);
-int RungContainingSelected(void);
 BOOL ItemIsLastInCircuit(ElemLeaf *item);
 BOOL UartFunctionUsed(void);
 BOOL PwmFunctionUsed(void);

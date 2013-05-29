@@ -1217,13 +1217,15 @@ cmp:
             break;
 
         case MNU_UNDO:
-            UndoUndo();
-			ProgramChanged();
+			ladder.Undo();
+//            UndoUndo();
+//			ProgramChanged();
             break;
 
         case MNU_REDO:
-            UndoRedo();
-			ProgramChanged();
+			ladder.Redo();
+//            UndoRedo();
+//			ProgramChanged();
             break;
 
         case MNU_INSERT_RUNG_BEFORE:
@@ -1264,8 +1266,7 @@ cmp:
             break;
 
         case MNU_COPY_RUNG: {
-			int i = RungContainingSelected();
-//            CopyLeaf(Selected, SelectedWhich);
+			int i = ladder.RungContainingSelected();
 			if(i >= 0) {
 				CopyRung(Prog.rungs[i]);
 			}
@@ -1273,12 +1274,10 @@ cmp:
 		}
 
         case MNU_PASTE_RUNG_BEFORE:
-//            CHANGING_PROGRAM(PasteLeaf());
             CHANGING_PROGRAM(PasteRung(false));
             break;
 
         case MNU_PASTE_RUNG_AFTER:
-//            CHANGING_PROGRAM(PasteLeaf());
             CHANGING_PROGRAM(PasteRung(true));
             break;
 
@@ -1288,7 +1287,7 @@ cmp:
             break;
 
         case MNU_DELETE_ELEMENT:
-			CHANGING_PROGRAM(ladder.DelElement());
+			CHANGING_PROGRAM(DeleteSelectedFromProgram());
             break;
 
         case MNU_FIND_AND_REPLACE:
@@ -2014,7 +2013,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	Init_MBDev();
 	Init_MBDev_Slave();
 
-//	Draw_Init();
+	SetMenusEnabled(nullptr);
 
 	MSG msg;
     DWORD ret;

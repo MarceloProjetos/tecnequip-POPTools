@@ -166,7 +166,7 @@ void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled, uns
 		if(angle) {
 			xy.x = rf.rect.left + (rf.rect.right  - rf.rect.left)/2;
 			xy.y = rf.rect.top  + (rf.rect.bottom - rf.rect.top )/2;
-			pRT->SetTransform(D2D1::Matrix3x2F::Rotation(angle, xy));
+			pRT->SetTransform(D2D1::Matrix3x2F::Rotation((float)angle, xy));
 		}
 
 		if(filled) {

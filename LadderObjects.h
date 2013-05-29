@@ -1,6 +1,7 @@
 #ifndef LADDEROBJECTS_H
 #define LADDEROBJECTS_H
 
+#include <deque>
 #include <array>
 #include <vector>
 #include <string>
@@ -12,10 +13,33 @@ using namespace std;
 /*** Estruturas auxiliares ***/
 class LadderElem;
 class LadderCircuit;
+class LadderDiagram;
+
+// Estrutura auxiliar que representa um subcircuito
+typedef struct {
+	LadderElem    *elem;
+	LadderCircuit *subckt;
+} Subckt;
+
+#define SUBCKT_STATUS_NOTFOUND 0
+#define SUBCKT_STATUS_FIRST    1
+#define SUBCKT_STATUS_INSIDE   2
+#define SUBCKT_STATUS_LAST     3
+
+typedef struct {
+	unsigned int   point;
+	Subckt         subckt;
+	LadderCircuit *series;
+	LadderCircuit *parallel;
+} InsertionPoint;
 
 typedef struct {
 	LadderElem    *SelectedElem;
+	LadderElem    *ParallelStart;
 	LadderCircuit *SelectedCircuit;
+	LadderDiagram *Diagram;
+
+	int SelectedState;
 
 	bool canNegate;
 	bool canNormal;
@@ -24,21 +48,34 @@ typedef struct {
 	bool canPushUp;
 	bool canPushDown;
 	bool canDelete;
+	bool canDeleteRung;
 	bool canInsertEnd;
 	bool canInsertOther;
 	bool canInsertComment;
 } LadderContext;
+
+// Estrutura auxiliar que representa uma acao de desfazer / refazer
+typedef struct {
+	string         Description;
+
+	LadderElem    *elem;
+	LadderCircuit *subckt;
+	LadderContext  context;
+
+	unsigned int   action;
+	void          *data;
+
+	bool           isDiscard;
+} UndoRedoAction;
 
 /*** Classes representando os elementos do Ladder ***/
 
 // Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base
 class LadderElem {
 private:
-	bool isName;
 	bool isEndOfLine;
 	bool isComment;
 	bool isFormatted;
-	int  selectedState;
 	int  which;
 
 	void Init(void);
@@ -48,7 +85,7 @@ protected:
 
 public:
 	LadderElem(void);
-	LadderElem(bool EOL, bool Comment, bool Formatted, bool Name, int elemWhich);
+	LadderElem(bool EOL, bool Comment, bool Formatted, int elemWhich);
 
 	virtual pair<string, string> DrawTXT(void) = 0;
 	virtual void DrawGUI(void *data) = 0;
@@ -61,15 +98,14 @@ public:
 	inline bool IsEOL         (void) { return isEndOfLine;  }
 	inline bool IsPoweredAfter(void) { return poweredAfter; }
 	inline bool IsFormatted   (void) { return isFormatted;  }
-	inline bool IsName        (void) { return isName;       }
 	inline int  getWhich      (void) { return which;        }
-
-	void Select          (int state) { selectedState = state; }
-	int  getSelectedState(void)      { return selectedState; }
 
 	virtual bool CanInsert(LadderContext context) = 0;
 
 	virtual inline int getWidthTXT(void) = 0;
+
+	// Funcao que executa uma acao de desfazer / refazer
+	virtual bool DoUndoRedo(bool IsUndo, UndoRedoAction action) = 0;
 };
 
 // Classe do elemento PlaceHolder
@@ -89,6 +125,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Comment
@@ -111,6 +150,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void);
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Contato
@@ -137,6 +179,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Bobina
@@ -165,6 +210,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Timer
@@ -190,6 +238,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento RTC
@@ -215,6 +266,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Counter
@@ -238,6 +292,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Reset Timer / Counter
@@ -260,6 +317,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento One Shot
@@ -279,6 +339,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Cmp
@@ -302,6 +365,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Math
@@ -326,6 +392,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 2; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Sqrt
@@ -349,6 +418,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Rand
@@ -373,6 +445,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 2; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Abs
@@ -396,6 +471,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Move
@@ -419,6 +497,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Open & Short
@@ -438,6 +519,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Set Bit
@@ -462,6 +546,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Check Bit
@@ -486,6 +573,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Read A/D
@@ -508,6 +598,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Set D/A
@@ -531,6 +624,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Read Encoder
@@ -553,6 +649,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Reset Encoder
@@ -575,6 +674,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Multiset D/A
@@ -608,6 +710,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Read / Write USS
@@ -634,6 +739,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento ModBUS
@@ -660,6 +768,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Set PWM
@@ -683,6 +794,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Send / Receive UART
@@ -705,6 +819,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Master Relay
@@ -724,6 +841,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Shift Register
@@ -747,6 +867,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Look Up Table
@@ -774,6 +897,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Piecewise Linear
@@ -799,6 +925,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Formatted String
@@ -822,6 +951,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 2; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Read / Write Yaskawa
@@ -846,6 +978,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 2; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento Persist
@@ -868,6 +1003,9 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 // Classe do elemento X
@@ -889,15 +1027,12 @@ public:
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 /*** Classe representando os circuitos (Serie / Paralelo) ***/
-
-// Estrutura auxiliar que representa um subcircuito
-typedef struct {
-	LadderElem    *elem;
-	LadderCircuit *subckt;
-} Subckt;
 
 class LadderCircuit {
 private:
@@ -908,9 +1043,14 @@ private:
 	bool DrawElementTXT(vector< vector<int> > &DisplayMatrix, LadderElem *elem, int *cx, int *cy, bool poweredBefore);
 	void VerticalWireTXT(int cx, int cy);
 
+protected:
+	bool InsertSubckt(Subckt s, int pos);
+
 public:
 	LadderCircuit(void);
 	LadderCircuit(bool newSeries);
+
+	~LadderCircuit(void);
 
 	bool DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *cy, bool poweredBefore, int ColsAvailable);
 	void DrawGUI(void *data);
@@ -925,21 +1065,46 @@ public:
 
 	unsigned int   getSize(void) { return vectorSubckt.size(); }
 	LadderCircuit *getSubcktForElement(LadderElem *elem);
-	Subckt         getSubckt(unsigned int pos);
+	Subckt         getSubckt(unsigned int pos, bool remove = true);
 
 	int            getWidthTXT (int ColsAvailable);
 	int            getHeightTXT(void);
 
 	void AddPlaceHolderIfNoEOL(void);
 	bool AddElement(LadderElem *elem, LadderContext &context);
+	bool InsertParallel(LadderElem *elem, unsigned int start, unsigned int end, LadderContext &context);
 	bool DelElement(LadderElem *elem, LadderContext &context);
 
 	void RemoveUnnecessarySubckts(void);
+
+	int SearchMatch(LadderCircuit *series, int direction);
+	int ElemInSubcktSeries(LadderContext &context, InsertionPoint *point);
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 /*** Classe representando o Diagrama Ladder ***/
 class LadderDiagram {
 private:
+	// Undo / Redo Action Lists
+	unsigned int CheckPointLevels;
+	unsigned int CheckPointLevelsMax;
+
+	deque<UndoRedoAction> UndoList;
+	deque<UndoRedoAction> RedoList;
+
+	void DiscardCheckpoint(bool isUndo = true);
+
+	// Estrutura de dados para acoes de Desfazer / Refazer
+	enum UndoRedoActionsEnum { eCheckpoint = 0, ePushRung };
+	union UndoRedoData {
+		struct {
+			int  pos;
+			bool isUp;
+		} PushRung;
+	};
+
 	// Context properties
 	LadderContext context;
 
@@ -958,6 +1123,8 @@ private:
 
 	bool IsSelectedVisible(void);
 
+	bool InsertParallel(LadderElem *elem);
+
 public:
 	LadderDiagram(void);
 
@@ -966,6 +1133,10 @@ public:
 
 	int getWidthTXT (void);
 	int getHeightTXT(void);
+
+	LadderContext getContext(void) { return context; }
+
+	void ClearDiagram(void);
 
 	void SelectElement(LadderElem *elem, int state);
 
@@ -979,11 +1150,24 @@ public:
 	bool IsRungEmpty(unsigned int n);
 	void NewRung(bool isAfter);
 	bool PushRung(int rung, bool up);
+	bool DeleteRung(int rung);
 
 	void DrawTXT(int OffsetX);
 	void DrawGUI(void);
 
 	void MouseClick(int x, int y, bool isDown, bool isDouble);
+
+	bool AddParallelStart(void);
+
+	// Funcoes relacionadas aos comandos de Desfazer / Refazer
+	void RegisterAction(UndoRedoAction Action, bool isUndo = true);
+	void Checkpoint    (string description);
+	void UndoRedo      (bool isUndo);
+	void Undo          (void) { UndoRedo( true); }
+	void Redo          (void) { UndoRedo(false); }
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
 };
 
 #endif

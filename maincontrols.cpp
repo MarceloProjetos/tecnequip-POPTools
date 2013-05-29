@@ -216,25 +216,36 @@ void UpdateMainWindowTitleBar(void)
 // Set the enabled state of the logic menu items to reflect where we are on
 // the schematic (e.g. can't insert two coils in series).
 //-----------------------------------------------------------------------------
-void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
-    BOOL canSetOnly, BOOL canDelete, BOOL canInsertEnd, BOOL canInsertOther,
-    BOOL canPushDown, BOOL canPushUp, BOOL canInsertComment)
+void SetMenusEnabled(LadderContext *context)
 {
-    EnableInterfaceItem(MNU_PUSH_RUNG_UP, canPushUp);
-    EnableInterfaceItem(MNU_PUSH_RUNG_DOWN, canPushDown);
-    EnableInterfaceItem(MNU_DELETE_RUNG, (Prog.numRungs > 1));
+	static bool InitOK = false;
+	static LadderContext PreInitContext;
 
-    EnableInterfaceItem(MNU_NEGATE, canNegate);
-    EnableInterfaceItem(MNU_MAKE_NORMAL, canNormal);
-    EnableInterfaceItem(MNU_MAKE_RESET_ONLY, canResetOnly);
-    EnableInterfaceItem(MNU_MAKE_SET_ONLY, canSetOnly);
+	if(!InitOK) {
+		if(context == nullptr) {
+			InitOK = true;
+			context = &PreInitContext;
+		} else {
+			PreInitContext = *context;
+			return;
+		}
+	}
 
-    EnableInterfaceItem(MNU_INSERT_COMMENT, canInsertComment);
+	EnableInterfaceItem(MNU_PUSH_RUNG_UP, context->canPushUp);
+    EnableInterfaceItem(MNU_PUSH_RUNG_DOWN, context->canPushDown);
+    EnableInterfaceItem(MNU_DELETE_RUNG, context->canDeleteRung);
 
-    EnableInterfaceItem(MNU_DELETE_ELEMENT, canDelete);
+    EnableInterfaceItem(MNU_NEGATE, context->canNegate);
+    EnableInterfaceItem(MNU_MAKE_NORMAL, context->canNormal);
+    EnableInterfaceItem(MNU_MAKE_RESET_ONLY, context->canResetOnly);
+    EnableInterfaceItem(MNU_MAKE_SET_ONLY, context->canSetOnly);
+
+    EnableInterfaceItem(MNU_INSERT_COMMENT, context->canInsertComment);
+
+    EnableInterfaceItem(MNU_DELETE_ELEMENT, context->canDelete);
 
     int t;
-    t = canInsertEnd;
+    t = context->canInsertEnd;
     EnableInterfaceItem(MNU_INSERT_COIL, t);
     EnableInterfaceItem(MNU_INSERT_RES, t);
     EnableInterfaceItem(MNU_INSERT_MOV, t);
@@ -260,7 +271,7 @@ void SetMenusEnabled(BOOL canNegate, BOOL canNormal, BOOL canResetOnly,
 	EnableInterfaceItem(MNU_INSERT_ABS, t);
 	EnableInterfaceItem(MNU_INSERT_RAND, t);
 
-    t = canInsertOther;
+    t = context->canInsertOther;
     EnableInterfaceItem(MNU_INSERT_TON, t);
     EnableInterfaceItem(MNU_INSERT_TOF, t);
     EnableInterfaceItem(MNU_INSERT_OSR, t);

@@ -21,6 +21,7 @@ typedef struct {
 	RECT  regionSelected;
 	bool  expanded;
 	bool  DontDraw;
+	LadderContext *context;
 } tDataDrawGUI;
 
 /*** Fim das estruturas auxiliares ***/
@@ -87,11 +88,11 @@ public:
 	void DrawStart(int OffsetX, int OffsetY);
 	void DrawEnd  (void);
 
-	void DrawElementBox(LadderElem *elem, POINT StartTopLeft);
-	RECT DrawElementBox(LadderElem *elem, POINT StartTopLeft, POINT GridSize, string ElemName = "teste", bool ShowExpand = true);
-	void DrawElementBox(LadderElem *elem, POINT StartTopLeft, pair<string, string> txt);
+	void DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft);
+	RECT DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, POINT GridSize, string ElemName = "teste", bool ShowExpand = true);
+	void DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, pair<string, string> txt);
 
-	RECT DrawElementBar(LadderElem *elem, int StartGridY, int GridHeight);
+	RECT DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight);
 
 	pair<POINT, POINT> DrawWire(POINT StartPoint, POINT EndPoint, bool StartHasConnectionDot);
 
@@ -347,11 +348,10 @@ void LadderGUI::DrawEnd(void)
 	EndDraw();
 }
 
-RECT LadderGUI::DrawElementBar(LadderElem *elem, int StartGridY, int GridHeight)
+RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight)
 {
 	RECT r, rCursor;
 	POINT start, size = DiagramSize;
-	int SelectedState = elem != nullptr ? elem->getSelectedState() : SELECTED_NONE;
 
 	start.x = 0;
 	start.y = StartGridY;
@@ -391,10 +391,9 @@ RECT LadderGUI::DrawElementBar(LadderElem *elem, int StartGridY, int GridHeight)
 	return r;
 }
 
-RECT LadderGUI::DrawElementBox(LadderElem *elem, POINT StartTopLeft, POINT GridSize, string ElemName, bool ShowExpand)
+RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, POINT GridSize, string ElemName, bool ShowExpand)
 {
 	bool isMouseOver;
-	int SelectedState = elem != nullptr ? elem->getSelectedState() : SELECTED_NONE;
 	RECT r = getRECT(StartTopLeft, GridSize);
 
 	isMouseOver = MouseOver(r);
@@ -548,14 +547,14 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, POINT StartTopLeft, POINT GridS
 	return r;
 }
 
-void LadderGUI::DrawElementBox(LadderElem *elem, POINT StartTopLeft)
+void LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft)
 {
 	POINT size = { 1, 1 };
 
-	DrawElementBox(elem, StartTopLeft, size);
+	DrawElementBox(elem, SelectedState, StartTopLeft, size);
 }
 
-void LadderGUI::DrawElementBox(LadderElem *elem, POINT StartTopLeft, pair<string, string> txt)
+void LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, pair<string, string> txt)
 {
 	RECT r;
 	POINT size;
@@ -564,7 +563,7 @@ void LadderGUI::DrawElementBox(LadderElem *elem, POINT StartTopLeft, pair<string
 	size.x = 1 + (txt_size / Grid1x1.x);
 	size.y = 1;
 
-	r = DrawElementBox(elem, StartTopLeft, size);
+	r = DrawElementBox(elem, SelectedState, StartTopLeft, size);
 	r.top += 2;
 	r.left += (r.right - r.left - txt_size)/2;
 	DrawText(txt.first.c_str(), r, 0, HighlightColoursBrush.name);
@@ -665,7 +664,8 @@ void DrawGenericGUI(LadderElem *elem, void *data)
 
 	if(ddg->DontDraw) return;
 
-	RECT r = gui.DrawElementBox(elem, ddg->start, ddg->size, _("???"));
+	int SelectedState = ddg->context->SelectedElem == elem ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(elem, SelectedState, ddg->start, ddg->size, _("???"));
 	ddg->region = r;
 }
 
@@ -687,7 +687,7 @@ bool LadderElemPlaceHolder::ShowDialog(void) { return false; }
 void LadderElemPlaceHolder::DrawGUI(void *data)
 {
 	RECT rCursor;
-	int SelectedState = getSelectedState();
+	int SelectedState;
 	POINT start, end, GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 	pair<POINT, POINT> WireCoords;
@@ -696,6 +696,8 @@ void LadderElemPlaceHolder::DrawGUI(void *data)
 	ddg->size.y = 2;
 
 	if(ddg->DontDraw) return;
+
+	SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 
 	start = ddg->start;
 	end.x = start.x - 1;
@@ -744,7 +746,8 @@ void LadderElemComment::DrawGUI(void *data)
 
 	if(ddg->DontDraw) return;
 
-	RECT r = ddg->region = gui.DrawElementBar(this, ddg->start.y, ddg->size.y);
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = ddg->region = gui.DrawElementBar(this, SelectedState, ddg->start.y, ddg->size.y);
 	gui.AddCommand(this, r, CmdSelectBelow, false);
 
 	RECT rDialog = r;
@@ -813,7 +816,8 @@ void LadderElemContact::DrawGUI(void *data)
 
 	if(ddg->DontDraw) return;
 
-	RECT r = gui.DrawElementBox(this, ddg->start, ddg->size, _("CONTATO"));
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("CONTATO"));
 	ddg->region = r;
 
 	// Escreve o nome do contato
@@ -902,7 +906,8 @@ void LadderElemCoil::DrawGUI(void *data)
 
 	DoEOL(start, size, ddg->size);
 
-	RECT r = gui.DrawElementBox(this, start, ddg->size, _("BOBINA"));
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, start, ddg->size, _("BOBINA"));
 	ddg->region = r;
 
 	// Escreve o nome da bobina
@@ -1049,7 +1054,8 @@ void LadderElemOneShot::DrawGUI(void *data)
 
 	if(ddg->DontDraw) return;
 
-	RECT r = gui.DrawElementBox(this, start, ddg->size, ddg->expanded ? (isOSR ? _("BORDA DE SUBIDA") : _("BORDA DE DESCIDA")) : _("BORDA"), true);
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, start, ddg->size, ddg->expanded ? (isOSR ? _("BORDA DE SUBIDA") : _("BORDA DE DESCIDA")) : _("BORDA"), true);
 	ddg->region = r;
 
 	//                                                   _
@@ -1718,6 +1724,7 @@ void LadderElemX::DrawGUI(void *data)
 void LadderCircuit::DrawGUI(void *data)
 {
 	int max = 0;
+	bool FirstIsParallelStart = false;
 	POINT StartWire, EndWire, PreviousWire;
 	bool isFirstElement = true, HasEOL = false;
 	vector<Subckt>::iterator it;
@@ -1732,6 +1739,7 @@ void LadderCircuit::DrawGUI(void *data)
 
 	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
 		ElemDDG.size           = ddg->size;
+		ElemDDG.context        = ddg->context;
 		ElemDDG.region         = RegionZero;
 		ElemDDG.regionSelected = RegionZero;
 
@@ -1740,10 +1748,11 @@ void LadderCircuit::DrawGUI(void *data)
 			ElemDDG.expanded = gui.IsExpanded(it->elem);
 			it->elem->DrawGUI(&ElemDDG);
 
-			if(it->elem->getSelectedState() != SELECTED_NONE) {
+			if(it->elem == ddg->context->SelectedElem) {
 				ddg->regionSelected = gui.getRECT(ElemDDG.start, ElemDDG.size);
 			}
 		} else {
+			HasEOL |= it->subckt->HasEOL();
 			it->subckt->DrawGUI(&ElemDDG);
 			if(!IsRegionZero(ElemDDG.regionSelected)) {
 				ddg->regionSelected = ElemDDG.regionSelected;
@@ -1757,6 +1766,18 @@ void LadderCircuit::DrawGUI(void *data)
 			}
 		} else {
 			if(ddg->DontDraw == false) {
+				bool isParallelStart = ddg->context->ParallelStart != nullptr &&
+					it->elem == ddg->context->ParallelStart;
+
+				// Salva o ponto final do elemento atual para poder fazer a ligacao no final
+				if(isFirstElement || !isParallelStart) {
+					if(isParallelStart) {
+						FirstIsParallelStart = isFirstElement;
+					}
+					POINT xy = { ElemDDG.start.x + ElemDDG.size.x, ElemDDG.start.y };
+					EndPoints.push_back(xy);
+				}
+
 				// Desenha a linha de ligacao
 				if(isFirstElement) {
 					isFirstElement = false;
@@ -1766,10 +1787,6 @@ void LadderCircuit::DrawGUI(void *data)
 					EndWire   = ElemDDG.start;
 					gui.DrawWire(StartWire, EndWire, true);
 				}
-
-				// Salva o ponto final do elemento atual para poder fazer a ligacao no final
-				POINT xy = { ElemDDG.start.x + ElemDDG.size.x, ElemDDG.start.y };
-				EndPoints.push_back(xy);
 			}
 
 			// Atualiza as coordenadas para o proximo elemento
@@ -1794,7 +1811,7 @@ void LadderCircuit::DrawGUI(void *data)
 				// Desenha a linha horizontal
 				StartWire = EndWire = *itPoint;
 				EndWire.x = ddg->start.x + max;
-				if(StartWire.x < EndWire.x) {
+				if(StartWire.x < EndWire.x && (itPoint != EndPoints.begin() || !FirstIsParallelStart)) {
 					gui.DrawWire(StartWire, EndWire, false);
 				}
 
@@ -1805,7 +1822,7 @@ void LadderCircuit::DrawGUI(void *data)
 					EndWire.x++; // Avanca 1 posicao no grid pois a linha vertical se desenha a esquerda
 					StartWire.x = EndWire.x;
 					StartWire.y = PreviousWire.y;
-					gui.DrawWire(StartWire, EndWire, true);
+					gui.DrawWire(StartWire, EndWire, itPoint != (EndPoints.begin() + 1) || !FirstIsParallelStart);
 				}
 
 				PreviousWire.y = EndWire.y;
@@ -1839,7 +1856,7 @@ void LadderDiagram::DrawGUI(void)
 	POINT SizeMax = { 0, 0 };
 
 	vector<LadderCircuit>::size_type i;
-	tDataDrawGUI RungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true };
+	tDataDrawGUI RungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, &context };
 
 	for(i = 0; i < rungs.size(); i++) {
 		rungs[i]->DrawGUI(&RungDDG);
@@ -1923,7 +1940,7 @@ bool LadderDiagram::IsSelectedVisible(void)
 	if(context.SelectedElem == nullptr) return false;
 
 	vector<LadderCircuit>::size_type i;
-	tDataDrawGUI RungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true };
+	tDataDrawGUI RungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, &context };
 
 	for(i = 0; i < rungs.size(); i++) {
 		rungs[i]->DrawGUI(&RungDDG);
