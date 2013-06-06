@@ -1218,14 +1218,10 @@ cmp:
 
         case MNU_UNDO:
 			ladder.Undo();
-//            UndoUndo();
-//			ProgramChanged();
             break;
 
         case MNU_REDO:
 			ladder.Redo();
-//            UndoRedo();
-//			ProgramChanged();
             break;
 
         case MNU_INSERT_RUNG_BEFORE:
@@ -1257,32 +1253,29 @@ cmp:
             break;
 
         case MNU_COPY_ELEMENT: {
-            CopyLeaf(Selected, SelectedWhich);
+			ladder.CopyElement();
             break;
 		}
 
         case MNU_PASTE_ELEMENT:
-            CHANGING_PROGRAM(PasteLeaf());
+			CHANGING_PROGRAM(ladder.PasteElement());
             break;
 
         case MNU_COPY_RUNG: {
-			int i = ladder.RungContainingSelected();
-			if(i >= 0) {
-				CopyRung(Prog.rungs[i]);
-			}
+			ladder.CopyRung();
             break;
 		}
 
         case MNU_PASTE_RUNG_BEFORE:
-            CHANGING_PROGRAM(PasteRung(false));
+            CHANGING_PROGRAM(ladder.PasteRung(false));
             break;
 
         case MNU_PASTE_RUNG_AFTER:
-            CHANGING_PROGRAM(PasteRung(true));
+            CHANGING_PROGRAM(ladder.PasteRung(true));
             break;
 
         case MNU_CUT_ELEMENT:
-			CopyLeaf(Selected, SelectedWhich);
+			ladder.CopyElement();
             CHANGING_PROGRAM(DeleteSelectedFromProgram());
             break;
 
@@ -1933,62 +1926,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     ShowWindow(MainWindow, SW_SHOW);
     SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
 	SetAutoSaveInterval(POPSettings.AutoSaveInterval);
-
-	/*/ Teste LadderObjects
-	ladder.AddElement(new LadderElemContact);
-	ladder.AddElement(new LadderElemContact);
-	ladder.AddElement(new LadderElemContact);
-
-	LadderElem *elem = new LadderElemContact;
-	ladder.AddElement(elem);
-	ladder.SelectElement(elem, SELECTED_BELOW);
-
-	ladder.AddElement(new LadderElemContact);
-	ladder.AddElement(new LadderElemContact);
-
-	elem = new LadderElemContact;
-	ladder.AddElement(elem);
-	ladder.SelectElement(elem, SELECTED_BELOW);
-
-	elem = new LadderElemTimer(ELEM_TON);
-	ladder.AddElement(elem);
-	ladder.SelectElement(elem, SELECTED_BELOW);
-
-	ladder.AddElement(new LadderElemContact);
-	ladder.AddElement(new LadderElemContact);
-
-	ladder.NewRung(true);
-
-	ladder.AddElement(new LadderElemContact);
-
-	elem = new LadderElemContact;
-	ladder.AddElement(elem);
-	ladder.SelectElement(elem, SELECTED_BELOW);
-
-	ladder.AddElement(new LadderElemContact);
-	ladder.AddElement(new LadderElemCoil);
-
-	ladder.NewRung(false);
-	ladder.AddElement(new LadderElemComment);
-
-	ladder.NewRung(true);
-	ladder.AddElement(new LadderElemContact);
-	LadderElemCoil *coil = new LadderElemCoil;
-	coil->setProperties("teste", true, false, false, IO_TYPE_INTERNAL_RELAY, 3);
-	ladder.AddElement(coil);
-	ladder.SelectElement(coil, SELECTED_ABOVE);
-	ladder.AddElement(new LadderElemCoil);
-	ladder.AddElement(new LadderElemContact);
-	ladder.AddElement(new LadderElemTimer(ELEM_TOF));
-
-	elem = new LadderElemContact;
-	ladder.AddElement(elem);
-	ladder.SelectElement(elem, SELECTED_BELOW);
-
-	elem = new LadderElemContact;
-	ladder.AddElement(elem);
-	ladder.SelectElement(elem, SELECTED_LEFT);
-	// Fim do Teste */
 
 	if(strlen(lpCmdLine) > 0) {
         char line[MAX_PATH];

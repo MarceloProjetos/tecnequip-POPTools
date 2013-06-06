@@ -1,5 +1,40 @@
 #include "poptools.h"
 
+// Funcao apenas devido a compatibilidade com codigo antigo.
+// Quando nao for mais necessaria, deve ser removida.
+int RemoveParallelStart(int which, void *any)
+{
+	int ret = SUBCKT_STATUS_NOTFOUND;
+	return ret;
+}
+
+// Funcao auxiliar que entrega um contexto "vazio"
+LadderContext getEmptyContext(void)
+{
+	LadderContext context;
+
+	context.canNegate        = false;
+	context.canNormal        = false;
+	context.canSetOnly       = false;
+	context.canResetOnly     = false;
+	context.canPushUp        = false;
+	context.canPushDown      = false;
+	context.canDelete        = false;
+	context.canDeleteRung    = false;
+	context.canInsertEnd     = false;
+	context.canInsertOther   = false;
+	context.canInsertComment = false;
+
+	context.SelectedCircuit  = nullptr;
+	context.SelectedElem     = nullptr;
+	context.SelectedState    = SELECTED_NONE;
+
+	context.Diagram          = nullptr;
+	context.ParallelStart    = nullptr;
+
+	return context;
+}
+
 //Classe LadderElem
 void LadderElem::Init(void)
 {
@@ -20,6 +55,65 @@ LadderElem::LadderElem(bool EOL, bool Comment, bool Formatted, int elemWhich)
 	isEndOfLine = EOL;
 	isComment   = Comment;
 	isFormatted = Formatted;
+}
+
+void LadderElem::setProperties(LadderContext context, void *propData)
+{
+	// Registro da acao para desfazer / refazer
+	UndoRedoAction action;
+	UndoRedoData *data = new UndoRedoData;
+
+	data->SetProp.data = getProperties();
+
+	action.action        = eSetProp;
+	action.contextAfter  = getEmptyContext();
+	action.contextBefore = context;
+	action.data          = data;
+	action.elem          = this;
+	action.subckt        = nullptr;
+
+	context.Diagram->CheckpointBegin(_("Alterado Elemento"));
+	context.Diagram->RegisterAction(action);
+
+	// Altera as propriedades do elemento
+	internalSetProperties(propData);
+
+	// Finaliza a operacao
+	context.Diagram->CheckpointEnd();
+}
+
+// Funcao que executa uma acao de desfazer / refazer
+bool LadderElem::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
+{
+	void *olddata;
+	bool ret = true;
+	UndoRedoData *data = (UndoRedoData *)action.data;
+
+	switch(action.action) {
+	case eSetProp: {
+		if(isDiscard) {
+			ret = internalDoUndoRedo(IsUndo, isDiscard, action);
+			if(ret) {
+				delete data->SetProp.data;
+			}
+		} else {
+			olddata = getProperties();
+			internalSetProperties(data->SetProp.data);
+			delete data->SetProp.data;
+			data->SetProp.data = olddata;
+		}
+		break;
+	}
+
+	default: ret = internalDoUndoRedo(IsUndo, isDiscard, action);
+	}
+
+	// Se estamos descartando, desaloca a estrutura que representa a acao
+	if(isDiscard && ret) {
+		delete data;
+	}
+
+	return ret; // Nada mais a fazer
 }
 
 // Classe LadderElemPlaceHolder
@@ -43,7 +137,14 @@ bool LadderElemPlaceHolder::CanInsert(LadderContext context)
 		(context.SelectedElem == nullptr || context.SelectedElem->getWhich() != ELEM_PLACEHOLDER);
 }
 
-bool LadderElemPlaceHolder::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+LadderElem *LadderElemPlaceHolder::Clone(void)
+{
+	LadderElemPlaceHolder *clone = new LadderElemPlaceHolder();
+
+	return clone;
+}
+
+bool LadderElemPlaceHolder::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -51,7 +152,7 @@ bool LadderElemPlaceHolder::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemComment
 LadderElemComment::LadderElemComment(void) : LadderElem(false, true, false, ELEM_COMMENT)
 {
-	str = _("--add comment here--");
+	prop.str = _("--add comment here--");
 }
 
 pair<string, string> LadderElemComment::DrawTXT(void)
@@ -61,7 +162,7 @@ pair<string, string> LadderElemComment::DrawTXT(void)
 	char tbuf[MAX_COMMENT_LEN];
 	char tlbuf[MAX_COMMENT_LEN+8];
 
-	strcpy(tbuf, str.c_str());
+	strcpy(tbuf, prop.str.c_str());
 	char *b = strchr(tbuf, '\n');
 
 	if(b) {
@@ -88,16 +189,27 @@ bool LadderElemComment::CanInsert(LadderContext context)
 	return context.canInsertComment;
 }
 
-void LadderElemComment::setProperties(string newStr)
+void LadderElemComment::internalSetProperties(void *data)
 {
-	str = newStr;
+	LadderElemCommentProp *newProp = (LadderElemCommentProp *)data;
+
+	prop.str    = newProp->str;
+}
+
+void *LadderElemComment::getProperties(void)
+{
+	LadderElemCommentProp *curProp = new LadderElemCommentProp;
+
+	curProp->str    = prop.str;
+
+	return curProp;
 }
 
 inline int LadderElemComment::getWidthTXT(void)
 {
 	char tbuf[MAX_COMMENT_LEN];
 
-	strcpy(tbuf, str.c_str());
+	strcpy(tbuf, prop.str.c_str());
 	char *b = strchr(tbuf, '\n');
 
 	int len;
@@ -111,7 +223,15 @@ inline int LadderElemComment::getWidthTXT(void)
 	return  (len + 7 + (POS_WIDTH-1)) / POS_WIDTH;
 }
 
-bool LadderElemComment::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+LadderElem *LadderElemComment::Clone(void)
+{
+	LadderElemComment *clone = new LadderElemComment();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemComment::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -119,10 +239,10 @@ bool LadderElemComment::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemContact
 LadderElemContact::LadderElemContact(void) : LadderElem(false, false, false, ELEM_CONTACTS)
 {
-	name    = _("in");
-	negated = false;
-	type    = IO_TYPE_DIG_INPUT;
-	bit     = 0;
+	prop.name    = _("in");
+	prop.negated = false;
+	prop.type    = IO_TYPE_DIG_INPUT;
+	prop.bit     = 0;
 }
 
 pair<string, string> LadderElemContact::DrawTXT(void)
@@ -130,12 +250,12 @@ pair<string, string> LadderElemContact::DrawTXT(void)
 	char ch, buf[4], name_with_type[MAX_NAME_LEN+4];
 
 	buf[0] = ']';
-	buf[1] = negated ? '/' : ' ';
+	buf[1] = prop.negated ? '/' : ' ';
 	buf[2] = '[';
 	buf[3] = '\0';
 
 	// TODO: Internacionalizar
-	switch(type) {
+	switch(prop.type) {
 	case IO_TYPE_DIG_INPUT:
 		ch = 'E';
 		break;
@@ -156,7 +276,7 @@ pair<string, string> LadderElemContact::DrawTXT(void)
 		ch = '?';
 		break;
 	}
-	sprintf(name_with_type, "%s (%c)", name.c_str(), ch);
+	sprintf(name_with_type, "%s (%c)", prop.name.c_str(), ch);
 
 	return pair<string, string>(name_with_type, buf);
 }
@@ -164,14 +284,14 @@ pair<string, string> LadderElemContact::DrawTXT(void)
 bool LadderElemContact::GenerateIntCode(IntCode &ic)
 {
 	string buf;
-	if(type == IO_TYPE_INTERNAL_FLAG) {
-		buf = "$" + name;
+	if(prop.type == IO_TYPE_INTERNAL_FLAG) {
+		buf = "$" + prop.name;
 	} else {
-		buf = name;
+		buf = prop.name;
 	}
 
-	ic.OpBit(negated ? INT_IF_BIT_SET : INT_IF_BIT_CLEAR, buf.c_str(), bit);
-		ic.OpBit(INT_CLEAR_BIT, ic.getStateInOut(), bit);
+	ic.OpBit(prop.negated ? INT_IF_BIT_SET : INT_IF_BIT_CLEAR, buf.c_str(), prop.bit);
+		ic.OpBit(INT_CLEAR_BIT, ic.getStateInOut(), prop.bit);
 	ic.Op   (INT_END_IF);
 
 	return true;
@@ -182,23 +302,37 @@ bool LadderElemContact::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemContact::getProperties(string &curName, bool &curNegated, unsigned int &curType, unsigned char &curBit)
+void *LadderElemContact::getProperties(void)
 {
-	curName    = name;
-	curNegated = negated;
-	curType    = type;
-	curBit     = bit;
+	LadderElemContactProp *curProp = new LadderElemContactProp;
+
+	curProp->name    = prop.name;
+	curProp->negated = prop.negated;
+	curProp->type    = prop.type;
+	curProp->bit     = prop.bit;
+
+	return curProp;
 }
 
-void LadderElemContact::setProperties(string newName, bool newNegated, unsigned int newType, unsigned char newBit)
+void LadderElemContact::internalSetProperties(void *data)
 {
-	name    = newName;
-	negated = newNegated;
-	type    = newType;
-	bit     = newBit;
+	LadderElemContactProp *newProp = (LadderElemContactProp *)data;
+
+	prop.name    = newProp->name;
+	prop.negated = newProp->negated;
+	prop.type    = newProp->type;
+	prop.bit     = newProp->bit;
 }
 
-bool LadderElemContact::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+LadderElem *LadderElemContact::Clone(void)
+{
+	LadderElemContact *clone = new LadderElemContact();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemContact::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -206,12 +340,12 @@ bool LadderElemContact::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemCoil
 LadderElemCoil::LadderElemCoil(void) : LadderElem(true, false, false, ELEM_COIL)
 {
-	name      = _("out");
-	negated   = false;
-	setOnly   = false;
-	resetOnly = false;
-	type      = IO_TYPE_DIG_OUTPUT;
-	bit       = 0;
+	prop.name      = _("out");
+	prop.negated   = false;
+	prop.setOnly   = false;
+	prop.resetOnly = false;
+	prop.type      = IO_TYPE_DIG_OUTPUT;
+	prop.bit       = 0;
 }
 
 pair<string, string> LadderElemCoil::DrawTXT(void)
@@ -219,11 +353,11 @@ pair<string, string> LadderElemCoil::DrawTXT(void)
 	char buf[4], name_with_type[MAX_NAME_LEN+4];
 
     buf[0] = '(';
-    if(negated) {
+    if(prop.negated) {
         buf[1] = '/';
-    } else if(setOnly) {
+    } else if(prop.setOnly) {
         buf[1] = 'S';
-    } else if(resetOnly) {
+    } else if(prop.resetOnly) {
         buf[1] = 'R';
     } else {
         buf[1] = ' ';
@@ -232,7 +366,7 @@ pair<string, string> LadderElemCoil::DrawTXT(void)
     buf[3] = '\0';
 
 	// TODO: Internacionalizar
-	sprintf(name_with_type, "%s (%c)", name.c_str(), type == IO_TYPE_DIG_OUTPUT ? 'S' : 'R');
+	sprintf(name_with_type, "%s (%c)", prop.name.c_str(), prop.type == IO_TYPE_DIG_OUTPUT ? 'S' : 'R');
 
 	return pair<string, string>(name_with_type, buf);
 }
@@ -240,22 +374,22 @@ pair<string, string> LadderElemCoil::DrawTXT(void)
 bool LadderElemCoil::GenerateIntCode(IntCode &ic)
 {
 	const char *stateInOut = ic.getStateInOut();
-	if(negated) {
+	if(prop.negated) {
 		ic.Op(INT_IF_BIT_SET, stateInOut);
-		ic.OpBit(INT_CLEAR_BIT, name.c_str(), bit);
+		ic.OpBit(INT_CLEAR_BIT, prop.name.c_str(), prop.bit);
 		ic.Op(INT_ELSE);
-		ic.OpBit(INT_SET_BIT, name.c_str(), bit);
+		ic.OpBit(INT_SET_BIT, prop.name.c_str(), prop.bit);
 		ic.Op(INT_END_IF);
-	} else if(setOnly) {
-		ic.OpBit(INT_IF_BIT_SET, stateInOut, bit);
-		ic.OpBit(INT_SET_BIT, name.c_str(), bit);
+	} else if(prop.setOnly) {
+		ic.OpBit(INT_IF_BIT_SET, stateInOut, prop.bit);
+		ic.OpBit(INT_SET_BIT, prop.name.c_str(), prop.bit);
 		ic.Op(INT_END_IF);
-	} else if(resetOnly) {
-		ic.OpBit(INT_IF_BIT_SET, stateInOut, bit);
-		ic.OpBit(INT_CLEAR_BIT, name.c_str(), bit);
+	} else if(prop.resetOnly) {
+		ic.OpBit(INT_IF_BIT_SET, stateInOut, prop.bit);
+		ic.OpBit(INT_CLEAR_BIT, prop.name.c_str(), prop.bit);
 		ic.Op(INT_END_IF);
 	} else {
-		ic.OpBit(INT_COPY_BIT_TO_BIT, name.c_str(), stateInOut, bit);
+		ic.OpBit(INT_COPY_BIT_TO_BIT, prop.name.c_str(), stateInOut, prop.bit);
 	}
 
 	return true;
@@ -266,18 +400,41 @@ bool LadderElemCoil::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemCoil::setProperties(string newName, bool newNegated, bool newSetOnly, bool newResetOnly,
-	unsigned int newType, unsigned char newBit)
+void LadderElemCoil::internalSetProperties(void *data)
 {
-	name      = newName;
-	negated   = newNegated;
-	setOnly   = newSetOnly;
-	resetOnly = newResetOnly;
-	type      = newType;
-	bit       = newBit;
+	LadderElemCoilProp *newProp = (LadderElemCoilProp *)data;
+
+	prop.name      = newProp->name;
+	prop.negated   = newProp->negated;
+	prop.setOnly   = newProp->setOnly;
+	prop.resetOnly = newProp->resetOnly;
+	prop.type      = newProp->type;
+	prop.bit       = newProp->bit;
 }
 
-bool LadderElemCoil::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemCoil::getProperties(void)
+{
+	LadderElemCoilProp *curProp = new LadderElemCoilProp;
+
+	curProp->name      = prop.name;
+	curProp->negated   = prop.negated;
+	curProp->setOnly   = prop.setOnly;
+	curProp->resetOnly = prop.resetOnly;
+	curProp->type      = prop.type;
+	curProp->bit       = prop.bit;
+
+	return curProp;
+}
+
+LadderElem *LadderElemCoil::Clone(void)
+{
+	LadderElemCoil *clone = new LadderElemCoil();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemCoil::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -285,8 +442,8 @@ bool LadderElemCoil::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemTimer
 LadderElemTimer::LadderElemTimer(int which) : LadderElem(which == ELEM_RTO ? true : false, false, false, which)
 {
-	name  = _("new");
-	delay = 100000;
+	prop.name  = _("new");
+	prop.delay = 100000;
 }
 
 //-----------------------------------------------------------------------------
@@ -295,7 +452,7 @@ LadderElemTimer::LadderElemTimer(int which) : LadderElem(which == ELEM_RTO ? tru
 //-----------------------------------------------------------------------------
 int LadderElemTimer::TimerPeriod(void)
 {
-    unsigned int period = (delay / Prog.settings.cycleTime) - 1;
+    unsigned int period = (prop.delay / Prog.settings.cycleTime) - 1;
 
     if(period < 1)  {
         Error(_("Timer period too short (needs faster cycle time)."));
@@ -325,15 +482,15 @@ pair<string, string> LadderElemTimer::DrawTXT(void)
 
 	char buf[256];
 
-	if(delay >= 1000*1000) {
-		sprintf(buf, "[\x01%s\x02 %.3f s]", s, delay/1000000.0);
-	} else if(delay >= 100*1000) {
-		sprintf(buf, "[\x01%s\x02 %.1f ms]", s, delay/1000.0);
+	if(prop.delay >= 1000*1000) {
+		sprintf(buf, "[\x01%s\x02 %.3f s]" , s, prop.delay/1000000.0);
+	} else if(prop.delay >= 100*1000) {
+		sprintf(buf, "[\x01%s\x02 %.1f ms]", s, prop.delay/1000.0);
 	} else {
-		sprintf(buf, "[\x01%s\x02 %.2f ms]", s, delay/1000.0);
+		sprintf(buf, "[\x01%s\x02 %.2f ms]", s, prop.delay/1000.0);
 	}
 
-	return pair<string, string>(name, buf);
+	return pair<string, string>(prop.name, buf);
 }
 
 bool LadderElemTimer::GenerateIntCode(IntCode &ic)
@@ -344,10 +501,10 @@ bool LadderElemTimer::GenerateIntCode(IntCode &ic)
         case ELEM_RTO: {
             int period = TimerPeriod();
 
-			ic.Op(INT_IF_VARIABLE_LES_LITERAL, name.c_str(), period);
+			ic.Op(INT_IF_VARIABLE_LES_LITERAL, prop.name.c_str(), period);
 
             ic.Op(INT_IF_BIT_SET, stateInOut);
-			ic.Op(INT_INCREMENT_VARIABLE, name.c_str());
+			ic.Op(INT_INCREMENT_VARIABLE, prop.name.c_str());
             ic.Op(INT_END_IF);
             ic.Op(INT_CLEAR_BIT, stateInOut);
 
@@ -364,15 +521,15 @@ bool LadderElemTimer::GenerateIntCode(IntCode &ic)
 
             ic.Op(INT_IF_BIT_SET, stateInOut);
 
-            ic.Op(INT_IF_VARIABLE_LES_LITERAL, name.c_str(), period);
+            ic.Op(INT_IF_VARIABLE_LES_LITERAL, prop.name.c_str(), period);
 
-            ic.Op(INT_INCREMENT_VARIABLE, name.c_str());
+            ic.Op(INT_INCREMENT_VARIABLE, prop.name.c_str());
             ic.Op(INT_CLEAR_BIT, stateInOut);
             ic.Op(INT_END_IF);
 
             ic.Op(INT_ELSE);
 
-            ic.Op(INT_SET_VARIABLE_TO_LITERAL, name.c_str());
+            ic.Op(INT_SET_VARIABLE_TO_LITERAL, prop.name.c_str());
 
             ic.Op(INT_END_IF);
 
@@ -386,23 +543,23 @@ bool LadderElemTimer::GenerateIntCode(IntCode &ic)
             // it finishes counting up. This does not seem to be what
             // people expect, so add a special case to fix that up.
             char antiGlitchName[MAX_NAME_LEN];
-            sprintf(antiGlitchName, "$%s_antiglitch", name.c_str());
+            sprintf(antiGlitchName, "$%s_antiglitch", prop.name.c_str());
             ic.Op(INT_IF_BIT_CLEAR, antiGlitchName);
-                ic.Op(INT_SET_VARIABLE_TO_LITERAL, name.c_str(), period);
+                ic.Op(INT_SET_VARIABLE_TO_LITERAL, prop.name.c_str(), period);
             ic.Op(INT_END_IF);
             ic.Op(INT_SET_BIT, antiGlitchName);
             
             ic.Op(INT_IF_BIT_CLEAR, stateInOut);
 
-            ic.Op(INT_IF_VARIABLE_LES_LITERAL, name.c_str(), period);
+            ic.Op(INT_IF_VARIABLE_LES_LITERAL, prop.name.c_str(), period);
 
-            ic.Op(INT_INCREMENT_VARIABLE, name.c_str());
+            ic.Op(INT_INCREMENT_VARIABLE, prop.name.c_str());
             ic.Op(INT_SET_BIT, stateInOut);
             ic.Op(INT_END_IF);
 
             ic.Op(INT_ELSE);
 
-            ic.Op(INT_SET_VARIABLE_TO_LITERAL, name.c_str());
+            ic.Op(INT_SET_VARIABLE_TO_LITERAL, prop.name.c_str());
 
             ic.Op(INT_END_IF);
             break;
@@ -417,13 +574,33 @@ bool LadderElemTimer::CanInsert(LadderContext context)
 	return getWhich() == ELEM_RTO ? context.canInsertEnd : context.canInsertOther;
 }
 
-void LadderElemTimer::setProperties(string newName, int newDelay)
+void LadderElemTimer::internalSetProperties(void *data)
 {
-	name  = newName;
-	delay = newDelay;
+	LadderElemTimerProp *newProp = (LadderElemTimerProp *)data;
+
+	prop.name  = newProp->name;
+	prop.delay = newProp->delay;
 }
 
-bool LadderElemTimer::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemTimer::getProperties(void)
+{
+	LadderElemTimerProp *curProp = new LadderElemTimerProp;
+
+	curProp->name  = prop.name;
+	curProp->delay = prop.delay;
+
+	return curProp;
+}
+
+LadderElem *LadderElemTimer::Clone(void)
+{
+	LadderElemTimer *clone = new LadderElemTimer(getWhich());
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemTimer::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -441,22 +618,22 @@ LadderElemRTC::LadderElemRTC(void) : LadderElem(false, false, false, ELEM_RTC)
 	t->tm_mon++;
 	t->tm_sec = t->tm_sec > 59 ? 59 : t->tm_sec;
 
-	mode = ELEM_RTC_MODE_FIXED;
-	wday = 255;
+	prop.mode = ELEM_RTC_MODE_FIXED;
+	prop.wday = 255;
 
-	start.tm_mday = 0;
-	start.tm_mon  = 0;
-	start.tm_year = 0;
-	start.tm_hour = t->tm_hour;
-	start.tm_min  = t->tm_min;
-	start.tm_sec  = t->tm_sec;
+	prop.start.tm_mday = 0;
+	prop.start.tm_mon  = 0;
+	prop.start.tm_year = 0;
+	prop.start.tm_hour = t->tm_hour;
+	prop.start.tm_min  = t->tm_min;
+	prop.start.tm_sec  = t->tm_sec;
 
-	end.tm_mday   = 0;
-	end.tm_mon    = 0;
-	end.tm_year   = 0;
-	end.tm_hour   = t->tm_hour;
-	end.tm_min    = t->tm_min;
-	end.tm_sec    = t->tm_sec;
+	prop.end.tm_mday   = 0;
+	prop.end.tm_mon    = 0;
+	prop.end.tm_year   = 0;
+	prop.end.tm_hour   = t->tm_hour;
+	prop.end.tm_min    = t->tm_min;
+	prop.end.tm_sec    = t->tm_sec;
 }
 
 pair<string, string> LadderElemRTC::DrawTXT(void)
@@ -472,18 +649,18 @@ pair<string, string> LadderElemRTC::DrawTXT(void)
 	memset(year , 0, sizeof(year));
 
 	for(linha=0; linha<2; linha++) {
-		struct tm *ptm = linha ? &end : &start;
+		struct tm *ptm = linha ? &prop.end : &prop.start;
 
-		if(wday & (1 << 7)) 
+		if(prop.wday & (1 << 7)) 
 		{
 			int i;
 
 			sprintf(linha ? bufe : bufs, "[\x01%s %02d:%02d:%02d\x02]", _("SMTWTFS"),
 				ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 
-			if(linha || mode == ELEM_RTC_MODE_FIXED) {
+			if(linha || prop.mode == ELEM_RTC_MODE_FIXED) {
 				for(i=0; i<7; i++) {
-					if(!(wday & (1<<i))) {
+					if(!(prop.wday & (1<<i))) {
 						(linha ? bufe : bufs)[i+2] = ' ';
 					} else if(linha) {
 						bufe[i+2] = '*';
@@ -510,7 +687,7 @@ pair<string, string> LadderElemRTC::DrawTXT(void)
 		} 
 	}
 
-	if(mode == ELEM_RTC_MODE_FIXED) {
+	if(prop.mode == ELEM_RTC_MODE_FIXED) {
 		strcpy(bufe, bufs);
 		strcpy(bufs, _("RTC - Mode Fixed"));
 	}
@@ -528,15 +705,37 @@ bool LadderElemRTC::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemRTC::setProperties(int newMode, unsigned char newWday, struct tm newStart, struct tm newEnd)
+void LadderElemRTC::internalSetProperties(void *data)
 {
-	mode  = newMode;
-	wday  = newWday;
-	start = newStart;
-	end   = newEnd;
+	LadderElemRTCProp *newProp = (LadderElemRTCProp *)data;
+
+	prop.mode  = newProp->mode;
+	prop.wday  = newProp->wday;
+	prop.start = newProp->start;
+	prop.end   = newProp->end;
 }
 
-bool LadderElemRTC::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemRTC::getProperties(void)
+{
+	LadderElemRTCProp *curProp = new LadderElemRTCProp;
+
+	curProp->mode  = prop.mode;
+	curProp->wday  = prop.wday;
+	curProp->start = prop.start;
+	curProp->end   = prop.end;
+
+	return curProp;
+}
+
+LadderElem *LadderElemRTC::Clone(void)
+{
+	LadderElemRTC *clone = new LadderElemRTC();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemRTC::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -544,8 +743,8 @@ bool LadderElemRTC::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemCounter
 LadderElemCounter::LadderElemCounter(int which) : LadderElem(which == ELEM_CTC ? true : false, false, false, which)
 {
-	name = _("new");
-	max  = 0;
+	prop.name = _("new");
+	prop.max  = 0;
 }
 
 pair<string, string> LadderElemCounter::DrawTXT(void)
@@ -554,7 +753,7 @@ pair<string, string> LadderElemCounter::DrawTXT(void)
 	char *s, op, buf[256];
 
 	if(which == ELEM_CTC) {
-		sprintf(buf, _("{\x01""CTC\x02 0:%d}"), max);
+		sprintf(buf, _("{\x01""CTC\x02 0:%d}"), prop.max);
 	} else {
 		if(which == ELEM_CTU) {
 			s = _("CTU");
@@ -564,10 +763,10 @@ pair<string, string> LadderElemCounter::DrawTXT(void)
 			op = '<';
 		} else oops();
 
-		sprintf(buf, "[\x01%s\x02 %c=%d]", s, op, max);
+		sprintf(buf, "[\x01%s\x02 %c=%d]", s, op, prop.max);
 	}
 
-	return pair<string, string>(name, buf);
+	return pair<string, string>(prop.name, buf);
 }
 
 bool LadderElemCounter::GenerateIntCode(IntCode &ic)
@@ -580,12 +779,12 @@ bool LadderElemCounter::GenerateIntCode(IntCode &ic)
         case ELEM_CTU: {
             ic.Op(INT_IF_BIT_SET, stateInOut);
 				ic.Op(INT_IF_BIT_CLEAR, storeName.c_str());
-					ic.Op(INT_INCREMENT_VARIABLE, name.c_str());
+					ic.Op(INT_INCREMENT_VARIABLE, prop.name.c_str());
                 ic.Op(INT_END_IF);
             ic.Op(INT_END_IF);
 			ic.Op(INT_COPY_BIT_TO_BIT, storeName.c_str(), stateInOut);
 
-			ic.Op(INT_IF_VARIABLE_LES_LITERAL, name.c_str(), max);
+			ic.Op(INT_IF_VARIABLE_LES_LITERAL, prop.name.c_str(), prop.max);
                 ic.Op(INT_CLEAR_BIT, stateInOut);
             ic.Op(INT_ELSE);
                 ic.Op(INT_SET_BIT, stateInOut);
@@ -596,12 +795,12 @@ bool LadderElemCounter::GenerateIntCode(IntCode &ic)
             ic.Op(INT_IF_BIT_SET, stateInOut);
 				ic.Op(INT_IF_BIT_CLEAR, storeName.c_str());
                     ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 1);
-					ic.Op(INT_SET_VARIABLE_SUBTRACT, name.c_str(), name.c_str(), "$scratch", 0, 0);
+					ic.Op(INT_SET_VARIABLE_SUBTRACT, prop.name.c_str(), prop.name.c_str(), "$scratch", 0, 0);
                 ic.Op(INT_END_IF);
             ic.Op(INT_END_IF);
 			ic.Op(INT_COPY_BIT_TO_BIT, storeName.c_str(), stateInOut);
 
-			ic.Op(INT_IF_VARIABLE_GRT_VARIABLE, name.c_str(), max);
+			ic.Op(INT_IF_VARIABLE_GRT_VARIABLE, prop.name.c_str(), prop.max);
                 ic.Op(INT_CLEAR_BIT, stateInOut);
             ic.Op(INT_ELSE);
                 ic.Op(INT_SET_BIT, stateInOut);
@@ -611,10 +810,10 @@ bool LadderElemCounter::GenerateIntCode(IntCode &ic)
         case ELEM_CTC: {
             ic.Op(INT_IF_BIT_SET, stateInOut);
                 ic.Op(INT_IF_BIT_CLEAR, storeName.c_str());
-                    ic.Op(INT_INCREMENT_VARIABLE, name.c_str());
-                    ic.Op(INT_IF_VARIABLE_LES_LITERAL, name.c_str(), max+1);
+                    ic.Op(INT_INCREMENT_VARIABLE, prop.name.c_str());
+                    ic.Op(INT_IF_VARIABLE_LES_LITERAL, prop.name.c_str(), prop.max+1);
                     ic.Op(INT_ELSE);
-                        ic.Op(INT_SET_VARIABLE_TO_LITERAL, name.c_str(), (SWORD)0);
+                        ic.Op(INT_SET_VARIABLE_TO_LITERAL, prop.name.c_str(), (SWORD)0);
                     ic.Op(INT_END_IF);
                 ic.Op(INT_END_IF);
             ic.Op(INT_END_IF);
@@ -631,13 +830,33 @@ bool LadderElemCounter::CanInsert(LadderContext context)
 	return getWhich() == ELEM_CTC ? context.canInsertEnd : context.canInsertOther;
 }
 
-void LadderElemCounter::setProperties(string newName, int newMax)
+void LadderElemCounter::internalSetProperties(void *data)
 {
-	name = newName;
-	max  = newMax;
+	LadderElemCounterProp *newProp = (LadderElemCounterProp *)data;
+
+	prop.name = newProp->name;
+	prop.max  = newProp->max;
 }
 
-bool LadderElemCounter::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemCounter::getProperties(void)
+{
+	LadderElemCounterProp *curProp = new LadderElemCounterProp;
+
+	curProp->name = prop.name;
+	curProp->max  = prop.max;
+
+	return curProp;
+}
+
+LadderElem *LadderElemCounter::Clone(void)
+{
+	LadderElemCounter *clone = new LadderElemCounter(getWhich());
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemCounter::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -645,12 +864,12 @@ bool LadderElemCounter::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemReset
 LadderElemReset::LadderElemReset(void) : LadderElem(true, false, false, ELEM_RES)
 {
-	name = _("new");
+	prop.name = _("new");
 }
 
 pair<string, string> LadderElemReset::DrawTXT(void)
 {
-	return pair<string, string>(name, _("{RES}"));
+	return pair<string, string>(prop.name, _("{RES}"));
 }
 
 bool LadderElemReset::GenerateIntCode(IntCode &ic)
@@ -658,7 +877,7 @@ bool LadderElemReset::GenerateIntCode(IntCode &ic)
 	const char *stateInOut = ic.getStateInOut();
 
 	ic.Op(INT_IF_BIT_SET, stateInOut);
-		ic.Op(INT_SET_VARIABLE_TO_LITERAL, name.c_str());
+		ic.Op(INT_SET_VARIABLE_TO_LITERAL, prop.name.c_str());
 	ic.Op(INT_END_IF);
 
 	return true;
@@ -669,12 +888,31 @@ bool LadderElemReset::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemReset::setProperties(string newName)
+void LadderElemReset::internalSetProperties(void *data)
 {
-	name = newName;
+	LadderElemResetProp *newProp = (LadderElemResetProp *)data;
+
+	prop.name = newProp->name;
 }
 
-bool LadderElemReset::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemReset::getProperties(void)
+{
+	LadderElemResetProp *curProp = new LadderElemResetProp;
+
+	curProp->name = prop.name;
+
+	return curProp;
+}
+
+LadderElem *LadderElemReset::Clone(void)
+{
+	LadderElemReset *clone = new LadderElemReset();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemReset::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -738,7 +976,14 @@ bool LadderElemOneShot::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-bool LadderElemOneShot::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+LadderElem *LadderElemOneShot::Clone(void)
+{
+	LadderElemOneShot *clone = new LadderElemOneShot(getWhich());
+
+	return clone;
+}
+
+bool LadderElemOneShot::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -746,8 +991,8 @@ bool LadderElemOneShot::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemCmp
 LadderElemCmp::LadderElemCmp(int which) : LadderElem(false, false, false, which)
 {
-	op1 = _("var");
-	op2 = "1";
+	prop.op1 = _("var");
+	prop.op2 = "1";
 }
 
 pair<string, string> LadderElemCmp::DrawTXT(void)
@@ -767,8 +1012,8 @@ pair<string, string> LadderElemCmp::DrawTXT(void)
 	char s1[POS_WIDTH+10], s2[POS_WIDTH+10];
 	int l1, l2, lmax;
 
-	l1 = 2 + 1 + strlen(s) + op1.size();
-	l2 = 2 + 1 + op2.size();
+	l1 = 2 + 1 + strlen(s) + prop.op1.size();
+	l2 = 2 + 1 + prop.op2.size();
 	lmax = max(l1, l2);
 
 	memset(s1, ' ', sizeof(s1));
@@ -777,17 +1022,17 @@ pair<string, string> LadderElemCmp::DrawTXT(void)
 	s1[lmax] = '\0';
 	strcpy(s2, s1);
 
-	memcpy(s1+1, op1.c_str(), op1.size());
-	memcpy(s1+op1.size()+2, s, strlen(s));
-	memcpy(s2+2, op2.c_str(), op2.size());
+	memcpy(s1+1, prop.op1.c_str(), prop.op1.size());
+	memcpy(s1+prop.op1.size()+2, s, strlen(s));
+	memcpy(s2+2, prop.op2.c_str(), prop.op2.size());
 
 	return pair<string, string>(s1, s2);
 }
 
 bool LadderElemCmp::GenerateIntCode(IntCode &ic)
 {
-	const char *cop1 = ic.VarFromExpr(op1.c_str(), "$scratch");
-	const char *cop2 = ic.VarFromExpr(op2.c_str(), "$scratch2");
+	const char *cop1 = ic.VarFromExpr(prop.op1.c_str(), "$scratch");
+	const char *cop2 = ic.VarFromExpr(prop.op2.c_str(), "$scratch2");
 
 	switch(getWhich()) {
 	case ELEM_GRT:
@@ -825,13 +1070,33 @@ bool LadderElemCmp::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemCmp::setProperties(string newOp1, string newOp2)
+void LadderElemCmp::internalSetProperties(void *data)
 {
-	op1 = newOp1;
-	op2 = newOp2;
+	LadderElemCmpProp *newProp = (LadderElemCmpProp *)data;
+
+	prop.op1 = newProp->op1;
+	prop.op2 = newProp->op2;
 }
 
-bool LadderElemCmp::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemCmp::getProperties(void)
+{
+	LadderElemCmpProp *curProp = new LadderElemCmpProp;
+
+	curProp->op1 = prop.op1;
+	curProp->op2 = prop.op2;
+
+	return curProp;
+}
+
+LadderElem *LadderElemCmp::Clone(void)
+{
+	LadderElemCmp *clone = new LadderElemCmp(getWhich());
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemCmp::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -839,9 +1104,9 @@ bool LadderElemCmp::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemMath
 LadderElemMath::LadderElemMath(int which) : LadderElem(true, false, false, which)
 {
-	dest = _("dest");
-	op1  = _("src");
-	op2 = "1";
+	prop.dest = _("dest");
+	prop.op1  = _("src");
+	prop.op2 = "1";
 }
 
 pair<string, string> LadderElemMath::DrawTXT(void)
@@ -868,18 +1133,18 @@ pair<string, string> LadderElemMath::DrawTXT(void)
 	}
 
 	lt += 6;
-	memcpy(top+lt, dest.c_str(), dest.size());
-	lt += dest.size() + 2;
+	memcpy(top+lt, prop.dest.c_str(), prop.dest.size());
+	lt += prop.dest.size() + 2;
 	top[lt++] = ':';
 	top[lt++] = '=';
 
 	int lb = 2;
-	memcpy(bot+lb, op1.c_str(), op1.size());
-	lb += op1.size() + 1;
+	memcpy(bot+lb, prop.op1.c_str(), prop.op1.size());
+	lb += prop.op1.size() + 1;
 	bot[lb++] = op;
 	lb++;
-	memcpy(bot+lb, op2.c_str(), op2.size());
-	lb += op2.size();
+	memcpy(bot+lb, prop.op2.c_str(), prop.op2.size());
+	lb += prop.op2.size();
 
 	int l = max(lb, lt - 2);
 	top[l+2] = '}'; top[l+3] = '\0';
@@ -890,14 +1155,14 @@ pair<string, string> LadderElemMath::DrawTXT(void)
 
 bool LadderElemMath::GenerateIntCode(IntCode &ic)
 {
-	if(IsNumber(dest.c_str())) {
-		Error(_("Math instruction: '%s' not a valid destination."), dest.c_str());
+	if(IsNumber(prop.dest.c_str())) {
+		Error(_("Math instruction: '%s' not a valid destination."), prop.dest.c_str());
 		CompileError();
 	}
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 
-	const char *cop1 = ic.VarFromExpr(op1.c_str(), "$scratch");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-	const char *cop2 = ic.VarFromExpr(op2.c_str(), "$scratch2");
+	const char *cop1 = ic.VarFromExpr(prop.op1.c_str(), "$scratch");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+	const char *cop2 = ic.VarFromExpr(prop.op2.c_str(), "$scratch2");
 
 	int intOp;
 	switch(getWhich()) {
@@ -909,7 +1174,7 @@ bool LadderElemMath::GenerateIntCode(IntCode &ic)
 		default: oops();
 	}
 
-	ic.Op(intOp, dest.c_str(), cop1, cop2, 0, 0);
+	ic.Op(intOp, prop.dest.c_str(), cop1, cop2, 0, 0);
 
 	ic.Op(INT_END_IF);
 
@@ -921,14 +1186,35 @@ bool LadderElemMath::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemMath::setProperties(string newOp1, string newOp2, string newDest)
+void LadderElemMath::internalSetProperties(void *data)
 {
-	op1  = newOp1;
-	op2  = newOp2;
-	dest = newDest;
+	LadderElemMathProp *newProp = (LadderElemMathProp *)data;
+
+	prop.op1  = newProp->op1;
+	prop.op2  = newProp->op2;
+	prop.dest = newProp->dest;
 }
 
-bool LadderElemMath::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemMath::getProperties(void)
+{
+	LadderElemMathProp *curProp = new LadderElemMathProp;
+
+	curProp->op1  = prop.op1;
+	curProp->op2  = prop.op2;
+	curProp->dest = prop.dest;
+
+	return curProp;
+}
+
+LadderElem *LadderElemMath::Clone(void)
+{
+	LadderElemMath *clone = new LadderElemMath(getWhich());
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemMath::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -936,8 +1222,8 @@ bool LadderElemMath::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemSqrt
 LadderElemSqrt::LadderElemSqrt(void) : LadderElem(true, false, false, ELEM_SQRT)
 {
-	dest = _("dest");
-	src  = _("src");
+	prop.dest = _("dest");
+	prop.src  = _("src");
 }
 
 pair<string, string> LadderElemSqrt::DrawTXT(void)
@@ -945,28 +1231,28 @@ pair<string, string> LadderElemSqrt::DrawTXT(void)
 	char top[256];
 	char bot[256];
 
-	sprintf(top, "{%s :=}", dest.c_str());
-	sprintf(bot, _("{%s SQRT}"), src.c_str());
+	sprintf(top, "{%s :=}", prop.dest.c_str());
+	sprintf(bot, _("{%s SQRT}"), prop.src.c_str());
 
 	return pair<string, string>(top, bot);
 }
 
 bool LadderElemSqrt::GenerateIntCode(IntCode &ic)
 {
-	if(IsNumber(dest.c_str())) {
-		Error(_("Sqrt instruction: '%s' not a valid destination."), dest.c_str());
+	if(IsNumber(prop.dest.c_str())) {
+		Error(_("Sqrt instruction: '%s' not a valid destination."), prop.dest.c_str());
 		CompileError();
 	}
 
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 
-	if(IsNumber(src.c_str())) {
-		ic.Op(INT_SET_VARIABLE_TO_LITERAL, dest.c_str(), CheckMakeNumber(src.c_str()));
+	if(IsNumber(prop.src.c_str())) {
+		ic.Op(INT_SET_VARIABLE_TO_LITERAL, prop.dest.c_str(), CheckMakeNumber(prop.src.c_str()));
 	} else {
-		ic.Op(INT_SET_VARIABLE_TO_VARIABLE, dest.c_str(), src.c_str(), 0);
+		ic.Op(INT_SET_VARIABLE_TO_VARIABLE, prop.dest.c_str(), prop.src.c_str(), 0);
 	}
 
-		ic.Op(INT_SQRT, dest.c_str());
+		ic.Op(INT_SQRT, prop.dest.c_str());
 	ic.Op(INT_END_IF);
 
 	return true;
@@ -977,13 +1263,33 @@ bool LadderElemSqrt::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemSqrt::setProperties(string newSrc, string newDest)
+void LadderElemSqrt::internalSetProperties(void *data)
 {
-	src  = newSrc;
-	dest = newDest;
+	LadderElemSqrtProp *newProp = (LadderElemSqrtProp *)data;
+
+	prop.src  = newProp->src;
+	prop.dest = newProp->dest;
 }
 
-bool LadderElemSqrt::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemSqrt::getProperties(void)
+{
+	LadderElemSqrtProp *curProp = new LadderElemSqrtProp;
+
+	curProp->src  = prop.src;
+	curProp->dest = prop.dest;
+
+	return curProp;
+}
+
+LadderElem *LadderElemSqrt::Clone(void)
+{
+	LadderElemSqrt *clone = new LadderElemSqrt();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemSqrt::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -991,9 +1297,9 @@ bool LadderElemSqrt::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemRand
 LadderElemRand::LadderElemRand(void) : LadderElem(true, false, false, ELEM_RAND)
 {
-	var = _("var");
-	min = "0";
-	max = "100";
+	prop.var = _("var");
+	prop.min = "0";
+	prop.max = "100";
 }
 
 pair<string, string> LadderElemRand::DrawTXT(void)
@@ -1001,21 +1307,21 @@ pair<string, string> LadderElemRand::DrawTXT(void)
 	char top[256];
 	char bot[256];
 
-	sprintf(top, "{ %s := }", var.c_str());
-	sprintf(bot, "{%s <= ? <= %s}", min.c_str(), max.c_str());
+	sprintf(top, "{ %s := }", prop.var.c_str());
+	sprintf(bot, "{%s <= ? <= %s}", prop.min.c_str(), prop.max.c_str());
 
 	return pair<string, string>(top, bot);
 }
 
 bool LadderElemRand::GenerateIntCode(IntCode &ic)
 {
-	if(IsNumber(var.c_str())) {
-		Error(_("Rand instruction: '%s' not a valid destination."), var);
+	if(IsNumber(prop.var.c_str())) {
+		Error(_("Rand instruction: '%s' not a valid destination."), prop.var);
 		CompileError();
 	}
 
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
-		ic.Op(INT_RAND, var.c_str(), min.c_str(), max.c_str(), 0, 0);
+		ic.Op(INT_RAND, prop.var.c_str(), prop.min.c_str(), prop.max.c_str(), 0, 0);
 	ic.Op(INT_END_IF);
 
 	return true;
@@ -1026,14 +1332,35 @@ bool LadderElemRand::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemRand::setProperties(string newVar, string newMin, string newMax)
+void LadderElemRand::internalSetProperties(void *data)
 {
-	var = newVar;
-	min = newMin;
-	max = newMax;
+	LadderElemRandProp *newProp = (LadderElemRandProp *)data;
+
+	prop.var = newProp->var;
+	prop.min = newProp->min;
+	prop.max = newProp->max;
 }
 
-bool LadderElemRand::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemRand::getProperties(void)
+{
+	LadderElemRandProp *curProp = new LadderElemRandProp;
+
+	curProp->var = prop.var;
+	curProp->min = prop.min;
+	curProp->max = prop.max;
+
+	return curProp;
+}
+
+LadderElem *LadderElemRand::Clone(void)
+{
+	LadderElemRand *clone = new LadderElemRand();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemRand::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1041,8 +1368,8 @@ bool LadderElemRand::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemAbs
 LadderElemAbs::LadderElemAbs(void) : LadderElem(true, false, false, ELEM_ABS)
 {
-	src  = _("src");
-	dest = _("dest");
+	prop.src  = _("src");
+	prop.dest = _("dest");
 }
 
 pair<string, string> LadderElemAbs::DrawTXT(void)
@@ -1050,28 +1377,28 @@ pair<string, string> LadderElemAbs::DrawTXT(void)
 	char top[256];
 	char bot[256];
 
-	sprintf(top, "{ %s :=}", dest.c_str());
-	sprintf(bot, "{ |%s| }", src.c_str());
+	sprintf(top, "{ %s :=}", prop.dest.c_str());
+	sprintf(bot, "{ |%s| }", prop.src.c_str());
 
 	return pair<string, string>(top, bot);
 }
 
 bool LadderElemAbs::GenerateIntCode(IntCode &ic)
 {
-	if(IsNumber(dest.c_str())) {
-		Error(_("Abs instruction: '%s' not a valid destination."), dest.c_str());
+	if(IsNumber(prop.dest.c_str())) {
+		Error(_("Abs instruction: '%s' not a valid destination."), prop.dest.c_str());
 		CompileError();
 	}
 
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
-		ic.Op(INT_IF_VARIABLE_LES_LITERAL, src.c_str(), (SWORD)0);
+		ic.Op(INT_IF_VARIABLE_LES_LITERAL, prop.src.c_str(), (SWORD)0);
 			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch_int", CheckMakeNumber("-1"));
-			ic.Op(INT_SET_VARIABLE_MULTIPLY, dest.c_str(), src.c_str(), "$scratch_int", 0, 0);
+			ic.Op(INT_SET_VARIABLE_MULTIPLY, prop.dest.c_str(), prop.src.c_str(), "$scratch_int", 0, 0);
 		ic.Op(INT_ELSE);
-			if(IsNumber(src.c_str())) {
-				ic.Op(INT_SET_VARIABLE_TO_LITERAL, dest.c_str(), CheckMakeNumber(src.c_str()));
+			if(IsNumber(prop.src.c_str())) {
+				ic.Op(INT_SET_VARIABLE_TO_LITERAL, prop.dest.c_str(), CheckMakeNumber(prop.src.c_str()));
 			} else {
-				ic.Op(INT_SET_VARIABLE_TO_VARIABLE, dest.c_str(), src.c_str(), 0);
+				ic.Op(INT_SET_VARIABLE_TO_VARIABLE, prop.dest.c_str(), prop.src.c_str(), 0);
 			}
 		ic.Op(INT_END_IF);
 	ic.Op(INT_END_IF);
@@ -1084,13 +1411,33 @@ bool LadderElemAbs::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemAbs::setProperties(string newSrc, string newDest)
+void LadderElemAbs::internalSetProperties(void *data)
 {
-	src  = newSrc;
-	dest = newDest;
+	LadderElemAbsProp *newProp = (LadderElemAbsProp *)data;
+
+	prop.src  = newProp->src;
+	prop.dest = newProp->dest;
 }
 
-bool LadderElemAbs::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemAbs::getProperties(void)
+{
+	LadderElemAbsProp *curProp = new LadderElemAbsProp;
+
+	curProp->src  = prop.src;
+	curProp->dest = prop.dest;
+
+	return curProp;
+}
+
+LadderElem *LadderElemAbs::Clone(void)
+{
+	LadderElemAbs *clone = new LadderElemAbs();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemAbs::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1098,8 +1445,8 @@ bool LadderElemAbs::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemMove
 LadderElemMove::LadderElemMove(void) : LadderElem(true, false, false, ELEM_MOVE)
 {
-	src  = _("src");
-	dest = _("dest");
+	prop.src  = _("src");
+	prop.dest = _("dest");
 }
 
 pair<string, string> LadderElemMove::DrawTXT(void)
@@ -1107,25 +1454,25 @@ pair<string, string> LadderElemMove::DrawTXT(void)
 	char top[256];
 	char bot[256];
 
-	sprintf(top, "{%s :=}", dest.c_str());
-	sprintf(bot, _("{%s MOV}"), src.c_str());
+	sprintf(top, "{%s :=}", prop.dest.c_str());
+	sprintf(bot, _("{%s MOV}"), prop.src.c_str());
 
 	return pair<string, string>(top, bot);
 }
 
 bool LadderElemMove::GenerateIntCode(IntCode &ic)
 {
-	if(IsNumber(dest.c_str())) {
-		Error(_("Move instruction: '%s' not a valid destination."), dest.c_str());
+	if(IsNumber(prop.dest.c_str())) {
+		Error(_("Move instruction: '%s' not a valid destination."), prop.dest.c_str());
 		CompileError();
 	}
 
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 
-	if(IsNumber(src.c_str())) {
-		ic.Op(INT_SET_VARIABLE_TO_LITERAL, dest.c_str(), CheckMakeNumber(src.c_str()));
+	if(IsNumber(prop.src.c_str())) {
+		ic.Op(INT_SET_VARIABLE_TO_LITERAL, prop.dest.c_str(), CheckMakeNumber(prop.src.c_str()));
 	} else {
-		ic.Op(INT_SET_VARIABLE_TO_VARIABLE, dest.c_str(), src.c_str(), 0);
+		ic.Op(INT_SET_VARIABLE_TO_VARIABLE, prop.dest.c_str(), prop.src.c_str(), 0);
 	}
 
 	ic.Op(INT_END_IF);
@@ -1138,13 +1485,33 @@ bool LadderElemMove::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemMove::setProperties(string newSrc, string newDest)
+void LadderElemMove::internalSetProperties(void *data)
 {
-	src  = newSrc;
-	dest = newDest;
+	LadderElemMoveProp *newProp = (LadderElemMoveProp *)data;
+
+	prop.src  = newProp->src;
+	prop.dest = newProp->dest;
 }
 
-bool LadderElemMove::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemMove::getProperties(void)
+{
+	LadderElemMoveProp *curProp = new LadderElemMoveProp;
+
+	curProp->src  = prop.src;
+	curProp->dest = prop.dest;
+
+	return curProp;
+}
+
+LadderElem *LadderElemMove::Clone(void)
+{
+	LadderElemMove *clone = new LadderElemMove();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemMove::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1179,7 +1546,14 @@ bool LadderElemOpenShort::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-bool LadderElemOpenShort::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+LadderElem *LadderElemOpenShort::Clone(void)
+{
+	LadderElemOpenShort *clone = new LadderElemOpenShort(getWhich());
+
+	return clone;
+}
+
+bool LadderElemOpenShort::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1187,28 +1561,28 @@ bool LadderElemOpenShort::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemSetBit
 LadderElemSetBit::LadderElemSetBit(void) : LadderElem(false, false, false, ELEM_PADDING)
 {
-	name = _("new");
-	bit  = 0;
-	set  = false;
+	prop.name = _("new");
+	prop.bit  = 0;
+	prop.set  = false;
 }
 
 pair<string, string> LadderElemSetBit::DrawTXT(void)
 {
 	char str[100];
 
-	sprintf(str, _("{%s BIT:%d}"), set ? _("SET") : _("RST"), bit);
+	sprintf(str, _("{%s BIT:%d}"), prop.set ? _("SET") : _("RST"), prop.bit);
 
-	return pair<string, string>(name, str);
+	return pair<string, string>(prop.name, str);
 }
 
 bool LadderElemSetBit::GenerateIntCode(IntCode &ic)
 {
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 
-	if(set) {
-		ic.OpBit(INT_SET_SINGLE_BIT  , name.c_str(), bit);
+	if(prop.set) {
+		ic.OpBit(INT_SET_SINGLE_BIT  , prop.name.c_str(), prop.bit);
 	} else {
-		ic.OpBit(INT_CLEAR_SINGLE_BIT, name.c_str(), bit);
+		ic.OpBit(INT_CLEAR_SINGLE_BIT, prop.name.c_str(), prop.bit);
 	}
 
 	ic.Op(INT_END_IF);
@@ -1221,14 +1595,35 @@ bool LadderElemSetBit::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemSetBit::setProperties(string newName, int newBit, bool newSet)
+void LadderElemSetBit::internalSetProperties(void *data)
 {
-	name = newName;
-	bit  = newBit;
-	set  = newSet;
+	LadderElemSetBitProp *newProp = (LadderElemSetBitProp *)data;
+
+	prop.name = newProp->name;
+	prop.bit  = newProp->bit;
+	prop.set  = newProp->set;
 }
 
-bool LadderElemSetBit::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemSetBit::getProperties(void)
+{
+	LadderElemSetBitProp *curProp = new LadderElemSetBitProp;
+
+	curProp->name = prop.name;
+	curProp->bit  = prop.bit;
+	curProp->set  = prop.set;
+
+	return curProp;
+}
+
+LadderElem *LadderElemSetBit::Clone(void)
+{
+	LadderElemSetBit *clone = new LadderElemSetBit();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemSetBit::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1236,31 +1631,31 @@ bool LadderElemSetBit::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemCheckBit
 LadderElemCheckBit::LadderElemCheckBit(void) : LadderElem(false, false, false, ELEM_CHECK_BIT)
 {
-	name = _("new");
-	bit  = 0;
-	set  = false;
+	prop.name = _("new");
+	prop.bit  = 0;
+	prop.set  = false;
 }
 
 pair<string, string> LadderElemCheckBit::DrawTXT(void)
 {
 	char str[100];
 
-	sprintf(str, _("{CHECK %s:%d}"), set ? _("ON") : _("OFF"), bit);
+	sprintf(str, _("{CHECK %s:%d}"), prop.set ? _("ON") : _("OFF"), prop.bit);
 
-	return pair<string, string>(name, str);
+	return pair<string, string>(prop.name, str);
 }
 
 bool LadderElemCheckBit::GenerateIntCode(IntCode &ic)
 {
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 
-	if(set) {
-		ic.OpBit(INT_IF_BIT_CHECK_CLEAR, name.c_str(), bit);
+	if(prop.set) {
+		ic.OpBit(INT_IF_BIT_CHECK_CLEAR, prop.name.c_str(), prop.bit);
 	} else {
-		ic.OpBit(INT_IF_BIT_CHECK_SET  , name.c_str(), bit);
+		ic.OpBit(INT_IF_BIT_CHECK_SET  , prop.name.c_str(), prop.bit);
 	}
 
-			ic.OpBit(INT_CLEAR_BIT, ic.getStateInOut(), set);
+			ic.OpBit(INT_CLEAR_BIT, ic.getStateInOut(), prop.set);
 		ic.Op(INT_END_IF);
 	ic.Op(INT_END_IF);
 
@@ -1272,14 +1667,35 @@ bool LadderElemCheckBit::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemCheckBit::setProperties(string newName, int newBit, bool newSet)
+void LadderElemCheckBit::internalSetProperties(void *data)
 {
-	name = newName;
-	bit  = newBit;
-	set  = newSet;
+	LadderElemCheckBitProp *newProp = (LadderElemCheckBitProp *)data;
+
+	prop.name = newProp->name;
+	prop.bit  = newProp->bit;
+	prop.set  = newProp->set;
 }
 
-bool LadderElemCheckBit::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemCheckBit::getProperties(void)
+{
+	LadderElemCheckBitProp *curProp = new LadderElemCheckBitProp;
+
+	curProp->name = prop.name;
+	curProp->bit  = prop.bit;
+	curProp->set  = prop.set;
+
+	return curProp;
+}
+
+LadderElem *LadderElemCheckBit::Clone(void)
+{
+	LadderElemCheckBit *clone = new LadderElemCheckBit();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemCheckBit::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1287,22 +1703,22 @@ bool LadderElemCheckBit::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemReadAdc
 LadderElemReadAdc::LadderElemReadAdc(void) : LadderElem(true, false, false, ELEM_READ_ADC)
 {
-	name = _("new");
+	prop.name = _("new");
 }
 
 pair<string, string> LadderElemReadAdc::DrawTXT(void)
 {
 	char txt[50];
 
-	sprintf(txt, _("{READ ADC %s }"), GetPinADC(name.c_str()));
+	sprintf(txt, _("{READ ADC %s }"), GetPinADC(prop.name.c_str()));
 
-	return pair<string, string>(name, txt);
+	return pair<string, string>(prop.name, txt);
 }
 
 bool LadderElemReadAdc::GenerateIntCode(IntCode &ic)
 {
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
-		ic.Op(INT_READ_ADC, name.c_str());
+		ic.Op(INT_READ_ADC, prop.name.c_str());
 	ic.Op(INT_END_IF);
 
 	return true;
@@ -1313,12 +1729,31 @@ bool LadderElemReadAdc::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemReadAdc::setProperties(string newName)
+void LadderElemReadAdc::internalSetProperties(void *data)
 {
-	name = newName;
+	LadderElemReadAdcProp *newProp = (LadderElemReadAdcProp *)data;
+
+	prop.name = newProp->name;
 }
 
-bool LadderElemReadAdc::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemReadAdc::getProperties(void)
+{
+	LadderElemReadAdcProp *curProp = new LadderElemReadAdcProp;
+
+	curProp->name = prop.name;
+
+	return curProp;
+}
+
+LadderElem *LadderElemReadAdc::Clone(void)
+{
+	LadderElemReadAdc *clone = new LadderElemReadAdc();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemReadAdc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1326,25 +1761,25 @@ bool LadderElemReadAdc::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemSetDa
 LadderElemSetDa::LadderElemSetDa(void) : LadderElem(true, false, false, ELEM_SET_DA)
 {
-	name  = _("new");
-	mode  = ELEM_SET_DA_MODE_RAW;
+	prop.name  = _("new");
+	prop.mode  = ELEM_SET_DA_MODE_RAW;
 }
 
 pair<string, string> LadderElemSetDa::DrawTXT(void)
 {
 	char cname[50];
 
-	switch(mode) {
+	switch(prop.mode) {
 	case ELEM_SET_DA_MODE_RAW:
-		strcpy(cname, name.c_str());
+		strcpy(cname, prop.name.c_str());
 		break;
 
 	case ELEM_SET_DA_MODE_MV:
-		sprintf(cname, "%s mV", name.c_str());
+		sprintf(cname, "%s mV", prop.name.c_str());
 		break;
 
 	case ELEM_SET_DA_MODE_PCT:
-		sprintf(cname, "%s %%", name.c_str());
+		sprintf(cname, "%s %%", prop.name.c_str());
 		break;
 	}
 
@@ -1354,7 +1789,7 @@ pair<string, string> LadderElemSetDa::DrawTXT(void)
 bool LadderElemSetDa::GenerateIntCode(IntCode &ic)
 {
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
-		ic.Op(INT_SET_DA, name.c_str(), mode);
+		ic.Op(INT_SET_DA, prop.name.c_str(), prop.mode);
 	ic.Op(INT_END_IF);
 
 	return true;
@@ -1365,13 +1800,33 @@ bool LadderElemSetDa::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemSetDa::setProperties(string newName, int newMode)
+void LadderElemSetDa::internalSetProperties(void *data)
 {
-	name  = newName;
-	mode  = newMode;
+	LadderElemSetDaProp *newProp = (LadderElemSetDaProp *)data;
+
+	prop.name = newProp->name;
+	prop.mode = newProp->mode;
 }
 
-bool LadderElemSetDa::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemSetDa::getProperties(void)
+{
+	LadderElemSetDaProp *curProp = new LadderElemSetDaProp;
+
+	curProp->name = prop.name;
+	curProp->mode = prop.mode;
+
+	return curProp;
+}
+
+LadderElem *LadderElemSetDa::Clone(void)
+{
+	LadderElemSetDa *clone = new LadderElemSetDa();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemSetDa::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1379,18 +1834,18 @@ bool LadderElemSetDa::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemReadEnc
 LadderElemReadEnc::LadderElemReadEnc(void) : LadderElem(true, false, false, ELEM_READ_ENC)
 {
-	name = _("new");
+	prop.name = _("new");
 }
 
 pair<string, string> LadderElemReadEnc::DrawTXT(void)
 {
-	return pair<string, string>(name, _("{READ ENC}"));
+	return pair<string, string>(prop.name, _("{READ ENC}"));
 }
 
 bool LadderElemReadEnc::GenerateIntCode(IntCode &ic)
 {
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
-		ic.Op(INT_READ_ENC, name.c_str());
+		ic.Op(INT_READ_ENC, prop.name.c_str());
 	ic.Op(INT_END_IF);
 
 	return true;
@@ -1401,12 +1856,31 @@ bool LadderElemReadEnc::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemReadEnc::setProperties(string newName)
+void LadderElemReadEnc::internalSetProperties(void *data)
 {
-	name = newName;
+	LadderElemReadEncProp *newProp = (LadderElemReadEncProp *)data;
+
+	prop.name = newProp->name;
 }
 
-bool LadderElemReadEnc::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemReadEnc::getProperties(void)
+{
+	LadderElemReadEncProp *curProp = new LadderElemReadEncProp;
+
+	curProp->name = prop.name;
+
+	return curProp;
+}
+
+LadderElem *LadderElemReadEnc::Clone(void)
+{
+	LadderElemReadEnc *clone = new LadderElemReadEnc();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemReadEnc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1414,18 +1888,18 @@ bool LadderElemReadEnc::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemResetEnc
 LadderElemResetEnc::LadderElemResetEnc(void) : LadderElem(true, false, false, ELEM_RESET_ENC)
 {
-	name = _("new");
+	prop.name = _("new");
 }
 
 pair<string, string> LadderElemResetEnc::DrawTXT(void)
 {
-	return pair<string, string>(name, _("{WRITE ENC}"));
+	return pair<string, string>(prop.name, _("{WRITE ENC}"));
 }
 
 bool LadderElemResetEnc::GenerateIntCode(IntCode &ic)
 {
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
-		ic.Op(INT_RESET_ENC, name.c_str());
+		ic.Op(INT_RESET_ENC, prop.name.c_str());
 	ic.Op(INT_END_IF);
 
 	return true;
@@ -1436,12 +1910,31 @@ bool LadderElemResetEnc::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemResetEnc::setProperties(string newName)
+void LadderElemResetEnc::internalSetProperties(void *data)
 {
-	name = newName;
+	LadderElemResetEncProp *newProp = (LadderElemResetEncProp *)data;
+
+	prop.name = newProp->name;
 }
 
-bool LadderElemResetEnc::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemResetEnc::getProperties(void)
+{
+	LadderElemResetEncProp *curProp = new LadderElemResetEncProp;
+
+	curProp->name = prop.name;
+
+	return curProp;
+}
+
+LadderElem *LadderElemResetEnc::Clone(void)
+{
+	LadderElemResetEnc *clone = new LadderElemResetEnc();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemResetEnc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1449,22 +1942,22 @@ bool LadderElemResetEnc::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemMultisetDA
 LadderElemMultisetDA::LadderElemMultisetDA(void) : LadderElem(true, false, false, ELEM_MULTISET_DA)
 {
-    name                  = "600";
-	name1                 = "2047";
-	gaint                 = 10;
-	gainr                 = 5;
-	initval               = DA_RESOLUTION - 1;
-	linear                = true; // true = linear, false = curva
-	forward               = true; // true = avanço, false = recuo
-	speedup               = false; // true = aceleração, false = desaceleração
-	StartFromCurrentValue = false; // false = Iniciar ou ir para zero, conforme speedup. true = partir do valor atual até o valor configurado
+    prop.name                  = "600";
+	prop.name1                 = "2047";
+	prop.gaint                 = 10;
+	prop.gainr                 = 5;
+	prop.initval               = DA_RESOLUTION - 1;
+	prop.linear                = true; // true = linear, false = curva
+	prop.forward               = true; // true = avanço, false = recuo
+	prop.speedup               = false; // true = aceleração, false = desaceleração
+	prop.StartFromCurrentValue = false; // false = Iniciar ou ir para zero, conforme speedup. true = partir do valor atual até o valor configurado
 }
 
 pair<string, string> LadderElemMultisetDA::DrawTXT(void)
 {
 	return pair<string, string>(
-		linear ? _("RAMPA LINEAR") : _("RAMPA CURVA"),
-		StartFromCurrentValue ? "{COINCIDIR}": (speedup ? _("{ACELERACAO}") : _("{DESACELERACAO}"))
+		prop.linear ? _("RAMPA LINEAR") : _("RAMPA CURVA"),
+		prop.StartFromCurrentValue ? "{COINCIDIR}": (prop.speedup ? _("{ACELERACAO}") : _("{DESACELERACAO}"))
 		);
 }
 
@@ -1477,17 +1970,17 @@ bool LadderElemMultisetDA::GenerateIntCode(IntCode &ic)
 	string oneShot;
 	oneShot = ic.GenSymOneShot();
 
-	_itoa(gaint, cgaint, 10);
-	_itoa(gainr, cgainr, 10);
-	_itoa(type , ctype , 10);
+	_itoa(prop.gaint, cgaint, 10);
+	_itoa(prop.gainr, cgainr, 10);
+	_itoa(prop.type , ctype , 10);
 
-	strcpy(str_initval, name1.c_str());
+	strcpy(str_initval, prop.name1.c_str());
 	if(IsNumber(str_initval)) {
 		int initval = atoi(str_initval);
 
-		if (type == 1)  // (mV)
+		if (prop.type == 1)  // (mV)
 			initval = static_cast<int>(DA_RESOLUTION * (initval / DA_VOLTAGE));
-		else if (type == 2) // (%)
+		else if (prop.type == 2) // (%)
 			initval = static_cast<int>(DA_RESOLUTION * (initval / 100.0f));
 
 		_itoa(initval, str_initval, 10);
@@ -1496,10 +1989,10 @@ bool LadderElemMultisetDA::GenerateIntCode(IntCode &ic)
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
 			ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), ic.getStateInOut());
-			ic.Op(INT_MULTISET_DA, name.c_str(), str_initval, cgaint, cgainr, ctype, NULL, NULL, linear, StartFromCurrentValue ? 2 : speedup);
+			ic.Op(INT_MULTISET_DA, prop.name.c_str(), str_initval, cgaint, cgainr, ctype, NULL, NULL, prop.linear, prop.StartFromCurrentValue ? 2 : prop.speedup);
 		ic.Op(INT_END_IF);
 			ic.Op(INT_ELSE_IF); ic.Op(INT_IF_BIT_SET, oneShot.c_str());
-		ic.Op(INT_MULTISET_DA, "", ramp_abort_mode == RAMP_ABORT_DEFAULT ? Prog.settings.ramp_abort_mode : ramp_abort_mode);
+		ic.Op(INT_MULTISET_DA, "", prop.ramp_abort_mode == RAMP_ABORT_DEFAULT ? Prog.settings.ramp_abort_mode : prop.ramp_abort_mode);
 		ic.Op(INT_CLEAR_BIT, oneShot.c_str());
 	ic.Op(INT_END_IF);
 
@@ -1511,21 +2004,48 @@ bool LadderElemMultisetDA::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemMultisetDA::setProperties(string newName, string newName1, int newGaint, int newGainr, int newInitval,
-	bool newLinear, bool newForward, bool newSpeedup, bool newStartFromCurrentValue)
+void LadderElemMultisetDA::internalSetProperties(void *data)
 {
-    name                  = newName;
-	name1                 = newName1;
-	gaint                 = newGaint;
-	gainr                 = newGainr;
-	initval               = newInitval;
-	linear                = newLinear;
-	forward               = newForward;
-	speedup               = newSpeedup;
-	StartFromCurrentValue = newStartFromCurrentValue;
+	LadderElemMultisetDAProp *newProp = (LadderElemMultisetDAProp *)data;
+
+    prop.name                  = newProp->name;
+	prop.name1                 = newProp->name1;
+	prop.gaint                 = newProp->gaint;
+	prop.gainr                 = newProp->gainr;
+	prop.initval               = newProp->initval;
+	prop.linear                = newProp->linear;
+	prop.forward               = newProp->forward;
+	prop.speedup               = newProp->speedup;
+	prop.StartFromCurrentValue = newProp->StartFromCurrentValue;
 }
 
-bool LadderElemMultisetDA::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemMultisetDA::getProperties(void)
+{
+	LadderElemMultisetDAProp *curProp = new LadderElemMultisetDAProp;
+
+	curProp->name = prop.name;
+    curProp->name                  = prop.name;
+	curProp->name1                 = prop.name1;
+	curProp->gaint                 = prop.gaint;
+	curProp->gainr                 = prop.gainr;
+	curProp->initval               = prop.initval;
+	curProp->linear                = prop.linear;
+	curProp->forward               = prop.forward;
+	curProp->speedup               = prop.speedup;
+	curProp->StartFromCurrentValue = prop.StartFromCurrentValue;
+
+	return curProp;
+}
+
+LadderElem *LadderElemMultisetDA::Clone(void)
+{
+	LadderElemMultisetDA *clone = new LadderElemMultisetDA();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemMultisetDA::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1533,16 +2053,16 @@ bool LadderElemMultisetDA::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemUSS
 LadderElemUSS::LadderElemUSS(int which) : LadderElem(false, false, false, which)
 {
-	name          = _("new");
-	id            = 0;
-	parameter     = 0;
-	parameter_set = 0;
-	index         = 0;
+	prop.name          = _("new");
+	prop.id            = 0;
+	prop.parameter     = 0;
+	prop.parameter_set = 0;
+	prop.index         = 0;
 }
 
 pair<string, string> LadderElemUSS::DrawTXT(void)
 {
-	return pair<string, string>(name, (getWhich() == ELEM_READ_USS) ? _("{READ USS}") : _("{WRITE USS}"));
+	return pair<string, string>(prop.name, (getWhich() == ELEM_READ_USS) ? _("{READ USS}") : _("{WRITE USS}"));
 }
 
 bool LadderElemUSS::GenerateIntCode(IntCode &ic)
@@ -1554,10 +2074,10 @@ bool LadderElemUSS::GenerateIntCode(IntCode &ic)
 	char param_set[10];
 	char index    [10];
 
-	sprintf(addr     , "%d", id);
-	sprintf(param    , "%d", parameter);
-	sprintf(param_set, "%d", parameter_set);
-	sprintf(index    , "%d", index);
+	sprintf(addr     , "%d", prop.id);
+	sprintf(param    , "%d", prop.parameter);
+	sprintf(param_set, "%d", prop.parameter_set);
+	sprintf(index    , "%d", prop.index);
 
 	// We want to respond to rising edges, so yes we need a one shot.
 	string oneShot = ic.GenSymOneShot();
@@ -1567,7 +2087,7 @@ bool LadderElemUSS::GenerateIntCode(IntCode &ic)
 	ic.Op(INT_IF_BIT_SET, stateInOut);
 		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
 			ic.Op(INT_IF_BIT_SET, "$SerialReady");
-				ic.Op(getWhich() == ELEM_READ_USS ? INT_READ_USS : INT_WRITE_USS, name.c_str(), addr, param, param_set, (SWORD)atoi(index), 0);
+				ic.Op(getWhich() == ELEM_READ_USS ? INT_READ_USS : INT_WRITE_USS, prop.name.c_str(), addr, param, param_set, (SWORD)atoi(index), 0);
 				ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
 			ic.Op(INT_END_IF);
 			ic.Op(INT_CLEAR_BIT, stateInOut);
@@ -1592,16 +2112,39 @@ bool LadderElemUSS::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemUSS::setProperties(string newName, int newId, int newParameter, int newParameter_set, int newIndex)
+void LadderElemUSS::internalSetProperties(void *data)
 {
-	name          = newName;
-	id            = newId;
-	parameter     = newParameter;
-	parameter_set = newParameter_set;
-	index         = newIndex;
+	LadderElemUSSProp *newProp = (LadderElemUSSProp *)data;
+
+	prop.name          = newProp->name;
+	prop.id            = newProp->id;
+	prop.parameter     = newProp->parameter;
+	prop.parameter_set = newProp->parameter_set;
+	prop.index         = newProp->index;
 }
 
-bool LadderElemUSS::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemUSS::getProperties(void)
+{
+	LadderElemUSSProp *curProp = new LadderElemUSSProp;
+
+	curProp->name          = prop.name;
+	curProp->id            = prop.id;
+	curProp->parameter     = prop.parameter;
+	curProp->parameter_set = prop.parameter_set;
+	curProp->index         = prop.index;
+
+	return curProp;
+}
+
+LadderElem *LadderElemUSS::Clone(void)
+{
+	LadderElemUSS *clone = new LadderElemUSS(getWhich());
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemUSS::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1609,20 +2152,20 @@ bool LadderElemUSS::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemModBUS
 LadderElemModBUS::LadderElemModBUS(int which) : LadderElem(false, false, false, which)
 {
-    name         = _("new");
-	retransmitir = true;
-	elem         = MbNodeList_GetByIndex(0)->NodeID;
+    prop.name         = _("new");
+	prop.retransmitir = true;
+	prop.elem         = MbNodeList_GetByIndex(0)->NodeID;
 
-	MbNodeList_AddRef(elem);
+	MbNodeList_AddRef(prop.elem);
 }
 
 pair<string, string> LadderElemModBUS::DrawTXT(void)
 {
 	char *bot;
 	char buf[100];
-	MbNodeList *l = MbNodeList_GetByNodeID(elem);
+	MbNodeList *l = MbNodeList_GetByNodeID(prop.elem);
 
-	sprintf(buf, "%s:%d", l->node.name, address);
+	sprintf(buf, "%s:%d", l->node.name, prop.address);
 
 	if(getWhich() == ELEM_READ_MODBUS) {
 		bot = l->node.iface == MB_IFACE_RS485 ? _("{READ MB 485}")  : _("{READ MB ETH}");
@@ -1642,10 +2185,10 @@ bool LadderElemModBUS::GenerateIntCode(IntCode &ic)
 	int intcode;
 	MbNodeList *list;
 
-	list    = MbNodeList_GetByNodeID(elem);
+	list    = MbNodeList_GetByNodeID(prop.elem);
 	intcode = getWhich() == ELEM_READ_MODBUS ? INT_READ_MODBUS : INT_WRITE_MODBUS;
 	sprintf(id  , "%d", list->node.id);
-	sprintf(addr, "%d", address);
+	sprintf(addr, "%d", prop.address);
 
 	if(list->node.iface == MB_IFACE_RS485) {
 		MbReady   = "$SerialReady";
@@ -1663,7 +2206,7 @@ bool LadderElemModBUS::GenerateIntCode(IntCode &ic)
 	ic.Op(INT_IF_BIT_SET, stateInOut);
 		ic.Op(INT_IF_BIT_CLEAR, MessageSent.c_str());
 			ic.Op(INT_IF_BIT_SET, MbReady);
-				ic.Op(intcode, name.c_str(), id, addr, list->node.ip, (unsigned char)int32);
+				ic.Op(intcode, prop.name.c_str(), id, addr, list->node.ip, (unsigned char)prop.int32);
 				ic.Op(INT_SET_BIT, MessageSent.c_str());
 			ic.Op(INT_END_IF);
 			ic.Op(INT_CLEAR_BIT, stateInOut);
@@ -1673,10 +2216,10 @@ bool LadderElemModBUS::GenerateIntCode(IntCode &ic)
 			ic.Op(INT_CLEAR_BIT, stateInOut);
 			ic.Op(INT_IF_BIT_SET, MbReady);
 				ic.Op(INT_SET_BIT, ReplyReceived.c_str());
-		if(retransmitir) { // Retransmitir?
+		if(prop.retransmitir) { // Retransmitir?
 			ic.Op(INT_ELSE_IF); ic.Op(INT_IF_BIT_SET, MbTimeout);
 				ic.Op(INT_CLEAR_BIT, MbTimeout);
-				ic.Op(intcode, name.c_str(), id, addr, list->node.ip, (unsigned char)int32);
+				ic.Op(intcode, prop.name.c_str(), id, addr, list->node.ip, (unsigned char)prop.int32);
 		}
 			ic.Op(INT_END_IF);
 		ic.Op(INT_END_IF);
@@ -1693,11 +2236,35 @@ bool LadderElemModBUS::CanInsert(LadderContext context)
 	return context.canInsertOther && Prog.settings.mb_list_size;
 }
 
-void LadderElemModBUS::setProperties()
+void LadderElemModBUS::internalSetProperties(void *data)
 {
+	LadderElemModBUSProp *newProp = (LadderElemModBUSProp *)data;
+
+	prop.name         = newProp->name;
+	prop.retransmitir = newProp->retransmitir;
+	prop.elem         = newProp->elem;
 }
 
-bool LadderElemModBUS::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemModBUS::getProperties(void)
+{
+	LadderElemModBUSProp *curProp = new LadderElemModBUSProp;
+
+	curProp->name         = prop.name;
+	curProp->retransmitir = prop.retransmitir;
+	curProp->elem         = prop.elem;
+
+	return curProp;
+}
+
+LadderElem *LadderElemModBUS::Clone(void)
+{
+	LadderElemModBUS *clone = new LadderElemModBUS(getWhich());
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemModBUS::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1705,24 +2272,24 @@ bool LadderElemModBUS::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemSetPWM
 LadderElemSetPWM::LadderElemSetPWM(void) : LadderElem(true, false, false, ELEM_SET_PWM)
 {
-	name       = _("duty_cycle");
-	targetFreq = 1000;
+	prop.name       = _("duty_cycle");
+	prop.targetFreq = 1000;
 }
 
 pair<string, string> LadderElemSetPWM::DrawTXT(void)
 {
 	char l[50];
-	if(targetFreq >= 100000) {
-		sprintf(l, _("{PWM %d kHz}"), (targetFreq+500)/1000);
-	} else if(targetFreq >= 10000) {
-		sprintf(l, _("{PWM %.1f kHz}"), targetFreq/1000.0);
-	} else if(targetFreq >= 1000) {
-		sprintf(l, _("{PWM %.2f kHz}"), targetFreq/1000.0);
+	if(prop.targetFreq >= 100000) {
+		sprintf(l, _("{PWM %d kHz}"), (prop.targetFreq+500)/1000);
+	} else if(prop.targetFreq >= 10000) {
+		sprintf(l, _("{PWM %.1f kHz}"), prop.targetFreq/1000.0);
+	} else if(prop.targetFreq >= 1000) {
+		sprintf(l, _("{PWM %.2f kHz}"), prop.targetFreq/1000.0);
 	} else {
-		sprintf(l, _("{PWM %d Hz}"), targetFreq);
+		sprintf(l, _("{PWM %d Hz}"), prop.targetFreq);
 	}
 
-	return pair<string, string>(name, l);
+	return pair<string, string>(prop.name, l);
 }
 
 bool LadderElemSetPWM::GenerateIntCode(IntCode &ic)
@@ -1732,11 +2299,11 @@ bool LadderElemSetPWM::GenerateIntCode(IntCode &ic)
 	string oneShot = ic.GenSymOneShot();
 
 	// ugh; need a >16 bit literal though, could be >64 kHz
-	sprintf(line, "%d", targetFreq);
+	sprintf(line, "%d", prop.targetFreq);
 
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 		ic.Op(INT_SET_BIT, oneShot.c_str());
-		ic.Op(INT_SET_PWM, name.c_str(), line);
+		ic.Op(INT_SET_PWM, prop.name.c_str(), line);
 	ic.Op(INT_ELSE_IF); ic.Op(INT_IF_BIT_SET, oneShot.c_str());
 		ic.Op(INT_CLEAR_BIT, oneShot.c_str());
 		ic.Op(INT_SET_PWM, "0", "0"); // Disable PWM Output
@@ -1750,11 +2317,33 @@ bool LadderElemSetPWM::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemSetPWM::setProperties()
+void LadderElemSetPWM::internalSetProperties(void *data)
 {
+	LadderElemSetPWMProp *newProp = (LadderElemSetPWMProp *)data;
+
+	prop.name       = newProp->name;
+	prop.targetFreq = newProp->targetFreq;
 }
 
-bool LadderElemSetPWM::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemSetPWM::getProperties(void)
+{
+	LadderElemSetPWMProp *curProp = new LadderElemSetPWMProp;
+
+	curProp->name       = prop.name;
+	curProp->targetFreq = prop.targetFreq;
+
+	return curProp;
+}
+
+LadderElem *LadderElemSetPWM::Clone(void)
+{
+	LadderElemSetPWM *clone = new LadderElemSetPWM();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemSetPWM::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1762,12 +2351,12 @@ bool LadderElemSetPWM::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemUART
 LadderElemUART::LadderElemUART(int which) : LadderElem(false, false, false, which)
 {
-	name = _("char");
+	prop.name = _("char");
 }
 
 pair<string, string> LadderElemUART::DrawTXT(void)
 {
-	return pair<string, string>(name, (getWhich() == ELEM_UART_RECV) ? _("{UART RECV}") : _("{UART SEND}"));
+	return pair<string, string>(prop.name, (getWhich() == ELEM_UART_RECV) ? _("{UART RECV}") : _("{UART SEND}"));
 }
 
 bool LadderElemUART::GenerateIntCode(IntCode &ic)
@@ -1778,7 +2367,7 @@ bool LadderElemUART::GenerateIntCode(IntCode &ic)
 	ic.Op(INT_IF_BIT_SET, stateInOut);
 		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
 			ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
-			ic.Op(getWhich() == ELEM_UART_SEND ? INT_UART_SEND : INT_UART_RECV, name.c_str(), stateInOut);
+			ic.Op(getWhich() == ELEM_UART_SEND ? INT_UART_SEND : INT_UART_RECV, prop.name.c_str(), stateInOut);
 		ic.Op(INT_END_IF);
 	ic.Op(INT_ELSE);
 		ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
@@ -1792,12 +2381,31 @@ bool LadderElemUART::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemUART::setProperties(string newName)
+void LadderElemUART::internalSetProperties(void *data)
 {
-	name = newName;
+	LadderElemUARTProp *newProp = (LadderElemUARTProp *)data;
+
+	prop.name = newProp->name;
 }
 
-bool LadderElemUART::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemUART::getProperties(void)
+{
+	LadderElemUARTProp *curProp = new LadderElemUARTProp;
+
+	curProp->name = prop.name;
+
+	return curProp;
+}
+
+LadderElem *LadderElemUART::Clone(void)
+{
+	LadderElemUART *clone = new LadderElemUART(getWhich());
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemUART::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1832,7 +2440,14 @@ bool LadderElemMasterRelay::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-bool LadderElemMasterRelay::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+LadderElem *LadderElemMasterRelay::Clone(void)
+{
+	LadderElemMasterRelay *clone = new LadderElemMasterRelay();
+
+	return clone;
+}
+
+bool LadderElemMasterRelay::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1840,8 +2455,8 @@ bool LadderElemMasterRelay::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemShiftRegister
 LadderElemShiftRegister::LadderElemShiftRegister(void) : LadderElem(true, false, false, ELEM_SHIFT_REGISTER)
 {
-	name   = _("reg");
-	stages = 7;
+	prop.name   = _("reg");
+	prop.stages = 7;
 }
 
 pair<string, string> LadderElemShiftRegister::DrawTXT(void)
@@ -1849,7 +2464,7 @@ pair<string, string> LadderElemShiftRegister::DrawTXT(void)
 	char bot[MAX_NAME_LEN+20];
 	memset(bot, ' ', sizeof(bot));
 	bot[0] = '{';
-	sprintf(bot+2, "%s:%d", name.c_str(), stages-1);
+	sprintf(bot+2, "%s:%d", prop.name.c_str(), prop.stages-1);
 	bot[strlen(bot)] = ' ';
 	bot[19] = '}';
 	bot[20] = '\0';
@@ -1864,10 +2479,10 @@ bool LadderElemShiftRegister::GenerateIntCode(IntCode &ic)
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 		ic.Op(INT_IF_BIT_CLEAR, storeName.c_str());
 			int i;
-			for(i = (stages-2); i >= 0; i--) {
+			for(i = (prop.stages-2); i >= 0; i--) {
 				char dest[MAX_NAME_LEN+10], src[MAX_NAME_LEN+10];
-				sprintf(src , "%s%d", name.c_str(), i);
-				sprintf(dest, "%s%d", name.c_str(), i+1);
+				sprintf(src , "%s%d", prop.name.c_str(), i);
+				sprintf(dest, "%s%d", prop.name.c_str(), i+1);
 				ic.Op(INT_SET_VARIABLE_TO_VARIABLE, dest, src);
 			}
 		ic.Op(INT_END_IF);
@@ -1882,13 +2497,33 @@ bool LadderElemShiftRegister::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemShiftRegister::setProperties(string newName, int newStages)
+void LadderElemShiftRegister::internalSetProperties(void *data)
 {
-	name   = newName;
-	stages = newStages;
+	LadderElemShiftRegisterProp *newProp = (LadderElemShiftRegisterProp *)data;
+
+	prop.name   = newProp->name;
+	prop.stages = newProp->stages;
 }
 
-bool LadderElemShiftRegister::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemShiftRegister::getProperties(void)
+{
+	LadderElemShiftRegisterProp *curProp = new LadderElemShiftRegisterProp;
+
+	curProp->name   = prop.name;
+	curProp->stages = prop.stages;
+
+	return curProp;
+}
+
+LadderElem *LadderElemShiftRegister::Clone(void)
+{
+	LadderElemShiftRegister *clone = new LadderElemShiftRegister();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemShiftRegister::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1896,12 +2531,12 @@ bool LadderElemShiftRegister::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemLUT
 LadderElemLUT::LadderElemLUT(void) : LadderElem(true, false, false, ELEM_LOOK_UP_TABLE)
 {
-	dest         = _("dest");
-	index        = _("index");
-	count        = 0;
-	editAsString = false;
+	prop.dest         = _("dest");
+	prop.index        = _("index");
+	prop.count        = 0;
+	prop.editAsString = false;
 
-	vals.fill(0);
+	prop.vals.fill(0);
 }
 
 pair<string, string> LadderElemLUT::DrawTXT(void)
@@ -1910,14 +2545,14 @@ pair<string, string> LadderElemLUT::DrawTXT(void)
 
 	memset(top, ' ', sizeof(top));
 	top[0] = '{';
-	sprintf(top+2, "%s :=", dest.c_str());
+	sprintf(top+2, "%s :=", prop.dest.c_str());
 	top[strlen(top)] = ' ';
 	top[19] = '}';
 	top[20] = '\0';
 
 	memset(bot, ' ', sizeof(bot));
 	bot[0] = '{';
-	sprintf(bot+2, " %s[%s]", "LUT", index.c_str());
+	sprintf(bot+2, " %s[%s]", "LUT", prop.index.c_str());
 	bot[strlen(bot)] = ' ';
 	bot[19] = '}';
 	bot[20] = '\0';
@@ -1933,10 +2568,10 @@ bool LadderElemLUT::GenerateIntCode(IntCode &ic)
 
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 
-	for(i = 0; i < count; i++) {
+	for(i = 0; i < prop.count; i++) {
 		ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
-		ic.Op(INT_IF_VARIABLE_EQUALS_VARIABLE, index.c_str(), "$scratch");
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, dest.c_str(), vals[i]);
+		ic.Op(INT_IF_VARIABLE_EQUALS_VARIABLE, prop.index.c_str(), "$scratch");
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, prop.dest.c_str(), prop.vals[i]);
 		ic.Op(INT_END_IF);
 	}
 
@@ -1950,17 +2585,39 @@ bool LadderElemLUT::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemLUT::setProperties(string newDest, string newIndex, int newCount,
-	bool newEditAsString, array<long, MAX_LOOK_UP_TABLE_LEN> newVals)
+void LadderElemLUT::internalSetProperties(void *data)
 {
-	dest         = newDest;
-	index        = newIndex;
-	count        = newCount;
-	editAsString = newEditAsString;
-	vals         = newVals;
+	LadderElemLUTProp *newProp = (LadderElemLUTProp *)data;
+
+	prop.dest         = newProp->dest;
+	prop.index        = newProp->index;
+	prop.count        = newProp->count;
+	prop.editAsString = newProp->editAsString;
+	prop.vals         = newProp->vals;
 }
 
-bool LadderElemLUT::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemLUT::getProperties(void)
+{
+	LadderElemLUTProp *curProp = new LadderElemLUTProp;
+
+	curProp->dest         = prop.dest;
+	curProp->index        = prop.index;
+	curProp->count        = prop.count;
+	curProp->editAsString = prop.editAsString;
+	curProp->vals         = prop.vals;
+
+	return curProp;
+}
+
+LadderElem *LadderElemLUT::Clone(void)
+{
+	LadderElemLUT *clone = new LadderElemLUT();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemLUT::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -1968,11 +2625,11 @@ bool LadderElemLUT::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemPiecewise
 LadderElemPiecewise::LadderElemPiecewise(void) : LadderElem(false, false, false, ELEM_PADDING)
 {
-	dest  = _("yvar");
-	index = _("xvar");
-	count = 0;
+	prop.dest  = _("yvar");
+	prop.index = _("xvar");
+	prop.count = 0;
 
-	vals.fill(0);
+	prop.vals.fill(0);
 }
 
 pair<string, string> LadderElemPiecewise::DrawTXT(void)
@@ -1981,14 +2638,14 @@ pair<string, string> LadderElemPiecewise::DrawTXT(void)
 
 	memset(top, ' ', sizeof(top));
 	top[0] = '{';
-	sprintf(top+2, "%s :=", dest.c_str());
+	sprintf(top+2, "%s :=", prop.dest.c_str());
 	top[strlen(top)] = ' ';
 	top[19] = '}';
 	top[20] = '\0';
 
 	memset(bot, ' ', sizeof(bot));
 	bot[0] = '{';
-	sprintf(bot+2, " %s[%s]", "PWL", index.c_str());
+	sprintf(bot+2, " %s[%s]", "PWL", prop.index.c_str());
 	bot[strlen(bot)] = ' ';
 	bot[19] = '}';
 	bot[20] = '\0';
@@ -2001,27 +2658,27 @@ bool LadderElemPiecewise::GenerateIntCode(IntCode &ic)
 	// This one is not so obvious; we have to decide how best to
 	// perform the linear interpolation, using our 16-bit fixed
 	// point math.
-	if(count == 0) {
+	if(prop.count == 0) {
 		Error(_("Piecewise linear lookup table with zero elements!"));
 		CompileError();
 	}
 
 	int i;
-	int xThis = vals[0];
-	for(i = 1; i < count; i++) {
-		if(vals[i*2] <= xThis) {
+	int xThis = prop.vals[0];
+	for(i = 1; i < prop.count; i++) {
+		if(prop.vals[i*2] <= xThis) {
 			Error(_("x values in piecewise linear table must be "
 				"strictly increasing."));
 			CompileError();
 		}
-		xThis = vals[i*2];
+		xThis = prop.vals[i*2];
 	}
 
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 
-	for(i = count - 1; i >= 1; i--) {
-		int thisDx = vals[i*2    ] - vals[(i-1)*2    ];
-		int thisDy = vals[i*2 + 1] - vals[(i-1)*2 + 1];
+	for(i = prop.count - 1; i >= 1; i--) {
+		int thisDx = prop.vals[i*2    ] - prop.vals[(i-1)*2    ];
+		int thisDy = prop.vals[i*2 + 1] - prop.vals[(i-1)*2 + 1];
 		// The output point is given by
 		//    yout = y[i-1] + (xin - x[i-1])*dy/dx
 		// and this is the best form in which to keep it, numerically
@@ -2038,17 +2695,17 @@ bool LadderElemPiecewise::GenerateIntCode(IntCode &ic)
 			CompileError();
 		}
 
-		ic.Op(INT_IF_VARIABLE_LES_LITERAL, index.c_str(), vals[i*2]+1);
+		ic.Op(INT_IF_VARIABLE_LES_LITERAL, prop.index.c_str(), prop.vals[i*2]+1);
 
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch"  , vals[(i-1)*2]);
-			ic.Op(INT_SET_VARIABLE_SUBTRACT  , "$scratch"  , index.c_str(), "$scratch" , 0, 0);
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2" , thisDx);
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch3" , thisDy);
-			ic.Op(INT_SET_VARIABLE_MULTIPLY  , dest.c_str(), "$scratch"   , "$scratch3", 0, 0);
-			ic.Op(INT_SET_VARIABLE_DIVIDE    , dest.c_str(), dest.c_str() , "$scratch2", 0, 0);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch"       , prop.vals[(i-1)*2]);
+			ic.Op(INT_SET_VARIABLE_SUBTRACT  , "$scratch"       , prop.index.c_str(), "$scratch" , 0, 0);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2"      , thisDx);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch3"      , thisDy);
+			ic.Op(INT_SET_VARIABLE_MULTIPLY  , prop.dest.c_str(), "$scratch"   , "$scratch3", 0, 0);
+			ic.Op(INT_SET_VARIABLE_DIVIDE    , prop.dest.c_str(), prop.dest.c_str() , "$scratch2", 0, 0);
 
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch"  , vals[(i-1)*2 + 1]);
-			ic.Op(INT_SET_VARIABLE_ADD       , dest.c_str(), dest.c_str() , "$scratch" , 0, 0);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch"       , prop.vals[(i-1)*2 + 1]);
+			ic.Op(INT_SET_VARIABLE_ADD       , prop.dest.c_str(), prop.dest.c_str() , "$scratch" , 0, 0);
 
 		ic.Op(INT_END_IF);
 	}
@@ -2063,15 +2720,37 @@ bool LadderElemPiecewise::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemPiecewise::setProperties(string newDest, string newIndex, int newCount, array<long, MAX_LOOK_UP_TABLE_LEN> newVals)
+void LadderElemPiecewise::internalSetProperties(void *data)
 {
-	dest  = newDest;
-	index = newIndex;
-	count = newCount;
-	vals  = newVals;
+	LadderElemPiecewiseProp *newProp = (LadderElemPiecewiseProp *)data;
+
+	prop.dest  = newProp->dest;
+	prop.index = newProp->index;
+	prop.count = newProp->count;
+	prop.vals  = newProp->vals;
 }
 
-bool LadderElemPiecewise::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemPiecewise::getProperties(void)
+{
+	LadderElemPiecewiseProp *curProp = new LadderElemPiecewiseProp;
+
+	curProp->dest  = prop.dest;
+	curProp->index = prop.index;
+	curProp->count = prop.count;
+	curProp->vals  = prop.vals;
+
+	return curProp;
+}
+
+LadderElem *LadderElemPiecewise::Clone(void)
+{
+	LadderElemPiecewise *clone = new LadderElemPiecewise();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemPiecewise::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -2079,16 +2758,16 @@ bool LadderElemPiecewise::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemFmtString
 LadderElemFmtString::LadderElemFmtString(int which) : LadderElem(false, false, true, which)
 {
-	var = _("var");
-	txt = _("value: %d\\r\\n");
+	prop.var = _("var");
+	prop.txt = _("value: %d\\r\\n");
 }
 
 pair<string, string> LadderElemFmtString::DrawTXT(void)
 {
 	char top[100], bot[100];
 
-	sprintf(top, "%s: %s", getWhich() == ELEM_READ_FORMATTED_STRING ? _("READ") : _("WRITE"), var.c_str());
-	sprintf(bot, "{\"%s\"}", txt.c_str());
+	sprintf(top, "%s: %s", getWhich() == ELEM_READ_FORMATTED_STRING ? _("READ") : _("WRITE"), prop.var.c_str());
+	sprintf(bot, "{\"%s\"}", prop.txt.c_str());
 
 	return pair<string, string>(top, bot);
 }
@@ -2105,9 +2784,9 @@ bool LadderElemFmtString::GenerateIntCode(IntCode &ic)
 		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
 			ic.Op(INT_IF_BIT_SET, "$SerialReady");
 				if (getWhich() == ELEM_READ_FORMATTED_STRING)
-					ic.Op(INT_READ_FORMATTED_STRING, var.c_str(), txt.c_str());
+					ic.Op(INT_READ_FORMATTED_STRING, prop.var.c_str(), prop.txt.c_str());
 				else
-					ic.Op(INT_WRITE_FORMATTED_STRING, var.c_str(), txt.c_str());
+					ic.Op(INT_WRITE_FORMATTED_STRING, prop.var.c_str(), prop.txt.c_str());
 				ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
 			ic.Op(INT_END_IF);
 			ic.Op(INT_CLEAR_BIT, stateInOut);
@@ -2132,13 +2811,33 @@ bool LadderElemFmtString::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemFmtString::setProperties(string newVar, string newTxt)
+void LadderElemFmtString::internalSetProperties(void *data)
 {
-	var = newVar;
-	txt = newTxt;
+	LadderElemFmtStringProp *newProp = (LadderElemFmtStringProp *)data;
+
+	prop.var = newProp->var;
+	prop.txt = newProp->txt;
 }
 
-bool LadderElemFmtString::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemFmtString::getProperties(void)
+{
+	LadderElemFmtStringProp *curProp = new LadderElemFmtStringProp;
+
+	curProp->var = prop.var;
+	curProp->txt = prop.txt;
+
+	return curProp;
+}
+
+LadderElem *LadderElemFmtString::Clone(void)
+{
+	LadderElemFmtString *clone = new LadderElemFmtString(getWhich());
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemFmtString::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -2146,17 +2845,17 @@ bool LadderElemFmtString::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemYaskawa
 LadderElemYaskawa::LadderElemYaskawa(int which) : LadderElem(false, false, true, which)
 {
-	id  = "0";
-	var = "var";
-	txt = _("0ZSET%d");
+	prop.id  = "0";
+	prop.var = "var";
+	prop.txt = _("0ZSET%d");
 }
 
 pair<string, string> LadderElemYaskawa::DrawTXT(void)
 {
 	char top[100], bot[100];
 
-	sprintf(top, "%s: %s", getWhich() == ELEM_READ_SERVO_YASKAWA ? _("RX NS600") : _("TX NS600"), var.c_str());
-	sprintf(bot, "{\"%s\"}", txt.c_str());
+	sprintf(top, "%s: %s", getWhich() == ELEM_READ_SERVO_YASKAWA ? _("RX NS600") : _("TX NS600"), prop.var.c_str());
+	sprintf(bot, "{\"%s\"}", prop.txt.c_str());
 
 	return pair<string, string>(top, bot);
 }
@@ -2174,9 +2873,9 @@ bool LadderElemYaskawa::GenerateIntCode(IntCode &ic)
 		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
 			ic.Op(INT_IF_BIT_SET, "$SerialReady");
 				if (getWhich() == ELEM_READ_SERVO_YASKAWA)
-					ic.Op(INT_READ_SERVO_YASKAWA , var.c_str(), txt.c_str(), id.c_str(), 0, 0);
+					ic.Op(INT_READ_SERVO_YASKAWA , prop.var.c_str(), prop.txt.c_str(), prop.id.c_str(), 0, 0);
 				else
-					ic.Op(INT_WRITE_SERVO_YASKAWA, var.c_str(), txt.c_str(), id.c_str(), 0, 0);
+					ic.Op(INT_WRITE_SERVO_YASKAWA, prop.var.c_str(), prop.txt.c_str(), prop.id.c_str(), 0, 0);
 				ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
 			ic.Op(INT_END_IF);
 			ic.Op(INT_CLEAR_BIT, stateInOut);
@@ -2201,14 +2900,35 @@ bool LadderElemYaskawa::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemYaskawa::setProperties(string newId, string newVar, string newTxt)
+void LadderElemYaskawa::internalSetProperties(void *data)
 {
-	id  = newId;
-	var = newVar;
-	txt = newTxt;
+	LadderElemYaskawaProp *newProp = (LadderElemYaskawaProp *)data;
+
+	prop.id  = newProp->id;
+	prop.var = newProp->var;
+	prop.txt = newProp->txt;
 }
 
-bool LadderElemYaskawa::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemYaskawa::getProperties(void)
+{
+	LadderElemYaskawaProp *curProp = new LadderElemYaskawaProp;
+
+	curProp->id  = prop.id;
+	curProp->var = prop.var;
+	curProp->txt = prop.txt;
+
+	return curProp;
+}
+
+LadderElem *LadderElemYaskawa::Clone(void)
+{
+	LadderElemYaskawa *clone = new LadderElemYaskawa(getWhich());
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemYaskawa::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -2216,12 +2936,12 @@ bool LadderElemYaskawa::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 // Classe LadderElemPersist
 LadderElemPersist::LadderElemPersist(void) : LadderElem(true, false, false, ELEM_PERSIST)
 {
-	var = _("saved");
+	prop.var = _("saved");
 }
 
 pair<string, string> LadderElemPersist::DrawTXT(void)
 {
-	return pair<string, string>(var, _("{PERSIST}"));
+	return pair<string, string>(prop.var, _("{PERSIST}"));
 }
 
 bool LadderElemPersist::GenerateIntCode(IntCode &ic)
@@ -2241,7 +2961,7 @@ bool LadderElemPersist::GenerateIntCode(IntCode &ic)
 		ic.Op(INT_CLEAR_BIT, "$scratch");
 		ic.Op(INT_EEPROM_BUSY_CHECK, "$scratch");
 		ic.Op(INT_IF_BIT_CLEAR, "$scratch");
-			ic.Op(INT_EEPROM_READ, var.c_str(), isInit.c_str(), EepromAddrFree);
+			ic.Op(INT_EEPROM_READ, prop.var.c_str(), isInit.c_str(), EepromAddrFree);
 		ic.Op(INT_END_IF);
 	ic.Op(INT_ELSE);
 		// While running, continuously compare the EEPROM copy of
@@ -2251,9 +2971,9 @@ bool LadderElemPersist::GenerateIntCode(IntCode &ic)
 		ic.Op(INT_EEPROM_BUSY_CHECK, "$scratch");
 		ic.Op(INT_IF_BIT_CLEAR, "$scratch");
 			ic.Op(INT_EEPROM_READ, "$scratch2", "$scratch", EepromAddrFree);
-			ic.Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch2", var.c_str());
+			ic.Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch2", prop.var.c_str());
 			ic.Op(INT_ELSE);
-				ic.Op(INT_EEPROM_WRITE, var.c_str(), EepromAddrFree);
+				ic.Op(INT_EEPROM_WRITE, prop.var.c_str(), EepromAddrFree);
 			ic.Op(INT_END_IF);
 		ic.Op(INT_END_IF);
 	ic.Op(INT_END_IF);
@@ -2268,12 +2988,31 @@ bool LadderElemPersist::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-void LadderElemPersist::setProperties(string newVar)
+void LadderElemPersist::internalSetProperties(void *data)
 {
-	var = newVar;
+	LadderElemPersistProp *newProp = (LadderElemPersistProp *)data;
+
+	prop.var = newProp->var;
 }
 
-bool LadderElemPersist::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+void *LadderElemPersist::getProperties(void)
+{
+	LadderElemPersistProp *curProp = new LadderElemPersistProp;
+
+	curProp->var = prop.var;
+
+	return curProp;
+}
+
+LadderElem *LadderElemPersist::Clone(void)
+{
+	LadderElemPersist *clone = new LadderElemPersist();
+	clone->internalSetProperties(&prop);
+
+	return clone;
+}
+
+bool LadderElemPersist::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -2298,11 +3037,15 @@ bool LadderElemX::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-void LadderElemX::setProperties()
+LadderElem *LadderElemX::Clone(void)
 {
+	LadderElemX *clone = new LadderElemX();
+	clone->internalSetProperties(&prop);
+
+	return clone;
 }
 
-bool LadderElemX::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+bool LadderElemX::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
 }
@@ -2311,13 +3054,11 @@ bool LadderElemX::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 LadderCircuit::LadderCircuit(void)
 {
 	isSeries = true;
-	vectorSubckt.clear();
 }
 
 LadderCircuit::LadderCircuit(bool newSeries)
 {
 	isSeries = newSeries;
-	vectorSubckt.clear();
 }
 
 LadderCircuit::~LadderCircuit(void)
@@ -2681,7 +3422,7 @@ int LadderCircuit::getWidthTXT(int ColsAvailable)
 	return width;
 }
 
-void LadderCircuit::AddPlaceHolderIfNoEOL(void)
+void LadderCircuit::AddPlaceHolderIfNoEOL(LadderContext context)
 {
 	vector<Subckt>::iterator it;
 
@@ -2691,26 +3432,114 @@ void LadderCircuit::AddPlaceHolderIfNoEOL(void)
 			// Se o circuito estiver vazio ou se adicionamos um paralelo e for o ultimo elemento,
 			// devemos adicionar o elemento de final de linha (PlaceHolder)
 			Subckt s = { new LadderElemPlaceHolder, this };
-			vectorSubckt.push_back(s);
+			InsertSubckt(context, getSize(), s);
 		}
 	}
 }
 
-bool LadderCircuit::InsertSubckt(Subckt s, int pos)
+bool LadderCircuit::InsertSubckt(LadderContext context, unsigned int pos, Subckt s,
+	bool isMove, bool isUndoRedo)
 {
 	bool ret = false;
-	unsigned int idx = pos;
 
 	if(s.elem != nullptr) {
 		s.subckt = this;
 	}
 
-	if(pos < 0) {
+	if(pos == getSize()) {
 		ret = true;
 		vectorSubckt.push_back(s);
-	} else if(idx < vectorSubckt.size()) {
+	} else if(pos < getSize()) {
 		ret = true;
-		vectorSubckt.insert(vectorSubckt.begin() + idx, s);
+		vectorSubckt.insert(vectorSubckt.begin() + pos, s);
+	}
+
+	// Registro da acao para desfazer / refazer
+	if(!isMove && !isUndoRedo) {
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->InsertSubckt.pos    = pos;
+		data->InsertSubckt.subckt = s;
+
+		action.action        = eInsertSubckt;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = context;
+		action.data          = data;
+		action.elem          = nullptr;
+		action.subckt        = this;
+
+		context.Diagram->RegisterAction(action);
+	}
+
+	return ret;
+}
+
+bool LadderCircuit::DeleteSubckt(LadderContext context, unsigned int pos,
+	bool isMove, bool isUndoRedo)
+{
+	bool ret = false;
+
+	if(pos < getSize()) {
+		vector<Subckt>::iterator it = vectorSubckt.begin() + pos;
+
+	// Registro da acao para desfazer / refazer
+		if(!isMove && !isUndoRedo) {
+			UndoRedoAction action;
+			UndoRedoData *data = new UndoRedoData;
+
+			data->DeleteSubckt.pos    = pos;
+			data->DeleteSubckt.subckt = *it;
+
+			action.action        = eDeleteSubckt;
+			action.contextAfter  = getEmptyContext();
+			action.contextBefore = context;
+			action.data          = data;
+			action.elem          = nullptr;
+			action.subckt        = this;
+
+			context.Diagram->RegisterAction(action);
+		}
+
+		vectorSubckt.erase(it);
+
+		ret = true;
+	}
+
+	return ret;
+}
+
+bool LadderCircuit::MoveSubckt(LadderContext context, unsigned int pos, LadderCircuit *fromCircuit,
+	unsigned int fromPos, bool isUndoRedo)
+{
+	bool ret = false;
+	Subckt s = fromCircuit->getSubckt(fromPos);
+
+	if(s.elem != nullptr || s.subckt != nullptr) {
+		// Se recebeu o elemento solicitado, remove-o do circuito antigo e o adiciona ao novo.
+		fromCircuit->DeleteSubckt(context, fromPos, true, isUndoRedo);
+		InsertSubckt(context, pos, s, true, isUndoRedo);
+
+		// Registro da acao para desfazer / refazer
+		if(!isUndoRedo) {
+			UndoRedoAction action;
+			UndoRedoData *data = new UndoRedoData;
+
+			data->MoveSubckt.pos     = pos;
+			data->MoveSubckt.fromPos = fromPos;
+			data->MoveSubckt.circuit = fromCircuit;
+
+			action.action        = eMoveSubckt;
+			action.contextAfter  = getEmptyContext();
+			action.contextBefore = context;
+			action.data          = data;
+			action.elem          = nullptr;
+			action.subckt        = this;
+
+			context.Diagram->RegisterAction(action);
+		}
+
+		ret = true;
 	}
 
 	return ret;
@@ -2728,7 +3557,7 @@ bool LadderCircuit::InsertParallel(LadderElem *elem, unsigned int start, unsigne
 		LadderCircuit *new_series = new LadderCircuit(true);
 
 		for(i=0; i < qty; i++) {
-			new_series->InsertSubckt(getSubckt(start), -1);
+			new_series->MoveSubckt(context, new_series->getSize(), this, start);
 		}
 
 		// Phase 4: creates a new parallel subcircuit which will hold the previously created series
@@ -2737,31 +3566,27 @@ bool LadderCircuit::InsertParallel(LadderElem *elem, unsigned int start, unsigne
 		Subckt series = { nullptr, new_series }, new_elem = { elem, new_parallel };
 
 		if(context.SelectedState == SELECTED_ABOVE) {
-			new_parallel->InsertSubckt(new_elem, -1);
-			new_parallel->InsertSubckt(series  , -1);
+			new_parallel->InsertSubckt(context, new_parallel->getSize(), new_elem);
+			new_parallel->InsertSubckt(context, new_parallel->getSize(), series  );
 		} else {
-			new_parallel->InsertSubckt(series  , -1);
-			new_parallel->InsertSubckt(new_elem, -1);
+			new_parallel->InsertSubckt(context, new_parallel->getSize(), series  );
+			new_parallel->InsertSubckt(context, new_parallel->getSize(), new_elem);
 		}
 
 		new_elem.elem   = nullptr;
 		new_elem.subckt = new_parallel;
-		if(start < vectorSubckt.size()) {
-			vectorSubckt.insert(vectorSubckt.begin() + start, new_elem);
-		} else {
-			vectorSubckt.push_back(new_elem);
-		}
+		InsertSubckt(context, start, new_elem);
 
 		return true;
 	} else {
 		Subckt s = { elem, this };
 
-		// Inserindo em paralelo
-		if(context.SelectedState == SELECTED_ABOVE) {
-			vector<Subckt>::iterator it = vectorSubckt.begin() + start;
-		} else {
-			vectorSubckt.push_back(s);
+		if(context.SelectedState != SELECTED_ABOVE) {
+			start = getSize();
 		}
+
+		// Inserindo em paralelo
+		InsertSubckt(context, start, s);
 
 		ret = true;
 	}
@@ -2838,7 +3663,7 @@ int LadderCircuit::SearchMatch(LadderCircuit *series, int direction)
 		for(i=0; i < vectorSubckt.size(); i++) {
 			if(vectorSubckt[i].elem == nullptr && vectorSubckt[i].subckt->IsSeries()) {
 				int index = (direction == SUBCKT_STATUS_FIRST ? 0 : vectorSubckt[i].subckt->getSize() - 1);
-				Subckt s = vectorSubckt[i].subckt->getSubckt(index, false);
+				Subckt s = vectorSubckt[i].subckt->getSubckt(index);
 
 				if(series == vectorSubckt[i].subckt) {
 					series = vectorSubckt[i].subckt;
@@ -2855,35 +3680,29 @@ int LadderCircuit::SearchMatch(LadderCircuit *series, int direction)
 	return status;
 }
 
-int RemoveParallelStart(int which, void *any)
-{
-	int ret = SUBCKT_STATUS_NOTFOUND;
-	return ret;
-}
-
 bool LadderCircuit::AddElement(LadderElem *elem, LadderContext &context)
 {
 	int state;
-	vector<Subckt>::iterator it;
+	unsigned int i;
 	Subckt node = { elem, this };
 
 	// Se elemento a ser adicionado for nulo, retorna
 	if(elem == nullptr) return false;
 
 	if(vectorSubckt.empty()) {
-		vectorSubckt.push_back(node);
+		InsertSubckt(context, 0, node);
 
 		return true;
 	} else if(context.SelectedElem != nullptr) {
-		for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
-			if(context.SelectedElem == it->elem) {
+		for(i = 0; i < vectorSubckt.size(); i++) {
+			if(context.SelectedElem == vectorSubckt[i].elem) {
 				// Encontrada posicao de insercao
-				if(it->elem->getWhich() == ELEM_PLACEHOLDER) {
+				if(vectorSubckt[i].elem->getWhich() == ELEM_PLACEHOLDER) {
 					// Existe placeholder, removendo...
-					delete it->elem;
+					DeleteSubckt(context, i);
 					context.SelectedElem = nullptr;
 
-					it->elem = elem;
+					InsertSubckt(context, i, node);
 				} else {
 					// Agora criamos o subcircuito para insercao.
 					state = context.SelectedState;
@@ -2893,10 +3712,10 @@ bool LadderCircuit::AddElement(LadderElem *elem, LadderContext &context)
 							// Apenas adiciona um item a mais no vetor.
 
 							// Se devemos inserir depois do elemento selecionado, avanca iterator.
-							if(state == SELECTED_RIGHT || state == SELECTED_BELOW) it++;
+							if(state == SELECTED_RIGHT || state == SELECTED_BELOW) i++;
 
 							// Insere o elemento na posicao indicada
-							vectorSubckt.insert(it, node);
+							InsertSubckt(context, i, node);
 					} else {
 							// Inserindo paralelamente em um serie ou serie em um paralelo.
 							// Devemos criar o serie / paralelo e entao incluir o novo elemento como um item
@@ -2904,33 +3723,23 @@ bool LadderCircuit::AddElement(LadderElem *elem, LadderContext &context)
 							LadderCircuit *new_subckt = new LadderCircuit(!isSeries);
 
 							// Aqui carregamos ponteiros para os objetos que serao inseridos.
+							node.elem   = elem;
+							node.subckt = new_subckt;
+
 							// Primeiro adicionamos o novo elemento e entao o subcircuito com os elementos existentes
-							LadderElem *first = elem, *second = it->elem;
 							if(state == SELECTED_RIGHT || state == SELECTED_BELOW) {
-								// Se devemos inserir depois do elemento selecionado, inverte a ordem
-								LadderElem *tmp = first;
-								first  = second;
-								second = tmp;
+								// Se devemos depois antes do elemento selecionado, inverte a ordem
+								new_subckt->  MoveSubckt(context, new_subckt->getSize(), this, i);
+								new_subckt->InsertSubckt(context, new_subckt->getSize(), node);
+							} else {
+								new_subckt->InsertSubckt(context, new_subckt->getSize(), node);
+								new_subckt->  MoveSubckt(context, new_subckt->getSize(), this, i);
 							}
 
-							// Insere o primeiro elemento no subcircuito criado.
-							new_subckt->AddElement(first , context);
-
-							// Atualiza o contexto para que o segundo elemento seja adicionado corretamente
-							state = context.SelectedState;
-							context.SelectedElem  = first;
-							context.SelectedState = isSeries ? SELECTED_BELOW : SELECTED_RIGHT;
-
-							// Insere o segundo elemento no subcircuito criado.
-							new_subckt->AddElement(second, context);
-
-							// Restaura o contexto
-							context.SelectedState = state;
-							context.SelectedElem  = it->elem;
-
 							// Atualiza o item atual para o subcircuito criado
-							it->elem = nullptr;
-							it->subckt = new_subckt;
+							node.elem   = nullptr;
+							node.subckt = new_subckt;
+							InsertSubckt(context, i, node);
 					}
 				}
 
@@ -2948,22 +3757,20 @@ bool LadderCircuit::DelElement(LadderElem *elem, LadderContext &context)
 	// Se elemento a ser removido for nulo, o circuito for vazio ou nao puder excluir, retorna false
 	if(elem == nullptr || vectorSubckt.empty() || !context.canDelete) return false;
 
-	vector<Subckt>::iterator it;
-	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
-		if(elem == it->elem) {
+	unsigned int i;
+	for(i = 0; i < vectorSubckt.size(); i++) {
+		if(elem == vectorSubckt[i].elem) {
 			// Encontrado elemento a ser removido
-			delete it->elem;
+			DeleteSubckt(context, i);
 
 			if(context.SelectedElem == elem) {
 				context.SelectedElem = nullptr;
 			}
 
-			vectorSubckt.erase(it);
-			AddPlaceHolderIfNoEOL();
-
 			// Removido com sucesso, retorna true!
 			return true;
-		} else if(it->elem == nullptr && it->subckt->DelElement(elem, context)) { // Removido em subcircuito
+		} else if(vectorSubckt[i].elem == nullptr && vectorSubckt[i].subckt->DelElement(elem, context)) {
+			// Removido em subcircuito, retorna indicando sucesso na remocao!
 			return true;
 		}
 	}
@@ -2971,68 +3778,148 @@ bool LadderCircuit::DelElement(LadderElem *elem, LadderContext &context)
 	return false;
 }
 
-Subckt LadderCircuit::getSubckt(unsigned int pos, bool remove)
+Subckt LadderCircuit::getSubckt(unsigned int pos)
 {
 	Subckt ret = { nullptr, nullptr };
 
 	if(pos < vectorSubckt.size()) {
 		vector<Subckt>::iterator it = vectorSubckt.begin() + pos;
 		ret = *it;
-		if(remove) {
-			vectorSubckt.erase(it);
-		}
 	}
 
 	return ret;
 }
 
-void LadderCircuit::RemoveUnnecessarySubckts(void)
+void LadderCircuit::RemoveUnnecessarySubckts(LadderContext context)
 {
-	vector<Subckt>::iterator it, itnext;
-
-	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
-		if(it->elem == nullptr) {
-			it->subckt->RemoveUnnecessarySubckts();
-			if(it->subckt->getSize() == 1) {
+	unsigned int i;
+	for(i = 0; i < vectorSubckt.size(); i++) {
+		if(vectorSubckt[i].elem == nullptr) {
+			vectorSubckt[i].subckt->RemoveUnnecessarySubckts(context);
+			if(vectorSubckt[i].subckt->getSize() == 1) {
 				// Recupera o unico elemento do subcircuito
-				Subckt s = it->subckt->getSubckt(0);
-
-				// Desaloca o subcircuito
-				delete it->subckt;
+				Subckt s = vectorSubckt[i].subckt->getSubckt(0);
 
 				// Adiciona o elemento ao circuito atual
-				if(s.elem != nullptr) { // Se for um elemento
-					it->elem   = s.elem;
-					it->subckt = this; // Agora este elemento pertence ao circuito atual
-				} else if(s.subckt->IsSeries() != isSeries) { // Se for um tipo diferente de circuito
-					it->elem   = nullptr;
-					it->subckt = s.subckt;
+				if(s.elem != nullptr || s.subckt->IsSeries() != isSeries) {
+					// Se for um elemento ou um tipo diferente de circuito,
+					// apenas move para o circuito atual na posicao do subcircuito
+					MoveSubckt(context, i, vectorSubckt[i].subckt, 0);
+					// Avanca i para corresponder a nova posicao do circuito vazio
+					i++;
 				} else { // Caso mais complicado: restou um circuito do mesmo tipo do nosso!
-					Subckt ss;
-
-					// Primeiro adiciona todos os itens do subcircuito na posicao atual deste circuito
-					itnext = it;
 					while(s.subckt->getSize() > 0) {
-						ss = s.subckt->getSubckt(0);
-						if(ss.elem != nullptr) {
-							ss.subckt = this; // Este elemento passa a fazer pate do circuito atual
-						}
-						it = vectorSubckt.insert(itnext, ss);
-						itnext = it + 1;
+						MoveSubckt(context, i++, s.subckt, 0);
 					}
-
-					// Exclui o circuito vazio
-					vectorSubckt.erase(itnext);
 				}
+
+				// Desaloca o subcircuito
+				DeleteSubckt(context, i);
 			}
 		}
 	}
 }
 
-bool LadderCircuit::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+LadderCircuit *LadderCircuit::Clone(void)
 {
-	return true; // Nada a fazer
+	vector<Subckt>::size_type i;
+	LadderCircuit *clone = new LadderCircuit(isSeries);
+
+	for(i = 0; i < vectorSubckt.size(); i++) {
+		Subckt s;
+		if(vectorSubckt[i].elem != nullptr) {
+			s.elem   = vectorSubckt[i].elem->Clone();
+			s.subckt = this;
+		} else {
+			s.elem = nullptr;
+			s.subckt = vectorSubckt[i].subckt->Clone();
+		}
+
+		// Simula ser Move para que nao registre a acao
+		clone->InsertSubckt(getEmptyContext(), i, s, true);
+	}
+
+	return clone;
 }
+
+bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
+{
+	UndoRedoData *data = (UndoRedoData *)action.data;
+
+	switch(action.action) {
+	case eInsertSubckt: {
+		if(isDiscard) {
+			// Se estamos descartando uma acao que representava a inclusao de um elemento, devemos
+			// desalocar a memoria ocupada pelo elemento se estiver descartando da lista de Refazer. Isso indica
+			// que a operacao de inclusao foi desfeita e nao podera ser refeita. Se estiver descartando a lista
+			// de Desfazer, significa que a inclusao foi feita e nao podera ser desfeita, ou seja, o objeto esta
+			// no circuito e portanto nao deve ser desalocado.
+			if(!IsUndo) {
+				if(data->DeleteSubckt.subckt.elem != nullptr) {
+					delete data->DeleteSubckt.subckt.elem;
+				} else if(data->DeleteSubckt.subckt.subckt != nullptr) { // Nunca subckt deveria ser nulo aqui!
+					delete data->DeleteSubckt.subckt.subckt;
+				}
+			}
+		} else {
+			if(IsUndo) {
+				DeleteSubckt(action.contextBefore, data->InsertSubckt.pos, false, true);
+			} else {
+				InsertSubckt(action.contextBefore, data->InsertSubckt.pos, data->InsertSubckt.subckt, false, true);
+			}
+		}
+		break;
+	}
+
+	case eDeleteSubckt: {
+		if(isDiscard) {
+			// Se estamos descartando uma acao que representava a exclusao de um elemento, devemos
+			// desalocar a memoria ocupada pelo elemento pois ele ja foi excluido do circuito.
+			// Porem isso deve ser feito apenas se estiver descartando da lista de Desfazer, o que indica
+			// que a operacao de exclusao nao podera ser desfeita. Se estiver descartando a lista de Refazer,
+			// significa que a exclusao foi desfeita, ou seja, o objeto nao podera mais ser excluido e portanto
+			// nao deve ser desalocado.
+			if(IsUndo) {
+				if(data->DeleteSubckt.subckt.elem != nullptr) {
+					delete data->DeleteSubckt.subckt.elem;
+				} else if(data->DeleteSubckt.subckt.subckt != nullptr) { // Nunca subckt deveria ser nulo aqui!
+					delete data->DeleteSubckt.subckt.subckt;
+				}
+			}
+		} else {
+			if(IsUndo) {
+				InsertSubckt(action.contextBefore, data->DeleteSubckt.pos, data->DeleteSubckt.subckt, false, true);
+			} else {
+				DeleteSubckt(action.contextBefore, data->DeleteSubckt.pos, false, true);
+			}
+		}
+		break;
+	}
+
+	case eMoveSubckt: {
+		if(isDiscard) {
+			// Nada a fazer...
+		} else {
+			if(IsUndo) {
+				data->MoveSubckt.circuit->MoveSubckt(action.contextBefore, data->MoveSubckt.fromPos, this, data->MoveSubckt.pos, true);
+			} else {
+				MoveSubckt(action.contextBefore, data->MoveSubckt.pos, data->MoveSubckt.circuit, data->MoveSubckt.fromPos, true);
+			}
+		}
+		break;
+	}
+
+	default: return false;
+	}
+
+	// Se estamos descartando, desaloca a estrutura que representa a acao
+	if(isDiscard) {
+		delete data;
+	}
+
+	return true; // Nada mais a fazer
+}
+
 // Classe LadderDiagram
 void LadderDiagram::Init(void)
 {
@@ -3043,14 +3930,22 @@ void LadderDiagram::Init(void)
 
 	context.SelectedState   = SELECTED_NONE;
 
-	CheckPointLevels    =  0;
-	CheckPointLevelsMax = 30;
+	CheckPointLevels     =  0;
+	CheckPointLevelsMax  = 30;
+	CheckpointBeginCount =  0;
+	CheckpointDoRollback = false;
+
+	copiedElement = nullptr;
+	copiedRung    = nullptr;
 
 	NeedScrollSelectedIntoView = false;
 
 	NewRung(false);
 
 	updateContext();
+
+	// As acoes executadas durante a inicializacao (criacao da linha e PlaceHolder) nao devem ser desfeitas
+	UndoList.clear();
 }
 
 LadderDiagram::LadderDiagram(void)
@@ -3060,6 +3955,14 @@ LadderDiagram::LadderDiagram(void)
 
 void LadderDiagram::ClearDiagram(void)
 {
+	if(copiedElement != nullptr) {
+		delete copiedElement;
+	}
+
+	if(copiedRung != nullptr) {
+		delete copiedRung;
+	}
+
 	while(rungs.size() > 0) {
 		DeleteRung(0);
 	}
@@ -3124,11 +4027,14 @@ void LadderDiagram::SelectElement(LadderElem *elem, int state)
 
 bool LadderDiagram::EditSelectedElement(void)
 {
+	bool ret = false;
+
 	if(context.SelectedElem != nullptr) {
-		return context.SelectedElem->ShowDialog();
+		ret = context.SelectedElem->ShowDialog(context);
+		updateContext();
 	}
 
-	return false;
+	return ret;
 }
 
 LadderCircuit *LadderDiagram::getSubcktForElement(LadderElem *elem)
@@ -3141,6 +4047,29 @@ LadderCircuit *LadderDiagram::getSubcktForElement(LadderElem *elem)
 	}
 
 	return subckt;
+}
+
+void LadderDiagram::updateUndoContextAfter(bool forceNotNull)
+{
+	deque<UndoRedoAction>::iterator it;
+
+	if(UndoList.size() == 0) return; // Lista vazia...
+
+	it = UndoList.end();
+	do{
+		it--;
+
+		if(it->contextAfter.Diagram == nullptr || forceNotNull) {
+			it->contextAfter = context;
+			// Se estiver no modo para forcar atualizacao,
+			// deve sair no primeiro checkpoint encontrado.
+			if(forceNotNull && it->action == eCheckpoint) {
+				break;
+			}
+		} else {
+			break;
+		}
+	} while (it != UndoList.begin());
 }
 
 void LadderDiagram::updateContext(void)
@@ -3231,6 +4160,8 @@ void LadderDiagram::updateContext(void)
 	}
 
 	SetMenusEnabled(&context);
+
+	updateUndoContextAfter();
 }
 
 int LadderDiagram::getWidthTXT(void)
@@ -3289,22 +4220,41 @@ void LadderDiagram::NewRung(bool isAfter)
 	vector<LadderCircuit *>::iterator it;
 	int position = RungContainingSelected();
 
+	CheckpointBegin(_("Inserir Linha"));
+
+	// Registro da acao para desfazer / refazer
+	UndoRedoAction action;
+	UndoRedoData *data = new UndoRedoData;
+
+	data->NewRung.rung = new LadderCircuit(true);
+
 	if(position < 0) { // Se posicao menor que zero, insere no final
 		it = rungs.end();
-		position = rungs.size();
+		data->NewRung.pos = rungs.size();
 	} else {
-		it = rungs.begin() + position;
-		if(it != rungs.end() && isAfter) it++;
+		data->NewRung.pos = min((unsigned int)position + (isAfter ? 1 : 0), rungs.size());
+		it = rungs.begin() + data->NewRung.pos;
 	}
 
+	action.action        = eNewRung;
+	action.contextAfter  = getEmptyContext();
+	action.contextBefore = context;
+	action.data          = data;
+	action.elem          = nullptr;
+	action.subckt        = nullptr;
+
+	RegisterAction(action);
+
 	// Adiciona a linha na posicao calculada
-	it = rungs.insert(it, new LadderCircuit(true));
+	it = rungs.insert(it, data->NewRung.rung);
 
 	// Adiciona o padding
 	LadderElem *elem = new LadderElemPlaceHolder;
 	(*it)->AddElement(elem, context);
 
 	SelectElement(elem, SELECTED_RIGHT);
+
+	CheckpointEnd();
 }
 
 bool LadderDiagram::PushRung(int rung, bool up)
@@ -3346,14 +4296,16 @@ bool LadderDiagram::PushRung(int rung, bool up)
 	data->PushRung.pos  = rung;
 	data->PushRung.isUp = up;
 
-	action.action  = ePushRung;
-	action.context = context;
-	action.data    = data;
-	action.elem    = nullptr;
-	action.subckt  = nullptr;
+	action.action        = ePushRung;
+	action.contextAfter  = getEmptyContext();
+	action.contextBefore = context;
+	action.data          = data;
+	action.elem          = nullptr;
+	action.subckt        = nullptr;
 
-	Checkpoint(_("Mover Linha"));
+	CheckpointBegin(_("Mover Linha"));
 	RegisterAction(action);
+	CheckpointEnd();
 
 	// Atualiza o contexto
 	updateContext();
@@ -3369,23 +4321,118 @@ bool LadderDiagram::DeleteRung(int rung)
 
 	if(rung < 0) return false;
 
+	CheckpointBegin(_("Remover Linha"));
+
+	vector<LadderCircuit *>::iterator it = rungs.begin() + rung;
+
+	// Registro da acao para desfazer / refazer
+	UndoRedoAction action;
+	UndoRedoData *data = new UndoRedoData;
+
+	data->DelRung.pos  = rung;
+	data->DelRung.rung = *it;
+
+	action.action        = eDelRung;
+	action.contextAfter  = getEmptyContext();
+	action.contextBefore = context;
+	action.data          = data;
+	action.elem          = nullptr;
+	action.subckt        = nullptr;
+
+	RegisterAction(action);
+
 	if(rung == RungContainingSelected()) {
 		context.SelectedElem    = nullptr;
 		context.SelectedCircuit = nullptr;
 	}
 
-	vector<LadderCircuit *>::iterator it = rungs.begin() + rung;
-
-	delete *it;
 	rungs.erase(it);
 
+	CheckpointEnd();
+
+	updateContext();
+
 	return true;
+}
+
+bool LadderDiagram::CopyRung(LadderElem *elem)
+{
+	int pos;
+	if(elem == nullptr) {
+		elem = context.SelectedElem;
+		if(elem == nullptr) return false; // Sem linha para copiar
+	}
+
+	pos = RungContainingElement(elem);
+
+	// Primeiro descarta uma linha previamente copiada
+	if(copiedRung != nullptr) {
+		delete copiedRung;
+	}
+
+	// Copia o elemento
+	copiedRung = rungs[pos]->Clone();
+
+	// Retorna com sucesso!
+	return true;
+}
+
+bool LadderDiagram::PasteRung(bool isAfter)
+{
+	int pos;
+	bool ret = false;
+
+	// Nao existe linha copiada ou nao existe ponto de insercao definido
+	if(copiedRung == nullptr || context.SelectedElem == nullptr) return false;
+
+	CheckpointBegin(_("Colar Linha"));
+
+	pos = RungContainingSelected();
+
+	if(pos >= 0) {
+		if(isAfter) {
+			pos++;
+		}
+
+		rungs.insert(rungs.begin() + pos, copiedRung);
+
+		// Registro da acao para desfazer / refazer
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->NewRung.rung = copiedRung;
+		data->NewRung.pos  = pos;
+
+		action.action        = eNewRung;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = context;
+		action.data          = data;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+
+		RegisterAction(action);
+
+		// Cria uma copia de si mesma para que seja possivel inserir uma nova copia
+		copiedRung = copiedRung->Clone();
+
+		ret = true;
+	} else {
+		CheckpointRollback();
+	}
+
+	CheckpointEnd();
+
+	updateContext();
+
+	return ret;
 }
 
 bool LadderDiagram::AddElement(LadderElem *elem)
 {
 	// Se elemento a ser adicionado for nulo ou nao existe um elemento selecionado, retorna
 	if(elem == nullptr || context.SelectedElem == nullptr || context.SelectedCircuit == nullptr) return false;
+
+	CheckpointBegin(_("Adicionar Elemento"));
 
 	bool ret = elem->CanInsert(context);
 	if(ret) {
@@ -3401,17 +4448,22 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 		int position = RungContainingSelected();
 		if(position >= 0) { // Se posicao menor que zero, insere no final
 			vector<LadderCircuit *>::iterator it = rungs.begin() + position;
-			(*it)->AddPlaceHolderIfNoEOL();
+			(*it)->AddPlaceHolderIfNoEOL(context);
 		}
 
 		SelectElement(elem, elem->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT);
 		updateContext();
 	} else {
+		// Ocorreu um erro! Marca o checkpoint para remocao
+		CheckpointRollback();
+
 		// Apos o recebimento de elem, a classe LadderDiagram passa a ser responsavel por ele.
 		// Se por qualquer motivo houver uma falha ao inserir, a classe tem a responsabilidade
 		// de desalocar este elemento.
 		delete elem;
 	}
+
+	CheckpointEnd();
 
 	return ret;
 }
@@ -3425,13 +4477,63 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 
 	int rung = RungContainingElement(elem);
 
+	CheckpointBegin(_("Remover Elemento"));
 	if(rungs[rung]->DelElement(elem, context)) {
-		rungs[rung]->RemoveUnnecessarySubckts();
+		rungs[rung]->RemoveUnnecessarySubckts(context);
+		rungs[rung]->AddPlaceHolderIfNoEOL(context);
 		updateContext();
+		CheckpointEnd();
 		return true;
 	}
 
+	CheckpointRollback();
+	CheckpointEnd();
+
 	return false;
+}
+
+bool LadderDiagram::CopyElement(LadderElem *elem)
+{
+	if(elem == nullptr) {
+		elem = context.SelectedElem;
+		if(elem == nullptr) return false; // Sem elemento para copiar
+	}
+
+	// Primeiro descarta um elemento previamente copiado
+	if(copiedElement != nullptr) {
+		delete copiedElement;
+	}
+
+	// Copia o elemento
+	copiedElement = elem->Clone();
+
+	// Retorna com sucesso!
+	return true;
+}
+
+bool LadderDiagram::PasteElement(void)
+{
+	bool ret = false;
+
+	if(copiedElement == nullptr) return false; // Nao existe elemento copiado
+
+	LadderElem *newCopiedElement = copiedElement->Clone();
+
+	CheckpointBegin(_("Colar Elemento"));
+
+	if(AddElement(copiedElement)) {
+		ret = true;
+	} else {
+		CheckpointRollback();
+	}
+
+	CheckpointEnd();
+
+	copiedElement = newCopiedElement;
+
+	updateContext();
+
+	return ret;
 }
 
 void LadderDiagram::DrawTXT(int OffsetX)
@@ -3496,6 +4598,7 @@ bool LadderDiagram::AddParallelStart(void)
 		if(ret == true) {
 			context.ParallelStart = ps;
 			updateContext();
+			updateUndoContextAfter(true);
 		}
 	}
 
@@ -3532,7 +4635,7 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 		LadderElem *EndElem = nullptr;
 
 		if(EndPoint.parallel != nullptr && EndPoint.parallel->getSize() == 2) {
-			EndElem = EndPoint.parallel->getSubckt(1, false).elem;
+			EndElem = EndPoint.parallel->getSubckt(1).elem;
 		}
 
 		if(StartPoint.parallel == EndPoint.parallel) {
@@ -3545,14 +4648,14 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 			Subckt End, Previous = { nullptr, nullptr }, Next = { nullptr, nullptr };
 
 			if(context.SelectedState == SELECTED_RIGHT) {
-				End = EndPoint.series->getSubckt(EndPoint.point, false);
+				End = EndPoint.series->getSubckt(EndPoint.point);
 				// Next
 				if(End.elem == EndPoint.subckt.elem && EndPoint.point < (EndPoint.series->getSize()-1)) {
-					Next = EndPoint.series->getSubckt(EndPoint.point + 1, false);
+					Next = EndPoint.series->getSubckt(EndPoint.point + 1);
 				} else if(End.elem == nullptr && !End.subckt->IsSeries()) {
 					bool LastIsEndParallel;
 					do {
-						End = EndPoint.series->getSubckt(EndPoint.series->getSize()-1, false);
+						End = EndPoint.series->getSubckt(EndPoint.series->getSize()-1);
 						LastIsEndParallel = (End.elem == nullptr) && End.subckt == EndPoint.parallel;
 
 						if(LastIsEndParallel) {
@@ -3562,17 +4665,17 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 							rungs[CurrentRung]->ElemInSubcktSeries(context, &EndPoint);
 						}
 					} while(LastIsEndParallel);
-					Previous = EndPoint.series->getSubckt(EndPoint.point, false);
+					Previous = EndPoint.series->getSubckt(EndPoint.point);
 				}
 			} else if(context.SelectedState == SELECTED_LEFT) {
-				End = EndPoint.series->getSubckt(EndPoint.point, false);
+				End = EndPoint.series->getSubckt(EndPoint.point);
 				// Next
 				if(End.elem == nullptr && !End.subckt->IsSeries()) {
 					Next = End;
 				}
 				// Previous
 				if(EndPoint.point) {
-					Previous = EndPoint.series->getSubckt(EndPoint.point - 1, false);
+					Previous = EndPoint.series->getSubckt(EndPoint.point - 1);
 				}
 			}
 
@@ -3626,7 +4729,7 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 	context.canDelete = true; // Forca a exclusao de ParallelStart
 	DelElement(context.ParallelStart);
 	context.ParallelStart = nullptr;
-	rungs[CurrentRung]->RemoveUnnecessarySubckts();
+	rungs[CurrentRung]->RemoveUnnecessarySubckts(context);
 
 	return ret;
 }
@@ -3634,8 +4737,6 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 // Funcoes relacionadas aos comandos de Desfazer / Refazer
 void LadderDiagram::RegisterAction(UndoRedoAction Action, bool isUndo)
 {
-	Action.isDiscard = false;
-
 	if(isUndo) {
 		UndoList.push_back(Action);
 	} else {
@@ -3643,9 +4744,26 @@ void LadderDiagram::RegisterAction(UndoRedoAction Action, bool isUndo)
 	}
 }
 
-void LadderDiagram::Checkpoint(string description)
+bool LadderDiagram::ExecuteAction(bool isUndo, bool isDiscard, UndoRedoAction Action)
+{
+	// Se checkpoint, nada a fazer. Retorna como operacao executada com sucesso
+	if(Action.action == eCheckpoint) return true;
+
+	if(Action.elem != nullptr) {
+		return Action.elem->DoUndoRedo(isUndo, isDiscard, Action);
+	} else if(Action.subckt != nullptr) {
+		return Action.subckt->DoUndoRedo(isUndo, isDiscard, Action);
+	} else {
+		return DoUndoRedo(isUndo, isDiscard, Action);
+	}
+}
+
+void LadderDiagram::CheckpointBegin(string description)
 {
 	UndoRedoAction cp;
+
+	// Se ja registrando acoes, descarta chekpoint
+	if(CheckpointBeginCount++ > 0) return;
 
 	// Se estamos adicionando um checkpoint em Desfazer, a lista de Refazer se torna invalida!
 	// Apagando a lista de Refazer...
@@ -3661,60 +4779,82 @@ void LadderDiagram::Checkpoint(string description)
 	cp.elem    = nullptr;
 	cp.subckt  = nullptr;
 
-	cp.context = context;
+	cp.contextBefore = cp.contextAfter = context;
 
 	RegisterAction(cp);
 
-	CheckPointLevels++;
-	if(CheckPointLevels > CheckPointLevelsMax) {
+	if(++CheckPointLevels > CheckPointLevelsMax) {
 		DiscardCheckpoint();
+	}
+}
+
+void LadderDiagram::CheckpointEnd(void)
+{
+	if(CheckpointBeginCount > 0) { // Nunca deveria ser zero aqui...
+		CheckpointBeginCount--;
+
+		if(CheckpointBeginCount == 0 && CheckpointDoRollback) {
+			UndoRedoAction action;
+
+			CheckpointDoRollback = false;
+
+			if(UndoList.size() == 0) return; // Lista vazia
+
+			do {
+				action = UndoList.back();
+				ExecuteAction(true, true, action);
+				UndoList.pop_back();
+			} while(action.action != eCheckpoint);
+		}
 	}
 }
 
 void LadderDiagram::DiscardCheckpoint(bool isUndo)
 {
-	bool ignoreFirstCheckpoint;
-	deque<UndoRedoAction> *List;
-
 	if(isUndo) {
-		ignoreFirstCheckpoint = false;
-		List = &UndoList;
-	} else {
-		ignoreFirstCheckpoint = true;
-		List = &RedoList;
-	}
+		// Sempre a lista inicia por um checkpoint. Assim devemos remove-lo antes de iniciar o loop
+		// Isso precisa ser feito pois o loop termina ao encontrar um checkpoint
+		UndoList.pop_front();
+		while(!UndoList.empty()) { // Executa as acoes ate achar um checkpoint ou a lista estiver vazia
+			UndoRedoAction action = UndoList.front();
 
-	while(!List->empty()) { // Executa as acoes ate achar um checkpoint ou a lista estiver vazia
-		UndoRedoAction action = List->front();
-		action.isDiscard = true;
-
-		if(action.action == eCheckpoint) { // Checkpoint atingido
-			// Se devemos ignorar o primeiro checkpoint, apenas o remove e vai para o proximo
-			if(ignoreFirstCheckpoint) {
-				List->pop_front();
-				ignoreFirstCheckpoint = false;
-				continue;
-			}
-
-			// Se for Desfazer, remove o checkpoint e diminui a contagem de niveis de checkpoint
-			if(isUndo) {
-				List->pop_front();
+			if(action.action == eCheckpoint) { // Checkpoint atingido
+				// Diminui a contagem de niveis de checkpoint
 				CheckPointLevels--;
+
+				break; // sai do loop!
 			}
 
-			break; // sai do loop!
+			// Descarta a acao
+			ExecuteAction(true, true, action);
+
+			// Exclui o elemento atual da lista apos executar sua acao
+			UndoList.pop_front();
+		}
+	} else {
+		unsigned int start = 0;
+		if(RedoList.size() >= 2) { // Sempre a lista deve ter no minimo 2 elementos: checkpoint e acao
+			start = RedoList.size() - 2;
 		}
 
-		if(action.elem != nullptr) {
-			action.elem->DoUndoRedo(isUndo, action);
-		} else if(action.subckt != nullptr) {
-			action.subckt->DoUndoRedo(isUndo, action);
-		} else {
-			DoUndoRedo(isUndo, action);
+		// Procura o checkpoint anterior ao inicial, indicando o ponto onde devemos iniciar a exclusao
+		while(start > 0) {
+			if(RedoList[start - 1].action == eCheckpoint) { // encontrou chekpoint!
+				break; // termina a busca
+			}
+
+			// Nao encontrou, reduz start e tenta novamente.
+			start--;
 		}
 
-		// Exclui o elemento atual da lista apos executar sua acao
-		List->pop_front();
+		while(RedoList.size() > start) { // Executa as acoes enquanto a lista estiver alem do ponto inicial
+			// Descarta a acao
+			ExecuteAction(false, true, RedoList[start]);
+
+			// Exclui o elemento atual da lista apos executar sua acao
+			RedoList.erase(RedoList.begin() + start);
+		}
+
 	}
 }
 
@@ -3733,9 +4873,10 @@ void LadderDiagram::UndoRedo(bool isUndo)
 
 	while(!List->empty()) { // Executa as acoes ate achar um checkpoint ou a lista estiver vazia
 		UndoRedoAction action = List->back();
-		RegisterAction(action, !isUndo);
 
 		if(action.action == eCheckpoint) { // Checkpoint atingido
+			RegisterAction(action, !isUndo);
+
 			// Se devemos ignorar o primeiro checkpoint, apenas o remove e vai para o proximo
 			if(ignoreFirstCheckpoint) {
 				List->pop_back();
@@ -3747,34 +4888,45 @@ void LadderDiagram::UndoRedo(bool isUndo)
 			if(isUndo) {
 				List->pop_back();
 				CheckPointLevels--;
-			} else { // Registramos a acao mas ela nao sera executada! Cancelamos o registro...
+			} else {
+				CheckPointLevels++;
+				// Registramos a acao mas ela nao sera executada! Cancelamos o registro...
 				UndoList.pop_back();
 			}
 
 			break; // sai do loop!
 		}
 
-		if(action.elem != nullptr) {
-			action.elem->DoUndoRedo(isUndo, action);
-		} else if(action.subckt != nullptr) {
-			action.subckt->DoUndoRedo(isUndo, action);
-		} else {
-			DoUndoRedo(isUndo, action);
-		}
+		// Executa a acao
+		ExecuteAction(isUndo, false, action);
 
-		context = action.context;
+		// Registra a acao na lista contraria a que estamos trabalhando
+		RegisterAction(action, !isUndo);
+
+		// Atualiza o contexto para o que era valido antes/depois da operacao
+		if(isUndo) {
+			context = action.contextBefore;
+		} else {
+			context = action.contextAfter;
+		}
 
 		// Exclui o elemento atual da lista apos executar sua acao
 		List->pop_back();
 	}
+
+	if(!IsSelectedVisible()) {
+		NeedScrollSelectedIntoView = true;
+	}
+
+	SetMenusEnabled(&context);
 }
 
-bool LadderDiagram::DoUndoRedo(bool IsUndo, UndoRedoAction action)
+bool LadderDiagram::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	UndoRedoData *data = (UndoRedoData *)action.data;
 	switch(action.action) {
 	case ePushRung: {
-		if(action.isDiscard) {
+		if(isDiscard) {
 			// Nada a fazer...
 		} else {
 			int offset = data->PushRung.isUp ? -1 : +1;
@@ -3785,11 +4937,45 @@ bool LadderDiagram::DoUndoRedo(bool IsUndo, UndoRedoAction action)
 		break;
 	}
 
+	case eNewRung: {
+		if(isDiscard) {
+			// Se estiver descartando a acao para refazer a inclusao da linha, significa que ela havia sido
+			// removida do circuito e nesse momento a acao para sua inclusao esta sendo descartada.
+			// Assim essa linha nao sera mais incluida no circuito e deve ser desalocada da memoria.
+			if(!IsUndo) {
+				delete data->NewRung.rung;
+			}
+		} else if(IsUndo) {
+			rungs.erase(rungs.begin() + data->NewRung.pos);
+		} else {
+			rungs.insert(rungs.begin() + data->NewRung.pos, data->NewRung.rung);
+		}
+
+		break;
+	}
+
+	case eDelRung: {
+		if(isDiscard) {
+			// Se estiver descartando a acao para desfazer a exclusao da linha, significa que ela havia sido
+			// removida do circuito e nesse momento a acao para sua exclusao esta sendo descartada.
+			// Assim essa linha nao sera mais incluida no circuito e deve ser desalocada da memoria.
+			if(IsUndo) {
+				delete data->DelRung.rung;
+			}
+		} else if(IsUndo) {
+			rungs.insert(rungs.begin() + data->DelRung.pos, data->DelRung.rung);
+		} else {
+			rungs.erase(rungs.begin() + data->DelRung.pos);
+		}
+
+		break;
+	}
+
 	default: return false;
 	}
 
 	// Se estamos descartando, desaloca a estrutura que representa a acao
-	if(action.isDiscard) {
+	if(isDiscard) {
 		delete data;
 	}
 

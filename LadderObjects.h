@@ -56,16 +56,20 @@ typedef struct {
 
 // Estrutura auxiliar que representa uma acao de desfazer / refazer
 typedef struct {
+	// Texto que descreve a acao de forma amigavel para o usuario
 	string         Description;
 
+	// Objeto responsavel por executar a acao
 	LadderElem    *elem;
 	LadderCircuit *subckt;
-	LadderContext  context;
 
+	// Contexto Antes e Depois de executar a acao
+	LadderContext  contextAfter;
+	LadderContext  contextBefore;
+
+	// Codigo da acao e ponteiro para dados especificos da acao
 	unsigned int   action;
 	void          *data;
-
-	bool           isDiscard;
 } UndoRedoAction;
 
 /*** Classes representando os elementos do Ladder ***/
@@ -78,7 +82,20 @@ private:
 	bool isFormatted;
 	int  which;
 
+	virtual void internalSetProperties(void *data) = 0;
+
+	// Estrutura de dados para acoes de Desfazer / Refazer
+	enum UndoRedoActionsEnum { eCheckpoint = 0, eSetProp, eActionsEnd };
+	union UndoRedoData {
+		struct {
+			void *data;
+		} SetProp;
+	};
+
 	void Init(void);
+
+	// Funcao que executa uma acao de desfazer / refazer nas classes derivadas
+	virtual bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action) = 0;
 
 protected:
 	bool poweredAfter;
@@ -90,7 +107,7 @@ public:
 	virtual pair<string, string> DrawTXT(void) = 0;
 	virtual void DrawGUI(void *data) = 0;
 
-	virtual bool ShowDialog(void) = 0;
+	virtual bool ShowDialog(LadderContext context) = 0;
 
 	virtual bool GenerateIntCode(IntCode &ic) = 0;
 
@@ -104,13 +121,19 @@ public:
 
 	virtual inline int getWidthTXT(void) = 0;
 
+	void          setProperties(LadderContext context, void *propData);
+	virtual void *getProperties(void) = 0;
+
+	virtual LadderElem *Clone(void) = 0;
+
 	// Funcao que executa uma acao de desfazer / refazer
-	virtual bool DoUndoRedo(bool IsUndo, UndoRedoAction action) = 0;
+	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento PlaceHolder
 class LadderElemPlaceHolder : public LadderElem {
 	// Sem propriedades privadas...
+	void internalSetProperties(void *data) { }
 
 public:
 	LadderElemPlaceHolder(void);
@@ -118,7 +141,7 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
@@ -126,14 +149,24 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
+	void *getProperties(void) { return nullptr; }
+
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Comment
+struct LadderElemCommentProp {
+	string str;
+};
+
 class LadderElemComment : public LadderElem {
 private:
-	string str;
+	LadderElemCommentProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemComment(void);
@@ -141,27 +174,35 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newStr);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void);
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Contato
-class LadderElemContact : public LadderElem {
-private:
+struct LadderElemContactProp {
     string        name;
     bool          negated;
 	unsigned int  type;
 	unsigned char bit;
+};
+
+class LadderElemContact : public LadderElem {
+private:
+	LadderElemContactProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemContact(void);
@@ -169,30 +210,37 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void getProperties(string &curName, bool &curNegated, unsigned int &curType, unsigned char &curBit);
-	void setProperties(string  newName, bool  newNegated, unsigned int  newType, unsigned char  newBit);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Bobina
-class LadderElemCoil : public LadderElem {
-private:
+struct LadderElemCoilProp {
     string        name;
     bool          negated;
     bool          setOnly;
     bool          resetOnly;
 	unsigned int  type;
 	unsigned char bit;
+};
+
+class LadderElemCoil : public LadderElem {
+private:
+	LadderElemCoilProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemCoil(void);
@@ -200,28 +248,35 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName, bool newNegated, bool newSetOnly, bool newResetOnly,
-		unsigned int newType, unsigned char newBit);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Timer
-class LadderElemTimer : public LadderElem {
-private:
+struct LadderElemTimerProp {
     string name;
     int    delay;
+};
+
+class LadderElemTimer : public LadderElem {
+private:
+	LadderElemTimerProp prop;
 
 	int TimerPeriod(void);
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemTimer(int which);
@@ -229,27 +284,35 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName, int newDelay);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento RTC
-class LadderElemRTC : public LadderElem {
-private:
+struct LadderElemRTCProp {
 	int           mode;  // Continuous or Intermittent (when using date/hour range) or only a fixed date/hour.
     unsigned char wday;  // [0:0] Sum, [0:1] Mon, [0:2] Tue, [0:3] Wed, [0:4] Thu, [0:5] Fri, [0:6] Sat, [0:7] WDay 1=YES, 0=No
 	struct tm     start; // Start date/time of the range or the fixed one
 	struct tm     end;   // End date/time when using range.
+};
+
+class LadderElemRTC : public LadderElem {
+private:
+	LadderElemRTCProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemRTC(void);
@@ -257,25 +320,33 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(int newMode, unsigned char newWday, struct tm newStart, struct tm newEnd);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Counter
-class LadderElemCounter : public LadderElem {
-private:
+struct LadderElemCounterProp {
     string  name;
     int     max;
+};
+
+class LadderElemCounter : public LadderElem {
+private:
+	LadderElemCounterProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemCounter(int which);
@@ -283,24 +354,32 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName, int newMax);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Reset Timer / Counter
+struct LadderElemResetProp {
+	string name;
+};
+
 class LadderElemReset : public LadderElem {
 private:
-	string name;
+	LadderElemResetProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemReset(void);
@@ -308,23 +387,26 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento One Shot
 class LadderElemOneShot : public LadderElem {
 	// Sem propriedades privadas...
+	void internalSetProperties(void *data) { }
 
 public:
 	LadderElemOneShot(int which);
@@ -332,23 +414,33 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
+
+	void *getProperties(void) { return nullptr; }
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Cmp
-class LadderElemCmp : public LadderElem {
-private:
+struct LadderElemCmpProp {
 	string op1;
 	string op2;
+};
+
+class LadderElemCmp : public LadderElem {
+private:
+	LadderElemCmpProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemCmp(int which);
@@ -356,26 +448,34 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newOp1, string newOp2);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Math
-class LadderElemMath : public LadderElem {
-private:
+struct LadderElemMathProp {
 	string op1;
 	string op2;
 	string dest;
+};
+
+class LadderElemMath : public LadderElem {
+private:
+	LadderElemMathProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemMath(int which);
@@ -383,25 +483,33 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newOp1, string newOp2, string newDest);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 2; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Sqrt
-class LadderElemSqrt : public LadderElem {
-private:
+struct LadderElemSqrtProp {
 	string src;
 	string dest;
+};
+
+class LadderElemSqrt : public LadderElem {
+private:
+	LadderElemSqrtProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemSqrt(void);
@@ -409,26 +517,34 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newSrc, string newDest);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Rand
-class LadderElemRand : public LadderElem {
-private:
+struct LadderElemRandProp {
 	string var;
 	string min;
 	string max;
+};
+
+class LadderElemRand : public LadderElem {
+private:
+	LadderElemRandProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemRand(void);
@@ -436,25 +552,33 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newVar, string newMin, string newMax);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 2; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Abs
-class LadderElemAbs : public LadderElem {
-private:
+struct LadderElemAbsProp {
 	string src;
 	string dest;
+};
+
+class LadderElemAbs : public LadderElem {
+private:
+	LadderElemAbsProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemAbs(void);
@@ -462,25 +586,33 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newSrc, string newDest);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Move
-class LadderElemMove : public LadderElem {
-private:
+struct LadderElemMoveProp {
 	string src;
 	string dest;
+};
+
+class LadderElemMove : public LadderElem {
+private:
+	LadderElemMoveProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemMove(void);
@@ -488,23 +620,26 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newSrc, string newDest);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Open & Short
 class LadderElemOpenShort : public LadderElem {
 	// Sem propriedades privadas...
+	void internalSetProperties(void *data) { }
 
 public:
 	LadderElemOpenShort(int which);
@@ -512,24 +647,34 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
+
+	void *getProperties(void) { return nullptr; }
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Set Bit
-class LadderElemSetBit : public LadderElem {
-private:
+struct LadderElemSetBitProp {
 	string name;
 	int    bit;
 	bool   set;
+};
+
+class LadderElemSetBit : public LadderElem {
+private:
+	LadderElemSetBitProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemSetBit(void);
@@ -537,26 +682,34 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName, int newBit, bool newSet);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Check Bit
-class LadderElemCheckBit : public LadderElem {
-private:
+struct LadderElemCheckBitProp {
 	string name;
 	int    bit;
 	bool   set;
+};
+
+class LadderElemCheckBit : public LadderElem {
+private:
+	LadderElemCheckBitProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemCheckBit(void);
@@ -564,24 +717,32 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName, int newBit, bool newSet);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Read A/D
+struct LadderElemReadAdcProp {
+	string name;
+};
+
 class LadderElemReadAdc : public LadderElem {
 private:
-	string name;
+	LadderElemReadAdcProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemReadAdc(void);
@@ -589,25 +750,33 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Set D/A
-class LadderElemSetDa : public LadderElem {
-private:
+struct LadderElemSetDaProp {
 	string name;
 	int    mode;
+};
+
+class LadderElemSetDa : public LadderElem {
+private:
+	LadderElemSetDaProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemSetDa(void);
@@ -615,24 +784,32 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName, int newMode);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Read Encoder
+struct LadderElemReadEncProp {
+	string name;
+};
+
 class LadderElemReadEnc : public LadderElem {
 private:
-	string name;
+	LadderElemReadEncProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemReadEnc(void);
@@ -640,24 +817,32 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Reset Encoder
+struct LadderElemResetEncProp {
+	string name;
+};
+
 class LadderElemResetEnc : public LadderElem {
 private:
-	string name;
+	LadderElemResetEncProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemResetEnc(void);
@@ -665,23 +850,24 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Multiset D/A
-class LadderElemMultisetDA : public LadderElem {
-private:
+struct LadderElemMultisetDAProp {
 	string	name;					// Tempo
 	string	name1;					// Deslocamento
 	bool	linear;					// true = Linear, false = Curva Ascendente/Descendente
@@ -693,6 +879,13 @@ private:
 	int		gainr;					// resolução da curva de ganho em %
 	bool	StartFromCurrentValue;	// false = Iniciar ou ir para zero, conforme speedup. true = partir do valor atual até o valor configurado
 	int		ramp_abort_mode;
+};
+
+class LadderElemMultisetDA : public LadderElem {
+private:
+	LadderElemMultisetDAProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemMultisetDA(void);
@@ -700,29 +893,36 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName, string newName1, int newGaint, int newGainr, int newInitval,
-		bool newLinear, bool newForward, bool newSpeedup, bool newStartFromCurrentValue);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Read / Write USS
-class LadderElemUSS : public LadderElem {
-private:
+struct LadderElemUSSProp {
     string  name;
 	int		id;
 	int		parameter;
 	int		parameter_set;
 	int		index;
+};
+
+class LadderElemUSS : public LadderElem {
+private:
+	LadderElemUSSProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemUSS(int which);
@@ -730,28 +930,36 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName, int newId, int newParameter, int newParameter_set, int newIndex);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento ModBUS
-class LadderElemModBUS : public LadderElem {
-private:
+struct LadderElemModBUSProp {
     string  name;
 	int		elem;
 	int		address;
 	bool	int32;
 	bool	retransmitir;
+};
+
+class LadderElemModBUS : public LadderElem {
+private:
+	LadderElemModBUSProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemModBUS(int which);
@@ -759,25 +967,33 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties();
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Set PWM
-class LadderElemSetPWM : public LadderElem {
-private:
+struct LadderElemSetPWMProp {
     string  name;
     int     targetFreq;
+};
+
+class LadderElemSetPWM : public LadderElem {
+private:
+	LadderElemSetPWMProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemSetPWM(void);
@@ -785,24 +1001,32 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties();
-
 	bool CanInsert(LadderContext context);
+
+	void *getProperties(void);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Send / Receive UART
+struct LadderElemUARTProp {
+	string name;
+};
+
 class LadderElemUART : public LadderElem {
 private:
-	string name;
+	LadderElemUARTProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemUART(int which);
@@ -810,23 +1034,26 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Master Relay
 class LadderElemMasterRelay : public LadderElem {
 	// Sem propriedades privadas...
+	void internalSetProperties(void *data) { }
 
 public:
 	LadderElemMasterRelay(void);
@@ -834,23 +1061,33 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
+
+	void *getProperties(void) { return nullptr; }
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Shift Register
-class LadderElemShiftRegister : public LadderElem {
-private:
+struct LadderElemShiftRegisterProp {
     string name;
     int    stages;
+};
+
+class LadderElemShiftRegister : public LadderElem {
+private:
+	LadderElemShiftRegisterProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemShiftRegister(void);
@@ -858,28 +1095,36 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newName, int newStages);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Look Up Table
-class LadderElemLUT : public LadderElem {
-private:
+struct LadderElemLUTProp {
     string                             dest;
     string                             index;
     int                                count;
     bool                               editAsString;
     array<long, MAX_LOOK_UP_TABLE_LEN> vals;
+};
+
+class LadderElemLUT : public LadderElem {
+private:
+	LadderElemLUTProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemLUT(void);
@@ -887,28 +1132,35 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newDest, string newIndex, int newCount,
-		bool newEditAsString, array<long, MAX_LOOK_UP_TABLE_LEN> newVals);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Piecewise Linear
-class LadderElemPiecewise : public LadderElem {
-private:
+struct LadderElemPiecewiseProp {
     string                             dest;
     string                             index;
     int                                count;
     array<long, MAX_LOOK_UP_TABLE_LEN> vals;
+};
+
+class LadderElemPiecewise : public LadderElem {
+private:
+	LadderElemPiecewiseProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemPiecewise(void);
@@ -916,25 +1168,33 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newDest, string newIndex, int newCount, array<long, MAX_LOOK_UP_TABLE_LEN> newVals);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Formatted String
-class LadderElemFmtString : public LadderElem {
-private:
+struct LadderElemFmtStringProp {
     string var;
     string txt;
+};
+
+class LadderElemFmtString : public LadderElem {
+private:
+	LadderElemFmtStringProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemFmtString(int which);
@@ -942,26 +1202,34 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newVar, string newTxt);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 2; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Read / Write Yaskawa
-class LadderElemYaskawa : public LadderElem {
-private:
+struct LadderElemYaskawaProp {
     string id;
     string var;
     string txt;
+};
+
+class LadderElemYaskawa : public LadderElem {
+private:
+	LadderElemYaskawaProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemYaskawa(int which);
@@ -969,24 +1237,32 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newId, string newVar, string newTxt);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 2; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Persist
+struct LadderElemPersistProp {
+	string var;
+};
+
 class LadderElemPersist : public LadderElem {
 private:
-	string var;
+	LadderElemPersistProp prop;
+
+	void internalSetProperties(void *data);
 
 public:
 	LadderElemPersist(void);
@@ -994,23 +1270,32 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties(string newVar);
+	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento X
+struct LadderElemXProp {
+};
+
 class LadderElemX : public LadderElem {
 private:
+	// Sem propriedades privadas...
+	LadderElemXProp prop;
+
+	void internalSetProperties(void *data) { }
 
 public:
 	LadderElemX(void);
@@ -1018,18 +1303,20 @@ public:
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
 
-	bool ShowDialog(void);
+	bool ShowDialog(LadderContext context);
 
 	bool GenerateIntCode(IntCode &ic);
 
-	void setProperties();
+	void *getProperties(void) { return nullptr; }
 
 	bool CanInsert(LadderContext context);
 
 	inline int getWidthTXT(void) { return 1; }
 
+	LadderElem *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 /*** Classe representando os circuitos (Serie / Paralelo) ***/
@@ -1043,8 +1330,30 @@ private:
 	bool DrawElementTXT(vector< vector<int> > &DisplayMatrix, LadderElem *elem, int *cx, int *cy, bool poweredBefore);
 	void VerticalWireTXT(int cx, int cy);
 
+	// Estrutura de dados para acoes de Desfazer / Refazer
+	enum UndoRedoActionsEnum { eCheckpoint = 0, eInsertSubckt, eDeleteSubckt, eMoveSubckt };
+	union UndoRedoData {
+		struct {
+			unsigned int pos;
+			Subckt       subckt;
+		} InsertSubckt;
+		struct {
+			unsigned int pos;
+			Subckt       subckt;
+		} DeleteSubckt;
+		struct {
+			unsigned int   pos;
+			unsigned int   fromPos;
+			LadderCircuit *circuit;
+		} MoveSubckt;
+	};
+
 protected:
-	bool InsertSubckt(Subckt s, int pos);
+	bool InsertSubckt(LadderContext context, unsigned int pos, Subckt s, bool isMove = false,
+		bool isUndoRedo = false);
+	bool DeleteSubckt(LadderContext context, unsigned int pos, bool isMove = false,	bool isUndoRedo = false);
+	bool MoveSubckt  (LadderContext context, unsigned int pos, LadderCircuit *fromCircuit,
+		unsigned int fromPos, bool isUndoRedo = false);
 
 public:
 	LadderCircuit(void);
@@ -1065,23 +1374,25 @@ public:
 
 	unsigned int   getSize(void) { return vectorSubckt.size(); }
 	LadderCircuit *getSubcktForElement(LadderElem *elem);
-	Subckt         getSubckt(unsigned int pos, bool remove = true);
+	Subckt         getSubckt(unsigned int pos);
 
 	int            getWidthTXT (int ColsAvailable);
 	int            getHeightTXT(void);
 
-	void AddPlaceHolderIfNoEOL(void);
+	void AddPlaceHolderIfNoEOL(LadderContext context);
 	bool AddElement(LadderElem *elem, LadderContext &context);
 	bool InsertParallel(LadderElem *elem, unsigned int start, unsigned int end, LadderContext &context);
 	bool DelElement(LadderElem *elem, LadderContext &context);
 
-	void RemoveUnnecessarySubckts(void);
+	void RemoveUnnecessarySubckts(LadderContext context);
 
 	int SearchMatch(LadderCircuit *series, int direction);
 	int ElemInSubcktSeries(LadderContext &context, InsertionPoint *point);
 
+	LadderCircuit *Clone(void);
+
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 /*** Classe representando o Diagrama Ladder ***/
@@ -1090,19 +1401,31 @@ private:
 	// Undo / Redo Action Lists
 	unsigned int CheckPointLevels;
 	unsigned int CheckPointLevelsMax;
+	unsigned int CheckpointBeginCount;
+
+	bool CheckpointDoRollback;
 
 	deque<UndoRedoAction> UndoList;
 	deque<UndoRedoAction> RedoList;
 
 	void DiscardCheckpoint(bool isUndo = true);
+	bool ExecuteAction(bool isUndo, bool isDiscard, UndoRedoAction Action);
 
 	// Estrutura de dados para acoes de Desfazer / Refazer
-	enum UndoRedoActionsEnum { eCheckpoint = 0, ePushRung };
+	enum UndoRedoActionsEnum { eCheckpoint = 0, ePushRung, eNewRung, eDelRung };
 	union UndoRedoData {
 		struct {
 			int  pos;
 			bool isUp;
 		} PushRung;
+		struct {
+			int  pos;
+			LadderCircuit *rung;
+		} NewRung;
+		struct {
+			int  pos;
+			LadderCircuit *rung;
+		} DelRung;
 	};
 
 	// Context properties
@@ -1115,11 +1438,14 @@ private:
 
 	IntCode ic;
 
+	LadderElem    *copiedElement;
+	LadderCircuit *copiedRung;
+
 	void Init(void);
 
 	LadderCircuit *getSubcktForElement(LadderElem *elem);
 
-	void updateContext(void);
+	void updateUndoContextAfter(bool forceNotNull = false);
 
 	bool IsSelectedVisible(void);
 
@@ -1134,23 +1460,28 @@ public:
 	int getWidthTXT (void);
 	int getHeightTXT(void);
 
+	void updateContext(void);
 	LadderContext getContext(void) { return context; }
 
 	void ClearDiagram(void);
 
 	void SelectElement(LadderElem *elem, int state);
 
-	bool AddElement   (LadderElem *elem);
-	bool DelElement   (LadderElem *elem = nullptr);
+	bool AddElement         (LadderElem *elem);
+	bool DelElement         (LadderElem *elem = nullptr);
+	bool CopyElement        (LadderElem *elem = nullptr);
+	bool PasteElement       (void);
 	bool EditSelectedElement(void);
 
 	int  RungContainingElement (LadderElem *elem);
 	int  RungContainingSelected(void);
 
+	void NewRung    (bool isAfter);
+	bool PushRung   (int rung, bool up);
+	bool DeleteRung (int rung);
 	bool IsRungEmpty(unsigned int n);
-	void NewRung(bool isAfter);
-	bool PushRung(int rung, bool up);
-	bool DeleteRung(int rung);
+	bool CopyRung   (LadderElem *elem = nullptr);
+	bool PasteRung  (bool isAfter);
 
 	void DrawTXT(int OffsetX);
 	void DrawGUI(void);
@@ -1160,14 +1491,16 @@ public:
 	bool AddParallelStart(void);
 
 	// Funcoes relacionadas aos comandos de Desfazer / Refazer
-	void RegisterAction(UndoRedoAction Action, bool isUndo = true);
-	void Checkpoint    (string description);
-	void UndoRedo      (bool isUndo);
-	void Undo          (void) { UndoRedo( true); }
-	void Redo          (void) { UndoRedo(false); }
+	void RegisterAction    (UndoRedoAction Action, bool isUndo = true);
+	void CheckpointBegin   (string description);
+	void CheckpointRollback(void) { CheckpointDoRollback = true; }
+	void CheckpointEnd     (void);
+	void UndoRedo          (bool isUndo);
+	void Undo              (void) { UndoRedo( true); }
+	void Redo              (void) { UndoRedo(false); }
 
 	// Funcao que executa uma acao de desfazer / refazer
-	bool DoUndoRedo(bool IsUndo, UndoRedoAction action);
+	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 #endif
