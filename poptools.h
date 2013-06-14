@@ -756,6 +756,7 @@ typedef struct ElemSubckParallelTag {
 
 #include "intcode.h"
 #include "LadderObjects.h"
+#include "iomap.h"
 
 typedef struct McuIoInfoTag McuIoInfo;
 
@@ -1294,14 +1295,14 @@ void ShowEncoderSliderPopup(char *name);
 // commentdialog.cpp
 bool ShowCommentDialog(char *comment);
 // contactsdialog.cpp
-bool ShowContactsDialog(bool *negated, char *name, unsigned char * bit);
+bool ShowContactsDialog(bool *negated, unsigned long *idName);
 // coildialog.cpp
-bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, char *name, unsigned char *bit);
+bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, unsigned long *idName);
 bool ShowMultisetDADialog(ElemMultisetDA *l);
 // simpledialog.cpp
-bool ShowTimerDialog(int which, int *delay, char *name);
+bool ShowTimerDialog(int which, int *delay, unsigned long *idName);
 bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end);
-bool ShowCounterDialog(int which, int *count, char *name);
+bool ShowCounterDialog(int which, int *maxV, unsigned long *idName);
 bool ShowReadAdcDialog(char *name);
 bool ShowSetBitDialog(char *name, bool * set, int * bit);
 bool ShowCheckBitDialog(char *name, bool * set, int * bit);
@@ -1313,14 +1314,14 @@ bool ShowModbusDialog(int mode_write, char *name, int *id, int *address, bool *s
 bool ShowSetPwmDialog(char *name, int *targetFreq);
 bool ShowPersistDialog(char *var);
 bool ShowUartDialog(int which, char *name);
-bool ShowCmpDialog(int which, char *op1, char *op2);
+bool ShowCmpDialog(int which, pair<unsigned long, int> *op1, pair<unsigned long, int> *op2);
 bool ShowShiftRegisterDialog(char *name, int *stages);
 bool ShowFormattedStringDialog(int mode_write, char *var, char *string);
 bool ShowServoYaskawaDialog(int mode_write, char *id, char *var, char *string);
 void ShowSimulationVarSetDialog(char *name, char *val);
 bool ShowLookUpTableDialog(ElemLookUpTable *t);
 bool ShowPiecewiseLinearDialog(ElemPiecewiseLinear *t);
-bool ShowResetDialog(char *name);
+bool ShowResetDialog(LadderElemReset *elem, unsigned long *idName);
 bool ShowSqrtDialog(char *dest, char *src);
 bool ShowRandDialog(char *var, char *min, char *max);
 bool ShowAbsDialog(char *dest, char *src);
@@ -1361,6 +1362,7 @@ int IoMap_IsModBUS(PlcProgramSingleIo *io);
     }
 void dbp(char *str, ...);
 void Error(char *str, ...);
+void Error(char *title, char *str, va_list f);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 extern HANDLE MainHeap;

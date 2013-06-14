@@ -135,12 +135,15 @@ static LRESULT CALLBACK ContactsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	return CallWindowProc((WNDPROC)PrevContactsDialogProc, hwnd, msg, wParam, lParam);
 }
 
-bool ShowContactsDialog(bool *negated, char *name, unsigned char * bit)
+bool ShowContactsDialog(bool *negated, unsigned long *idName)
 {
 	bool changed = false;
+	string sname = ladder.getNameIO(*idName);
+	const char *name = sname.c_str();
+	mapDetails detailsIO = ladder.getDetailsIO(*idName);
 
 	char name_tmp[MAX_NAME_LEN];
-	unsigned int type;
+	eType type;
 
 	ContactsDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Contacts"), WS_OVERLAPPED | WS_SYSMENU,
@@ -152,16 +155,16 @@ bool ShowContactsDialog(bool *negated, char *name, unsigned char * bit)
     MakeControls();
  
 	char cbit[10];
-	_itoa(*bit, cbit, 10);
+	_itoa(detailsIO.bit, cbit, 10);
 	SetWindowText(BitTextbox, cbit );
 
-    if(GetTypeFromName(name) == IO_TYPE_INTERNAL_RELAY) {
+	if(detailsIO.type == eType_InternalRelay) {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
 		LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_RELAY);
-    } else if(GetTypeFromName(name) == IO_TYPE_DIG_OUTPUT) {
+    } else if(detailsIO.type == eType_DigOutput) {
         SendMessage(SourceOutputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
 		LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
-    } else if(GetTypeFromName(name) == IO_TYPE_DIG_INPUT) {
+    } else if(detailsIO.type == eType_DigInput || detailsIO.type == eType_Reserved) {
         SendMessage(SourceInputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
 		LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_INPUT);
     } else { // Internal Flag
@@ -206,42 +209,32 @@ bool ShowContactsDialog(bool *negated, char *name, unsigned char * bit)
         if(SendMessage(SourceInternalRelayRadio, BM_GETSTATE, 0, 0)
 	        & BST_CHECKED)
 		{
-			type = IO_TYPE_INTERNAL_RELAY;
+			type = eType_InternalRelay;
         } else if(SendMessage(SourceInputPinRadio, BM_GETSTATE, 0, 0)
 	        & BST_CHECKED)
 		{
-			type = IO_TYPE_DIG_INPUT;
+			type = eType_DigInput;
         } else if(SendMessage(InternalFlagRadio, BM_GETSTATE, 0, 0)
 	        & BST_CHECKED)
 		{
-			type = IO_TYPE_INTERNAL_FLAG;
+			type = eType_InternalFlag;
         } else {
-			type = IO_TYPE_DIG_OUTPUT;
+			type = eType_DigOutput;
 		}
 
-		if(IsValidNameAndType(name, name_tmp, type)) {
-		   changed = true;
+		if(ladder.IsValidNameAndType(*idName, name_tmp, type)) {
+			pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
+			if(ladder.getIO(pin, name_tmp, true, type)) { // Variavel valida!
+				changed = true;
 
-			strcpy(name, name_tmp);
-			UpdateTypeInCircuit(name, type);
+				*idName = pin.first;
 
-			if(SendMessage(NegatedCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-		        *negated = TRUE;
-			} else {
-				*negated = FALSE;
-	        }
-
-			*bit = 0;
-			int i;
-			for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
-			{
-				if (_stricmp(IoSeenPreviously[i].name, name)==0)
-					*bit = IoSeenPreviously[i].bit;
+				if(SendMessage(NegatedCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+					*negated = true;
+				} else {
+					*negated = false;
+				}
 			}
-
-			/*char cbit[10];
-			_itoa(*bit, cbit, 10);
-			SetWindowText(BitTextbox, cbit );*/
 		}
 
     }

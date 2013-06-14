@@ -7,6 +7,7 @@
 #include <string>
 
 #include "intcode.h"
+#include "iomap.h"
 
 using namespace std;
 
@@ -72,6 +73,9 @@ typedef struct {
 	void          *data;
 } UndoRedoAction;
 
+// Funcao auxiliar que retorna o tipo de I/O do timer conforme o seu tipo
+eType getTimerTypeIO(int which);
+
 /*** Classes representando os elementos do Ladder ***/
 
 // Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base
@@ -100,6 +104,8 @@ private:
 protected:
 	bool poweredAfter;
 
+	LadderDiagram *Diagram;
+
 public:
 	LadderElem(void);
 	LadderElem(bool EOL, bool Comment, bool Formatted, int elemWhich);
@@ -126,6 +132,10 @@ public:
 
 	virtual LadderElem *Clone(void) = 0;
 
+	// Funcoes relacionadas com I/O
+	virtual bool acceptIO(unsigned long id, eType type) = 0;
+	virtual void updateIO(bool isDiscard) = 0;
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
@@ -136,7 +146,7 @@ class LadderElemPlaceHolder : public LadderElem {
 	void internalSetProperties(void *data) { }
 
 public:
-	LadderElemPlaceHolder(void);
+	LadderElemPlaceHolder(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -152,6 +162,10 @@ public:
 	void *getProperties(void) { return nullptr; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -169,7 +183,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemComment(void);
+	LadderElemComment(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -186,16 +200,18 @@ public:
 
 	LadderElem *Clone(void);
 
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Contato
 struct LadderElemContactProp {
-    string        name;
-    bool          negated;
-	unsigned int  type;
-	unsigned char bit;
+    bool                     negated;
+	pair<unsigned long, int> idName;
 };
 
 class LadderElemContact : public LadderElem {
@@ -205,7 +221,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemContact(void);
+	LadderElemContact(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -222,18 +238,20 @@ public:
 
 	LadderElem *Clone(void);
 
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Bobina
 struct LadderElemCoilProp {
-    string        name;
-    bool          negated;
-    bool          setOnly;
-    bool          resetOnly;
-	unsigned int  type;
-	unsigned char bit;
+    bool                     negated;
+    bool                     setOnly;
+    bool                     resetOnly;
+	pair<unsigned long, int> idName;
 };
 
 class LadderElemCoil : public LadderElem {
@@ -243,7 +261,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemCoil(void);
+	LadderElemCoil(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -260,14 +278,18 @@ public:
 
 	LadderElem *Clone(void);
 
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Timer
 struct LadderElemTimerProp {
-    string name;
-    int    delay;
+	pair<unsigned long, int> idName;
+    int                      delay;
 };
 
 class LadderElemTimer : public LadderElem {
@@ -279,7 +301,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemTimer(int which);
+	LadderElemTimer(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -295,6 +317,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -315,7 +341,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemRTC(void);
+	LadderElemRTC(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -332,14 +358,18 @@ public:
 
 	LadderElem *Clone(void);
 
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Counter
 struct LadderElemCounterProp {
-    string  name;
-    int     max;
+	pair<unsigned long, int> idName;
+    int                      max;
 };
 
 class LadderElemCounter : public LadderElem {
@@ -349,7 +379,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemCounter(int which);
+	LadderElemCounter(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -366,13 +396,17 @@ public:
 
 	LadderElem *Clone(void);
 
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Reset Timer / Counter
 struct LadderElemResetProp {
-	string name;
+	pair<unsigned long, int> idName;
 };
 
 class LadderElemReset : public LadderElem {
@@ -382,7 +416,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemReset(void);
+	LadderElemReset(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -398,6 +432,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -409,7 +447,7 @@ class LadderElemOneShot : public LadderElem {
 	void internalSetProperties(void *data) { }
 
 public:
-	LadderElemOneShot(int which);
+	LadderElemOneShot(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -426,14 +464,18 @@ public:
 
 	LadderElem *Clone(void);
 
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 // Classe do elemento Cmp
 struct LadderElemCmpProp {
-	string op1;
-	string op2;
+	pair<unsigned long, int> idOp1;
+	pair<unsigned long, int> idOp2;
 };
 
 class LadderElemCmp : public LadderElem {
@@ -443,7 +485,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemCmp(int which);
+	LadderElemCmp(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -459,6 +501,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -478,7 +524,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemMath(int which);
+	LadderElemMath(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -494,6 +540,10 @@ public:
 	inline int getWidthTXT(void) { return 2; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -512,7 +562,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemSqrt(void);
+	LadderElemSqrt(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -528,6 +578,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -547,7 +601,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemRand(void);
+	LadderElemRand(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -563,6 +617,10 @@ public:
 	inline int getWidthTXT(void) { return 2; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -581,7 +639,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemAbs(void);
+	LadderElemAbs(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -597,6 +655,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -615,7 +677,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemMove(void);
+	LadderElemMove(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -632,6 +694,10 @@ public:
 
 	LadderElem *Clone(void);
 
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
@@ -642,7 +708,7 @@ class LadderElemOpenShort : public LadderElem {
 	void internalSetProperties(void *data) { }
 
 public:
-	LadderElemOpenShort(int which);
+	LadderElemOpenShort(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -658,6 +724,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -677,7 +747,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemSetBit(void);
+	LadderElemSetBit(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -693,6 +763,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -712,7 +786,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemCheckBit(void);
+	LadderElemCheckBit(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -728,6 +802,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -745,7 +823,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemReadAdc(void);
+	LadderElemReadAdc(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -761,6 +839,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -779,7 +861,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemSetDa(void);
+	LadderElemSetDa(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -795,6 +877,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -812,7 +898,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemReadEnc(void);
+	LadderElemReadEnc(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -828,6 +914,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -845,7 +935,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemResetEnc(void);
+	LadderElemResetEnc(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -861,6 +951,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -888,7 +982,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemMultisetDA(void);
+	LadderElemMultisetDA(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -904,6 +998,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -925,7 +1023,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemUSS(int which);
+	LadderElemUSS(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -941,6 +1039,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -962,7 +1064,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemModBUS(int which);
+	LadderElemModBUS(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -978,6 +1080,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -996,7 +1102,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemSetPWM(void);
+	LadderElemSetPWM(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -1012,6 +1118,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1029,7 +1139,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemUART(int which);
+	LadderElemUART(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -1046,6 +1156,10 @@ public:
 
 	LadderElem *Clone(void);
 
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
@@ -1056,7 +1170,7 @@ class LadderElemMasterRelay : public LadderElem {
 	void internalSetProperties(void *data) { }
 
 public:
-	LadderElemMasterRelay(void);
+	LadderElemMasterRelay(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -1072,6 +1186,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1090,7 +1208,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemShiftRegister(void);
+	LadderElemShiftRegister(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -1106,6 +1224,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1127,7 +1249,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemLUT(void);
+	LadderElemLUT(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -1143,6 +1265,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1163,7 +1289,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemPiecewise(void);
+	LadderElemPiecewise(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -1179,6 +1305,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1197,7 +1327,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemFmtString(int which);
+	LadderElemFmtString(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -1213,6 +1343,10 @@ public:
 	inline int getWidthTXT(void) { return 2; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1232,7 +1366,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemYaskawa(int which);
+	LadderElemYaskawa(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -1248,6 +1382,10 @@ public:
 	inline int getWidthTXT(void) { return 2; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1265,7 +1403,7 @@ private:
 	void internalSetProperties(void *data);
 
 public:
-	LadderElemPersist(void);
+	LadderElemPersist(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -1281,6 +1419,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1298,7 +1440,7 @@ private:
 	void internalSetProperties(void *data) { }
 
 public:
-	LadderElemX(void);
+	LadderElemX(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
 	void DrawGUI(void *data);
@@ -1314,6 +1456,10 @@ public:
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool acceptIO(unsigned long id, eType type) { return true; }
+	void updateIO(bool isDiscard) { }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1391,6 +1537,10 @@ public:
 
 	LadderCircuit *Clone(void);
 
+	// Funcoes relacionadas com I/O
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
@@ -1433,6 +1583,9 @@ private:
 
 	// list of rungs
 	vector<LadderCircuit *> rungs;
+
+	// Objeto que contem todos os I/Os
+	mapIO IO;
 
 	bool NeedScrollSelectedIntoView;
 
@@ -1498,6 +1651,28 @@ public:
 	void UndoRedo          (bool isUndo);
 	void Undo              (void) { UndoRedo( true); }
 	void Redo              (void) { UndoRedo(false); }
+
+	// Funcoes relacionadas com I/O
+	bool          acceptIO        (unsigned long  id, eType type);
+	void          updateIO        (pair<unsigned long, int> &pin, string defaultName, bool isBit, eType defaultType, bool isDiscard);
+	bool          getIO           (pair<unsigned long, int> &pin, string name, bool isBit, eType type);
+	string        getNameIO       (unsigned long  id);
+	string        getNameIObyIndex(unsigned int index);
+	mapDetails    getDetailsIO    (unsigned long  id);
+	mapDetails    getDetailsIO    (string name) { return getDetailsIO(IO.getID(name)); }
+	char         *getStringTypeIO (unsigned int   index);
+	unsigned int  getCountIO      (void);
+	void          selectIO        (unsigned int index);
+
+	bool equalsNameIO             (string name1, string name2);
+
+	bool IsValidNumber     (string varnumber);
+	bool IsValidVarName    (string varname);
+	bool IsValidNameAndType(unsigned long id, string name, eType type, const char *FieldName, unsigned int Rules, int MinVal, int MaxVal, eReply canUpdate = eReply_Ask);
+	bool IsValidNameAndType(unsigned long id, string name, eType type, eReply canUpdate = eReply_Ask);
+
+	// Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
+	eReply ShowDialog(bool isMessage, char *title, char *message, ...);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);

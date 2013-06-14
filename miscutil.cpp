@@ -54,15 +54,21 @@ BOOL AttachConsoleDynamic(DWORD base)
 //-----------------------------------------------------------------------------
 // For error messages to the user; printf-like, to a message box.
 //-----------------------------------------------------------------------------
-void Error(char *str, ...)
+void Error(char *title, char *str, va_list f)
 {
-    va_list f;
     char buf[1024];
-    va_start(f, str);
     vsprintf(buf, str, f);
 
 	HWND h = GetForegroundWindow();
-    MessageBox(h, buf, _("POPTools Error"), MB_OK | MB_ICONERROR);
+    MessageBox(h, buf, title, MB_OK | MB_ICONERROR);
+}
+
+void Error(char *str, ...)
+{
+    va_list f;
+    va_start(f, str);
+
+	Error(_("POPTools Error"), str, f);
 }
 
 //-----------------------------------------------------------------------------

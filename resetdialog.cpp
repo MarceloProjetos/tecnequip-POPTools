@@ -52,9 +52,12 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
-bool ShowResetDialog(char *name)
+bool ShowResetDialog(LadderElemReset *elem, unsigned long *idName)
 {
 	bool changed = false;
+	string sname = ladder.getNameIO(*idName);
+	const char *name = sname.c_str();
+	mapDetails detailsIO = ladder.getDetailsIO(*idName);
 
 	char name_tmp[MAX_NAME_LEN];
 
@@ -94,10 +97,20 @@ bool ShowResetDialog(char *name)
 
     if(!DialogCancel) {
 		SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_tmp));
-		if(IsValidNameAndType(name, name_tmp, _("Destino"), VALIDATE_IS_VAR, GetTypeFromName(name_tmp), 0, 0)) {
-	        changed = true;
+		eType type = ladder.getDetailsIO(name_tmp).type;
 
-			strcpy(name, name_tmp);
+		if(ladder.IsValidNameAndType(*idName, name_tmp, type, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
+			pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
+
+			// No caso do reset, ele deve ser associado a uma variavel ja existente visto que ele deve
+			// zerar um contador / timer que existe! Assim checa diretamente com ele se aceita a variavel.
+			if(!elem->acceptIO(*idName, type)) {
+				ladder.ShowDialog(true, "Contador/Temporizador inválido", "Selecione um contador/temporizador válido!");
+			} else if(ladder.getIO(pin, name_tmp, false, type)) {// Variavel valida!
+				changed = true;
+
+				*idName = pin.first;
+			}
 		}
     }
 

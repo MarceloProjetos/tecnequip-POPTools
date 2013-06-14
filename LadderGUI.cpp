@@ -793,20 +793,16 @@ void ContactCmdToggleNegated(LadderElem *elem)
 
 bool LadderElemContact::ShowDialog(LadderContext context)
 {
-	bool NewNegated      = prop.negated;
-	unsigned char NewBit = prop.bit;
+	bool NewNegated         = prop.negated;
+	unsigned long NewIdName = prop.idName.first;
 
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
-
-	bool changed = ShowContactsDialog(&NewNegated, NewName, &NewBit);
+	bool changed = ShowContactsDialog(&NewNegated, &NewIdName);
 
 	if(changed) {
 		LadderElemContactProp *data = (LadderElemContactProp *)getProperties();
 
-		data->negated = NewNegated;
-		data->bit     = NewBit;
-		data->name    = NewName;
+		data->negated      = NewNegated;
+		data->idName.first = NewIdName;
 
 		setProperties(context, data);
 	}
@@ -830,6 +826,10 @@ void LadderElemContact::DrawGUI(void *data)
 
 	if(ddg->DontDraw) return;
 
+	string sname = ladder.getNameIO(prop.idName.first);
+	const char *name = sname.c_str();
+	mapDetails detailsIO = ladder.getDetailsIO(prop.idName.first);
+
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("CONTATO"));
 	ddg->region = r;
@@ -838,7 +838,7 @@ void LadderElemContact::DrawGUI(void *data)
 	RECT rText = r;
 	rText.left += 5;
 	rText.top  += 5;
-	gui.DrawText(prop.name.c_str(), rText, 0, 1);
+	gui.DrawText(name, rText, 0, 1);
 
 	// Desenha o contato
 	start.x = r.left;
@@ -879,24 +879,20 @@ void LadderElemContact::DrawGUI(void *data)
 // Classe LadderElemCoil
 bool LadderElemCoil::ShowDialog(LadderContext context)
 {
-	bool NewNegated      = prop.negated;
-	bool NewSetOnly      = prop.setOnly;
-	bool NewResetOnly    = prop.resetOnly;
-	unsigned char NewBit = prop.bit;
+	bool          NewNegated   = prop.negated;
+	bool          NewSetOnly   = prop.setOnly;
+	bool          NewResetOnly = prop.resetOnly;
+	unsigned long NewIdName    = prop.idName.first;
 
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
-
-	bool changed = ShowCoilDialog(&NewNegated, &NewSetOnly, &NewResetOnly, NewName, &NewBit);
+	bool changed = ShowCoilDialog(&NewNegated, &NewSetOnly, &NewResetOnly, &NewIdName);
 
 	if(changed) {
 		LadderElemCoilProp *data = (LadderElemCoilProp *)getProperties();
 
-		data->setOnly   = NewSetOnly;
-		data->resetOnly = NewResetOnly;
-		data->negated   = NewNegated;
-		data->bit       = NewBit;
-		data->name      = NewName;
+		data->setOnly      = NewSetOnly;
+		data->resetOnly    = NewResetOnly;
+		data->negated      = NewNegated;
+		data->idName.first = NewIdName;
 
 		setProperties(context, data);
 	}
@@ -922,6 +918,9 @@ void LadderElemCoil::DrawGUI(void *data)
 
 	if(ddg->DontDraw) return;
 
+	string sname = ladder.getNameIO(prop.idName.first);
+	const char *name = sname.c_str();
+
 	DoEOL(start, size, ddg->size);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
@@ -932,7 +931,7 @@ void LadderElemCoil::DrawGUI(void *data)
 	RECT rText = r;
 	rText.left += 5;
 	rText.top  += 5;
-	gui.DrawText(prop.name.c_str(), rText, 0, 1);
+	gui.DrawText(name, rText, 0, 1);
 
 	// Desenha a bobina
 	start.x = r.left;
@@ -962,17 +961,15 @@ void LadderElemCoil::DrawGUI(void *data)
 bool LadderElemTimer::ShowDialog(LadderContext context)
 {
 	int NewDelay = prop.delay;
+	unsigned long NewIdName = prop.idName.first;
 
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
-
-	bool changed = ShowTimerDialog(getWhich(), &NewDelay, NewName);
+	bool changed = ShowTimerDialog(getWhich(), &NewDelay, &NewIdName);
 
 	if(changed) {
 		LadderElemTimerProp *data = (LadderElemTimerProp *)getProperties();
 
-		data->delay = NewDelay;
-		data->name  = NewName;
+		data->delay        = NewDelay;
+		data->idName.first = NewIdName;
 
 		setProperties(context, data);
 	}
@@ -1018,17 +1015,15 @@ void LadderElemRTC::DrawGUI(void *data)
 bool LadderElemCounter::ShowDialog(LadderContext context)
 {
 	int NewMax = prop.max;
+	unsigned long NewIdName = prop.idName.first;
 
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
-
-	bool changed = ShowCounterDialog(getWhich(), &NewMax, NewName);
+	bool changed = ShowCounterDialog(getWhich(), &NewMax, &NewIdName);
 
 	if(changed) {
 		LadderElemCounterProp *data = (LadderElemCounterProp *)getProperties();
 
 		data->max  = NewMax;
-		data->name = NewName;
+		data->idName.first = NewIdName;
 
 		setProperties(context, data);
 	}
@@ -1044,15 +1039,14 @@ void LadderElemCounter::DrawGUI(void *data)
 // Classe LadderElemReset
 bool LadderElemReset::ShowDialog(LadderContext context)
 {
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
+	unsigned long NewIdName = prop.idName.first;
 
-	bool changed = ShowResetDialog(NewName);
+	bool changed = ShowResetDialog(this, &NewIdName);
 
 	if(changed) {
 		LadderElemResetProp *data = (LadderElemResetProp *)getProperties();
 
-		data->name = NewName;
+		data->idName.first = NewIdName;
 
 		setProperties(context, data);
 	}
@@ -1146,19 +1140,16 @@ void LadderElemOneShot::DrawGUI(void *data)
 // Classe LadderElemCmp
 bool LadderElemCmp::ShowDialog(LadderContext context)
 {
-	char NewOp1[MAX_NAME_LEN];
-	strcpy(NewOp1, prop.op1.c_str());
+	pair<unsigned long, int> NewIdOp1 = prop.idOp1;
+	pair<unsigned long, int> NewIdOp2 = prop.idOp2;
 
-	char NewOp2[MAX_NAME_LEN];
-	strcpy(NewOp2, prop.op2.c_str());
-
-	bool changed = ShowCmpDialog(getWhich(), NewOp1, NewOp2);
+	bool changed = ShowCmpDialog(getWhich(), &NewIdOp1, &NewIdOp2);
 
 	if(changed) {
 		LadderElemCmpProp *data = (LadderElemCmpProp *)getProperties();
 
-		data->op1 = NewOp1;
-		data->op2 = NewOp2;
+		data->idOp1 = NewIdOp1;
+		data->idOp2 = NewIdOp2;
 
 		setProperties(context, data);
 	}
@@ -2101,6 +2092,28 @@ void LadderDiagram::MouseClick(int x, int y, bool isDown, bool isDouble)
 	gui.MouseClick(x, y, isDown, isDouble);
 }
 
+// Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
+eReply LadderDiagram::ShowDialog(bool isMessage, char *title, char *message, ...)
+{
+	eReply reply = eReply_Yes;
+	message = _(message);
+
+	va_list f;
+	va_start(f, message);
+
+	if(isMessage) {
+		Error(title, message, f);
+	} else {
+		char buf[1024];
+		vsprintf(buf, message, f);
+		if(MessageBox(MainWindow, buf, _(title), MB_YESNO | MB_ICONQUESTION) != IDYES) {
+			reply = eReply_No;
+		}
+	}
+
+	return reply;
+}
+
 HRESULT UpdateRibbonHeight(void);
 
 //-----------------------------------------------------------------------------
@@ -2185,4 +2198,32 @@ void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
 
     if(ScrollYOffset > ScrollYOffsetMax) ScrollYOffset = ScrollYOffsetMax;
     if(ScrollYOffset < 0) ScrollYOffset = 0;
+}
+
+// Classe mapIO
+void mapIO::updateGUI(void)
+{
+    int i, iocount = ladder.getCountIO();
+
+    ListView_DeleteAllItems(IoList);
+    for(i = 0; i < iocount; i++) {
+        LVITEM lvi;
+        lvi.mask        = LVIF_TEXT | LVIF_PARAM | LVIF_STATE;
+        lvi.state       = lvi.stateMask = 0;
+        lvi.iItem       = i;
+        lvi.iSubItem    = 0;
+        lvi.pszText     = LPSTR_TEXTCALLBACK;
+        lvi.lParam      = i;
+
+        if(ListView_InsertItem(IoList, &lvi) < 0) oops();
+    }
+
+	for(i = 0; i < iocount; i++) {
+		ListView_SetItemState(IoList, i, 0, LVIS_SELECTED);
+	}
+
+	if(selectedIO) {
+		ListView_SetItemState (IoList, getIndex(selectedIO, true) - 1, LVIS_SELECTED, LVIS_SELECTED);
+		ListView_EnsureVisible(IoList, getIndex(selectedIO, true) - 1, FALSE);
+	}
 }

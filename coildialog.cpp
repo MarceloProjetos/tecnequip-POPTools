@@ -143,11 +143,14 @@ static LRESULT CALLBACK CoilDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	return CallWindowProc((WNDPROC)PrevCoilDialogProc, hwnd, msg, wParam, lParam);
 }
 
-bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, char *name, unsigned char * bit)
+bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, unsigned long *idName)
 {
 	bool changed = false;
+	string sname = ladder.getNameIO(*idName);
+	const char *name = sname.c_str();
+	mapDetails detailsIO = ladder.getDetailsIO(*idName);
 
-	unsigned int type;
+	eType type;
 	char name_tmp[MAX_NAME_LEN];
 
 	CoilDialog = CreateWindowClient(0, "POPToolsDialog",
@@ -162,10 +165,10 @@ bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, char *name, u
     MakeControls();
 
 	char cbit[10];
-	_itoa(*bit, cbit, 10);
+	_itoa(detailsIO.bit, cbit, 10);
 	SetWindowText(BitTextbox, cbit );
 
-    if(GetTypeFromName(name) == IO_TYPE_INTERNAL_RELAY) {
+	if(detailsIO.type == eType_InternalRelay) {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
 		LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_RELAY);
     } else {
@@ -217,46 +220,36 @@ bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, char *name, u
         if(SendMessage(SourceInternalRelayRadio, BM_GETSTATE, 0, 0)
             & BST_CHECKED)
         {
-            type = IO_TYPE_INTERNAL_RELAY;
+            type = eType_InternalRelay;
         } else {
-            type = IO_TYPE_DIG_OUTPUT;
+            type = eType_DigOutput;
         }
 
-		if(IsValidNameAndType(name, name_tmp, type)) {
-			changed = true;
+		if(ladder.IsValidNameAndType(*idName, name_tmp, type)) {
+			pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
+			if(ladder.getIO(pin, name_tmp, true, type)) { // Variavel valida!
+				changed = true;
 
-			strcpy(name, name_tmp);
-            UpdateTypeInCircuit(name, type);
+				*idName = pin.first;
 
-	        if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-		        *negated = false;
-			    *setOnly = false;
-				*resetOnly = false;
-	        } else if(SendMessage(NegatedRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-		        *negated = true;
-			    *setOnly = false;
-				*resetOnly = false;
-	        } else if(SendMessage(SetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-		        *negated = false;
-			    *setOnly = true;
-				*resetOnly = false;
-	        } else if(SendMessage(ResetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-	            *negated = false;
-		        *setOnly = false;
-			    *resetOnly = true;
-	        }
-
-			int i;
-
-			*bit = 0;
-			for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
-			{
-				if (_stricmp(IoSeenPreviously[i].name, name)==0)
-					*bit = IoSeenPreviously[i].bit;
+				if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+					*negated = false;
+					*setOnly = false;
+					*resetOnly = false;
+				} else if(SendMessage(NegatedRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+					*negated = true;
+					*setOnly = false;
+					*resetOnly = false;
+				} else if(SendMessage(SetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+					*negated = false;
+					*setOnly = true;
+					*resetOnly = false;
+				} else if(SendMessage(ResetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+					*negated = false;
+					*setOnly = false;
+					*resetOnly = true;
+				}
 			}
-			//char cbit[10];
-			//_itoa(*bit, cbit, 10);
-			//SetWindowText(BitTextbox, cbit );
 		}
     }
 

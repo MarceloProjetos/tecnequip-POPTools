@@ -452,44 +452,6 @@ void HscrollProc(WPARAM wParam)
 void RefreshControlsToSettings(void)
 {
     int i;
-
-    if(!IoListOutOfSync) {
-        IoListSelectionPoint = -1;
-        for(i = 0; i < Prog.io.count; i++) {
-            if(ListView_GetItemState(IoList, i, LVIS_SELECTED)) {
-                IoListSelectionPoint = i;
-                break;
-            }
-        }
-    }
-
-    ListView_DeleteAllItems(IoList);
-    for(i = 0; i < Prog.io.count; i++) {
-        LVITEM lvi;
-        lvi.mask        = LVIF_TEXT | LVIF_PARAM | LVIF_STATE;
-        lvi.state       = lvi.stateMask = 0;
-        lvi.iItem       = i;
-        lvi.iSubItem    = 0;
-        lvi.pszText     = LPSTR_TEXTCALLBACK;
-        lvi.lParam      = i;
-
-        if(ListView_InsertItem(IoList, &lvi) < 0) oops();
-    }
-    if(IoListSelectionPoint >= 0) {
-        for(i = 0; i < Prog.io.count; i++) {
-            ListView_SetItemState(IoList, i, 0, LVIS_SELECTED);
-        }
-        ListView_SetItemState(IoList, IoListSelectionPoint, LVIS_SELECTED,
-            LVIS_SELECTED);
-        ListView_EnsureVisible(IoList, IoListSelectionPoint, FALSE);
-    }
-    IoListOutOfSync = FALSE;
-
-    /*if(Prog.mcu) {
-        SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)Prog.mcu->mcuName);
-    } else {
-        SendMessage(StatusBar, SB_SETTEXT, 0, (LPARAM)_("no MCU selected"));
-    }*/
     char buf[256];
 	sprintf(buf, _("IP: %d.%d.%d.%d"), Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
     SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)buf);

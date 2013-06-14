@@ -224,9 +224,12 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     return !didCancel;
 }
 
-bool ShowTimerDialog(int which, int *delay, char *name)
+bool ShowTimerDialog(int which, int *delay, unsigned long *idName)
 {
 	bool changed = false;
+	string sname = ladder.getNameIO(*idName);
+	const char *name = sname.c_str();
+	mapDetails detailsIO = ladder.getDetailsIO(*idName);
 
 	char *s;
     switch(which) 
@@ -246,27 +249,32 @@ bool ShowTimerDialog(int which, int *delay, char *name)
     char *dests[] = { nameBuf, delBuf };
 
     if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), (1 << 0), dests)) {
-		if(IsValidNameAndType(name  , nameBuf, _("Nome") , VALIDATE_IS_VAR   , GetTypeFromName(nameBuf), 0, 0) &&
-		   IsValidNameAndType(delBuf, delBuf , _("Tempo"), VALIDATE_IS_NUMBER, GetTypeFromName(delBuf ), 1, 2147483)) {
-			   changed = true;
+		if(ladder.IsValidNameAndType(*idName, nameBuf, detailsIO.type, _("Nome" ), VALIDATE_IS_VAR   , 0, 0) &&
+		   ladder.IsValidNameAndType(0      , delBuf , eType_Pending , _("Tempo"), VALIDATE_IS_NUMBER, 1, 2147483)) {
+				pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
+				if(ladder.getIO(pin, nameBuf, false, getTimerTypeIO(which))) { // Variavel valida!
+					changed = true;
 
-			   *delay = 1000*atoi(delBuf);
-			   if(*delay % Prog.settings.cycleTime) {
-				   *delay = (1 + *delay / Prog.settings.cycleTime) * Prog.settings.cycleTime;
-				   Error(_("Tempo de ciclo deve ser múltiplo de %d! Será utilizado %d."),
+					*idName = pin.first;
+
+					*delay = 1000*atoi(delBuf);
+					if(*delay % Prog.settings.cycleTime) {
+						*delay = (1 + *delay / Prog.settings.cycleTime) * Prog.settings.cycleTime;
+						Error(_("Tempo de ciclo deve ser múltiplo de %d! Será utilizado %d."),
 							Prog.settings.cycleTime/1000, *delay/1000);
-			   }
-		        strncpy(name, nameBuf, 16);
-				name[16] = '\0';
+					}
+				}
 		}
     }
 
 	return changed;
 }
 
-bool ShowCounterDialog(int which, int *maxV, char *name)
+bool ShowCounterDialog(int which, int *maxV, unsigned long *idName)
 {
 	bool changed = false;
+	string sname = ladder.getNameIO(*idName);
+	const char *name = sname.c_str();
 
 	char *title;
 
@@ -285,25 +293,29 @@ bool ShowCounterDialog(int which, int *maxV, char *name)
 	strcpy(name_tmp, name);
     char *dests[] = { name_tmp, maxS };
     if(ShowSimpleDialog(title, 2, labels, 0x2, 0x1, 0x1, 0x1, dests)) {
-		if(IsValidNameAndType(name, name_tmp, _("Nome") , VALIDATE_IS_VAR   , GetTypeFromName(name_tmp), 0, 0) &&
-		   IsValidNameAndType(maxS, maxS    , _("Valor"), VALIDATE_IS_NUMBER, GetTypeFromName(maxS    ), 0, 0)) {
-				changed = true;
-				
-				strncpy(name, name_tmp, 16);
-				name[16] = '\0';
-				*maxV = atoi(maxS);
+		if(ladder.IsValidNameAndType(*idName, name_tmp, eType_Counter, _("Nome" ), VALIDATE_IS_VAR   , 0, 0) &&
+		   ladder.IsValidNameAndType(0      , maxS    , eType_Pending, _("Valor"), VALIDATE_IS_NUMBER, 0, 0)) {
+				pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
+				if(ladder.getIO(pin, name_tmp, false, eType_Counter)) { // Variavel valida!
+					changed = true;
+
+					*idName = pin.first;
+					*maxV   = atoi(maxS);
+				}
 		}
 	}
 
 	return changed;
 }
 
-bool ShowCmpDialog(int which, char *op1, char *op2)
+bool ShowCmpDialog(int which, pair<unsigned long, int> *op1, pair<unsigned long, int> *op2)
 {
 	bool changed = false;
 
 	char op1_tmp[MAX_NAME_LEN], op2_tmp[MAX_NAME_LEN];
-    char *title;
+	char op1_old[MAX_NAME_LEN], op2_old[MAX_NAME_LEN];
+
+	char *title;
     char *l2;
     switch(which) {
         case ELEM_EQU:
@@ -342,16 +354,32 @@ bool ShowCmpDialog(int which, char *op1, char *op2)
     char *labels[] = { _("'Closed' if:"), l2 };
     char *dests[] = { op1_tmp, op2_tmp };
 
-	strcpy(op1_tmp, op1);
-	strcpy(op2_tmp, op2);
+	strcpy(op1_tmp, ladder.getNameIO(op1->first).c_str());
+	strcpy(op2_tmp, ladder.getNameIO(op2->first).c_str());
+	if(!strlen(op2_tmp)) {
+		sprintf(op2_tmp, "%d", op2->second);
+	}
+
+	strcpy(op1_old, op1_tmp);
+	strcpy(op2_old, op2_tmp);
 
 	if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
-		if(IsValidNameAndType(op1, op1_tmp, NULL, VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op1_tmp), 0, 0) &&
-		   IsValidNameAndType(op2, op2_tmp, NULL, VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op2_tmp), 0, 0)) {
-			   changed = true;
+		if(ladder.IsValidNameAndType(op1->first, op1_tmp, eType_General, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
+			ladder.IsValidNameAndType(op2->first, op2_tmp, eType_General, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+				pair<unsigned long, int> pin1 = pair<unsigned long, int>(op1->first, 0);
+				pair<unsigned long, int> pin2 = pair<unsigned long, int>(op2->first, 0);
 
-			   strcpy(op1, op1_tmp);
-			   strcpy(op2, op2_tmp);
+				// Se variavel alterada e valida, atualiza o pino
+				if(!ladder.equalsNameIO(op1_old, op1_tmp) && ladder.getIO(pin1, op1_tmp, false, eType_General)) {
+					changed = true;
+					*op1 = pin1;
+				}
+
+				// Se variavel alterada e valida, atualiza o pino
+				if(!ladder.equalsNameIO(op2_old, op2_tmp) && ladder.getIO(pin2, op2_tmp, false, eType_General)) {
+					changed = true;
+					*op2 = pin2;
+				}
 		}
 	}
 

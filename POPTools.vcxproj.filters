@@ -260,6 +260,9 @@
     <ClInclude Include="LadderObjects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="iomap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc">

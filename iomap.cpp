@@ -1,5 +1,300 @@
 #include "poptools.h"
 
+mapIO::mapIO(LadderDiagram *pDiagram)
+{
+	countIO    = 0;
+	selectedIO = 0;
+
+	diagram = pDiagram;
+
+	// Adicionando itens que sao flags internas
+	vectorInternalFlag.push_back("SerialReady"  );
+	vectorInternalFlag.push_back("SerialTimeout");
+	vectorInternalFlag.push_back("SerialAborted");
+	vectorInternalFlag.push_back("RampActive"   );
+	vectorInternalFlag.push_back("TcpReady"     );
+	vectorInternalFlag.push_back("TcpTimeout"   );
+
+	// Adicionando variaveis reservadas
+	vectorReservedName.push_back(_("in" ));
+	vectorReservedName.push_back(_("out"));
+	vectorReservedName.push_back(_("new"));
+}
+
+eReply mapIO::AskUser(string txt)
+{
+	Error((char *)txt.c_str());
+
+	return eReply_Yes;
+}
+
+bool mapIO::IsReserved(string name)
+{
+	vector<string>::size_type i;
+	for(i = 0; i < vectorReservedName.size(); i++) {
+		if(name == vectorReservedName[i]) return true; // Encontrado!
+	}
+
+	return false;
+}
+
+bool mapIO::IsInternalFlag(string name)
+{
+	vector<string>::size_type i;
+	for(i = 0; i < vectorInternalFlag.size(); i++) {
+		if(name == vectorInternalFlag[i]) return true; // Encontrado!
+	}
+
+	return false;
+}
+
+bool mapIO::Add(string name, eType type)
+{
+	bool ret = false;
+
+	if(IO.count(name) == 0) {
+		if(IsReserved(name)) {
+			type = eType_Reserved;
+		}
+
+		IO[name].first       = 1 + countIO++; // ID a partir de 1. Zero indica id invalido
+		IO[name].second.pin  = 0;
+		IO[name].second.bit  = 0;
+		IO[name].second.type = type;
+
+		IO[name].second.countRequestBit = 0;
+		IO[name].second.countRequestInt = 0;
+
+		updateGUI();
+
+		ret = true;
+	}
+
+	return true;
+}
+
+bool mapIO::Update(unsigned long id, string name, eType type)
+{
+	string old_name = getName(id);
+	if(old_name.size() == 0) return false; // id invalido!
+
+	if(IsReserved(name)) {
+		type = eType_Reserved;
+	}
+
+	// Check for Internal Flags and Reserved Names restrictions
+	if((type != eType_InternalFlag && IsInternalFlag(name)) ||
+		(type == eType_InternalFlag && !IsInternalFlag(name)) ||
+		(IsReserved(name) && name != old_name)) {
+			return false;
+	}
+
+	if(name == old_name) {
+		IO[name].second.type = type;
+	} else {
+		map<string, pair<unsigned long, mapDetails> >::iterator it = IO.find(old_name);
+		IO[name] = it->second;
+		IO[name].second.type = type;
+		IO.erase(it);
+	}
+
+	updateGUI();
+
+	return true;
+}
+
+unsigned long mapIO::Request(string name, bool isBit, eType type)
+{
+	bool result;
+	unsigned long id = 0;
+
+	if(IO.count(name) > 0) {
+		result = Update(getID(name), name, type);
+	} else {
+		result = Add(name, type);
+	}
+
+	if(result) {
+		if(isBit) {
+			IO[name].second.countRequestBit++;
+		} else {
+			IO[name].second.countRequestInt++;
+		}
+
+		id = getID(name);
+	}
+
+	return id;
+}
+
+void mapIO::Discard(unsigned long id, bool isBit)
+{
+	string name = getName(id);
+	if(name.size() > 0) {
+		if(isBit) {
+			IO[name].second.countRequestBit--;
+		} else {
+			IO[name].second.countRequestInt--;
+		}
+
+		// Se Variavel nao usada, remove do mapa
+		if(IO[name].second.countRequestBit == 0 && IO[name].second.countRequestInt == 0) {
+			map<string, pair<unsigned long, mapDetails> >::iterator it;
+			it = IO.find(name);
+			IO.erase(it);
+
+			updateGUI();
+		}
+	}
+}
+
+unsigned long mapIO::getIndex(unsigned long id, bool isTotal)
+{
+	unsigned long idxBit = 1, idxInt = 1;
+	map<string, pair<unsigned long, mapDetails> >::iterator it;
+
+	for(it = IO.begin(); it != IO.end(); it++) {
+		// Se encontrou, retorna o indice conforme modo do IO
+		if(it->second.first == id) {
+			if(isTotal) {
+				return idxBit + idxInt - 1;
+			} else if (it->second.second.countRequestInt == 0) {
+				return idxBit;
+			} else {
+				return idxInt;
+			}
+		}
+
+		// Incrementa o indice referente ao modo do IO atual
+		if(it->second.second.countRequestInt == 0) {
+			idxBit++;
+		} else {
+			idxInt++;
+		}
+	}
+
+	return 0;
+}
+
+string mapIO::getName(unsigned long id)
+{
+	map<string, pair<unsigned long, mapDetails> >::iterator it;
+
+	for(it = IO.begin(); it != IO.end(); it++) {
+		if(it->second.first == id) {
+			return it->first;
+		}
+	}
+
+	return "";
+}
+
+mapDetails mapIO::getDetails(unsigned long id)
+{
+	string name = getName(id);
+
+	if(name.size() > 0) {
+		return IO[name].second;
+	}
+
+	mapDetails m = { 0, 0, eType_Pending, 0, 0 };
+	return m;
+}
+
+unsigned long mapIO::getID(string name)
+{
+	// Retorna zero se o nome nao estiver no mapa
+	if(IO.count(name) == 0) {
+		return 0;
+	}
+
+	return IO[name].first;
+}
+
+unsigned long mapIO::getID(unsigned int index)
+{
+	// Retorna zero se o indice for maior que o numero de elementos do mapa
+	if(index >= IO.size()) {
+		return 0;
+	}
+
+	map<string, pair<unsigned long, mapDetails> >::iterator it = IO.begin();
+
+	while(index--) {
+		it++;
+	}
+
+	return it->second.first;
+}
+
+unsigned int mapIO::getCount(void)
+{
+	return IO.size();
+}
+
+void mapIO::Select(unsigned int index)
+{
+	selectedIO = getID(index);
+}
+
+bool mapIO::Assign(unsigned long id, unsigned int pin, unsigned int bit)
+{
+	string name = getName(id);
+
+	if(name.size() > 0) {
+		Assign(name, pin, bit);
+		return true;
+	}
+
+	return false;
+}
+
+bool mapIO::Assign(string name, unsigned int pin, unsigned int bit)
+{
+	if(IO.count(name) > 0) {
+		IO[name].second.pin = pin;
+		IO[name].second.bit = bit;
+		return true;
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Map an I/O type to a string describing it. Used both in the on-screen
+// list and when we write a text file to describe it.
+//-----------------------------------------------------------------------------
+char *mapIO::getTypeString(eType type)
+{
+    switch(type) {
+        case eType_Reserved:         return _("reservado"); 
+        case eType_DigInput:         return _("digital in"); 
+        case eType_DigOutput:        return _("digital out"); 
+		case eType_InternalRelay:    return _("int. relay"); 
+//        case IO_TYPE_UART_TX:           return _("UART tx"); 
+//        case IO_TYPE_UART_RX:           return _("UART rx"); 
+//        case IO_TYPE_PWM_OUTPUT:        return _("PWM out"); 
+		case eType_TON:               return _("turn-on delay"); 
+		case eType_TOF:               return _("turn-off delay"); 
+        case eType_RTO:               return _("retentive timer"); 
+        case eType_Counter:           return _("counter"); 
+		case eType_General:           return _("general var"); 
+//        case IO_TYPE_READ_ADC:          return _("adc input"); 
+//        case IO_TYPE_READ_ENC:          return _("entrada encoder"); 
+//        case IO_TYPE_RESET_ENC:         return _("write encoder"); 
+//        case IO_TYPE_READ_USS:         return _("read USS"); 
+//        case IO_TYPE_WRITE_USS:         return _("write USS"); 
+//		case IO_TYPE_SET_DA:			return _("Set D/A"); 
+//		case IO_TYPE_READ_MODBUS:       return _("leitura modbus"); 
+//		case IO_TYPE_WRITE_MODBUS:      return _("escrita modbus"); 
+//		case IO_TYPE_READ_YASKAWA:		return _("leitura NS600"); 
+//		case IO_TYPE_WRITE_YASKAWA:		return _("escrita NS600"); 
+		case eType_InternalFlag:		return _("Flag Interna"); 
+		case eType_Pending:				return _("Sem tipo"); 
+        default:                        return "";
+    }
+}
+
 // I/O that we have seen recently, so that we don't forget pin assignments
 // when we re-extract the list
 #define MAX_IO_SEEN_PREVIOUSLY 1024
@@ -705,6 +1000,38 @@ static int CompareIoType(const void *av, const void *bv)
 	return bSortAscending ? a->type - b->type : b->type - a->type;
 }
 
+//-----------------------------------------------------------------------------
+// Called in response to a notify for the listview. Handles click, text-edit
+// operations etc., but also gets called to find out what text to display
+// where (LPSTR_TEXTCALLBACK); that way we don't have two parallel copies of
+// the I/O list to keep in sync.
+//-----------------------------------------------------------------------------
+int CALLBACK CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+{
+	int nColumn = lParamSort;
+
+	char lpszItem1[MAX_NAME_LEN];
+	char lpszItem2[MAX_NAME_LEN];
+
+	LVITEM itm;
+	itm.mask = LVIF_TEXT;
+	itm.iSubItem = nColumn;
+
+	itm.iItem = lParam1;
+	itm.pszText = lpszItem1;
+	itm.cchTextMax = sizeof(lpszItem1);
+
+	ListView_GetItem(IoList, &itm);
+
+	itm.iItem = lParam2;
+	itm.pszText = lpszItem2;
+	itm.cchTextMax = sizeof(lpszItem2);
+
+	ListView_GetItem(IoList, &itm);
+
+	return bSortAscending ? _stricmp(lpszItem1, lpszItem2) : _stricmp(lpszItem2, lpszItem1);
+}
+
 void SortList(int NewSortColumn)
 {
 	// get new sort parameters. If NewSortColumn < 0, use previous settings
@@ -716,15 +1043,15 @@ void SortList(int NewSortColumn)
 	}
 
 	// sort list
-	//ListView_SortItems(pLVInfo->hdr.hwndFrom, CompareListItems, lParamSort);
-	if (nSortColumn == 0)
+	ListView_SortItems(IoList, CompareListItems, nSortColumn);
+/*	if (nSortColumn == 0)
 		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoName);
 	else if (nSortColumn == 1)
 		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoType);
 	else if (nSortColumn == 3)
 		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPin);
 	else if (nSortColumn == 4)
-		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPort);
+		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPort);*/
 
 	RefreshControlsToSettings();
 }
@@ -1432,44 +1759,21 @@ int *ShowWatchPointDialog(char *name, int type, int *curval, int *newval)
 	return ret;
 }
 
-//-----------------------------------------------------------------------------
-// Called in response to a notify for the listview. Handles click, text-edit
-// operations etc., but also gets called to find out what text to display
-// where (LPSTR_TEXTCALLBACK); that way we don't have two parallel copies of
-// the I/O list to keep in sync.
-//-----------------------------------------------------------------------------
-int CALLBACK CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
-{
-	BOOL bSortAscending = (lParamSort > 0);
-	int nColumn = abs(lParamSort) - 1;
-
-	char lpszItem1[MAX_NAME_LEN];
-	char lpszItem2[MAX_NAME_LEN];
-
-	LVITEM itm;
-	itm.mask = LVIF_TEXT;
-	itm.iSubItem = nColumn;
-
-	itm.iItem = lParam1;
-	itm.pszText = lpszItem1;
-	itm.cchTextMax = sizeof(lpszItem1);
-
-	ListView_GetItem(IoList, &itm);
-
-	itm.iItem = lParam2;
-	itm.pszText = lpszItem2;
-	itm.cchTextMax = sizeof(lpszItem2);
-
-	ListView_GetItem(IoList, &itm);
-
-	return bSortAscending ? _stricmp(lpszItem1, lpszItem2) : _stricmp(lpszItem2, lpszItem1);
-}
-
 void IoMapListProc(NMHDR *h)
 {
 	char val[20];
 	int c = LVN_COLUMNCLICK;
-    switch(h->code) {
+	LPNMLISTVIEW pNM = (LPNMLISTVIEW)h;
+
+	switch(h->code) {
+		case LVN_ITEMCHANGED:
+			if(pNM->uNewState & LVIS_SELECTED) {
+				ladder.selectIO(pNM->iItem);
+			} else if(pNM->uOldState & LVIS_SELECTED) {
+				ladder.selectIO(0);
+			}
+			break;
+
 		case LVN_COLUMNCLICK:
 			{
 				LPNMLISTVIEW pLVInfo = (LPNMLISTVIEW)h;
@@ -1504,13 +1808,14 @@ void IoMapListProc(NMHDR *h)
                     break;
 
                 case LV_IO_TYPE: {
-                    char *s = IoTypeToString(Prog.io.assignment[item].type);
-                    strcpy(i->item.pszText, s);
+                    strcpy(i->item.pszText, ladder.getStringTypeIO(item));
                     break;
                 }
-                case LV_IO_NAME:
-                    strcpy(i->item.pszText, Prog.io.assignment[item].name);
+                case LV_IO_NAME: {
+					string name = ladder.getNameIObyIndex(item);
+					strcpy(i->item.pszText, name.c_str());
                     break;
+				}
 
                 case LV_IO_PORT: {
                     // Don't confuse people by displaying bogus pin assignments

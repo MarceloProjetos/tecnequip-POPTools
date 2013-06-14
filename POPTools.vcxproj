@@ -356,6 +356,7 @@
     <ClInclude Include="EngineUtils.h" />
     <ClInclude Include="Firmware\App\intreg.h" />
     <ClInclude Include="Firmware\App\modbus_rtu.h" />
+    <ClInclude Include="iomap.h" />
     <ClInclude Include="KeyboardHandlers.h" />
     <ClInclude Include="KeyboardMap.h" />
     <ClInclude Include="LadderObjects.h" />

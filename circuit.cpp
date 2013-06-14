@@ -245,157 +245,157 @@ bool AddParallelStart(void)
 }
 bool AddComment(char *str)
 {
-	return ladder.AddElement(new LadderElemComment);
+	return ladder.AddElement(new LadderElemComment(&ladder));
 }
 bool AddContact(void)
 {
-	return ladder.AddElement(new LadderElemContact);
+	return ladder.AddElement(new LadderElemContact(&ladder));
 }
 bool AddCoil(void)
 {
-	return ladder.AddElement(new LadderElemCoil);
+	return ladder.AddElement(new LadderElemCoil(&ladder));
 }
 bool AddTimer(int which)
 {
-	return ladder.AddElement(new LadderElemTimer(which));
+	return ladder.AddElement(new LadderElemTimer(&ladder, which));
 }
 bool AddRTC(int which)
 {
-	return ladder.AddElement(new LadderElemRTC);
+	return ladder.AddElement(new LadderElemRTC(&ladder));
 }
 bool AddEmpty(int which)
 {
 	switch(which) {
 	case ELEM_OPEN:
 	case ELEM_SHORT:
-		return ladder.AddElement(new LadderElemOpenShort(which));
+		return ladder.AddElement(new LadderElemOpenShort(&ladder, which));
 
 	case ELEM_ONE_SHOT_RISING:
 	case ELEM_ONE_SHOT_FALLING:
-		return ladder.AddElement(new LadderElemOneShot(which));
+		return ladder.AddElement(new LadderElemOneShot(&ladder, which));
 	}
 
 	return false;
 }
 bool AddReset(void)
 {
-	return ladder.AddElement(new LadderElemReset);
+	return ladder.AddElement(new LadderElemReset(&ladder));
 }
 bool AddMasterRelay(void)
 {
-	return ladder.AddElement(new LadderElemMasterRelay);
+	return ladder.AddElement(new LadderElemMasterRelay(&ladder));
 }
 bool AddSetBit(void)
 {
-	return ladder.AddElement(new LadderElemSetBit);
+	return ladder.AddElement(new LadderElemSetBit(&ladder));
 }
 bool AddCheckBit(void)
 {
-	return ladder.AddElement(new LadderElemCheckBit);
+	return ladder.AddElement(new LadderElemCheckBit(&ladder));
 }
 bool AddShiftRegister(void)
 {
-	return ladder.AddElement(new LadderElemShiftRegister);
+	return ladder.AddElement(new LadderElemShiftRegister(&ladder));
 }
 bool AddLookUpTable(void)
 {
-	return ladder.AddElement(new LadderElemLUT);
+	return ladder.AddElement(new LadderElemLUT(&ladder));
 }
 bool AddPiecewiseLinear(void)
 {
-	return ladder.AddElement(new LadderElemPiecewise);
+	return ladder.AddElement(new LadderElemPiecewise(&ladder));
 }
 bool AddMove(void)
 {
-	return ladder.AddElement(new LadderElemMove);
+	return ladder.AddElement(new LadderElemMove(&ladder));
 }
 bool AddSqrt(void)
 {
-	return ladder.AddElement(new LadderElemSqrt);
+	return ladder.AddElement(new LadderElemSqrt(&ladder));
 }
 bool AddMath(int which)
 {
-	return ladder.AddElement(new LadderElemMath(which));
+	return ladder.AddElement(new LadderElemMath(&ladder, which));
 }
 bool AddRand(void)
 {
-	return ladder.AddElement(new LadderElemRand);
+	return ladder.AddElement(new LadderElemRand(&ladder));
 }
 bool AddAbs(void)
 {
-	return ladder.AddElement(new LadderElemAbs);
+	return ladder.AddElement(new LadderElemAbs(&ladder));
 }
 bool AddCmp(int which)
 {
-	return ladder.AddElement(new LadderElemCmp(which));
+	return ladder.AddElement(new LadderElemCmp(&ladder, which));
 }
 bool AddCounter(int which)
 {
-	return ladder.AddElement(new LadderElemCounter(which));
+	return ladder.AddElement(new LadderElemCounter(&ladder, which));
 }
 bool AddSetDA(void)
 {
-	return ladder.AddElement(new LadderElemSetDa);
+	return ladder.AddElement(new LadderElemSetDa(&ladder));
 }
 bool AddReadAdc(void)
 {
-	return ladder.AddElement(new LadderElemReadAdc);
+	return ladder.AddElement(new LadderElemReadAdc(&ladder));
 }
 bool AddReadEnc(void)
 {
-	return ladder.AddElement(new LadderElemReadEnc);
+	return ladder.AddElement(new LadderElemReadEnc(&ladder));
 }
 bool AddResetEnc(void)
 {
-	return ladder.AddElement(new LadderElemResetEnc);
+	return ladder.AddElement(new LadderElemResetEnc(&ladder));
 }
 bool AddMultisetDA(void)
 {
-	return ladder.AddElement(new LadderElemMultisetDA);
+	return ladder.AddElement(new LadderElemMultisetDA(&ladder));
 }
 bool AddReadFormatString(void)
 {
-	return ladder.AddElement(new LadderElemFmtString(ELEM_READ_FORMATTED_STRING));
+	return ladder.AddElement(new LadderElemFmtString(&ladder, ELEM_READ_FORMATTED_STRING));
 }
 bool AddWriteFormatString(void)
 {
-	return ladder.AddElement(new LadderElemFmtString(ELEM_WRITE_FORMATTED_STRING));
+	return ladder.AddElement(new LadderElemFmtString(&ladder, ELEM_WRITE_FORMATTED_STRING));
 }
 bool AddReadServoYaskawa(void)
 {
-	return ladder.AddElement(new LadderElemYaskawa(ELEM_READ_SERVO_YASKAWA));
+	return ladder.AddElement(new LadderElemYaskawa(&ladder, ELEM_READ_SERVO_YASKAWA));
 }
 bool AddWriteServoYaskawa(void)
 {
-	return ladder.AddElement(new LadderElemYaskawa(ELEM_WRITE_SERVO_YASKAWA));
+	return ladder.AddElement(new LadderElemYaskawa(&ladder, ELEM_WRITE_SERVO_YASKAWA));
 }
 bool AddReadUSS(void)
 {
-	return ladder.AddElement(new LadderElemUSS(ELEM_READ_USS));
+	return ladder.AddElement(new LadderElemUSS(&ladder, ELEM_READ_USS));
 }
 bool AddWriteUSS(void)
 {
-	return ladder.AddElement(new LadderElemUSS(ELEM_WRITE_USS));
+	return ladder.AddElement(new LadderElemUSS(&ladder, ELEM_WRITE_USS));
 }
 bool AddReadModbus(void)
 {
-	return ladder.AddElement(new LadderElemModBUS(ELEM_READ_MODBUS));
+	return ladder.AddElement(new LadderElemModBUS(&ladder, ELEM_READ_MODBUS));
 }
 bool AddWriteModbus(void)
 {
-	return ladder.AddElement(new LadderElemModBUS(ELEM_WRITE_MODBUS));
+	return ladder.AddElement(new LadderElemModBUS(&ladder, ELEM_WRITE_MODBUS));
 }
 bool AddSetPwm(void)
 {
-	return ladder.AddElement(new LadderElemSetPWM);
+	return ladder.AddElement(new LadderElemSetPWM(&ladder));
 }
 bool AddUart(int which)
 {
-	return ladder.AddElement(new LadderElemUART(which));
+	return ladder.AddElement(new LadderElemUART(&ladder, which));
 }
 bool AddPersist(void)
 {
-	return ladder.AddElement(new LadderElemPersist);
+	return ladder.AddElement(new LadderElemPersist(&ladder));
 }
 
 //-----------------------------------------------------------------------------
