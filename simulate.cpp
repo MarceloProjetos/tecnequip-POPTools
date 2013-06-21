@@ -1647,7 +1647,7 @@ void ClearSimulationData(void)
         return;
     }
 
-	vectorIntCode = ladder.getVectorIntCode();
+	vectorIntCode = ladder->getVectorIntCode();
 	IntCodeLen = vectorIntCode.size();
 
 	HardwareRegisters_Init(&hwreg);

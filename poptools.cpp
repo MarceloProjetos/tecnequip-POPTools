@@ -48,7 +48,7 @@ char *InternalVars[][MAX_NAME_LEN] = { { "IncPerimRoda" , "IncPulsosVolta", "Inc
 // choice, and so on--basically everything that would be saved in the
 // project file.
 PlcProgram Prog;
-LadderDiagram ladder;
+LadderDiagram *ladder = nullptr;
 
 // Settings structure
 Settings POPSettings;
@@ -1217,11 +1217,11 @@ cmp:
             break;
 
         case MNU_UNDO:
-			ladder.Undo();
+			ladder->Undo();
             break;
 
         case MNU_REDO:
-			ladder.Redo();
+			ladder->Redo();
             break;
 
         case MNU_INSERT_RUNG_BEFORE:
@@ -1253,29 +1253,29 @@ cmp:
             break;
 
         case MNU_COPY_ELEMENT: {
-			ladder.CopyElement();
+			ladder->CopyElement();
             break;
 		}
 
         case MNU_PASTE_ELEMENT:
-			CHANGING_PROGRAM(ladder.PasteElement());
+			CHANGING_PROGRAM(ladder->PasteElement());
             break;
 
         case MNU_COPY_RUNG: {
-			ladder.CopyRung();
+			ladder->CopyRung();
             break;
 		}
 
         case MNU_PASTE_RUNG_BEFORE:
-            CHANGING_PROGRAM(ladder.PasteRung(false));
+            CHANGING_PROGRAM(ladder->PasteRung(false));
             break;
 
         case MNU_PASTE_RUNG_AFTER:
-            CHANGING_PROGRAM(ladder.PasteRung(true));
+            CHANGING_PROGRAM(ladder->PasteRung(true));
             break;
 
         case MNU_CUT_ELEMENT:
-			ladder.CopyElement();
+			ladder->CopyElement();
             CHANGING_PROGRAM(DeleteSelectedFromProgram());
             break;
 
@@ -1516,7 +1516,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int x = LOWORD(lParam);
             int y = HIWORD(lParam) - RibbonHeight;
 
-			ladder.MouseClick(x, y, false, false);
+			ladder->MouseClick(x, y, false, false);
 
 			break;
 		}
@@ -1534,7 +1534,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
             InvalidateRect(MainWindow, NULL, FALSE);
 
-			ladder.MouseClick(x, y, false, true);
+			ladder->MouseClick(x, y, false, true);
 
 			break;
         }
@@ -1553,7 +1553,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 MouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL,
                         (HOOKPROC)MouseHook, Instance, 0);
             } else {
-				ladder.MouseClick(x, y - RibbonHeight, true, false);
+				ladder->MouseClick(x, y - RibbonHeight, true, false);
 			}
 
             SetFocus(MainWindow);
@@ -1920,6 +1920,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	KeyboardHandlers_Init();
 
+	ladder = new LadderDiagram;
 	NewProgram();
     strcpy(CurrentSaveFile, "");
 
@@ -1949,8 +1950,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// Initialize ModBUS protocol and devices
 	Init_MBDev();
 	Init_MBDev_Slave();
-
-	SetMenusEnabled(nullptr);
 
 	MSG msg;
     DWORD ret;

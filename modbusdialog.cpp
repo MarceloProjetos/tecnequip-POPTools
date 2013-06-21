@@ -246,7 +246,7 @@ static void MakeControls(void)
     //    (LONG_PTR)MyNameProc);
 }
 
-bool ShowModbusDialog(int mode_write, char *name, int *elem, int *address, bool *set, bool *retransmitir)
+bool ShowModbusDialog(int mode_write, pair<unsigned long, int> *name, int *elem, int *address, bool *set, bool *retransmitir)
 {
 	bool changed = false;
 
@@ -274,7 +274,7 @@ bool ShowModbusDialog(int mode_write, char *name, int *elem, int *address, bool 
 	else
         SendMessage(RetransmitCheckbox, BM_SETCHECK, BST_UNCHECKED, 0);
 
-    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name));
+    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(ladder->getNameIO(*name).c_str()));
 	SendMessage(AddressTextbox, WM_SETTEXT, 0, (LPARAM)(addr));
 
     EnableWindow(MainWindow, FALSE);
@@ -305,26 +305,30 @@ bool ShowModbusDialog(int mode_write, char *name, int *elem, int *address, bool 
 
     if(!DialogCancel) {
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_temp));
-		if(IsValidNameAndType(name, name_temp, GetTypeFromName(name_temp))) {
-			changed = true;
+		if(ladder->IsValidNameAndType(name->first, name_temp, mode_write ? eType_WriteModbus : eType_ReadModbus)) {
+			pair<unsigned long, int> pin = *name;
+			if(ladder->getIO(pin, name_temp, false, mode_write ? eType_WriteModbus : eType_ReadModbus)) { // Variavel valida!
+				changed = true;
 
-			strcpy(name, name_temp);
-	        if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-		        *set = TRUE;
-			else
-				*set = FALSE;
+				*name = pin;
 
-	        if(SendMessage(RetransmitCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED)
-		        *retransmitir = TRUE;
-			else
-				*retransmitir = FALSE;
+				if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
+					*set = TRUE;
+				else
+					*set = FALSE;
 
-			MbNodeList_DelRef(*elem);
-			*elem = MbNodeList_GetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
-			MbNodeList_AddRef(*elem);
-			SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
+				if(SendMessage(RetransmitCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED)
+					*retransmitir = TRUE;
+				else
+					*retransmitir = FALSE;
 
-			*address = atoi(addr);
+				MbNodeList_DelRef(*elem);
+				*elem = MbNodeList_GetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
+				MbNodeList_AddRef(*elem);
+				SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
+
+				*address = atoi(addr);
+			}
 		}
 	}
 

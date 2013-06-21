@@ -1187,7 +1187,7 @@ DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 	char szAppHeader[MAX_PATH]		= "";
 	char szAppSourceFile[MAX_PATH]	= "";
 
-	vectorIntCode = ladder.getVectorIntCode();
+	vectorIntCode = ladder->getVectorIntCode();
 	IntCodeLen = vectorIntCode.size();
 
 	if(ValidateDiagram() == DIAGRAM_VALIDATION_ERROR) {

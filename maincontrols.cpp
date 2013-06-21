@@ -218,19 +218,6 @@ void UpdateMainWindowTitleBar(void)
 //-----------------------------------------------------------------------------
 void SetMenusEnabled(LadderContext *context)
 {
-	static bool InitOK = false;
-	static LadderContext PreInitContext;
-
-	if(!InitOK) {
-		if(context == nullptr) {
-			InitOK = true;
-			context = &PreInitContext;
-		} else {
-			PreInitContext = *context;
-			return;
-		}
-	}
-
 	EnableInterfaceItem(MNU_PUSH_RUNG_UP, context->canPushUp);
     EnableInterfaceItem(MNU_PUSH_RUNG_DOWN, context->canPushDown);
     EnableInterfaceItem(MNU_DELETE_RUNG, context->canDeleteRung);

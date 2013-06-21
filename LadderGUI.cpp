@@ -115,14 +115,16 @@ void CmdExpand(LadderElem *elem)
 void CmdShowDialog(LadderElem *elem)
 {
 	if(elem != nullptr) {
-		elem->ShowDialog(ladder.getContext());
-		ladder.updateContext();
+		ladder->CheckpointBegin("Editar Elemento");
+		elem->ShowDialog(ladder->getContext());
+		ladder->CheckpointEnd();
+		ladder->updateContext();
 	}
 }
 
 void CmdSelect(LadderElem *elem, int SelectedState)
 {
-	ladder.SelectElement(elem, SelectedState);
+	ladder->SelectElement(elem, SelectedState);
 }
 
 void CmdSelectLeft(LadderElem *elem)
@@ -785,10 +787,14 @@ void ContactCmdToggleNegated(LadderElem *elem)
 	LadderElemContact *contact = dynamic_cast<LadderElemContact *>(elem);
 	LadderElemContactProp *data = (LadderElemContactProp *)contact->getProperties();
 
+	ladder->CheckpointBegin("Inverter Contato");
+
 	data->negated = !data->negated;
 
-	contact->setProperties(ladder.getContext(), data);
-	ladder.updateContext();
+	contact->setProperties(ladder->getContext(), data);
+
+	ladder->CheckpointEnd();
+	ladder->updateContext();
 }
 
 bool LadderElemContact::ShowDialog(LadderContext context)
@@ -826,9 +832,9 @@ void LadderElemContact::DrawGUI(void *data)
 
 	if(ddg->DontDraw) return;
 
-	string sname = ladder.getNameIO(prop.idName.first);
+	string sname = ladder->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
-	mapDetails detailsIO = ladder.getDetailsIO(prop.idName.first);
+	mapDetails detailsIO = ladder->getDetailsIO(prop.idName.first);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("CONTATO"));
@@ -918,7 +924,7 @@ void LadderElemCoil::DrawGUI(void *data)
 
 	if(ddg->DontDraw) return;
 
-	string sname = ladder.getNameIO(prop.idName.first);
+	string sname = ladder->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
 
 	DoEOL(start, size, ddg->size);
@@ -1165,23 +1171,18 @@ void LadderElemCmp::DrawGUI(void *data)
 // Classe LadderElemMath
 bool LadderElemMath::ShowDialog(LadderContext context)
 {
-	char NewDest[MAX_NAME_LEN];
-	strcpy(NewDest, prop.dest.c_str());
+	pair<unsigned long, int> NewIdOp1  = prop.idOp1;
+	pair<unsigned long, int> NewIdOp2  = prop.idOp2;
+	pair<unsigned long, int> NewIdDest = prop.idDest;
 
-	char NewOp1[MAX_NAME_LEN];
-	strcpy(NewOp1, prop.op1.c_str());
-
-	char NewOp2[MAX_NAME_LEN];
-	strcpy(NewOp2, prop.op2.c_str());
-
-	bool changed = ShowMathDialog(getWhich(), NewDest, NewOp1, NewOp2);
+	bool changed = ShowMathDialog(getWhich(), &NewIdDest, &NewIdOp1, &NewIdOp2);
 
 	if(changed) {
 		LadderElemMathProp *data = (LadderElemMathProp *)getProperties();
 
-		data->dest = NewDest;
-		data->op1  = NewOp1;
-		data->op2  = NewOp2;
+		data->idDest = NewIdDest;
+		data->idOp1  = NewIdOp1;
+		data->idOp2  = NewIdOp2;
 
 		setProperties(context, data);
 	}
@@ -1197,19 +1198,16 @@ void LadderElemMath::DrawGUI(void *data)
 // Classe LadderElemSqrt
 bool LadderElemSqrt::ShowDialog(LadderContext context)
 {
-	char NewDest[MAX_NAME_LEN];
-	strcpy(NewDest, prop.dest.c_str());
+	pair<unsigned long, int> NewIdDest = prop.idDest;
+	pair<unsigned long, int> NewIdSrc  = prop.idSrc;
 
-	char NewSrc[MAX_NAME_LEN];
-	strcpy(NewSrc, prop.src.c_str());
-
-	bool changed = ShowSqrtDialog(NewDest, NewSrc);
+	bool changed = ShowSqrtDialog(&NewIdDest, &NewIdSrc);
 
 	if(changed) {
 		LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
 
-		data->dest = NewDest;
-		data->src  = NewSrc;
+		data->idDest = NewIdDest;
+		data->idSrc  = NewIdSrc;
 
 		setProperties(context, data);
 	}
@@ -1225,23 +1223,18 @@ void LadderElemSqrt::DrawGUI(void *data)
 // Classe LadderElemRand
 bool LadderElemRand::ShowDialog(LadderContext context)
 {
-	char NewVar[MAX_NAME_LEN];
-	strcpy(NewVar, prop.var.c_str());
+	pair<unsigned long, int> NewIdVar = prop.idVar;
+	pair<unsigned long, int> NewIdMin = prop.idMin;
+	pair<unsigned long, int> NewIdMax = prop.idMax;
 
-	char NewMin[MAX_NAME_LEN];
-	strcpy(NewMin, prop.min.c_str());
-
-	char NewMax[MAX_NAME_LEN];
-	strcpy(NewMax, prop.max.c_str());
-
-	bool changed = ShowRandDialog(NewVar, NewMin, NewMax);
+	bool changed = ShowRandDialog(&NewIdVar, &NewIdMin, &NewIdMax);
 
 	if(changed) {
 		LadderElemRandProp *data = (LadderElemRandProp *)getProperties();
 
-		data->var = NewVar;
-		data->min = NewMin;
-		data->max = NewMax;
+		data->idVar = NewIdVar;
+		data->idMin = NewIdMin;
+		data->idMax = NewIdMax;
 
 		setProperties(context, data);
 	}
@@ -1257,19 +1250,16 @@ void LadderElemRand::DrawGUI(void *data)
 // Classe LadderElemAbs
 bool LadderElemAbs::ShowDialog(LadderContext context)
 {
-	char NewDest[MAX_NAME_LEN];
-	strcpy(NewDest, prop.dest.c_str());
+	pair<unsigned long, int> NewIdDest = prop.idDest;
+	pair<unsigned long, int> NewIdSrc  = prop.idSrc;
 
-	char NewSrc[MAX_NAME_LEN];
-	strcpy(NewSrc, prop.src.c_str());
-
-	bool changed = ShowAbsDialog(NewDest, NewSrc);
+	bool changed = ShowAbsDialog(&NewIdDest, &NewIdSrc);
 
 	if(changed) {
 		LadderElemAbsProp *data = (LadderElemAbsProp *)getProperties();
 
-		data->dest = NewDest;
-		data->src  = NewSrc;
+		data->idDest = NewIdDest;
+		data->idSrc  = NewIdSrc;
 
 		setProperties(context, data);
 	}
@@ -1285,19 +1275,16 @@ void LadderElemAbs::DrawGUI(void *data)
 // Classe LadderElemMove
 bool LadderElemMove::ShowDialog(LadderContext context)
 {
-	char NewDest[MAX_NAME_LEN];
-	strcpy(NewDest, prop.dest.c_str());
+	pair<unsigned long, int> NewIdDest = prop.idDest;
+	pair<unsigned long, int> NewIdSrc  = prop.idSrc;
 
-	char NewSrc[MAX_NAME_LEN];
-	strcpy(NewSrc, prop.src.c_str());
-
-	bool changed = ShowMathDialog(getWhich(), NewDest, NewSrc, nullptr);
+	bool changed = ShowMathDialog(getWhich(), &NewIdDest, &NewIdSrc, nullptr);
 
 	if(changed) {
 		LadderElemMoveProp *data = (LadderElemMoveProp *)getProperties();
 
-		data->dest = NewDest;
-		data->src  = NewSrc;
+		data->idDest = NewIdDest;
+		data->idSrc  = NewIdSrc;
 
 		setProperties(context, data);
 	}
@@ -1323,18 +1310,16 @@ bool LadderElemSetBit::ShowDialog(LadderContext context)
 {
 	bool NewSet = prop.set;
 	int  NewBit = prop.bit;
+	pair<unsigned long, int> NewIdName = prop.idName;
 
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
-
-	bool changed = ShowSetBitDialog(NewName, &NewSet, &NewBit);
+	bool changed = ShowSetBitDialog(&NewIdName, &NewSet, &NewBit);
 
 	if(changed) {
 		LadderElemSetBitProp *data = (LadderElemSetBitProp *)getProperties();
 
-		data->name = NewName;
-		data->set  = NewSet;
-		data->bit  = NewBit;
+		data->idName = NewIdName;
+		data->set    = NewSet;
+		data->bit    = NewBit;
 
 		setProperties(context, data);
 	}
@@ -1352,18 +1337,16 @@ bool LadderElemCheckBit::ShowDialog(LadderContext context)
 {
 	bool NewSet = prop.set;
 	int  NewBit = prop.bit;
+	pair<unsigned long, int> NewIdName = prop.idName;
 
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
-
-	bool changed = ShowCheckBitDialog(NewName, &NewSet, &NewBit);
+	bool changed = ShowCheckBitDialog(&NewIdName, &NewSet, &NewBit);
 
 	if(changed) {
 		LadderElemCheckBitProp *data = (LadderElemCheckBitProp *)getProperties();
 
-		data->name = NewName;
-		data->set  = NewSet;
-		data->bit  = NewBit;
+		data->idName = NewIdName;
+		data->set    = NewSet;
+		data->bit    = NewBit;
 
 		setProperties(context, data);
 	}
@@ -1379,15 +1362,14 @@ void LadderElemCheckBit::DrawGUI(void *data)
 // Classe LadderElemReadAdc
 bool LadderElemReadAdc::ShowDialog(LadderContext context)
 {
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
+	pair<unsigned long, int> NewIdName = prop.idName;
 
-	bool changed = ShowReadAdcDialog(NewName);
+	bool changed = ShowReadAdcDialog(&NewIdName);
 
 	if(changed) {
 		LadderElemReadAdcProp *data = (LadderElemReadAdcProp *)getProperties();
 
-		data->name = NewName;
+		data->idName = NewIdName;
 
 		setProperties(context, data);
 	}
@@ -1404,17 +1386,15 @@ void LadderElemReadAdc::DrawGUI(void *data)
 bool LadderElemSetDa::ShowDialog(LadderContext context)
 {
 	int NewMode = prop.mode;
+	pair<unsigned long, int> NewIdName = prop.idName;
 
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
-
-	bool changed = ShowSetDADialog(NewName, &NewMode);
+	bool changed = ShowSetDADialog(&NewIdName, &NewMode);
 
 	if(changed) {
 		LadderElemSetDaProp *data = (LadderElemSetDaProp *)getProperties();
 
-		data->name = NewName;
-		data->mode = NewMode;
+		data->idName = NewIdName;
+		data->mode   = NewMode;
 
 		setProperties(context, data);
 	}
@@ -1430,15 +1410,14 @@ void LadderElemSetDa::DrawGUI(void *data)
 // Classe LadderElemReadEnc
 bool LadderElemReadEnc::ShowDialog(LadderContext context)
 {
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
+	pair<unsigned long, int> NewIdName = prop.idName;
 
-	bool changed = ShowReadEncDialog(NewName);
+	bool changed = ShowReadEncDialog(&NewIdName);
 
 	if(changed) {
 		LadderElemReadEncProp *data = (LadderElemReadEncProp *)getProperties();
 
-		data->name = NewName;
+		data->idName = NewIdName;
 
 		setProperties(context, data);
 	}
@@ -1454,15 +1433,14 @@ void LadderElemReadEnc::DrawGUI(void *data)
 // Classe LadderElemResetEnc
 bool LadderElemResetEnc::ShowDialog(LadderContext context)
 {
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
+	pair<unsigned long, int> NewIdName = prop.idName;
 
-	bool changed = ShowResetEncDialog(NewName);
+	bool changed = ShowResetEncDialog(&NewIdName);
 
 	if(changed) {
 		LadderElemResetEncProp *data = (LadderElemResetEncProp *)getProperties();
 
-		data->name = NewName;
+		data->idName = NewIdName;
 
 		setProperties(context, data);
 	}
@@ -1478,38 +1456,13 @@ void LadderElemResetEnc::DrawGUI(void *data)
 // Classe LadderElemMultisetDA
 bool LadderElemMultisetDA::ShowDialog(LadderContext context)
 {
-	ElemMultisetDA dialogData;
-
-	dialogData.forward               = prop.forward;
-	dialogData.gainr                 = prop.gainr;
-	dialogData.gaint                 = prop.gaint;
-	dialogData.initval               = prop.initval;
-	dialogData.linear                = prop.linear;
-	dialogData.ramp_abort_mode       = prop.ramp_abort_mode;
-	dialogData.speedup               = prop.speedup;
-	dialogData.StartFromCurrentValue = prop.StartFromCurrentValue;
-	dialogData.time                  = 0;
-	dialogData.type                  = prop.type;
-
-	strcpy(dialogData.name , prop.name .c_str());
-	strcpy(dialogData.name1, prop.name1.c_str());
-
+	LadderElemMultisetDAProp dialogData = prop;
 	bool changed = ShowMultisetDADialog(&dialogData);
 
 	if(changed) {
 		LadderElemMultisetDAProp *data = (LadderElemMultisetDAProp *)getProperties();
 
-		data->forward               = dialogData.forward               ? true : false;
-		data->gainr                 = dialogData.gainr;
-		data->gaint                 = dialogData.gaint;
-		data->initval               = dialogData.initval;
-		data->linear                = dialogData.linear                ? true:  false;
-		data->ramp_abort_mode       = dialogData.ramp_abort_mode;
-		data->speedup               = dialogData.speedup               ? true : false;
-		data->StartFromCurrentValue = dialogData.StartFromCurrentValue ? true : false;
-		data->type                  = dialogData.type;
-		data->name                  = dialogData.name;
-		data->name1                 = dialogData.name1;
+		*data = dialogData;
 
 		setProperties(context, data);
 	}
@@ -1525,20 +1478,18 @@ void LadderElemMultisetDA::DrawGUI(void *data)
 // Classe LadderElemUSS
 bool LadderElemUSS::ShowDialog(LadderContext context)
 {
-	int NewId           = prop.id;
-	int NewIndex        = prop.index;
-	int NewParameter    = prop.parameter;
-	int NewParameterSet = prop.parameter_set;
+	int NewId                          = prop.id;
+	int NewIndex                       = prop.index;                                                                                                                                                                                                                                                                                                                                                                                         
+	int NewParameter                   = prop.parameter;
+	int NewParameterSet                = prop.parameter_set;
+	pair<unsigned long, int> NewIdName = prop.idName;
 
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
-
-	bool changed = ShowUSSDialog(getWhich(), NewName, &NewId, &NewParameter, &NewParameterSet, &NewIndex);
+	bool changed = ShowUSSDialog(getWhich(), &NewIdName, &NewId, &NewParameter, &NewParameterSet, &NewIndex);
 
 	if(changed) {
 		LadderElemUSSProp *data = (LadderElemUSSProp *)getProperties();
 
-		data->name          = NewName;
+		data->idName        = NewIdName;
 		data->id            = NewId;
 		data->parameter     = NewParameter;
 		data->parameter_set = NewParameterSet;
@@ -1562,17 +1513,15 @@ bool LadderElemModBUS::ShowDialog(LadderContext context)
 	int  NewAddress      = prop.address;
 	bool NewInt32        = prop.int32;
 	bool NewRetransmitir = prop.retransmitir;
-
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
+	pair<unsigned long, int> NewIdName = prop.idName;
 
 	bool changed = ShowModbusDialog(getWhich() == ELEM_WRITE_MODBUS ? 1 : 0,
-					NewName, &NewElem, &NewAddress, &NewInt32, &NewRetransmitir);
+					&NewIdName, &NewElem, &NewAddress, &NewInt32, &NewRetransmitir);
 
 	if(changed) {
 		LadderElemModBUSProp *data = (LadderElemModBUSProp *)getProperties();
 
-		data->name         = NewName;
+		data->idName       = NewIdName;
 		data->elem         = NewElem;
 		data->address      = NewAddress;
 		data->int32        = NewInt32;
@@ -1593,16 +1542,14 @@ void LadderElemModBUS::DrawGUI(void *data)
 bool LadderElemSetPWM::ShowDialog(LadderContext context)
 {
 	int  NewTargetFreq = prop.targetFreq;
+	pair<unsigned long, int> NewIdName = prop.idName;
 
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
-
-	bool changed = ShowSetPwmDialog(NewName, &NewTargetFreq);
+	bool changed = ShowSetPwmDialog(&NewIdName, &NewTargetFreq);
 
 	if(changed) {
 		LadderElemSetPWMProp *data = (LadderElemSetPWMProp *)getProperties();
 
-		data->name       = NewName;
+		data->idName       = NewIdName;
 		data->targetFreq = NewTargetFreq;
 
 		setProperties(context, data);
@@ -1619,15 +1566,14 @@ void LadderElemSetPWM::DrawGUI(void *data)
 // Classe LadderElemUART
 bool LadderElemUART::ShowDialog(LadderContext context)
 {
-	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
+	pair<unsigned long, int> NewIdName = prop.idName;
 
-	bool changed = ShowUartDialog(getWhich(), NewName);
+	bool changed = ShowUartDialog(getWhich(), &NewIdName);
 
 	if(changed) {
 		LadderElemUARTProp *data = (LadderElemUARTProp *)getProperties();
 
-		data->name       = NewName;
+		data->idName = NewIdName;
 
 		setProperties(context, data);
 	}
@@ -1652,19 +1598,19 @@ void LadderElemMasterRelay::DrawGUI(void *data)
 bool LadderElemShiftRegister::ShowDialog(LadderContext context)
 {
 	int  NewStages = prop.stages;
-
 	char NewName[MAX_NAME_LEN];
-	strcpy(NewName, prop.name.c_str());
+
+	strcpy(NewName, prop.nameReg.c_str());
 
 	bool changed = ShowShiftRegisterDialog(NewName, &NewStages);
 
-	if(changed) {
-		LadderElemShiftRegisterProp *data = (LadderElemShiftRegisterProp *)getProperties();
+	if(changed && ladder->IsValidNameAndType(prop.vectorIdRegs[0].first, NewName, eType_General, _("Nome"), VALIDATE_IS_VAR, 0,   0)) {
+			LadderElemShiftRegisterProp *data = (LadderElemShiftRegisterProp *)getProperties();
 
-		data->name   = NewName;
-		data->stages = NewStages;
+			data->stages  = NewStages;
+			data->nameReg = NewName;
 
-		setProperties(context, data);
+			setProperties(context, data);
 	}
 
 	return changed;
@@ -1678,27 +1624,14 @@ void LadderElemShiftRegister::DrawGUI(void *data)
 // Classe LadderElemLUT
 bool LadderElemLUT::ShowDialog(LadderContext context)
 {
-	ElemLookUpTable Dialogdata;
-
-	Dialogdata.count        = prop.count;
-	Dialogdata.editAsString = prop.editAsString;
-
-	strcpy(Dialogdata.dest , prop.dest .c_str());
-	strcpy(Dialogdata.index, prop.index.c_str());
-
-	memcpy(Dialogdata.vals, prop.vals.data(), sizeof(Dialogdata.vals));
+	LadderElemLUTProp Dialogdata = prop;
 
 	bool changed = ShowLookUpTableDialog(&Dialogdata);
 
 	if(changed) {
 		LadderElemLUTProp *data = (LadderElemLUTProp *)getProperties();
 
-		data->editAsString = Dialogdata.editAsString ? true : false;
-		data->count        = Dialogdata.count;
-		data->dest         = Dialogdata.dest;
-		data->index        = Dialogdata.index;
-
-		memcpy(data->vals.data(), Dialogdata.vals, sizeof(Dialogdata.vals));
+		*data = Dialogdata;
 
 		setProperties(context, data);
 	}
@@ -1714,25 +1647,13 @@ void LadderElemLUT::DrawGUI(void *data)
 // Classe LadderElemPiecewise
 bool LadderElemPiecewise::ShowDialog(LadderContext context)
 {
-	ElemPiecewiseLinear Dialogdata;
-
-	Dialogdata.count = prop.count;
-
-	strcpy(Dialogdata.dest , prop.dest .c_str());
-	strcpy(Dialogdata.index, prop.index.c_str());
-
-	memcpy(Dialogdata.vals, prop.vals.data(), sizeof(Dialogdata.vals));
-
+	LadderElemPiecewiseProp Dialogdata = prop;
 	bool changed = ShowPiecewiseLinearDialog(&Dialogdata);
 
 	if(changed) {
 		LadderElemPiecewiseProp *data = (LadderElemPiecewiseProp *)getProperties();
 
-		data->count        = Dialogdata.count;
-		data->dest         = Dialogdata.dest;
-		data->index        = Dialogdata.index;
-
-		memcpy(data->vals.data(), Dialogdata.vals, sizeof(Dialogdata.vals));
+		*data = Dialogdata;
 
 		setProperties(context, data);
 	}
@@ -1748,18 +1669,17 @@ void LadderElemPiecewise::DrawGUI(void *data)
 // Classe LadderElemFmtString
 bool LadderElemFmtString::ShowDialog(LadderContext context)
 {
-	char NewVar[MAX_NAME_LEN];
-	strcpy(NewVar, prop.var.c_str());
+	pair<unsigned long, int> NewIdVar = prop.idVar;
 
 	char NewTxt[MAX_NAME_LEN];
 	strcpy(NewTxt, prop.txt.c_str());
 
-	bool changed = ShowFormattedStringDialog(getWhich() == ELEM_WRITE_FORMATTED_STRING ? 1 : 0, NewVar, NewTxt);
+	bool changed = ShowFormattedStringDialog(getWhich() == ELEM_WRITE_FORMATTED_STRING ? 1 : 0, &NewIdVar, NewTxt);
 
 	if(changed) {
 		LadderElemFmtStringProp *data = (LadderElemFmtStringProp *)getProperties();
 
-		data->var = NewVar;
+		data->idVar = NewIdVar;
 		data->txt = NewTxt;
 
 		setProperties(context, data);
@@ -1776,23 +1696,20 @@ void LadderElemFmtString::DrawGUI(void *data)
 // Classe LadderElemYaskawa
 bool LadderElemYaskawa::ShowDialog(LadderContext context)
 {
-	char NewId[MAX_NAME_LEN];
-	strcpy(NewId, prop.id.c_str());
-
-	char NewVar[MAX_NAME_LEN];
-	strcpy(NewVar, prop.var.c_str());
+	int NewId = prop.id;
+	pair<unsigned long, int> NewIdVar = prop.idVar;
 
 	char NewTxt[MAX_NAME_LEN];
 	strcpy(NewTxt, prop.txt.c_str());
 
-	bool changed = ShowServoYaskawaDialog(getWhich() == ELEM_WRITE_SERVO_YASKAWA ? 1 : 0, NewId, NewVar, NewTxt);
+	bool changed = ShowServoYaskawaDialog(getWhich() == ELEM_WRITE_SERVO_YASKAWA ? 1 : 0, &NewId, &NewIdVar, NewTxt);
 
 	if(changed) {
 		LadderElemYaskawaProp *data = (LadderElemYaskawaProp *)getProperties();
 
-		data->id  = NewId;
-		data->var = NewVar;
-		data->txt = NewTxt;
+		data->id    = NewId;
+		data->idVar = NewIdVar;
+		data->txt   = NewTxt;
 
 		setProperties(context, data);
 	}
@@ -1808,15 +1725,13 @@ void LadderElemYaskawa::DrawGUI(void *data)
 // Classe LadderElemPersist
 bool LadderElemPersist::ShowDialog(LadderContext context)
 {
-	char NewVar[MAX_NAME_LEN];
-	strcpy(NewVar, prop.var.c_str());
-
-	bool changed = ShowPersistDialog(NewVar);
+	pair<unsigned long, int> NewIdVar = prop.idVar;
+	bool changed = ShowPersistDialog(&NewIdVar);
 
 	if(changed) {
 		LadderElemPersistProp *data = (LadderElemPersistProp *)getProperties();
 
-		data->var = NewVar;
+		data->idVar = NewIdVar;
 
 		setProperties(context, data);
 	}
@@ -2133,7 +2048,7 @@ void PaintWindow(void)
 		UpdateRibbonHeight();
 	}
 
-	ladder.DrawGUI();
+	ladder->DrawGUI();
 
 	ok();
 }
@@ -2203,7 +2118,7 @@ void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
 // Classe mapIO
 void mapIO::updateGUI(void)
 {
-    int i, iocount = ladder.getCountIO();
+    int i, iocount = ladder->getCountIO();
 
     ListView_DeleteAllItems(IoList);
     for(i = 0; i < iocount; i++) {
@@ -2226,4 +2141,10 @@ void mapIO::updateGUI(void)
 		ListView_SetItemState (IoList, getIndex(selectedIO, true) - 1, LVIS_SELECTED, LVIS_SELECTED);
 		ListView_EnsureVisible(IoList, getIndex(selectedIO, true) - 1, FALSE);
 	}
+}
+
+void LadderDiagram::ShowIoMapDialog(int item)
+{
+	IO->ShowIoMapDialog(item);
+	updateContext();
 }

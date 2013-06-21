@@ -1731,7 +1731,7 @@ BOOL GenerateIntermediateCode(void)
         return FALSE;
     }
 
-	ladder.GenerateIntCode();
+	ladder->GenerateIntCode();
 
     return TRUE;
 }

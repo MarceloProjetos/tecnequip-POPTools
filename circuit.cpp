@@ -161,7 +161,7 @@ bool PasteRung(bool after)
 	int i;
 
 	InsertRung(after);
-	i = ladder.RungContainingSelected();
+	i = ladder->RungContainingSelected();
 
 	if(SavedRung != NULL && i >= 0 && Prog.rungs[i]->count == 1 && Prog.rungs[i]->contents[0].which == ELEM_PLACEHOLDER) {
 		FreeCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
@@ -241,161 +241,465 @@ bool PasteLeaf(void)
 //-----------------------------------------------------------------------------
 bool AddParallelStart(void)
 {
-	return ladder.AddParallelStart();
+	return ladder->AddParallelStart();
 }
+
 bool AddComment(char *str)
 {
-	return ladder.AddElement(new LadderElemComment(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Comentário"));
+	bool ret = ladder->AddElement(new LadderElemComment(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddContact(void)
 {
-	return ladder.AddElement(new LadderElemContact(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Contato"));
+	bool ret = ladder->AddElement(new LadderElemContact(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddCoil(void)
 {
-	return ladder.AddElement(new LadderElemCoil(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Bobina"));
+	bool ret = ladder->AddElement(new LadderElemCoil(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddTimer(int which)
 {
-	return ladder.AddElement(new LadderElemTimer(&ladder, which));
+	switch(which) {
+	case ELEM_TON:
+		ladder->CheckpointBegin(_("Adicionar Atraso para Ligar"));
+		break;
+
+	case ELEM_TOF:
+		ladder->CheckpointBegin(_("Adicionar Atraso para Desligar"));
+		break;
+
+	case ELEM_RTO:
+		ladder->CheckpointBegin(_("Adicionar Atraso Retentivo para Ligar"));
+		break;
+
+	default:
+		ladder->CheckpointBegin(_("Adicionar Temporizador"));
+		break;
+	}
+
+	bool ret = ladder->AddElement(new LadderElemTimer(ladder, which));
+
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddRTC(int which)
 {
-	return ladder.AddElement(new LadderElemRTC(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Agendador de Tarefas"));
+	bool ret = ladder->AddElement(new LadderElemRTC(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddEmpty(int which)
 {
+	bool ret;
+
+	switch(which) {
+	case ELEM_OPEN:
+		ladder->CheckpointBegin(_("Adicionar Circuito Aberto"));
+		break;
+
+	case ELEM_SHORT:
+		ladder->CheckpointBegin(_("Adicionar Circuito Fechado"));
+		break;
+
+	case ELEM_ONE_SHOT_RISING:
+		ladder->CheckpointBegin(_("Adicionar Borda de Subida"));
+		break;
+
+	case ELEM_ONE_SHOT_FALLING:
+		ladder->CheckpointBegin(_("Adicionar Borda de Descida"));
+		break;
+
+	default:
+		ladder->CheckpointBegin(_("Adicionar Elemento"));
+		break;
+	}
+
 	switch(which) {
 	case ELEM_OPEN:
 	case ELEM_SHORT:
-		return ladder.AddElement(new LadderElemOpenShort(&ladder, which));
+		ret = ladder->AddElement(new LadderElemOpenShort(ladder, which));
 
 	case ELEM_ONE_SHOT_RISING:
 	case ELEM_ONE_SHOT_FALLING:
-		return ladder.AddElement(new LadderElemOneShot(&ladder, which));
+		ret = ladder->AddElement(new LadderElemOneShot(ladder, which));
 	}
 
-	return false;
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddReset(void)
 {
-	return ladder.AddElement(new LadderElemReset(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Zerar Temporizador/Contador"));
+	bool ret = ladder->AddElement(new LadderElemReset(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddMasterRelay(void)
 {
-	return ladder.AddElement(new LadderElemMasterRelay(&ladder));
+	ladder->CheckpointBegin(_("Adicionado Relé Mestre"));
+	bool ret = ladder->AddElement(new LadderElemMasterRelay(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddSetBit(void)
 {
-	return ladder.AddElement(new LadderElemSetBit(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Liga/Desliga Bit"));
+	bool ret = ladder->AddElement(new LadderElemSetBit(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddCheckBit(void)
 {
-	return ladder.AddElement(new LadderElemCheckBit(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Checar Bit"));
+	bool ret = ladder->AddElement(new LadderElemCheckBit(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddShiftRegister(void)
 {
-	return ladder.AddElement(new LadderElemShiftRegister(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Fila de Variáveis"));
+	bool ret = ladder->AddElement(new LadderElemShiftRegister(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddLookUpTable(void)
 {
-	return ladder.AddElement(new LadderElemLUT(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Tabela de Busca"));
+	bool ret = ladder->AddElement(new LadderElemLUT(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddPiecewiseLinear(void)
 {
-	return ladder.AddElement(new LadderElemPiecewise(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Linearização por Segmentos"));
+	bool ret = ladder->AddElement(new LadderElemPiecewise(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddMove(void)
 {
-	return ladder.AddElement(new LadderElemMove(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Mover Valor"));
+	bool ret = ladder->AddElement(new LadderElemMove(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddSqrt(void)
 {
-	return ladder.AddElement(new LadderElemSqrt(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Raiz Quadrado"));
+	bool ret = ladder->AddElement(new LadderElemSqrt(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddMath(int which)
 {
-	return ladder.AddElement(new LadderElemMath(&ladder, which));
+	switch(which) {
+	case ELEM_ADD:
+		ladder->CheckpointBegin(_("Adicionar Operação Somar"));
+		break;
+
+	case ELEM_SUB:
+		ladder->CheckpointBegin(_("Adicionar Operação Subtrair"));
+		break;
+
+	case ELEM_MUL:
+		ladder->CheckpointBegin(_("Adicionar Operação Multiplicar"));
+		break;
+
+	case ELEM_DIV:
+		ladder->CheckpointBegin(_("Adicionar Operação Dividir"));
+		break;
+
+	default:
+		ladder->CheckpointBegin(_("Adicionar Operação Matemática"));
+		break;
+	}
+
+	bool ret = ladder->AddElement(new LadderElemMath(ladder, which));
+
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddRand(void)
 {
-	return ladder.AddElement(new LadderElemRand(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Número Randômico"));
+	bool ret = ladder->AddElement(new LadderElemRand(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddAbs(void)
 {
-	return ladder.AddElement(new LadderElemAbs(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Valor Absoluto"));
+	bool ret = ladder->AddElement(new LadderElemAbs(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddCmp(int which)
 {
-	return ladder.AddElement(new LadderElemCmp(&ladder, which));
+	switch(which) {
+	case ELEM_EQU:
+		ladder->CheckpointBegin(_("Adicionar Condicional Igual a "));
+		break;
+
+	case ELEM_NEQ:
+		ladder->CheckpointBegin(_("Adicionar Condicional Diferente de"));
+		break;
+
+	case ELEM_GRT:
+		ladder->CheckpointBegin(_("Adicionar Condicional Maior que "));
+		break;
+
+	case ELEM_GEQ:
+		ladder->CheckpointBegin(_("Adicionar Condicional Maior ou igual a"));
+		break;
+
+	case ELEM_LES:
+		ladder->CheckpointBegin(_("Adicionar Condicional Menor que "));
+		break;
+
+	case ELEM_LEQ:
+		ladder->CheckpointBegin(_("Adicionar Condicional Menor ou igual a"));
+		break;
+
+	default:
+		ladder->CheckpointBegin(_("Adicionar Condicional"));
+		break;
+	}
+
+	bool ret = ladder->AddElement(new LadderElemCmp(ladder, which));
+
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddCounter(int which)
 {
-	return ladder.AddElement(new LadderElemCounter(&ladder, which));
+	switch(which) {
+	case ELEM_CTU:
+		ladder->CheckpointBegin(_("Adicionar Contador Incremental"));
+		break;
+
+	case ELEM_CTD:
+		ladder->CheckpointBegin(_("Adicionar Contador Decremental"));
+		break;
+
+	case ELEM_CTC:
+		ladder->CheckpointBegin(_("Adicionar Contador Circular"));
+		break;
+
+	default:
+		ladder->CheckpointBegin(_("Adicionar Contador"));
+		break;
+	}
+
+	bool ret = ladder->AddElement(new LadderElemCounter(ladder, which));
+
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddSetDA(void)
 {
-	return ladder.AddElement(new LadderElemSetDa(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Escrita no D/A"));
+	bool ret = ladder->AddElement(new LadderElemSetDa(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddReadAdc(void)
 {
-	return ladder.AddElement(new LadderElemReadAdc(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Leitura do A/D"));
+	bool ret = ladder->AddElement(new LadderElemReadAdc(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddReadEnc(void)
 {
-	return ladder.AddElement(new LadderElemReadEnc(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Leitura do Encoder"));
+	bool ret = ladder->AddElement(new LadderElemReadEnc(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddResetEnc(void)
 {
-	return ladder.AddElement(new LadderElemResetEnc(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Escrita no Encoder"));
+	bool ret = ladder->AddElement(new LadderElemResetEnc(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddMultisetDA(void)
 {
-	return ladder.AddElement(new LadderElemMultisetDA(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Rampa de Aceleração/Desaceleração"));
+	bool ret = ladder->AddElement(new LadderElemMultisetDA(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddReadFormatString(void)
 {
-	return ladder.AddElement(new LadderElemFmtString(&ladder, ELEM_READ_FORMATTED_STRING));
+	ladder->CheckpointBegin(_("Adicionar Ler String Formatada"));
+	bool ret = ladder->AddElement(new LadderElemFmtString(ladder, ELEM_READ_FORMATTED_STRING));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddWriteFormatString(void)
 {
-	return ladder.AddElement(new LadderElemFmtString(&ladder, ELEM_WRITE_FORMATTED_STRING));
+	ladder->CheckpointBegin(_("Adicionar Escrever String Formatada"));
+	bool ret = ladder->AddElement(new LadderElemFmtString(ladder, ELEM_WRITE_FORMATTED_STRING));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddReadServoYaskawa(void)
 {
-	return ladder.AddElement(new LadderElemYaskawa(&ladder, ELEM_READ_SERVO_YASKAWA));
+	ladder->CheckpointBegin(_("Adicionar Leitura de NS-600 Yaskawa"));
+	bool ret = ladder->AddElement(new LadderElemYaskawa(ladder, ELEM_READ_SERVO_YASKAWA));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddWriteServoYaskawa(void)
 {
-	return ladder.AddElement(new LadderElemYaskawa(&ladder, ELEM_WRITE_SERVO_YASKAWA));
+	ladder->CheckpointBegin(_("Adicionar Escrita de NS-600 Yaskawa"));
+	bool ret = ladder->AddElement(new LadderElemYaskawa(ladder, ELEM_WRITE_SERVO_YASKAWA));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddReadUSS(void)
 {
-	return ladder.AddElement(new LadderElemUSS(&ladder, ELEM_READ_USS));
+	ladder->CheckpointBegin(_("Adicionar Leitura USS"));
+	bool ret = ladder->AddElement(new LadderElemUSS(ladder, ELEM_READ_USS));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddWriteUSS(void)
 {
-	return ladder.AddElement(new LadderElemUSS(&ladder, ELEM_WRITE_USS));
+	ladder->CheckpointBegin(_("Adicionar Escrita USS"));
+	bool ret = ladder->AddElement(new LadderElemUSS(ladder, ELEM_WRITE_USS));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddReadModbus(void)
 {
-	return ladder.AddElement(new LadderElemModBUS(&ladder, ELEM_READ_MODBUS));
+	ladder->CheckpointBegin(_("Adicionar Ler Registrador ModBUS"));
+	bool ret = ladder->AddElement(new LadderElemModBUS(ladder, ELEM_READ_MODBUS));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddWriteModbus(void)
 {
-	return ladder.AddElement(new LadderElemModBUS(&ladder, ELEM_WRITE_MODBUS));
+	ladder->CheckpointBegin(_("Adicionar Escrever Registrador ModBUS"));
+	bool ret = ladder->AddElement(new LadderElemModBUS(ladder, ELEM_WRITE_MODBUS));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddSetPwm(void)
 {
-	return ladder.AddElement(new LadderElemSetPWM(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Saída PWM"));
+	bool ret = ladder->AddElement(new LadderElemSetPWM(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddUart(int which)
 {
-	return ladder.AddElement(new LadderElemUART(&ladder, which));
+	switch(which) {
+	case ELEM_CTU:
+		ladder->CheckpointBegin(_("Adicionar Leitura de Caracter da RS-485"));
+		break;
+
+	case ELEM_CTC:
+		ladder->CheckpointBegin(_("Adicionar Escrita de Caracter na RS-485"));
+		break;
+
+	default:
+		ladder->CheckpointBegin(_("Adicionar Elemento"));
+		break;
+	}
+
+	bool ret = ladder->AddElement(new LadderElemUART(ladder, which));
+
+	ladder->CheckpointEnd();
+
+	return ret;
 }
+
 bool AddPersist(void)
 {
-	return ladder.AddElement(new LadderElemPersist(&ladder));
+	ladder->CheckpointBegin(_("Adicionar Persistente"));
+	bool ret = ladder->AddElement(new LadderElemPersist(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
 }
 
 //-----------------------------------------------------------------------------
@@ -575,7 +879,7 @@ static BOOL DeleteSelectedFromSubckt(int which, void *any)
 //-----------------------------------------------------------------------------
 bool DeleteSelectedFromProgram(void)
 {
-	return ladder.DelElement();
+	return ladder->DelElement();
 }
 
 //-----------------------------------------------------------------------------
@@ -763,13 +1067,13 @@ BOOL ContainsElem(int which, void *any, ElemLeaf *seek)
 //-----------------------------------------------------------------------------
 bool DeleteSelectedRung(void)
 {
-	LadderContext context = ladder.getContext();
+	LadderContext context = ladder->getContext();
 	if(!context.canDeleteRung) {
         Error(_("Cannot delete rung; program must have at least one rung."));
         return false;
     }
 
-	ladder.DeleteRung(-1);
+	ladder->DeleteRung(-1);
 
 	return true;
 }
@@ -795,7 +1099,7 @@ static ElemSubcktSeries *AllocEmptyRung(void)
 //-----------------------------------------------------------------------------
 bool InsertRung(bool afterCursor)
 {
-	ladder.NewRung(afterCursor);
+	ladder->NewRung(afterCursor);
 
 	return true; // Sempre insere uma nova linha!
 }
@@ -810,7 +1114,7 @@ bool InsertRung(bool afterCursor)
 //-----------------------------------------------------------------------------
 bool PushRung(bool up)
 {
-	return ladder.PushRung(-1, up);
+	return ladder->PushRung(-1, up);
 }
 
 //-----------------------------------------------------------------------------
@@ -825,7 +1129,7 @@ void NewProgram(void)
     Prog.numRungs = 1;
     Prog.rungs[0] = AllocEmptyRung();
 
-	ladder.ClearDiagram();
+	ladder->ClearDiagram();
 }
 
 //-----------------------------------------------------------------------------
@@ -870,7 +1174,7 @@ static void LastInCircuit(int which, void *any, ElemLeaf *seek,
 //-----------------------------------------------------------------------------
 BOOL ItemIsLastInCircuit(ElemLeaf *item)
 {
-    int i = ladder.RungContainingSelected();
+    int i = ladder->RungContainingSelected();
     if(i < 0) return FALSE;
 
     BOOL found = FALSE;

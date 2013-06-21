@@ -63,7 +63,10 @@ static int		gain_idx;
 static float	points[DA_RESOLUTION];
 static float	gains[DA_RESOLUTION];
 
-static ElemMultisetDA current;
+char time_tmp   [MAX_NAME_LEN];
+char initval_tmp[MAX_NAME_LEN];
+
+static LadderElemMultisetDAProp current;
 
 static vector<D2D1_POINT_2F>	DAPoints;
 
@@ -872,12 +875,12 @@ void UpdateWindow(void)
 
 		tempo = max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num))));
 		_itoa(tempo, num, 10);
-		_itoa(tempo, current.name, 10);
 		SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 	} else {
 		tempo = 600;
-		strcpy(current.name, num);
 	}
+
+	strcpy(time_tmp, num);
 
 	current.type            = SendMessage(ResolTypeCombobox, CB_GETCURSEL, 0, 0);
 	current.ramp_abort_mode = SendMessage(AbortModeCombobox, CB_GETCURSEL, 0, 0);
@@ -901,7 +904,7 @@ void UpdateWindow(void)
 		}
 	
 		_itoa(current.initval, num, 10);
-		_itoa(current.forward ? current.initval : current.initval * -1, current.name1, 10);
+		_itoa(current.forward ? current.initval : current.initval * -1, initval_tmp, 10);
 		SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 
 		if ((current.type == 0 && (((current.forward && atoi(num) > DA_RESOLUTION - 1) || (!current.forward && atoi(num) > DA_RESOLUTION)))) ||
@@ -922,7 +925,7 @@ void UpdateWindow(void)
 		default:
 			current.initval = 2047;
 		}
-		strcpy(current.name1, num);
+		strcpy(initval_tmp, num);
 	}
 
 	if (current.type == 1)  // (mV)
@@ -1334,20 +1337,19 @@ void PopulateAbortModeCombobox(HWND AbortModeCombobox, bool IncludeDefault)
 		SendMessage(AbortModeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)RampAbortModes[i]));
 }
 
-bool ShowMultisetDADialog(ElemMultisetDA *l)
+bool ShowMultisetDADialog(LadderElemMultisetDAProp *l)
 {
 	bool changed = false;
+	string stime = ladder->getNameIO(l->idTime);
+	string sdesl = ladder->getNameIO(l->idDesl);
+	const char *time = stime.c_str();
+	const char *desl = sdesl.c_str();
 
 	char num[12];
-	char time_tmp   [MAX_NAME_LEN];
-	char initval_tmp[MAX_NAME_LEN];
 
 	current = *l;
-	tempo = IsNumber(current.name) ? atoi(current.name) : 600;
+	tempo = IsNumber(time) ? atoi(time) : 600;
 	//initval = current.initval;
-
-	strcpy(time_tmp   , l->name );
-	strcpy(initval_tmp, l->name1);
 
 	MultisetDADialog = CreateWindowClient(0, "POPToolsDialog",
         _("Rampa de Aceleração/Desaceleração"), WS_OVERLAPPED | WS_SYSMENU | WS_EX_CONTROLPARENT,
@@ -1373,8 +1375,8 @@ bool ShowMultisetDADialog(ElemMultisetDA *l)
 	_itoa(current.gainr, num, 10);
     SendMessage(GainInitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
 
-	SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(current.name));
-    SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(current.name1));
+	SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(time));
+    SendMessage(InitValTextbox, WM_SETTEXT, 0, (LPARAM)(desl));
 
     if(current.linear) {
         SendMessage(LinearRadio, BM_SETCHECK, BST_CHECKED, 0);
@@ -1394,6 +1396,9 @@ bool ShowMultisetDADialog(ElemMultisetDA *l)
     } else {
         SendMessage(SpeedDownRadio, BM_SETCHECK, BST_CHECKED, 0);
     }
+
+	strcpy(time_tmp   , ladder->getNameIO(l->idTime).c_str());
+	strcpy(initval_tmp, ladder->getNameIO(l->idDesl).c_str());
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(MultisetDADialog, TRUE);
@@ -1433,11 +1438,30 @@ bool ShowMultisetDADialog(ElemMultisetDA *l)
     }
 
     if(!DialogCancel &&
-			IsValidNameAndType(time_tmp   , current.name , _("Tempo"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(current.name), 0, 0) &&
-			IsValidNameAndType(initval_tmp, current.name1, _("Valor"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(current.name), 0, 0)) {
-		changed = true;
+		ladder->IsValidNameAndType(l->idTime.first, time_tmp   , eType_General, _("Tempo"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
+		ladder->IsValidNameAndType(l->idDesl.first, initval_tmp, eType_General, _("Valor"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+			tGetIO pin;
+			vector<tGetIO> pins;
 
-		*l = current;
+			pin.pin   = l->idTime;
+			pin.name  = time_tmp;
+			pin.isBit = false;
+			pin.type  = eType_General;
+			pins.push_back(pin);
+
+			pin.pin   = l->idDesl;
+			pin.name  = initval_tmp;
+			pin.isBit = false;
+			pin.type  = eType_General;
+			pins.push_back(pin);
+
+			// Se variavel alterada e valida, atualiza o pino
+			if(ladder->getIO(pins)) {
+				changed = true;
+				*l = current;
+				l->idTime = pins[0].pin;
+				l->idDesl = pins[1].pin;
+			}
 	}
 
 	DiscardDeviceResources();

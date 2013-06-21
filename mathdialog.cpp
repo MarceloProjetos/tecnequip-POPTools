@@ -83,7 +83,7 @@ static void MakeControls(char *op) // op: text for current operator
     NiceFont(CancelButton);
 }
 
-bool ShowMathDialog(int which, char *dest, char *op1, char *op2)
+bool ShowMathDialog(int which, pair<unsigned long, int> *dest, pair<unsigned long, int> *op1, pair<unsigned long, int> *op2)
 {
 	bool changed = false;
 
@@ -117,10 +117,16 @@ bool ShowMathDialog(int which, char *dest, char *op1, char *op2)
 
     MakeControls(l2);
    
-    SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(dest));
-    SendMessage(Op1Textbox , WM_SETTEXT, 0, (LPARAM)(op1 ));
+	char op1_tmp[MAX_NAME_LEN], op2_tmp[MAX_NAME_LEN];
+
+	strcpy(op1_tmp, ladder->getNameIO(*op1).c_str());
+
+	SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(ladder->getNameIO(dest->first).c_str()));
+    SendMessage(Op1Textbox , WM_SETTEXT, 0, (LPARAM)(op1_tmp));
+
 	if(l2) {
-	    SendMessage(Op2Textbox , WM_SETTEXT, 0, (LPARAM)(op2 ));
+		strcpy(op2_tmp, ladder->getNameIO(*op2).c_str());
+	    SendMessage(Op2Textbox , WM_SETTEXT, 0, (LPARAM)(op2_tmp));
 	}
 
     EnableWindow(MainWindow, FALSE);
@@ -151,24 +157,54 @@ bool ShowMathDialog(int which, char *dest, char *op1, char *op2)
     }
 
     if(!DialogCancel) {
-		char dest_tmp[MAX_NAME_LEN], op1_tmp[MAX_NAME_LEN], op2_tmp[MAX_NAME_LEN];
+		char dest_tmp[MAX_NAME_LEN];
 
+		// Se variavel sem tipo, usa tipo geral.
+		eType op1_type = eType_General, op2_type = eType_General;
 		SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(dest_tmp));
         SendMessage(Op1Textbox , WM_GETTEXT, (WPARAM)17, (LPARAM)(op1_tmp ));
 		if(l2) {
 		    SendMessage(Op2Textbox , WM_GETTEXT, (WPARAM)17, (LPARAM)(op2_tmp ));
+			op2_type = ladder->getTypeIO(ladder->getNameIO(op2->first), op2_tmp, eType_General, true);
 		}
 
-		if(IsValidNameAndType(dest, dest_tmp, _("Destino"), VALIDATE_IS_VAR          , GetTypeFromName(dest_tmp), 0, 0) &&
-		   IsValidNameAndType(op1 , op1_tmp , NULL        , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op1_tmp ), 0, 0) &&
-		   (l2 ? IsValidNameAndType(op2 , op2_tmp , NULL        , VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(op2_tmp ), 0, 0) : true)) {
-			changed = true;
+		op1_type = ladder->getTypeIO(ladder->getNameIO(op1->first), op1_tmp, eType_General, true);
 
-			strcpy(dest, dest_tmp);
-			strcpy(op1 , op1_tmp );
-			if(l2) {
-				strcpy(op2 , op2_tmp );
-			}
+		if(ladder->IsValidNameAndType      (dest->first, dest_tmp, eType_General, _("Destino"), VALIDATE_IS_VAR          , 0, 0) &&
+			ladder->IsValidNameAndType     (op1->first , op1_tmp , op1_type     , NULL        , VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
+		   (l2 ? ladder->IsValidNameAndType(op2->first , op2_tmp , op2_type     , NULL        , VALIDATE_IS_VAR_OR_NUMBER, 0, 0) : true)) {
+				tGetIO pin;
+				vector<tGetIO> pins;
+
+				pin.pin   = pair<unsigned long, int>(dest->first, 0);
+				pin.name  = dest_tmp;
+				pin.isBit = false;
+				pin.type  = eType_General;
+				pins.push_back(pin);
+
+				pin.pin   = pair<unsigned long, int>(op1->first, 0);
+				pin.name  = op1_tmp;
+				pin.isBit = false;
+				pin.type  = op1_type;
+				pins.push_back(pin);
+
+				if(l2) {
+					pin.pin   = pair<unsigned long, int>(op2->first, 0);
+					pin.name  = op2_tmp;
+					pin.isBit = false;
+					pin.type  = op2_type;
+					pins.push_back(pin);
+				}
+
+				// Se variavel alterada e valida, atualiza o pino
+				if(ladder->getIO(pins)) {
+					changed = true;
+					*dest = pins[0].pin;
+					*op1  = pins[1].pin;
+					if(l2) {
+						*op2 = pins[2].pin;
+					}
+				}
 		}
     }
 

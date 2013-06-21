@@ -1022,7 +1022,7 @@ extern HINSTANCE Instance;
 extern HWND MainWindow;
 extern HDC Hdc;
 extern PlcProgram Prog;
-extern LadderDiagram ladder;
+extern LadderDiagram *ladder;
 extern Settings POPSettings;
 extern XMLWrapper XmlSettings;
 extern char CurrentSaveFile[MAX_PATH];
@@ -1286,7 +1286,6 @@ int GenerateIoMapList(int prevSel);
 void SaveIoListToFile(FILE *f);
 BOOL LoadIoListFromFile(FILE *f, int version);
 void ShowIoDialog(int item);
-void ShowIoMapDialog(int item);
 void IoListProc(NMHDR *h);
 void IoMapListProc(NMHDR *h);
 void ShowAnalogSliderPopup(char *name);
@@ -1298,33 +1297,33 @@ bool ShowCommentDialog(char *comment);
 bool ShowContactsDialog(bool *negated, unsigned long *idName);
 // coildialog.cpp
 bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, unsigned long *idName);
-bool ShowMultisetDADialog(ElemMultisetDA *l);
+bool ShowMultisetDADialog(LadderElemMultisetDAProp *l);
 // simpledialog.cpp
 bool ShowTimerDialog(int which, int *delay, unsigned long *idName);
 bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end);
 bool ShowCounterDialog(int which, int *maxV, unsigned long *idName);
-bool ShowReadAdcDialog(char *name);
-bool ShowSetBitDialog(char *name, bool * set, int * bit);
-bool ShowCheckBitDialog(char *name, bool * set, int * bit);
-bool ShowSetDADialog(char *name, int *mode);
-bool ShowReadEncDialog(char *name);
-bool ShowResetEncDialog(char *name);
-bool ShowUSSDialog(int which, char *name, int *id, int *parameter, int *parameter_set, int *index);
-bool ShowModbusDialog(int mode_write, char *name, int *id, int *address, bool *set, bool *retransmitir);
-bool ShowSetPwmDialog(char *name, int *targetFreq);
-bool ShowPersistDialog(char *var);
-bool ShowUartDialog(int which, char *name);
+bool ShowReadAdcDialog(pair<unsigned long, int> *name);
+bool ShowSetBitDialog(pair<unsigned long, int> *name, bool * set, int * bit);
+bool ShowCheckBitDialog(pair<unsigned long, int> *name, bool * set, int * bit);
+bool ShowSetDADialog(pair<unsigned long, int> *name, int *mode);
+bool ShowReadEncDialog(pair<unsigned long, int> *name);
+bool ShowResetEncDialog(pair<unsigned long, int> *name);
+bool ShowUSSDialog(int which, pair<unsigned long, int> *name, int *id, int *parameter, int *parameter_set, int *index);
+bool ShowModbusDialog(int mode_write, pair<unsigned long, int> *name, int *id, int *address, bool *set, bool *retransmitir);
+bool ShowSetPwmDialog(pair<unsigned long, int> *name, int *targetFreq);
+bool ShowPersistDialog(pair<unsigned long, int> *var);
+bool ShowUartDialog(int which, pair<unsigned long, int> *name);
 bool ShowCmpDialog(int which, pair<unsigned long, int> *op1, pair<unsigned long, int> *op2);
 bool ShowShiftRegisterDialog(char *name, int *stages);
-bool ShowFormattedStringDialog(int mode_write, char *var, char *string);
-bool ShowServoYaskawaDialog(int mode_write, char *id, char *var, char *string);
+bool ShowFormattedStringDialog(int mode_write, pair<unsigned long, int> *var, char *string);
+bool ShowServoYaskawaDialog(int mode_write, int *id, pair<unsigned long, int> *var, char *string);
 void ShowSimulationVarSetDialog(char *name, char *val);
-bool ShowLookUpTableDialog(ElemLookUpTable *t);
-bool ShowPiecewiseLinearDialog(ElemPiecewiseLinear *t);
+bool ShowLookUpTableDialog(LadderElemLUTProp *t);
+bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t);
 bool ShowResetDialog(LadderElemReset *elem, unsigned long *idName);
-bool ShowSqrtDialog(char *dest, char *src);
-bool ShowRandDialog(char *var, char *min, char *max);
-bool ShowAbsDialog(char *dest, char *src);
+bool ShowSqrtDialog(pair<unsigned long, int> *dest, pair<unsigned long, int> *src);
+bool ShowRandDialog(pair<unsigned long, int> *var, pair<unsigned long, int> *min, pair<unsigned long, int> *max);
+bool ShowAbsDialog(pair<unsigned long, int> *dest, pair<unsigned long, int> *src);
 // confdialog.cpp
 extern struct strSerialConfig SerialConfig[];
 extern char *SerialParityString[];
@@ -1535,7 +1534,7 @@ void SimulationServer_Stop   (void);
 void SimulationServer_Message(WPARAM wParam, LPARAM lParam);
 
 // mathdialog.cpp
-bool ShowMathDialog(int which, char *dest, char *op1, char *op2);
+bool ShowMathDialog(int which, pair<unsigned long, int> *dest, pair<unsigned long, int> *op1, pair<unsigned long, int> *op2);
 
 // modbus_usb.cpp
 bool          USB_SetDateTime(struct tm *t);

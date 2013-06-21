@@ -146,9 +146,9 @@ static LRESULT CALLBACK CoilDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, unsigned long *idName)
 {
 	bool changed = false;
-	string sname = ladder.getNameIO(*idName);
+	string sname = ladder->getNameIO(*idName);
 	const char *name = sname.c_str();
-	mapDetails detailsIO = ladder.getDetailsIO(*idName);
+	mapDetails detailsIO = ladder->getDetailsIO(*idName);
 
 	eType type;
 	char name_tmp[MAX_NAME_LEN];
@@ -225,9 +225,9 @@ bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, unsigned long
             type = eType_DigOutput;
         }
 
-		if(ladder.IsValidNameAndType(*idName, name_tmp, type)) {
+		if(ladder->IsValidNameAndType(*idName, name_tmp, type)) {
 			pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
-			if(ladder.getIO(pin, name_tmp, true, type)) { // Variavel valida!
+			if(ladder->getIO(pin, name_tmp, true, type)) { // Variavel valida!
 				changed = true;
 
 				*idName = pin.first;

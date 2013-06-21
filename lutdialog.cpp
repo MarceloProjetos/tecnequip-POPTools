@@ -325,7 +325,7 @@ BOOL StringToValuesCache(char *str, int *c)
 // I should convert between those two representations on the fly, as the user
 // edit things, so I do.
 //-----------------------------------------------------------------------------
-bool ShowLookUpTableDialog(ElemLookUpTable *t)
+bool ShowLookUpTableDialog(LadderElemLUTProp *t)
 {
 	bool changed = false;
 
@@ -336,7 +336,7 @@ bool ShowLookUpTableDialog(ElemLookUpTable *t)
     // bad to update those in the leaf before the user clicks okay (as he
     // might cancel).
     int count = t->count;
-    BOOL asString = t->editAsString;
+    bool asString = t->editAsString;
     memset(ValuesCache, 0, sizeof(ValuesCache));
     int i;
     for(i = 0; i < count; i++) {
@@ -352,8 +352,8 @@ bool ShowLookUpTableDialog(ElemLookUpTable *t)
     MakeLutControls(asString, count, FALSE);
   
     // Set up the controls to reflect the initial configuration.
-    SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(t->dest));
-    SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(t->index));
+	SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(ladder->getNameIO(t->idDest.first).c_str()));
+    SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(ladder->getNameIO(t->idIndex.first).c_str()));
     char buf[30];
     sprintf(buf, "%d", t->count);
     SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -422,7 +422,7 @@ bool ShowLookUpTableDialog(ElemLookUpTable *t)
         }
 
         // Did we just change modes?
-        BOOL x = SendMessage(AsStringCheckbox, BM_GETCHECK, 0, 0)==BST_CHECKED;
+        bool x = SendMessage(AsStringCheckbox, BM_GETCHECK, 0, 0)==BST_CHECKED;
         if((x && !asString) || (!x && asString)) {
             asString = x;
             DestroyLutControls();
@@ -434,23 +434,45 @@ bool ShowLookUpTableDialog(ElemLookUpTable *t)
     if(!DialogCancel) {
         SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(dest_tmp));
         SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(index_tmp));
+
+		// Se variavel sem tipo, usa tipo geral.
+		eType index_type = ladder->getTypeIO(ladder->getNameIO(t->idIndex.first), index_tmp, eType_General, true);
+
         DestroyLutControls();
-		if(IsValidNameAndType(t->dest , dest_tmp , _("Destino"), VALIDATE_IS_VAR           , GetTypeFromName(dest_tmp ), 0, 0) &&
-		   IsValidNameAndType(t->index, index_tmp, _("Indice" ), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(index_tmp), -10, 50)) {
-			changed = true;
+		if(ladder->IsValidNameAndType(t->idDest.first, dest_tmp , eType_General, _("Destino"), VALIDATE_IS_VAR, 0, 0) &&
+			ladder->IsValidNameAndType(t->idIndex.first, index_tmp, index_type, _("Indice" ), VALIDATE_IS_VAR, 0, 0)) {
+				tGetIO pin;
+				vector<tGetIO> pins;
 
-			// The call to DestroyLutControls updated ValuesCache, so just read
-			// them out of there (whichever mode we were in before).
-		    int i;
-	        for(i = 0; i < count; i++) {
-				t->vals[i] = ValuesCache[i];
-			}
+				pin.pin   = t->idDest;
+				pin.name  = dest_tmp;
+				pin.isBit = false;
+				pin.type  = eType_General;
+				pins.push_back(pin);
 
-			strcpy(t->dest , dest_tmp );
-			strcpy(t->index, index_tmp);
+				pin.pin   = t->idIndex;
+				pin.name  = index_tmp;
+				pin.isBit = false;
+				pin.type  = index_type;
+				pins.push_back(pin);
 
-			t->count = count;
-	        t->editAsString = asString;
+				// Se variavel alterada e valida, atualiza o pino
+				if(ladder->getIO(pins)) {
+					changed = true;
+
+					// The call to DestroyLutControls updated ValuesCache, so just read
+					// them out of there (whichever mode we were in before).
+					int i;
+					for(i = 0; i < count; i++) {
+						t->vals[i] = ValuesCache[i];
+					}
+
+					t->idDest  = pins[0].pin;
+					t->idIndex = pins[1].pin;
+
+					t->count = count;
+					t->editAsString = asString;
+				}
 		}
     }
 
@@ -464,7 +486,7 @@ bool ShowLookUpTableDialog(ElemLookUpTable *t)
 // Show the piecewise linear table dialog. This one can only be edited in
 // only a single format, which makes things easier than before.
 //-----------------------------------------------------------------------------
-bool ShowPiecewiseLinearDialog(ElemPiecewiseLinear *t)
+bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t)
 {
 	bool changed = false;
 
@@ -488,8 +510,8 @@ bool ShowPiecewiseLinearDialog(ElemPiecewiseLinear *t)
     MakeLutControls(FALSE, count*2, TRUE);
   
     // Set up the controls to reflect the initial configuration.
-    SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(t->dest));
-    SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(t->index));
+	SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(ladder->getNameIO(t->idDest.first).c_str()));
+    SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(ladder->getNameIO(t->idIndex.first).c_str()));
     char buf[30];
     sprintf(buf, "%d", t->count);
     SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -537,19 +559,50 @@ bool ShowPiecewiseLinearDialog(ElemPiecewiseLinear *t)
     }
 
     if(!DialogCancel) {
-        SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(t->dest));
-        SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(t->index));
-        DestroyLutControls();
+		char dest_tmp[MAX_NAME_LEN], index_tmp[MAX_NAME_LEN];
 
-		changed = true;
+        SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(dest_tmp));
+        SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(index_tmp));
 
-		// The call to DestroyLutControls updated ValuesCache, so just read
-        // them out of there.
-        int i;
-        for(i = 0; i < count*2; i++) {
-            t->vals[i] = ValuesCache[i];
-        }
-        t->count = count;
+		// Se variavel sem tipo, usa tipo geral.
+		eType index_type = ladder->getTypeIO(ladder->getNameIO(t->idIndex.first), index_tmp, eType_General, true);
+
+		DestroyLutControls();
+
+		if(ladder->IsValidNameAndType(t->idDest.first, dest_tmp , eType_General, _("Destino"), VALIDATE_IS_VAR, 0, 0) &&
+			ladder->IsValidNameAndType(t->idIndex.first, index_tmp, index_type, _("Indice" ), VALIDATE_IS_VAR, 0, 0)) {
+				tGetIO pin;
+				vector<tGetIO> pins;
+
+				pin.pin   = t->idDest;
+				pin.name  = dest_tmp;
+				pin.isBit = false;
+				pin.type  = eType_General;
+				pins.push_back(pin);
+
+				pin.pin   = t->idIndex;
+				pin.name  = index_tmp;
+				pin.isBit = false;
+				pin.type  = index_type;
+				pins.push_back(pin);
+
+				// Se variavel alterada e valida, atualiza o pino
+				if(ladder->getIO(pins)) {
+					changed = true;
+
+					// The call to DestroyLutControls updated ValuesCache, so just read
+					// them out of there.
+					int i;
+					for(i = 0; i < count*2; i++) {
+						t->vals[i] = ValuesCache[i];
+					}
+
+					t->idDest  = pins[0].pin;
+					t->idIndex = pins[1].pin;
+
+					t->count = count;
+				}
+		}
     }
 
     EnableWindow(MainWindow, TRUE);

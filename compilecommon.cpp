@@ -349,7 +349,7 @@ int ValidateDiagram(void)
 
 	// Validate Generated IntCode
 	if(ret != DIAGRAM_VALIDATION_ERROR) {
-		vector<IntOp> vectorIntCode = ladder.getVectorIntCode();
+		vector<IntOp> vectorIntCode = ladder->getVectorIntCode();
 		vector<IntOp>::size_type IntCodeLen = vectorIntCode.size(), i;
 
 		for(i = 0; i < IntCodeLen; i++) {

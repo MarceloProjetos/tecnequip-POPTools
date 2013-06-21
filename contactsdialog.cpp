@@ -138,9 +138,9 @@ static LRESULT CALLBACK ContactsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, L
 bool ShowContactsDialog(bool *negated, unsigned long *idName)
 {
 	bool changed = false;
-	string sname = ladder.getNameIO(*idName);
+	string sname = ladder->getNameIO(*idName);
 	const char *name = sname.c_str();
-	mapDetails detailsIO = ladder.getDetailsIO(*idName);
+	mapDetails detailsIO = ladder->getDetailsIO(*idName);
 
 	char name_tmp[MAX_NAME_LEN];
 	eType type;
@@ -222,9 +222,9 @@ bool ShowContactsDialog(bool *negated, unsigned long *idName)
 			type = eType_DigOutput;
 		}
 
-		if(ladder.IsValidNameAndType(*idName, name_tmp, type)) {
+		if(ladder->IsValidNameAndType(*idName, name_tmp, type)) {
 			pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
-			if(ladder.getIO(pin, name_tmp, true, type)) { // Variavel valida!
+			if(ladder->getIO(pin, name_tmp, true, type)) { // Variavel valida!
 				changed = true;
 
 				*idName = pin.first;

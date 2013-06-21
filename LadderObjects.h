@@ -7,14 +7,53 @@
 #include <string>
 
 #include "intcode.h"
-#include "iomap.h"
-
+ 
 using namespace std;
 
 /*** Estruturas auxiliares ***/
+class mapIO;
 class LadderElem;
 class LadderCircuit;
 class LadderDiagram;
+
+// Estruturas auxiliares relacionadas com o I/O
+enum eReply { eReply_No = 0, eReply_Yes, eReply_Ask };
+
+enum eType  {
+	eType_Pending = 0,
+	eType_Reserved,
+	eType_General,
+	eType_DigInput,
+	eType_InternalRelay,
+	eType_DigOutput,
+	eType_InternalFlag,
+	eType_Counter,
+	eType_TOF,
+	eType_TON,
+	eType_RTO,
+	eType_ReadADC,
+	eType_SetDAC,
+	eType_ReadEnc,
+	eType_ResetEnc,
+	eType_ReadUSS,
+	eType_WriteUSS,
+	eType_ReadModbus,
+	eType_WriteModbus,
+	eType_PWM,
+	eType_RxUART,
+	eType_TxUART,
+	eType_ReadYaskawa,
+	eType_WriteYaskawa
+};
+
+typedef struct {
+	unsigned int countRequestBit;
+	unsigned int countRequestInt;
+
+	eType        type;
+	unsigned int pin;
+	unsigned int bit;
+} mapDetails;
 
 // Estrutura auxiliar que representa um subcircuito
 typedef struct {
@@ -55,12 +94,21 @@ typedef struct {
 	bool canInsertComment;
 } LadderContext;
 
+// Estrutura auxiliar para solicitar um I/O.
+typedef struct {
+	pair<unsigned long, int> pin;
+	string name;
+	bool isBit;
+	eType type;
+} tGetIO;
+
 // Estrutura auxiliar que representa uma acao de desfazer / refazer
 typedef struct {
 	// Texto que descreve a acao de forma amigavel para o usuario
 	string         Description;
 
 	// Objeto responsavel por executar a acao
+	mapIO         *io;
 	LadderElem    *elem;
 	LadderCircuit *subckt;
 
@@ -75,6 +123,9 @@ typedef struct {
 
 // Funcao auxiliar que retorna o tipo de I/O do timer conforme o seu tipo
 eType getTimerTypeIO(int which);
+
+// Funcao auxiliar que entrega um contexto "vazio"
+LadderContext getEmptyContext(void);
 
 /*** Classes representando os elementos do Ladder ***/
 
@@ -512,9 +563,9 @@ public:
 
 // Classe do elemento Math
 struct LadderElemMathProp {
-	string op1;
-	string op2;
-	string dest;
+	pair<unsigned long, int> idOp1;
+	pair<unsigned long, int> idOp2;
+	pair<unsigned long, int> idDest;
 };
 
 class LadderElemMath : public LadderElem {
@@ -542,8 +593,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -551,8 +602,8 @@ public:
 
 // Classe do elemento Sqrt
 struct LadderElemSqrtProp {
-	string src;
-	string dest;
+	pair<unsigned long, int> idDest;
+	pair<unsigned long, int> idSrc;
 };
 
 class LadderElemSqrt : public LadderElem {
@@ -580,8 +631,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -589,9 +640,9 @@ public:
 
 // Classe do elemento Rand
 struct LadderElemRandProp {
-	string var;
-	string min;
-	string max;
+	pair<unsigned long, int> idVar;
+	pair<unsigned long, int> idMin;
+	pair<unsigned long, int> idMax;
 };
 
 class LadderElemRand : public LadderElem {
@@ -619,8 +670,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -628,8 +679,8 @@ public:
 
 // Classe do elemento Abs
 struct LadderElemAbsProp {
-	string src;
-	string dest;
+	pair<unsigned long, int> idDest;
+	pair<unsigned long, int> idSrc;
 };
 
 class LadderElemAbs : public LadderElem {
@@ -657,8 +708,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -666,8 +717,8 @@ public:
 
 // Classe do elemento Move
 struct LadderElemMoveProp {
-	string src;
-	string dest;
+	pair<unsigned long, int> idDest;
+	pair<unsigned long, int> idSrc;
 };
 
 class LadderElemMove : public LadderElem {
@@ -695,8 +746,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -735,7 +786,7 @@ public:
 
 // Classe do elemento Set Bit
 struct LadderElemSetBitProp {
-	string name;
+	pair<unsigned long, int> idName;
 	int    bit;
 	bool   set;
 };
@@ -765,8 +816,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -774,7 +825,7 @@ public:
 
 // Classe do elemento Check Bit
 struct LadderElemCheckBitProp {
-	string name;
+	pair<unsigned long, int> idName;
 	int    bit;
 	bool   set;
 };
@@ -804,8 +855,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -813,7 +864,7 @@ public:
 
 // Classe do elemento Read A/D
 struct LadderElemReadAdcProp {
-	string name;
+	pair<unsigned long, int> idName;
 };
 
 class LadderElemReadAdc : public LadderElem {
@@ -841,8 +892,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -850,7 +901,7 @@ public:
 
 // Classe do elemento Set D/A
 struct LadderElemSetDaProp {
-	string name;
+	pair<unsigned long, int> idName;
 	int    mode;
 };
 
@@ -879,8 +930,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -888,7 +939,7 @@ public:
 
 // Classe do elemento Read Encoder
 struct LadderElemReadEncProp {
-	string name;
+	pair<unsigned long, int> idName;
 };
 
 class LadderElemReadEnc : public LadderElem {
@@ -916,8 +967,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -925,7 +976,7 @@ public:
 
 // Classe do elemento Reset Encoder
 struct LadderElemResetEncProp {
-	string name;
+	pair<unsigned long, int> idName;
 };
 
 class LadderElemResetEnc : public LadderElem {
@@ -953,8 +1004,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -962,17 +1013,17 @@ public:
 
 // Classe do elemento Multiset D/A
 struct LadderElemMultisetDAProp {
-	string	name;					// Tempo
-	string	name1;					// Deslocamento
-	bool	linear;					// true = Linear, false = Curva Ascendente/Descendente
-	bool	forward;				// true = Avança, false = Recua
-	bool	speedup;				// true = Aceleração, false = Desaceleração
-	int		initval;				// valor inicial do DA na rampa
-	int		type;					// 0 = Valor saida do DA (2048 ~ -2048), 1 = milivolt (mV) (10V ~-10V), 2 = percentual (%)
-	int		gaint;					// tempo da curva de ganho em %
-	int		gainr;					// resolução da curva de ganho em %
-	bool	StartFromCurrentValue;	// false = Iniciar ou ir para zero, conforme speedup. true = partir do valor atual até o valor configurado
-	int		ramp_abort_mode;
+	pair<unsigned long, int>	idTime;					// Tempo
+	pair<unsigned long, int>	idDesl;					// Deslocamento
+	bool						linear;					// true = Linear, false = Curva Ascendente/Descendente
+	bool						forward;				// true = Avança, false = Recua
+	bool						speedup;				// true = Aceleração, false = Desaceleração
+	int							initval;				// valor inicial do DA na rampa
+	int							type;					// 0 = Valor saida do DA (2048 ~ -2048), 1 = milivolt (mV) (10V ~-10V), 2 = percentual (%)
+	int							gaint;					// tempo da curva de ganho em %
+	int							gainr;					// resolução da curva de ganho em %
+	bool						StartFromCurrentValue;	// false = Iniciar ou ir para zero, conforme speedup. true = partir do valor atual até o valor configurado
+	int							ramp_abort_mode;
 };
 
 class LadderElemMultisetDA : public LadderElem {
@@ -1000,8 +1051,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1009,7 +1060,7 @@ public:
 
 // Classe do elemento Read / Write USS
 struct LadderElemUSSProp {
-    string  name;
+	pair<unsigned long, int> idName;
 	int		id;
 	int		parameter;
 	int		parameter_set;
@@ -1041,8 +1092,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1050,7 +1101,7 @@ public:
 
 // Classe do elemento ModBUS
 struct LadderElemModBUSProp {
-    string  name;
+	pair<unsigned long, int> idName;
 	int		elem;
 	int		address;
 	bool	int32;
@@ -1082,8 +1133,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1091,7 +1142,7 @@ public:
 
 // Classe do elemento Set PWM
 struct LadderElemSetPWMProp {
-    string  name;
+	pair<unsigned long, int> idName;
     int     targetFreq;
 };
 
@@ -1120,8 +1171,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1129,7 +1180,7 @@ public:
 
 // Classe do elemento Send / Receive UART
 struct LadderElemUARTProp {
-	string name;
+	pair<unsigned long, int> idName;
 };
 
 class LadderElemUART : public LadderElem {
@@ -1157,8 +1208,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1197,7 +1248,8 @@ public:
 
 // Classe do elemento Shift Register
 struct LadderElemShiftRegisterProp {
-    string name;
+	vector< pair<unsigned long, int> > vectorIdRegs;
+	string nameReg;
     int    stages;
 };
 
@@ -1206,6 +1258,8 @@ private:
 	LadderElemShiftRegisterProp prop;
 
 	void internalSetProperties(void *data);
+
+	void createRegs(void);
 
 public:
 	LadderElemShiftRegister(LadderDiagram *diagram);
@@ -1226,8 +1280,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1235,8 +1289,8 @@ public:
 
 // Classe do elemento Look Up Table
 struct LadderElemLUTProp {
-    string                             dest;
-    string                             index;
+	pair<unsigned long, int>           idDest;
+	pair<unsigned long, int>           idIndex;
     int                                count;
     bool                               editAsString;
     array<long, MAX_LOOK_UP_TABLE_LEN> vals;
@@ -1267,8 +1321,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1276,8 +1330,8 @@ public:
 
 // Classe do elemento Piecewise Linear
 struct LadderElemPiecewiseProp {
-    string                             dest;
-    string                             index;
+	pair<unsigned long, int>           idDest;
+	pair<unsigned long, int>           idIndex;
     int                                count;
     array<long, MAX_LOOK_UP_TABLE_LEN> vals;
 };
@@ -1307,8 +1361,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1316,7 +1370,7 @@ public:
 
 // Classe do elemento Formatted String
 struct LadderElemFmtStringProp {
-    string var;
+	pair<unsigned long, int> idVar;
     string txt;
 };
 
@@ -1345,8 +1399,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1354,8 +1408,8 @@ public:
 
 // Classe do elemento Read / Write Yaskawa
 struct LadderElemYaskawaProp {
-    string id;
-    string var;
+	pair<unsigned long, int> idVar;
+    int id;
     string txt;
 };
 
@@ -1384,8 +1438,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1393,7 +1447,7 @@ public:
 
 // Classe do elemento Persist
 struct LadderElemPersistProp {
-	string var;
+	pair<unsigned long, int> idVar;
 };
 
 class LadderElemPersist : public LadderElem {
@@ -1421,8 +1475,8 @@ public:
 	LadderElem *Clone(void);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	bool acceptIO(unsigned long id, eType type);
+	void updateIO(bool isDiscard);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1548,13 +1602,16 @@ public:
 /*** Classe representando o Diagrama Ladder ***/
 class LadderDiagram {
 private:
-	// Undo / Redo Action Lists
+	// Variaveis e funcoes relacionados a acoes de Desfazer / Refazer
 	unsigned int CheckPointLevels;
 	unsigned int CheckPointLevelsMax;
 	unsigned int CheckpointBeginCount;
 
 	bool CheckpointDoRollback;
+	// Indica se existem acoes registradas ao fechar um checkpoint 
+	bool isCheckpointEmpty;
 
+	// Undo / Redo Action Lists
 	deque<UndoRedoAction> UndoList;
 	deque<UndoRedoAction> RedoList;
 
@@ -1585,7 +1642,7 @@ private:
 	vector<LadderCircuit *> rungs;
 
 	// Objeto que contem todos os I/Os
-	mapIO IO;
+	mapIO *IO;
 
 	bool NeedScrollSelectedIntoView;
 
@@ -1606,6 +1663,7 @@ private:
 
 public:
 	LadderDiagram(void);
+	~LadderDiagram(void);
 
 	vector<IntOp> getVectorIntCode(void);
 	bool GenerateIntCode(void);
@@ -1616,6 +1674,7 @@ public:
 	void updateContext(void);
 	LadderContext getContext(void) { return context; }
 
+	void FreeDiagram (void);
 	void ClearDiagram(void);
 
 	void SelectElement(LadderElem *elem, int state);
@@ -1656,13 +1715,19 @@ public:
 	bool          acceptIO        (unsigned long  id, eType type);
 	void          updateIO        (pair<unsigned long, int> &pin, string defaultName, bool isBit, eType defaultType, bool isDiscard);
 	bool          getIO           (pair<unsigned long, int> &pin, string name, bool isBit, eType type);
-	string        getNameIO       (unsigned long  id);
+	bool          getIO           (vector<tGetIO> &vectorGetIO);
+	eType         getTypeIO       (string previousName, string newName, eType default_type = eType_Pending, bool isGeneric = false);
+	string        getNameIO       (unsigned long id);
+	string        getNameIO       (pair<unsigned long, int> pin);
 	string        getNameIObyIndex(unsigned int index);
 	mapDetails    getDetailsIO    (unsigned long  id);
-	mapDetails    getDetailsIO    (string name) { return getDetailsIO(IO.getID(name)); }
+	mapDetails    getDetailsIO    (string name);
 	char         *getStringTypeIO (unsigned int   index);
 	unsigned int  getCountIO      (void);
 	void          selectIO        (unsigned int index);
+	bool          IsGenericTypeIO (eType type);
+	string        getPortNameIO   (int index);
+	void          ShowIoMapDialog (int item);
 
 	bool equalsNameIO             (string name1, string name2);
 

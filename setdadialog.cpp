@@ -53,7 +53,7 @@ static void MakeControls(void)
     NiceFont(CancelButton);
 }
 
-bool ShowSetDADialog(char *name, int *mode)
+bool ShowSetDADialog(pair<unsigned long, int> *name, int *mode)
 {
 	bool changed = false;
 
@@ -74,7 +74,7 @@ bool ShowSetDADialog(char *name, int *mode)
         SendMessage(PctRadio, BM_SETCHECK, BST_CHECKED, 0);
 	}
 
-    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name));
+    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(ladder->getNameIO(*name).c_str()));
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(SetDADialog, TRUE);
@@ -119,13 +119,14 @@ bool ShowSetDADialog(char *name, int *mode)
 			max = +100;
 		}
 
-		if(IsValidNameAndType(name, name_tmp, _("Origem"), VALIDATE_IS_VAR_OR_NUMBER, GetTypeFromName(name_tmp), min, max)) {
-			changed = true;
+		if(ladder->IsValidNameAndType(name->first, name_tmp, eType_SetDAC, _("Origem"), VALIDATE_IS_VAR_OR_NUMBER, min, max)) {
+			pair<unsigned long, int> pin = *name;
+			if(ladder->getIO(pin, name_tmp, false, eType_SetDAC)) { // Variavel valida!
+				changed = true;
 
-			strcpy(name, name_tmp);
-			name[16] = '\0';
-
-			*mode = mode_tmp;
+				*name = pin;
+				*mode = mode_tmp;
+			}
 		}
     }
 

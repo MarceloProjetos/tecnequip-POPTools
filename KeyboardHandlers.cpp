@@ -285,7 +285,7 @@ int KBH_Element_Edit(void *user_data)
 {
 	if(InSimulationMode) return 0;
 
-	CHANGING_PROGRAM(ladder.EditSelectedElement());
+	CHANGING_PROGRAM(ladder->EditSelectedElement());
 
 	return 1;
 }
@@ -295,7 +295,7 @@ int KBH_Element_Delete(void *user_data)
 {
 	if(InSimulationMode) return 0;
 
-	if(ladder.IsRungEmpty(ladder.RungContainingSelected())) {
+	if(ladder->IsRungEmpty(ladder->RungContainingSelected())) {
 		ProcessMenu(MNU_DELETE_RUNG);
 	} else {
 		ProcessMenu(MNU_DELETE_ELEMENT);

@@ -1,5 +1,13 @@
 #include "poptools.h"
 
+// Funcao auxiliar que retorna um char* de uma string passada como parametro, alocando a memoria necessaria
+char *AllocCharFromString(string s)
+{
+	char *buf = new char[s.size() + 1];
+	strcpy(buf, s.c_str());
+	return buf;
+}
+
 mapIO::mapIO(LadderDiagram *pDiagram)
 {
 	countIO    = 0;
@@ -16,16 +24,11 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 	vectorInternalFlag.push_back("TcpTimeout"   );
 
 	// Adicionando variaveis reservadas
-	vectorReservedName.push_back(_("in" ));
-	vectorReservedName.push_back(_("out"));
-	vectorReservedName.push_back(_("new"));
-}
-
-eReply mapIO::AskUser(string txt)
-{
-	Error((char *)txt.c_str());
-
-	return eReply_Yes;
+	vectorReservedName.push_back(_("in"  ));
+	vectorReservedName.push_back(_("out" ));
+	vectorReservedName.push_back(_("new" ));
+	vectorReservedName.push_back(_("var" ));
+	vectorReservedName.push_back(_("char"));
 }
 
 bool mapIO::IsReserved(string name)
@@ -33,6 +36,19 @@ bool mapIO::IsReserved(string name)
 	vector<string>::size_type i;
 	for(i = 0; i < vectorReservedName.size(); i++) {
 		if(name == vectorReservedName[i]) return true; // Encontrado!
+	}
+
+	// Caso especial para Shift Register:
+	// Nome reservado se iniciar por reg e terminar em numero
+	char cname[MAX_NAME_LEN];
+	strcpy(cname, name.c_str());
+	if(tolower(cname[0]) == 'r' && tolower(cname[1]) == 'e' && tolower(cname[2]) == 'g') {
+		// inicia com reg, agora verifica se termina em numero
+		int val = atoi(cname + 3);
+		sprintf(cname + 3, "%d", val);
+		if(name == cname) {
+			return true;
+		}
 	}
 
 	return false;
@@ -48,7 +64,7 @@ bool mapIO::IsInternalFlag(string name)
 	return false;
 }
 
-bool mapIO::Add(string name, eType type)
+bool mapIO::Add(string name, eType type, bool isUndoRedo)
 {
 	bool ret = false;
 
@@ -65,6 +81,29 @@ bool mapIO::Add(string name, eType type)
 		IO[name].second.countRequestBit = 0;
 		IO[name].second.countRequestInt = 0;
 
+		if(!isUndoRedo) {
+			// Registro da acao para desfazer / refazer
+			diagram->CheckpointBegin(_("Adicionar I/O"));
+
+			UndoRedoAction action;
+			UndoRedoData *data = new UndoRedoData;
+
+			data->Add.name = AllocCharFromString(name);
+			data->Add.type = type;
+
+			action.action        = eAdd;
+			action.contextAfter  = getEmptyContext();
+			action.contextBefore = diagram->getContext();
+			action.data          = data;
+			action.io            = this;
+			action.elem          = nullptr;
+			action.subckt        = nullptr;
+
+			diagram->RegisterAction(action);
+
+			diagram->CheckpointEnd();
+		}
+
 		updateGUI();
 
 		ret = true;
@@ -73,7 +112,7 @@ bool mapIO::Add(string name, eType type)
 	return true;
 }
 
-bool mapIO::Update(unsigned long id, string name, eType type)
+bool mapIO::Update(unsigned long id, string name, eType type, bool isUndoRedo)
 {
 	string old_name = getName(id);
 	if(old_name.size() == 0) return false; // id invalido!
@@ -89,12 +128,56 @@ bool mapIO::Update(unsigned long id, string name, eType type)
 			return false;
 	}
 
-	if(name == old_name) {
+	if(!isUndoRedo) {
+		// Registro da acao para desfazer / refazer
+		diagram->CheckpointBegin(_("Atualizar I/O"));
+
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->Update.id   = id;
+		data->Update.name = AllocCharFromString(old_name);
+		data->Update.type = IO[old_name].second.type;
+
+		action.action        = eUpdate;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = diagram->getContext();
+		action.data          = data;
+		action.io            = this;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+
+		diagram->RegisterAction(action);
+
+		diagram->CheckpointEnd();
+	}
+
+	if(name == old_name) { // Nome inalterado, atualiza apenas o tipo!
 		IO[name].second.type = type;
 	} else {
 		map<string, pair<unsigned long, mapDetails> >::iterator it = IO.find(old_name);
-		IO[name] = it->second;
+
+		// Atualizando o nome do I/O
+		if(IO.count(name) > 0) {
+			// Nesta condicao esta mesclando dois I/Os existentes.
+			// Situacao possivel porem que nao ocorre atualmente devido a tratamento em LadderDiagram::getIO
+			// Para garantir que nao vai mesmo ocorrer, vamos gerar erro aqui!
+			// Se vier a ser alterado o tratamento em LadderDiagram::getIO, vai aparecer o erro e sera entao
+			// possivel corrigi-lo ao inves de prejudicar toda a logica
+			// Precisa de uma tarefa especifica de undo/redo para esta situacao e tambem mesclar as contagens
+			// de requests int/bit (o que ja esta sendo feito abaixo porem precisa de verificacao)
+			oops();
+
+			IO[name].second.countRequestBit += it->second.second.countRequestBit;
+			IO[name].second.countRequestInt += it->second.second.countRequestInt;
+		} else {
+			IO[name] = it->second;
+		}
+
+		// Atualizando o tipo do I/O
 		IO[name].second.type = type;
+
+		// Exclui o I/O antigo
 		IO.erase(it);
 	}
 
@@ -107,6 +190,9 @@ unsigned long mapIO::Request(string name, bool isBit, eType type)
 {
 	bool result;
 	unsigned long id = 0;
+
+	// Registro da acao para desfazer / refazer
+	diagram->CheckpointBegin(_("Solicitar I/O"));
 
 	if(IO.count(name) > 0) {
 		result = Update(getID(name), name, type);
@@ -124,6 +210,25 @@ unsigned long mapIO::Request(string name, bool isBit, eType type)
 		id = getID(name);
 	}
 
+	UndoRedoAction action;
+	UndoRedoData *data = new UndoRedoData;
+
+	data->Request.id        = id;
+	data->Request.isBit     = isBit;
+	data->Request.isDiscard = false;
+
+	action.action        = eRequest;
+	action.contextAfter  = getEmptyContext();
+	action.contextBefore = diagram->getContext();
+	action.data          = data;
+	action.io            = this;
+	action.elem          = nullptr;
+	action.subckt        = nullptr;
+
+	diagram->RegisterAction(action);
+
+	diagram->CheckpointEnd();
+
 	return id;
 }
 
@@ -137,14 +242,53 @@ void mapIO::Discard(unsigned long id, bool isBit)
 			IO[name].second.countRequestInt--;
 		}
 
+		// Registro da acao para desfazer / refazer
+		diagram->CheckpointBegin(_("Descartar I/O"));
+
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->Request.id        = id;
+		data->Request.isBit     = isBit;
+		data->Request.isDiscard = true;
+
+		action.action        = eRequest;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = diagram->getContext();
+		action.data          = data;
+		action.io            = this;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+
+		diagram->RegisterAction(action);
+
 		// Se Variavel nao usada, remove do mapa
 		if(IO[name].second.countRequestBit == 0 && IO[name].second.countRequestInt == 0) {
+			UndoRedoAction action;
+			UndoRedoData *data = new UndoRedoData;
+
+			data->Discard.id        = id;
+			data->Discard.name      = AllocCharFromString(name);
+			data->Discard.detailsIO = getDetails(id);
+
+			action.action        = eDiscard;
+			action.contextAfter  = getEmptyContext();
+			action.contextBefore = diagram->getContext();
+			action.data          = data;
+			action.io            = this;
+			action.elem          = nullptr;
+			action.subckt        = nullptr;
+
+			diagram->RegisterAction(action);
+
 			map<string, pair<unsigned long, mapDetails> >::iterator it;
 			it = IO.find(name);
 			IO.erase(it);
 
 			updateGUI();
 		}
+
+		diagram->CheckpointEnd();
 	}
 }
 
@@ -237,27 +381,99 @@ void mapIO::Select(unsigned int index)
 	selectedIO = getID(index);
 }
 
-bool mapIO::Assign(unsigned long id, unsigned int pin, unsigned int bit)
+bool mapIO::Assign(unsigned long id, unsigned int pin, unsigned int bit, bool isUndoRedo)
 {
 	string name = getName(id);
 
 	if(name.size() > 0) {
-		Assign(name, pin, bit);
+		return Assign(name, pin, bit, isUndoRedo);
+	}
+
+	return false;
+}
+
+bool mapIO::Assign(string name, unsigned int pin, unsigned int bit, bool isUndoRedo)
+{
+	if(IO.count(name) > 0) {
+		// Registro da acao para desfazer / refazer
+		if(!isUndoRedo) {
+			diagram->CheckpointBegin(_("Associar I/O"));
+
+			UndoRedoAction action;
+			UndoRedoData *data = new UndoRedoData;
+
+			data->Assign.id  = IO[name].first;
+			data->Assign.pin = IO[name].second.pin;
+			data->Assign.bit = IO[name].second.bit;
+
+			action.action        = eAssign;
+			action.contextAfter  = getEmptyContext();
+			action.contextBefore = diagram->getContext();
+			action.data          = data;
+			action.io            = this;
+			action.elem          = nullptr;
+			action.subckt        = nullptr;
+
+			diagram->RegisterAction(action);
+
+			diagram->CheckpointEnd();
+		}
+
+		// Associa o I/O
+		IO[name].second.pin = pin;
+		IO[name].second.bit = bit;
+
 		return true;
 	}
 
 	return false;
 }
 
-bool mapIO::Assign(string name, unsigned int pin, unsigned int bit)
+string mapIO::getPortName(int index)
 {
-	if(IO.count(name) > 0) {
-		IO[name].second.pin = pin;
-		IO[name].second.bit = bit;
-		return true;
+	char buf[1024];
+	mapDetails detailsIO = getDetails(getID(index));
+
+	if((detailsIO.type != eType_DigInput && detailsIO.type != eType_DigOutput && detailsIO.type != eType_General
+		&& detailsIO.type != eType_ReadADC && detailsIO.type != eType_ReadEnc && detailsIO.type != eType_ResetEnc
+		&& detailsIO.type != eType_ReadUSS && detailsIO.type != eType_WriteUSS) || detailsIO.pin == 0 || !Prog.mcu)
+	{
+		return string("");
 	}
 
-	return false;
+	if(UartFunctionUsed() && Prog.mcu) {
+		if((Prog.mcu->uartNeeds.rxPin == detailsIO.pin) ||
+			(Prog.mcu->uartNeeds.txPin == detailsIO.pin))
+		{
+			return string(_("<UART needs!>"));
+		}
+	}
+
+	if(PwmFunctionUsed() && Prog.mcu) {
+		if(Prog.mcu->pwmNeedsPin == detailsIO.pin && detailsIO.type == eType_DigOutput) {
+			return string(_("<PWM needs!>"));
+		}
+	}
+
+	if((detailsIO.type == eType_DigOutput || detailsIO.type == eType_DigInput) && detailsIO.pin > 19)
+		sprintf(buf, "M%d.%d", detailsIO.pin - 20, detailsIO.bit);
+	else if (detailsIO.type == eType_DigOutput)
+		sprintf(buf, "S%d", detailsIO.pin);
+	else if (detailsIO.type == eType_General)
+		sprintf(buf, "M%d", detailsIO.pin - 20);
+	else if (detailsIO.type == eType_DigInput)
+		sprintf(buf, "E%d", detailsIO.pin);
+	else if (detailsIO.type == eType_ReadADC)
+		if (detailsIO.pin == 6)
+			strcpy(buf, "TEMP");
+		else
+			sprintf(buf, "AD%d", detailsIO.pin);
+	else if (detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc)
+		strcpy(buf, detailsIO.pin == 1 ? _("Enc. Inc.") : _("Enc. Abs."));
+	else
+		strcpy(buf, _("<not an I/O!>"));
+
+	return string(buf);
 }
 
 //-----------------------------------------------------------------------------
@@ -267,32 +483,139 @@ bool mapIO::Assign(string name, unsigned int pin, unsigned int bit)
 char *mapIO::getTypeString(eType type)
 {
     switch(type) {
-        case eType_Reserved:         return _("reservado"); 
-        case eType_DigInput:         return _("digital in"); 
-        case eType_DigOutput:        return _("digital out"); 
-		case eType_InternalRelay:    return _("int. relay"); 
-//        case IO_TYPE_UART_TX:           return _("UART tx"); 
-//        case IO_TYPE_UART_RX:           return _("UART rx"); 
-//        case IO_TYPE_PWM_OUTPUT:        return _("PWM out"); 
-		case eType_TON:               return _("turn-on delay"); 
-		case eType_TOF:               return _("turn-off delay"); 
-        case eType_RTO:               return _("retentive timer"); 
-        case eType_Counter:           return _("counter"); 
-		case eType_General:           return _("general var"); 
-//        case IO_TYPE_READ_ADC:          return _("adc input"); 
-//        case IO_TYPE_READ_ENC:          return _("entrada encoder"); 
-//        case IO_TYPE_RESET_ENC:         return _("write encoder"); 
-//        case IO_TYPE_READ_USS:         return _("read USS"); 
-//        case IO_TYPE_WRITE_USS:         return _("write USS"); 
-//		case IO_TYPE_SET_DA:			return _("Set D/A"); 
-//		case IO_TYPE_READ_MODBUS:       return _("leitura modbus"); 
-//		case IO_TYPE_WRITE_MODBUS:      return _("escrita modbus"); 
-//		case IO_TYPE_READ_YASKAWA:		return _("leitura NS600"); 
-//		case IO_TYPE_WRITE_YASKAWA:		return _("escrita NS600"); 
-		case eType_InternalFlag:		return _("Flag Interna"); 
-		case eType_Pending:				return _("Sem tipo"); 
+        case eType_Reserved:			return _("reservado");
+		case eType_DigInput:			return _("digital in");
+        case eType_DigOutput:			return _("digital out");
+		case eType_InternalRelay:		return _("int. relay");
+        case eType_TxUART:				return _("UART tx");
+		case eType_RxUART:				return _("UART rx");
+        case eType_PWM:					return _("PWM out");
+		case eType_TON:					return _("turn-on delay");
+		case eType_TOF:					return _("turn-off delay");
+        case eType_RTO:					return _("retentive timer");
+        case eType_Counter:				return _("counter");
+		case eType_General:				return _("general var");
+        case eType_ReadADC:				return _("adc input");
+        case eType_ReadEnc:				return _("entrada encoder");
+        case eType_ResetEnc:			return _("write encoder");
+        case eType_ReadUSS:				return _("read USS");
+		case eType_WriteUSS:			return _("write USS");
+		case eType_SetDAC:				return _("Set D/A");
+		case eType_ReadModbus:			return _("leitura modbus");
+		case eType_WriteModbus:			return _("escrita modbus");
+		case eType_ReadYaskawa:			return _("leitura NS600");
+		case eType_WriteYaskawa:		return _("escrita NS600");
+		case eType_InternalFlag:		return _("Flag Interna");
+		case eType_Pending:				return _("Sem tipo");
         default:                        return "";
     }
+}
+
+// Funcao que executa uma acao de desfazer / refazer
+bool mapIO::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
+{
+	UndoRedoData *data = (UndoRedoData *)action.data;
+	switch(action.action) {
+	case eAssign: {
+		if(isDiscard) {
+			// Nada a fazer...
+		} else {
+			mapDetails detailsIO = getDetails(data->Assign.id);
+			Assign(data->Assign.id, data->Assign.pin, data->Assign.bit, true);
+
+			// Atualiza a estrutura para se desfazer essa acao
+			data->Assign.pin = detailsIO.pin;
+			data->Assign.bit = detailsIO.bit;
+
+			// Atualiza a tela para que se exiba corretamente a lista de I/Os
+			updateGUI();
+		}
+		break;
+	}
+
+	case eRequest: {
+		if(isDiscard) {
+			// Nada a fazer...
+		} else {
+			int offset = data->Request.isDiscard ? -1 : +1;
+			if(IsUndo) {
+				offset *= -1;
+			}
+
+			if(data->Request.isBit) {
+				IO[getName(data->Request.id)].second.countRequestBit += offset;
+			} else {
+				IO[getName(data->Request.id)].second.countRequestInt += offset;
+			}
+		}
+		break;
+	}
+
+	case eAdd: {
+		if(isDiscard) {
+			delete [] data->Add.name; // Descarta o buffer com o nome do I/O
+		} else if(IsUndo) {
+			IO.erase(IO.find(data->Add.name));
+			countIO--;
+		} else {
+			Add(data->Add.name, data->Add.type, true);
+		}
+
+		// Atualiza a tela para que se exiba corretamente a lista de I/Os
+		updateGUI();
+
+		break;
+	}
+
+	case eUpdate: {
+		if(isDiscard) {
+			delete [] data->Update.name; // Descarta o buffer com o nome do I/O
+		} else {
+			char       *name      = AllocCharFromString(getName(data->Update.id));
+			mapDetails  detailsIO = getDetails(data->Update.id);
+
+			Update(data->Update.id, data->Update.name, data->Update.type, true);
+
+			if(name != nullptr) {
+				delete [] data->Update.name; // Descarta o buffer com o nome (agora atual) do I/O
+				data->Update.name    = name; // Salva o nome anterior para a operacao de Refazer
+				data->Update.type    = detailsIO.type; // Atualiza o tipo para o anterior
+			}
+		}
+
+		// Atualiza a tela para que se exiba corretamente a lista de I/Os
+		updateGUI();
+
+		break;
+	}
+
+	case eDiscard: {
+		if(isDiscard) {
+			delete [] data->Discard.name; // Descarta o buffer com o nome do I/O
+		} else if(IsUndo) {
+			IO[data->Discard.name].first  = data->Discard.id;
+			IO[data->Discard.name].second = data->Discard.detailsIO;
+		} else {
+			map<string, pair<unsigned long, mapDetails> >::iterator it;
+			it = IO.find(data->Discard.name);
+			IO.erase(it);
+		}
+
+		// Atualiza a tela para que se exiba corretamente a lista de I/Os
+		updateGUI();
+
+		break;
+	}
+
+	default: return false;
+	}
+
+	// Se estamos descartando, desaloca a estrutura que representa a acao
+	if(isDiscard) {
+		delete data;
+	}
+
+	return true; // Nada mais a fazer
 }
 
 // I/O that we have seen recently, so that we don't forget pin assignments
@@ -1326,9 +1649,12 @@ static void MakeControls(void)
     NiceFont(CancelButton);
 }
 
-void ShowIoMapDialog(int item)
+void mapIO::ShowIoMapDialog(int item)
 {
-    if(!Prog.mcu) {
+	unsigned long id = getID(item);
+	mapDetails detailsIO = getDetails(id);
+
+	if(!Prog.mcu) {
         MessageBox(MainWindow,
             _("No microcontroller has been selected. You must select a "
             "microcontroller before you can assign I/O pins.\r\n\r\n"
@@ -1349,37 +1675,35 @@ void ShowIoMapDialog(int item)
         return;
     }
 
-    if(Prog.io.assignment[item].type != IO_TYPE_DIG_INPUT && 
-       Prog.io.assignment[item].type != IO_TYPE_DIG_OUTPUT &&
-       Prog.io.assignment[item].type != IO_TYPE_GENERAL  &&
-       Prog.io.assignment[item].type != IO_TYPE_READ_ADC &&
-       Prog.io.assignment[item].type != IO_TYPE_READ_ENC &&
-       Prog.io.assignment[item].type != IO_TYPE_RESET_ENC)
+	if(IsReserved(getName(id))) {
+        Error(_("Rename I/O from default name ('%s') before assigning "
+			"MCU pin."), getName(id).c_str());
+        return;
+    }
+
+	if(IsInternalFlag(getName(id))) {
+        Error(_("Variáveis internas não podem ser atribuídas."));
+        return;
+    }
+
+    if(detailsIO.type != eType_DigInput && 
+       detailsIO.type != eType_DigOutput &&
+       detailsIO.type != eType_General  &&
+	   detailsIO.type != eType_ReadADC &&
+       detailsIO.type != eType_ReadEnc &&
+	   detailsIO.type != eType_ResetEnc)
     {
         Error(_("Can only assign pin number to input/output pins or general variable."));
         return;
     }
 
-    if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC && Prog.mcu->adcCount == 0) {
+    if(detailsIO.type == eType_ReadADC && Prog.mcu->adcCount == 0) {
         Error(_("No ADC or ADC not supported for this micro."));
         return;
     }
 
-	if(Prog.io.assignment[item].type == IO_TYPE_READ_ENC && Prog.mcu->encCount == 0) {
+	if((detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) && Prog.mcu->encCount == 0) {
         Error(_("No Encoder or Encoder not supported for selected micro."));
-        return;
-    }
-
-	if((_stricmp(Prog.io.assignment[item].name, _("in"))==0 && Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT) ||
-		(_stricmp(Prog.io.assignment[item].name, _("out"))==0 && Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT) ||
-		_stricmp(Prog.io.assignment[item].name, _("new"))==0) {
-        Error(_("Rename I/O from default name ('%s') before assigning "
-            "MCU pin."), Prog.io.assignment[item].name);
-        return;
-    }
-
-	if(IsInternalVar(Prog.io.assignment[item].name)) {
-        Error(_("Variáveis internas não podem ser atribuídas."));
         return;
     }
 
@@ -1408,7 +1732,7 @@ void ShowIoMapDialog(int item)
 		EnableWindow(BitCombobox, TRUE);
 	}
 
-	if(Prog.io.assignment[item].type != IO_TYPE_DIG_INPUT && Prog.io.assignment[item].type != IO_TYPE_DIG_OUTPUT) {
+	if(detailsIO.type != eType_DigInput && detailsIO.type != eType_DigOutput) {
 		ShowWindow(BitCombobox, 0);
 		ShowWindow(lblBit     , 0);
 
@@ -1424,13 +1748,14 @@ void ShowIoMapDialog(int item)
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
 	PinListItemCount++;
 
+	map<string, pair<unsigned long, mapDetails> >::iterator it;
 	for(i = 0; i < Prog.mcu->pinCount; i++) {
         int j;
-        for(j = 0; j < Prog.io.count; j++) 
+		for(it = IO.begin(); it != IO.end(); it++) 
 		{
-            if(j == item) continue;
-            if(Prog.io.assignment[j].pin == Prog.mcu->pinInfo[i].pin && Prog.io.assignment[j].type == Prog.io.assignment[item].type && 
-				!((Prog.io.assignment[j].type == IO_TYPE_DIG_INPUT && i > 18) || (Prog.io.assignment[j].type == IO_TYPE_DIG_OUTPUT && i > 66)) )
+			if(it->second.first == id) continue;
+			if(it->second.second.pin == Prog.mcu->pinInfo[i].pin && it->second.second.type == detailsIO.type && 
+				!((it->second.second.type == eType_DigInput && i > 18) || (it->second.second.type == eType_DigOutput && i > 66)) )
 			{
                 goto cant_use_this_io;
             }
@@ -1449,7 +1774,7 @@ void ShowIoMapDialog(int item)
             goto cant_use_this_io;
         }
 
-        if(Prog.io.assignment[item].type == IO_TYPE_READ_ADC) {
+		if(detailsIO.type == eType_ReadADC) {
             for(j = 0; j < Prog.mcu->adcCount; j++) 
 			{
 				if (j == 4) continue;
@@ -1470,7 +1795,7 @@ void ShowIoMapDialog(int item)
             }
         }
 
-		if(Prog.io.assignment[item].type == IO_TYPE_READ_ENC || Prog.io.assignment[item].type == IO_TYPE_RESET_ENC) {
+		if(detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) {
             for(j = 0; j < Prog.mcu->encCount; j++) 
 			{
 				char *strEnc[] = { _("Enc. Inc."), _("Enc. Abs.") };
@@ -1487,9 +1812,9 @@ void ShowIoMapDialog(int item)
             }
         }
 
-		if ((Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT  && i < 51) ||
-			(Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && i > 50) ||
-			(Prog.io.assignment[item].type == IO_TYPE_GENERAL    && i > 66))
+		if ((detailsIO.type == eType_DigInput  && i < 51) ||
+			(detailsIO.type == eType_DigOutput && i > 50) ||
+			(detailsIO.type == eType_General   && i > 66))
 		{
 			sprintf(buf, "%3d %c%d", Prog.mcu->pinInfo[i].pin,
 				Prog.mcu->pinInfo[i].port,
@@ -1501,7 +1826,7 @@ void ShowIoMapDialog(int item)
 cant_use_this_io:;
     }
 
-	SendMessage(textLabelName, WM_SETTEXT, 0, (LPARAM)(Prog.io.assignment[item].name));
+	SendMessage(textLabelName, WM_SETTEXT, 0, (LPARAM)(getName(id).c_str()));
 
 	EnableWindow(MainWindow, FALSE);
     ShowWindow(IoDialog, TRUE);
@@ -1513,7 +1838,7 @@ cant_use_this_io:;
 		int sel = SendMessage(PinList, LB_GETSEL, i, 0);
         char pin[16];
         SendMessage(PinList, LB_GETTEXT, (WPARAM)i, (LPARAM)pin);
-		if (Prog.io.assignment[item].pin == atoi(pin))
+		if (detailsIO.pin == atoi(pin))
 			SendMessage(PinList, LB_SETCURSEL, i, 0);
 	}
 
@@ -1541,54 +1866,12 @@ cant_use_this_io:;
     if(!DialogCancel) {
         int sel = SendMessage(PinList, LB_GETCURSEL, 0, 0);
         char pin[16];
-        SendMessage(PinList, LB_GETTEXT, (WPARAM)sel, (LPARAM)pin);
-        if(_stricmp(pin, _("(no pin)"))==0) {
-            int i;
-            for(i = 0; i < IoSeenPreviouslyCount; i++) {
-                if(_stricmp(IoSeenPreviously[i].name,
-					Prog.io.assignment[item].name)==0 && IoSeenPreviously[i].type == Prog.io.assignment[item].type)
-                {
-                    IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
-					IoSeenPreviously[i].bit = NO_PIN_ASSIGNED;
-                }
-            }
-            Prog.io.assignment[item].pin = NO_PIN_ASSIGNED;
-			Prog.io.assignment[item].bit = NO_PIN_ASSIGNED;
-        } else {
-            Prog.io.assignment[item].pin = atoi(pin);
+		char buf[16];
 
-			char buf[16];
-			SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
-				(LPARAM)(buf));
+		SendMessage(PinList    , LB_GETTEXT, (WPARAM)sel        , (LPARAM)pin);
+		SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
 
-			Prog.io.assignment[item].bit = atoi(buf);
-
-			for(int i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) 
-			{
-				for(int j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) 
-				{
-					ElemLeaf *l = DisplayMatrix[i][j];
-					if (l && DisplayMatrixWhich[i][j] == ELEM_COIL) 
-						if (_stricmp(Prog.io.assignment[item].name, l->d.coil.name) == 0)
-							l->d.coil.bit = Prog.io.assignment[item].bit;
-					if (l && DisplayMatrixWhich[i][j] == ELEM_CONTACTS) 
-						if (_stricmp(Prog.io.assignment[item].name, l->d.contacts.name) == 0)
-							l->d.contacts.bit = Prog.io.assignment[item].bit;
-				}
-			}
-			// Only one name can be bound to each pin; make sure that there's
-            // not another entry for this pin in the IoSeenPreviously list,
-            // that might get used if the user creates a new pin with that
-            // name.
-            int i;
-            for(i = 0; i < IoSeenPreviouslyCount; i++) {
-				if(IoSeenPreviously[i].pin == atoi(pin) && IoSeenPreviously[i].type == Prog.io.assignment[item].type) {
-                    IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
-					IoSeenPreviously[i].bit = NO_PIN_ASSIGNED;
-                }
-            }
-
-		}
+		Assign(id, atoi(pin), atoi(buf));
     }
 
     EnableWindow(MainWindow, TRUE);
@@ -1768,9 +2051,9 @@ void IoMapListProc(NMHDR *h)
 	switch(h->code) {
 		case LVN_ITEMCHANGED:
 			if(pNM->uNewState & LVIS_SELECTED) {
-				ladder.selectIO(pNM->iItem);
+				ladder->selectIO(pNM->iItem);
 			} else if(pNM->uOldState & LVIS_SELECTED) {
-				ladder.selectIO(0);
+				ladder->selectIO(0);
 			}
 			break;
 
@@ -1802,17 +2085,25 @@ void IoMapListProc(NMHDR *h)
 							break;
 						}
 
-						PinNumberForIo(i->item.pszText,
-							&(Prog.io.assignment[item]));
+						mapDetails detailsIO = ladder->getDetailsIO(ladder->getNameIObyIndex(item));
+						if(detailsIO.pin != 0) {
+							sprintf(i->item.pszText, "%d", detailsIO.pin);
+						} else if(detailsIO.type == eType_DigInput || detailsIO.type == eType_DigOutput ||
+							detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc ||
+							detailsIO.type == eType_ReadADC) {
+								strcpy(i->item.pszText, _("(not assigned)"));
+						} else {
+								strcpy(i->item.pszText, "");
+						}
 					}
                     break;
 
                 case LV_IO_TYPE: {
-                    strcpy(i->item.pszText, ladder.getStringTypeIO(item));
+                    strcpy(i->item.pszText, ladder->getStringTypeIO(item));
                     break;
                 }
                 case LV_IO_NAME: {
-					string name = ladder.getNameIObyIndex(item);
+					string name = ladder->getNameIObyIndex(item);
 					strcpy(i->item.pszText, name.c_str());
                     break;
 				}
@@ -1825,70 +2116,9 @@ void IoMapListProc(NMHDR *h)
                         break;
                     }
 
-                    int type = Prog.io.assignment[item].type;
-                    if(type != IO_TYPE_DIG_INPUT && type != IO_TYPE_DIG_OUTPUT && type != IO_TYPE_GENERAL
-                        && type != IO_TYPE_READ_ADC && type != IO_TYPE_READ_ENC && type != IO_TYPE_RESET_ENC
-						&& type != IO_TYPE_READ_USS && type != IO_TYPE_WRITE_USS)
-                    {
-                        strcpy(i->item.pszText, "");
-                        break;
-                    }
+					strcpy(i->item.pszText, ladder->getPortNameIO(item).c_str());
 
-                    int pin = Prog.io.assignment[item].pin;
-                    if(pin == NO_PIN_ASSIGNED || !Prog.mcu) {
-                        strcpy(i->item.pszText, "");
-                        break;
-                    }
-
-                    if(UartFunctionUsed() && Prog.mcu) {
-                        if((Prog.mcu->uartNeeds.rxPin == pin) ||
-                           (Prog.mcu->uartNeeds.txPin == pin))
-                        {
-                            strcpy(i->item.pszText, _("<UART needs!>"));
-                            break;
-                        }
-                    }
-
-                    if(PwmFunctionUsed() && Prog.mcu) {
-                        if(Prog.mcu->pwmNeedsPin == pin) {
-                            strcpy(i->item.pszText, _("<PWM needs!>"));
-                            break;
-                        }
-                    }
-
-                    int j;
-                    for(j = 0; j < Prog.mcu->pinCount; j++) 
-					{
-                        if(Prog.mcu->pinInfo[j].pin == pin) 
-						{
-							if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 17)
-								sprintf(i->item.pszText, "LED ERRO");
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin == 18)
-								sprintf(i->item.pszText, "LED CPU");
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT && pin > 19)
-								sprintf(i->item.pszText, "M%d.%d", Prog.mcu->pinInfo[j].bit, Prog.io.assignment[item].bit);
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_OUTPUT)
-								sprintf(i->item.pszText, "S%d", Prog.mcu->pinInfo[j].bit);
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT && pin > 19)
-								sprintf(i->item.pszText, "M%d.%d", Prog.mcu->pinInfo[j].bit, Prog.io.assignment[item].bit);
-							else if (Prog.io.assignment[item].type == IO_TYPE_GENERAL)
-								sprintf(i->item.pszText, "M%d", Prog.mcu->pinInfo[j].bit);
-							else if (Prog.io.assignment[item].type == IO_TYPE_DIG_INPUT)
-								sprintf(i->item.pszText, "E%d", Prog.mcu->pinInfo[j].bit);
-							else if (Prog.io.assignment[item].type == IO_TYPE_READ_ADC)
-								if (pin == 6)
-									sprintf(i->item.pszText, "TEMP");
-								else
-									sprintf(i->item.pszText, "AD%d", Prog.mcu->pinInfo[j].bit);
-							else if (Prog.io.assignment[item].type == IO_TYPE_READ_ENC || Prog.io.assignment[item].type == IO_TYPE_RESET_ENC)
-								strcpy(i->item.pszText, Prog.mcu->pinInfo[j].bit == 1 ? _("Enc. Inc.") : _("Enc. Abs."));
-                            break;
-                        }
-                    }
-                    if(j == Prog.mcu->pinCount) {
-                        sprintf(i->item.pszText, _("<not an I/O!>"));
-                    }
-                    break;
+					break;
                 }
 
                 case LV_IO_STATE: {
@@ -1934,7 +2164,7 @@ void IoMapListProc(NMHDR *h)
 				}
             } else {
                 UndoRemember();
-                ShowIoMapDialog(i->iItem);
+                ladder->ShowIoMapDialog(i->iItem);
                 ProgramChanged();
                 InvalidateRect(MainWindow, NULL, FALSE);
             }

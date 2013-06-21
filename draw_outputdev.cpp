@@ -354,8 +354,8 @@ static void DrawCharsToExportBuffer(int cx, int cy, char *str)
 //-----------------------------------------------------------------------------
 void ExportDrawingAsText(char *file)
 {
-	int i, maxWidth = ladder.getWidthTXT();
-	int totalHeight = ladder.getHeightTXT()*POS_HEIGHT + 3;
+	int i, maxWidth = ladder->getWidthTXT();
+	int totalHeight = ladder->getHeightTXT()*POS_HEIGHT + 3;
 
 	ColsAvailable = maxWidth;
 
@@ -373,7 +373,7 @@ void ExportDrawingAsText(char *file)
     }
 
     DrawChars = DrawCharsToExportBuffer;
-	ladder.DrawTXT(6);
+	ladder->DrawTXT(6);
 
     FILE *f = fopen(file, "w");
     if(!f) {
