@@ -157,6 +157,7 @@ bool LadderElemPlaceHolder::CanInsert(LadderContext context)
 LadderElem *LadderElemPlaceHolder::Clone(void)
 {
 	LadderElemPlaceHolder *clone = new LadderElemPlaceHolder(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -211,14 +212,14 @@ void LadderElemComment::internalSetProperties(void *data)
 {
 	LadderElemCommentProp *newProp = (LadderElemCommentProp *)data;
 
-	prop.str    = newProp->str;
+	prop = *newProp;
 }
 
 void *LadderElemComment::getProperties(void)
 {
 	LadderElemCommentProp *curProp = new LadderElemCommentProp;
 
-	curProp->str    = prop.str;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -244,6 +245,7 @@ inline int LadderElemComment::getWidthTXT(void)
 LadderElem *LadderElemComment::Clone(void)
 {
 	LadderElemComment *clone = new LadderElemComment(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -332,8 +334,7 @@ void *LadderElemContact::getProperties(void)
 {
 	LadderElemContactProp *curProp = new LadderElemContactProp;
 
-	curProp->idName  = prop.idName;
-	curProp->negated = prop.negated;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -342,13 +343,13 @@ void LadderElemContact::internalSetProperties(void *data)
 {
 	LadderElemContactProp *newProp = (LadderElemContactProp *)data;
 
-	prop.idName  = newProp->idName;
-	prop.negated = newProp->negated;
+	prop = *newProp;
 }
 
 LadderElem *LadderElemContact::Clone(void)
 {
 	LadderElemContact *clone = new LadderElemContact(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -449,20 +450,14 @@ void LadderElemCoil::internalSetProperties(void *data)
 {
 	LadderElemCoilProp *newProp = (LadderElemCoilProp *)data;
 
-	prop.idName    = newProp->idName;
-	prop.negated   = newProp->negated;
-	prop.setOnly   = newProp->setOnly;
-	prop.resetOnly = newProp->resetOnly;
+	prop = *newProp;
 }
 
 void *LadderElemCoil::getProperties(void)
 {
 	LadderElemCoilProp *curProp = new LadderElemCoilProp;
 
-	curProp->idName    = prop.idName;
-	curProp->negated   = prop.negated;
-	curProp->setOnly   = prop.setOnly;
-	curProp->resetOnly = prop.resetOnly;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -470,6 +465,7 @@ void *LadderElemCoil::getProperties(void)
 LadderElem *LadderElemCoil::Clone(void)
 {
 	LadderElemCoil *clone = new LadderElemCoil(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -639,16 +635,14 @@ void LadderElemTimer::internalSetProperties(void *data)
 {
 	LadderElemTimerProp *newProp = (LadderElemTimerProp *)data;
 
-	prop.idName = newProp->idName;
-	prop.delay  = newProp->delay;
+	prop = *newProp;
 }
 
 void *LadderElemTimer::getProperties(void)
 {
 	LadderElemTimerProp *curProp = new LadderElemTimerProp;
 
-	curProp->idName = prop.idName;
-	curProp->delay  = prop.delay;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -656,6 +650,7 @@ void *LadderElemTimer::getProperties(void)
 LadderElem *LadderElemTimer::Clone(void)
 {
 	LadderElemTimer *clone = new LadderElemTimer(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -786,20 +781,14 @@ void LadderElemRTC::internalSetProperties(void *data)
 {
 	LadderElemRTCProp *newProp = (LadderElemRTCProp *)data;
 
-	prop.mode  = newProp->mode;
-	prop.wday  = newProp->wday;
-	prop.start = newProp->start;
-	prop.end   = newProp->end;
+	prop = *newProp;
 }
 
 void *LadderElemRTC::getProperties(void)
 {
 	LadderElemRTCProp *curProp = new LadderElemRTCProp;
 
-	curProp->mode  = prop.mode;
-	curProp->wday  = prop.wday;
-	curProp->start = prop.start;
-	curProp->end   = prop.end;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -807,6 +796,7 @@ void *LadderElemRTC::getProperties(void)
 LadderElem *LadderElemRTC::Clone(void)
 {
 	LadderElemRTC *clone = new LadderElemRTC(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -916,16 +906,14 @@ void LadderElemCounter::internalSetProperties(void *data)
 {
 	LadderElemCounterProp *newProp = (LadderElemCounterProp *)data;
 
-	prop.idName = newProp->idName;
-	prop.max    = newProp->max;
+	prop = *newProp;
 }
 
 void *LadderElemCounter::getProperties(void)
 {
 	LadderElemCounterProp *curProp = new LadderElemCounterProp;
 
-	curProp->idName = prop.idName;
-	curProp->max    = prop.max;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -933,6 +921,7 @@ void *LadderElemCounter::getProperties(void)
 LadderElem *LadderElemCounter::Clone(void)
 {
 	LadderElemCounter *clone = new LadderElemCounter(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -995,14 +984,14 @@ void LadderElemReset::internalSetProperties(void *data)
 {
 	LadderElemResetProp *newProp = (LadderElemResetProp *)data;
 
-	prop.idName = newProp->idName;
+	prop = *newProp;
 }
 
 void *LadderElemReset::getProperties(void)
 {
 	LadderElemResetProp *curProp = new LadderElemResetProp;
 
-	curProp->idName = prop.idName;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -1010,6 +999,7 @@ void *LadderElemReset::getProperties(void)
 LadderElem *LadderElemReset::Clone(void)
 {
 	LadderElemReset *clone = new LadderElemReset(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -1098,6 +1088,7 @@ bool LadderElemOneShot::CanInsert(LadderContext context)
 LadderElem *LadderElemOneShot::Clone(void)
 {
 	LadderElemOneShot *clone = new LadderElemOneShot(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -1207,16 +1198,14 @@ void LadderElemCmp::internalSetProperties(void *data)
 {
 	LadderElemCmpProp *newProp = (LadderElemCmpProp *)data;
 
-	prop.idOp1 = newProp->idOp1;
-	prop.idOp2 = newProp->idOp2;
+	prop = *newProp;
 }
 
 void *LadderElemCmp::getProperties(void)
 {
 	LadderElemCmpProp *curProp = new LadderElemCmpProp;
 
-	curProp->idOp1 = prop.idOp1;
-	curProp->idOp2 = prop.idOp2;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -1224,6 +1213,7 @@ void *LadderElemCmp::getProperties(void)
 LadderElem *LadderElemCmp::Clone(void)
 {
 	LadderElemCmp *clone = new LadderElemCmp(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -1362,18 +1352,14 @@ void LadderElemMath::internalSetProperties(void *data)
 {
 	LadderElemMathProp *newProp = (LadderElemMathProp *)data;
 
-	prop.idOp1  = newProp->idOp1;
-	prop.idOp2  = newProp->idOp2;
-	prop.idDest = newProp->idDest;
+	prop = *newProp;
 }
 
 void *LadderElemMath::getProperties(void)
 {
 	LadderElemMathProp *curProp = new LadderElemMathProp;
 
-	curProp->idOp1  = prop.idOp1;
-	curProp->idOp2  = prop.idOp2;
-	curProp->idDest = prop.idDest;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -1381,6 +1367,7 @@ void *LadderElemMath::getProperties(void)
 LadderElem *LadderElemMath::Clone(void)
 {
 	LadderElemMath *clone = new LadderElemMath(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -1478,16 +1465,14 @@ void LadderElemSqrt::internalSetProperties(void *data)
 {
 	LadderElemSqrtProp *newProp = (LadderElemSqrtProp *)data;
 
-	prop.idSrc  = newProp->idSrc;
-	prop.idDest = newProp->idDest;
+	prop = *newProp;
 }
 
 void *LadderElemSqrt::getProperties(void)
 {
 	LadderElemSqrtProp *curProp = new LadderElemSqrtProp;
 
-	curProp->idSrc  = prop.idSrc;
-	curProp->idDest = prop.idDest;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -1495,6 +1480,7 @@ void *LadderElemSqrt::getProperties(void)
 LadderElem *LadderElemSqrt::Clone(void)
 {
 	LadderElemSqrt *clone = new LadderElemSqrt(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -1586,18 +1572,14 @@ void LadderElemRand::internalSetProperties(void *data)
 {
 	LadderElemRandProp *newProp = (LadderElemRandProp *)data;
 
-	prop.idVar = newProp->idVar;
-	prop.idMin = newProp->idMin;
-	prop.idMax = newProp->idMax;
+	prop = *newProp;
 }
 
 void *LadderElemRand::getProperties(void)
 {
 	LadderElemRandProp *curProp = new LadderElemRandProp;
 
-	curProp->idVar = prop.idVar;
-	curProp->idMin = prop.idMin;
-	curProp->idMax = prop.idMax;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -1605,6 +1587,7 @@ void *LadderElemRand::getProperties(void)
 LadderElem *LadderElemRand::Clone(void)
 {
 	LadderElemRand *clone = new LadderElemRand(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -1704,16 +1687,14 @@ void LadderElemAbs::internalSetProperties(void *data)
 {
 	LadderElemAbsProp *newProp = (LadderElemAbsProp *)data;
 
-	prop.idSrc  = newProp->idSrc;
-	prop.idDest = newProp->idDest;
+	prop = *newProp;
 }
 
 void *LadderElemAbs::getProperties(void)
 {
 	LadderElemAbsProp *curProp = new LadderElemAbsProp;
 
-	curProp->idSrc  = prop.idSrc;
-	curProp->idDest = prop.idDest;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -1721,6 +1702,7 @@ void *LadderElemAbs::getProperties(void)
 LadderElem *LadderElemAbs::Clone(void)
 {
 	LadderElemAbs *clone = new LadderElemAbs(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -1812,16 +1794,14 @@ void LadderElemMove::internalSetProperties(void *data)
 {
 	LadderElemMoveProp *newProp = (LadderElemMoveProp *)data;
 
-	prop.idSrc  = newProp->idSrc;
-	prop.idDest = newProp->idDest;
+	prop = *newProp;
 }
 
 void *LadderElemMove::getProperties(void)
 {
 	LadderElemMoveProp *curProp = new LadderElemMoveProp;
 
-	curProp->idSrc  = prop.idSrc;
-	curProp->idDest = prop.idDest;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -1829,6 +1809,7 @@ void *LadderElemMove::getProperties(void)
 LadderElem *LadderElemMove::Clone(void)
 {
 	LadderElemMove *clone = new LadderElemMove(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -1892,6 +1873,7 @@ bool LadderElemOpenShort::CanInsert(LadderContext context)
 LadderElem *LadderElemOpenShort::Clone(void)
 {
 	LadderElemOpenShort *clone = new LadderElemOpenShort(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -1949,18 +1931,14 @@ void LadderElemSetBit::internalSetProperties(void *data)
 {
 	LadderElemSetBitProp *newProp = (LadderElemSetBitProp *)data;
 
-	prop.idName = newProp->idName;
-	prop.bit    = newProp->bit;
-	prop.set    = newProp->set;
+	prop = *newProp;
 }
 
 void *LadderElemSetBit::getProperties(void)
 {
 	LadderElemSetBitProp *curProp = new LadderElemSetBitProp;
 
-	curProp->idName = prop.idName;
-	curProp->bit    = prop.bit;
-	curProp->set    = prop.set;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -1968,6 +1946,7 @@ void *LadderElemSetBit::getProperties(void)
 LadderElem *LadderElemSetBit::Clone(void)
 {
 	LadderElemSetBit *clone = new LadderElemSetBit(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -2042,18 +2021,14 @@ void LadderElemCheckBit::internalSetProperties(void *data)
 {
 	LadderElemCheckBitProp *newProp = (LadderElemCheckBitProp *)data;
 
-	prop.idName = newProp->idName;
-	prop.bit    = newProp->bit;
-	prop.set    = newProp->set;
+	prop = *newProp;
 }
 
 void *LadderElemCheckBit::getProperties(void)
 {
 	LadderElemCheckBitProp *curProp = new LadderElemCheckBitProp;
 
-	curProp->idName = prop.idName;
-	curProp->bit    = prop.bit;
-	curProp->set    = prop.set;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -2061,6 +2036,7 @@ void *LadderElemCheckBit::getProperties(void)
 LadderElem *LadderElemCheckBit::Clone(void)
 {
 	LadderElemCheckBit *clone = new LadderElemCheckBit(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -2127,14 +2103,14 @@ void LadderElemReadAdc::internalSetProperties(void *data)
 {
 	LadderElemReadAdcProp *newProp = (LadderElemReadAdcProp *)data;
 
-	prop.idName = newProp->idName;
+	prop = *newProp;
 }
 
 void *LadderElemReadAdc::getProperties(void)
 {
 	LadderElemReadAdcProp *curProp = new LadderElemReadAdcProp;
 
-	curProp->idName = prop.idName;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -2142,6 +2118,7 @@ void *LadderElemReadAdc::getProperties(void)
 LadderElem *LadderElemReadAdc::Clone(void)
 {
 	LadderElemReadAdc *clone = new LadderElemReadAdc(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -2222,16 +2199,14 @@ void LadderElemSetDa::internalSetProperties(void *data)
 {
 	LadderElemSetDaProp *newProp = (LadderElemSetDaProp *)data;
 
-	prop.idName = newProp->idName;
-	prop.mode   = newProp->mode;
+	prop = *newProp;
 }
 
 void *LadderElemSetDa::getProperties(void)
 {
 	LadderElemSetDaProp *curProp = new LadderElemSetDaProp;
 
-	curProp->idName = prop.idName;
-	curProp->mode   = prop.mode;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -2239,6 +2214,7 @@ void *LadderElemSetDa::getProperties(void)
 LadderElem *LadderElemSetDa::Clone(void)
 {
 	LadderElemSetDa *clone = new LadderElemSetDa(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -2299,14 +2275,14 @@ void LadderElemReadEnc::internalSetProperties(void *data)
 {
 	LadderElemReadEncProp *newProp = (LadderElemReadEncProp *)data;
 
-	prop.idName = newProp->idName;
+	prop = *newProp;
 }
 
 void *LadderElemReadEnc::getProperties(void)
 {
 	LadderElemReadEncProp *curProp = new LadderElemReadEncProp;
 
-	curProp->idName = prop.idName;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -2314,6 +2290,7 @@ void *LadderElemReadEnc::getProperties(void)
 LadderElem *LadderElemReadEnc::Clone(void)
 {
 	LadderElemReadEnc *clone = new LadderElemReadEnc(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -2374,14 +2351,14 @@ void LadderElemResetEnc::internalSetProperties(void *data)
 {
 	LadderElemResetEncProp *newProp = (LadderElemResetEncProp *)data;
 
-	prop.idName = newProp->idName;
+	prop = *newProp;
 }
 
 void *LadderElemResetEnc::getProperties(void)
 {
 	LadderElemResetEncProp *curProp = new LadderElemResetEncProp;
 
-	curProp->idName = prop.idName;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -2389,6 +2366,7 @@ void *LadderElemResetEnc::getProperties(void)
 LadderElem *LadderElemResetEnc::Clone(void)
 {
 	LadderElemResetEnc *clone = new LadderElemResetEnc(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -2492,30 +2470,14 @@ void LadderElemMultisetDA::internalSetProperties(void *data)
 {
 	LadderElemMultisetDAProp *newProp = (LadderElemMultisetDAProp *)data;
 
-    prop.idTime                = newProp->idTime;
-	prop.idDesl                = newProp->idDesl;
-	prop.gaint                 = newProp->gaint;
-	prop.gainr                 = newProp->gainr;
-	prop.initval               = newProp->initval;
-	prop.linear                = newProp->linear;
-	prop.forward               = newProp->forward;
-	prop.speedup               = newProp->speedup;
-	prop.StartFromCurrentValue = newProp->StartFromCurrentValue;
+	prop = *newProp;
 }
 
 void *LadderElemMultisetDA::getProperties(void)
 {
 	LadderElemMultisetDAProp *curProp = new LadderElemMultisetDAProp;
 
-    curProp->idTime                = prop.idTime;
-	curProp->idDesl                = prop.idDesl;
-	curProp->gaint                 = prop.gaint;
-	curProp->gainr                 = prop.gainr;
-	curProp->initval               = prop.initval;
-	curProp->linear                = prop.linear;
-	curProp->forward               = prop.forward;
-	curProp->speedup               = prop.speedup;
-	curProp->StartFromCurrentValue = prop.StartFromCurrentValue;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -2523,6 +2485,7 @@ void *LadderElemMultisetDA::getProperties(void)
 LadderElem *LadderElemMultisetDA::Clone(void)
 {
 	LadderElemMultisetDA *clone = new LadderElemMultisetDA(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -2624,22 +2587,14 @@ void LadderElemUSS::internalSetProperties(void *data)
 {
 	LadderElemUSSProp *newProp = (LadderElemUSSProp *)data;
 
-	prop.idName        = newProp->idName;
-	prop.id            = newProp->id;
-	prop.parameter     = newProp->parameter;
-	prop.parameter_set = newProp->parameter_set;
-	prop.index         = newProp->index;
+	prop = *newProp;
 }
 
 void *LadderElemUSS::getProperties(void)
 {
 	LadderElemUSSProp *curProp = new LadderElemUSSProp;
 
-	curProp->idName        = prop.idName;
-	curProp->id            = prop.id;
-	curProp->parameter     = prop.parameter;
-	curProp->parameter_set = prop.parameter_set;
-	curProp->index         = prop.index;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -2647,6 +2602,7 @@ void *LadderElemUSS::getProperties(void)
 LadderElem *LadderElemUSS::Clone(void)
 {
 	LadderElemUSS *clone = new LadderElemUSS(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -2676,27 +2632,32 @@ LadderElemModBUS::LadderElemModBUS(LadderDiagram *diagram, int which) : LadderEl
 {
 	Diagram           = diagram;
 
+	int NodeID = Diagram->mbGetNodeIDByIndex(0);
+	if(NodeID < 0) {
+		NodeID = Diagram->mbCreateNode("Default");
+	}
+
+	prop.address      = 0;
 	prop.retransmitir = true;
-	prop.elem         = MbNodeList_GetByIndex(0)->NodeID;
+	prop.int32        = false;
+	prop.elem         = NodeID;
 	prop.idName       = pair<unsigned long, int>(0, 0);
 
 	Diagram->getIO(prop.idName, _("new"), false, (getWhich() == ELEM_READ_MODBUS) ? eType_ReadModbus : eType_WriteModbus);
-
-	MbNodeList_AddRef(prop.elem);
 }
 
 pair<string, string> LadderElemModBUS::DrawTXT(void)
 {
 	char *bot;
 	char buf[100];
-	MbNodeList *l = MbNodeList_GetByNodeID(prop.elem);
+	LadderMbNode node = Diagram->mbGetNodeByNodeID(prop.elem);
 
-	sprintf(buf, "%s:%d", l->node.name, prop.address);
+	sprintf(buf, "%s:%d", node.name, prop.address);
 
 	if(getWhich() == ELEM_READ_MODBUS) {
-		bot = l->node.iface == MB_IFACE_RS485 ? _("{READ MB 485}")  : _("{READ MB ETH}");
+		bot = (node.iface == eMbTypeNode_RS485) ? _("{READ MB 485}")  : _("{READ MB ETH}");
 	} else {
-		bot = l->node.iface == MB_IFACE_RS485 ? _("{WRITE MB 485}") : _("{WRITE MB ETH}");
+		bot = (node.iface == eMbTypeNode_RS485) ? _("{WRITE MB 485}") : _("{WRITE MB ETH}");
 	}
 
 	return pair<string, string>(buf, bot);
@@ -2712,14 +2673,14 @@ bool LadderElemModBUS::GenerateIntCode(IntCode &ic)
 	char *MbReady, *MbTimeout;
 	const char *stateInOut = ic.getStateInOut();
 	int intcode;
-	MbNodeList *list;
+	LadderMbNode node;
 
-	list    = MbNodeList_GetByNodeID(prop.elem);
+	node    = Diagram->mbGetNodeByNodeID(prop.elem);
 	intcode = getWhich() == ELEM_READ_MODBUS ? INT_READ_MODBUS : INT_WRITE_MODBUS;
-	sprintf(id  , "%d", list->node.id);
+	sprintf(id  , "%d", node.id);
 	sprintf(addr, "%d", prop.address);
 
-	if(list->node.iface == MB_IFACE_RS485) {
+	if(node.iface == eMbTypeNode_RS485) {
 		MbReady   = "$SerialReady";
 		MbTimeout = "$SerialTimeout";
 	} else {
@@ -2735,7 +2696,7 @@ bool LadderElemModBUS::GenerateIntCode(IntCode &ic)
 	ic.Op(INT_IF_BIT_SET, stateInOut);
 		ic.Op(INT_IF_BIT_CLEAR, MessageSent.c_str());
 			ic.Op(INT_IF_BIT_SET, MbReady);
-				ic.Op(intcode, name, id, addr, list->node.ip, (unsigned char)prop.int32);
+				ic.Op(intcode, name, id, addr, node.ip, (unsigned char)prop.int32);
 				ic.Op(INT_SET_BIT, MessageSent.c_str());
 			ic.Op(INT_END_IF);
 			ic.Op(INT_CLEAR_BIT, stateInOut);
@@ -2748,7 +2709,7 @@ bool LadderElemModBUS::GenerateIntCode(IntCode &ic)
 		if(prop.retransmitir) { // Retransmitir?
 			ic.Op(INT_ELSE_IF); ic.Op(INT_IF_BIT_SET, MbTimeout);
 				ic.Op(INT_CLEAR_BIT, MbTimeout);
-				ic.Op(intcode, name, id, addr, list->node.ip, (unsigned char)prop.int32);
+				ic.Op(intcode, name, id, addr, node.ip, (unsigned char)prop.int32);
 		}
 			ic.Op(INT_END_IF);
 		ic.Op(INT_END_IF);
@@ -2762,25 +2723,31 @@ bool LadderElemModBUS::GenerateIntCode(IntCode &ic)
 
 bool LadderElemModBUS::CanInsert(LadderContext context)
 {
-	return context.canInsertOther && Prog.settings.mb_list_size;
+	return context.canInsertOther;
+}
+
+void LadderElemModBUS::doPostInsert(void)
+{
+	Diagram->mbAddRef(prop.address);
+}
+
+void LadderElemModBUS::doPostRemove(void)
+{
+	Diagram->mbDelRef(prop.address);
 }
 
 void LadderElemModBUS::internalSetProperties(void *data)
 {
 	LadderElemModBUSProp *newProp = (LadderElemModBUSProp *)data;
 
-	prop.idName       = newProp->idName;
-	prop.retransmitir = newProp->retransmitir;
-	prop.elem         = newProp->elem;
+	prop = *newProp;
 }
 
 void *LadderElemModBUS::getProperties(void)
 {
 	LadderElemModBUSProp *curProp = new LadderElemModBUSProp;
 
-	curProp->idName       = prop.idName;
-	curProp->retransmitir = prop.retransmitir;
-	curProp->elem         = prop.elem;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -2788,6 +2755,7 @@ void *LadderElemModBUS::getProperties(void)
 LadderElem *LadderElemModBUS::Clone(void)
 {
 	LadderElemModBUS *clone = new LadderElemModBUS(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -2870,16 +2838,14 @@ void LadderElemSetPWM::internalSetProperties(void *data)
 {
 	LadderElemSetPWMProp *newProp = (LadderElemSetPWMProp *)data;
 
-	prop.idName     = newProp->idName;
-	prop.targetFreq = newProp->targetFreq;
+	prop = *newProp;
 }
 
 void *LadderElemSetPWM::getProperties(void)
 {
 	LadderElemSetPWMProp *curProp = new LadderElemSetPWMProp;
 
-	curProp->idName     = prop.idName;
-	curProp->targetFreq = prop.targetFreq;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -2887,6 +2853,7 @@ void *LadderElemSetPWM::getProperties(void)
 LadderElem *LadderElemSetPWM::Clone(void)
 {
 	LadderElemSetPWM *clone = new LadderElemSetPWM(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -2954,14 +2921,14 @@ void LadderElemUART::internalSetProperties(void *data)
 {
 	LadderElemUARTProp *newProp = (LadderElemUARTProp *)data;
 
-	prop.idName = newProp->idName;
+	prop = *newProp;
 }
 
 void *LadderElemUART::getProperties(void)
 {
 	LadderElemUARTProp *curProp = new LadderElemUARTProp;
 
-	curProp->idName = prop.idName;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -2969,6 +2936,7 @@ void *LadderElemUART::getProperties(void)
 LadderElem *LadderElemUART::Clone(void)
 {
 	LadderElemUART *clone = new LadderElemUART(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -3027,6 +2995,7 @@ bool LadderElemMasterRelay::CanInsert(LadderContext context)
 LadderElem *LadderElemMasterRelay::Clone(void)
 {
 	LadderElemMasterRelay *clone = new LadderElemMasterRelay(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -3139,6 +3108,7 @@ void *LadderElemShiftRegister::getProperties(void)
 LadderElem *LadderElemShiftRegister::Clone(void)
 {
 	LadderElemShiftRegister *clone = new LadderElemShiftRegister(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -3249,22 +3219,14 @@ void LadderElemLUT::internalSetProperties(void *data)
 {
 	LadderElemLUTProp *newProp = (LadderElemLUTProp *)data;
 
-	prop.idDest       = newProp->idDest;
-	prop.idIndex      = newProp->idIndex;
-	prop.count        = newProp->count;
-	prop.editAsString = newProp->editAsString;
-	prop.vals         = newProp->vals;
+	prop = *newProp;
 }
 
 void *LadderElemLUT::getProperties(void)
 {
 	LadderElemLUTProp *curProp = new LadderElemLUTProp;
 
-	curProp->idDest       = prop.idDest;
-	curProp->idIndex      = prop.idIndex;
-	curProp->count        = prop.count;
-	curProp->editAsString = prop.editAsString;
-	curProp->vals         = prop.vals;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -3272,6 +3234,7 @@ void *LadderElemLUT::getProperties(void)
 LadderElem *LadderElemLUT::Clone(void)
 {
 	LadderElemLUT *clone = new LadderElemLUT(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -3418,20 +3381,14 @@ void LadderElemPiecewise::internalSetProperties(void *data)
 {
 	LadderElemPiecewiseProp *newProp = (LadderElemPiecewiseProp *)data;
 
-	prop.idDest  = newProp->idDest;
-	prop.idIndex = newProp->idIndex;
-	prop.count   = newProp->count;
-	prop.vals    = newProp->vals;
+	prop = *newProp;
 }
 
 void *LadderElemPiecewise::getProperties(void)
 {
 	LadderElemPiecewiseProp *curProp = new LadderElemPiecewiseProp;
 
-	curProp->idDest  = prop.idDest;
-	curProp->idIndex = prop.idIndex;
-	curProp->count   = prop.count;
-	curProp->vals    = prop.vals;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -3439,6 +3396,7 @@ void *LadderElemPiecewise::getProperties(void)
 LadderElem *LadderElemPiecewise::Clone(void)
 {
 	LadderElemPiecewise *clone = new LadderElemPiecewise(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -3537,16 +3495,14 @@ void LadderElemFmtString::internalSetProperties(void *data)
 {
 	LadderElemFmtStringProp *newProp = (LadderElemFmtStringProp *)data;
 
-	prop.idVar = newProp->idVar;
-	prop.txt   = newProp->txt;
+	prop = *newProp;
 }
 
 void *LadderElemFmtString::getProperties(void)
 {
 	LadderElemFmtStringProp *curProp = new LadderElemFmtStringProp;
 
-	curProp->idVar = prop.idVar;
-	curProp->txt   = prop.txt;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -3554,6 +3510,7 @@ void *LadderElemFmtString::getProperties(void)
 LadderElem *LadderElemFmtString::Clone(void)
 {
 	LadderElemFmtString *clone = new LadderElemFmtString(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -3653,18 +3610,14 @@ void LadderElemYaskawa::internalSetProperties(void *data)
 {
 	LadderElemYaskawaProp *newProp = (LadderElemYaskawaProp *)data;
 
-	prop.id    = newProp->id;
-	prop.idVar = newProp->idVar;
-	prop.txt   = newProp->txt;
+	prop = *newProp;
 }
 
 void *LadderElemYaskawa::getProperties(void)
 {
 	LadderElemYaskawaProp *curProp = new LadderElemYaskawaProp;
 
-	curProp->id    = prop.id;
-	curProp->idVar = prop.idVar;
-	curProp->txt   = prop.txt;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -3672,6 +3625,7 @@ void *LadderElemYaskawa::getProperties(void)
 LadderElem *LadderElemYaskawa::Clone(void)
 {
 	LadderElemYaskawa *clone = new LadderElemYaskawa(Diagram, getWhich());
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -3762,14 +3716,14 @@ void LadderElemPersist::internalSetProperties(void *data)
 {
 	LadderElemPersistProp *newProp = (LadderElemPersistProp *)data;
 
-	prop.idVar = newProp->idVar;
+	prop = *newProp;
 }
 
 void *LadderElemPersist::getProperties(void)
 {
 	LadderElemPersistProp *curProp = new LadderElemPersistProp;
 
-	curProp->idVar = prop.idVar;
+	*curProp = prop;
 
 	return curProp;
 }
@@ -3777,6 +3731,7 @@ void *LadderElemPersist::getProperties(void)
 LadderElem *LadderElemPersist::Clone(void)
 {
 	LadderElemPersist *clone = new LadderElemPersist(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -3825,6 +3780,7 @@ bool LadderElemX::CanInsert(LadderContext context)
 LadderElem *LadderElemX::Clone(void)
 {
 	LadderElemX *clone = new LadderElemX(Diagram);
+	clone->updateIO(true); // Descarta os I/Os registrados
 	clone->internalSetProperties(&prop);
 
 	return clone;
@@ -4630,6 +4586,32 @@ LadderCircuit *LadderCircuit::Clone(void)
 	return clone;
 }
 
+void LadderCircuit::doPostInsert(void)
+{
+	vector<Subckt>::size_type i;
+
+	for(i = 0; i < vectorSubckt.size(); i++) {
+		if(vectorSubckt[i].elem != nullptr) {
+			vectorSubckt[i].elem->doPostInsert();
+		} else {
+			vectorSubckt[i].subckt->doPostInsert();
+		}
+	}
+}
+
+void LadderCircuit::doPostRemove(void)
+{
+	vector<Subckt>::size_type i;
+
+	for(i = 0; i < vectorSubckt.size(); i++) {
+		if(vectorSubckt[i].elem != nullptr) {
+			vectorSubckt[i].elem->doPostRemove();
+		} else {
+			vectorSubckt[i].subckt->doPostRemove();
+		}
+	}
+}
+
 bool LadderCircuit::acceptIO(unsigned long id, enum eType type)
 {
 	bool ret = true;
@@ -4762,6 +4744,49 @@ void LadderDiagram::Init(void)
 
 	NeedScrollSelectedIntoView = false;
 
+	// Inicializacao das configuracoes
+	LadderSettings.General.canSave     = true; // Permite salvar o arquivo (sobreescrita)
+	LadderSettings.General.cycleTime   = 10000; // Ciclo de 10 ms
+	LadderSettings.General.mcuClock    = 100000000; // Frequencia da cpu: 100 MHz
+
+	LadderSettings.Uart.UART           = 0; // Modo da UART: 8 bits de dados, sem paridade, 1 bit de parada
+	LadderSettings.Uart.baudRate       = 9600; // Velocidade da UART: 9600 bps
+
+	LadderSettings.Network.ip          = MAKEIPADDRESS(192, 168, 0, 254); // IP da POP-7: 192.168.0.254
+	LadderSettings.Network.mask        = MAKEIPADDRESS(255, 255, 255, 0); // Mascara de rede: 255.255.255.0
+	LadderSettings.Network.gw          = MAKEIPADDRESS(192, 168, 0,   1); // IP do Gateway: 192.168.0.1
+	LadderSettings.Network.dns         = MAKEIPADDRESS(192, 168, 0,   1); // IP do servidor DNS: 192.168.0.1
+
+	LadderSettings.Sntp.sntp_enable    = false; // Sincronismo com servidor de hora desativado por padrao
+	LadderSettings.Sntp.dailysave      = false; // Horario de verao desativado por padrao
+	LadderSettings.Sntp.sntp_server    = "br.pool.ntp.org"; // Usa servidor brasileiro de NTP.org
+	LadderSettings.Sntp.gmt            = 9; // Fuso horario do Brasil: GMT-3, posicao 9 na lista
+
+	LadderSettings.EncInc.conv_mode    = ENCODER_MODE_RAW; // Usa o valor lido do encoder, sem conversao
+	LadderSettings.EncInc.factor       = 1.0; // Valor padrao do fator de correcao do encoder
+	LadderSettings.EncInc.perimeter    = 400; // Normalmente usamos rodas com 400 mm de diametro
+	LadderSettings.EncInc.pulses       = 1024; // Numero de pulsos por volta do encoder
+	LadderSettings.EncInc.x4           = true; // Indica que devemos usar o modo x4 (ler as 4 bordas)
+
+	LadderSettings.EncSSI.conv_mode    = ENCODER_MODE_RAW; // Usa o valor lido do encoder, sem conversao
+	LadderSettings.EncSSI.factor       = 1.0; // Valor padrao do fator de correcao do encoder
+	LadderSettings.EncSSI.perimeter    = 400; // Normalmente usamos rodas com 400 mm de diametro
+	LadderSettings.EncSSI.mode         = 0; // Modo 0 = Leitura em Gray
+	LadderSettings.EncSSI.size         = 24; // Numero de bits de resolucao do encoder
+	LadderSettings.EncSSI.size_bpr     = 12; // Numero de bits que representam voltas
+
+	LadderSettings.Dac.ramp_abort_mode = RAMP_ABORT_LEAVE; // Modo padrao de abandono: mantem o valor atual
+
+	LadderSettings.MbSlave.ModBUSID    = 0; // ID padrao do ModBUS escravo: 0
+
+	LadderSettings.Info.Name           = ""; // Nome do Programa
+	LadderSettings.Info.Developer      = ""; // Nome do Desenvolvedor
+	LadderSettings.Info.Description    = ""; // Descricao do programa
+	LadderSettings.Info.FWVersion      = "1.5"; // Versao do Firmware atual do POPTools
+	LadderSettings.Info.BuildNumber    =  0; // Numero de compilacao atual
+	LadderSettings.Info.CompileDate    =  0; // Data da ultima compilacao. Zero: nunca
+	LadderSettings.Info.ProgramDate    =  0; // Data da ultima gravacao. Zero: nunca
+
 	NewRung(false);
 
 	updateContext();
@@ -4773,7 +4798,19 @@ void LadderDiagram::Init(void)
 
 LadderDiagram::LadderDiagram(void)
 {
+	int i;
+
 	IO = new mapIO(this);
+
+	mcu = nullptr;
+	for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
+	{
+		if(_stricmp(SupportedMcus[i].mcuName, DEFAULT_CPU)==0) 
+		{
+			mcu = &SupportedMcus[i];
+			break;
+		}
+	}
 
 	Init();
 }
@@ -4798,6 +4835,7 @@ void LadderDiagram::FreeDiagram(void)
 	}
 
 	if(copiedRung != nullptr) {
+		delete copiedRung->rung;
 		delete copiedRung;
 	}
 
@@ -4814,6 +4852,7 @@ void LadderDiagram::FreeDiagram(void)
 	}
 
 	ic.Clear();
+	IO->Clear();
 }
 
 vector<IntOp> LadderDiagram::getVectorIntCode(void)
@@ -4831,7 +4870,7 @@ bool LadderDiagram::GenerateIntCode(void)
     ic.Op(INT_SET_BIT, "$mcr");
 
 	for(i = 0; i < rungs.size() && ret; i++) {
-		if(rungs[i]->IsComment()) continue;
+		if(rungs[i]->rung->IsComment()) continue;
 
 		ic.Comment("");
         ic.Comment(_("start rung %d"), i+1);
@@ -4839,7 +4878,7 @@ bool LadderDiagram::GenerateIntCode(void)
         ic.Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");
         ic.SimState(&(Prog.rungPowered[i]), "$rung_top");
 
-		ret = rungs[i]->GenerateIntCode(ic);
+		ret = rungs[i]->rung->GenerateIntCode(ic);
 	}
 
 	return ret;
@@ -4880,10 +4919,10 @@ bool LadderDiagram::EditSelectedElement(void)
 LadderCircuit *LadderDiagram::getSubcktForElement(LadderElem *elem)
 {
 	LadderCircuit *subckt = nullptr;
-	vector<LadderCircuit>::size_type i;
+	vector<LadderRung *>::size_type i;
 
 	for(i = 0; i < rungs.size() && subckt == nullptr; i++) {
-		subckt = rungs[i]->getSubcktForElement(elem);
+		subckt = rungs[i]->rung->getSubcktForElement(elem);
 	}
 
 	return subckt;
@@ -4970,10 +5009,10 @@ void LadderDiagram::updateContext(void)
 
 			if(context.SelectedState == SELECTED_RIGHT || 
 				context.SelectedElem->getWhich() == ELEM_PLACEHOLDER) {
-					vector<LadderCircuit *>::iterator it;
+					vector<LadderRung *>::iterator it;
 					if(i >= 0) {
 						it = rungs.begin() + i;
-						context.canInsertEnd = (*it)->IsLast(context.SelectedElem);
+						context.canInsertEnd = (*it)->rung->IsLast(context.SelectedElem);
 					} else {
 						context.canInsertEnd = false;
 					}
@@ -5010,7 +5049,7 @@ int LadderDiagram::getWidthTXT(void)
 	vector<LadderCircuit>::size_type i;
 
 	for(i = 0; i < rungs.size(); i++) {
-		thisWidth = rungs[i]->getWidthTXT(0);
+		thisWidth = rungs[i]->rung->getWidthTXT(0);
 		if(thisWidth > width) {
 			width = thisWidth;
 		}
@@ -5025,7 +5064,7 @@ int LadderDiagram::getHeightTXT(void)
 	vector<LadderCircuit>::size_type i;
 
 	for(i = 0; i < rungs.size(); i++) {
-		height += rungs[i]->getHeightTXT() + 1;
+		height += rungs[i]->rung->getHeightTXT() + 1;
 	}
 
 	return height;
@@ -5037,7 +5076,7 @@ int  LadderDiagram::RungContainingElement(LadderElem *elem)
 
 	if(elem != nullptr) {
 		for(i = 0; i < rungs.size(); i++) {
-			if(rungs[i]->getSubcktForElement(elem) != nullptr)
+			if(rungs[i]->rung->getSubcktForElement(elem) != nullptr)
 				return i;
 		}
 	}
@@ -5052,12 +5091,12 @@ int LadderDiagram::RungContainingSelected(void)
 
 bool LadderDiagram::IsRungEmpty(unsigned int n)
 {
-	return (n < rungs.size()) ? rungs[n]->IsEmpty() : true;
+	return (n < rungs.size()) ? rungs[n]->rung->IsEmpty() : true;
 }
 
 void LadderDiagram::NewRung(bool isAfter)
 {
-	vector<LadderCircuit *>::iterator it;
+	vector<LadderRung *>::iterator it;
 	int position = RungContainingSelected();
 
 	CheckpointBegin(_("Inserir Linha"));
@@ -5066,7 +5105,11 @@ void LadderDiagram::NewRung(bool isAfter)
 	UndoRedoAction action;
 	UndoRedoData *data = new UndoRedoData;
 
-	data->NewRung.rung = new LadderCircuit(true);
+	data->NewRung.rung                = new LadderRung;
+
+	data->NewRung.rung->hasBreakpoint = false;
+	data->NewRung.rung->isPowered     = false;
+	data->NewRung.rung->rung          = new LadderCircuit(true);
 
 	if(position < 0) { // Se posicao menor que zero, insere no final
 		it = rungs.end();
@@ -5091,7 +5134,7 @@ void LadderDiagram::NewRung(bool isAfter)
 
 	// Adiciona o padding
 	LadderElem *elem = new LadderElemPlaceHolder(this);
-	(*it)->AddElement(elem, context);
+	(*it)->rung->AddElement(elem, context);
 
 	SelectElement(elem, SELECTED_RIGHT);
 
@@ -5122,8 +5165,8 @@ bool LadderDiagram::PushRung(int rung, bool up)
 		offset = +1;
 	}
 
-	LadderCircuit *tmp = rungs[rung];
-	rungs[rung] = rungs[rung + offset];
+	LadderRung *tmp      = rungs[rung];
+	rungs[rung]          = rungs[rung + offset];
 	rungs[rung + offset] = tmp;
 
 	if(!IsSelectedVisible()) {
@@ -5165,7 +5208,7 @@ bool LadderDiagram::DeleteRung(int rung)
 
 	CheckpointBegin(_("Remover Linha"));
 
-	vector<LadderCircuit *>::iterator it = rungs.begin() + rung;
+	vector<LadderRung *>::iterator it = rungs.begin() + rung;
 
 	// Registro da acao para desfazer / refazer
 	UndoRedoAction action;
@@ -5189,7 +5232,8 @@ bool LadderDiagram::DeleteRung(int rung)
 		context.SelectedCircuit = nullptr;
 	}
 
-	(*it)->updateIO(true);
+	(*it)->rung->doPostRemove();
+	(*it)->rung->updateIO(true);
 	rungs.erase(it);
 
 	CheckpointEnd();
@@ -5211,11 +5255,16 @@ bool LadderDiagram::CopyRung(LadderElem *elem)
 
 	// Primeiro descarta uma linha previamente copiada
 	if(copiedRung != nullptr) {
+		delete copiedRung->rung;
 		delete copiedRung;
 	}
 
-	// Copia o elemento
-	copiedRung = rungs[pos]->Clone();
+	// Copia a linha
+	copiedRung                = new LadderRung;
+
+	copiedRung->hasBreakpoint = false;
+	copiedRung->isPowered     = false;
+	copiedRung->rung          = rungs[pos]->rung->Clone();
 
 	// Retorna com sucesso!
 	return true;
@@ -5239,7 +5288,8 @@ bool LadderDiagram::PasteRung(bool isAfter)
 		}
 
 		rungs.insert(rungs.begin() + pos, copiedRung);
-		copiedRung->updateIO(false);
+		copiedRung->rung->doPostInsert();
+		copiedRung->rung->updateIO(false);
 
 		// Registro da acao para desfazer / refazer
 		UndoRedoAction action;
@@ -5259,7 +5309,11 @@ bool LadderDiagram::PasteRung(bool isAfter)
 		RegisterAction(action);
 
 		// Cria uma copia de si mesma para que seja possivel inserir uma nova copia
-		copiedRung = copiedRung->Clone();
+		copiedRung                = new LadderRung;
+
+		copiedRung->hasBreakpoint = false;
+		copiedRung->isPowered     = false;
+		copiedRung->rung          = rungs[pos]->rung->Clone();
 
 		ret = true;
 	} else {
@@ -5305,18 +5359,20 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 	if(ret == true) {
 		int position = RungContainingSelected();
 		if(position >= 0) { // Se posicao menor que zero, insere no final
-			vector<LadderCircuit *>::iterator it = rungs.begin() + position;
-			(*it)->AddPlaceHolderIfNoEOL(context);
+			vector<LadderRung *>::iterator it = rungs.begin() + position;
+			(*it)->rung->AddPlaceHolderIfNoEOL(context);
 		}
+
+		// Elemento adicionado, chama a funcao para que o elemento realize qualquer etapa
+		// adicional apos a sua inclusao no circuito.
+		// Especificamente para o caso do ModBUS, que precisa referenciar o node que ele usa.
+		elem->doPostInsert();
 
 		SelectElement(elem, elem->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT);
 		updateContext();
 	} else {
 		// Ocorreu um erro! Marca o checkpoint para remocao
 		CheckpointRollback();
-
-		// Se o elemento for descartado, deve descartar todos os I/Os que ele houver registrado.
-		elem->updateIO(true);
 
 		// Apos o recebimento de elem, a classe LadderDiagram passa a ser responsavel por ele.
 		// Se por qualquer motivo houver uma falha ao inserir, a classe tem a responsabilidade
@@ -5339,10 +5395,15 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 	int rung = RungContainingElement(elem);
 
 	CheckpointBegin(_("Remover Elemento"));
-	if(rungs[rung]->DelElement(elem, context)) {
+	if(rungs[rung]->rung->DelElement(elem, context)) {
+		// Elemento adicionado, chama a funcao para que o elemento realize qualquer etapa
+		// adicional apos a sua inclusao no circuito.
+		// Especificamente para o caso do ModBUS, que precisa referenciar o node que ele usa.
+		elem->doPostRemove();
+
 		elem->updateIO(true);
-		rungs[rung]->RemoveUnnecessarySubckts(context);
-		rungs[rung]->AddPlaceHolderIfNoEOL(context);
+		rungs[rung]->rung->RemoveUnnecessarySubckts(context);
+		rungs[rung]->rung->AddPlaceHolderIfNoEOL(context);
 		updateContext();
 		CheckpointEnd();
 		return true;
@@ -5361,6 +5422,10 @@ bool LadderDiagram::CopyElement(LadderElem *elem)
 		if(elem == nullptr) return false; // Sem elemento para copiar
 	}
 
+	// As acoes de copia do objeto nao devem ser registradas pois o CTRL+Z nao desfaz a copia.
+	// Assim precisamos criar um checkpoint para que possamos descartar as acoes inscritas
+	CheckpointBegin(_("Copiar Elemento"));
+
 	// Primeiro descarta um elemento previamente copiado
 	if(copiedElement != nullptr) {
 		delete copiedElement;
@@ -5368,6 +5433,11 @@ bool LadderDiagram::CopyElement(LadderElem *elem)
 
 	// Copia o elemento
 	copiedElement = elem->Clone();
+
+	// Copia finalizada. Executa o rollback e fecha o checkpoint e assim todas as acoes registradas
+	// desde a criacao do checkpoint serao descartadas
+	CheckpointRollback();
+	CheckpointEnd();
 
 	// Retorna com sucesso!
 	return true;
@@ -5379,9 +5449,9 @@ bool LadderDiagram::PasteElement(void)
 
 	if(copiedElement == nullptr) return false; // Nao existe elemento copiado
 
-	LadderElem *newCopiedElement = copiedElement->Clone();
-
 	CheckpointBegin(_("Colar Elemento"));
+
+	LadderElem *newCopiedElement = copiedElement->Clone();
 
 	if(AddElement(copiedElement)) {
 		copiedElement->updateIO(false);
@@ -5422,10 +5492,10 @@ void LadderDiagram::DrawTXT(int OffsetX)
         }
 		DrawChars(0, cy, ch);
 
-		rungs[it]->DrawTXT(DisplayMatrix, &cx, &cy, true, ColsAvailable);
+		rungs[it]->rung->DrawTXT(DisplayMatrix, &cx, &cy, true, ColsAvailable);
 
 		cx  = OffsetX;
-		cy += (rungs[it]->getHeightTXT() + 1) * POS_HEIGHT;
+		cy += (rungs[it]->rung->getHeightTXT() + 1) * POS_HEIGHT;
 	}
 
 	// Desenha a linha final
@@ -5482,10 +5552,10 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 
 	// Phase 1: check if Prog.ParallelStart and currently selected object are in the same subcircuit.
 	for(i=0; i < rungs.size(); i++) {
-		rungs[i]->ElemInSubcktSeries(context, &StartPoint);
+		rungs[i]->rung->ElemInSubcktSeries(context, &StartPoint);
 		if(StartPoint.series != nullptr) {
 			// Start found, now we will search for End in the same rung and stop the search.
-			rungs[i]->ElemInSubcktSeries(context, &EndPoint);
+			rungs[i]->rung->ElemInSubcktSeries(context, &EndPoint);
 			break;
 		}
 	}
@@ -5525,7 +5595,7 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 							EndPoint.subckt.subckt = EndPoint.parallel;
 							EndPoint.series        = nullptr;
 							EndPoint.parallel      = nullptr;
-							rungs[CurrentRung]->ElemInSubcktSeries(context, &EndPoint);
+							rungs[CurrentRung]->rung->ElemInSubcktSeries(context, &EndPoint);
 						}
 					} while(LastIsEndParallel);
 					Previous = EndPoint.series->getSubckt(EndPoint.point);
@@ -5592,10 +5662,354 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 	context.canDelete = true; // Forca a exclusao de ParallelStart
 	DelElement(context.ParallelStart);
 	context.ParallelStart = nullptr;
-	rungs[CurrentRung]->RemoveUnnecessarySubckts(context);
+	rungs[CurrentRung]->rung->RemoveUnnecessarySubckts(context);
 
 	return ret;
 }
+
+/*** Funcoes para gravar a configuracao do ladder ***/
+
+// Funcao que Registra no Undo/Redo a configuracao atual para que possa ser desfeito
+void LadderDiagram::RegisterSettingsChanged(void)
+{
+	// Registro da acao para desfazer / refazer
+	UndoRedoAction action;
+	UndoRedoData *data = new UndoRedoData;
+
+	data->SettingsChanged.settings = new tLadderSettings;
+	*(data->SettingsChanged.settings) = LadderSettings;
+
+	action.action        = eSettingsChanged;
+	action.contextAfter  = getEmptyContext();
+	action.contextBefore = context;
+	action.data          = data;
+	action.io            = nullptr;
+	action.elem          = nullptr;
+	action.subckt        = nullptr;
+
+	RegisterAction(action);
+}
+
+void LadderDiagram::setSettingsGeneral(LadderSettingsGeneral setGeneral)
+{
+	RegisterSettingsChanged();
+	LadderSettings.General = setGeneral;
+}
+
+void LadderDiagram::setSettingsUART(LadderSettingsUART setUart)
+{
+	RegisterSettingsChanged();
+	LadderSettings.Uart = setUart;
+}
+
+void LadderDiagram::setSettingsNetwork(LadderSettingsNetwork setNetwork)
+{
+	RegisterSettingsChanged();
+	LadderSettings.Network = setNetwork;
+}
+
+void LadderDiagram::setSettingsSNTP(LadderSettingsSNTP setSntp)
+{
+	RegisterSettingsChanged();
+	LadderSettings.Sntp = setSntp;
+}
+
+void LadderDiagram::setSettingsEncoderIncremental(LadderSettingsEncoderIncremental setEncInc)
+{
+	RegisterSettingsChanged();
+	LadderSettings.EncInc = setEncInc;
+}
+
+void LadderDiagram::setSettingsEncoderSSI(LadderSettingsEncoderSSI setEncSSI)
+{
+	RegisterSettingsChanged();
+	LadderSettings.EncSSI = setEncSSI;
+}
+
+void LadderDiagram::setSettingsDAC(LadderSettingsDAC setDac)
+{
+	RegisterSettingsChanged();
+	LadderSettings.Dac = setDac;
+}
+
+void LadderDiagram::setSettingsModbusSlave(LadderSettingsModbusSlave setMbSlave)
+{
+	RegisterSettingsChanged();
+	LadderSettings.MbSlave = setMbSlave;
+}
+
+void LadderDiagram::setSettingsInformation(LadderSettingsInformation setInfo)
+{
+	RegisterSettingsChanged();
+	LadderSettings.Info = setInfo;
+}
+
+/*** Funcoes relacionadas com lista de nos do ModBUS ***/
+
+// Clears a node to its default values
+void LadderDiagram::mbClearNode(LadderMbNode *node)
+{
+	if(node == nullptr) return;
+
+	node->id    = 0;
+	node->iface = eMbTypeNode_RS485;
+	node->ip    = 0;
+	node->name  = "";
+}
+
+// Create a new node in the list
+int LadderDiagram::mbCreateNode(string NodeName)
+{
+	if(NodeName.size() == 0) return -1;
+
+	LadderMbNode node;
+	mbClearNode(&node);
+	node.name = NodeName;
+
+	return mbCreateNode(node);
+}
+
+// Create a new node in the list
+int LadderDiagram::mbCreateNode(LadderMbNode node)
+{
+	if(node.name.size() == 0) return -1;
+
+	int elem = -1, NodeID = mbGetNodeIDByName(node.name);
+
+	if(NodeID >= 0) {
+		elem = mbUpdateNode(NodeID, node);
+	} else {
+		LadderMbNodeList *nl = new LadderMbNodeList;
+		elem = vectorMbNodeList.size();
+
+		nl->NodeID    = elem ? vectorMbNodeList[elem - 1]->NodeID + 1 : 0;
+		nl->NodeCount = 0;
+		nl->node      = node;
+
+		// Registro da acao para desfazer / refazer
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->MbNodeCreate.nl = nl;
+
+		action.action        = eMbNodeCreate;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = context;
+		action.data          = data;
+		action.io            = nullptr;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+
+		RegisterAction(action);
+
+		vectorMbNodeList.push_back(nl);
+	}
+
+	return elem;
+}
+
+// Update data of node in the list
+int LadderDiagram::mbUpdateNode(int NodeID, LadderMbNode node)
+{
+	if(node.name.size() == 0) return -1;
+
+	int elem = mbGetIndexByNodeID(NodeID);
+
+	if(elem >= 0) {
+		unsigned int index = elem;
+		if(index < vectorMbNodeList.size()) {
+			// Registro da acao para desfazer / refazer
+			UndoRedoAction action;
+			UndoRedoData *data = new UndoRedoData;
+
+			  data->MbNodeUpdate.index = index;
+			  data->MbNodeUpdate.node  = new LadderMbNode;
+			*(data->MbNodeUpdate.node) = vectorMbNodeList[index]->node;
+
+			action.action        = eMbNodeUpdate;
+			action.contextAfter  = getEmptyContext();
+			action.contextBefore = context;
+			action.data          = data;
+			action.io            = nullptr;
+			action.elem          = nullptr;
+			action.subckt        = nullptr;
+
+			RegisterAction(action);
+
+			// Atualiza o no
+			vectorMbNodeList[index]->node = node;
+		} else {
+			elem = -1;
+		}
+	} else {
+		elem = mbCreateNode(node);
+	}
+
+	return elem;
+}
+
+// Delete a node from the list
+void LadderDiagram::mbDeleteNode(int NodeID)
+{
+	unsigned int index = mbGetIndexByNodeID(NodeID);
+	if(index >= 0 && index < vectorMbNodeList.size()) {
+		// Registro da acao para desfazer / refazer
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->MbNodeDelete.index = index;
+		data->MbNodeDelete.nl    = vectorMbNodeList[index];
+
+		action.action        = eMbNodeDelete;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = context;
+		action.data          = data;
+		action.io            = nullptr;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+
+		RegisterAction(action);
+
+		// Remove o no
+		vectorMbNodeList.erase(vectorMbNodeList.begin() + index);
+	}
+}
+
+// Get MbNodeList by Index (Position in the list)
+LadderMbNode LadderDiagram::mbGetNodeByIndex(int elem)
+{
+	if(elem >= 0) {
+		unsigned int index = elem;
+		if(index < vectorMbNodeList.size()) {
+			return vectorMbNodeList[index]->node;
+		}
+	}
+
+	// Se chegou aqui, index invalido! Cria um no vazio
+	LadderMbNode node;
+	mbClearNode(&node);
+
+	return node;
+}
+
+// Get MbNode by NodeID
+LadderMbNode LadderDiagram::mbGetNodeByNodeID(int NodeID)
+{
+	return mbGetNodeByIndex(mbGetIndexByNodeID(NodeID));
+}
+
+// Get NodeID by Index (Position in the list)
+int LadderDiagram::mbGetNodeIDByIndex(int elem)
+{
+	if(elem >= 0) {
+		unsigned int index = elem;
+		if(index < vectorMbNodeList.size()) {
+			return vectorMbNodeList[index]->NodeID;
+		}
+	}
+
+	return -1;
+}
+
+// Get NodeID by node name
+int LadderDiagram::mbGetNodeIDByName(string Name)
+{
+	unsigned int index;
+
+	for(index = 0; index < vectorMbNodeList.size(); index++) {
+		if(vectorMbNodeList[index]->node.name == Name) {
+			return vectorMbNodeList[index]->NodeID;
+		}
+	}
+
+	return -1;
+}
+
+// Get Index (Position in the list) by NodeID
+int LadderDiagram::mbGetIndexByNodeID(int NodeID)
+{
+	unsigned int index;
+
+	for(index = 0; index < vectorMbNodeList.size(); index++) {
+		if(vectorMbNodeList[index]->NodeID == NodeID) {
+			return index;
+		}
+	}
+
+	return -1;
+}
+
+// Get Node Count by NodeID
+unsigned int LadderDiagram::mbGetNodeCount(int NodeID)
+{
+	unsigned int index;
+
+	for(index = 0; index < vectorMbNodeList.size(); index++) {
+		if(vectorMbNodeList[index]->NodeID == NodeID) {
+			return vectorMbNodeList[index]->NodeCount;
+		}
+	}
+
+	return 0;
+}
+
+// Increment Reference Count for given NodeID
+void LadderDiagram::mbAddRef(int NodeID)
+{
+	unsigned int index = mbGetIndexByNodeID(NodeID);
+
+	if(index >= 0) {
+		// Registro da acao para desfazer / refazer
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->MbNodeRef.index    = index;
+		data->MbNodeRef.isAddRef = true;
+
+		action.action        = eMbNodeRef;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = context;
+		action.data          = data;
+		action.io            = nullptr;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+
+		RegisterAction(action);
+
+		// Adiciona a referencia
+		vectorMbNodeList[index]->NodeCount++;
+	}
+}
+
+// Decrement Reference Count for given NodeID
+void LadderDiagram::mbDelRef(int NodeID)
+{
+	unsigned int index = mbGetIndexByNodeID(NodeID);
+
+	if(index >= 0 && vectorMbNodeList[index]->NodeCount > 0) {
+		// Registro da acao para desfazer / refazer
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->MbNodeRef.index    = index;
+		data->MbNodeRef.isAddRef = false;
+
+		action.action        = eMbNodeRef;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = context;
+		action.data          = data;
+		action.io            = nullptr;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+
+		RegisterAction(action);
+
+		// Remove a referencia
+		vectorMbNodeList[index]->NodeCount--;
+	}
+}
+
+/*** Funcoes relacionadas com I/O ***/
 
 bool LadderDiagram::acceptIO(unsigned long id, enum eType type)
 {
@@ -5607,7 +6021,7 @@ bool LadderDiagram::acceptIO(unsigned long id, enum eType type)
 	}
 
 	for(it = 0; it < rungs.size(); it++) {
-		if(!rungs[it]->acceptIO(id, type)) {
+		if(!rungs[it]->rung->acceptIO(id, type)) {
 			return false;
 		}
 	}
@@ -6032,11 +6446,7 @@ void LadderDiagram::CheckpointBegin(string description)
 	// Se ja registrando acoes, descarta chekpoint
 	if(CheckpointBeginCount++ > 0) return;
 
-	// Se estamos adicionando um checkpoint em Desfazer, a lista de Refazer se torna invalida!
-	// Apagando a lista de Refazer...
-	while(RedoList.size() > 0) {
-		DiscardCheckpoint(false);
-	}
+	CheckpointDoRollback = false;
 
 	cp.Description = description;
 
@@ -6071,7 +6481,10 @@ void LadderDiagram::CheckpointEnd(void)
 
 				do {
 					action = UndoList.back();
-					ExecuteAction(true, true, action);
+					// Primeiro desfaz a acao
+					ExecuteAction(true , false, action);
+					// Agora descarta como Refazer pois a acao foi desfeita mas nao sera refeita...
+					ExecuteAction(false, true , action);
 					UndoList.pop_back();
 				} while(action.action != eCheckpoint);
 			} else if(isCheckpointEmpty) {
@@ -6079,6 +6492,13 @@ void LadderDiagram::CheckpointEnd(void)
 				// Devemos remover o marcador de checkpoint e diminuir 1 nivel
 				UndoList.pop_back();
 				CheckPointLevels--;
+			} else {
+				// Tudo ok, checkpoint valido!
+				// Se estamos adicionando um checkpoint em Desfazer, a lista de Refazer se torna invalida!
+				// Apagando a lista de Refazer...
+				while(RedoList.size() > 0) {
+					DiscardCheckpoint(false);
+				}
 			}
 
 			isCheckpointEmpty = true;
@@ -6207,7 +6627,7 @@ bool LadderDiagram::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 			// Nada a fazer...
 		} else {
 			int offset = data->PushRung.isUp ? -1 : +1;
-			LadderCircuit *tmp = rungs[data->PushRung.pos];
+			LadderRung *tmp                    = rungs[data->PushRung.pos];
 			rungs[data->PushRung.pos         ] = rungs[data->PushRung.pos + offset];
 			rungs[data->PushRung.pos + offset] = tmp;
 		}
@@ -6220,6 +6640,7 @@ bool LadderDiagram::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 			// removida do circuito e nesse momento a acao para sua inclusao esta sendo descartada.
 			// Assim essa linha nao sera mais incluida no circuito e deve ser desalocada da memoria.
 			if(!IsUndo) {
+				delete data->NewRung.rung->rung;
 				delete data->NewRung.rung;
 			}
 		} else if(IsUndo) {
@@ -6237,12 +6658,85 @@ bool LadderDiagram::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 			// removida do circuito e nesse momento a acao para sua exclusao esta sendo descartada.
 			// Assim essa linha nao sera mais incluida no circuito e deve ser desalocada da memoria.
 			if(IsUndo) {
+				delete data->DelRung.rung->rung;
 				delete data->DelRung.rung;
 			}
 		} else if(IsUndo) {
 			rungs.insert(rungs.begin() + data->DelRung.pos, data->DelRung.rung);
 		} else {
 			rungs.erase(rungs.begin() + data->DelRung.pos);
+		}
+
+		break;
+	}
+
+	case eSettingsChanged: {
+		if(isDiscard) {
+			delete data->SettingsChanged.settings; // Descarrega a estrutura de configuracoes
+		} else {
+			tLadderSettings oldsettings       = LadderSettings;
+			LadderSettings                    = *(data->SettingsChanged.settings);
+			*(data->SettingsChanged.settings) = oldsettings;
+		}
+		break;
+	}
+
+	case eMbNodeCreate: {
+		if(isDiscard) {
+			// Se estiver descartando a acao para refazer a inclusao do node, significa que ele havia sido
+			// removido do circuito e nesse momento a acao para sua inclusao esta sendo descartada.
+			// Assim esse node nao sera mais cadastrado e deve ser desalocado da memoria.
+			if(!IsUndo) {
+				delete data->MbNodeCreate.nl;
+			}
+		} else if(IsUndo) {
+			vectorMbNodeList.pop_back();
+		} else {
+			vectorMbNodeList.push_back(data->MbNodeCreate.nl);
+		}
+
+		break;
+	}
+
+	case eMbNodeUpdate: {
+		if(isDiscard) {
+			delete data->MbNodeUpdate.node;
+		} else {
+			LadderMbNode oldnode                             = vectorMbNodeList[data->MbNodeUpdate.index]->node;
+			vectorMbNodeList[data->MbNodeUpdate.index]->node = *(data->MbNodeUpdate.node);
+			*(data->MbNodeUpdate.node)                       = oldnode;
+		}
+
+		break;
+	}
+
+	case eMbNodeDelete: {
+		if(isDiscard) {
+			// Se estiver descartando a acao para desfazer a exclusao do node, significa que ele havia sido
+			// removido do circuito e nesse momento a acao para sua exclusao esta sendo descartada.
+			// Assim esse node nao sera mais cadastrado e deve ser desalocado da memoria.
+			if(IsUndo) {
+				delete data->MbNodeDelete.nl;
+			}
+		} else if(IsUndo) {
+			vectorMbNodeList.insert(vectorMbNodeList.begin() + data->MbNodeDelete.index, data->MbNodeDelete.nl);
+		} else {
+			vectorMbNodeList.erase(vectorMbNodeList.begin() + data->MbNodeDelete.index);
+		}
+
+		break;
+	}
+
+	case eMbNodeRef: {
+		if(isDiscard) {
+			// Nada a fazer...
+		} else {
+			int offset = data->MbNodeRef.isAddRef ? +1 : -1;
+			if(IsUndo) {
+				offset *= -1;
+			}
+
+			vectorMbNodeList[data->MbNodeRef.index]->NodeCount += offset;
 		}
 
 		break;

@@ -29,11 +29,6 @@ static BOOL CheckBoundsUndoIfFails(int gx, int gy)
     if(gx >= DISPLAY_MATRIX_X_SIZE || gx < 0 ||
        gy >= DISPLAY_MATRIX_Y_SIZE || gy < 0)
     {
-        if(CanUndo()) {
-            UndoUndo();
-            Error(_("Too many elements in subcircuit!"));
-            return TRUE;
-        }
     }
     return FALSE;
 }
@@ -179,9 +174,6 @@ static int CountWidthOfElement(int which, void *elem, int soFar)
 int CountHeightOfElement(int which, void *elem)
 {
     switch(which) {
-        CASE_LEAF
-            return 1;
-
         case ELEM_PARALLEL_SUBCKT: {
             // total of the height of the members
             int total = 0;
@@ -669,7 +661,7 @@ static BOOL DrawEndOfLine(int which, ElemLeaf *leaf, int *cx, int *cy,
 //-----------------------------------------------------------------------------
 static BOOL DrawLeaf(int which, ElemLeaf *leaf, int *cx, int *cy,
     BOOL poweredBefore)
-{
+{return TRUE;/*
 	char ch;
     int cx0 = *cx, cy0 = *cy;
     BOOL poweredAfter = leaf->poweredAfter;
@@ -1093,7 +1085,7 @@ cmp:
             break;
     }
 
-    return poweredAfter;
+    return poweredAfter;*/
 }
 
 //-----------------------------------------------------------------------------

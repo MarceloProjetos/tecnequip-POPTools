@@ -1891,7 +1891,7 @@ void LadderDiagram::DrawGUI(void)
 	tDataDrawGUI RungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, &context };
 
 	for(i = 0; i < rungs.size(); i++) {
-		rungs[i]->DrawGUI(&RungDDG);
+		rungs[i]->rung->DrawGUI(&RungDDG);
 
 		RungDDG.start.y += RungDDG.size.y + 1;
 		if(SizeMax.x < RungDDG.size.x) {
@@ -1940,7 +1940,7 @@ void LadderDiagram::DrawGUI(void)
 	RungDDG.start.y = 0;
 	for(i = 0; i < rungs.size(); i++) {
 		RungDDG.size = SizeMax;
-		rungs[i]->DrawGUI(&RungDDG);
+		rungs[i]->rung->DrawGUI(&RungDDG);
 
 		RECT r = gui.getRECT(RungDDG.start, RungDDG.size);
 		r.right = r.left;
@@ -1975,7 +1975,7 @@ bool LadderDiagram::IsSelectedVisible(void)
 	tDataDrawGUI RungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, &context };
 
 	for(i = 0; i < rungs.size(); i++) {
-		rungs[i]->DrawGUI(&RungDDG);
+		rungs[i]->rung->DrawGUI(&RungDDG);
 
 		if(!IsRegionZero(RungDDG.regionSelected)) { // Selecionado encontrado.
 			RECT rWindow = { 0, 0, 0, 0 };

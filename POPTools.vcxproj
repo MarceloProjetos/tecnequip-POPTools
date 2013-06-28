@@ -346,7 +346,6 @@
     <ClCompile Include="simpledialog.cpp" />
     <ClCompile Include="simulate.cpp" />
     <ClCompile Include="splash.cpp" />
-    <ClCompile Include="undoredo.cpp" />
     <ClCompile Include="XMLWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>

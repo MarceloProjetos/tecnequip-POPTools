@@ -285,7 +285,7 @@ int KBH_Element_Edit(void *user_data)
 {
 	if(InSimulationMode) return 0;
 
-	CHANGING_PROGRAM(ladder->EditSelectedElement());
+	ladder->EditSelectedElement();
 
 	return 1;
 }

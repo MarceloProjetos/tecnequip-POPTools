@@ -16,6 +16,69 @@ class LadderElem;
 class LadderCircuit;
 class LadderDiagram;
 
+// Estruturas para gravar / ler as configuracoes do ladder
+typedef struct {
+	bool			canSave;
+	int				cycleTime;
+	int				mcuClock;
+} LadderSettingsGeneral;
+
+typedef struct {
+	int				baudRate;	// RS485 baudrate
+	int				UART;
+} LadderSettingsUART;
+
+typedef struct {
+	unsigned long	ip;
+	unsigned long	mask;
+	unsigned long	gw;
+	unsigned long	dns;
+} LadderSettingsNetwork;
+
+typedef struct {
+	bool			sntp_enable;
+	string			sntp_server;
+	int				gmt;
+	bool			dailysave;
+} LadderSettingsSNTP;
+
+typedef struct {
+	int				perimeter;
+	int				pulses;
+	float			factor;
+	int				conv_mode;
+	bool			x4;
+} LadderSettingsEncoderIncremental;
+
+typedef struct {
+	int		size;
+	int		mode;
+
+	int		conv_mode;
+	int		perimeter;
+	float	factor;
+	int		size_bpr;
+} LadderSettingsEncoderSSI;
+
+typedef struct {
+	int ramp_abort_mode;
+} LadderSettingsDAC;
+
+typedef struct {
+	int			ModBUSID;
+} LadderSettingsModbusSlave;
+
+typedef struct {
+	// Project Information
+	string Name       ;
+	string Developer  ;
+	string Description;
+	string FWVersion  ;
+	long   BuildNumber;
+	time_t CompileDate;
+	time_t ProgramDate;
+} LadderSettingsInformation;
+
 // Estruturas auxiliares relacionadas com o I/O
 enum eReply { eReply_No = 0, eReply_Yes, eReply_Ask };
 
@@ -127,6 +190,16 @@ eType getTimerTypeIO(int which);
 // Funcao auxiliar que entrega um contexto "vazio"
 LadderContext getEmptyContext(void);
 
+// Estruturas auxiliares relacionada a lista de nos do ModBUS
+enum eMbTypeNode { eMbTypeNode_RS485 = 0, eMbTypeNode_Ethernet };
+
+typedef struct {
+	string        name;
+	int           id;
+	unsigned long ip;
+	eMbTypeNode   iface;
+} LadderMbNode;
+
 /*** Classes representando os elementos do Ladder ***/
 
 // Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base
@@ -176,6 +249,9 @@ public:
 
 	virtual bool CanInsert(LadderContext context) = 0;
 
+	virtual void doPostInsert(void) = 0;
+	virtual void doPostRemove(void) = 0;
+
 	virtual inline int getWidthTXT(void) = 0;
 
 	void          setProperties(LadderContext context, void *propData);
@@ -207,6 +283,9 @@ public:
 	bool GenerateIntCode(IntCode &ic);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -247,6 +326,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void);
 
 	LadderElem *Clone(void);
@@ -284,6 +366,9 @@ public:
 	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -325,6 +410,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -364,6 +452,9 @@ public:
 	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -405,6 +496,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -443,6 +537,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -480,6 +577,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -510,6 +610,9 @@ public:
 	void *getProperties(void) { return nullptr; }
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -548,6 +651,9 @@ public:
 	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -588,6 +694,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 2; }
 
 	LadderElem *Clone(void);
@@ -625,6 +734,9 @@ public:
 	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -665,6 +777,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 2; }
 
 	LadderElem *Clone(void);
@@ -702,6 +817,9 @@ public:
 	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -741,6 +859,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -771,6 +892,9 @@ public:
 	void *getProperties(void) { return nullptr; }
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -811,6 +935,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -850,6 +977,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -886,6 +1016,9 @@ public:
 	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -925,6 +1058,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -962,6 +1098,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -998,6 +1137,9 @@ public:
 	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -1046,6 +1188,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -1086,6 +1231,9 @@ public:
 	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -1128,6 +1276,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void);
+	void doPostRemove(void);
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -1163,6 +1314,9 @@ public:
 	bool GenerateIntCode(IntCode &ic);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	void *getProperties(void);
 
@@ -1203,6 +1357,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -1233,6 +1390,9 @@ public:
 	void *getProperties(void) { return nullptr; }
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -1275,6 +1435,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -1316,6 +1479,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -1356,6 +1522,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -1393,6 +1562,9 @@ public:
 	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 2; }
 
@@ -1433,6 +1605,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 2; }
 
 	LadderElem *Clone(void);
@@ -1470,6 +1645,9 @@ public:
 
 	bool CanInsert(LadderContext context);
 
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
 	inline int getWidthTXT(void) { return 1; }
 
 	LadderElem *Clone(void);
@@ -1506,6 +1684,9 @@ public:
 	void *getProperties(void) { return nullptr; }
 
 	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
 
 	inline int getWidthTXT(void) { return 1; }
 
@@ -1591,6 +1772,9 @@ public:
 
 	LadderCircuit *Clone(void);
 
+	void doPostInsert(void);
+	void doPostRemove(void);
+
 	// Funcoes relacionadas com I/O
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
@@ -1611,6 +1795,14 @@ private:
 	// Indica se existem acoes registradas ao fechar um checkpoint 
 	bool isCheckpointEmpty;
 
+	// list of rungs
+	struct LadderRung {
+		LadderCircuit *rung;
+		bool           hasBreakpoint;
+		bool           isPowered;
+	};
+	vector<LadderRung *> rungs;
+
 	// Undo / Redo Action Lists
 	deque<UndoRedoAction> UndoList;
 	deque<UndoRedoAction> RedoList;
@@ -1618,8 +1810,36 @@ private:
 	void DiscardCheckpoint(bool isUndo = true);
 	bool ExecuteAction(bool isUndo, bool isDiscard, UndoRedoAction Action);
 
+	// Configuracoes do Diagrama Ladder
+	typedef struct {
+		LadderSettingsGeneral            General;
+		LadderSettingsUART               Uart;
+		LadderSettingsNetwork            Network;
+		LadderSettingsSNTP               Sntp;
+		LadderSettingsEncoderIncremental EncInc;
+		LadderSettingsEncoderSSI         EncSSI;
+		LadderSettingsDAC                Dac;
+		LadderSettingsModbusSlave        MbSlave;
+		LadderSettingsInformation        Info;
+	} tLadderSettings;
+
+	tLadderSettings LadderSettings;
+
+	// Funcao que Registra no Undo/Redo a configuracao atual para que possa ser desfeito
+	void RegisterSettingsChanged(void);
+
+	// Lista de nos do ModBUS
+	typedef struct {
+		int          NodeID;
+		unsigned int NodeCount;
+		LadderMbNode node;
+	} LadderMbNodeList;
+
+	vector<LadderMbNodeList *> vectorMbNodeList;
+
 	// Estrutura de dados para acoes de Desfazer / Refazer
-	enum UndoRedoActionsEnum { eCheckpoint = 0, ePushRung, eNewRung, eDelRung };
+	enum UndoRedoActionsEnum { eCheckpoint = 0, ePushRung, eNewRung, eDelRung, eSettingsChanged,
+		eMbNodeCreate, eMbNodeUpdate, eMbNodeDelete, eMbNodeRef };
 	union UndoRedoData {
 		struct {
 			int  pos;
@@ -1627,29 +1847,48 @@ private:
 		} PushRung;
 		struct {
 			int  pos;
-			LadderCircuit *rung;
+			LadderRung *rung;
 		} NewRung;
 		struct {
 			int  pos;
-			LadderCircuit *rung;
+			LadderRung *rung;
 		} DelRung;
+		struct {
+			tLadderSettings *settings;
+		} SettingsChanged;
+		struct {
+			LadderMbNodeList *nl;
+		} MbNodeCreate;
+		struct {
+			unsigned int      index;
+			LadderMbNode     *node;
+		} MbNodeUpdate;
+		struct {
+			unsigned int      index;
+			LadderMbNodeList *nl;
+		} MbNodeDelete;
+		struct {
+			unsigned int index;
+			bool         isAddRef;
+		} MbNodeRef;
 	};
 
 	// Context properties
 	LadderContext context;
 
-	// list of rungs
-	vector<LadderCircuit *> rungs;
-
 	// Objeto que contem todos os I/Os
 	mapIO *IO;
+
+	// Estrutura que representa a CPU que estamos trabalhando
+	// Heranca do antigo codigo, mantido para nao desenvolver tudo de novo
+	McuIoInfo  *mcu;
 
 	bool NeedScrollSelectedIntoView;
 
 	IntCode ic;
 
-	LadderElem    *copiedElement;
-	LadderCircuit *copiedRung;
+	LadderElem *copiedElement;
+	LadderRung *copiedRung;
 
 	void Init(void);
 
@@ -1702,14 +1941,44 @@ public:
 
 	bool AddParallelStart(void);
 
-	// Funcoes relacionadas aos comandos de Desfazer / Refazer
-	void RegisterAction    (UndoRedoAction Action, bool isUndo = true);
-	void CheckpointBegin   (string description);
-	void CheckpointRollback(void) { CheckpointDoRollback = true; }
-	void CheckpointEnd     (void);
-	void UndoRedo          (bool isUndo);
-	void Undo              (void) { UndoRedo( true); }
-	void Redo              (void) { UndoRedo(false); }
+	// Funcao que retorna a estrutura que representa a CPU
+	McuIoInfo *getMCU(void) { return mcu; }
+
+	// Funcoes para ler / gravar a configuracao do ladder
+	LadderSettingsGeneral            getSettingsGeneral           (void) { return LadderSettings.General; }
+	LadderSettingsUART               getSettingsUART              (void) { return LadderSettings.Uart   ; }
+	LadderSettingsNetwork            getSettingsNetwork           (void) { return LadderSettings.Network; }
+	LadderSettingsSNTP               getSettingsSNTP              (void) { return LadderSettings.Sntp   ; }
+	LadderSettingsEncoderIncremental getSettingsEncoderIncremental(void) { return LadderSettings.EncInc ; }
+	LadderSettingsEncoderSSI         getSettingsEncoderSSI        (void) { return LadderSettings.EncSSI ; }
+	LadderSettingsDAC                getSettingsDAC               (void) { return LadderSettings.Dac    ; }
+	LadderSettingsModbusSlave        getSettingsModbusSlave       (void) { return LadderSettings.MbSlave; }
+	LadderSettingsInformation        getSettingsInformation       (void) { return LadderSettings.Info   ; }
+
+	void                             setSettingsGeneral           (LadderSettingsGeneral            setGeneral);
+	void                             setSettingsUART              (LadderSettingsUART               setUart   );
+	void                             setSettingsNetwork           (LadderSettingsNetwork            setNetwork);
+	void                             setSettingsSNTP              (LadderSettingsSNTP               setSntp   );
+	void                             setSettingsEncoderIncremental(LadderSettingsEncoderIncremental setEncInc );
+	void                             setSettingsEncoderSSI        (LadderSettingsEncoderSSI         setEncSSI );
+	void                             setSettingsDAC               (LadderSettingsDAC                setDac    );
+	void                             setSettingsModbusSlave       (LadderSettingsModbusSlave        setMbSlave);
+	void                             setSettingsInformation       (LadderSettingsInformation        setInfo   );
+
+	// Funcoes para manipular/acessar lista de nos do ModBUS
+	void         mbClearNode       (LadderMbNode *node);
+	int          mbCreateNode      (string NodeName);
+	int          mbCreateNode      (LadderMbNode node);
+	int          mbUpdateNode      (int NodeID, LadderMbNode node);
+	void         mbDeleteNode      (int NodeID );
+	LadderMbNode mbGetNodeByIndex  (int elem   );
+	LadderMbNode mbGetNodeByNodeID (int NodeID );
+	int          mbGetNodeIDByName (string name);
+	int          mbGetNodeIDByIndex(int elem   );
+	int          mbGetIndexByNodeID(int NodeID );
+	unsigned int mbGetNodeCount    (int NodeID );
+	void         mbAddRef          (int NodeID );
+	void         mbDelRef          (int NodeID );
 
 	// Funcoes relacionadas com I/O
 	bool          acceptIO        (unsigned long  id, eType type);
@@ -1728,6 +1997,15 @@ public:
 	bool          IsGenericTypeIO (eType type);
 	string        getPortNameIO   (int index);
 	void          ShowIoMapDialog (int item);
+
+	// Funcoes relacionadas aos comandos de Desfazer / Refazer
+	void RegisterAction    (UndoRedoAction Action, bool isUndo = true);
+	void CheckpointBegin   (string description);
+	void CheckpointRollback(void) { CheckpointDoRollback = true; }
+	void CheckpointEnd     (void);
+	void UndoRedo          (bool isUndo);
+	void Undo              (void) { UndoRedo( true); }
+	void Redo              (void) { UndoRedo(false); }
 
 	bool equalsNameIO             (string name1, string name2);
 

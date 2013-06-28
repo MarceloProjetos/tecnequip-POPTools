@@ -31,6 +31,13 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 	vectorReservedName.push_back(_("char"));
 }
 
+void mapIO::Clear(void)
+{
+	IO.clear();
+	countIO = 0;
+	selectedIO = 0;
+}
+
 bool mapIO::IsReserved(string name)
 {
 	vector<string>::size_type i;
@@ -431,26 +438,27 @@ bool mapIO::Assign(string name, unsigned int pin, unsigned int bit, bool isUndoR
 
 string mapIO::getPortName(int index)
 {
+	McuIoInfo *mcu = diagram->getMCU();
 	char buf[1024];
 	mapDetails detailsIO = getDetails(getID(index));
 
 	if((detailsIO.type != eType_DigInput && detailsIO.type != eType_DigOutput && detailsIO.type != eType_General
 		&& detailsIO.type != eType_ReadADC && detailsIO.type != eType_ReadEnc && detailsIO.type != eType_ResetEnc
-		&& detailsIO.type != eType_ReadUSS && detailsIO.type != eType_WriteUSS) || detailsIO.pin == 0 || !Prog.mcu)
+		&& detailsIO.type != eType_ReadUSS && detailsIO.type != eType_WriteUSS) || detailsIO.pin == 0 || !mcu)
 	{
 		return string("");
 	}
 
-	if(UartFunctionUsed() && Prog.mcu) {
-		if((Prog.mcu->uartNeeds.rxPin == detailsIO.pin) ||
-			(Prog.mcu->uartNeeds.txPin == detailsIO.pin))
+	if(UartFunctionUsed() && mcu) {
+		if((mcu->uartNeeds.rxPin == detailsIO.pin) ||
+			(mcu->uartNeeds.txPin == detailsIO.pin))
 		{
 			return string(_("<UART needs!>"));
 		}
 	}
 
-	if(PwmFunctionUsed() && Prog.mcu) {
-		if(Prog.mcu->pwmNeedsPin == detailsIO.pin && detailsIO.type == eType_DigOutput) {
+	if(PwmFunctionUsed() && mcu) {
+		if(mcu->pwmNeedsPin == detailsIO.pin && detailsIO.type == eType_DigOutput) {
 			return string(_("<PWM needs!>"));
 		}
 	}
@@ -2163,9 +2171,7 @@ void IoMapListProc(NMHDR *h)
 					InvalidateRect(IoList, NULL, FALSE);
 				}
             } else {
-                UndoRemember();
                 ladder->ShowIoMapDialog(i->iItem);
-                ProgramChanged();
                 InvalidateRect(MainWindow, NULL, FALSE);
             }
             break;

@@ -50,6 +50,8 @@ private:
 public:
 	mapIO(LadderDiagram *pDiagram);
 
+	void Clear(void); // Descarrega a lista de I/Os
+
 	unsigned long  getIndex     (unsigned long id, bool isTotal = true);
 	string         getName      (unsigned long id);
 	mapDetails     getDetails   (unsigned long id);

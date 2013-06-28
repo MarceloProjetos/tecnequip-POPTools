@@ -147,9 +147,6 @@
     <ClCompile Include="modbus_slave.cpp">
       <Filter>Source Files\POP-7</Filter>
     </ClCompile>
-    <ClCompile Include="undoredo.cpp">
-      <Filter>Source Files\Diagrama Ladder</Filter>
-    </ClCompile>
     <ClCompile Include="lang.cpp">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>

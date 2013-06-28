@@ -25,93 +25,11 @@ static LONG_PTR PrevNameProc;
 
 /*** Helper Functions for MbNodeList ***/
 
-// Create a new node in the list
-int MbNodeList_Create(char *NodeName)
-{
-	int elem = Prog.settings.mb_list_size;
-
-	if(NodeName == NULL || Prog.settings.mb_list_size == MB_LIST_MAX) return -1;
-
-	Prog.settings.mb_list[elem].NodeID     = elem ? Prog.settings.mb_list[elem-1].NodeID + 1 : 0;
-	Prog.settings.mb_list[elem].NodeCount  = 0;
-
-	Prog.settings.mb_list[elem].node.id    = 0;
-	Prog.settings.mb_list[elem].node.iface = 0;
-	Prog.settings.mb_list[elem].node.ip    = 0;
-
-	strcpy(Prog.settings.mb_list[elem].node.name, NodeName);
-
-	Prog.settings.mb_list_size++;
-
-	return elem;
-}
-
-// Get MbNodeList by Index (Position in the list)
-MbNodeList *MbNodeList_GetByIndex(int index)
-{
-	return index < Prog.settings.mb_list_size ? &Prog.settings.mb_list[index] : NULL;
-}
-
-// Get MbNodeList by NodeID
-MbNodeList *MbNodeList_GetByNodeID(int NodeID)
-{
-	int index;
-
-	for(index = 0; index < Prog.settings.mb_list_size; index++) {
-		if(Prog.settings.mb_list[index].NodeID == NodeID) {
-			break;
-		}
-	}
-
-	return index < Prog.settings.mb_list_size ? &Prog.settings.mb_list[index] : NULL;
-}
-
-// Get NodeID by Index (Position in the list)
-int MbNodeList_GetNodeIDByIndex(int index)
-{
-	MbNodeList *l = MbNodeList_GetByIndex(index);
-	return l ? l->NodeID : 0;
-}
-
-// Get Index (Position in the list) by NodeID
-int MbNodeList_GetIndexByNodeID(int NodeID)
-{
-	int index;
-
-	for(index = 0; index < Prog.settings.mb_list_size; index++) {
-		if(Prog.settings.mb_list[index].NodeID == NodeID) {
-			break;
-		}
-	}
-
-	return index < Prog.settings.mb_list_size ? index : 0;
-}
-
-// Increment Reference Count for given NodeID
-void MbNodeList_AddRef(int NodeID)
-{
-	MbNodeList *l = MbNodeList_GetByNodeID(NodeID);
-
-	if(l != NULL) {
-		l->NodeCount++;
-	}
-}
-
-// Decrement Reference Count for given NodeID
-void MbNodeList_DelRef(int NodeID)
-{
-	MbNodeList *l = MbNodeList_GetByNodeID(NodeID);
-
-	if(l != NULL) {
-		l->NodeCount--;
-	}
-}
-
 // Populate a Combobox with the names of current items on ModBUS Node List, including an optional "New" item
 void PopulateModBUSMasterCombobox(HWND h, bool has_new)
 {
-	int index, i = 0;
-	MbNodeList *l = Prog.settings.mb_list;
+	unsigned int index = 0, i = 0;
+	LadderMbNode node = ladder->mbGetNodeByIndex(0);
 
 	SendMessage(h, CB_RESETCONTENT, 0, 0);
 
@@ -119,8 +37,9 @@ void PopulateModBUSMasterCombobox(HWND h, bool has_new)
 		SendMessage(h, CB_INSERTSTRING, i++, (LPARAM)((LPCTSTR)"< NOVO >"));
 	}
 
-	for(index = 0; index < Prog.settings.mb_list_size; index++) {
-		SendMessage(h, CB_INSERTSTRING, i++, (LPARAM)((LPCTSTR)Prog.settings.mb_list[index].node.name));
+	while(node.name.size() > 0) {
+		SendMessage(h, CB_INSERTSTRING, i++, (LPARAM)((LPCTSTR)node.name.c_str()));
+		node = ladder->mbGetNodeByIndex(++index);
 	}
 
 	SendMessage(h, CB_SETCURSEL, 0, 0);
@@ -261,7 +180,7 @@ bool ShowModbusDialog(int mode_write, pair<unsigned long, int> *name, int *elem,
     sprintf(addr, "%d", *address);
 
 	PopulateModBUSMasterCombobox(ElemTextbox, false);
-	SendMessage(ElemTextbox, CB_SETCURSEL, MbNodeList_GetIndexByNodeID(*elem), 0);
+	SendMessage(ElemTextbox, CB_SETCURSEL, ladder->mbGetIndexByNodeID(*elem), 0);
 	SendMessage(ElemTextbox, CB_SETDROPPEDWIDTH, 200, 0);
 
 	if (*set)
@@ -322,9 +241,9 @@ bool ShowModbusDialog(int mode_write, pair<unsigned long, int> *name, int *elem,
 				else
 					*retransmitir = FALSE;
 
-				MbNodeList_DelRef(*elem);
-				*elem = MbNodeList_GetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
-				MbNodeList_AddRef(*elem);
+				ladder->mbDelRef(*elem);
+				*elem = ladder->mbGetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
+				ladder->mbAddRef(*elem);
 				SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
 
 				*address = atoi(addr);

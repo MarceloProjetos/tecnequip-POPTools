@@ -228,25 +228,26 @@ void LoadMBMasterControls(int elem)
 {
 	if(elem > 0) {
 		char buf[10];
-		MbNodeList *l = MbNodeList_GetByIndex(elem-1);
+		LadderMbNode node = ladder->mbGetNodeByIndex(elem-1);
 
-		if(l != NULL) {
-			sprintf(buf, "%d", l->node.id);
+		if(node.name.size() > 0) {
+			sprintf(buf, "%d", node.id);
 
-			EnableWindow(MBip  , l->node.iface ? TRUE : FALSE);
-			SendMessage(MBiface, CB_SETCURSEL  , l->node.iface, 0);
-			SendMessage(MBname , WM_SETTEXT    , 0, (LPARAM)l->node.name);
-			SendMessage(MBip   , IPM_SETADDRESS, 0, l->node.ip);
+			EnableWindow(MBip  , (node.iface == eMbTypeNode_Ethernet) ? TRUE : FALSE);
+			SendMessage(MBiface, CB_SETCURSEL  , node.iface, 0);
+			SendMessage(MBname , WM_SETTEXT    , 0, (LPARAM)node.name.c_str());
+			SendMessage(MBip   , IPM_SETADDRESS, 0, node.ip);
 			SendMessage(MBid   , WM_SETTEXT    , 0, (LPARAM)buf);
 		}
 
 		Button_SetText(MBok, _("Alterar"));
 		EnableWindow(MBdelete, TRUE);
 	} else {
+		LadderSettingsNetwork network = ladder->getSettingsNetwork();
 		EnableWindow(MBip  , TRUE);
 		SendMessage(MBiface, CB_SETCURSEL  , 1, 0); // Ethernet
 		SendMessage(MBname , WM_SETTEXT    , 0, (LPARAM)"");
-		SendMessage(MBip   , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]));
+		SendMessage(MBip   , IPM_SETADDRESS, 0, network.ip);
 		SendMessage(MBid   , WM_SETTEXT    , 0, (LPARAM)"1");
 
 		Button_SetText(MBok, _("Adicionar"));
@@ -266,78 +267,81 @@ static LRESULT CALLBACK ConfDialogProc_ModBusMasterGrouper(HWND hwnd, UINT msg, 
             if(h == MBok && wParam == BN_CLICKED) {
 				char buf[MAX_NAME_LEN];
 				PCWSTR msg;
-				MbNodeList *new_node = NULL;
 				int i = ComboBox_GetCurSel(MBelem), pos = 1;
 
 				// Check if name already in the list
 				SendMessage(MBname, WM_GETTEXT, (WPARAM)17, (LPARAM)buf);
-				for(pos = 0; pos < Prog.settings.mb_list_size; pos++) {
-					if((i-1) != pos && !strcmp(Prog.settings.mb_list[pos].node.name, buf)) {
-						ShowTaskDialog(L"Já existe um elemento com esse nome!", NULL, TD_ERROR_ICON, TDCBF_OK_BUTTON);
-						break;
-					}
+				LadderMbNode new_node = ladder->mbGetNodeByNodeID(ladder->mbGetNodeIDByName(buf));
+
+				bool nameOK = false;
+				if(i == ladder->mbGetIndexByNodeID(ladder->mbGetNodeIDByName(buf)) + 1) {
+					nameOK = true;
 				}
 
-				if(pos == Prog.settings.mb_list_size) { // Name not found,  we can insert / update element.
+				if(new_node.name.size() > 0 && !nameOK) {
+					ShowTaskDialog(L"Já existe um elemento com esse nome!", NULL, TD_ERROR_ICON, TDCBF_OK_BUTTON);
+				} else { // Name not found,  we can insert / update element.
 					if(!i) { // New element
-						if(Prog.settings.mb_list_size == MB_LIST_MAX) {
-							msg = L"Muitos elementos cadastrados!";
+						i = ladder->mbCreateNode(buf); // Create the new node
+
+						if(i < 0) {
+							msg = L"Erro ao criar elemento!";
 						} else {
-							i = MbNodeList_Create(""); // Create the new node
+							msg = L"Elemento adicionado com sucesso!";
 
-							if(i < 0) {
-								msg = L"Erro ao criar elemento!";
-							} else {
-								msg = L"Elemento adicionado com sucesso!";
-
-								new_node = &Prog.settings.mb_list[i];
-							}
+							new_node = ladder->mbGetNodeByIndex(i);
 						}
 					} else { // Updating existent element
 						msg = L"Elemento alterado com sucesso!";
 
-						new_node = MbNodeList_GetByIndex(i-1);
+						new_node = ladder->mbGetNodeByIndex(i-1);
 					}
 
-					if(new_node != NULL) {
-						strcpy(new_node->node.name, buf);
+					if(new_node.name.size() > 0) {
+						int NodeID = ladder->mbGetNodeIDByName(new_node.name);
+						new_node.name = buf;
 
 						SendMessage(MBid, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)buf);
-						new_node->node.id = atoi(buf);
+						new_node.id = atoi(buf);
 
-						new_node->node.iface = SendMessage(MBiface, CB_GETCURSEL, 0, 0);
+						switch(SendMessage(MBiface, CB_GETCURSEL, 0, 0)) {
+						default:
+						case 0: new_node.iface = eMbTypeNode_RS485   ; break;
+						case 1: new_node.iface = eMbTypeNode_Ethernet; break;
+						}
 
-						SendMessage(MBip, IPM_GETADDRESS, 0, (LPARAM)&new_node->node.ip);
+						SendMessage(MBip, IPM_GETADDRESS, 0, (LPARAM)&new_node.ip);
+
+						ladder->mbUpdateNode(NodeID, new_node);
 
 						PopulateModBUSMasterCombobox(MBelem, true);
 						LoadMBMasterControls(0);
 					}
 
-					ShowTaskDialog(msg, NULL, new_node ? TD_INFORMATION_ICON : TD_ERROR_ICON, TDCBF_OK_BUTTON);
+					ShowTaskDialog(msg, NULL, (new_node.name.size() == 0) ? TD_INFORMATION_ICON : TD_ERROR_ICON, TDCBF_OK_BUTTON);
 				}
             } else if(h == MBdelete && wParam == BN_CLICKED) {
 				int i = ComboBox_GetCurSel(MBelem) - 1;
-				MbNodeList *l = MbNodeList_GetByIndex(i);
+				int NodeID = ladder->mbGetNodeIDByIndex(i);
 
-				if(l->NodeCount) {
+				if(ladder->mbGetNodeCount(NodeID) > 0) {
 					ShowTaskDialog(L"Este elemento está em uso!", L"Primeiro remova sua referência de todas as instruções que o utilizam.",
 						TD_ERROR_ICON, TDCBF_OK_BUTTON);
 				} else if(ShowTaskDialog(L"Tem certeza que deseja excluir o item selecionado?", NULL,
-						TD_WARNING_ICON, TDCBF_YES_BUTTON | TDCBF_NO_BUTTON) == IDYES) {
-					memcpy(&Prog.settings.mb_list[i], &Prog.settings.mb_list[i+1], sizeof(Prog.settings.mb_list[i])*(Prog.settings.mb_list_size - i - 1));
-
-					Prog.settings.mb_list_size--;
-					PopulateModBUSMasterCombobox(MBelem, true);
-					LoadMBMasterControls(0);
+					TD_WARNING_ICON, TDCBF_YES_BUTTON | TDCBF_NO_BUTTON) == IDYES) {
+						ladder->mbDeleteNode(NodeID);
+						PopulateModBUSMasterCombobox(MBelem, true);
+						LoadMBMasterControls(0);
 				}
             } else if(h == MBelem && HIWORD(wParam) == CBN_SELCHANGE) {
 				LoadMBMasterControls(ComboBox_GetCurSel(MBelem));
 			} else if(h == MBiface && HIWORD(wParam) == CBN_SELCHANGE) {
-				if(ComboBox_GetCurSel(MBiface) == MB_IFACE_RS485) {
+				if(ComboBox_GetCurSel(MBiface) == eMbTypeNode_RS485) {
 					SendMessage (MBip, IPM_SETADDRESS, 0, 0);
 					EnableWindow(MBip, FALSE);
 				} else {
-					SendMessage (MBip, IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]));
+					LadderSettingsNetwork network = ladder->getSettingsNetwork();
+					SendMessage (MBip, IPM_SETADDRESS, 0, network.ip);
 					EnableWindow(MBip, TRUE);
 				}
 			}
@@ -948,8 +952,7 @@ static void MakeControls(void)
 bool ShowConfDialog(bool NetworkSection)
 {
 	bool changed = false;
-	MbNodeList mb_list[MB_LIST_MAX];
-	unsigned int i, ipaddress, ipmask, ipgw, ipdns, mb_list_size;
+	unsigned int i;
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "POPToolsDialog", _("PLC Configuration"),
         WS_OVERLAPPED | WS_SYSMENU,
@@ -965,20 +968,30 @@ bool ShowConfDialog(bool NetworkSection)
 		OnSelChanged(0); // Initial Group
 	}
 
-    char buf[160];
+    char buf[1024];
 	time_t rawtime;
 	struct tm * timeinfo;
 
-	SendMessage(InfoProjectTextbox    , WM_SETTEXT, 0, (LPARAM)Prog.settings.InfoName       );
-	SendMessage(InfoDeveloperTextbox  , WM_SETTEXT, 0, (LPARAM)Prog.settings.InfoDeveloper  );
-	SendMessage(InfoDescriptionTextbox, WM_SETTEXT, 0, (LPARAM)Prog.settings.InfoDescription);
-	SendMessage(InfoFWVersionLabel    , WM_SETTEXT, 0, (LPARAM)Prog.settings.InfoFWVersion  );
+	LadderSettingsGeneral            settingsGeneral = ladder->getSettingsGeneral           ();
+	LadderSettingsUART               settingsUart    = ladder->getSettingsUART              ();
+	LadderSettingsNetwork            settingsNetwork = ladder->getSettingsNetwork           ();
+	LadderSettingsSNTP               settingsSntp    = ladder->getSettingsSNTP              ();
+	LadderSettingsEncoderIncremental settingsEncInc  = ladder->getSettingsEncoderIncremental();
+	LadderSettingsEncoderSSI         settingsEncSSI  = ladder->getSettingsEncoderSSI        ();
+	LadderSettingsDAC                settingsDac     = ladder->getSettingsDAC               ();
+	LadderSettingsModbusSlave        settingsMbSlave = ladder->getSettingsModbusSlave       ();
+	LadderSettingsInformation        settingsInfo    = ladder->getSettingsInformation       ();
 
-	sprintf(buf, "%d", Prog.settings.InfoBuildNumber);
+	SendMessage(InfoProjectTextbox    , WM_SETTEXT, 0, (LPARAM)settingsInfo.Name       .c_str());
+	SendMessage(InfoDeveloperTextbox  , WM_SETTEXT, 0, (LPARAM)settingsInfo.Developer  .c_str());
+	SendMessage(InfoDescriptionTextbox, WM_SETTEXT, 0, (LPARAM)settingsInfo.Description.c_str());
+	SendMessage(InfoFWVersionLabel    , WM_SETTEXT, 0, (LPARAM)settingsInfo.FWVersion  .c_str());
+
+	sprintf(buf, "%d", settingsInfo.BuildNumber);
 	SendMessage(InfoBuildNumberLabel, WM_SETTEXT, 0, (LPARAM)buf);
 
-	if(Prog.settings.InfoCompileDate) {
-		rawtime = Prog.settings.InfoCompileDate;
+	if(settingsInfo.CompileDate) {
+		rawtime = settingsInfo.CompileDate;
 		timeinfo = localtime(&rawtime);
 		strftime(buf, sizeof(buf), "%H:%M:%S %d/%m/%Y", timeinfo);
 	} else {
@@ -986,8 +999,8 @@ bool ShowConfDialog(bool NetworkSection)
 	}
 	SendMessage(InfoCompileDateLabel, WM_SETTEXT, 0, (LPARAM)buf);
 
-	if(Prog.settings.InfoProgramDate) {
-		rawtime = Prog.settings.InfoProgramDate;
+	if(settingsInfo.ProgramDate) {
+		rawtime = settingsInfo.ProgramDate;
 		timeinfo = localtime(&rawtime);
 		strftime(buf, sizeof(buf), "%H:%M:%S %d/%m/%Y", timeinfo);
 	} else {
@@ -995,13 +1008,13 @@ bool ShowConfDialog(bool NetworkSection)
 	}
 	SendMessage(InfoProgramDateLabel, WM_SETTEXT, 0, (LPARAM)buf);
 
-	SendMessage(ip  , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.ip  [0], Prog.settings.ip  [1], Prog.settings.ip  [2], Prog.settings.ip  [3]));
-	SendMessage(mask, IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.mask[0], Prog.settings.mask[1], Prog.settings.mask[2], Prog.settings.mask[3]));
-	SendMessage(gw  , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.gw  [0], Prog.settings.gw  [1], Prog.settings.gw  [2], Prog.settings.gw  [3]));
-	SendMessage(dns , IPM_SETADDRESS, 0, MAKEIPADDRESS(Prog.settings.dns [0], Prog.settings.dns [1], Prog.settings.dns [2], Prog.settings.dns [3]));
+	SendMessage(ip  , IPM_SETADDRESS, 0, settingsNetwork.ip  );
+	SendMessage(mask, IPM_SETADDRESS, 0, settingsNetwork.mask);
+	SendMessage(gw  , IPM_SETADDRESS, 0, settingsNetwork.gw  );
+	SendMessage(dns , IPM_SETADDRESS, 0, settingsNetwork.dns );
 
 	PopulateAbortModeCombobox(AbortModeCombobox, false);
-	SendMessage(AbortModeCombobox, CB_SETCURSEL, Prog.settings.ramp_abort_mode-1, 0);
+	SendMessage(AbortModeCombobox, CB_SETCURSEL, settingsDac.ramp_abort_mode-1, 0);
 
 	for (i = 0; i < sizeof(ModBUSInterfaces) / sizeof(ModBUSInterfaces[0]); i++)
 		SendMessage(MBiface, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ModBUSInterfaces[i]));
@@ -1010,22 +1023,19 @@ bool ShowConfDialog(bool NetworkSection)
 		SendMessage(IncConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)EncoderConvModes[i]));
 		SendMessage(SSIConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)EncoderConvModes[i]));
 	}
-	SendMessage(IncConvModeCombobox, CB_SETCURSEL, Prog.settings.enc_inc_conv_mode, 0);
-	SendMessage(SSIConvModeCombobox, CB_SETCURSEL, Prog.settings.enc_ssi_conv_mode, 0);
+	SendMessage(IncConvModeCombobox, CB_SETCURSEL, settingsEncInc.conv_mode, 0);
+	SendMessage(SSIConvModeCombobox, CB_SETCURSEL, settingsEncSSI.conv_mode, 0);
 
 	PopulateModBUSMasterCombobox(MBelem, true);
 	LoadMBMasterControls(0);
 
-	mb_list_size = Prog.settings.mb_list_size;
-	memcpy(mb_list, Prog.settings.mb_list, sizeof(Prog.settings.mb_list));
-
 	for (i = 0; i < sizeof(SerialConfig) / sizeof(SerialConfig[0]); i++)
 		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)SerialConfig[i].ConfigName));
 
-	SendMessage(ParityCombobox, CB_SETCURSEL, Prog.settings.UART, 0);
+	SendMessage(ParityCombobox, CB_SETCURSEL, settingsUart.UART, 0);
 	SendMessage(ParityCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
-	sprintf(buf, "%d", Prog.settings.baudRate);
+	sprintf(buf, "%d", settingsUart.baudRate);
 	for (i = 0; i < sizeof(ComboboxBaudRateItens) / sizeof(ComboboxBaudRateItens[0]); i++)
 	{
 		SendMessage(BaudRateCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBaudRateItens[i]));
@@ -1033,38 +1043,38 @@ bool ShowConfDialog(bool NetworkSection)
 			SendMessage(BaudRateCombobox, CB_SETCURSEL, i, 0);
 	}
 
-	sprintf(buf, "%d", Prog.settings.ModBUSID);
+	sprintf(buf, "%d",settingsMbSlave.ModBUSID);
 	SendMessage(ModBUSIDTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
 	for (i = 0; i < sizeof(ComboboxSNTPItens) / sizeof(ComboboxSNTPItens[0]); i++)
 		SendMessage(SNTPCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxSNTPItens[i]));
-	SendMessage(SNTPCombobox, WM_SETTEXT, 0, (LPARAM)Prog.settings.sntp);
+	SendMessage(SNTPCombobox, WM_SETTEXT, 0, (LPARAM)settingsSntp.sntp_server.c_str());
 
 	for (i = 0; i < sizeof(ComboboxGMTItens) / sizeof(ComboboxGMTItens[0]); i++)
 		SendMessage(GMTCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxGMTItens[i]));
-	SendMessage(GMTCombobox, CB_SETCURSEL, Prog.settings.gmt, 0);
+	SendMessage(GMTCombobox, CB_SETCURSEL, settingsSntp.gmt, 0);
 	SendMessage(GMTCombobox, CB_SETDROPPEDWIDTH, 300, 0);
 
 	for (i = 0; i < sizeof(EncAbsConfig) / sizeof(EncAbsConfig[0]); i++)
 		SendMessage(SSIModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)EncAbsConfig[i]));
-	SendMessage(SSIModeCombobox, CB_SETCURSEL, Prog.settings.ssi_mode, 0);
+	SendMessage(SSIModeCombobox, CB_SETCURSEL, settingsEncSSI.mode, 0);
 
-	if (Prog.settings.dailysave)
+	if (settingsSntp.dailysave)
 		SendMessage(DailySaveCheckbox, BM_SETCHECK, BST_CHECKED, 0);
 
-	if (Prog.settings.sntp_enable)
+	if (settingsSntp.sntp_enable)
 		SendMessage(SNTPEnableCheckbox, BM_SETCHECK, BST_CHECKED, 0);
 
-	sprintf(buf, "%d", Prog.settings.perimeter);
+	sprintf(buf, "%d", settingsEncInc.perimeter);
 	SendMessage(PerimeterTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-	sprintf(buf, "%d", Prog.settings.pulses);
+	sprintf(buf, "%d", settingsEncInc.pulses);
 	SendMessage(PulsesTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-	sprintf(buf, "%05f", Prog.settings.factor);
+	sprintf(buf, "%05f", settingsEncInc.factor);
 	SendMessage(FactorTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-	if (Prog.settings.x4)
+	if (settingsEncInc.x4)
 		SendMessage(X4Checkbox, BM_SETCHECK, BST_CHECKED, 0);
 	else
 		SendMessage(X2Checkbox, BM_SETCHECK, BST_CHECKED, 0);
@@ -1072,21 +1082,23 @@ bool ShowConfDialog(bool NetworkSection)
 	//SendMessage(BaudRateCombobox, CB_SETCURSEL, 0, 0);
 	SendMessage(BaudRateCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
-	sprintf(buf, "%d", Prog.settings.ssi_perimeter);
+	sprintf(buf, "%d", settingsEncSSI.perimeter);
 	SendMessage(SSIPerimeterTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-	sprintf(buf, "%05f", Prog.settings.ssi_factor);
+	sprintf(buf, "%05f", settingsEncSSI.factor);
 	SendMessage(SSIFactorTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-	sprintf(buf, "%d", Prog.settings.ssi_size);
+	sprintf(buf, "%d", settingsEncSSI.size);
 	SendMessage(SSISizeTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-	sprintf(buf, "%d", Prog.settings.ssi_size_bpr);
+	sprintf(buf, "%d", settingsEncSSI.size_bpr);
 	SendMessage(SSISizeRevTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(ConfDialog, TRUE);
     SetFocus(OkButton);
+
+	ladder->CheckpointBegin(_("Alterar Configurações"));
 
     MSG msg;
     DWORD ret;
@@ -1110,117 +1122,95 @@ bool ShowConfDialog(bool NetworkSection)
     }
 
     if(!DialogCancel) {
-        SendMessage(InfoProjectTextbox    , WM_GETTEXT, (WPARAM)sizeof(Prog.settings.InfoName       ), (LPARAM)Prog.settings.InfoName       );
-        SendMessage(InfoDeveloperTextbox  , WM_GETTEXT, (WPARAM)sizeof(Prog.settings.InfoDeveloper  ), (LPARAM)Prog.settings.InfoDeveloper  );
-		SendMessage(InfoDescriptionTextbox, WM_GETTEXT, (WPARAM)sizeof(Prog.settings.InfoDescription), (LPARAM)Prog.settings.InfoDescription);
+		SendMessage(InfoProjectTextbox    , WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)buf);
+		settingsInfo.Name        = buf;
+
+		SendMessage(InfoDeveloperTextbox  , WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)buf);
+		settingsInfo.Developer   = buf;
+
+		SendMessage(InfoDescriptionTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)buf);
+		settingsInfo.Description = buf;
+
+		ladder->setSettingsInformation(settingsInfo);
 
 		// Recebe dados de rede configurados
-		SendMessage(ip  , IPM_GETADDRESS, 0, (LPARAM)&ipaddress);
-		SendMessage(mask, IPM_GETADDRESS, 0, (LPARAM)&ipmask   );
-		SendMessage(gw  , IPM_GETADDRESS, 0, (LPARAM)&ipgw     );
-		SendMessage(dns , IPM_GETADDRESS, 0, (LPARAM)&ipdns    );
+		SendMessage(ip  , IPM_GETADDRESS, 0, (LPARAM)&settingsNetwork.ip  );
+		SendMessage(mask, IPM_GETADDRESS, 0, (LPARAM)&settingsNetwork.mask);
+		SendMessage(gw  , IPM_GETADDRESS, 0, (LPARAM)&settingsNetwork.gw  );
+		SendMessage(dns , IPM_GETADDRESS, 0, (LPARAM)&settingsNetwork.dns );
 
-		// Carrega IP
-		Prog.settings.ip[0] = FIRST_IPADDRESS (ipaddress);
-		Prog.settings.ip[1] = SECOND_IPADDRESS(ipaddress);
-		Prog.settings.ip[2] = THIRD_IPADDRESS (ipaddress);
-		Prog.settings.ip[3] = FOURTH_IPADDRESS(ipaddress);
-
-		// Carrega Mascara
-		Prog.settings.mask[0] = FIRST_IPADDRESS (ipmask);
-		Prog.settings.mask[1] = SECOND_IPADDRESS(ipmask);
-		Prog.settings.mask[2] = THIRD_IPADDRESS (ipmask);
-		Prog.settings.mask[3] = FOURTH_IPADDRESS(ipmask);
-
-		// Carrega Gateway
-		Prog.settings.gw[0] = FIRST_IPADDRESS (ipgw);
-		Prog.settings.gw[1] = SECOND_IPADDRESS(ipgw);
-		Prog.settings.gw[2] = THIRD_IPADDRESS (ipgw);
-		Prog.settings.gw[3] = FOURTH_IPADDRESS(ipgw);
-
-		// Carrega DNS
-		Prog.settings.dns[0] = FIRST_IPADDRESS (ipdns);
-		Prog.settings.dns[1] = SECOND_IPADDRESS(ipdns);
-		Prog.settings.dns[2] = THIRD_IPADDRESS (ipdns);
-		Prog.settings.dns[3] = FOURTH_IPADDRESS(ipdns);
+		ladder->setSettingsNetwork(settingsNetwork);
 
         SendMessage(BaudRateCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
             (LPARAM)(buf));
-        Prog.settings.baudRate = atoi(buf);
+        settingsUart.baudRate = atoi(buf);
 
-		Prog.settings.UART = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
+		settingsUart.UART = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
+
+		ladder->setSettingsUART(settingsUart);
 
         SendMessage(ModBUSIDTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		Prog.settings.ModBUSID = atoi(buf);
-		if(Prog.settings.ModBUSID < 0)
-			Prog.settings.ModBUSID = 0;
+		settingsMbSlave.ModBUSID = max(0, atoi(buf));
 
-		SendMessage(SNTPCombobox, WM_GETTEXT, (WPARAM)sizeof(Prog.settings.sntp),
-            (LPARAM)(Prog.settings.sntp));
+		ladder->setSettingsModbusSlave(settingsMbSlave);
 
-		Prog.settings.gmt = SendMessage(GMTCombobox, CB_GETCURSEL, 0, 0);
-		Prog.settings.dailysave = SendMessage(DailySaveCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
-		Prog.settings.sntp_enable = SendMessage(SNTPEnableCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED;
+		SendMessage(SNTPCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		settingsSntp.sntp_server = buf;
 
-		Prog.settings.enc_inc_conv_mode = SendMessage(IncConvModeCombobox, CB_GETCURSEL, 0, 0);
+		settingsSntp.gmt = SendMessage(GMTCombobox, CB_GETCURSEL, 0, 0);
+		settingsSntp.dailysave   = (SendMessage(DailySaveCheckbox , BM_GETSTATE, 0, 0) & BST_CHECKED) ? true : false;
+		settingsSntp.sntp_enable = (SendMessage(SNTPEnableCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) ? true : false;
+
+		ladder->setSettingsSNTP(settingsSntp);
+
+		// Atualizacao do Encoder Incremental
+		settingsEncInc.conv_mode = SendMessage(IncConvModeCombobox, CB_GETCURSEL, 0, 0);
 
 		SendMessage(PerimeterTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		Prog.settings.perimeter = atoi(buf);
-		if(Prog.settings.perimeter < 0)
-			Prog.settings.perimeter = 0;
+		settingsEncInc.perimeter = max(0, atoi(buf));
 
         SendMessage(PulsesTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		Prog.settings.pulses = atoi(buf);
-		if(Prog.settings.pulses < 0) {
-			Prog.settings.pulses = 0;
-		} else if(Prog.settings.pulses > 5000) {
-			Prog.settings.pulses = 5000;
-		}
+		settingsEncInc.pulses = min(max(0, atoi(buf)), 5000);
 
         SendMessage(FactorTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		Prog.settings.factor = (float)atof(buf);
-		if(Prog.settings.factor < 0)
-			Prog.settings.factor = 1;
+		settingsEncInc.factor = (float)atof(buf);
+		if(settingsEncInc.factor < 0.0)
+			settingsEncInc.factor = 1.0;
 
-		Prog.settings.x4 = (char)SendMessage(X4Checkbox, BM_GETCHECK, 0, 0);
+		settingsEncInc.x4 = (SendMessage(X4Checkbox, BM_GETCHECK, 0, 0) & BST_CHECKED) ? true : false;
+
+		ladder->setSettingsEncoderIncremental(settingsEncInc);
 
 		SendMessage(SSISizeTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		Prog.settings.ssi_size = atoi(buf);
-		if(Prog.settings.ssi_size < 1) {
-			Prog.settings.ssi_size = 1;
-		} else if(Prog.settings.ssi_size > 32) {
-			Prog.settings.ssi_size = 32;
-		}
+		settingsEncSSI.size = min(max(1, atoi(buf)), 32);
 
 		SendMessage(SSISizeRevTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		Prog.settings.ssi_size_bpr = atoi(buf);
-		if(Prog.settings.ssi_size_bpr < 1) {
-			Prog.settings.ssi_size_bpr = 1;
-		} else if(Prog.settings.ssi_size_bpr > Prog.settings.ssi_size) {
-			Prog.settings.ssi_size_bpr = Prog.settings.ssi_size;
-		}
+		settingsEncSSI.size_bpr =  min(max(1, atoi(buf)), settingsEncSSI.size);
 
-		Prog.settings.ssi_mode = SendMessage(SSIModeCombobox, CB_GETCURSEL, 0, 0);
+		settingsEncSSI.mode = SendMessage(SSIModeCombobox, CB_GETCURSEL, 0, 0);
 
         SendMessage(SSIPerimeterTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		Prog.settings.ssi_perimeter = atoi(buf);
-		if(Prog.settings.ssi_perimeter < 0)
-			Prog.settings.ssi_perimeter = 0;
+		settingsEncSSI.perimeter = max(0, atoi(buf));
 
         SendMessage(SSIFactorTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		Prog.settings.ssi_factor = (float)atof(buf);
-		if(Prog.settings.ssi_factor < 0)
-			Prog.settings.ssi_factor = 1;
+		settingsEncSSI.factor = (float)atof(buf);
+		if(settingsEncSSI.factor < 0.0)
+			settingsEncSSI.factor = 1.0;
 
-		Prog.settings.enc_ssi_conv_mode = SendMessage(SSIConvModeCombobox, CB_GETCURSEL, 0, 0);
+		settingsEncSSI.conv_mode = SendMessage(SSIConvModeCombobox, CB_GETCURSEL, 0, 0);
 
-		Prog.settings.ramp_abort_mode = SendMessage(AbortModeCombobox, CB_GETCURSEL, 0, 0) + 1;
+		ladder->setSettingsEncoderSSI(settingsEncSSI);
+
+		settingsDac.ramp_abort_mode = SendMessage(AbortModeCombobox, CB_GETCURSEL, 0, 0) + 1;
+
+		ladder->setSettingsDAC(settingsDac);
 
 		changed = true;
 	} else {
-		Prog.settings.mb_list_size = mb_list_size;
-		memcpy(Prog.settings.mb_list, mb_list, sizeof(mb_list));
+		ladder->CheckpointRollback();
 	}
+
+	ladder->CheckpointEnd();
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(ConfDialog);

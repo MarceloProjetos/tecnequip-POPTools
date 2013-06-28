@@ -41,21 +41,6 @@ PlcCursor Cursor;
 //-----------------------------------------------------------------------------
 BOOL FindSelected(int *gx, int *gy)
 {
-    if(!Selected) return FALSE;
-
-    int i, j;
-    for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
-        for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
-            if(DisplayMatrix[i][j] == Selected) {
-                while(DisplayMatrix[i+1][j] == Selected) {
-                    i++;
-                }
-                *gx = i;
-                *gy = j;
-                return TRUE;
-            }
-        }
-    }
     return FALSE;
 }
 
@@ -291,97 +276,6 @@ unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
 //-----------------------------------------------------------------------------
 void SelectElement(int gx, int gy, int state)
 {
-    if(gx < 0 || gy < 0) {
-        if(!FindSelected(&gx, &gy)) {
-            return;
-        }
-    }
-
-    if(Selected) Selected->selectedState = SELECTED_NONE;
-
-    Selected = DisplayMatrix[gx][gy];
-    SelectedWhich = DisplayMatrixWhich[gx][gy];
-
-    if(SelectedWhich == ELEM_PLACEHOLDER) {
-        state = SELECTED_LEFT;
-    }
-
-    if((gy - ScrollYOffset) >= ScreenRowsAvailable()) {
-        ScrollYOffset = gy - ScreenRowsAvailable() + 1;
-        RefreshScrollbars();
-    }
-    if((gy - ScrollYOffset) < 0) {
-        ScrollYOffset = gy;
-        RefreshScrollbars();
-    }
-    if((gx - ScrollXOffset*POS_WIDTH*FONT_WIDTH) >= ScreenColsAvailable()) {
-        ScrollXOffset = gx*POS_WIDTH*FONT_WIDTH - ScreenColsAvailable();
-        RefreshScrollbars();
-    }
-    if((gx - ScrollXOffset*POS_WIDTH*FONT_WIDTH) < 0) {
-        ScrollXOffset = gx*POS_WIDTH*FONT_WIDTH;
-        RefreshScrollbars();
-    }
-
-    ok();
-    Selected->selectedState = state;
-    ok();
-
-    WhatCanWeDoFromCursorAndTopology();
-}
-
-//-----------------------------------------------------------------------------
-// Must be called every time the cursor moves or the cursor stays the same
-// but the circuit topology changes under it. Determines what we are allowed
-// to do: where coils can be added, etc.
-//-----------------------------------------------------------------------------
-void WhatCanWeDoFromCursorAndTopology(void)
-{
-}
-
-//-----------------------------------------------------------------------------
-// Rub out freed element from the DisplayMatrix, just so we don't confuse
-// ourselves too much (or access freed memory)...
-//-----------------------------------------------------------------------------
-void ForgetFromGrid(void *p)
-{
-    int i, j;
-    for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
-        for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
-            if(DisplayMatrix[i][j] == p) {
-                DisplayMatrix[i][j] = NULL;
-            }
-        }
-    }
-    if(Selected == p) {
-        Selected = NULL;
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Rub out everything from DisplayMatrix. If we don't do that before freeing
-// the program (e.g. when loading a new file) then there is a race condition
-// when we repaint.
-//-----------------------------------------------------------------------------
-void ForgetEverything(void)
-{
-	RemoveParallelStart(0, NULL);
-
-	memset(DisplayMatrix, 0, sizeof(DisplayMatrix));
-    memset(DisplayMatrixWhich, 0, sizeof(DisplayMatrixWhich));
-
-	int i;
-
-	for(i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++) 
-	{
-		memset(IoSeenPreviously[i].name, 0, sizeof(IoSeenPreviously[i].name));
-		IoSeenPreviously[i].type = 0;
-		IoSeenPreviously[i].pin = NO_PIN_ASSIGNED;
-		IoSeenPreviously[i].bit = NO_PIN_ASSIGNED;
-    }
-
-    Selected = NULL;
-    SelectedWhich = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -607,190 +501,8 @@ void MoveCursorKeyboard(int keyCode, BOOL shiftPressed)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Edit the selected element. Pop up the appropriate modal dialog box to do
-// this.
-//-----------------------------------------------------------------------------
-bool EditSelectedElement(void)
-{/*
-    if(!Selected || Selected->selectedState == SELECTED_NONE) return false;
-
-    switch(SelectedWhich) {
-        case ELEM_COMMENT:
-            ShowCommentDialog(Selected->d.comment.str);
-            break;
-
-        case ELEM_CONTACTS:
-            ShowContactsDialog(&(Selected->d.contacts.negated),
-                Selected->d.contacts.name, &(Selected->d.contacts.bit));
-            break;
-
-        case ELEM_COIL:
-            ShowCoilDialog(&(Selected->d.coil.negated),
-                &(Selected->d.coil.setOnly), &(Selected->d.coil.resetOnly),
-                Selected->d.coil.name, &(Selected->d.coil.bit));
-            break;
-
-        case ELEM_TON:
-        case ELEM_TOF:
-        case ELEM_RTO:
-            ShowTimerDialog(SelectedWhich, &(Selected->d.timer.delay),
-                Selected->d.timer.name);
-            break;
-
-		case ELEM_RTC:
-			ShowRTCDialog(&(Selected->d.rtc.mode), &(Selected->d.rtc.wday),
-				&(Selected->d.rtc.start), &(Selected->d.rtc.end));
-            break;
-
-		case ELEM_CTU:
-        case ELEM_CTD:
-        case ELEM_CTC:
-            ShowCounterDialog(SelectedWhich, &(Selected->d.counter.max),
-                Selected->d.counter.name);
-            break;
-
-        case ELEM_EQU:
-        case ELEM_NEQ:
-        case ELEM_GRT:
-        case ELEM_GEQ:
-        case ELEM_LES:
-        case ELEM_LEQ:
-            ShowCmpDialog(SelectedWhich, Selected->d.cmp.op1,
-                Selected->d.cmp.op2);
-            break;
-
-        case ELEM_ADD:
-        case ELEM_SUB:
-        case ELEM_MUL:
-        case ELEM_DIV:
-        case ELEM_MOD:
-            ShowMathDialog(SelectedWhich, Selected->d.math.dest, 
-                Selected->d.math.op1, Selected->d.math.op2);
-            break;
-
-        case ELEM_RES:
-            ShowResetDialog(Selected->d.reset.name);
-            break;
-
-        case ELEM_MOVE:
-            ShowMathDialog(SelectedWhich, Selected->d.move.dest, Selected->d.move.src, NULL);
-            break;
-
-        case ELEM_SQRT:
-            ShowSqrtDialog(Selected->d.sqrt.dest, Selected->d.sqrt.src);
-            break;
-
-        case ELEM_RAND:
-            ShowRandDialog(Selected->d.rand.var, Selected->d.rand.min, Selected->d.rand.max);
-            break;
-
-        case ELEM_ABS:
-            ShowAbsDialog(Selected->d.abs.dest, Selected->d.abs.src);
-            break;
-
-        case ELEM_SET_PWM:
-            ShowSetPwmDialog(Selected->d.setPwm.name,
-                &(Selected->d.setPwm.targetFreq));
-            break;
-
-        case ELEM_SET_BIT:
-			ShowSetBitDialog(Selected->d.setBit.name, &Selected->d.setBit.set, &Selected->d.setBit.bit);
-            break;
-
-        case ELEM_CHECK_BIT:
-			ShowCheckBitDialog(Selected->d.setBit.name, &Selected->d.setBit.set, &Selected->d.setBit.bit);
-            break;
-
-		case ELEM_READ_ADC:
-            ShowReadAdcDialog(Selected->d.readAdc.name);
-            break;
-
-        case ELEM_SET_DA:
-			ShowSetDADialog(Selected->d.setDA.name, &Selected->d.setDA.mode);
-            break;
-
-        case ELEM_READ_ENC:
-            ShowReadEncDialog(Selected->d.readEnc.name);
-            break;
-
-        case ELEM_RESET_ENC:
-            ShowResetEncDialog(Selected->d.resetEnc.name);
-            break;
-
-        case ELEM_MULTISET_DA: {
-			ShowMultisetDADialog(&Selected->d.multisetDA); }
-            break;
-
-        case ELEM_READ_USS:
-			ShowReadUSSDialog(Selected->d.readUSS.name, &Selected->d.readUSS.id, &Selected->d.readUSS.parameter, &Selected->d.readUSS.parameter_set, &Selected->d.readUSS.index);
-            break;
-
-        case ELEM_WRITE_USS:
-            ShowWriteUSSDialog(Selected->d.writeUSS.name, &Selected->d.writeUSS.id, &Selected->d.writeUSS.parameter, &Selected->d.writeUSS.parameter_set, &Selected->d.writeUSS.index);
-            break;
-
-        case ELEM_READ_MODBUS:
-			//ShowReadModbusDialog(Selected->d.readModbus.name, &Selected->d.readModbus.id, &Selected->d.readModbus.address);
-			ShowModbusDialog(0, Selected->d.readModbus.name, &Selected->d.readModbus.elem, &Selected->d.readModbus.address, &Selected->d.readModbus.int32, &Selected->d.readModbus.retransmitir);
-            break;
-
-        case ELEM_WRITE_MODBUS:
-			//ShowWriteModbusDialog(Selected->d.writeModbus.name, &Selected->d.writeModbus.id, &Selected->d.writeModbus.address);
-			ShowModbusDialog(1, Selected->d.writeModbus.name, &Selected->d.writeModbus.elem, &Selected->d.writeModbus.address, &Selected->d.writeModbus.int32, &Selected->d.readModbus.retransmitir);
-            break;
-
-        case ELEM_UART_RECV:
-        case ELEM_UART_SEND:
-            ShowUartDialog(SelectedWhich, Selected->d.uart.name);
-            break;
-
-        case ELEM_PERSIST:
-            ShowPersistDialog(Selected->d.persist.var);
-            break;
-
-        case ELEM_SHIFT_REGISTER:
-            ShowShiftRegisterDialog(Selected->d.shiftRegister.name,
-                &(Selected->d.shiftRegister.stages));
-            break;
-
-		case ELEM_READ_FORMATTED_STRING:
-            ShowFormattedStringDialog(0, Selected->d.fmtdStr.var,
-                Selected->d.fmtdStr.string);
-            break;
-
-		case ELEM_WRITE_FORMATTED_STRING:
-        case ELEM_FORMATTED_STRING:
-            ShowFormattedStringDialog(1, Selected->d.fmtdStr.var,
-                Selected->d.fmtdStr.string);
-            break;
-
-		case ELEM_READ_SERVO_YASKAWA:
-            ShowServoYaskawaDialog(0, Selected->d.servoYaskawa.id, Selected->d.servoYaskawa.var,
-                Selected->d.servoYaskawa.string);
-            break;
-
-		case ELEM_WRITE_SERVO_YASKAWA:
-            ShowServoYaskawaDialog(1, Selected->d.servoYaskawa.id, Selected->d.servoYaskawa.var,
-                Selected->d.servoYaskawa.string);
-            break;
-
-        case ELEM_PIECEWISE_LINEAR:
-            ShowPiecewiseLinearDialog(Selected);
-            break;
-
-        case ELEM_LOOK_UP_TABLE:
-            ShowLookUpTableDialog(Selected);
-            break;
-    }
-*/
-	return true;
-}
-
 int FindRung(int gx, int gy)
 {
-	int rung;
-
 	while(DM_INSIDE_BOUNDS(gx, gy) && DisplayMatrix[gx][gy] == NULL)
 		gy--;
 
@@ -801,14 +513,6 @@ int FindRung(int gx, int gy)
 			gx--;
 			while(DM_INSIDE_BOUNDS(gx, gy) && DisplayMatrix[gx][gy] == PADDING_IN_DISPLAY_MATRIX)
 				gx--;
-		}
-	}
-
-	if(DM_INSIDE_BOUNDS(gx, gy) && VALID_LEAF(DisplayMatrix[gx][gy])) {
-		for(rung=0; rung<Prog.numRungs; rung++) {
-			if(ContainsElem(ELEM_SERIES_SUBCKT, Prog.rungs[rung], DisplayMatrix[gx][gy])) {
-				return rung;
-			}
 		}
 	}
 
@@ -858,10 +562,6 @@ bool EditElementMouseDoubleclick(int x, int y)
             } 
         } else if(l && DisplayMatrixWhich[gx][gy] == ELEM_READ_ADC) {
             ShowAnalogSliderPopup(l->d.readAdc.name);
-        }
-    } else {
-        if(DisplayMatrix[gx][gy] == Selected) {
-            changed = EditSelectedElement();
         }
     }
 

@@ -855,12 +855,10 @@ static void OpenDialog(char *filename)
         ProgramChangedNotSaved = FALSE;
         strcpy(CurrentSaveFile, tempSaveFile);
 		ChangeFileExtension(CurrentSaveFile, "ld");
-        UndoFlush();
 
 		UpdateRecentList(tempSaveFile);
 	}
 
-    GenerateIoListDontLoseSelection();
     RefreshScrollbars();
     UpdateMainWindowTitleBar();
 }
@@ -1004,175 +1002,175 @@ void ProcessMenu(int code)
             break;
 
         case MNU_INSERT_COMMENT:
-			CHANGING_PROGRAM(AddComment(_("--add comment here--")));
+			AddComment(_("--add comment here--"));
             break;
 
         case MNU_INSERT_PARALLEL:
-            CHANGING_PROGRAM(AddParallelStart());
+            AddParallelStart();
             break;
 
         case MNU_INSERT_CONTACTS:
-            CHANGING_PROGRAM(AddContact());
+            AddContact();
             break;
 
         case MNU_INSERT_COIL:
-            CHANGING_PROGRAM(AddCoil());
+            AddCoil();
             break;
 
         case MNU_INSERT_TON:
-            CHANGING_PROGRAM(AddTimer(ELEM_TON));
+            AddTimer(ELEM_TON);
             break;
 
         case MNU_INSERT_TOF:
-            CHANGING_PROGRAM(AddTimer(ELEM_TOF));
+            AddTimer(ELEM_TOF);
             break;
 
         case MNU_INSERT_RTO:
-            CHANGING_PROGRAM(AddTimer(ELEM_RTO));
+            AddTimer(ELEM_RTO);
             break;
 
         case MNU_INSERT_RTC:
-            CHANGING_PROGRAM(AddRTC(ELEM_RTC));
+            AddRTC(ELEM_RTC);
             break;
 
         case MNU_INSERT_CTU:
-            CHANGING_PROGRAM(AddCounter(ELEM_CTU));
+            AddCounter(ELEM_CTU);
             break;
 
         case MNU_INSERT_CTD:
-            CHANGING_PROGRAM(AddCounter(ELEM_CTD));
+            AddCounter(ELEM_CTD);
             break;
 
         case MNU_INSERT_CTC:
-            CHANGING_PROGRAM(AddCounter(ELEM_CTC));
+            AddCounter(ELEM_CTC);
             break;
 
         case MNU_INSERT_RES:
-            CHANGING_PROGRAM(AddReset());
+            AddReset();
             break;
 
         case MNU_INSERT_OPEN:
-            CHANGING_PROGRAM(AddEmpty(ELEM_OPEN));
+            AddEmpty(ELEM_OPEN);
             break;
 
         case MNU_INSERT_SHORT:
-            CHANGING_PROGRAM(AddEmpty(ELEM_SHORT));
+            AddEmpty(ELEM_SHORT);
             break;
 
         case MNU_INSERT_MASTER_RLY:
-            CHANGING_PROGRAM(AddMasterRelay());
+            AddMasterRelay();
             break;
 
         case MNU_INSERT_SET_BIT:
-            CHANGING_PROGRAM(AddSetBit());
+            AddSetBit();
             break;
 
         case MNU_INSERT_CHECK_BIT:
-            CHANGING_PROGRAM(AddCheckBit());
+            AddCheckBit();
             break;
 
         case MNU_INSERT_SHIFT_REG:
-            CHANGING_PROGRAM(AddShiftRegister());
+            AddShiftRegister();
             break;
 
         case MNU_INSERT_LUT:
-            CHANGING_PROGRAM(AddLookUpTable());
+            AddLookUpTable();
             break;
         
         case MNU_INSERT_PWL:
-            CHANGING_PROGRAM(AddPiecewiseLinear());
+            AddPiecewiseLinear();
             break;
         
         case MNU_INSERT_OSR:
-            CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_RISING));
+            AddEmpty(ELEM_ONE_SHOT_RISING);
             break;
 
         case MNU_INSERT_OSF:
-            CHANGING_PROGRAM(AddEmpty(ELEM_ONE_SHOT_FALLING));
+            AddEmpty(ELEM_ONE_SHOT_FALLING);
             break;
 
         case MNU_INSERT_MOV:
-            CHANGING_PROGRAM(AddMove());
+            AddMove();
             break;
 
         case MNU_INSERT_SET_PWM:
-            CHANGING_PROGRAM(AddSetPwm());
+            AddSetPwm();
             break;
 
         case MNU_INSERT_SET_DA:
-            CHANGING_PROGRAM(AddSetDA());
+            AddSetDA();
             break;
 
 		case MNU_INSERT_READ_ADC:
-            CHANGING_PROGRAM(AddReadAdc());
+            AddReadAdc();
             break;
 
         case MNU_INSERT_READ_ENC:
-            CHANGING_PROGRAM(AddReadEnc());
+            AddReadEnc();
             break;
 
         case MNU_INSERT_RESET_ENC:
-            CHANGING_PROGRAM(AddResetEnc());
+            AddResetEnc();
             break;
 			
 		case MNU_INSERT_MULTISET_DA:
-            CHANGING_PROGRAM(AddMultisetDA());
+            AddMultisetDA();
             break;
 
         case MNU_READ_FMTD_STR:
-            CHANGING_PROGRAM(AddReadFormatString());
+            AddReadFormatString();
             break;
 
         case MNU_WRITE_FMTD_STR:
-            CHANGING_PROGRAM(AddWriteFormatString());
+            AddWriteFormatString();
             break;
 
 		case MNU_READ_SERVO_YASKAWA:
-            CHANGING_PROGRAM(AddReadServoYaskawa());
+            AddReadServoYaskawa();
             break;
 
         case MNU_WRITE_SERVO_YASKAWA:
-            CHANGING_PROGRAM(AddWriteServoYaskawa());
+            AddWriteServoYaskawa();
             break;
 
 		case MNU_INSERT_READ_USS:
-            CHANGING_PROGRAM(AddReadUSS());
+            AddReadUSS();
             break;
 
         case MNU_INSERT_WRITE_USS:
-            CHANGING_PROGRAM(AddWriteUSS());
+            AddWriteUSS();
             break;
 
         case MNU_INSERT_READ_MODBUS:
-            CHANGING_PROGRAM(AddReadModbus());
+            AddReadModbus();
             break;
 
         case MNU_INSERT_WRITE_MODBUS:
-            CHANGING_PROGRAM(AddWriteModbus());
+            AddWriteModbus();
             break;
 
         case MNU_INSERT_UART_SEND:
-            CHANGING_PROGRAM(AddUart(ELEM_UART_SEND));
+            AddUart(ELEM_UART_SEND);
             break;
 
         case MNU_INSERT_UART_RECV:
-            CHANGING_PROGRAM(AddUart(ELEM_UART_RECV));
+            AddUart(ELEM_UART_RECV);
             break;
 
         case MNU_INSERT_SQRT:
-            CHANGING_PROGRAM(AddSqrt());
+            AddSqrt();
             break;
 
         case MNU_INSERT_RAND:
-            CHANGING_PROGRAM(AddRand());
+            AddRand();
             break;
 
         case MNU_INSERT_ABS:
-            CHANGING_PROGRAM(AddAbs());
+            AddAbs();
             break;
 
         case MNU_INSERT_PERSIST:
-            CHANGING_PROGRAM(AddPersist());
+            AddPersist();
             break;
 
         {
@@ -1183,7 +1181,7 @@ void ProcessMenu(int code)
             case MNU_INSERT_DIV: elem = ELEM_DIV; goto math;
             case MNU_INSERT_MOD: elem = ELEM_MOD; goto math;
 math:
-                CHANGING_PROGRAM(AddMath(elem));
+                AddMath(elem);
                 break;
         }
 
@@ -1196,24 +1194,24 @@ math:
             case MNU_INSERT_LES: elem = ELEM_LES; goto cmp;
             case MNU_INSERT_LEQ: elem = ELEM_LEQ; goto cmp;
 cmp:    
-                CHANGING_PROGRAM(AddCmp(elem));
+                AddCmp(elem);
                 break;
         } 
 
         case MNU_MAKE_NORMAL:
-            CHANGING_PROGRAM(MakeNormalSelected());
+            MakeNormalSelected();
             break;
 
         case MNU_NEGATE:
-            CHANGING_PROGRAM(NegateSelected());
+            NegateSelected();
             break;
 
         case MNU_MAKE_SET_ONLY:
-            CHANGING_PROGRAM(MakeSetOnlySelected());
+            MakeSetOnlySelected();
             break;
 
         case MNU_MAKE_RESET_ONLY:
-            CHANGING_PROGRAM(MakeResetOnlySelected());
+            MakeResetOnlySelected();
             break;
 
         case MNU_UNDO:
@@ -1225,23 +1223,23 @@ cmp:
             break;
 
         case MNU_INSERT_RUNG_BEFORE:
-            CHANGING_PROGRAM(InsertRung(false));
+            InsertRung(false);
             break;
 
         case MNU_INSERT_RUNG_AFTER:
-            CHANGING_PROGRAM(InsertRung(true));
+            InsertRung(true);
             break;
 
         case MNU_DELETE_RUNG:
-            CHANGING_PROGRAM(DeleteSelectedRung());
+            DeleteSelectedRung();
             break;
 
         case MNU_PUSH_RUNG_UP:
-            CHANGING_PROGRAM(PushRung(true));
+            PushRung(true);
             break;
 
         case MNU_PUSH_RUNG_DOWN:
-            CHANGING_PROGRAM(PushRung(false));
+            PushRung(false);
             break;
 
         case MNU_GO_HOME:
@@ -1258,7 +1256,7 @@ cmp:
 		}
 
         case MNU_PASTE_ELEMENT:
-			CHANGING_PROGRAM(ladder->PasteElement());
+			ladder->PasteElement();
             break;
 
         case MNU_COPY_RUNG: {
@@ -1267,24 +1265,24 @@ cmp:
 		}
 
         case MNU_PASTE_RUNG_BEFORE:
-            CHANGING_PROGRAM(ladder->PasteRung(false));
+            ladder->PasteRung(false);
             break;
 
         case MNU_PASTE_RUNG_AFTER:
-            CHANGING_PROGRAM(ladder->PasteRung(true));
+            ladder->PasteRung(true);
             break;
 
         case MNU_CUT_ELEMENT:
 			ladder->CopyElement();
-            CHANGING_PROGRAM(DeleteSelectedFromProgram());
+            DeleteSelectedFromProgram();
             break;
 
         case MNU_DELETE_ELEMENT:
-			CHANGING_PROGRAM(DeleteSelectedFromProgram());
+			DeleteSelectedFromProgram();
             break;
 
         case MNU_FIND_AND_REPLACE:
-			CHANGING_PROGRAM(ShowFARDialog());
+			ShowFARDialog();
             break;
 
         case MNU_FIND_AND_REPLACE_NEXT:
@@ -1293,8 +1291,7 @@ cmp:
             break;
 
         case MNU_MCU_SETTINGS:
-            CHANGING_PROGRAM(ShowConfDialog(false));
-			WhatCanWeDoFromCursorAndTopology();
+            ShowConfDialog(false);
             break;
 
         case MNU_MCU_PREFERENCES:
@@ -1530,7 +1527,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			} else if(InSimulationMode) {
                 EditElementMouseDoubleclick(x, y);
             } else {
-                CHANGING_PROGRAM(EditElementMouseDoubleclick(x, y));
+                EditElementMouseDoubleclick(x, y);
             }
             InvalidateRect(MainWindow, NULL, FALSE);
 
@@ -1940,7 +1937,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         char *s;
         GetFullPathName(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
         OpenDialog(CurrentSaveFile);
-        UndoFlush();
     }
 
     GenerateIoListDontLoseSelection();

@@ -49,15 +49,6 @@
 #include "PropertySet.h"
 #include "KeyboardHandlers.h"
 
-#define CHANGING_PROGRAM(x) { \
-        UndoRemember(); \
-        if(x) { \
-			ProgramChanged(); \
-		} else { \
-			UndoForget(); \
-		} \
-    }
-
 /****************************************
 ****                                 ****
 ***       MRU Classes Definition      ***
@@ -421,63 +412,6 @@ struct strSerialConfig {
 #define ELEM_RTC				0x41
 #define ELEM_MULTISET_DA		0x42
 
-#define CASE_LEAF \
-        case ELEM_PLACEHOLDER: \
-        case ELEM_COMMENT: \
-        case ELEM_COIL: \
-        case ELEM_CONTACTS: \
-        case ELEM_TON: \
-        case ELEM_TOF: \
-        case ELEM_RTO: \
-		case ELEM_RTC: \
-        case ELEM_CTD: \
-        case ELEM_CTU: \
-        case ELEM_CTC: \
-        case ELEM_RES: \
-        case ELEM_ONE_SHOT_RISING: \
-        case ELEM_ONE_SHOT_FALLING: \
-        case ELEM_EQU: \
-        case ELEM_NEQ: \
-        case ELEM_GRT: \
-        case ELEM_GEQ: \
-        case ELEM_LES: \
-        case ELEM_LEQ: \
-        case ELEM_ADD: \
-        case ELEM_SUB: \
-        case ELEM_MUL: \
-        case ELEM_DIV: \
-        case ELEM_MOD: \
-        case ELEM_SQRT: \
-        case ELEM_RAND: \
-        case ELEM_ABS: \
-        case ELEM_MOVE: \
-        case ELEM_SHORT: \
-        case ELEM_OPEN: \
-		case ELEM_SET_BIT: \
-		case ELEM_CHECK_BIT: \
-        case ELEM_READ_ADC: \
-		case ELEM_SET_DA: \
-        case ELEM_READ_ENC: \
-        case ELEM_RESET_ENC: \
-		case ELEM_MULTISET_DA: \
-        case ELEM_READ_USS: \
-        case ELEM_WRITE_USS: \
-        case ELEM_READ_MODBUS: \
-        case ELEM_WRITE_MODBUS: \
-        case ELEM_SET_PWM: \
-        case ELEM_UART_SEND: \
-        case ELEM_UART_RECV: \
-        case ELEM_MASTER_RELAY: \
-        case ELEM_SHIFT_REGISTER: \
-        case ELEM_LOOK_UP_TABLE: \
-        case ELEM_PIECEWISE_LINEAR: \
-		case ELEM_READ_FORMATTED_STRING: \
-		case ELEM_WRITE_FORMATTED_STRING: \
-		case ELEM_READ_SERVO_YASKAWA: \
-		case ELEM_WRITE_SERVO_YASKAWA: \
-        case ELEM_FORMATTED_STRING: \
-        case ELEM_PERSIST:
-
 #define MAX_NAME_LEN                128
 #define MAX_COMMENT_LEN             384
 #define MAX_LOOK_UP_TABLE_LEN        60
@@ -755,8 +689,6 @@ typedef struct ElemSubckParallelTag {
 } ElemSubcktParallel;
 
 #include "intcode.h"
-#include "LadderObjects.h"
-#include "iomap.h"
 
 typedef struct McuIoInfoTag McuIoInfo;
 
@@ -807,24 +739,6 @@ typedef struct PlcProgramSingleIoTag {
 	unsigned char bit;
 } PlcProgramSingleIo;
 
-typedef struct MbNodeTag {
-	char name[MAX_NAME_LEN];
-	int id;
-	DWORD ip;
-	int iface;
-} MbNode;
-
-#define MB_LIST_MAX 100
-
-#define MB_IFACE_RS485 0
-#define MB_IFACE_ETH   1
-
-typedef struct MbNodeListTag {
-	int NodeID;
-	int NodeCount;
-	MbNode node;
-} MbNodeList;
-
 #define MAX_IO  4096
 typedef struct PlcProgramTag {
     struct {
@@ -854,8 +768,6 @@ typedef struct PlcProgramTag {
 		int ssi_size;
 		int ssi_mode;
 		int ramp_abort_mode;
-		int mb_list_size;
-		MbNodeList mb_list[MB_LIST_MAX];
 		int enc_inc_conv_mode;
 		int enc_ssi_conv_mode;
 		int ssi_perimeter;
@@ -878,6 +790,9 @@ typedef struct PlcProgramTag {
     BOOL              rungPowered[MAX_RUNGS];
     int               numRungs;
 } PlcProgram;
+
+#include "LadderObjects.h"
+#include "iomap.h"
 
 //-----------------------------------------------
 // For actually drawing the ladder logic on screen; constants that determine
@@ -1175,7 +1090,6 @@ bool MakeNormalSelected(void);
 bool NegateSelected(void);
 void ForgetFromGrid(void *p);
 void ForgetEverything(void);
-void WhatCanWeDoFromCursorAndTopology(void);
 BOOL FindSelected(int *gx, int *gy);
 void MoveCursorNear(int gx, int gy);
 void ToggleBreakPoint(int y);
@@ -1250,7 +1164,6 @@ int RemoveParallelStart(int which, void *any);
 bool DeleteSelectedFromProgram(void);
 bool DeleteSelectedRung(void);
 bool InsertRung(bool afterCursor);
-BOOL ItemIsLastInCircuit(ElemLeaf *item);
 BOOL UartFunctionUsed(void);
 BOOL PwmFunctionUsed(void);
 void CopyRung(ElemSubcktSeries *rung);
@@ -1259,20 +1172,9 @@ void CopyLeaf(ElemLeaf *leaf, int which);
 bool PasteLeaf(void);
 bool PushRung(bool up);
 void NewProgram(void);
-ElemLeaf *AllocLeaf(void);
-ElemSubcktSeries *AllocSubcktSeries(void);
-ElemSubcktParallel *AllocSubcktParallel(void);
 void FreeCircuit(int which, void *any);
 void FreeEntireProgram(void);
 BOOL ContainsElem(int which, void *any, ElemLeaf *seek);
-
-// undoredo.cpp
-void UndoUndo(void);
-void UndoRedo(void);
-void UndoForget(void);
-void UndoRemember(void);
-void UndoFlush(void);
-BOOL CanUndo(void);
 
 // loadsave.cpp
 BOOL LoadProjectFromFile(char *filename);
@@ -1330,11 +1232,6 @@ extern char *SerialParityString[];
 bool ShowConfDialog(bool NetworkSection);
 // modbusdialog.cpp
 void PopulateModBUSMasterCombobox(HWND h, bool has_new);
-MbNodeList *MbNodeList_GetByIndex(int index);
-MbNodeList *MbNodeList_GetByNodeID(int NodeID);
-int  MbNodeList_Create(char *NodeName);
-void MbNodeList_AddRef(int NodeID);
-void MbNodeList_DelRef(int NodeID);
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
 void OpenCHM(void);
