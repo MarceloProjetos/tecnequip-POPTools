@@ -11,8 +11,10 @@ MODBUS_HANDLER_TX(Modbus_TCP_Tx)
 
 	int iResult;
 	char strIP[20];
+	LadderSettingsNetwork settings = ladder->getSettingsNetwork();
 
-	sprintf(strIP, "%d.%d.%d.%d", Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
+	sprintf(strIP, "%d.%d.%d.%d", FIRST_IPADDRESS(settings.ip), SECOND_IPADDRESS(settings.ip),
+		THIRD_IPADDRESS(settings.ip), FOURTH_IPADDRESS(settings.ip));
 
 	ZeroMemory( &hints, sizeof(hints) );
 	hints.ai_family = AF_UNSPEC;

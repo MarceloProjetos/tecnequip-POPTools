@@ -1,15 +1,12 @@
 #include "poptools.h"
 
 #include <vector>
+#include <map>
 
 static vector<IntOp>::size_type IntCodeLen;
 static vector<IntOp> vectorIntCode;
 
-static struct {
-    char name[MAX_NAME_LEN];
-    BOOL powered;
-} SingleBitItems[MAX_IO];
-static int SingleBitItemsCount;
+map<string, bool> SingleBitItems;
 
 static struct {
     char    name[MAX_NAME_LEN];
@@ -167,7 +164,7 @@ static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int a
 static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned int address, char *name);
 
 static void SimulateIntCode(void);
-static char *MarkUsedVariable(char *name, DWORD flag);
+static char *MarkUsedVariable(const char *name, DWORD flag);
 
 struct WatchPoint *listWP = NULL;
 
@@ -217,7 +214,7 @@ void RemoveWP(char *name)
 	}
 }
 
-int * GetValWP(char *name, int *val)
+int * GetValWP(const char *name, int *val)
 {
 	struct WatchPoint *current = listWP;
 
@@ -240,7 +237,7 @@ void ClearListWP(void)
 	}
 }
 
-void CheckWP(char *name, int val)
+void CheckWP(const char *name, int val)
 {
 	int wpval;
 	char desc[100];
@@ -263,7 +260,7 @@ void CheckWP(char *name, int val)
 
 	if(NeedStop) {
 		PauseSimulation();
-		DescribeForIoList(wpval, GetTypeFromName(name), desc);
+		DescribeForIoList(wpval, ladder->getDetailsIO(name).type, desc);
 		Error(_("Simulação interrompida!\n\n%s = %s"), name, desc);
 	}
 }
@@ -328,69 +325,65 @@ void HardwareRegisters_SetValue(HardwareRegisters *hwr, int index, int val)
 	}
 }
 
-void HardwareRegisters_Update(HardwareRegisters *hwr, char *name, int val)
+void HardwareRegisters_Update(HardwareRegisters *hwr, const char *name, int val)
 {
-	int i, index, ismb;
 	if(name == NULL) return;
 
-	for(i=0; i<Prog.io.count; i++) {
-		if(Prog.io.assignment[i].pin != NO_PIN_ASSIGNED &&
-				!strcmp(name, Prog.io.assignment[i].name)) { // name has assignment
-			index = IoMap_GetIndex(&Prog.io.assignment[i]);
-			ismb  = IoMap_IsModBUS(&Prog.io.assignment[i]);
+	mapDetails detailsIO = ladder->getDetailsIO(name);
 
-			// Now we have to update register associated to name
-			switch(Prog.io.assignment[i].type) {
-			case IO_TYPE_DIG_INPUT:
-				HardwareRegisters_SetBit(hwr, ismb ? HWR_REG_MODBUS : HWR_REG_INPUT,
-					index, ismb ? Prog.io.assignment[i].bit : index, val);
-				break;
+	if(detailsIO.pin > 0) { // name has assignment
+		unsigned int index = IoMap_GetIndex(detailsIO);
+		bool         ismb  = IoMap_IsModBUS(detailsIO);
 
-			case IO_TYPE_DIG_OUTPUT:
-				HardwareRegisters_SetBit(hwr, ismb ? HWR_REG_MODBUS : HWR_REG_OUTPUT,
-					index, ismb ? Prog.io.assignment[i].bit : index, val);
-				break;
+		// Now we have to update register associated to name
+		switch(detailsIO.type) {
+		case eType_DigInput:
+			HardwareRegisters_SetBit(hwr, ismb ? HWR_REG_MODBUS : HWR_REG_INPUT,
+				index, ismb ? detailsIO.bit : index, val);
+			break;
 
-			case IO_TYPE_GENERAL:
-				HardwareRegisters_SetValue(hwr, index, val);
-				break;
-			}
-			// Register updated, exit search loop.
+		case eType_DigOutput:
+			HardwareRegisters_SetBit(hwr, ismb ? HWR_REG_MODBUS : HWR_REG_OUTPUT,
+				index, ismb ? detailsIO.bit : index, val);
+			break;
+
+		case eType_General:
+			HardwareRegisters_SetValue(hwr, index, val);
 			break;
 		}
 	}
 }
 
-static void SetSingleBit(char *name, BOOL state);
+static void SetSingleBit(const char *name, bool state);
 
 void HardwareRegisters_Sync(HardwareRegisters *hwr)
 {
-	int i, index, ismb;
-	unsigned int mask;
+	bool         ismb;
+	string       name;
+	mapDetails   detailsIO;
+	unsigned int i, index, mask, count = ladder->getCountIO();
 	if(hwr == NULL) return;
 
 	hwr->Syncing = true;
 
-	for(i=0; i<Prog.io.count; i++) {
-		if(Prog.io.assignment[i].pin != NO_PIN_ASSIGNED) {
-			index = IoMap_GetIndex(&Prog.io.assignment[i]);
-			ismb  = IoMap_IsModBUS(&Prog.io.assignment[i]);
-			mask  = 1UL << Prog.io.assignment[i].bit;
+	for(i = 0; i < count; i++) {
+		name = ladder->getNameIObyIndex(i);
+		detailsIO = ladder->getDetailsIO(name);
+		if(detailsIO.pin > 0) {
+			index = IoMap_GetIndex(detailsIO);
+			ismb  = IoMap_IsModBUS(detailsIO);
+			mask  = 1UL << detailsIO.bit;
 
 			// Now we have to update register associated to name
-			switch(Prog.io.assignment[i].type) {
-			case IO_TYPE_DIG_INPUT:
-//				HardwareRegisters_SetBit(hwr, ismb ? HWR_REG_MODBUS : HWR_REG_INPUT,
-//					index, ismb ? Prog.io.assignment[i].bit : index, val);
-//				break;
-
-			case IO_TYPE_DIG_OUTPUT:
+			switch(detailsIO.type) {
+			case eType_DigInput:
+			case eType_DigOutput:
 				if(ismb)
-					SetSingleBit(Prog.io.assignment[i].name, (hwreg.ModBUS[index] & mask) ? TRUE : FALSE);
+					SetSingleBit(name.c_str(), (hwreg.ModBUS[index] & mask) ? true : false);
 				break;
 
-			case IO_TYPE_GENERAL:
-				SetSimulationVariable(Prog.io.assignment[i].name, hwreg.ModBUS[index]);
+			case eType_General:
+				SetSimulationVariable(name.c_str(), hwreg.ModBUS[index]);
 				break;
 			}
 		}
@@ -401,7 +394,7 @@ void HardwareRegisters_Sync(HardwareRegisters *hwr)
 }
 
 // Update Hardware Registers, check WatchPoints, etc.
-void UpdateSimulation(char *name, int val)
+void UpdateSimulation(const char *name, int val)
 {
 	if(!hwreg.Syncing) {
 		HardwareRegisters_Update(&hwreg, name, val);
@@ -568,37 +561,23 @@ int RTC_OutputState(struct tm start, struct tm end, struct tm now, int mode, int
 // Looks in the SingleBitItems list; if an item is not present then it is
 // FALSE by default.
 //-----------------------------------------------------------------------------
-static BOOL SingleBitOn(char *name)
+static bool SingleBitOn(char *name)
 {
-    int i;
-    for(i = 0; i < SingleBitItemsCount; i++) {
-        if(_stricmp(SingleBitItems[i].name, name)==0) {
-            return SingleBitItems[i].powered;
-        }
-    }
-    return FALSE;
+	if(SingleBitItems.count(name) > 0) {
+		return SingleBitItems[name];
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
 // Set the state of a single-bit item. Adds it to the list if it is not there
 // already.
 //-----------------------------------------------------------------------------
-static void SetSingleBit(char *name, BOOL state)
+static void SetSingleBit(const char *name, bool state)
 {
-    int i;
-    for(i = 0; i < SingleBitItemsCount; i++) {
-        if(_stricmp(SingleBitItems[i].name, name)==0) {
-            SingleBitItems[i].powered = state;
-			UpdateSimulation(name, state);
-            return;
-        }
-    }
-    if(i < MAX_IO) {
-        strcpy(SingleBitItems[i].name, name);
-        SingleBitItems[i].powered = state;
-		UpdateSimulation(name, state);
-        SingleBitItemsCount++;
-    }
+	SingleBitItems[name] = state;
+	UpdateSimulation(name, state);
 }
 
 //-----------------------------------------------------------------------------
@@ -663,7 +642,7 @@ static bool CheckSimulationBit(char *name, int bit)
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
-void SetSimulationVariable(char *name, SWORD val)
+void SetSimulationVariable(const char *name, SWORD val)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
@@ -681,7 +660,7 @@ void SetSimulationVariable(char *name, SWORD val)
 //-----------------------------------------------------------------------------
 // Read a variable's value.
 //-----------------------------------------------------------------------------
-SWORD GetSimulationVariable(char *name)
+SWORD GetSimulationVariable(const char *name)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
@@ -827,7 +806,7 @@ SWORD GetResetEncShadow(char *name)
 // (e.g. just a TON, an RTO with its reset, etc.). Returns NULL for success,
 // else an error string.
 //-----------------------------------------------------------------------------
-static char *MarkUsedVariable(char *name, DWORD flag)
+static char *MarkUsedVariable(const char *name, DWORD flag)
 {
     int i;
     for(i = 0; i < VariablesCount; i++) {
@@ -1073,7 +1052,7 @@ static void CheckVariableNames(void)
 {
     int i;
     for(i = 0; i < Prog.numRungs; i++) {
-        CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
+        CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);	
     }
 }
 
@@ -1165,20 +1144,18 @@ static void SimulateIntCode(void)
                 break;
 
             case INT_SET_BIT:
-                SetSingleBit(a->name1, TRUE);
+                SetSingleBit(a->name1, true);
                 break;
 
             case INT_CLEAR_BIT:
-                SetSingleBit(a->name1, FALSE);
+                SetSingleBit(a->name1, false);
                 break;
 
             case INT_SET_SINGLE_BIT:
-                //SetSingleBit(a->name1, TRUE);
 				SetSimulationBit(a->name1, a->bit);
                 break;
 
             case INT_CLEAR_SINGLE_BIT:
-                //SetSingleBit(a->name1, FALSE);
 				ClearSimulationBit(a->name1, a->bit);
                 break;
 
@@ -1305,7 +1282,7 @@ math:
             // busy all the time, so that the program never does anything
             // with it.
             case INT_EEPROM_BUSY_CHECK:
-                SetSingleBit(a->name1, TRUE);
+                SetSingleBit(a->name1, true);
                 break;
 
             case INT_EEPROM_READ:
@@ -1353,22 +1330,22 @@ math:
 					int time = IsNumber(a->name1) ? atoi(a->name1) : GetSimulationVariable(a->name1);
 					SimulateMultisetDA.Count = time/PLC_CYCLE;
 					SimulateMultisetDA.FinalValue = Simulate_DaConv(IsNumber(a->name2) ? atoi(a->name2) : GetSimulationVariable(a->name2), atoi(a->name5));
-					SetSingleBit("$RampActive", TRUE);
+					SetSingleBit("$RampActive", true);
 				} else if(SingleBitOn("$RampActive")) {
 					switch(a->literal) {
 					case RAMP_ABORT_LEAVE:
 						SimulateMultisetDA.Count = 0;
-						SetSingleBit("$RampActive", FALSE);
+						SetSingleBit("$RampActive", false);
 						break;
 					case RAMP_ABORT_STOP:
 						SimulateMultisetDA.Count = 1;  // Desacelera em  10 ms =  1 ciclo
 						SimulateMultisetDA.FinalValue = DA_RESOLUTION;
-						SetSingleBit("$RampActive", TRUE);
+						SetSingleBit("$RampActive", true);
 						break;
 					case RAMP_ABORT_DESACEL:
 						SimulateMultisetDA.Count = 10; // Desacelera em 100 ms = 10 ciclos
 						SimulateMultisetDA.FinalValue = DA_RESOLUTION;
-						SetSingleBit("$RampActive", TRUE);
+						SetSingleBit("$RampActive", true);
 						break;
 					}
 				}
@@ -1378,33 +1355,33 @@ math:
 				break;
 
 			case INT_READ_FORMATTED_STRING:
-				SetSingleBit("$SerialReady", FALSE);
+				SetSingleBit("$SerialReady", false);
 				SimulateUSSTxCountdown = 0;
 				AppendToFormattedStringSimulationTextControl("RS485 Read: %s\r\n", a->name2, GetSimulationVariable(a->name1));
                 break;
 			case INT_WRITE_FORMATTED_STRING:
-				SetSingleBit("$SerialReady", FALSE);
+				SetSingleBit("$SerialReady", false);
 				SimulateUSSTxCountdown = 0;
 				AppendToFormattedStringSimulationTextControl("RS485 Write: %s\r\n", a->name2, GetSimulationVariable(a->name1));
                 break;
 			case INT_READ_SERVO_YASKAWA:
-				SetSingleBit("$SerialReady", FALSE);
+				SetSingleBit("$SerialReady", false);
 				SimulateUSSTxCountdown = 0;
 				AppendToFormattedStringSimulationTextControl("Servo Read: %s\r\n", a->name2, GetSimulationVariable(a->name1));
                 break;
 			case INT_WRITE_SERVO_YASKAWA:
-				SetSingleBit("$SerialReady", FALSE);
+				SetSingleBit("$SerialReady", false);
 				SimulateUSSTxCountdown = 0;
 				AppendToFormattedStringSimulationTextControl("Servo Write: %s\r\n", a->name2, GetSimulationVariable(a->name1));
                 break;
             case INT_READ_USS:
-				SetSingleBit("$USSReady", FALSE);
+				SetSingleBit("$USSReady", false);
 				SimulateUSSTxCountdown = 0;
 				AppendToUSSSimulationTextControl(atoi(a->name2), atoi(a->name3), atoi(a->name4), a->name1, GetSimulationVariable(a->name1));
                 break;
 
             case INT_WRITE_USS:
-				SetSingleBit("$USSReady", FALSE);
+				SetSingleBit("$USSReady", false);
 				SimulateUSSTxCountdown = 0;
 				AppendToUSSSimulationTextControl(atoi(a->name2), atoi(a->name3), atoi(a->name4), a->name1, GetSimulationVariable(a->name1));
                 break;
@@ -1412,10 +1389,10 @@ math:
             case INT_READ_MODBUS:
             case INT_WRITE_MODBUS:
 				if(a->literal == 0) { // RS-485
-					SetSingleBit("$SerialReady", FALSE);
+					SetSingleBit("$SerialReady", false);
 					SimulateModbus485Countdown = 2;
 				} else { // Ethernet
-					SetSingleBit("$TcpReady", FALSE);
+					SetSingleBit("$TcpReady", false);
 					SimulateModbusEthCountdown = 2;
 				}
 				AppendToModbusSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
@@ -1428,19 +1405,19 @@ math:
                     AppendToUartSimulationTextControl((BYTE)GetSimulationVariable(a->name1));
                 }
                 if(SimulateUartTxCountdown == 0) {
-                    SetSingleBit(a->name2, FALSE);
+                    SetSingleBit(a->name2, false);
                 } else {
-                    SetSingleBit(a->name2, TRUE);
+                    SetSingleBit(a->name2, true);
                 }
                 break;
 
             case INT_UART_RECV:
                 if(QueuedUartCharacter >= 0) {
-                    SetSingleBit(a->name2, TRUE);
+                    SetSingleBit(a->name2, true);
                     SetSimulationVariable(a->name1, (SWORD)QueuedUartCharacter);
                     QueuedUartCharacter = -1;
                 } else {
-                    SetSingleBit(a->name2, FALSE);
+                    SetSingleBit(a->name2, false);
                 }
                 break;
 
@@ -1490,7 +1467,7 @@ math:
 							RTC_Mode = UseWeekDays ? RTC_MODE_WEEKDAY_INTERMITTENT : RTC_MODE_DATE_INTERMITTENT;
 						}
 
-						SetSingleBit(a->name1, RTC_OutputState(RTC_StartTM, RTC_EndTM, t, RTC_Mode, a->literal & 0x7F));
+						SetSingleBit(a->name1, RTC_OutputState(RTC_StartTM, RTC_EndTM, t, RTC_Mode, a->literal & 0x7F) ? true : false);
 					}
 				}
 				break;
@@ -1549,20 +1526,20 @@ void SimulateOneCycle(BOOL forceRefresh)
 
 	if (SimulateUSSTxCountdown > 2)
 	{
-		SetSingleBit("$SerialReady", TRUE);
+		SetSingleBit("$SerialReady", true);
 	}
 
 	if (SimulateModbus485Countdown > 0) {
 		SimulateModbus485Countdown--;
 		if (!SimulateModbus485Countdown) {
-			SetSingleBit("$SerialReady", TRUE);
+			SetSingleBit("$SerialReady", true);
 		}
 	}
 
 	if (SimulateModbusEthCountdown > 0) {
 		SimulateModbusEthCountdown--;
 		if (!SimulateModbusEthCountdown) {
-			SetSingleBit("$TcpReady", TRUE);
+			SetSingleBit("$TcpReady", true);
 		}
 	}
 
@@ -1571,7 +1548,7 @@ void SimulateOneCycle(BOOL forceRefresh)
 
 		SimulateMultisetDA.Count--;
 		if(!SimulateMultisetDA.Count) {
-			SetSingleBit("$RampActive", FALSE);
+			SetSingleBit("$RampActive", false);
 			SetDAShadow(SimulateMultisetDA.FinalValue);
 		} else {
 			offset = (float)(SimulateMultisetDA.StartValue - SimulateMultisetDA.FinalValue) / SimulateMultisetDA.StartCount;
@@ -1585,7 +1562,7 @@ void SimulateOneCycle(BOOL forceRefresh)
     if(NeedRedraw || SimulateRedrawAfterNextCycle || forceRefresh) {
 		NeedRedraw = FALSE;
         InvalidateRect(MainWindow, NULL, FALSE);
-        ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+		ListView_RedrawItems(IoList, 0, ladder->getCountIO() - 1);
     }
 
     SimulateRedrawAfterNextCycle = FALSE;
@@ -1607,10 +1584,11 @@ void SimulateOneCycle(BOOL forceRefresh)
 //-----------------------------------------------------------------------------
 void StartSimulationTimer(void)
 {
-    int p = Prog.settings.cycleTime/1000;
+	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+    int p = settings.cycleTime/1000;
     if(p < 5) {
         SetTimer(MainWindow, TIMER_SIMULATE, 10, PlcCycleTimer);
-        CyclesPerTimerTick = 10000 / Prog.settings.cycleTime;
+        CyclesPerTimerTick = 10000 / settings.cycleTime;
     } else {
         SetTimer(MainWindow, TIMER_SIMULATE, p, PlcCycleTimer);
         CyclesPerTimerTick = 1;
@@ -1623,7 +1601,6 @@ void StartSimulationTimer(void)
 void ClearSimulationData(void)
 {
     VariablesCount = 0;
-    SingleBitItemsCount = 0;
     AdcShadowsCount = 0;
 	readUSSShadowsCount = 0;
 	writeUSSShadowsCount = 0;
@@ -1634,11 +1611,11 @@ void ClearSimulationData(void)
     SimulateModbus485Countdown = 0;
     SimulateModbusEthCountdown = 0;
 
-	SetSingleBit("$USSReady", TRUE);
-	SetSingleBit("$SerialReady", TRUE);
-	SetSingleBit("$TcpReady", TRUE);
+	SetSingleBit("$USSReady", true);
+	SetSingleBit("$SerialReady", true);
+	SetSingleBit("$TcpReady", true);
 
-	CheckVariableNames();
+//	CheckVariableNames();
 
     SimulateRedrawAfterNextCycle = TRUE;
 
@@ -1659,25 +1636,26 @@ void ClearSimulationData(void)
 // Provide a description for an item (Xcontacts, Ycoil, Rrelay, Ttimer,
 // or other) in the I/O list.
 //-----------------------------------------------------------------------------
-void DescribeForIoList(int val, int type, char *out)
+void DescribeForIoList(int val, eType type, char *out)
 {
     switch(type) {
-        case IO_TYPE_INTERNAL_FLAG:
-        case IO_TYPE_INTERNAL_RELAY:
-        case IO_TYPE_DIG_OUTPUT:
-        case IO_TYPE_DIG_INPUT:
+        case eType_InternalFlag:
+        case eType_InternalRelay:
+        case eType_DigOutput:
+        case eType_DigInput:
             sprintf(out, "%d", val);
             break;
 
-		case IO_TYPE_SET_DA: {
+		case eType_SetDAC: {
             sprintf(out, "%i (0x%08x)", val, val);
             break;
 		}
 
-        case IO_TYPE_TON:
-        case IO_TYPE_TOF:
-        case IO_TYPE_RTO: {
-            double dtms = val * (Prog.settings.cycleTime / 1000.0);
+        case eType_TON:
+        case eType_TOF:
+        case eType_RTO: {
+			LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+            double dtms = val * (settings.cycleTime / 1000.0);
             if(dtms < 1000) {
                 sprintf(out, "%.2f ms", dtms);
             } else {
@@ -1692,7 +1670,7 @@ void DescribeForIoList(int val, int type, char *out)
     }
 }
 
-void DescribeForIoList(char *name, int type, char *out)
+void DescribeForIoList(const char *name, eType type, char *out)
 {
 	int val;
 	char varname[MAX_NAME_LEN];
@@ -1700,21 +1678,21 @@ void DescribeForIoList(char *name, int type, char *out)
 	strcpy(varname, name);
 
 	switch(type) {
-        case IO_TYPE_INTERNAL_FLAG:
+		case eType_InternalFlag:
 			sprintf(varname, "$%s", name);
-        case IO_TYPE_INTERNAL_RELAY:
-        case IO_TYPE_DIG_OUTPUT:
-        case IO_TYPE_DIG_INPUT:
+		case eType_InternalRelay:
+        case eType_DigOutput:
+        case eType_DigInput:
             val = SingleBitOn(varname);
             break;
 
-		case IO_TYPE_SET_DA:
+		case eType_SetDAC:
             val = GetDAShadow();
             break;
 
-        case IO_TYPE_TON:
-        case IO_TYPE_TOF:
-        case IO_TYPE_RTO:
+		case eType_TOF:
+        case eType_TON:
+        case eType_RTO:
             val = GetSimulationVariable(varname);
 			break;
 
@@ -1732,7 +1710,7 @@ void DescribeForIoList(char *name, int type, char *out)
 void SimulationToggleContact(char *name)
 {
     SetSingleBit(name, !SingleBitOn(name));
-    ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+    ListView_RedrawItems(IoList, 0, ladder->getCountIO() - 1);
 }
 
 //-----------------------------------------------------------------------------

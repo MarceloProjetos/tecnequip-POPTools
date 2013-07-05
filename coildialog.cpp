@@ -14,14 +14,6 @@ static HWND BitTextbox;
 static LONG_PTR PrevNameProc;
 static LONG_PTR PrevCoilDialogProc;
 
-#define MAX_IO_SEEN_PREVIOUSLY 512
-extern struct {
-    char    name[MAX_NAME_LEN];
-    int     type;
-    int     pin;
-	int		bit;
-} IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
-extern int IoSeenPreviouslyCount;
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
 //-----------------------------------------------------------------------------
@@ -91,7 +83,11 @@ static void MakeControls(void)
         190, 80, 100, 321, CoilDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-	LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT | IO_TYPE_INTERNAL_RELAY);
+	vector<eType> types;
+	types.push_back(eType_DigOutput);
+	types.push_back(eType_InternalRelay);
+
+	LoadIOListToComboBox(NameTextbox, types);
 	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
@@ -130,11 +126,15 @@ static LRESULT CALLBACK CoilDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
             HWND h = (HWND)lParam;
             if(wParam == BN_CLICKED) {
 				SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)name);
+				vector<eType> types;
+
 				if(h == SourceInternalRelayRadio) {
-					LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_RELAY);
+					types.push_back(eType_InternalRelay);
 				} else if(h == SourceMcuPinRadio) {
-					LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
+					types.push_back(eType_DigOutput);
 				}
+
+				LoadIOListToComboBox(NameTextbox, types);
 				SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)name);
             }
             break;
@@ -170,11 +170,13 @@ bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, unsigned long
 
 	if(detailsIO.type == eType_InternalRelay) {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
-		LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_RELAY);
     } else {
         SendMessage(SourceMcuPinRadio, BM_SETCHECK, BST_CHECKED, 0);
-		LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
     }
+
+	vector<eType> types;
+	types.push_back(detailsIO.type);
+	LoadIOListToComboBox(NameTextbox, types);
 
 	strcpy(name_tmp, name);
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)name_tmp);

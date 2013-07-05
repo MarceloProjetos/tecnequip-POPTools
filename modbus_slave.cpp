@@ -121,9 +121,11 @@ MODBUS_HANDLER_TX(Modbus_Slave_Tx)
 
 void Init_MBDev_Slave(void)
 {
+	LadderSettingsModbusSlave settings = ladder->getSettingsModbusSlave();
+
 	Modbus_RTU_Init(&MBDev_Slave);
 
-	MBDev_Slave.identification.Id                 = Prog.settings.ModBUSID;
+	MBDev_Slave.identification.Id                 = settings.ModBUSID;
 	MBDev_Slave.identification.VendorName         = "Tecnequip";
 	MBDev_Slave.identification.ProductCode        = "POPTools";
 	MBDev_Slave.identification.MajorMinorRevision = "v1.4";

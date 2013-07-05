@@ -104,7 +104,7 @@ static void MakeFixedControls(BOOL forPwl)
         85, 10, 120, 321, LutDialog, NULL, Instance, NULL);
     FixedFont(DestTextbox);
 
-	LoadIOListToComboBox(DestTextbox, IO_TYPE_ALL);
+	LoadIOListToComboBox(DestTextbox, vector<eType>()); // Vetor vazio, todos os tipos...
 	SendMessage(DestTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     Labels[1] = CreateWindowEx(0, WC_STATIC, _("Index:"),
@@ -117,7 +117,7 @@ static void MakeFixedControls(BOOL forPwl)
         85, 40, 120, 321, LutDialog, NULL, Instance, NULL);
     FixedFont(IndexTextbox);
 
-	LoadIOListToComboBox(IndexTextbox, IO_TYPE_ALL);
+	LoadIOListToComboBox(IndexTextbox, vector<eType>()); // Vetor vazio, todos os tipos...
 	SendMessage(IndexTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     Labels[2] = CreateWindowEx(0,WC_STATIC, forPwl ? _("Points:") : _("Count:"),

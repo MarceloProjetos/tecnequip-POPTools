@@ -44,169 +44,6 @@ SyntaxHighlightingColours HighlightColours;
 
 #define X_RIGHT_PADDING 30
 
-//-----------------------------------------------------------------------------
-// Blink the cursor on the schematic; called by a Windows timer. We XOR
-// draw it so just draw the same rectangle every time to show/erase the
-// cursor. Cursor may be in one of four places in the selected leaf (top,
-// bottom, left, right) but we don't care; just go from the coordinates
-// computed when we drew the schematic in the paint procedure.
-//-----------------------------------------------------------------------------
-void CALLBACK BlinkCursor2(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
-{
-    if(GetFocus() != MainWindow && !CursorDrawn) return;
-    if(Cursor.left == 0) return;
-
-    PlcCursor c;
-    memcpy(&c, &Cursor, sizeof(c));
-
-    c.top -= ScrollYOffset*POS_HEIGHT*FONT_HEIGHT;
-    c.left -= ScrollXOffset;
-
-    if(c.top >= IoListTop) return;
-
-    if(c.top + c.height >= IoListTop) {
-        c.height = IoListTop - c.top - 3;
-    }
-
-    Hdc = GetDC(DrawWindow);
-    SelectObject(Hdc, GetStockObject(WHITE_BRUSH));
-    PatBlt(Hdc, c.left, c.top, c.width, c.height, PATINVERT);
-    CursorDrawn = !CursorDrawn;
-    ReleaseDC(DrawWindow, Hdc);
-}
-
-//-----------------------------------------------------------------------------
-// Output a string to the screen at a particular location, in character-
-// sized units.
-//-----------------------------------------------------------------------------
-static void DrawCharsToScreen(int cx, int cy, char *str)
-{
-    cy -= ScrollYOffset*POS_HEIGHT;
-    if(cy < -2) return;
-    if(cy*FONT_HEIGHT + Y_PADDING + (int)RibbonHeight > IoListTop) return;
-
-    COLORREF prev;
-    BOOL firstTime = TRUE;
-    BOOL inNumber = FALSE;
-    BOOL inComment = FALSE;
-    int inBrace = 0;
-    for(; *str; str++, cx++) {
-        int x = cx*FONT_WIDTH + X_PADDING;
-        int y = cy*FONT_HEIGHT + Y_PADDING;
-
-        BOOL hiOk = !(InSimulationMode || ThisHighlighted);
-
-        if(strchr("{}[]", *str) && hiOk && !inComment)  {
-            if(*str == '{' || *str == '[') inBrace++;
-            if(inBrace == 1) {
-                prev = GetTextColor(Hdc);
-                SetTextColor(Hdc, HighlightColours.punct);
-                TextOut(Hdc, x, y, str, 1);
-                SetTextColor(Hdc, prev);
-            } else {
-                TextOut(Hdc, x, y, str, 1);
-            }
-            if(*str == ']' || *str == '}') inBrace--;
-        } else if((
-            ((*str > 0 ? isdigit(*str) : false) && (firstTime || isspace(str[-1]) 
-                || str[-1] == ':' || str[-1] == '[')) ||
-            (*str == '-' && (*str > 0 ? isdigit(str[1]) : false))) && hiOk && !inComment)
-        {
-            prev = GetTextColor(Hdc);
-            SetTextColor(Hdc, HighlightColours.lit);
-            TextOut(Hdc, x, y, str, 1);
-            SetTextColor(Hdc, prev);
-            inNumber = TRUE;
-        } else if(*str == '\x01') {
-            cx--;
-            if(hiOk) {
-                prev = GetTextColor(Hdc);
-                SetTextColor(Hdc, HighlightColours.op);
-            }
-        } else if(*str == '\x02') {
-            cx--;
-            if(hiOk) {
-                SetTextColor(Hdc, prev);
-                inComment = FALSE;
-            }
-        } else if(*str == '\x03') {
-            cx--;
-            if(hiOk) {
-                prev = GetTextColor(Hdc);
-                SetTextColor(Hdc, HighlightColours.comment);
-                inComment = TRUE;
-            }
-        } else if(inNumber) {
-            if((*str > 0 ? isdigit(*str) : false) || *str == '.') {
-                prev = GetTextColor(Hdc);
-                SetTextColor(Hdc, HighlightColours.lit);
-                TextOut(Hdc, x, y, str, 1);
-                SetTextColor(Hdc, prev);
-            } else {
-                TextOut(Hdc, x, y, str, 1);
-                inNumber = FALSE;
-            }
-		} else if(*str == '-') {
-			HPEN hOldPen = (HPEN)SelectObject(Hdc, CreatePen(PS_SOLID, 1, GetTextColor(Hdc)));
-			MoveToEx(Hdc, x, y + FONT_HEIGHT / 2, NULL);
-			LineTo(Hdc, x + FONT_WIDTH, y + FONT_HEIGHT / 2);
-			DeleteObject(SelectObject(Hdc, hOldPen));
-		} else if(*str == '+') {
-			if (x > X_PADDING - FONT_WIDTH + 3)
-			{
-				HPEN hOldPen = (HPEN)SelectObject(Hdc, CreatePen(PS_SOLID, 1, GetTextColor(Hdc)));
-				MoveToEx(Hdc, x, y + FONT_HEIGHT / 2, NULL);
-				LineTo(Hdc, x + FONT_WIDTH, y + FONT_HEIGHT / 2);
-				MoveToEx(Hdc, x + FONT_WIDTH / 2, y + FONT_HEIGHT / 4, NULL);
-				LineTo(Hdc, x + FONT_WIDTH / 2, y + ((FONT_HEIGHT / 4) * 3) + 1);
-				DeleteObject(SelectObject(Hdc, hOldPen));
-			}
-		} else if(*str == '|') {
-			if (x > X_PADDING - FONT_WIDTH + 3)
-			{
-				HPEN hOldPen = (HPEN)SelectObject(Hdc, CreatePen(PS_SOLID, 1, GetTextColor(Hdc)));
-				MoveToEx(Hdc, x + FONT_WIDTH / 2, y, NULL);
-				LineTo(Hdc, x + FONT_WIDTH / 2, y + FONT_HEIGHT);
-				DeleteObject(SelectObject(Hdc, hOldPen));
-			}
-        } else {
-            TextOut(Hdc, x, y, str, 1);
-        }
-
-        firstTime = FALSE;
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Total number of columns that we can display in the given amount of 
-// window area. Need to leave some slop on the right for the scrollbar, of
-// course.
-//-----------------------------------------------------------------------------
-int ScreenColsAvailable(void)
-{
-    RECT r;
-    GetClientRect(MainWindow, &r);
-
-    return (r.right - (X_PADDING + X_RIGHT_PADDING)) / (POS_WIDTH*FONT_WIDTH);
-}
-
-//-----------------------------------------------------------------------------
-// Total number of columns that we can display in the given amount of 
-// window area. Need to leave some slop on the right for the scrollbar, of
-// course, and extra slop at the bottom for the horiz scrollbar if it is
-// shown.
-//-----------------------------------------------------------------------------
-int ScreenRowsAvailable(void)
-{
-    int adj;
-    if(ScrollXOffsetMax == 0) {
-        adj = 0;
-    } else {
-        adj = 18;
-    }
-    return (IoListTop - Y_PADDING - adj - RibbonHeight) / (POS_HEIGHT*FONT_HEIGHT);
-}
-
 HRESULT InitRibbon(HWND hWindowFrame);
 HRESULT UpdateRibbonHeight(void);
 
@@ -354,7 +191,8 @@ static void DrawCharsToExportBuffer(int cx, int cy, char *str)
 //-----------------------------------------------------------------------------
 void ExportDrawingAsText(char *file)
 {
-	int i, maxWidth = ladder->getWidthTXT();
+	int i;
+	int maxWidth    = ladder->getWidthTXT();
 	int totalHeight = ladder->getHeightTXT()*POS_HEIGHT + 3;
 
 	ColsAvailable = maxWidth;
@@ -383,12 +221,15 @@ void ExportDrawingAsText(char *file)
 
     fprintf(f, _("POPTools - Diagrama Ladder exportado\n"));
 
-    if(Prog.mcu) {
+	McuIoInfo *mcu = ladder->getMCU();
+	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+
+	if(mcu != nullptr) {
         fprintf(f, _("Para '%s', cristal de %.6f MHz, tempo de ciclo de %.1f ms\n\n"),
-            Prog.mcu->mcuName, Prog.settings.mcuClock/1e6, Prog.settings.cycleTime/1e3);
+            mcu->mcuName, settings.mcuClock/1e6, settings.cycleTime/1e3);
     } else {
         fprintf(f, _("no MCU assigned, %.6f MHz crystal, %.1f ms cycle time\n\n"),
-            Prog.settings.mcuClock/1e6, Prog.settings.cycleTime/1e3);
+            settings.mcuClock/1e6, settings.cycleTime/1e3);
     }
 
     fprintf(f, _("\nDiagrama Ladder:\n\n"));
@@ -405,21 +246,24 @@ void ExportDrawingAsText(char *file)
     
     fprintf(f, _("  Name                       | Type               | Pin\n"));
     fprintf(f,   " ----------------------------+--------------------+------\n");
-    for(i = 0; i < Prog.io.count; i++) {
+
+	string name;
+	mapDetails detailsIO;
+	unsigned int index, count = ladder->getCountIO();
+    for(index = 0; index < count; index++) {
         char b[1024];
         memset(b, '\0', sizeof(b));
 
-        PlcProgramSingleIo *io = &Prog.io.assignment[i];
-        char *type = IoTypeToString(io->type);
-        char pin[MAX_NAME_LEN];
+		name      = ladder->getNameIObyIndex(index);
+		detailsIO = ladder->getDetailsIO(name);
 
-        PinNumberForIo(pin, io);
+		const char *type = ladder->getStringTypeIO(index);
+		const char *pin  = ladder->getPinNameIO(index).c_str();
 
-        sprintf(b, "                             |                    | %s\n",
-            pin);
+        sprintf(b, "                             |                    | %s\n", pin);
 
-        memcpy(b+2, io->name, strlen(io->name));
-        memcpy(b+31, type, strlen(type));
+		memcpy(b+2 , name.c_str(), name.size());
+        memcpy(b+31, type        , strlen(type));
         fprintf(f, "%s", b);
     }
 
@@ -427,54 +271,4 @@ void ExportDrawingAsText(char *file)
 
     // we may have trashed the grid tables a bit; a repaint will fix that
     InvalidateRect(MainWindow, NULL, FALSE);
-}
-
-//-----------------------------------------------------------------------------
-// Determine the settings of the vertical and (if needed) horizontal
-// scrollbars used to scroll our view of the program.
-//-----------------------------------------------------------------------------
-void SetUpScrollbars2(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
-{
-    int totalHeight = 0;
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        totalHeight += CountHeightOfElement(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-        totalHeight++;
-    }
-    totalHeight += 1; // for the end rung
-
-    int totalWidth = ProgCountWidestRow();
-
-    if(totalWidth <= ScreenColsAvailable()) {
-        *horizShown = FALSE;
-        ScrollXOffset = 0;
-        ScrollXOffsetMax = 0;
-    } else {
-        *horizShown = TRUE;
-        memset(horiz, 0, sizeof(*horiz));
-        horiz->cbSize = sizeof(*horiz);
-        horiz->fMask = SIF_DISABLENOSCROLL | SIF_ALL;
-        horiz->nMin = 0;
-        horiz->nMax = X_PADDING + totalWidth*POS_WIDTH*FONT_WIDTH;
-        RECT r;
-        GetClientRect(MainWindow, &r);
-        horiz->nPage = r.right - X_PADDING;
-        horiz->nPos = ScrollXOffset;
-
-        ScrollXOffsetMax = horiz->nMax - horiz->nPage + 1;
-        if(ScrollXOffset > ScrollXOffsetMax) ScrollXOffset = ScrollXOffsetMax;
-        if(ScrollXOffset < 0) ScrollXOffset = 0;
-    }
-
-    vert->cbSize = sizeof(*vert);
-    vert->fMask = SIF_DISABLENOSCROLL | SIF_ALL;
-    vert->nMin = 0;
-    vert->nMax = totalHeight - 1;
-    vert->nPos = ScrollYOffset;
-    vert->nPage = ScreenRowsAvailable();
-
-    ScrollYOffsetMax = vert->nMax - vert->nPage + 1;
-
-    if(ScrollYOffset > ScrollYOffsetMax) ScrollYOffset = ScrollYOffsetMax;
-    if(ScrollYOffset < 0) ScrollYOffset = 0;
 }

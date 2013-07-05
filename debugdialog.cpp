@@ -272,8 +272,10 @@ void MB_Transfer(bool mode_send, bool mode_tcp, bool retry)
 			mbdev = &MBDev_TCP;
 		} else {
 			mbdev = &MBDev_Serial;
-			if(!OpenCOMPort(POPSettings.COMPortDebug, Prog.settings.baudRate, SerialConfig[Prog.settings.UART].bByteSize,
-					SerialConfig[Prog.settings.UART].bParity, SerialConfig[Prog.settings.UART].bStopBits)) {
+			LadderSettingsUART settings = ladder->getSettingsUART();
+
+			if(!OpenCOMPort(POPSettings.COMPortDebug, settings.baudRate, SerialConfig[settings.UART].bByteSize,
+					SerialConfig[settings.UART].bParity, SerialConfig[settings.UART].bStopBits)) {
 				Error(_("Erro abrindo porta serial!"));
 				return;
 			}
@@ -311,7 +313,10 @@ static void SyncConfigToScreen(void)
 {
 	char buf[30];
 
-	sprintf(buf, "%d.%d.%d.%d", Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
+	LadderSettingsNetwork settings = ladder->getSettingsNetwork();
+
+	sprintf(buf, "%d.%d.%d.%d", FIRST_IPADDRESS(settings.ip), SECOND_IPADDRESS(settings.ip),
+		THIRD_IPADDRESS(settings.ip), FOURTH_IPADDRESS(settings.ip));
 	SendMessage(txtIP, WM_SETTEXT, 0, (LPARAM)buf);
 
 	sprintf(buf, "COM%d", POPSettings.COMPortDebug);

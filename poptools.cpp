@@ -2,6 +2,9 @@
 #include "mcutable.h"
 #include "LadderObjects.h"
 
+// Vetor com os tipos considerados como variaveis de uso geral, podendo ser utilizadas em elementos como move, etc.
+vector<eType> vectorTypesVar;
+
 //extern void Draw_Init(void);
 //extern void Draw_Start(void);
 //extern void PaintScrollAndSplitter(void);
@@ -26,13 +29,9 @@ static int         MouseY;
 
 // For the open/save dialog boxes
 #define LDMICRO_PATTERN _("POPTools Projeto Ladder (*.ld)\0*.ld\0All files\0*\0\0")
-char CurrentSaveFile[MAX_PATH];
 BOOL ProgramChangedNotSaved = FALSE;
 
-#define HEX_PATTERN  _("Intel Hex Files (*.hex)\0*.hex\0All files\0*\0\0")
 #define C_PATTERN    _("Linguagem C (*.c)\0*.c\0Todos os Arquivos\0*\0\0")
-#define INTERPRETED_PATTERN \
-    "Interpretable Byte Code Files (*.int)\0*.int\0All Files\0*\0\0"
 char CurrentCompileFile[MAX_PATH];
 
 #define TXT_PATTERN  _("Arquivos de Texto (*.txt)\0*.txt\0Todos os Arquivos\0*\0\0")
@@ -215,23 +214,27 @@ void UpdateRecentList(char *filename)
 // Get a filename with a common dialog box and then save the program to that
 // file and then set our default filename to that.
 //-----------------------------------------------------------------------------
-static BOOL SaveAsDialog(void)
+static bool SaveAsDialog(void)
 {
-	if(!Prog.settings.canSave) {
+	char CurrentSaveFile[MAX_PATH];
+	strcpy(CurrentSaveFile, ladder->getCurrentFilename().c_str());
+
+	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+	if(!settings.canSave) {
 		CurrentSaveFile[0] = '\0';
 	}
 
 	FileDialogShow(SaveLadder, "ld", CurrentSaveFile);
 	if(!strlen(CurrentSaveFile))
-		return FALSE;
+		return false;
 
 	if(!SaveProjectToFile(CurrentSaveFile)) {
         Error(_("Couldn't write to '%s'."), CurrentSaveFile);
-        return FALSE;
+        return false;
     } else {
 		UpdateRecentList(CurrentSaveFile);
-        ProgramChangedNotSaved = FALSE;
-        return TRUE;
+        ProgramChangedNotSaved = false;
+        return true;
     }
 }
 
@@ -327,8 +330,9 @@ static void ExportDialog(void)
 {
     char exportFile[MAX_PATH];
 
-	if(strlen(CurrentSaveFile) != 0) {
-		strcpy(exportFile, CurrentSaveFile);
+	string currentFilename = ladder->getCurrentFilename();
+	if(currentFilename.size() > 0) {
+		strcpy(exportFile, currentFilename.c_str());
 		ChangeFileExtension(exportFile, "txt");
 	} else {
 	    exportFile[0] = '\0';
@@ -347,12 +351,10 @@ static void ExportDialog(void)
 static void SaveAsAnsiC(void)
 {
     char exportFile[MAX_PATH];
+	strcpy(exportFile, ladder->getCurrentFilename().c_str());
 
-	if(strlen(CurrentSaveFile) != 0) {
-		strcpy(exportFile, CurrentSaveFile);
+	if(strlen(exportFile) != 0) {
 		ChangeFileExtension(exportFile, "c");
-	} else {
-	    exportFile[0] = '\0';
 	}
 
 	FileDialogShow(SaveC, "c", exportFile);
@@ -367,15 +369,16 @@ static void SaveAsAnsiC(void)
 // If we already have a filename, save the program to that. Otherwise same
 // as Save As. Returns TRUE if it worked, else returns FALSE.
 //-----------------------------------------------------------------------------
-static BOOL SaveProgram(void)
+static bool SaveProgram(void)
 {
-    if(strlen(CurrentSaveFile) && Prog.settings.canSave) {
-        if(!SaveProjectToFile(CurrentSaveFile)) {
-            Error(_("Couldn't write to '%s'."), CurrentSaveFile);
-            return FALSE;
+	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+	if(ladder->getCurrentFilename().size() > 0 && settings.canSave) {
+        if(!SaveProjectToFile("")) {
+			Error(_("Couldn't write to '%s'."), ladder->getCurrentFilename().c_str());
+            return false;
         } else {
-            ProgramChangedNotSaved = FALSE;
-            return TRUE;
+            ProgramChangedNotSaved = false;
+            return true;
         }
     } else {
         return SaveAsDialog();
@@ -671,21 +674,21 @@ static BOOL CompileProgram(BOOL ShowSuccessMessage)
 	ProgressStatus ps;
 	char text[100];
 
-	RemoveParallelStart(0, NULL);
+	McuIoInfo *mcu = ladder->getMCU();
 
 	if(!GenerateIntermediateCode()) goto CompileProgramEnd;
 
-    if(Prog.mcu == NULL) {
+    if(mcu == nullptr) {
         Error(_("Must choose a target microcontroller before compiling."));
         goto CompileProgramEnd;
-    } 
+    }
 
-    if(UartFunctionUsed() && Prog.mcu->uartNeeds.rxPin == 0) {
+    if(UartFunctionUsed() && mcu->uartNeeds.rxPin == 0) {
         Error(_("UART function used but not supported for this micro."));
         goto CompileProgramEnd;
     }
     
-    if(PwmFunctionUsed() && Prog.mcu->pwmNeedsPin == 0) {
+    if(PwmFunctionUsed() && mcu->pwmNeedsPin == 0) {
         Error(_("PWM function used but not supported for this micro."));
         goto CompileProgramEnd;
     }
@@ -802,11 +805,12 @@ static void WriteProgram(void)
 // or to cancel the operation they are performing. Return TRUE if they want
 // to cancel.
 //-----------------------------------------------------------------------------
-BOOL CheckSaveUserCancels(void)
+bool CheckSaveUserCancels(void)
 {
-	if(!ProgramChangedNotSaved || !Prog.settings.canSave) {
+	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+	if(!ProgramChangedNotSaved || !settings.canSave) {
         // no problem
-        return FALSE;
+        return false;
     }
 
     int r = MessageBox(MainWindow, 
@@ -816,15 +820,15 @@ BOOL CheckSaveUserCancels(void)
     switch(r) {
         case IDYES:
             if(SaveProgram())
-                return FALSE;
+                return false;
             else
-                return TRUE;
+                return true;
 
         case IDNO:
-            return FALSE;
+            return false;
 
         case IDCANCEL:
-            return TRUE;
+            return true;
 
         default:
             oops();
@@ -849,30 +853,13 @@ static void OpenDialog(char *filename)
 
     if(!LoadProjectFromFile(tempSaveFile)) {
         Error(_("Couldn't open '%s'."), tempSaveFile);
-        CurrentSaveFile[0] = '\0';
-		NewProgram();
     } else {
         ProgramChangedNotSaved = FALSE;
-        strcpy(CurrentSaveFile, tempSaveFile);
-		ChangeFileExtension(CurrentSaveFile, "ld");
-
 		UpdateRecentList(tempSaveFile);
 	}
 
     RefreshScrollbars();
-    UpdateMainWindowTitleBar();
-}
-
-//-----------------------------------------------------------------------------
-// Housekeeping required when the program changes: mark the program as
-// changed so that we ask if user wants to save before exiting, and update
-// the I/O list.
-//-----------------------------------------------------------------------------
-void ProgramChanged(void)
-{
-    ProgramChangedNotSaved = TRUE;
-    GenerateIoListDontLoseSelection();
-    RefreshScrollbars();
+	RefreshControlsToSettings();
     UpdateMainWindowTitleBar();
 }
 
@@ -917,28 +904,14 @@ void ProcessMenu(int code)
 {
 	unsigned int recent_index;
 
-	if(code >= MNU_PROCESSOR_0 && code < MNU_PROCESSOR_0+NUM_SUPPORTED_MCUS) {
-        strcpy(CurrentCompileFile, "");
-        Prog.mcu = &SupportedMcus[code - MNU_PROCESSOR_0];
-        RefreshControlsToSettings();
-        return;
-    }
-    if(code == MNU_PROCESSOR_0+NUM_SUPPORTED_MCUS) {
-        Prog.mcu = NULL;
-        strcpy(CurrentCompileFile, "");
-        RefreshControlsToSettings();
-        return;
-    }
-
     switch(code) {
         case MNU_NEW:
             if(CheckSaveUserCancels()) break;
             NewProgram();
 			ProgramChangedNotSaved = FALSE;
-            strcpy(CurrentSaveFile, "");
             strcpy(CurrentCompileFile, "");
-            GenerateIoListDontLoseSelection();
             RefreshScrollbars();
+			RefreshControlsToSettings();
             UpdateMainWindowTitleBar();
             break;
 
@@ -1292,10 +1265,12 @@ cmp:
 
         case MNU_MCU_SETTINGS:
             ShowConfDialog(false);
+	        RefreshControlsToSettings();
             break;
 
         case MNU_MCU_PREFERENCES:
             ShowPrefDialog();
+	        RefreshControlsToSettings();
             break;
 
         case MNU_SIMULATION_MODE:
@@ -1522,16 +1497,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int x = LOWORD(lParam);
             int y = HIWORD(lParam) - RibbonHeight;
 
-			if(x < X_PADDING - FONT_WIDTH + 3) {
-				ToggleBreakPoint(y);
-			} else if(InSimulationMode) {
-                EditElementMouseDoubleclick(x, y);
-            } else {
-                EditElementMouseDoubleclick(x, y);
-            }
-            InvalidateRect(MainWindow, NULL, FALSE);
-
 			ladder->MouseClick(x, y, false, true);
+
+			InvalidateRect(MainWindow, NULL, FALSE);
 
 			break;
         }
@@ -1919,14 +1887,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	ladder = new LadderDiagram;
 	NewProgram();
-    strcpy(CurrentSaveFile, "");
+
+	// Preenche o vetor com tipos de uso geral
+	vectorTypesVar.push_back(eType_General);
+	vectorTypesVar.push_back(eType_ReadADC);
+	vectorTypesVar.push_back(eType_Counter);
+	vectorTypesVar.push_back(eType_ReadEnc);
+	vectorTypesVar.push_back(eType_ReadUSS);
+	vectorTypesVar.push_back(eType_WriteUSS);
+	vectorTypesVar.push_back(eType_SetDAC);
+	vectorTypesVar.push_back(eType_ReadModbus);
+	vectorTypesVar.push_back(eType_WriteModbus);
+	vectorTypesVar.push_back(eType_ReadYaskawa);
+	vectorTypesVar.push_back(eType_WriteYaskawa);
 
     ShowWindow(MainWindow, SW_SHOW);
     SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
 	SetAutoSaveInterval(POPSettings.AutoSaveInterval);
 
 	if(strlen(lpCmdLine) > 0) {
-        char line[MAX_PATH];
+        char line[MAX_PATH], CurrentSaveFile[MAX_PATH];
         if(*lpCmdLine == '"') { 
             strcpy(line, lpCmdLine+1);
         } else {
@@ -1939,8 +1919,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         OpenDialog(CurrentSaveFile);
     }
 
-    GenerateIoListDontLoseSelection();
     RefreshScrollbars();
+	RefreshControlsToSettings();
     UpdateMainWindowTitleBar();
 
 	// Initialize ModBUS protocol and devices
@@ -1968,16 +1948,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-    FreezeWindowPos(MainWindow);
+
+	ShowWindow(MainWindow, SW_HIDE);
+
+	FreezeWindowPos(MainWindow);
     FreezeDWORD(IoListHeight);
 
 	SaveSettings();
 
 	WSACleanup();
 
-#ifndef POPTOOLS_DISABLE_RIBBON	
 	DestroyRibbon();
-#endif
 
 	return 0;
 }

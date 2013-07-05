@@ -3,9 +3,6 @@
 // Allocate memory on a local heap
 HANDLE MainHeap;
 
-// Running checksum as we build up IHEX records.
-static int IhexChecksum;
-
 // Try to common a bit of stuff between the dialog boxes, since only one
 // can be open at any time.
 HWND OkButton;
@@ -29,26 +26,6 @@ void dbp(char *str, ...)
     OutputDebugString(buf);
     OutputDebugString("\n");
 #endif
-}
-
-//-----------------------------------------------------------------------------
-// Wrapper for AttachConsole that does nothing running under <WinXP, so that
-// we still run (except for the console stuff) in earlier versions.
-//-----------------------------------------------------------------------------
-#define ATTACH_PARENT_PROCESS ((DWORD)-1) // defined in WinCon.h, but only if
-                                          // _WIN32_WINNT >= 0x500
-BOOL AttachConsoleDynamic(DWORD base)
-{
-    typedef BOOL WINAPI fptr_acd(DWORD base);
-    fptr_acd *fp;
-
-    HMODULE hm = LoadLibrary("kernel32.dll");
-    if(!hm) return FALSE;
-
-    fp = (fptr_acd *)GetProcAddress(hm, "AttachConsole");
-    if(!fp) return FALSE;
-
-    return fp(base);
 }
 
 //-----------------------------------------------------------------------------
@@ -133,37 +110,6 @@ void CheckFree(void *p)
 {
     ok();
     HeapFree(MainHeap, 0, p);
-}
-
-
-//-----------------------------------------------------------------------------
-// Clear the checksum and write the : that starts an IHEX record.
-//-----------------------------------------------------------------------------
-void StartIhex(FILE *f)
-{
-    fprintf(f, ":");
-    IhexChecksum = 0;
-}
-
-//-----------------------------------------------------------------------------
-// Write an octet in hex format to the given stream, and update the checksum
-// for the IHEX file.
-//-----------------------------------------------------------------------------
-void WriteIhex(FILE *f, BYTE b)
-{
-    fprintf(f, "%02X", b);
-    IhexChecksum += b;
-}
-
-//-----------------------------------------------------------------------------
-// Write the finished checksum to the IHEX file from the running sum
-// calculated by WriteIhex.
-//-----------------------------------------------------------------------------
-void FinishIhex(FILE *f)
-{
-    IhexChecksum = ~IhexChecksum + 1;
-    IhexChecksum = IhexChecksum & 0xff;
-    fprintf(f, "%02X\n", IhexChecksum);
 }
 
 //-----------------------------------------------------------------------------
@@ -277,91 +223,6 @@ void MakeDialogBoxClass(void)
 }
 
 //-----------------------------------------------------------------------------
-// Map an I/O type to a string describing it. Used both in the on-screen
-// list and when we write a text file to describe it.
-//-----------------------------------------------------------------------------
-char *IoTypeToString(int ioType)
-{
-    switch(ioType) {
-        case IO_TYPE_DIG_INPUT:         return _("digital in"); 
-        case IO_TYPE_DIG_OUTPUT:        return _("digital out"); 
-        case IO_TYPE_INTERNAL_RELAY:    return _("int. relay"); 
-        case IO_TYPE_UART_TX:           return _("UART tx"); 
-        case IO_TYPE_UART_RX:           return _("UART rx"); 
-        case IO_TYPE_PWM_OUTPUT:        return _("PWM out"); 
-        case IO_TYPE_TON:               return _("turn-on delay"); 
-        case IO_TYPE_TOF:               return _("turn-off delay"); 
-        case IO_TYPE_RTO:               return _("retentive timer"); 
-        case IO_TYPE_COUNTER:           return _("counter"); 
-        case IO_TYPE_GENERAL:           return _("general var"); 
-        case IO_TYPE_READ_ADC:          return _("adc input"); 
-        case IO_TYPE_READ_ENC:          return _("entrada encoder"); 
-        case IO_TYPE_RESET_ENC:         return _("write encoder"); 
-        case IO_TYPE_READ_USS:         return _("read USS"); 
-        case IO_TYPE_WRITE_USS:         return _("write USS"); 
-		case IO_TYPE_SET_DA:			return _("Set D/A"); 
-		case IO_TYPE_READ_MODBUS:       return _("leitura modbus"); 
-		case IO_TYPE_WRITE_MODBUS:      return _("escrita modbus"); 
-		case IO_TYPE_READ_YASKAWA:		return _("leitura NS600"); 
-		case IO_TYPE_WRITE_YASKAWA:		return _("escrita NS600"); 
-		case IO_TYPE_INTERNAL_FLAG:		return _("Flag Interna"); 
-        default:                        return "";
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Get a pin number for a given I/O; for digital ins and outs and analog ins,
-// this is easy, but for PWM and UART this is forced (by what peripherals
-// are available) so we look at the characteristics of the MCU that is in
-// use.
-//-----------------------------------------------------------------------------
-void PinNumberForIo(char *dest, PlcProgramSingleIo *io)
-{
-    if(!dest) return;
-
-    if(!io) {
-        strcpy(dest, "");
-        return;
-    }
-        
-    int type = io->type;
-    if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT || type == IO_TYPE_GENERAL
-        || type == IO_TYPE_READ_ADC || type == IO_TYPE_READ_ENC || type == IO_TYPE_RESET_ENC)
-    {
-        int pin = io->pin;
-        if(pin == NO_PIN_ASSIGNED) {
-			if(type == IO_TYPE_GENERAL) {
-		        strcpy(dest, "");
-			} else {
-	            strcpy(dest, _("(not assigned)"));
-			}
-        } else {
-            sprintf(dest, "%d", pin);
-        }
-    } else if(type == IO_TYPE_UART_TX && Prog.mcu) {
-        if(Prog.mcu->uartNeeds.txPin == 0) {
-            strcpy(dest, _("<no UART!>"));
-        } else {
-            sprintf(dest, "%d", Prog.mcu->uartNeeds.txPin);
-        }
-    } else if(type == IO_TYPE_UART_RX && Prog.mcu) {
-        if(Prog.mcu->uartNeeds.rxPin == 0) {
-            strcpy(dest, _("<no UART!>"));
-        } else {
-            sprintf(dest, "%d", Prog.mcu->uartNeeds.rxPin);
-        }
-    } else if(type == IO_TYPE_PWM_OUTPUT && Prog.mcu) {
-        if(Prog.mcu->pwmNeedsPin == 0) {
-            strcpy(dest, _("<no PWM!>"));
-        } else {
-            sprintf(dest, "%d", Prog.mcu->pwmNeedsPin);
-        }
-    } else {
-        strcpy(dest, "");
-    }
-}
-
-//-----------------------------------------------------------------------------
 // Is an expression that could be either a variable name or a number a number?
 //-----------------------------------------------------------------------------
 bool IsNumber(const char *str)
@@ -376,21 +237,28 @@ bool IsNumber(const char *str)
     }
 }
 
-void LoadIOListToComboBox(HWND ComboBox, unsigned int mask)
+void LoadIOListToComboBox(HWND ComboBox, vector<eType> allowedTypes)
 {
-	int i, idx = 0;
+	int idx = 0;
+	unsigned int i;
 
 	SendMessage(ComboBox, CB_RESETCONTENT, 0, 0);
-	if(mask & IO_TYPE_INTERNAL_FLAG) {
-		mask &= ~IO_TYPE_INTERNAL_FLAG;
-		for(i = 0; *InternalFlags[i]; i++) {
-			SendMessage(ComboBox, CB_INSERTSTRING, idx++, (LPARAM)((LPCTSTR)InternalFlags[i]));
+	if(find(allowedTypes.begin(), allowedTypes.end(), eType_InternalFlag) != allowedTypes.end()) {
+		vector<string>::iterator it;
+		vector<string> flags = ladder->getVectorInternalFlagsIO();
+		for(it = flags.begin(); it != flags.end(); it++) {
+			SendMessage(ComboBox, CB_INSERTSTRING, idx++, (LPARAM)((LPCTSTR)it->c_str()));
 		}
-	}
-
-	for(i = 0; i < Prog.io.count; i++) {
-		if(Prog.io.assignment[i].type & mask) {
-			SendMessage(ComboBox, CB_INSERTSTRING, idx++, (LPARAM)((LPCTSTR)Prog.io.assignment[i].name));
+	} else {
+		mapDetails detailsIO;
+		unsigned int count = ladder->getCountIO();
+		for(i = 0; i < count; i++) {
+			string name = ladder->getNameIObyIndex(i);
+			detailsIO = ladder->getDetailsIO(name);
+			if(allowedTypes.size() == 0 ||
+				find(allowedTypes.begin(), allowedTypes.end(), detailsIO.type) != allowedTypes.end()) {
+					SendMessage(ComboBox, CB_INSERTSTRING, idx++, (LPARAM)((LPCTSTR)name.c_str()));
+			}
 		}
     }
 }
@@ -549,31 +417,6 @@ int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto)
   return !ComboBox ? nPort : TRUE;
 }
 
-unsigned int GetTypeFromName(char *name)
-{
-	int i;
-
-	for(i=0; i<Prog.io.count; i++) {
-		if(!_stricmp(name, Prog.io.assignment[i].name))
-			return Prog.io.assignment[i].type;
-	}
-
-	return IO_TYPE_PENDING;
-}
-
-bool IsInternalFlag(char *name)
-{
-	unsigned int i;
-
-	for(i=0; *InternalFlags[i]; i++) {
-		if(!_stricmp(name, InternalFlags[i])) {
-			return true;
-		}
-	}
-
-	return false;	
-}
-
 bool IsInternalVar(char *name)
 {
 	unsigned int i;
@@ -585,19 +428,6 @@ bool IsInternalVar(char *name)
 	}
 
 	return false;	
-}
-
-bool IsReservedName(char *name)
-{
-	int i;
-	char *reserved[] = { _("in"), _("out"), _("new"), NULL };
-
-	for(i=0; reserved[i] != NULL; i++) {
-		if(!_stricmp(name, reserved[i]))
-			return true;
-	}
-
-	return false;
 }
 
 bool IsValidNumber(char *number)
@@ -634,111 +464,6 @@ bool IsValidVarName(char *name)
 	return true;
 }
 
-bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned int Rules, unsigned int new_type, int MinVal, int MaxVal)
-{
-	int val;
-	bool ret = FALSE;
-	unsigned int current_type = GetTypeFromName(name);
-	bool name_is_internal_flag = IsInternalFlag(name);
-	bool name_is_reserved = IsReservedName(name);
-	bool name_is_number = IsNumber(name);
-
-	// Check for Internal Flags and Reserved Names restrictions
-	if((new_type != IO_TYPE_INTERNAL_FLAG && name_is_internal_flag) || name_is_reserved) {
-		Error(_("Nome '%s' reservado para uso interno, favor escolher outro nome."), name);
-		return FALSE;
-	} else  if(new_type == IO_TYPE_INTERNAL_FLAG && !name_is_internal_flag) {
-		Error(_("Nome Inválido! Para o tipo 'Flag Interna' é obrigatório selecionar um item da lista."));
-		return FALSE;
-	}
-
-	// Check for Variable and Number restrictions
-	if(!name_is_number && !IsValidVarName(name)) {
-		Error(_("%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não inicar com número\nNúmero: Apenas números, podendo iniciar por - (menos)"), FieldName ? FieldName : "Nome", name);
-		return FALSE;
-	} else if((Rules & VALIDATE_IS_VAR) && name_is_number) {
-		Error(_("'%s' não pode ser número!"), FieldName ? FieldName : name);
-		return FALSE;
-	} else if((Rules & VALIDATE_IS_NUMBER) && !name_is_number) {
-		Error(_("'%s' deve ser número!"), FieldName ? FieldName : name);
-		return FALSE;
-	} else if(name_is_number && !IsValidNumber(name)) {
-		Error(_("Número '%s' inválido!"), name);
-		return FALSE;
-	}
-
-	// Check for Number Limits
-	if((MinVal || MaxVal) && (Rules & (VALIDATE_IS_NUMBER | VALIDATE_IS_VAR_OR_NUMBER)) && name_is_number) {
-		val = atoi(name);
-		if(val < MinVal || val > MaxVal) {
-			Error(_("'%s' fora dos limites! Deve estar entre %d e %d."), FieldName ? FieldName : name, MinVal, MaxVal);
-			return FALSE;
-		}
-	}
-
-	// Check for Type restrictions
-	if(!name_is_number) {
-		// If types must match and types are different or cannot accept io_pending type, generates an error
-		if((Rules & VALIDATE_TYPES_MUST_MATCH) && current_type != new_type && !((current_type == IO_TYPE_PENDING || new_type == IO_TYPE_PENDING) && (Rules & VALIDATE_ACCEPT_IO_PENDING))) {
-			Error(_("Conflito entre tipos! Operação não permitida."));
-		} else if(new_type == IO_TYPE_DIG_INPUT || new_type == IO_TYPE_DIG_OUTPUT || new_type == IO_TYPE_INTERNAL_RELAY) {
-			if(new_type == current_type) { // no type change, ok!
-				ret = TRUE;
-			} else if(current_type == IO_TYPE_PENDING) { // Inexistent name, ok!
-				ret = TRUE;
-			} else if(new_type == IO_TYPE_DIG_INPUT && (current_type == IO_TYPE_DIG_OUTPUT || current_type == IO_TYPE_INTERNAL_RELAY) && ExistsCoilWithName(name)) {
-				Error(_("Saída em uso! Não é possível alterar para Entrada."));
-			} else if(!_stricmp(old_name, name)) { // name not changed, ok!
-				ret = TRUE;
-			// name changed, check for type changes
-			} else if(new_type == IO_TYPE_INTERNAL_RELAY && current_type == IO_TYPE_DIG_OUTPUT) { // changing existent output to internal relay, needs confirmation
-				if(Rules & VALIDATE_DONT_ASK) {
-					Error(_("Valor inválido! Conflito de tipos: Rele Interno <-> Saída"));
-				} else if(MessageBox(MainWindow, _("Já existe uma Saída com este nome. Alterar para Rele Interno?"), _("Confirmar alteração de Saída para Rele Interno"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
-					ret = TRUE;
-				}
-			} else if(new_type == IO_TYPE_DIG_OUTPUT && current_type == IO_TYPE_INTERNAL_RELAY) { // changing existent output to internal relay, needs confirmation
-				if(Rules & VALIDATE_DONT_ASK) {
-					Error(_("Valor inválido! Conflito de tipos: Rele Interno <-> Saída"));
-				} else if(MessageBox(MainWindow, _("Já existe um Rele Interno com este nome. Alterar para Saída?"), _("Confirmar alteração de Rele Interno para Saída"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
-					ret = TRUE;
-				}
-			} else if(new_type == IO_TYPE_DIG_OUTPUT && current_type == IO_TYPE_DIG_INPUT) { // changing existent input to output, needs confirmation
-				if(Rules & VALIDATE_DONT_ASK) {
-					Error(_("Valor inválido! Conflito de tipos: Entrada <-> Saída"));
-				} else if(MessageBox(MainWindow, _("Já existe uma Entrada com este nome. Alterar para Saída?"), _("Confirmar alteração de Entrada para Saída"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
-					ret = TRUE;
-				}
-			} else if(new_type == IO_TYPE_INTERNAL_RELAY && current_type == IO_TYPE_DIG_INPUT) { // changing existent input to internal relay, needs confirmation
-				if(Rules & VALIDATE_DONT_ASK) {
-					Error(_("Valor inválido! Conflito de tipos: Rele Interno <-> Entrada"));
-				} else if(MessageBox(MainWindow, _("Já existe uma Entrada com este nome. Alterar para Relé Interno?"), _("Confirmar alteração de Entrada para Relé Interno"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
-					ret = TRUE;
-				}
-			} else { // no wrong conditions, ok!
-				ret = TRUE;
-			}
-		} else if(current_type == IO_TYPE_COUNTER || current_type == IO_TYPE_TOF || current_type == IO_TYPE_TON) {
-			if(new_type == IO_TYPE_COUNTER || new_type == IO_TYPE_TOF || new_type == IO_TYPE_TON) {
-				ret = TRUE;
-			} else {
-				Error(_("'Nome' deve ser um contador ou timer!"));
-			}
-		} else {
-			ret = TRUE;
-		}
-	} else {
-		ret = TRUE;
-	}
-
-	return ret;
-}
-
-bool IsValidNameAndType(char *old_name, char *name, unsigned int new_type)
-{
-	return IsValidNameAndType(old_name, name, NULL, VALIDATE_IS_VAR, new_type, 0, 0);
-}
-
 #define KEY_CONTROL_A  1
 #define KEY_CONTROL_C  3
 #define KEY_CONTROL_V 22
@@ -768,50 +493,6 @@ void ChangeFileExtension(char *name, char *ext)
 	}
 
 	sprintf(name, "%s.%s", name, ext);
-}
-
-const char *GetPinADC(const char *name)
-{
-	int i;
-	for(i=0; i < Prog.io.count; i++) {
-		if(!strcmp(name, Prog.io.assignment[i].name))
-			break;
-	}
-
-	switch(Prog.io.assignment[i].pin) {
-	case 1:
-		return "AD1";
-		break;
-	case 2:
-		return "AD2";
-		break;
-	case 3:
-		return "AD3";
-		break;
-	case 4:
-		return "AD4";
-		break;
-	case 5:
-		return "AD5";
-		break;
-	case 6:
-		return "TEMP";
-		break;
-	}
-
-	return "?";
-}
-
-int GetPinEnc(char *name)
-{
-	int i;
-	for(i=0; i < Prog.io.count; i++) {
-		if((Prog.io.assignment[i].type == IO_TYPE_READ_ENC || Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
-				&& !strcmp(name, Prog.io.assignment[i].name))
-			return Prog.io.assignment[i].pin;
-	}
-
-	return NO_PIN_ASSIGNED;
 }
 
 // CRC calculation //

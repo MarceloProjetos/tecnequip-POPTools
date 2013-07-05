@@ -35,7 +35,13 @@ static void MakeControls(void)
         62, 16, 115, 321, ResetDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-	LoadIOListToComboBox(NameTextbox, IO_TYPE_TOF | IO_TYPE_TON | IO_TYPE_RTO | IO_TYPE_COUNTER);
+	vector<eType> types;
+	types.push_back(eType_TON);
+	types.push_back(eType_TOF);
+	types.push_back(eType_RTO);
+	types.push_back(eType_Counter);
+
+	LoadIOListToComboBox(NameTextbox, types);
 	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),

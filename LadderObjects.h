@@ -118,6 +118,16 @@ typedef struct {
 	unsigned int bit;
 } mapDetails;
 
+// Enumeracao para informar o tipo de ordenacao que deve ser realizada na lista de I/O
+enum eSortBy { eSortBy_Nothing = 0, eSortBy_Name, eSortBy_Type, eSortBy_Pin, eSortBy_Port };
+
+// Enumeracao que indica o resultado da validacao do diagrama
+enum eValidateResult { eValidateResult_OK = 0, eValidateResult_Warning, eValidateResult_Error };
+
+// Enumeracao que indica o modo de validacao do I/O.
+// Exemplo: Para a simulacao, nao precisa checar por associacoes
+enum eValidateIO { eValidateIO_OnlyNames, eValidateIO_Full };
+
 // Estrutura auxiliar que representa um subcircuito
 typedef struct {
 	LadderElem    *elem;
@@ -143,6 +153,10 @@ typedef struct {
 	LadderDiagram *Diagram;
 
 	int SelectedState;
+
+	bool inSimulationMode;
+
+	string currentFilename;
 
 	bool canNegate;
 	bool canNormal;
@@ -212,6 +226,11 @@ private:
 
 	virtual void internalSetProperties(void *data) = 0;
 
+	virtual bool internalGenerateIntCode(IntCode &ic) = 0;
+
+	virtual bool internalSave(FILE *f) = 0;
+	virtual bool internalLoad(FILE *f, unsigned int version) = 0;
+
 	// Estrutura de dados para acoes de Desfazer / Refazer
 	enum UndoRedoActionsEnum { eCheckpoint = 0, eSetProp, eActionsEnd };
 	union UndoRedoData {
@@ -239,7 +258,7 @@ public:
 
 	virtual bool ShowDialog(LadderContext context) = 0;
 
-	virtual bool GenerateIntCode(IntCode &ic) = 0;
+	bool GenerateIntCode(IntCode &ic);
 
 	inline bool IsComment     (void) { return isComment;    }
 	inline bool IsEOL         (void) { return isEndOfLine;  }
@@ -263,6 +282,10 @@ public:
 	virtual bool acceptIO(unsigned long id, eType type) = 0;
 	virtual void updateIO(bool isDiscard) = 0;
 
+	// Funcoes para ler / gravar elementos para o disco
+	bool Save(FILE *f);
+	bool Load(FILE *f, unsigned int version);
+
 	// Funcao que executa uma acao de desfazer / refazer
 	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
@@ -272,6 +295,10 @@ class LadderElemPlaceHolder : public LadderElem {
 	// Sem propriedades privadas...
 	void internalSetProperties(void *data) { }
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f) { return true; }
+	bool internalLoad(FILE *f, unsigned int version) { return true; }
+
 public:
 	LadderElemPlaceHolder(LadderDiagram *diagram);
 
@@ -280,7 +307,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	bool CanInsert(LadderContext context);
 
@@ -312,6 +339,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemComment(LadderDiagram *diagram);
 
@@ -320,7 +351,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -353,6 +384,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemContact(LadderDiagram *diagram);
 
@@ -361,7 +396,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -396,6 +431,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemCoil(LadderDiagram *diagram);
 
@@ -404,7 +443,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -439,6 +478,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemTimer(LadderDiagram *diagram, int which);
 
@@ -447,7 +490,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -482,6 +525,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemRTC(LadderDiagram *diagram);
 
@@ -490,7 +537,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -523,6 +570,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemCounter(LadderDiagram *diagram, int which);
 
@@ -531,7 +582,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -563,6 +614,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemReset(LadderDiagram *diagram);
 
@@ -571,7 +626,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -597,6 +652,10 @@ class LadderElemOneShot : public LadderElem {
 	// Sem propriedades privadas...
 	void internalSetProperties(void *data) { }
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f) { return true; }
+	bool internalLoad(FILE *f, unsigned int version) { return true; }
+
 public:
 	LadderElemOneShot(LadderDiagram *diagram, int which);
 
@@ -605,7 +664,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void) { return nullptr; }
 
@@ -638,6 +697,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemCmp(LadderDiagram *diagram, int which);
 
@@ -646,7 +709,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -680,6 +743,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemMath(LadderDiagram *diagram, int which);
 
@@ -688,7 +755,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -721,6 +788,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemSqrt(LadderDiagram *diagram);
 
@@ -729,7 +800,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -763,6 +834,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemRand(LadderDiagram *diagram);
 
@@ -771,7 +846,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -804,6 +879,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemAbs(LadderDiagram *diagram);
 
@@ -812,7 +891,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -845,6 +924,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemMove(LadderDiagram *diagram);
 
@@ -853,7 +936,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -879,6 +962,10 @@ class LadderElemOpenShort : public LadderElem {
 	// Sem propriedades privadas...
 	void internalSetProperties(void *data) { }
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f) { return true; }
+	bool internalLoad(FILE *f, unsigned int version) { return true; }
+
 public:
 	LadderElemOpenShort(LadderDiagram *diagram, int which);
 
@@ -887,7 +974,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void) { return nullptr; }
 
@@ -921,6 +1008,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemSetBit(LadderDiagram *diagram);
 
@@ -929,7 +1020,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -963,6 +1054,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemCheckBit(LadderDiagram *diagram);
 
@@ -971,7 +1066,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1003,6 +1098,13 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que retorna o nome do A/D conforme atribuicao do pino
+	string GetNameADC(void);
+
 public:
 	LadderElemReadAdc(LadderDiagram *diagram);
 
@@ -1011,7 +1113,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1044,6 +1146,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemSetDa(LadderDiagram *diagram);
 
@@ -1052,7 +1158,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1084,6 +1190,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemReadEnc(LadderDiagram *diagram);
 
@@ -1092,7 +1202,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1124,6 +1234,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemResetEnc(LadderDiagram *diagram);
 
@@ -1132,7 +1246,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1174,6 +1288,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemMultisetDA(LadderDiagram *diagram);
 
@@ -1182,7 +1300,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1218,6 +1336,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemUSS(LadderDiagram *diagram, int which);
 
@@ -1226,7 +1348,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1262,6 +1384,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemModBUS(LadderDiagram *diagram, int which);
 
@@ -1270,7 +1396,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1303,6 +1429,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemSetPWM(LadderDiagram *diagram);
 
@@ -1311,7 +1441,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	bool CanInsert(LadderContext context);
 
@@ -1343,6 +1473,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemUART(LadderDiagram *diagram, int which);
 
@@ -1351,7 +1485,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1377,6 +1511,10 @@ class LadderElemMasterRelay : public LadderElem {
 	// Sem propriedades privadas...
 	void internalSetProperties(void *data) { }
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f) { return true; }
+	bool internalLoad(FILE *f, unsigned int version) { return true; }
+
 public:
 	LadderElemMasterRelay(LadderDiagram *diagram);
 
@@ -1385,7 +1523,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void) { return nullptr; }
 
@@ -1419,6 +1557,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 	void createRegs(void);
 
 public:
@@ -1429,7 +1571,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1465,6 +1607,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemLUT(LadderDiagram *diagram);
 
@@ -1473,7 +1619,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1508,6 +1654,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemPiecewise(LadderDiagram *diagram);
 
@@ -1516,7 +1666,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1549,6 +1699,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemFmtString(LadderDiagram *diagram, int which);
 
@@ -1557,7 +1711,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1591,6 +1745,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemYaskawa(LadderDiagram *diagram, int which);
 
@@ -1599,7 +1757,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1631,6 +1789,10 @@ private:
 
 	void internalSetProperties(void *data);
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
 public:
 	LadderElemPersist(LadderDiagram *diagram);
 
@@ -1639,7 +1801,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void);
 
@@ -1671,6 +1833,10 @@ private:
 
 	void internalSetProperties(void *data) { }
 
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f) { return true; }
+	bool internalLoad(FILE *f, unsigned int version) { return true; }
+
 public:
 	LadderElemX(LadderDiagram *diagram);
 
@@ -1679,7 +1845,7 @@ public:
 
 	bool ShowDialog(LadderContext context);
 
-	bool GenerateIntCode(IntCode &ic);
+	bool internalGenerateIntCode(IntCode &ic);
 
 	void *getProperties(void) { return nullptr; }
 
@@ -1774,6 +1940,10 @@ public:
 
 	void doPostInsert(void);
 	void doPostRemove(void);
+
+	// Funcoes para Salvar / Carregar um circuito do disco
+	bool Save(LadderDiagram *diagram, FILE *f);
+	bool Load(LadderDiagram *diagram, FILE *f, unsigned int version);
 
 	// Funcoes relacionadas com I/O
 	bool acceptIO(unsigned long id, eType type);
@@ -1915,6 +2085,7 @@ public:
 
 	void FreeDiagram (void);
 	void ClearDiagram(void);
+	void NewDiagram  (void);
 
 	void SelectElement(LadderElem *elem, int state);
 
@@ -1941,8 +2112,16 @@ public:
 
 	bool AddParallelStart(void);
 
+	// Funcoes para Salvar / Carregar um Diagrama Ladder do disco
+	bool   Save              (string filename, bool dontSaveFilename = false);
+	bool   Load              (string filename);
+	string getCurrentFilename(void);
+
 	// Funcao que retorna a estrutura que representa a CPU
 	McuIoInfo *getMCU(void) { return mcu; }
+
+	// Funcao para inverter o estado do breakpoint (ativo / inativo) em uma determinada linha
+	void ToggleBreakPoint(unsigned int rung);
 
 	// Funcoes para ler / gravar a configuracao do ladder
 	LadderSettingsGeneral            getSettingsGeneral           (void) { return LadderSettings.General; }
@@ -1981,22 +2160,27 @@ public:
 	void         mbDelRef          (int NodeID );
 
 	// Funcoes relacionadas com I/O
-	bool          acceptIO        (unsigned long  id, eType type);
-	void          updateIO        (pair<unsigned long, int> &pin, string defaultName, bool isBit, eType defaultType, bool isDiscard);
-	bool          getIO           (pair<unsigned long, int> &pin, string name, bool isBit, eType type);
-	bool          getIO           (vector<tGetIO> &vectorGetIO);
-	eType         getTypeIO       (string previousName, string newName, eType default_type = eType_Pending, bool isGeneric = false);
-	string        getNameIO       (unsigned long id);
-	string        getNameIO       (pair<unsigned long, int> pin);
-	string        getNameIObyIndex(unsigned int index);
-	mapDetails    getDetailsIO    (unsigned long  id);
-	mapDetails    getDetailsIO    (string name);
-	char         *getStringTypeIO (unsigned int   index);
-	unsigned int  getCountIO      (void);
-	void          selectIO        (unsigned int index);
-	bool          IsGenericTypeIO (eType type);
-	string        getPortNameIO   (int index);
-	void          ShowIoMapDialog (int item);
+	bool            acceptIO                (unsigned long  id, eType type);
+	void            updateIO                (pair<unsigned long, int> &pin, string defaultName, bool isBit, eType defaultType, bool isDiscard);
+	bool            getIO                   (pair<unsigned long, int> &pin, string name, bool isBit, eType type);
+	bool            getIO                   (vector<tGetIO> &vectorGetIO);
+	eType           getTypeIO               (string previousName, string newName, eType default_type = eType_Pending, bool isGeneric = false);
+	string          getNameIO               (unsigned long id);
+	string          getNameIO               (pair<unsigned long, int> pin);
+	string          getNameIObyIndex        (unsigned int index);
+	mapDetails      getDetailsIO            (unsigned long  id);
+	mapDetails      getDetailsIO            (string name);
+	char           *getStringTypeIO         (unsigned int   index);
+	unsigned int    getCountIO              (void);
+	void            selectIO                (unsigned int index);
+	bool            IsGenericTypeIO         (eType type);
+	string          getPortNameIO           (int index);
+	string          getPinNameIO            (int index);
+	void            ShowIoMapDialog         (int item);
+	vector<string>  getVectorInternalFlagsIO(void);
+
+	// Funcao para ordenar a lista de I/O conforme o campo especificado
+	void            sortIO                  (eSortBy sortby);
 
 	// Funcoes relacionadas aos comandos de Desfazer / Refazer
 	void RegisterAction    (UndoRedoAction Action, bool isUndo = true);
@@ -2013,6 +2197,8 @@ public:
 	bool IsValidVarName    (string varname);
 	bool IsValidNameAndType(unsigned long id, string name, eType type, const char *FieldName, unsigned int Rules, int MinVal, int MaxVal, eReply canUpdate = eReply_Ask);
 	bool IsValidNameAndType(unsigned long id, string name, eType type, eReply canUpdate = eReply_Ask);
+
+	eValidateResult Validate(void);
 
 	// Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
 	eReply ShowDialog(bool isMessage, char *title, char *message, ...);

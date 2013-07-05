@@ -14,6 +14,7 @@
 #include <time.h>
 #include <math.h>
 #include <vector>
+#include <algorithm>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <stdio.h>
@@ -745,8 +746,6 @@ typedef struct PlcProgramTag {
         PlcProgramSingleIo  assignment[MAX_IO];
         int                 count;
     }           io;
-    McuIoInfo  *mcu;
-	ElemLeaf   *ParallelStart;
 	struct {
 		int         cycleTime;
 		int         mcuClock;
@@ -928,8 +927,9 @@ typedef struct McuIoInfoTag {
 // Function prototypes
 
 // poptools.cpp
+extern vector<eType> vectorTypesVar;
+
 void ProcessMenu(int code);
-void ProgramChanged(void);
 void SetMenusEnabled(LadderContext *context);
 void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled);
 void RefreshScrollbars(void);
@@ -940,7 +940,6 @@ extern PlcProgram Prog;
 extern LadderDiagram *ladder;
 extern Settings POPSettings;
 extern XMLWrapper XmlSettings;
-extern char CurrentSaveFile[MAX_PATH];
 extern char CurrentCompileFile[MAX_PATH];
 extern McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS];
 extern char *InternalFlags[]; // Internal flags available to the users.
@@ -1020,7 +1019,6 @@ void MakeMainWindowControls(void);
 HMENU MakeMainWindowMenus(void);
 void VscrollProc(WPARAM wParam);
 void HscrollProc(WPARAM wParam);
-void GenerateIoListDontLoseSelection(void);
 void RefreshControlsToSettings(void);
 void MainWindowResized(void);
 void ToggleSimulationMode(void);
@@ -1042,11 +1040,6 @@ extern HWND UartSimulationTextControl;
 extern BOOL RealTimeSimulationRunning;
 
 // draw.cpp
-int ProgCountWidestRow(void);
-int CountHeightOfElement(int which, void *elem);
-BOOL DrawElement(int which, void *elem, int *cx, int *cy, BOOL poweredBefore);
-void DrawEndRung(int cx, int cy);
-void DummyPaint(void);
 extern int ColsAvailable;
 extern BOOL SelectionActive;
 extern BOOL ThisHighlighted;
@@ -1065,8 +1058,6 @@ void PaintWindow(void);
 void ExportDrawingAsText(char *file);
 void InitForDrawing(void);
 void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert);
-int ScreenRowsAvailable(void);
-int ScreenColsAvailable(void);
 extern HFONT FixedWidthFont;
 extern HFONT FixedWidthFontBold;
 extern int SelectedGxAfterNextPaint;
@@ -1080,19 +1071,14 @@ extern int ScrollYOffsetMax;
 // schematic.cpp
 void SelectElement(int gx, int gy, int state);
 void MoveCursorKeyboard(int keyCode, int shiftPressed);
-void MoveCursorMouseClick(int x, int y);
 BOOL MoveCursorTopLeft(void);
-bool EditElementMouseDoubleclick(int x, int y);
 bool EditSelectedElement(void);
 bool MakeResetOnlySelected(void);
 bool MakeSetOnlySelected(void);
 bool MakeNormalSelected(void);
 bool NegateSelected(void);
-void ForgetFromGrid(void *p);
-void ForgetEverything(void);
 BOOL FindSelected(int *gx, int *gy);
 void MoveCursorNear(int gx, int gy);
-void ToggleBreakPoint(int y);
 
 #define DISPLAY_MATRIX_X_SIZE 32
 #define DISPLAY_MATRIX_Y_SIZE 4096
@@ -1103,11 +1089,6 @@ extern ElemLeaf DisplayMatrixFiller;
 #define VALID_LEAF(x) ((x) != NULL && (x) != PADDING_IN_DISPLAY_MATRIX)
 extern ElemLeaf *Selected;
 extern int SelectedWhich;
-
-extern PlcCursor Cursor;
-extern BOOL CanInsertEnd;
-extern BOOL CanInsertOther;
-extern BOOL CanInsertComment;
 
 #define FAR_FIND_FIRST    0x01
 #define FAR_FIND_NEXT     0x02
@@ -1160,7 +1141,6 @@ bool AddLookUpTable(void);
 bool AddPiecewiseLinear(void);
 bool AddFormattedString(void);
 bool AddParallelStart(void);
-int RemoveParallelStart(int which, void *any);
 bool DeleteSelectedFromProgram(void);
 bool DeleteSelectedRung(void);
 bool InsertRung(bool afterCursor);
@@ -1173,18 +1153,39 @@ bool PasteLeaf(void);
 bool PushRung(bool up);
 void NewProgram(void);
 void FreeCircuit(int which, void *any);
-void FreeEntireProgram(void);
 BOOL ContainsElem(int which, void *any, ElemLeaf *seek);
 
 // loadsave.cpp
+bool fwrite_uint   (FILE *f, unsigned int   var);
+bool fwrite_int    (FILE *f,          int   var);
+bool fwrite_ulong  (FILE *f, unsigned long  var);
+bool fwrite_long   (FILE *f,          long  var);
+bool fwrite_float  (FILE *f, float          var);
+bool fwrite_uchar  (FILE *f, unsigned char  var);
+bool fwrite_bool   (FILE *f, bool           var);
+bool fwrite_string (FILE *f, string         var);
+bool fwrite_time_t (FILE *f, time_t         var);
+bool fwrite_pointer(FILE *f, void          *var, unsigned int size);
+
+bool fread_uint   (FILE *f, unsigned int  *var);
+bool fread_int    (FILE *f,          int  *var);
+bool fread_ulong  (FILE *f, unsigned long *var);
+bool fread_long   (FILE *f,          long *var);
+bool fread_float  (FILE *f, float         *var);
+bool fread_uchar  (FILE *f, unsigned char *var);
+bool fread_bool   (FILE *f, bool          *var);
+bool fread_string (FILE *f, string        *var);
+bool fread_time_t (FILE *f, time_t        *var);
+bool fread_pointer(FILE *f, void          *var, unsigned int size);
+
 BOOL LoadProjectFromFile(char *filename);
-BOOL SaveProjectToFile(char *filename);
+BOOL SaveProjectToFile(char *filename, bool isBackup = false);
+
 void SetAutoSaveInterval(int interval);
 void CALLBACK AutoSaveNow(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 
 // iolist.cpp
 int GenerateIoList(int prevSel);
-int GenerateIoMapList(int prevSel);
 void SaveIoListToFile(FILE *f);
 BOOL LoadIoListFromFile(FILE *f, int version);
 void ShowIoDialog(int item);
@@ -1242,13 +1243,8 @@ bool ShowFARDialog();
 void ShowPrefDialog(void);
 
 // iomap.cpp
-void ExtractNamesFromCircuit(int which, void *any);
-void UpdateTypeInCircuit(char *name, unsigned int type);
-void UpdateTypesFromSeenPreviouslyList();
-void UpdateTypeForInternalRelays();
-BOOL ExistsCoilWithName(char *name);
-int IoMap_GetIndex(PlcProgramSingleIo *io);
-int IoMap_IsModBUS(PlcProgramSingleIo *io);
+unsigned int IoMap_GetIndex(mapDetails detailsIO);
+bool         IoMap_IsModBUS(mapDetails detailsIO);
 
 // miscutil.cpp
 #define oops() { \
@@ -1262,11 +1258,6 @@ void Error(char *title, char *str, va_list f);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 extern HANDLE MainHeap;
-void StartIhex(FILE *f);
-void WriteIhex(FILE *f, BYTE b);
-void FinishIhex(FILE *f);
-char *IoTypeToString(int ioType);
-void PinNumberForIo(char *dest, PlcProgramSingleIo *io);
 HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
@@ -1276,15 +1267,11 @@ void FixedFont(HWND h);
 void CompileSuccessfulMessage(char *str);
 void ProgramSuccessfulMessage(char *str);
 bool IsNumber(const char *str);
-void LoadIOListToComboBox(HWND ComboBox, unsigned int mask);
+void LoadIOListToComboBox(HWND ComboBox, vector<eType> allowedTypes);
 int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto);
-unsigned int GetTypeFromName(char *name);
-bool IsInternalFlag(char *name);
 bool IsInternalVar(char *name);
 bool IsValidNumber(char *number);
 void ChangeFileExtension(char *name, char *ext);
-const char *GetPinADC(const char *name);
-int GetPinEnc(char *name);
 unsigned short int CRC16(unsigned char *puchMsg, unsigned int usDataLen);
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
@@ -1315,9 +1302,6 @@ void PopulateAbortModeCombobox(HWND AbortModeCombobox, bool IncludeDefault);
 #define VALIDATE_TYPES_MUST_MATCH   0x00000010
 #define VALIDATE_ACCEPT_IO_PENDING  0x00000020
 
-bool IsValidNameAndType(char *old_name, char *name, unsigned int new_type);
-bool IsValidNameAndType(char *old_name, char *name, char *FieldName, unsigned int Rules, unsigned int new_type, int MinVal, int MaxVal);
-
 int iscontrol(WPARAM wParam);
 
 // lang.cpp
@@ -1337,15 +1321,15 @@ void SimulateOneCycle(BOOL forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void StartSimulationTimer(void);
 void ClearSimulationData(void);
-void DescribeForIoList(int val, int type, char *out);
-void DescribeForIoList(char *name, int type, char *out);
+void DescribeForIoList(int val, eType type, char *out);
+void DescribeForIoList(const char *name, eType type, char *out);
 void SimulationToggleContact(char *name);
 void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
 void SetEncShadow(char *name, SWORD val);
 SWORD GetEncShadow(char *name);
-void SetSimulationVariable(char *name, SWORD val);
-SWORD GetSimulationVariable(char *name);
+void SetSimulationVariable(const char *name, SWORD val);
+SWORD GetSimulationVariable(const char *name);
 void DestroyUartSimulationWindow(void);
 void ShowUartSimulationWindow(void);
 extern BOOL InSimulationMode; 
@@ -1363,7 +1347,7 @@ extern struct WatchPoint *listWP;
 
 void  AddWP      (char *name, int val);
 void  RemoveWP   (char *name);
-int  *GetValWP   (char *name, int *val);
+int  *GetValWP   (const char *name, int *val);
 void  ClearListWP(void);
 
 // Hardware Registers
@@ -1387,24 +1371,12 @@ extern HardwareRegisters hwreg;
 void HardwareRegisters_Sync(HardwareRegisters *hwr);
 
 // compilecommon.cpp
-void AllocStart(void);
-DWORD AllocOctetRam(void);
-void AllocBitRam(DWORD *addr, int *bit);
-void MemForVariable(char *name, DWORD *addrl, DWORD *addrh);
-BYTE MuxForAdcVariable(char *name);
-void MemForSingleBit(char *name, BOOL forRead, DWORD *addr, int *bit);
-void MemCheckForErrorsPostCompile(void);
-void BuildDirectionRegisters(BYTE *isInput, BYTE *isOutput);
-void ComplainAboutBaudRateError(int divisor, double actual, double err);
-void ComplainAboutBaudRateOverflow(void);
 #define CompileError() longjmp(CompileErrorBuf, 1)
 extern jmp_buf CompileErrorBuf;
 
 #define DIAGRAM_VALIDATION_OK      0
 #define DIAGRAM_VALIDATION_WARNING 1
 #define DIAGRAM_VALIDATION_ERROR   2
-
-extern int ValidateDiagram(void);
 
 // intcode.cpp
 void IntDumpListing(char *outFile);

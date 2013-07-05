@@ -13,14 +13,6 @@ static HWND BitTextbox;
 static LONG_PTR PrevNameProc;
 static LONG_PTR PrevContactsDialogProc;
 
-#define MAX_IO_SEEN_PREVIOUSLY 512
-extern struct {
-    char    name[MAX_NAME_LEN];
-    int     type;
-    int     pin;
-	int		bit;
-} IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
-extern int IoSeenPreviouslyCount;
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
 //-----------------------------------------------------------------------------
@@ -118,15 +110,19 @@ static LRESULT CALLBACK ContactsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, L
             HWND h = (HWND)lParam;
             if(wParam == BN_CLICKED) {
 				SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)name);
+
+				vector<eType> types;
 				if(h == SourceInternalRelayRadio) {
-					LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_RELAY);
+					types.push_back(eType_InternalRelay);
 				} else if(h == SourceInputPinRadio) {
-					LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_INPUT);
+					types.push_back(eType_DigInput);
 				} else if(h == SourceOutputPinRadio) {
-					LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
+					types.push_back(eType_DigOutput);
 				} else if(h == InternalFlagRadio) {
-					LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_FLAG);
+					types.push_back(eType_InternalFlag);
 				}
+
+				LoadIOListToComboBox(NameTextbox, types);
 				SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)name);
             }
             break;
@@ -160,18 +156,19 @@ bool ShowContactsDialog(bool *negated, unsigned long *idName)
 
 	if(detailsIO.type == eType_InternalRelay) {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
-		LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_RELAY);
     } else if(detailsIO.type == eType_DigOutput) {
         SendMessage(SourceOutputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
-		LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_OUTPUT);
     } else if(detailsIO.type == eType_DigInput || detailsIO.type == eType_Reserved) {
         SendMessage(SourceInputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
-		LoadIOListToComboBox(NameTextbox, IO_TYPE_DIG_INPUT);
     } else { // Internal Flag
         SendMessage(InternalFlagRadio, BM_SETCHECK, BST_CHECKED, 0);
-		LoadIOListToComboBox(NameTextbox, IO_TYPE_INTERNAL_FLAG);
     }
-    if(*negated) {
+
+	vector<eType> types;
+	types.push_back(detailsIO.type);
+	LoadIOListToComboBox(NameTextbox, types);
+
+	if(*negated) {
         SendMessage(NegatedCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
 

@@ -192,13 +192,14 @@ void UpdateMainWindowTitleBar(void)
     } else {
         strcpy(line, _("POPTools - Program Editor"));
     }
-    if(strlen(CurrentSaveFile) > 0) {
+	string currentFilename = ladder->getCurrentFilename();
+    if(currentFilename.size() > 0) {
         sprintf(line+strlen(line), " - %d.%d.%d.%d - %s%s", 
 			wMajor,
 			wMinor,
 			wBuild,
 			wRevision,
-			CurrentSaveFile,
+			currentFilename.c_str(),
 			ProgramChangedNotSaved ? " *" : "");
     } else {
         sprintf(line+strlen(line), " - %d.%d.%d.%d%s", 
@@ -438,59 +439,29 @@ void HscrollProc(WPARAM wParam)
 //-----------------------------------------------------------------------------
 void RefreshControlsToSettings(void)
 {
-    int i;
     char buf[256];
-	sprintf(buf, _("IP: %d.%d.%d.%d"), Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
-    SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)buf);
+	McuIoInfo *mcu = ladder->getMCU();
 
-	sprintf(buf, _("ModBUS ID: %d"), Prog.settings.ModBUSID);
+	LadderSettingsUART        settingsUart    = ladder->getSettingsUART();
+	LadderSettingsNetwork     settingsNetwork = ladder->getSettingsNetwork();
+	LadderSettingsModbusSlave settingsMbSlave = ladder->getSettingsModbusSlave();
+
+	sprintf(buf, _("IP: %d.%d.%d.%d"), FIRST_IPADDRESS(settingsNetwork.ip), SECOND_IPADDRESS(settingsNetwork.ip),
+		THIRD_IPADDRESS(settingsNetwork.ip), FOURTH_IPADDRESS(settingsNetwork.ip));
+
+	SendMessage(StatusBar, SB_SETTEXT, 1, (LPARAM)buf);
+
+	sprintf(buf, _("ModBUS ID: %d"), settingsMbSlave.ModBUSID);
     SendMessage(StatusBar, SB_SETTEXT, 2, (LPARAM)buf);
 
-    if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC || Prog.mcu->whichIsa == ISA_INTERPRETED))
+    if(mcu != nullptr && (mcu->whichIsa == ISA_ANSIC || mcu->whichIsa == ISA_INTERPRETED))
     {
 		strcpy(buf, "");
     } else {
-		sprintf(buf, _("RS-485: %d bps, %d bits de dados, %s, Bits de Parada: %d"), Prog.settings.baudRate, SerialConfig[Prog.settings.UART].bByteSize,
-			SerialParityString[SerialConfig[Prog.settings.UART].bParity], SerialConfig[Prog.settings.UART].bStopBits == ONESTOPBIT ? 1 : 2);
+		sprintf(buf, _("RS-485: %d bps, %d bits de dados, %s, Bits de Parada: %d"), settingsUart.baudRate, SerialConfig[settingsUart.UART].bByteSize,
+			SerialParityString[SerialConfig[settingsUart.UART].bParity], SerialConfig[settingsUart.UART].bStopBits == ONESTOPBIT ? 1 : 2);
     }
     SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
-
-    for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
-	{
-        if(&SupportedMcus[i] == Prog.mcu) 
-		{
-            CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0+i, MF_CHECKED);
-        } else {
-            CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0+i, MF_UNCHECKED);
-        }
-    }
-    // `(no microcontroller)' setting
-    if(!Prog.mcu) {
-        CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0+i, MF_CHECKED);
-    } else {
-        CheckMenuItem(ProcessorMenu, MNU_PROCESSOR_0+i, MF_UNCHECKED);
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Regenerate the I/O list, keeping the selection in the same place if
-// possible.
-//-----------------------------------------------------------------------------
-void GenerateIoListDontLoseSelection(void)
-{
-    int i;
-    IoListSelectionPoint = -1;
-    for(i = 0; i < Prog.io.count; i++) {
-        if(ListView_GetItemState(IoList, i, LVIS_SELECTED)) {
-            IoListSelectionPoint = i;
-            break;
-        }
-    }
-    IoListSelectionPoint = GenerateIoMapList(IoListSelectionPoint);
-    // can't just update the listview index; if I/O has been added then the
-    // new selection point might be out of range till we refill it
-    IoListOutOfSync = TRUE;
-    RefreshControlsToSettings();
 }
 
 //-----------------------------------------------------------------------------
@@ -568,24 +539,6 @@ void ToggleSimulationMode(void)
 	SetApplicationMode();
 
     if(InSimulationMode) {
-		RemoveParallelStart(0, NULL);
-#ifdef POPTOOLS_DISABLE_RIBBON
-        EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
-        EnableMenuItem(SimulateMenu, MNU_SINGLE_CYCLE, MF_ENABLED);
-
-        EnableMenuItem(FileMenu, MNU_OPEN, MF_GRAYED);
-        EnableMenuItem(FileMenu, MNU_SAVE, MF_GRAYED);
-        EnableMenuItem(FileMenu, MNU_SAVE_AS, MF_GRAYED);
-        EnableMenuItem(FileMenu, MNU_NEW, MF_GRAYED);
-        EnableMenuItem(FileMenu, MNU_EXPORT, MF_GRAYED);
-
-        EnableMenuItem(TopMenu, 1, MF_GRAYED | MF_BYPOSITION);
-        EnableMenuItem(TopMenu, 2, MF_GRAYED | MF_BYPOSITION);
-        EnableMenuItem(TopMenu, 3, MF_GRAYED | MF_BYPOSITION);
-        EnableMenuItem(TopMenu, 5, MF_GRAYED | MF_BYPOSITION);
-    
-        CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_CHECKED);
-#else
 		RibbonSetCmdState(cmdFileSave             , FALSE);
 		RibbonSetCmdState(cmdUndo                 , FALSE);
 		RibbonSetCmdState(cmdRedo                 , FALSE);
@@ -593,7 +546,6 @@ void ToggleSimulationMode(void)
 		RibbonSetCmdState(cmdSimulationStop       , FALSE);
 		RibbonSetCmdState(cmdSimulationStart      , TRUE );
 		RibbonSetCmdState(cmdSimulationSingleCycle, TRUE );
-#endif
 
         // Recheck InSimulationMode, because there could have been a compile
         // error, which would have kicked us out of simulation mode.
@@ -611,28 +563,9 @@ void ToggleSimulationMode(void)
         RealTimeSimulationRunning = FALSE;
         KillTimer(MainWindow, TIMER_SIMULATE);
 
-#ifdef POPTOOLS_DISABLE_RIBBON
-        EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_GRAYED);
-        EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_GRAYED);
-        EnableMenuItem(SimulateMenu, MNU_SINGLE_CYCLE, MF_GRAYED);
-
-        EnableMenuItem(FileMenu, MNU_OPEN, MF_ENABLED);
-        EnableMenuItem(FileMenu, MNU_SAVE, MF_ENABLED);
-        EnableMenuItem(FileMenu, MNU_SAVE_AS, MF_ENABLED);
-        EnableMenuItem(FileMenu, MNU_NEW, MF_ENABLED);
-        EnableMenuItem(FileMenu, MNU_EXPORT, MF_ENABLED);
-
-        EnableMenuItem(TopMenu, 1, MF_ENABLED | MF_BYPOSITION);
-        EnableMenuItem(TopMenu, 2, MF_ENABLED | MF_BYPOSITION);
-        EnableMenuItem(TopMenu, 3, MF_ENABLED | MF_BYPOSITION);
-        EnableMenuItem(TopMenu, 5, MF_ENABLED | MF_BYPOSITION);
-
-        CheckMenuItem(SimulateMenu, MNU_SIMULATION_MODE, MF_UNCHECKED);
-#else
 		RibbonSetCmdState(cmdFileSave, TRUE);
 		RibbonSetCmdState(cmdUndo    , TRUE);
 		RibbonSetCmdState(cmdRedo    , TRUE);
-#endif
 
 		col.pszText = _("Pin on Processor");
 
@@ -648,7 +581,7 @@ void ToggleSimulationMode(void)
     DrawMenuBar(MainWindow);
     InvalidateRect(MainWindow, NULL, FALSE);
 	ListView_SetColumn(IoList, LV_IO_PIN, &col);
-    ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+	ListView_RedrawItems(IoList, 0, ladder->getCountIO() - 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -659,16 +592,12 @@ void StartSimulation(void)
 {
     RealTimeSimulationRunning = TRUE;
 
-#ifdef POPTOOLS_DISABLE_RIBBON
-    EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_GRAYED);
-    EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_ENABLED);
-#else
 	RibbonSetCmdState(cmdSimulationPause      , TRUE );
 	RibbonSetCmdState(cmdSimulationStop       , TRUE );
 	RibbonSetCmdState(cmdSimulationStart      , FALSE);
 	RibbonSetCmdState(cmdSimulationSingleCycle, FALSE);
-#endif
-    StartSimulationTimer();
+
+	StartSimulationTimer();
 
     UpdateMainWindowTitleBar();
 }
@@ -683,16 +612,12 @@ void StopSimulation(void)
 
 	ClearSimulationData();
 
-#ifdef POPTOOLS_DISABLE_RIBBON
-    EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
-    EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_GRAYED);
-#else
 	RibbonSetCmdState(cmdSimulationPause      , FALSE);
 	RibbonSetCmdState(cmdSimulationStop       , FALSE);
 	RibbonSetCmdState(cmdSimulationStart      , TRUE );
 	RibbonSetCmdState(cmdSimulationSingleCycle, TRUE );
-#endif
-    KillTimer(MainWindow, TIMER_SIMULATE);
+
+	KillTimer(MainWindow, TIMER_SIMULATE);
 
     UpdateMainWindowTitleBar();
 }
@@ -705,15 +630,11 @@ void PauseSimulation(void)
 {
     RealTimeSimulationRunning = FALSE;
 
-#ifdef POPTOOLS_DISABLE_RIBBON
-    EnableMenuItem(SimulateMenu, MNU_START_SIMULATION, MF_ENABLED);
-    EnableMenuItem(SimulateMenu, MNU_STOP_SIMULATION, MF_GRAYED);
-#else
 	RibbonSetCmdState(cmdSimulationPause      , FALSE);
 	RibbonSetCmdState(cmdSimulationStart      , TRUE );
 	RibbonSetCmdState(cmdSimulationSingleCycle, TRUE );
-#endif
-    KillTimer(MainWindow, TIMER_SIMULATE);
+
+	KillTimer(MainWindow, TIMER_SIMULATE);
 
     UpdateMainWindowTitleBar();
 }

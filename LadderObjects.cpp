@@ -1,13 +1,5 @@
 #include "poptools.h"
 
-// Funcao apenas devido a compatibilidade com codigo antigo.
-// Quando nao for mais necessaria, deve ser removida.
-int RemoveParallelStart(int which, void *any)
-{
-	int ret = SUBCKT_STATUS_NOTFOUND;
-	return ret;
-}
-
 // Funcao auxiliar que entrega um contexto "vazio"
 LadderContext getEmptyContext(void)
 {
@@ -98,6 +90,28 @@ void LadderElem::setProperties(LadderContext context, void *propData)
 	context.Diagram->CheckpointEnd();
 }
 
+bool LadderElem::GenerateIntCode(IntCode &ic)
+{
+	bool ret = internalGenerateIntCode(ic);
+
+	if(ret == true) {
+		ic.SimState(&poweredAfter, ic.getStateInOut());
+	}
+
+	return ret;
+}
+
+bool LadderElem::Save(FILE *f)
+{
+	return internalSave(f);
+}
+
+bool LadderElem::Load(FILE *f, unsigned int version)
+{
+	updateIO(true); // Descarta o I/O referenciado quando da criacao do objeto
+	return internalLoad(f, version);
+}
+
 // Funcao que executa uma acao de desfazer / refazer
 bool LadderElem::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
@@ -143,7 +157,7 @@ pair<string, string> LadderElemPlaceHolder::DrawTXT(void)
 	return pair<string, string>("", "--");
 }
 
-bool LadderElemPlaceHolder::GenerateIntCode(IntCode &ic)
+bool LadderElemPlaceHolder::internalGenerateIntCode(IntCode &ic)
 {
 	return true;
 }
@@ -198,7 +212,7 @@ pair<string, string> LadderElemComment::DrawTXT(void)
 	return pair<string, string>(first, second);
 }
 
-bool LadderElemComment::GenerateIntCode(IntCode &ic)
+bool LadderElemComment::internalGenerateIntCode(IntCode &ic)
 {
 	return true;
 }
@@ -222,6 +236,17 @@ void *LadderElemComment::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemComment::internalSave(FILE *f)
+{
+	return fwrite_string(f, prop.str);
+}
+
+bool LadderElemComment::internalLoad(FILE *f, unsigned int version)
+{
+	return fread_string(f, &prop.str);
 }
 
 inline int LadderElemComment::getWidthTXT(void)
@@ -306,7 +331,7 @@ pair<string, string> LadderElemContact::DrawTXT(void)
 	return pair<string, string>(name_with_type, buf);
 }
 
-bool LadderElemContact::GenerateIntCode(IntCode &ic)
+bool LadderElemContact::internalGenerateIntCode(IntCode &ic)
 {
 	string name = Diagram->getNameIO(prop.idName.first);
 	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
@@ -344,6 +369,23 @@ void LadderElemContact::internalSetProperties(void *data)
 	LadderElemContactProp *newProp = (LadderElemContactProp *)data;
 
 	prop = *newProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemContact::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second) &&
+		fwrite_bool (f, prop.negated);
+}
+
+bool LadderElemContact::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second) &&
+		fread_bool (f, &prop.negated);
 }
 
 LadderElem *LadderElemContact::Clone(void)
@@ -413,7 +455,7 @@ pair<string, string> LadderElemCoil::DrawTXT(void)
 	return pair<string, string>(name_with_type, buf);
 }
 
-bool LadderElemCoil::GenerateIntCode(IntCode &ic)
+bool LadderElemCoil::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
@@ -462,6 +504,27 @@ void *LadderElemCoil::getProperties(void)
 	return curProp;
 }
 
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemCoil::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second) &&
+		fwrite_bool (f, prop.negated) &&
+		fwrite_bool (f, prop.resetOnly) &&
+		fwrite_bool (f, prop.setOnly);
+}
+
+bool LadderElemCoil::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second) &&
+		fread_bool (f, &prop.negated) &&
+		fread_bool (f, &prop.resetOnly) &&
+		fread_bool (f, &prop.setOnly);
+}
+
 LadderElem *LadderElemCoil::Clone(void)
 {
 	LadderElemCoil *clone = new LadderElemCoil(Diagram);
@@ -507,7 +570,8 @@ LadderElemTimer::LadderElemTimer(LadderDiagram *diagram, int which) : LadderElem
 //-----------------------------------------------------------------------------
 int LadderElemTimer::TimerPeriod(void)
 {
-    unsigned int period = (prop.delay / Prog.settings.cycleTime) - 1;
+	LadderSettingsGeneral settings = Diagram->getSettingsGeneral();
+    unsigned int period = (prop.delay / settings.cycleTime) - 1;
 
     if(period < 1)  {
         Error(_("Timer period too short (needs faster cycle time)."));
@@ -548,7 +612,7 @@ pair<string, string> LadderElemTimer::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idName.first), buf);
 }
 
-bool LadderElemTimer::GenerateIntCode(IntCode &ic)
+bool LadderElemTimer::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
@@ -645,6 +709,23 @@ void *LadderElemTimer::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemTimer::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second) &&
+		fwrite_int  (f, prop.delay);
+}
+
+bool LadderElemTimer::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second) &&
+		fread_int  (f, &prop.delay);
 }
 
 LadderElem *LadderElemTimer::Clone(void)
@@ -767,7 +848,7 @@ pair<string, string> LadderElemRTC::DrawTXT(void)
 	return pair<string, string>(bufs, bufe);
 }
 
-bool LadderElemRTC::GenerateIntCode(IntCode &ic)
+bool LadderElemRTC::internalGenerateIntCode(IntCode &ic)
 {
 	return true;
 }
@@ -791,6 +872,25 @@ void *LadderElemRTC::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemRTC::internalSave(FILE *f)
+{
+	return
+		fwrite_pointer(f, &prop.start, sizeof(prop.start)) &&
+		fwrite_pointer(f, &prop.end  , sizeof(prop.end)) &&
+		fwrite_int    (f, prop.mode) &&
+		fwrite_uchar  (f, prop.wday);
+}
+
+bool LadderElemRTC::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_pointer(f, &prop.start, sizeof(prop.start)) &&
+		fread_pointer(f, &prop.end  , sizeof(prop.end)) &&
+		fread_int    (f, &prop.mode) &&
+		fread_uchar  (f, &prop.wday);
 }
 
 LadderElem *LadderElemRTC::Clone(void)
@@ -839,7 +939,7 @@ pair<string, string> LadderElemCounter::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idName.first), buf);
 }
 
-bool LadderElemCounter::GenerateIntCode(IntCode &ic)
+bool LadderElemCounter::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
@@ -918,6 +1018,23 @@ void *LadderElemCounter::getProperties(void)
 	return curProp;
 }
 
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemCounter::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second) &&
+		fwrite_int  (f, prop.max);
+}
+
+bool LadderElemCounter::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second) &&
+		fread_int  (f, &prop.max);
+}
+
 LadderElem *LadderElemCounter::Clone(void)
 {
 	LadderElemCounter *clone = new LadderElemCounter(Diagram, getWhich());
@@ -961,7 +1078,7 @@ pair<string, string> LadderElemReset::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idName.first), _("{RES}"));
 }
 
-bool LadderElemReset::GenerateIntCode(IntCode &ic)
+bool LadderElemReset::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
@@ -994,6 +1111,21 @@ void *LadderElemReset::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemReset::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second);
+}
+
+bool LadderElemReset::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second);
 }
 
 LadderElem *LadderElemReset::Clone(void)
@@ -1044,7 +1176,7 @@ pair<string, string> LadderElemOneShot::DrawTXT(void)
 	return pair<string, string>("", "");
 }
 
-bool LadderElemOneShot::GenerateIntCode(IntCode &ic)
+bool LadderElemOneShot::internalGenerateIntCode(IntCode &ic)
 {
     string storeName;
 	const char *stateInOut = ic.getStateInOut();
@@ -1148,7 +1280,7 @@ pair<string, string> LadderElemCmp::DrawTXT(void)
 	return pair<string, string>(s1, s2);
 }
 
-bool LadderElemCmp::GenerateIntCode(IntCode &ic)
+bool LadderElemCmp::internalGenerateIntCode(IntCode &ic)
 {
 	string sop1 = Diagram->getNameIO(prop.idOp1);
 	string sop2 = Diagram->getNameIO(prop.idOp2);
@@ -1208,6 +1340,25 @@ void *LadderElemCmp::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemCmp::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idOp1.first) &&
+		fwrite_int  (f, prop.idOp1.second) &&
+		fwrite_ulong(f, prop.idOp2.first) &&
+		fwrite_int  (f, prop.idOp2.second);
+}
+
+bool LadderElemCmp::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idOp1.first) &&
+		fread_int  (f, &prop.idOp1.second) &&
+		fread_ulong(f, &prop.idOp2.first) &&
+		fread_int  (f, &prop.idOp2.second);
 }
 
 LadderElem *LadderElemCmp::Clone(void)
@@ -1308,7 +1459,7 @@ pair<string, string> LadderElemMath::DrawTXT(void)
 	return pair<string, string>(top, bot);
 }
 
-bool LadderElemMath::GenerateIntCode(IntCode &ic)
+bool LadderElemMath::internalGenerateIntCode(IntCode &ic)
 {
 	string sop1  = Diagram->getNameIO(prop.idOp1 );
 	string sop2  = Diagram->getNameIO(prop.idOp2 );
@@ -1362,6 +1513,29 @@ void *LadderElemMath::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemMath::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idDest.first) &&
+		fwrite_int  (f, prop.idDest.second) &&
+		fwrite_ulong(f, prop.idOp1.first) &&
+		fwrite_int  (f, prop.idOp1.second) &&
+		fwrite_ulong(f, prop.idOp2.first) &&
+		fwrite_int  (f, prop.idOp2.second);
+}
+
+bool LadderElemMath::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idDest.first) &&
+		fread_int  (f, &prop.idDest.second) &&
+		fread_ulong(f, &prop.idOp1.first) &&
+		fread_int  (f, &prop.idOp1.second) &&
+		fread_ulong(f, &prop.idOp2.first) &&
+		fread_int  (f, &prop.idOp2.second);
 }
 
 LadderElem *LadderElemMath::Clone(void)
@@ -1430,7 +1604,7 @@ pair<string, string> LadderElemSqrt::DrawTXT(void)
 	return pair<string, string>(top, bot);
 }
 
-bool LadderElemSqrt::GenerateIntCode(IntCode &ic)
+bool LadderElemSqrt::internalGenerateIntCode(IntCode &ic)
 {
 	string ssrc  = Diagram->getNameIO(prop.idSrc );
 	string sdest = Diagram->getNameIO(prop.idDest);
@@ -1475,6 +1649,25 @@ void *LadderElemSqrt::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemSqrt::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idDest.first) &&
+		fwrite_int  (f, prop.idDest.second) &&
+		fwrite_ulong(f, prop.idSrc.first) &&
+		fwrite_int  (f, prop.idSrc.second);
+}
+
+bool LadderElemSqrt::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idDest.first) &&
+		fread_int  (f, &prop.idDest.second) &&
+		fread_ulong(f, &prop.idSrc.first) &&
+		fread_int  (f, &prop.idSrc.second);
 }
 
 LadderElem *LadderElemSqrt::Clone(void)
@@ -1542,7 +1735,7 @@ pair<string, string> LadderElemRand::DrawTXT(void)
 	return pair<string, string>(top, bot);
 }
 
-bool LadderElemRand::GenerateIntCode(IntCode &ic)
+bool LadderElemRand::internalGenerateIntCode(IntCode &ic)
 {
 	string svar = Diagram->getNameIO(prop.idVar);
 	string smin = Diagram->getNameIO(prop.idMin);
@@ -1582,6 +1775,29 @@ void *LadderElemRand::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemRand::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idMin.first) &&
+		fwrite_int  (f, prop.idMin.second) &&
+		fwrite_ulong(f, prop.idVar.first) &&
+		fwrite_int  (f, prop.idVar.second) &&
+		fwrite_ulong(f, prop.idMax.first) &&
+		fwrite_int  (f, prop.idMax.second);
+}
+
+bool LadderElemRand::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idMin.first) &&
+		fread_int  (f, &prop.idMin.second) &&
+		fread_ulong(f, &prop.idVar.first) &&
+		fread_int  (f, &prop.idVar.second) &&
+		fread_ulong(f, &prop.idMax.first) &&
+		fread_int  (f, &prop.idMax.second);
 }
 
 LadderElem *LadderElemRand::Clone(void)
@@ -1650,7 +1866,7 @@ pair<string, string> LadderElemAbs::DrawTXT(void)
 	return pair<string, string>(top, bot);
 }
 
-bool LadderElemAbs::GenerateIntCode(IntCode &ic)
+bool LadderElemAbs::internalGenerateIntCode(IntCode &ic)
 {
 	string ssrc  = Diagram->getNameIO(prop.idSrc );
 	string sdest = Diagram->getNameIO(prop.idDest);
@@ -1697,6 +1913,25 @@ void *LadderElemAbs::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemAbs::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idDest.first) &&
+		fwrite_int  (f, prop.idDest.second) &&
+		fwrite_ulong(f, prop.idSrc.first) &&
+		fwrite_int  (f, prop.idSrc.second);
+}
+
+bool LadderElemAbs::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idDest.first) &&
+		fread_int  (f, &prop.idDest.second) &&
+		fread_ulong(f, &prop.idSrc.first) &&
+		fread_int  (f, &prop.idSrc.second);
 }
 
 LadderElem *LadderElemAbs::Clone(void)
@@ -1760,7 +1995,7 @@ pair<string, string> LadderElemMove::DrawTXT(void)
 	return pair<string, string>(top, bot);
 }
 
-bool LadderElemMove::GenerateIntCode(IntCode &ic)
+bool LadderElemMove::internalGenerateIntCode(IntCode &ic)
 {
 	string ssrc  = Diagram->getNameIO(prop.idSrc );
 	string sdest = Diagram->getNameIO(prop.idDest);
@@ -1804,6 +2039,25 @@ void *LadderElemMove::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemMove::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idDest.first) &&
+		fwrite_int  (f, prop.idDest.second) &&
+		fwrite_ulong(f, prop.idSrc.first) &&
+		fwrite_int  (f, prop.idSrc.second);
+}
+
+bool LadderElemMove::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idDest.first) &&
+		fread_int  (f, &prop.idDest.second) &&
+		fread_ulong(f, &prop.idSrc.first) &&
+		fread_int  (f, &prop.idSrc.second);
 }
 
 LadderElem *LadderElemMove::Clone(void)
@@ -1856,7 +2110,7 @@ pair<string, string> LadderElemOpenShort::DrawTXT(void)
 	return pair<string, string>("", "");
 }
 
-bool LadderElemOpenShort::GenerateIntCode(IntCode &ic)
+bool LadderElemOpenShort::internalGenerateIntCode(IntCode &ic)
 {
 	if(getWhich() == ELEM_OPEN) {
 		ic.Op(INT_CLEAR_BIT, ic.getStateInOut());
@@ -1904,7 +2158,7 @@ pair<string, string> LadderElemSetBit::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idName), str);
 }
 
-bool LadderElemSetBit::GenerateIntCode(IntCode &ic)
+bool LadderElemSetBit::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName);
 	const char *name  = sname.c_str();
@@ -1941,6 +2195,25 @@ void *LadderElemSetBit::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemSetBit::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second) &&
+		fwrite_bool (f, prop.set) &&
+		fwrite_int  (f, prop.bit);
+}
+
+bool LadderElemSetBit::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second) &&
+		fread_bool (f, &prop.set) &&
+		fread_int  (f, &prop.bit);
 }
 
 LadderElem *LadderElemSetBit::Clone(void)
@@ -1992,7 +2265,7 @@ pair<string, string> LadderElemCheckBit::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idName), str);
 }
 
-bool LadderElemCheckBit::GenerateIntCode(IntCode &ic)
+bool LadderElemCheckBit::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName);
 	const char *name  = sname.c_str();
@@ -2033,6 +2306,25 @@ void *LadderElemCheckBit::getProperties(void)
 	return curProp;
 }
 
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemCheckBit::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second) &&
+		fwrite_bool (f, prop.set) &&
+		fwrite_int  (f, prop.bit);
+}
+
+bool LadderElemCheckBit::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second) &&
+		fread_bool (f, &prop.set) &&
+		fread_int  (f, &prop.bit);
+}
+
 LadderElem *LadderElemCheckBit::Clone(void)
 {
 	LadderElemCheckBit *clone = new LadderElemCheckBit(Diagram);
@@ -2071,18 +2363,42 @@ LadderElemReadAdc::LadderElemReadAdc(LadderDiagram *diagram) : LadderElem(true, 
 	Diagram->getIO(prop.idName, _("new"), false, eType_ReadADC);
 }
 
+string LadderElemReadAdc::GetNameADC(void)
+{
+	switch(Diagram->getDetailsIO(prop.idName.first).pin) {
+	case 1:
+		return "AD1";
+		break;
+	case 2:
+		return "AD2";
+		break;
+	case 3:
+		return "AD3";
+		break;
+	case 4:
+		return "AD4";
+		break;
+	case 5:
+		return "AD5";
+		break;
+	case 6:
+		return "TEMP";
+		break;
+	}
+
+	return "?";
+}
+
 pair<string, string> LadderElemReadAdc::DrawTXT(void)
 {
 	char txt[50];
-	string sname = Diagram->getNameIO(prop.idName);
-	const char *name = sname.c_str();
 
-	sprintf(txt, _("{READ ADC %s }"), GetPinADC(name));
+	sprintf(txt, _("{READ ADC %s }"), GetNameADC());
 
-	return pair<string, string>(name, txt);
+	return pair<string, string>(Diagram->getNameIO(prop.idName), txt);
 }
 
-bool LadderElemReadAdc::GenerateIntCode(IntCode &ic)
+bool LadderElemReadAdc::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName);
 	const char *name = sname.c_str();
@@ -2113,6 +2429,21 @@ void *LadderElemReadAdc::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemReadAdc::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second);
+}
+
+bool LadderElemReadAdc::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second);
 }
 
 LadderElem *LadderElemReadAdc::Clone(void)
@@ -2178,7 +2509,7 @@ pair<string, string> LadderElemSetDa::DrawTXT(void)
 	return pair<string, string>(cname, _("{SET DA}"));
 }
 
-bool LadderElemSetDa::GenerateIntCode(IntCode &ic)
+bool LadderElemSetDa::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName);
 	const char *name = sname.c_str();
@@ -2209,6 +2540,23 @@ void *LadderElemSetDa::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemSetDa::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second) &&
+		fwrite_int  (f, prop.mode);
+}
+
+bool LadderElemSetDa::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second) &&
+		fread_int  (f, &prop.mode);
 }
 
 LadderElem *LadderElemSetDa::Clone(void)
@@ -2254,7 +2602,7 @@ pair<string, string> LadderElemReadEnc::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idName), _("{READ ENC}"));
 }
 
-bool LadderElemReadEnc::GenerateIntCode(IntCode &ic)
+bool LadderElemReadEnc::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName);
 	const char *name = sname.c_str();
@@ -2285,6 +2633,21 @@ void *LadderElemReadEnc::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemReadEnc::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second);
+}
+
+bool LadderElemReadEnc::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second);
 }
 
 LadderElem *LadderElemReadEnc::Clone(void)
@@ -2330,7 +2693,7 @@ pair<string, string> LadderElemResetEnc::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idName), _("{WRITE ENC}"));
 }
 
-bool LadderElemResetEnc::GenerateIntCode(IntCode &ic)
+bool LadderElemResetEnc::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName);
 	const char *name = sname.c_str();
@@ -2361,6 +2724,21 @@ void *LadderElemResetEnc::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemResetEnc::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second);
+}
+
+bool LadderElemResetEnc::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second);
 }
 
 LadderElem *LadderElemResetEnc::Clone(void)
@@ -2418,8 +2796,10 @@ pair<string, string> LadderElemMultisetDA::DrawTXT(void)
 		);
 }
 
-bool LadderElemMultisetDA::GenerateIntCode(IntCode &ic)
+bool LadderElemMultisetDA::internalGenerateIntCode(IntCode &ic)
 {
+	LadderSettingsDAC settings = Diagram->getSettingsDAC();
+
 	string stime = Diagram->getNameIO(prop.idTime);
 	string sdesl = Diagram->getNameIO(prop.idDesl);
 	const char *time = stime.c_str();
@@ -2454,7 +2834,7 @@ bool LadderElemMultisetDA::GenerateIntCode(IntCode &ic)
 			ic.Op(INT_MULTISET_DA, time, str_initval, cgaint, cgainr, ctype, NULL, NULL, prop.linear, prop.StartFromCurrentValue ? 2 : prop.speedup);
 		ic.Op(INT_END_IF);
 			ic.Op(INT_ELSE_IF); ic.Op(INT_IF_BIT_SET, oneShot.c_str());
-		ic.Op(INT_MULTISET_DA, "", prop.ramp_abort_mode == RAMP_ABORT_DEFAULT ? Prog.settings.ramp_abort_mode : prop.ramp_abort_mode);
+		ic.Op(INT_MULTISET_DA, "", prop.ramp_abort_mode == RAMP_ABORT_DEFAULT ? settings.ramp_abort_mode : prop.ramp_abort_mode);
 		ic.Op(INT_CLEAR_BIT, oneShot.c_str());
 	ic.Op(INT_END_IF);
 
@@ -2480,6 +2860,39 @@ void *LadderElemMultisetDA::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemMultisetDA::internalSave(FILE *f)
+{
+	return
+		fwrite_int  (f, prop.gainr) &&
+		fwrite_int  (f, prop.gaint) &&
+		fwrite_int  (f, prop.initval) &&
+		fwrite_bool (f, prop.linear) &&
+		fwrite_bool (f, prop.forward) &&
+		fwrite_bool (f, prop.speedup) &&
+		fwrite_bool (f, prop.StartFromCurrentValue) &&
+		fwrite_ulong(f, prop.idDesl.first) &&
+		fwrite_int  (f, prop.idDesl.second) &&
+		fwrite_ulong(f, prop.idTime.first) &&
+		fwrite_int  (f, prop.idTime.second);
+}
+
+bool LadderElemMultisetDA::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_int  (f, &prop.gainr) &&
+		fread_int  (f, &prop.gaint) &&
+		fread_int  (f, &prop.initval) &&
+		fread_bool (f, &prop.linear) &&
+		fread_bool (f, &prop.forward) &&
+		fread_bool (f, &prop.speedup) &&
+		fread_bool (f, &prop.StartFromCurrentValue) &&
+		fread_ulong(f, &prop.idDesl.first) &&
+		fread_int  (f, &prop.idDesl.second) &&
+		fread_ulong(f, &prop.idTime.first) &&
+		fread_int  (f, &prop.idTime.second);
 }
 
 LadderElem *LadderElemMultisetDA::Clone(void)
@@ -2534,7 +2947,7 @@ pair<string, string> LadderElemUSS::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idName), (getWhich() == ELEM_READ_USS) ? _("{READ USS}") : _("{WRITE USS}"));
 }
 
-bool LadderElemUSS::GenerateIntCode(IntCode &ic)
+bool LadderElemUSS::internalGenerateIntCode(IntCode &ic)
 {
 	const char *stateInOut = ic.getStateInOut();
 	string sname = Diagram->getNameIO(prop.idName);
@@ -2597,6 +3010,29 @@ void *LadderElemUSS::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemUSS::internalSave(FILE *f)
+{
+	return
+		fwrite_int  (f, prop.id) &&
+		fwrite_int  (f, prop.index) &&
+		fwrite_int  (f, prop.parameter) &&
+		fwrite_int  (f, prop.parameter_set) &&
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second);
+}
+
+bool LadderElemUSS::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_int  (f, &prop.id) &&
+		fread_int  (f, &prop.index) &&
+		fread_int  (f, &prop.parameter) &&
+		fread_int  (f, &prop.parameter_set) &&
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second);
 }
 
 LadderElem *LadderElemUSS::Clone(void)
@@ -2663,7 +3099,7 @@ pair<string, string> LadderElemModBUS::DrawTXT(void)
 	return pair<string, string>(buf, bot);
 }
 
-bool LadderElemModBUS::GenerateIntCode(IntCode &ic)
+bool LadderElemModBUS::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName);
 	const char *name = sname.c_str();
@@ -2752,6 +3188,29 @@ void *LadderElemModBUS::getProperties(void)
 	return curProp;
 }
 
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemModBUS::internalSave(FILE *f)
+{
+	return
+		fwrite_int  (f, prop.address) &&
+		fwrite_int  (f, prop.elem) &&
+		fwrite_bool (f, prop.int32) &&
+		fwrite_bool (f, prop.retransmitir) &&
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second);
+}
+
+bool LadderElemModBUS::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_int  (f, &prop.address) &&
+		fread_int  (f, &prop.elem) &&
+		fread_bool (f, &prop.int32) &&
+		fread_bool (f, &prop.retransmitir) &&
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second);
+}
+
 LadderElem *LadderElemModBUS::Clone(void)
 {
 	LadderElemModBUS *clone = new LadderElemModBUS(Diagram, getWhich());
@@ -2807,7 +3266,7 @@ pair<string, string> LadderElemSetPWM::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idName), l);
 }
 
-bool LadderElemSetPWM::GenerateIntCode(IntCode &ic)
+bool LadderElemSetPWM::internalGenerateIntCode(IntCode &ic)
 {
 	char line[80];
 	string sname = Diagram->getNameIO(prop.idName);
@@ -2848,6 +3307,23 @@ void *LadderElemSetPWM::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemSetPWM::internalSave(FILE *f)
+{
+	return
+		fwrite_int  (f, prop.targetFreq) &&
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second);
+}
+
+bool LadderElemSetPWM::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_int  (f, &prop.targetFreq) &&
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second);
 }
 
 LadderElem *LadderElemSetPWM::Clone(void)
@@ -2893,7 +3369,7 @@ pair<string, string> LadderElemUART::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idName), (getWhich() == ELEM_UART_RECV) ? _("{UART RECV}") : _("{UART SEND}"));
 }
 
-bool LadderElemUART::GenerateIntCode(IntCode &ic)
+bool LadderElemUART::internalGenerateIntCode(IntCode &ic)
 {
 	string oneShot = ic.GenSymOneShot();
 	const char *stateInOut = ic.getStateInOut();
@@ -2931,6 +3407,21 @@ void *LadderElemUART::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemUART::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second);
+}
+
+bool LadderElemUART::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second);
 }
 
 LadderElem *LadderElemUART::Clone(void)
@@ -2972,7 +3463,7 @@ pair<string, string> LadderElemMasterRelay::DrawTXT(void)
 	return pair<string, string>("", _("{MASTER RLY}"));
 }
 
-bool LadderElemMasterRelay::GenerateIntCode(IntCode &ic)
+bool LadderElemMasterRelay::internalGenerateIntCode(IntCode &ic)
 {
 	// Tricky: must set the master control relay if we reach this
 	// instruction while the master control relay is cleared, because
@@ -3062,7 +3553,7 @@ pair<string, string> LadderElemShiftRegister::DrawTXT(void)
 	return pair<string, string>(_("{\x01SHIFT REG\x02   }"), bot);
 }
 
-bool LadderElemShiftRegister::GenerateIntCode(IntCode &ic)
+bool LadderElemShiftRegister::internalGenerateIntCode(IntCode &ic)
 {
 	string storeName = ic.GenSymOneShot();
 
@@ -3103,6 +3594,46 @@ void *LadderElemShiftRegister::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemShiftRegister::internalSave(FILE *f)
+{
+	vector< pair<unsigned long, int> >::iterator it = prop.vectorIdRegs.begin();
+
+	bool ret =
+		fwrite_string(f, prop.nameReg) &&
+		fwrite_int   (f, prop.stages);
+
+	while(ret == true && it != prop.vectorIdRegs.end()) {
+		ret = fwrite_ulong(f, it->first) && fwrite_int(f, it->second);
+		it++;
+	}
+
+	return ret;
+}
+
+bool LadderElemShiftRegister::internalLoad(FILE *f, unsigned int version)
+{
+	bool ret =
+		fread_string(f, &prop.nameReg) &&
+		fread_int   (f, &prop.stages);
+
+	if(ret == true) {
+		int i;
+		pair<unsigned long, int> pin;
+
+		for(i = 0; i < prop.stages; i++) {
+			ret = fread_ulong(f, &pin.first) && fread_int(f, &pin.second);
+			if(ret == true) {
+				prop.vectorIdRegs.push_back(pin);
+			} else {
+				break;
+			}
+		}
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemShiftRegister::Clone(void)
@@ -3185,7 +3716,7 @@ pair<string, string> LadderElemLUT::DrawTXT(void)
 	return pair<string, string>(top, bot);
 }
 
-bool LadderElemLUT::GenerateIntCode(IntCode &ic)
+bool LadderElemLUT::internalGenerateIntCode(IntCode &ic)
 {
 	// God this is stupid; but it will have to do, at least until I
 	// add new int code instructions for this.
@@ -3229,6 +3760,53 @@ void *LadderElemLUT::getProperties(void)
 	*curProp = prop;
 
 	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemLUT::internalSave(FILE *f)
+{
+	bool ret =
+		fwrite_int  (f, prop.count) &&
+		fwrite_bool (f, prop.editAsString) &&
+		fwrite_ulong(f, prop.idDest.first) &&
+		fwrite_int  (f, prop.idDest.second) &&
+		fwrite_ulong(f, prop.idIndex.first) &&
+		fwrite_int  (f, prop.idIndex.second);
+
+	if(ret == true) {
+		int i;
+		for(i = 0; i < prop.count; i++) {
+			ret = fwrite_long(f, prop.vals[i]);
+			if(ret != true) {
+				break;
+			}
+		}
+	}
+
+	return ret;
+}
+
+bool LadderElemLUT::internalLoad(FILE *f, unsigned int version)
+{
+	bool ret =
+		fread_int  (f, &prop.count) &&
+		fread_bool (f, &prop.editAsString) &&
+		fread_ulong(f, &prop.idDest.first) &&
+		fread_int  (f, &prop.idDest.second) &&
+		fread_ulong(f, &prop.idIndex.first) &&
+		fread_int  (f, &prop.idIndex.second);
+
+	if(ret == true) {
+		int i;
+		for(i = 0; i < prop.count; i++) {
+			ret = fread_long(f, &prop.vals[i]);
+			if(ret != true) {
+				break;
+			}
+		}
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemLUT::Clone(void)
@@ -3305,7 +3883,7 @@ pair<string, string> LadderElemPiecewise::DrawTXT(void)
 	return pair<string, string>(top, bot);
 }
 
-bool LadderElemPiecewise::GenerateIntCode(IntCode &ic)
+bool LadderElemPiecewise::internalGenerateIntCode(IntCode &ic)
 {
 	string sdest  = Diagram->getNameIO(prop.idDest);
 	string sindex = Diagram->getNameIO(prop.idIndex);
@@ -3393,6 +3971,51 @@ void *LadderElemPiecewise::getProperties(void)
 	return curProp;
 }
 
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemPiecewise::internalSave(FILE *f)
+{
+	bool ret =
+		fwrite_int  (f, prop.count) &&
+		fwrite_ulong(f, prop.idDest.first) &&
+		fwrite_int  (f, prop.idDest.second) &&
+		fwrite_ulong(f, prop.idIndex.first) &&
+		fwrite_int  (f, prop.idIndex.second);
+
+	if(ret == true) {
+		int i;
+		for(i = 0; i < prop.count * 2; i++) {
+			ret = fwrite_long(f, prop.vals[i]);
+			if(ret != true) {
+				break;
+			}
+		}
+	}
+
+	return ret;
+}
+
+bool LadderElemPiecewise::internalLoad(FILE *f, unsigned int version)
+{
+	bool ret =
+		fread_int  (f, &prop.count) &&
+		fread_ulong(f, &prop.idDest.first) &&
+		fread_int  (f, &prop.idDest.second) &&
+		fread_ulong(f, &prop.idIndex.first) &&
+		fread_int  (f, &prop.idIndex.second);
+
+	if(ret == true) {
+		int i;
+		for(i = 0; i < prop.count * 2; i++) {
+			ret = fread_long(f, &prop.vals[i]);
+			if(ret != true) {
+				break;
+			}
+		}
+	}
+
+	return ret;
+}
+
 LadderElem *LadderElemPiecewise::Clone(void)
 {
 	LadderElemPiecewise *clone = new LadderElemPiecewise(Diagram);
@@ -3449,7 +4072,7 @@ pair<string, string> LadderElemFmtString::DrawTXT(void)
 	return pair<string, string>(top, bot);
 }
 
-bool LadderElemFmtString::GenerateIntCode(IntCode &ic)
+bool LadderElemFmtString::internalGenerateIntCode(IntCode &ic)
 {
 	string svar = Diagram->getNameIO(prop.idVar);
 	const char *var  = svar.c_str();
@@ -3507,6 +4130,23 @@ void *LadderElemFmtString::getProperties(void)
 	return curProp;
 }
 
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemFmtString::internalSave(FILE *f)
+{
+	return
+		fwrite_string(f, prop.txt) &&
+		fwrite_ulong (f, prop.idVar.first) &&
+		fwrite_int   (f, prop.idVar.second);
+}
+
+bool LadderElemFmtString::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_string(f, &prop.txt) &&
+		fread_ulong (f, &prop.idVar.first) &&
+		fread_int   (f, &prop.idVar.second);
+}
+
 LadderElem *LadderElemFmtString::Clone(void)
 {
 	LadderElemFmtString *clone = new LadderElemFmtString(Diagram, getWhich());
@@ -3560,7 +4200,7 @@ pair<string, string> LadderElemYaskawa::DrawTXT(void)
 	return pair<string, string>(top, bot);
 }
 
-bool LadderElemYaskawa::GenerateIntCode(IntCode &ic)
+bool LadderElemYaskawa::internalGenerateIntCode(IntCode &ic)
 {
 	string svar = Diagram->getNameIO(prop.idVar);
 	const char *var  = svar.c_str();
@@ -3622,6 +4262,25 @@ void *LadderElemYaskawa::getProperties(void)
 	return curProp;
 }
 
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemYaskawa::internalSave(FILE *f)
+{
+	return
+		fwrite_int   (f, prop.id) &&
+		fwrite_string(f, prop.txt) &&
+		fwrite_ulong (f, prop.idVar.first) &&
+		fwrite_int   (f, prop.idVar.second);
+}
+
+bool LadderElemYaskawa::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_int   (f, &prop.id) &&
+		fread_string(f, &prop.txt) &&
+		fread_ulong (f, &prop.idVar.first) &&
+		fread_int   (f, &prop.idVar.second);
+}
+
 LadderElem *LadderElemYaskawa::Clone(void)
 {
 	LadderElemYaskawa *clone = new LadderElemYaskawa(Diagram, getWhich());
@@ -3665,7 +4324,7 @@ pair<string, string> LadderElemPersist::DrawTXT(void)
 	return pair<string, string>(Diagram->getNameIO(prop.idVar), _("{PERSIST}"));
 }
 
-bool LadderElemPersist::GenerateIntCode(IntCode &ic)
+bool LadderElemPersist::internalGenerateIntCode(IntCode &ic)
 {
 	string svar = Diagram->getNameIO(prop.idVar);
 	const char *var  = svar.c_str();
@@ -3728,6 +4387,21 @@ void *LadderElemPersist::getProperties(void)
 	return curProp;
 }
 
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemPersist::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong (f, prop.idVar.first) &&
+		fwrite_int   (f, prop.idVar.second);
+}
+
+bool LadderElemPersist::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong (f, &prop.idVar.first) &&
+		fread_int   (f, &prop.idVar.second);
+}
+
 LadderElem *LadderElemPersist::Clone(void)
 {
 	LadderElemPersist *clone = new LadderElemPersist(Diagram);
@@ -3767,7 +4441,7 @@ pair<string, string> LadderElemX::DrawTXT(void)
 	return pair<string, string>("", "");
 }
 
-bool LadderElemX::GenerateIntCode(IntCode &ic)
+bool LadderElemX::internalGenerateIntCode(IntCode &ic)
 {
 	return true;
 }
@@ -4612,6 +5286,132 @@ void LadderCircuit::doPostRemove(void)
 	}
 }
 
+bool LadderCircuit::Save(LadderDiagram *diagram, FILE *f)
+{
+	bool ret = false;
+
+	if(fwrite_bool(f, isSeries) && fwrite_uint(f, vectorSubckt.size())) {
+		vector<Subckt>::iterator it;
+		for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
+			if(it->elem != nullptr) {
+				// Salva flag indicando que este eh um elemento, id para criar o novo elemento
+				// durante o carregamento e os dados em si.
+				if(!fwrite_bool(f, true) || !fwrite_int(f, it->elem->getWhich()) ||
+					!it->elem->Save(f)) {
+						break; // erro durante a gravacao
+				}
+			} else {
+				if(!fwrite_bool(f, false) || !it->subckt->Save(diagram, f)) {
+					break; // erro durante a gravacao
+				}
+			}
+		}
+
+		if(it == vectorSubckt.end()) {
+			ret = true; // gravacao finalizada com sucesso!
+		}
+	}
+
+	return ret;
+}
+
+bool LadderCircuit::Load(LadderDiagram *diagram, FILE *f, unsigned int version)
+{
+	bool ret = false;
+	unsigned int size;
+
+	if(fread_bool(f, &isSeries) && fread_uint(f, &size)) {
+		bool isElem;
+		unsigned int i;
+
+		for(i=0; i < size; i++) {
+			if(fread_bool(f, &isElem)) {
+				Subckt s;
+				if(isElem) {
+					int which;
+					if(fread_int(f, &which)) {
+						switch(which) {
+						case ELEM_PLACEHOLDER           : s.elem = new LadderElemPlaceHolder  (diagram);        break;
+						case ELEM_COMMENT               : s.elem = new LadderElemComment      (diagram);        break;
+						case ELEM_CONTACTS              : s.elem = new LadderElemContact      (diagram);        break;
+						case ELEM_COIL                  : s.elem = new LadderElemCoil         (diagram);        break;
+						case ELEM_TOF                   :
+						case ELEM_TON                   :
+						case ELEM_RTO                   : s.elem = new LadderElemTimer        (diagram, which); break;
+						case ELEM_RTC                   : s.elem = new LadderElemRTC          (diagram);        break;
+						case ELEM_CTU                   :
+						case ELEM_CTD                   :
+						case ELEM_CTC                   : s.elem = new LadderElemCounter      (diagram, which); break;
+						case ELEM_RES                   : s.elem = new LadderElemReset        (diagram);        break;
+						case ELEM_ONE_SHOT_RISING       :
+						case ELEM_ONE_SHOT_FALLING      : s.elem = new LadderElemOneShot      (diagram, which); break;
+						case ELEM_GRT                   :
+						case ELEM_GEQ                   :
+						case ELEM_LES                   :
+						case ELEM_LEQ                   :
+						case ELEM_NEQ                   :
+						case ELEM_EQU                   : s.elem = new LadderElemCmp          (diagram, which); break;
+						case ELEM_ADD                   :
+						case ELEM_SUB                   :
+						case ELEM_MUL                   :
+						case ELEM_DIV                   : s.elem = new LadderElemMath         (diagram, which); break;
+						case ELEM_SQRT                  : s.elem = new LadderElemSqrt         (diagram);        break;
+						case ELEM_RAND                  : s.elem = new LadderElemRand         (diagram);        break;
+						case ELEM_ABS                   : s.elem = new LadderElemAbs          (diagram);        break;
+						case ELEM_MOVE                  : s.elem = new LadderElemMove         (diagram);        break;
+						case ELEM_OPEN                  :
+						case ELEM_SHORT                 : s.elem = new LadderElemOpenShort    (diagram, which); break;
+						case ELEM_SET_BIT               : s.elem = new LadderElemSetBit       (diagram);        break;
+						case ELEM_CHECK_BIT             : s.elem = new LadderElemCheckBit     (diagram);        break;
+						case ELEM_READ_ADC              : s.elem = new LadderElemReadAdc      (diagram);        break;
+						case ELEM_SET_DA                : s.elem = new LadderElemSetDa        (diagram);        break;
+						case ELEM_READ_ENC              : s.elem = new LadderElemReadEnc      (diagram);        break;
+						case ELEM_RESET_ENC             : s.elem = new LadderElemResetEnc     (diagram);        break;
+						case ELEM_MULTISET_DA           : s.elem = new LadderElemMultisetDA   (diagram);        break;
+						case ELEM_READ_USS              :
+						case ELEM_WRITE_USS             : s.elem = new LadderElemUSS          (diagram, which); break;
+						case ELEM_READ_MODBUS           :
+						case ELEM_WRITE_MODBUS          : s.elem = new LadderElemModBUS       (diagram, which); break;
+						case ELEM_SET_PWM               : s.elem = new LadderElemSetPWM       (diagram);        break;
+						case ELEM_UART_RECV             :
+						case ELEM_UART_SEND             : s.elem = new LadderElemUART         (diagram, which); break;
+						case ELEM_MASTER_RELAY          : s.elem = new LadderElemMasterRelay  (diagram);        break;
+						case ELEM_SHIFT_REGISTER        : s.elem = new LadderElemShiftRegister(diagram);        break;
+						case ELEM_LOOK_UP_TABLE         : s.elem = new LadderElemLUT          (diagram);        break;
+						case ELEM_PIECEWISE_LINEAR      : s.elem = new LadderElemPiecewise    (diagram);        break;
+						case ELEM_READ_FORMATTED_STRING :
+						case ELEM_WRITE_FORMATTED_STRING: s.elem = new LadderElemFmtString    (diagram, which); break;
+						case ELEM_READ_SERVO_YASKAWA    :
+						case ELEM_WRITE_SERVO_YASKAWA   : s.elem = new LadderElemYaskawa      (diagram, which); break;
+						case ELEM_PERSIST               : s.elem = new LadderElemPersist      (diagram);        break;
+						default: break; // Elemento nao suportado. Novo elemento nao cadastrado aqui???
+						}
+
+						s.elem->Load(f, version);
+						s.subckt = this;
+					} else {
+						break; // erro carregando elemento, interrompe carregamento
+					}
+				} else {
+					s.elem   = nullptr;
+					s.subckt = new LadderCircuit;
+					s.subckt->Load(diagram, f, version);
+				}
+
+				vectorSubckt.push_back(s);
+			} else {
+				ret = false;
+			}
+		}
+
+		if(i == size) {
+			ret = true; // terminou de carregar os itens!
+		}
+	}
+
+	return ret;
+}
+
 bool LadderCircuit::acceptIO(unsigned long id, enum eType type)
 {
 	bool ret = true;
@@ -4726,21 +5526,25 @@ bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 // Classe LadderDiagram
 void LadderDiagram::Init(void)
 {
-	context.Diagram         = this;
-	context.ParallelStart   = nullptr;
-	context.SelectedElem    = nullptr;
-	context.SelectedCircuit = nullptr;
+	context.Diagram            = this;
+	context.ParallelStart      = nullptr;
+	context.SelectedElem       = nullptr;
+	context.SelectedCircuit    = nullptr;
 
-	context.SelectedState   = SELECTED_NONE;
+	context.SelectedState      = SELECTED_NONE;
 
-	CheckPointLevels     =  0;
-	CheckPointLevelsMax  = 30;
-	CheckpointBeginCount =  0;
-	CheckpointDoRollback = false;
-	isCheckpointEmpty    = true;
+	context.inSimulationMode     = false;
 
-	copiedElement = nullptr;
-	copiedRung    = nullptr;
+	context.currentFilename    = "";
+
+	CheckPointLevels           =  0;
+	CheckPointLevelsMax        = 30;
+	CheckpointBeginCount       =  0;
+	CheckpointDoRollback       = false;
+	isCheckpointEmpty          = true;
+
+	copiedElement              = nullptr;
+	copiedRung                 = nullptr;
 
 	NeedScrollSelectedIntoView = false;
 
@@ -4787,13 +5591,7 @@ void LadderDiagram::Init(void)
 	LadderSettings.Info.CompileDate    =  0; // Data da ultima compilacao. Zero: nunca
 	LadderSettings.Info.ProgramDate    =  0; // Data da ultima gravacao. Zero: nunca
 
-	NewRung(false);
-
 	updateContext();
-
-	// As acoes executadas durante a inicializacao (criacao da linha e PlaceHolder) nao devem ser desfeitas
-	UndoList.clear();
-	CheckPointLevels = 0;
 }
 
 LadderDiagram::LadderDiagram(void)
@@ -4813,6 +5611,8 @@ LadderDiagram::LadderDiagram(void)
 	}
 
 	Init();
+
+	NewDiagram();
 }
 
 LadderDiagram::~LadderDiagram(void)
@@ -4855,6 +5655,19 @@ void LadderDiagram::FreeDiagram(void)
 	IO->Clear();
 }
 
+void LadderDiagram::NewDiagram(void)
+{
+	ClearDiagram();
+
+	NewRung(false);
+
+	// As acoes executadas durante a inicializacao (criacao da linha e PlaceHolder) nao devem ser desfeitas
+	UndoList.clear();
+	CheckPointLevels = 0;
+
+	updateContext();
+}
+
 vector<IntOp> LadderDiagram::getVectorIntCode(void)
 {
 	return ic.getVectorIntCode();
@@ -4876,7 +5689,7 @@ bool LadderDiagram::GenerateIntCode(void)
         ic.Comment(_("start rung %d"), i+1);
 		ic.ClearParallelCount();
         ic.Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");
-        ic.SimState(&(Prog.rungPowered[i]), "$rung_top");
+		ic.SimState(&rungs[i]->isPowered, "$rung_top");
 
 		ret = rungs[i]->rung->GenerateIntCode(ic);
 	}
@@ -5003,8 +5816,9 @@ void LadderDiagram::updateContext(void)
 				context.canInsertOther = false;
 			}
 		} else {
-			if(context.SelectedElem->getWhich() == ELEM_PLACEHOLDER) {
-				context.canDelete = false;
+			if(context.SelectedElem->getWhich() == ELEM_PLACEHOLDER &&
+				context.SelectedElem != context.ParallelStart) {
+					context.canDelete = false;
 			}
 
 			if(context.SelectedState == SELECTED_RIGHT || 
@@ -5404,6 +6218,11 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 		elem->updateIO(true);
 		rungs[rung]->rung->RemoveUnnecessarySubckts(context);
 		rungs[rung]->rung->AddPlaceHolderIfNoEOL(context);
+
+		if(elem == context.ParallelStart) {
+			context.ParallelStart = nullptr;
+		}
+
 		updateContext();
 		CheckpointEnd();
 		return true;
@@ -5538,7 +6357,7 @@ bool LadderDiagram::AddParallelStart(void)
 	return ret;
 }
 
-// Tries to insert a parallel subcircuit between Prog.ParallelStart and currently selected object
+// Tries to insert a parallel subcircuit between context.ParallelStart and currently selected object
 bool LadderDiagram::InsertParallel(LadderElem *elem)
 {
 	bool ret = false;
@@ -5550,7 +6369,7 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 	// We don't want user going back to this state (with parallel start)!
 	//UndoForget();
 
-	// Phase 1: check if Prog.ParallelStart and currently selected object are in the same subcircuit.
+	// Phase 1: check if context.ParallelStart and currently selected object are in the same subcircuit.
 	for(i=0; i < rungs.size(); i++) {
 		rungs[i]->rung->ElemInSubcktSeries(context, &StartPoint);
 		if(StartPoint.series != nullptr) {
@@ -5654,18 +6473,404 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 		} else {
 			ret = StartPoint.parallel->InsertParallel(elem, StartPoint.point, EndPoint.point, context);
 		}
+
+		// Phase 5: free context.ParallelStart and collapse.
+		context.canDelete = true; // Forca a exclusao de ParallelStart
+		DelElement(context.ParallelStart);
+		context.ParallelStart = nullptr;
+		rungs[CurrentRung]->rung->RemoveUnnecessarySubckts(context);
 	} else {
 		Error(_("Impossível criar paralelo entre os pontos selecionados!"));
 	}
 
-	// Phase 5: free Prog.ParallelStart and collapse.
-	context.canDelete = true; // Forca a exclusao de ParallelStart
-	DelElement(context.ParallelStart);
-	context.ParallelStart = nullptr;
-	rungs[CurrentRung]->rung->RemoveUnnecessarySubckts(context);
-
 	return ret;
 }
+
+/*** Funcoes para Ler / Gravar o diagrama ladder no disco ***/
+
+// Magic number to help us to identify if the file is valid.
+// Format: xxxxyyzz
+// Where:
+// xxxx = always 0f5a
+// yy   = flags.
+// yy.0 = 0 for old binfmt. 1 for v2 and others.
+// yy.1 - yy.15: reserved for future use.
+// zz   = format version
+static const unsigned long int LADDER_BINFMT_MAGIC      = 0x0f5a0100;
+static const unsigned long int LADDER_BINFMT_MAGIC_MASK = 0xffff0000;
+#define LADDER_BINFMT_GET_VERSION(m)  (m & 0x00ff)
+#define LADDER_BINFMT_GET_FLAGS(m)   ((m & 0xff00) >> 8)
+#define LADDER_FILE_MAX_SIZE         20971520 // 20 MB
+
+bool LadderDiagram::Save(string filename, bool dontSaveFilename)
+{
+	bool hasParallel = context.ParallelStart != nullptr;
+	bool failed = true; // Desmarca ao chegar no final da logica. Se nao chegou, ocorreu uma falha
+
+	if(filename.size() == 0) { // Nome vazio! Tentamos usar o nome do ultimo salvamento
+		filename = context.currentFilename;
+		if(filename.size() == 0) return false; // Continua vazio! Retorna erro...
+	}
+
+	FILE *f = fopen(filename.c_str(), "wb+");
+    if(!f) return failed;
+
+	// Ao salvar, se houver o inicio de um paralelo, ele deve ser removido
+	// A acao de exclusao constara na lista de desfazer.
+	// Para que o usuario nao perca o paralelo e nem consiga desfazer, devemos cancelar essa operacao
+	// Para isso criamos um checkpoint ao iniciar o salvamento e executando um rollback no final
+	// Dessa forma mesmo a lista de refazer (se existir) nao sera perdida...
+	CheckpointBegin("Salvar");
+
+	// Agora excluimos o inicio do paralelo, se ele existir...
+	if(context.ParallelStart != nullptr) {
+		DelElement(context.ParallelStart);
+	}
+
+	// Start with the magic number
+	bool ret = fwrite_ulong (f, LADDER_BINFMT_MAGIC);
+
+	/*** A seguir iniciamos o salvamento dos dados em si ***/
+
+	// Salvando as configuracoes
+	if(ret == true &&
+		fwrite_bool  (f, LadderSettings.General.canSave    ) &&
+		fwrite_int   (f, LadderSettings.General.cycleTime  ) &&
+		fwrite_int   (f, LadderSettings.General.mcuClock   ) &&
+
+		fwrite_int   (f, LadderSettings.Uart.UART          ) &&
+		fwrite_int   (f, LadderSettings.Uart.baudRate      ) &&
+
+		fwrite_ulong (f, LadderSettings.Network.ip         ) &&
+		fwrite_ulong (f, LadderSettings.Network.mask       ) &&
+		fwrite_ulong (f, LadderSettings.Network.gw         ) &&
+		fwrite_ulong (f, LadderSettings.Network.dns        ) &&
+
+		fwrite_bool  (f, LadderSettings.Sntp.sntp_enable   ) &&
+		fwrite_bool  (f, LadderSettings.Sntp.dailysave     ) &&
+		fwrite_string(f, LadderSettings.Sntp.sntp_server   ) &&
+		fwrite_int   (f, LadderSettings.Sntp.gmt           ) &&
+
+		fwrite_int   (f, LadderSettings.EncInc.conv_mode   ) &&
+		fwrite_float (f, LadderSettings.EncInc.factor      ) &&
+		fwrite_int   (f, LadderSettings.EncInc.perimeter   ) &&
+		fwrite_int   (f, LadderSettings.EncInc.pulses      ) &&
+		fwrite_bool  (f, LadderSettings.EncInc.x4          ) &&
+
+		fwrite_int   (f, LadderSettings.EncSSI.conv_mode   ) &&
+		fwrite_float (f, LadderSettings.EncSSI.factor      ) &&
+		fwrite_int   (f, LadderSettings.EncSSI.perimeter   ) &&
+		fwrite_int   (f, LadderSettings.EncSSI.mode        ) &&
+		fwrite_int   (f, LadderSettings.EncSSI.size        ) &&
+		fwrite_int   (f, LadderSettings.EncSSI.size_bpr    ) &&
+
+		fwrite_int   (f, LadderSettings.Dac.ramp_abort_mode) &&
+
+		fwrite_int   (f, LadderSettings.MbSlave.ModBUSID   ) &&
+
+		fwrite_string(f, LadderSettings.Info.Name          ) &&
+		fwrite_string(f, LadderSettings.Info.Developer     ) &&
+		fwrite_string(f, LadderSettings.Info.Description   ) &&
+		fwrite_string(f, LadderSettings.Info.FWVersion     ) &&
+		fwrite_long  (f, LadderSettings.Info.BuildNumber   ) &&
+		fwrite_time_t(f, LadderSettings.Info.CompileDate   ) &&
+		fwrite_time_t(f, LadderSettings.Info.ProgramDate   )
+		) {
+			// Configuracoes OK, agora devemos gravar o mapa de I/O
+			ret = IO->Save(f);
+
+			// Se OK, agora gravamos a lista de nodes do ModBUS.
+			if(ret == true) {
+				if(fwrite_uint(f, vectorMbNodeList.size())) {
+					vector<LadderMbNodeList *>::iterator it;
+
+					for(it = vectorMbNodeList.begin(); it != vectorMbNodeList.end(); it++) {
+						fwrite_int   (f, (*it)->NodeID);
+						fwrite_uint  (f, (*it)->NodeCount);
+						fwrite_string(f, (*it)->node.name);
+						fwrite_int   (f, (*it)->node.id);
+						fwrite_ulong (f, (*it)->node.ip);
+						fwrite_uint  (f, (*it)->node.iface);
+					}
+
+					if(it != vectorMbNodeList.end()) {
+						ret = false; // erro durante a gravacao da lista
+					}
+				} else {
+					ret = false;
+				}
+			}
+
+			// Gravacao do diagrama ladder
+			if(ret == true) {
+				vector<LadderRung *>::iterator it;
+
+				if(fwrite_uint(f, rungs.size())) {
+					for(it = rungs.begin(); it != rungs.end(); it++) {
+						if(!fwrite_bool(f, (*it)->hasBreakpoint) || !(*it)->rung->Save(this, f)) {
+							break;
+						}
+					}
+
+					if(it != rungs.end()) {
+						ret = false; // erro durante a gravacao do diagrama
+					}
+				} else {
+					ret = false;
+				}
+			}
+
+			// Se nao houve erros ate aqui, calcula e grava o checksum
+			if(ret == true) {
+				unsigned short int crc = 0;
+				long size;
+
+				fseek(f, 0, SEEK_END);
+				size = ftell(f) - sizeof(LADDER_BINFMT_MAGIC);
+				if(size <= LADDER_FILE_MAX_SIZE) {
+					unsigned char *buffer = new unsigned char[size];
+
+					fseek(f, sizeof(LADDER_BINFMT_MAGIC), SEEK_SET);
+					fread(buffer, size, 1, f);
+
+					crc = CRC16((unsigned char *)buffer, size);
+
+					fseek(f, 0, SEEK_END);
+					fwrite(&crc, sizeof(crc), 1, f);
+
+					delete [] buffer;
+
+					failed = false;
+
+					// Atualizamos o nome do arquivo atual, permitindo a acao salvar
+					// utilizar este nome de arquivo ao receber um nome vazio.
+					// Quando salvando um backup nao devemos salvar o nome do arquivo.
+					if(dontSaveFilename == false) {
+						context.currentFilename = filename;
+					}
+				}
+			}
+	}
+
+	fclose(f);
+
+	if(failed) {
+		_unlink(filename.c_str());
+	}
+
+	// Agora executamos o rollback e encerramos o checkpoint.
+	// Dessa forma as acoes serao desfeitas e as listas de desfazer/refazer nao serao perdidas.
+	CheckpointRollback();
+	CheckpointEnd();
+
+	return !failed;
+}
+
+bool LadderDiagram::Load(string filename)
+{
+	unsigned long int magic;
+	bool failed = true; // Desmarca ao chegar no final da logica. Se nao chegou, ocorreu uma falha
+
+	FILE *f = fopen(filename.c_str(), "rb");
+    if(!f) return failed;
+
+	// Start with the magic number
+	fread(&magic, sizeof(magic), 1, f);
+	if(((magic ^ LADDER_BINFMT_MAGIC) & LADDER_BINFMT_MAGIC_MASK) == 0) {
+		long size;
+		unsigned char *buffer;
+		unsigned short int crc_calc, crc_read;
+
+		fseek(f, 0, SEEK_END);
+		size   = ftell(f) - sizeof(LADDER_BINFMT_MAGIC) - sizeof(crc_read);
+		if(size <= LADDER_FILE_MAX_SIZE) {
+			buffer = new unsigned char[size];
+
+			fseek(f, sizeof(LADDER_BINFMT_MAGIC), SEEK_SET);
+			fread(buffer, size, 1, f);
+
+			crc_calc = CRC16((unsigned char *)buffer, size);
+
+			fread(&crc_read, sizeof(crc_read), 1, f);
+			delete [] buffer;
+
+			if(crc_calc == crc_read) {
+				// volta para o comeco, depois do numero magico
+				fseek(f, sizeof(LADDER_BINFMT_MAGIC), SEEK_SET);
+
+				// Limpa e inicializa o diagrama com os valores padrao antes de comecar o carregamento
+				ClearDiagram();
+
+				/*** A seguir iniciamos o carregamento dos dados em si ***/
+
+				// Carregando as configuracoes
+				if(
+					fread_bool  (f, &LadderSettings.General.canSave    ) &&
+					fread_int   (f, &LadderSettings.General.cycleTime  ) &&
+					fread_int   (f, &LadderSettings.General.mcuClock   ) &&
+
+					fread_int   (f, &LadderSettings.Uart.UART          ) &&
+					fread_int   (f, &LadderSettings.Uart.baudRate      ) &&
+
+					fread_ulong (f, &LadderSettings.Network.ip         ) &&
+					fread_ulong (f, &LadderSettings.Network.mask       ) &&
+					fread_ulong (f, &LadderSettings.Network.gw         ) &&
+					fread_ulong (f, &LadderSettings.Network.dns        ) &&
+
+					fread_bool  (f, &LadderSettings.Sntp.sntp_enable   ) &&
+					fread_bool  (f, &LadderSettings.Sntp.dailysave     ) &&
+					fread_string(f, &LadderSettings.Sntp.sntp_server   ) &&
+					fread_int   (f, &LadderSettings.Sntp.gmt           ) &&
+
+					fread_int   (f, &LadderSettings.EncInc.conv_mode   ) &&
+					fread_float (f, &LadderSettings.EncInc.factor      ) &&
+					fread_int   (f, &LadderSettings.EncInc.perimeter   ) &&
+					fread_int   (f, &LadderSettings.EncInc.pulses      ) &&
+					fread_bool  (f, &LadderSettings.EncInc.x4          ) &&
+
+					fread_int   (f, &LadderSettings.EncSSI.conv_mode   ) &&
+					fread_float (f, &LadderSettings.EncSSI.factor      ) &&
+					fread_int   (f, &LadderSettings.EncSSI.perimeter   ) &&
+					fread_int   (f, &LadderSettings.EncSSI.mode        ) &&
+					fread_int   (f, &LadderSettings.EncSSI.size        ) &&
+					fread_int   (f, &LadderSettings.EncSSI.size_bpr    ) &&
+
+					fread_int   (f, &LadderSettings.Dac.ramp_abort_mode) &&
+
+					fread_int   (f, &LadderSettings.MbSlave.ModBUSID   ) &&
+
+					fread_string(f, &LadderSettings.Info.Name          ) &&
+					fread_string(f, &LadderSettings.Info.Developer     ) &&
+					fread_string(f, &LadderSettings.Info.Description   ) &&
+					fread_string(f, &LadderSettings.Info.FWVersion     ) &&
+					fread_long  (f, &LadderSettings.Info.BuildNumber   ) &&
+					fread_time_t(f, &LadderSettings.Info.CompileDate   ) &&
+					fread_time_t(f, &LadderSettings.Info.ProgramDate   )
+					) {
+						// Configuracoes OK, agora devemos ler o mapa de I/O
+						bool ret = IO->Load(f, LADDER_BINFMT_GET_VERSION(magic));
+
+						// Se OK, agora carregamos a lista de nodes do ModBUS.
+						if(ret == true) {
+							unsigned int i, list_size, iIface;
+							LadderMbNodeList nl;
+
+							if(fread_uint(f, &list_size)) {
+
+								for(i = 0; i < list_size; i++) {
+									if(
+										!fread_int   (f, &nl.NodeID) ||
+										!fread_uint  (f, &nl.NodeCount) ||
+										!fread_string(f, &nl.node.name) ||
+										!fread_int   (f, &nl.node.id) ||
+										!fread_ulong (f, &nl.node.ip) ||
+										!fread_uint  (f, &iIface)
+										) {
+											break;
+									} else {
+										LadderMbNodeList *pnl = new LadderMbNodeList;
+
+										switch(iIface) {
+											default:
+											case eMbTypeNode_RS485   : nl.node.iface = eMbTypeNode_RS485   ; break;
+											case eMbTypeNode_Ethernet: nl.node.iface = eMbTypeNode_Ethernet; break;
+										}
+
+										*pnl = nl;
+										vectorMbNodeList.push_back(pnl);
+									}
+								}
+
+								if(i != list_size) {
+									ret = false; // erro durante a gravacao da lista
+								}
+							} else {
+								ret = false;
+							}
+						}
+
+						// Se OK, agora carregamos o diagrama ladder.
+						if(ret == true) {
+							unsigned int num_rungs;
+
+							if(fread_uint(f, &num_rungs)) {
+								unsigned int i;
+								for(i = 0; i < num_rungs; i++) {
+									LadderRung *rung = new LadderRung;
+									rung->isPowered = false;
+									if(fread_bool(f, &rung->hasBreakpoint)) {
+										rung->rung = new LadderCircuit;
+										if(!rung->rung->Load(this, f, LADDER_BINFMT_GET_VERSION(magic))) {
+											// Erro ao carregar o circuito. Desaloca memoria e cancela carregamento
+											delete rung->rung;
+											delete rung;
+											break;
+										} else {
+											rungs.push_back(rung);
+										}
+									} else {
+										delete rung;
+										break;
+									}
+								}
+
+								if(i != num_rungs) {
+									ret = false; // algum erro ocorreu ao carregar o diagrama
+								}
+							} else {
+								ret = false;
+							}
+						}
+
+						if(ret == true) {
+							// Fim do carregamento, nenhum erro ate aqui!
+							// Desmarca a flag de erro pois o carregamento finalizou sem erro.
+							failed = false;
+
+							// Atualizamos o nome do arquivo atual, permitindo a acao salvar
+							// utilizar este nome de arquivo ao receber um nome vazio.
+							context.currentFilename = filename;
+						}
+				}
+			}
+		}
+	}
+
+	fclose(f);
+
+	if(failed) {
+		// Erro durante o carregamento
+		NewDiagram();
+	} else {
+		// Carregmento finalizado com sucesso!
+		// As acoes executadas durante o carregamento nao devem ser desfeitas
+		UndoList.clear();
+		CheckPointLevels = 0;
+
+		// Garante que o contexto esta OK
+		updateContext();
+
+		// Forca desenhar a lista de I/Os e a tela
+		IO->updateGUI();
+		DrawGUI();
+	}
+
+	return !failed;
+}
+
+string LadderDiagram::getCurrentFilename(void)
+{
+	return context.currentFilename;
+}
+
+void LadderDiagram::ToggleBreakPoint(unsigned int rung)
+{
+	// Se linha inexistente ou comentario, retorna.
+	if(rung > rungs.size() || rungs[rung]->rung->IsComment()) return;
+
+	rungs[rung]->hasBreakpoint = !rungs[rung]->hasBreakpoint;
+}
+
 
 /*** Funcoes para gravar a configuracao do ladder ***/
 
@@ -6238,6 +7443,11 @@ bool LadderDiagram::IsValidNumber(string varnumber)
 	return true;
 }
 
+void LadderDiagram::sortIO(eSortBy sortby)
+{
+	IO->Sort(sortby);
+}
+
 bool LadderDiagram::IsValidVarName(string varname)
 {
 	bool first = true;
@@ -6379,6 +7589,80 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 	return IsValidNameAndType(id, name, type, NULL, VALIDATE_IS_VAR, 0, 0, canUpdate);
 }
 
+eValidateResult LadderDiagram::Validate(void)
+{
+	unsigned int i;
+	char msg_error[1024] = "", msg_warning[1024] = "";
+	int  WarningPersist = 0, CountPWM = 0;
+	eValidateResult ret = eValidateResult_OK;
+
+	// Validate I/O Pin Assignment
+	// Only if not in Simulation Mode
+	if(!context.inSimulationMode) {
+		mapDetails detailsIO;
+		unsigned int count = IO->getCount();
+		for(i = 0; i < count; i++) {
+			unsigned long id = IO->getID(i);
+			detailsIO = IO->getDetails(id);
+			switch(detailsIO.type) {
+			case eType_ReadADC:
+				if(detailsIO.pin == 0) {
+					Error(_("Variável A/D '%s' deve ser associado a um canal válido!"), IO->getName(id).c_str());
+					ret = eValidateResult_Error;
+				}
+				break;
+			case eType_ReadEnc:
+				if(detailsIO.pin == 0) {
+					Error(_("Leitura de Encoder '%s' deve ser associada a um canal válido!"), IO->getName(id).c_str());
+					ret = eValidateResult_Error;
+				}
+			case eType_ResetEnc:
+				if(detailsIO.pin == 0) {
+					Error(_("Escrita de Encoder '%s' deve ser associada a um canal válido!"), IO->getName(id).c_str());
+					ret = eValidateResult_Error;
+				}
+			}
+		}
+	}
+
+	// Validate Generated IntCode
+	if(ret != eValidateResult_Error) {
+		vector<IntOp> vectorIntCode = ladder->getVectorIntCode();
+		vector<IntOp>::size_type IntCodeLen = vectorIntCode.size(), i;
+
+		for(i = 0; i < IntCodeLen; i++) {
+			if(vectorIntCode[i].op == INT_READ_ADC && IO->getDetails(IO->getID(vectorIntCode[i].name1)).type != eType_ReadADC) {
+				sprintf(msg_error, _("Variável A/D '%s' usada em lógica incompatível!"), vectorIntCode[i].name1);
+			}
+
+			if(vectorIntCode[i].op == INT_EEPROM_READ && !WarningPersist) {
+				WarningPersist = 1;
+				sprintf(msg_warning, _("Variáveis persistentes devem ser usadas cautelosamente. Excesso no uso pode interferir no desempenho da execução do diagrama ladder e reduzir a vida útil do CLP.\nA memória interna possui um limite no número de gravações."));
+			}
+
+			if(vectorIntCode[i].op == INT_SET_PWM) {
+				CountPWM++;
+				if(CountPWM == 4) // Each ELEM_PWM generates two INT_SET_PWM
+					sprintf(msg_warning, _("Cuidado ao utilizar mais de uma instrução PWM em sua lógica.\nSe duas instruções PWM forem ativadas ao mesmo tempo, o PWM não funcionará corretamente."));
+			}
+
+			if(msg_error[0]) {
+				ShowDialog(true, _("Erro ao validar diagrama!"), _(msg_error));
+				ret = eValidateResult_Error;
+				break;
+			}
+
+			if(msg_warning[0]) {
+				ShowDialog(true, _("Atenção"), _(msg_warning));
+				ret = eValidateResult_Warning;
+				msg_warning[0] = '\0';
+			}
+		}
+	}
+
+	return ret;
+}
+
 // Funcao que checa se um tipo de I/O pode ser usado em objeto de tipo Geral
 bool LadderDiagram::IsGenericTypeIO(eType type)
 {
@@ -6407,6 +7691,16 @@ bool LadderDiagram::IsGenericTypeIO(eType type)
 string LadderDiagram::getPortNameIO(int index)
 {
 	return IO->getPortName(index);
+}
+
+string LadderDiagram::getPinNameIO(int index)
+{
+	return IO->getPinName(index);
+}
+
+vector<string> LadderDiagram::getVectorInternalFlagsIO(void)
+{
+	return IO->getVectorInternalFlags();
 }
 
 // Funcoes relacionadas aos comandos de Desfazer / Refazer

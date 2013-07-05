@@ -19,7 +19,7 @@ static void MakeControls(char *op) // op: text for current operator
         7, 30, 90, 221, MathDialog, NULL, Instance, NULL);
     FixedFont(DestTextbox);
 
-	LoadIOListToComboBox(DestTextbox, IO_TYPE_VAR);
+	LoadIOListToComboBox(DestTextbox, vectorTypesVar);
 	SendMessage(DestTextbox, CB_SETDROPPEDWIDTH, 200, 0);
 
 	// Text equal ( = )
@@ -46,7 +46,7 @@ static void MakeControls(char *op) // op: text for current operator
         135, 30, 90, 221, MathDialog, NULL, Instance, NULL);
     FixedFont(Op1Textbox);
 
-	LoadIOListToComboBox(Op1Textbox, IO_TYPE_VAR);
+	LoadIOListToComboBox(Op1Textbox, vectorTypesVar);
 	SendMessage(Op1Textbox, CB_SETDROPPEDWIDTH, 200, 0);
 
 	if(op) {
@@ -67,7 +67,7 @@ static void MakeControls(char *op) // op: text for current operator
 			255, 30, 90, 221, MathDialog, NULL, Instance, NULL);
 		FixedFont(Op2Textbox);
 
-		LoadIOListToComboBox(Op2Textbox, IO_TYPE_VAR);
+		LoadIOListToComboBox(Op2Textbox, vectorTypesVar);
 		SendMessage(Op2Textbox, CB_SETDROPPEDWIDTH, 200, 0);
 	}
 

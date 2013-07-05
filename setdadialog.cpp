@@ -19,7 +19,7 @@ static void MakeControls(void)
         62, 10, 195, 321, SetDADialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-	LoadIOListToComboBox(NameTextbox, IO_TYPE_ALL);
+	LoadIOListToComboBox(NameTextbox, vector<eType>()); // Vetor vazio, todos os tipos...
 	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Modo de Escrita"),

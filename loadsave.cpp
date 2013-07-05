@@ -1,16 +1,138 @@
 #include "poptools.h"
 
-#define USE_BINFMT 1
+// Funcoes para ler e gravar dados de um arquivo
+// Centralizando a leitura e gravacao de tipos padrao em funcoes especificas
+// diminui a redundancia do codigo e torna o codigo mais portavel e simples
 
-// Magic number to help us to identify if the file is valid.
-// Format: xxxxyyzz
-// Where:
-// xxxx = always 0f5a
-// yy   = flags. reserved for future use.
-// zz   = format version
-const unsigned long int  BINFMT_MAGIC      = 0x0f5a0007;
-const unsigned long int  BINFMT_MAGIC_MASK = 0xffff0000;
-#define BINFMT_GET_VERSION(m) (m & 0xff)
+bool fwrite_uint(FILE *f, unsigned int var)
+{
+	return 1 == fwrite(&var, sizeof(var), 1, f);
+}
+
+bool fwrite_int(FILE *f, int var)
+{
+	return 1 == fwrite(&var, sizeof(var), 1, f);
+}
+
+bool fwrite_ulong(FILE *f, unsigned long var)
+{
+	return 1 == fwrite(&var, sizeof(var), 1, f);
+}
+
+bool fwrite_long(FILE *f, long var)
+{
+	return 1 == fwrite(&var, sizeof(var), 1, f);
+}
+
+bool fwrite_float(FILE *f, float var)
+{
+	return 1 == fwrite(&var, sizeof(var), 1, f);
+}
+
+bool fwrite_uchar(FILE *f, unsigned char var)
+{
+	return 1 == fwrite(&var, sizeof(var), 1, f);
+}
+
+bool fwrite_bool(FILE *f, bool var)
+{
+	return fwrite_uchar(f, var);
+}
+
+bool fwrite_string(FILE *f, string var)
+{
+	if(fwrite_uint(f, var.size())) {
+		size_t size = sizeof(char) * var.size();
+		return (size == 0) || (1 == fwrite(var.c_str(), size, 1, f));
+	}
+
+	return false;
+}
+
+bool fwrite_time_t(FILE *f, time_t var)
+{
+	return 1 == fwrite(&var, sizeof(var), 1, f);
+}
+
+bool fwrite_pointer(FILE *f, void *var, unsigned int size)
+{
+	return 1 == fwrite(var, size, 1, f);
+}
+
+bool fread_uint(FILE *f, unsigned int *var)
+{
+	return 1 == fread(var, sizeof(*var), 1, f);
+}
+
+bool fread_int(FILE *f, int *var)
+{
+	return 1 == fread(var, sizeof(*var), 1, f);
+}
+
+bool fread_ulong(FILE *f, unsigned long *var)
+{
+	return 1 == fread(var, sizeof(*var), 1, f);
+}
+
+bool fread_long(FILE *f, long *var)
+{
+	return 1 == fread(var, sizeof(*var), 1, f);
+}
+
+bool fread_float(FILE *f, float *var)
+{
+	return 1 == fread(var, sizeof(*var), 1, f);
+}
+
+bool fread_uchar(FILE *f, unsigned char *var)
+{
+	return 1 == fread(var, sizeof(*var), 1, f);
+}
+
+bool fread_bool(FILE *f, bool *var)
+{
+	unsigned char ch;
+	if(fread_uchar(f, &ch)) {
+		*var = ch != 0 ? true : false;
+		return true;
+	}
+
+	return false;
+}
+
+bool fread_string(FILE *f, string *var)
+{
+	unsigned int n;
+	if(fread_uint(f, &n)) {
+		if(n > 0) {
+			char *buffer = new char [n + 1];
+			size_t size = sizeof(char) * n;
+			if(1 == fread(buffer, n, 1, f)) {
+				buffer[n] = 0;
+				*var = buffer;
+
+				delete [] buffer;
+
+				return true;
+			}
+		} else {
+			*var = "";
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool fread_time_t(FILE *f, time_t *var)
+{
+	return 1 == fread(var, sizeof(*var), 1, f);
+}
+
+bool fread_pointer(FILE *f, void *var, unsigned int size)
+{
+	return 1 == fread(var, size, 1, f);
+}
 
 //-----------------------------------------------------------------------------
 // Load a project from a saved project description files. This describes the
@@ -20,13 +142,8 @@ const unsigned long int  BINFMT_MAGIC_MASK = 0xffff0000;
 //-----------------------------------------------------------------------------
 BOOL LoadProjectFromFile(char *filename)
 {
-	unsigned long int magic;
-
-    FreeEntireProgram();
-
 	char szAppPath[MAX_PATH]  = "";
 	char szfilename[MAX_PATH] = "";
-    FILE *f;
 
 	if(filename[0] == '\\' || filename[1] == ':') { // Absolute path
 		strcpy(szfilename, filename);
@@ -37,41 +154,20 @@ BOOL LoadProjectFromFile(char *filename)
 		sprintf(szfilename, "%s\\%s", szfilename, filename);
 	}
 
-	f = fopen(szfilename, "rb");
-    if(!f) return FALSE;
-
-	// Start with the magic number
-	fread(&magic, sizeof(magic), 1, f);
-	if((magic ^ BINFMT_MAGIC) & BINFMT_MAGIC_MASK) { // Bad magic number. Maybe it is old format?
-	} else {
-	}
-
-	fclose(f);
-    return TRUE;
+	return ladder->Load(szfilename);
 }
 
 //-----------------------------------------------------------------------------
 // Save the program in memory to the given file. Returns TRUE for success,
 // FALSE otherwise.
 //-----------------------------------------------------------------------------
-BOOL SaveProjectToFile(char *filename)
+BOOL SaveProjectToFile(char *filename, bool isBackup)
 {
 	char szfilename[MAX_PATH+1];
-    FILE *f;
-
-#ifndef _DEBUG
-	Prog.settings.canSave = TRUE;
-#endif
-
-	// When the line bellow is active, saved files cannot be overwrited.
-//	Prog.settings.canSave=FALSE;
 
 	GetFullPathName(filename, MAX_PATH, szfilename, NULL);
-	f = fopen(szfilename, USE_BINFMT ? "wb+" : "w");
-    if(!f) return FALSE;
 
-	fclose(f);
-    return TRUE;
+	return ladder->Save(szfilename, isBackup);
 }
 
 void SetAutoSaveInterval(int interval)
@@ -84,10 +180,12 @@ void SetAutoSaveInterval(int interval)
 
 void CALLBACK AutoSaveNow(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 {
-	if(strlen(CurrentSaveFile) && Prog.ParallelStart == NULL && Prog.settings.canSave) {
+	string currentFilename = ladder->getCurrentFilename();
+	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+	if(currentFilename.size() > 0 && settings.canSave) {
 		char AutoSaveName[MAX_PATH];
-		strcpy(AutoSaveName, CurrentSaveFile);
+		strcpy(AutoSaveName, currentFilename.c_str());
 		ChangeFileExtension(AutoSaveName, "bld");
-		SaveProjectToFile(AutoSaveName);
+		SaveProjectToFile(AutoSaveName, true);
 	}
 }

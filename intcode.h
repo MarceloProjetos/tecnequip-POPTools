@@ -74,7 +74,7 @@
         char        name6[MAX_NAME_LEN];
 		char        name7[MAX_NAME_LEN];
         SWORD       literal;
-        BOOL       *poweredAfter;
+        bool       *poweredAfter;
 		unsigned char bit;
     } IntOp;
 
@@ -127,7 +127,7 @@ public:
 	void OpBit(int op, const char *name1, const char *name2,                               unsigned char bit) { Op(op, name1, name2,  NULL,         0, bit); }
 	void Op   (int op                                                                                       ) { Op(op,  NULL,  NULL,  NULL,         0,   0); }
 
-	void SimState(BOOL *b, char *name);
+	void SimState(bool *b, const char *name);
 	void Comment (char *str, ...);
 
 	const char *VarFromExpr(const char *expr, char *tempName);

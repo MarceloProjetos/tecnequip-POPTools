@@ -1,5 +1,11 @@
 #include "poptools.h"
 
+// Funcoes para ordenacao
+static int CompareIoName(const void *av, const void *bv);
+static int CompareIoPin (const void *av, const void *bv);
+static int CompareIoPort(const void *av, const void *bv);
+static int CompareIoType(const void *av, const void *bv);
+
 // Funcao auxiliar que retorna um char* de uma string passada como parametro, alocando a memoria necessaria
 char *AllocCharFromString(string s)
 {
@@ -162,7 +168,7 @@ bool mapIO::Update(unsigned long id, string name, eType type, bool isUndoRedo)
 	if(name == old_name) { // Nome inalterado, atualiza apenas o tipo!
 		IO[name].second.type = type;
 	} else {
-		map<string, pair<unsigned long, mapDetails> >::iterator it = IO.find(old_name);
+		tMapIO::iterator it = IO.find(old_name);
 
 		// Atualizando o nome do I/O
 		if(IO.count(name) > 0) {
@@ -288,7 +294,7 @@ void mapIO::Discard(unsigned long id, bool isBit)
 
 			diagram->RegisterAction(action);
 
-			map<string, pair<unsigned long, mapDetails> >::iterator it;
+			tMapIO::iterator it;
 			it = IO.find(name);
 			IO.erase(it);
 
@@ -302,7 +308,7 @@ void mapIO::Discard(unsigned long id, bool isBit)
 unsigned long mapIO::getIndex(unsigned long id, bool isTotal)
 {
 	unsigned long idxBit = 1, idxInt = 1;
-	map<string, pair<unsigned long, mapDetails> >::iterator it;
+	tMapIO::iterator it;
 
 	for(it = IO.begin(); it != IO.end(); it++) {
 		// Se encontrou, retorna o indice conforme modo do IO
@@ -329,7 +335,7 @@ unsigned long mapIO::getIndex(unsigned long id, bool isTotal)
 
 string mapIO::getName(unsigned long id)
 {
-	map<string, pair<unsigned long, mapDetails> >::iterator it;
+	tMapIO::iterator it;
 
 	for(it = IO.begin(); it != IO.end(); it++) {
 		if(it->second.first == id) {
@@ -369,7 +375,7 @@ unsigned long mapIO::getID(unsigned int index)
 		return 0;
 	}
 
-	map<string, pair<unsigned long, mapDetails> >::iterator it = IO.begin();
+	tMapIO::iterator it = IO.begin();
 
 	while(index--) {
 		it++;
@@ -438,18 +444,18 @@ bool mapIO::Assign(string name, unsigned int pin, unsigned int bit, bool isUndoR
 
 string mapIO::getPortName(int index)
 {
-	McuIoInfo *mcu = diagram->getMCU();
 	char buf[1024];
+	McuIoInfo *mcu = diagram->getMCU();
 	mapDetails detailsIO = getDetails(getID(index));
 
 	if((detailsIO.type != eType_DigInput && detailsIO.type != eType_DigOutput && detailsIO.type != eType_General
 		&& detailsIO.type != eType_ReadADC && detailsIO.type != eType_ReadEnc && detailsIO.type != eType_ResetEnc
-		&& detailsIO.type != eType_ReadUSS && detailsIO.type != eType_WriteUSS) || detailsIO.pin == 0 || !mcu)
+		&& detailsIO.type != eType_ReadUSS && detailsIO.type != eType_WriteUSS) || detailsIO.pin == 0 || mcu == nullptr)
 	{
 		return string("");
 	}
 
-	if(UartFunctionUsed() && mcu) {
+	if(UartFunctionUsed() && mcu != nullptr) {
 		if((mcu->uartNeeds.rxPin == detailsIO.pin) ||
 			(mcu->uartNeeds.txPin == detailsIO.pin))
 		{
@@ -457,7 +463,7 @@ string mapIO::getPortName(int index)
 		}
 	}
 
-	if(PwmFunctionUsed() && mcu) {
+	if(PwmFunctionUsed() && mcu != nullptr) {
 		if(mcu->pwmNeedsPin == detailsIO.pin && detailsIO.type == eType_DigOutput) {
 			return string(_("<PWM needs!>"));
 		}
@@ -482,6 +488,159 @@ string mapIO::getPortName(int index)
 		strcpy(buf, _("<not an I/O!>"));
 
 	return string(buf);
+}
+
+string mapIO::getPinName(int index)
+{
+	char buf[1024];
+	mapDetails detailsIO = getDetails(getID(index));
+
+	if(detailsIO.pin != 0) {
+		sprintf(buf, "%d", detailsIO.pin);
+	} else if(detailsIO.type == eType_DigInput || detailsIO.type == eType_DigOutput ||
+		detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc ||
+		detailsIO.type == eType_ReadADC) {
+			strcpy(buf, _("(not assigned)"));
+	} else {
+			strcpy(buf, "");
+	}
+
+	return string(buf);
+}
+
+vector<string> mapIO::getVectorInternalFlags(void)
+{
+	return vectorInternalFlag;
+}
+
+void mapIO::Sort(eSortBy sortby)
+{
+	int (*fnc)(const void *, const void *);
+
+	switch(sortby) {
+	case eSortBy_Name: fnc = CompareIoName; break;
+	case eSortBy_Type: fnc = CompareIoType; break;
+	case eSortBy_Pin : fnc = CompareIoPin ; break;
+	case eSortBy_Port: fnc = CompareIoPort; break;
+	}
+
+	qsort(Prog.io.assignment, IO.size(), sizeof(PlcProgramSingleIo), fnc);
+}
+
+bool mapIO::Validate(eValidateIO mode)
+{
+	tMapIO::iterator it;
+
+	for(it = IO.begin(); it != IO.end(); it++) {
+		if(it->second.second.pin == 0 && (
+			it->second.second.pin == eType_ReadADC   ||
+			it->second.second.pin == eType_ReadEnc   ||
+			it->second.second.pin == eType_ResetEnc  ||
+			it->second.second.pin == eType_DigInput  ||
+			it->second.second.pin == eType_DigOutput
+			)) {
+				Error(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), it->first.c_str());
+				return false;
+		}
+	}
+
+	return true;
+}
+
+bool mapIO::Save(FILE *f)
+{
+	// Primeiro grava a variavel que controla os IDs dos I/Os
+	if(fwrite_ulong(f, countIO) && fwrite_uint(f, IO.size())) {
+		tMapIO::iterator it;
+
+		for(it = IO.begin(); it != IO.end(); it++) {
+			if(
+				!fwrite_string(f, it->first) ||
+				!fwrite_ulong (f, it->second.first) || 
+				!fwrite_uint  (f, it->second.second.countRequestBit) || 
+				!fwrite_uint  (f, it->second.second.countRequestInt) || 
+				!fwrite_uint  (f, it->second.second.type) || 
+				!fwrite_uint  (f, it->second.second.pin) || 
+				!fwrite_uint  (f, it->second.second.bit)) {
+					break; // Erro na gravacao!
+			}
+		}
+
+		if(it == IO.end()) {
+			return true; // alcancou IO.end(), significa que gravou com sucesso!
+		}
+	}
+
+	return false;
+}
+
+bool mapIO::Load(FILE *f, unsigned int version)
+{
+	unsigned int size;
+
+	Clear();
+
+	// Primeiro grava a variavel que controla os IDs dos I/Os
+	if(fread_ulong(f, &countIO) && fread_uint(f, &size)) {
+		unsigned int  i;
+		string        name;
+		unsigned int  iType;
+		unsigned long pinID;
+		mapDetails    detailsIO;
+
+		for(i = 0; i < size; i++) {
+			if(
+				!fread_string(f, &name) ||
+				!fread_ulong (f, &(pinID)) || 
+				!fread_uint  (f, &(detailsIO.countRequestBit)) || 
+				!fread_uint  (f, &(detailsIO.countRequestInt)) || 
+				!fread_uint  (f, &iType) || 
+				!fread_uint  (f, &(detailsIO.pin)) || 
+				!fread_uint  (f, &(detailsIO.bit))) {
+					break; // Erro na leitura!
+			} else {
+				switch(iType) {
+					default:
+					case eType_Pending      : detailsIO.type = eType_Pending      ; break;
+					case eType_Reserved     : detailsIO.type = eType_Reserved     ; break;
+					case eType_General      : detailsIO.type = eType_General      ; break;
+					case eType_DigInput     : detailsIO.type = eType_DigInput     ; break;
+					case eType_InternalRelay: detailsIO.type = eType_InternalRelay; break;
+					case eType_DigOutput    : detailsIO.type = eType_DigOutput    ; break;
+					case eType_InternalFlag : detailsIO.type = eType_InternalFlag ; break;
+					case eType_Counter      : detailsIO.type = eType_Counter      ; break;
+					case eType_TOF          : detailsIO.type = eType_TOF          ; break;
+					case eType_TON          : detailsIO.type = eType_TON          ; break;
+					case eType_RTO          : detailsIO.type = eType_RTO          ; break;
+					case eType_ReadADC      : detailsIO.type = eType_ReadADC      ; break;
+					case eType_SetDAC       : detailsIO.type = eType_SetDAC       ; break;
+					case eType_ReadEnc      : detailsIO.type = eType_ReadEnc      ; break;
+					case eType_ResetEnc     : detailsIO.type = eType_ResetEnc     ; break;
+					case eType_ReadUSS      : detailsIO.type = eType_ReadUSS      ; break;
+					case eType_WriteUSS     : detailsIO.type = eType_WriteUSS     ; break;
+					case eType_ReadModbus   : detailsIO.type = eType_ReadModbus   ; break;
+					case eType_WriteModbus  : detailsIO.type = eType_WriteModbus  ; break;
+					case eType_PWM          : detailsIO.type = eType_PWM          ; break;
+					case eType_RxUART       : detailsIO.type = eType_RxUART       ; break;
+					case eType_TxUART       : detailsIO.type = eType_TxUART       ; break;
+					case eType_ReadYaskawa  : detailsIO.type = eType_ReadYaskawa  ; break;
+					case eType_WriteYaskawa : detailsIO.type = eType_WriteYaskawa ; break;
+				}
+
+				IO[name].first  = pinID;
+				IO[name].second = detailsIO;
+			}
+		}
+
+		if(i == size) {
+			return true; // alcancou IO.end(), significa que gravou com sucesso!
+		}
+	}
+
+	// Ocorreu erro! Limpa a lista que estava sendo carregada
+	Clear();
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -604,7 +763,7 @@ bool mapIO::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 			IO[data->Discard.name].first  = data->Discard.id;
 			IO[data->Discard.name].second = data->Discard.detailsIO;
 		} else {
-			map<string, pair<unsigned long, mapDetails> >::iterator it;
+			tMapIO::iterator it;
 			it = IO.find(data->Discard.name);
 			IO.erase(it);
 		}
@@ -625,17 +784,6 @@ bool mapIO::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 
 	return true; // Nada mais a fazer
 }
-
-// I/O that we have seen recently, so that we don't forget pin assignments
-// when we re-extract the list
-#define MAX_IO_SEEN_PREVIOUSLY 1024
-struct {
-    char    name[MAX_NAME_LEN];
-    int     type;
-    int     pin;
-	int		bit;
-} IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
-int IoSeenPreviouslyCount;
 
 // stuff for the dialog box that lets you choose pin assignments
 static BOOL DialogDone;
@@ -677,475 +825,6 @@ const LPCTSTR ComboboxBitItens[] = { "0",  "1",  "2",  "3",  "4",  "5",  "6",  "
 									"31"};
 
 //-----------------------------------------------------------------------------
-// Append an I/O to the I/O list if it is not in there already.
-//-----------------------------------------------------------------------------
-static void AppendIo(char *name, int type, unsigned char bit)
-{
-    int i;
-	int idx = 0;
-    for(i = 0; i < Prog.io.count; i++) {
-        if(_stricmp(Prog.io.assignment[i].name, name)==0) {
-            if(type != IO_TYPE_GENERAL && Prog.io.assignment[i].type ==
-                IO_TYPE_GENERAL)
-            {
-                Prog.io.assignment[i].type = type;
-            }
-            // already in there
-            return;
-        }
-    }
-
-    if(i < MAX_IO) {
-        Prog.io.assignment[i].type = type;
-        Prog.io.assignment[i].pin = NO_PIN_ASSIGNED;
-		Prog.io.assignment[i].bit = bit;
-        strcpy(Prog.io.assignment[i].name, name);
-        (Prog.io.count)++;
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Move an I/O pin into the `seen previously' list. This means that if the
-// user creates input Xasd, assigns it a pin, deletes, and then recreates it,
-// then it will come back with the correct pin assigned.
-//-----------------------------------------------------------------------------
-static void AppendIoSeenPreviously(char *name, int type, int pin, int bit)
-{
-    if(_stricmp(name, _("new"))==0) return;
-
-    int i;
-    for(i = 0; i < IoSeenPreviouslyCount; i++) {
-        if(_stricmp(name, IoSeenPreviously[i].name)==0 &&
-            type == IoSeenPreviously[i].type)
-        {
-            if(pin != NO_PIN_ASSIGNED) {
-                IoSeenPreviously[i].pin = pin;
-				IoSeenPreviously[i].bit = bit;
-            }
-            return;
-        }
-    }
-    if(IoSeenPreviouslyCount >= MAX_IO_SEEN_PREVIOUSLY) {
-        // maybe improve later; just throw away all our old information, and
-        // the user might have to reenter the pin if they delete and recreate
-        // things
-        IoSeenPreviouslyCount = 0;
-    }
-
-    i = IoSeenPreviouslyCount;
-    IoSeenPreviously[i].type = type;
-    IoSeenPreviously[i].pin = pin;
-	IoSeenPreviously[i].bit = bit;
-    strcpy(IoSeenPreviously[i].name, name);
-    IoSeenPreviouslyCount++;
-}
-
-//-----------------------------------------------------------------------------
-// Walk a subcircuit, calling ourselves recursively and extracting all the
-// I/O names out of it.
-//-----------------------------------------------------------------------------
-void ExtractNamesFromCircuit(int which, void *any)
-{
-    ElemLeaf *l = (ElemLeaf *)any;
-
-    switch(which) {
-        case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int i;
-            for(i = 0; i < p->count; i++) {
-                ExtractNamesFromCircuit(p->contents[i].which,
-                    p->contents[i].d.any);
-            }
-            break;
-        }
-        case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int i;
-            for(i = 0; i < s->count; i++) {
-                ExtractNamesFromCircuit(s->contents[i].which,
-                    s->contents[i].d.any);
-            }
-            break;
-        }
-        case ELEM_CONTACTS:
-            switch(l->d.contacts.type) {
-                case IO_TYPE_INTERNAL_RELAY:
-                    AppendIo(l->d.contacts.name, IO_TYPE_INTERNAL_RELAY, l->d.contacts.bit);
-                    break;
-
-                case IO_TYPE_DIG_INPUT:
-                    AppendIo(l->d.contacts.name, IO_TYPE_DIG_INPUT, l->d.contacts.bit);
-                    break;
-
-                case IO_TYPE_DIG_OUTPUT:
-                    AppendIo(l->d.contacts.name, IO_TYPE_DIG_OUTPUT, l->d.contacts.bit);
-                    break;
-
-				case IO_TYPE_INTERNAL_FLAG:
-                    AppendIo(l->d.contacts.name, IO_TYPE_INTERNAL_FLAG, l->d.contacts.bit);
-                    break;
-
-                default:
-                    oops();
-                    break;
-            }
-            break;
-
-        case ELEM_COIL:
-			if(l->d.coil.type == IO_TYPE_INTERNAL_RELAY || l->d.coil.type == IO_TYPE_DIG_OUTPUT) {
-	            AppendIo(l->d.coil.name, l->d.coil.type, l->d.coil.bit);
-			} else {
-                oops();
-			}
-            break;
-
-        case ELEM_TON:
-        case ELEM_TOF:
-            AppendIo(l->d.timer.name, which == ELEM_TON ?  IO_TYPE_TON :
-                IO_TYPE_TOF, 0);
-            break;
-
-        case ELEM_RTO:
-            AppendIo(l->d.timer.name, IO_TYPE_RTO, 0);
-            break;
-
-        case ELEM_MOVE:
-            AppendIo(l->d.move.dest, IO_TYPE_GENERAL, 0);
-			if(!IsNumber(l->d.move.src))
-				AppendIo(l->d.move.src, IO_TYPE_GENERAL, 0);
-            break;
-
-        case ELEM_SET_BIT:
-			AppendIo(l->d.setBit.name, IO_TYPE_GENERAL, 0);
-            break;
-
-        case ELEM_CHECK_BIT:
-			AppendIo(l->d.checkBit.name, IO_TYPE_GENERAL, 0);
-            break;
-
-        case ELEM_ADD:
-        case ELEM_SUB:
-        case ELEM_MUL:
-        case ELEM_DIV:
-        case ELEM_MOD:
-            AppendIo(l->d.math.dest, IO_TYPE_GENERAL, 0);
-			if(!IsNumber(l->d.math.op1))
-	            AppendIo(l->d.math.op1, IO_TYPE_GENERAL, 0);
-			if(!IsNumber(l->d.math.op2))
-	            AppendIo(l->d.math.op2, IO_TYPE_GENERAL, 0);
-            break;
-
-        case ELEM_SQRT:
-            AppendIo(l->d.sqrt.dest, IO_TYPE_GENERAL, 0);
-			if(!IsNumber(l->d.sqrt.src))
-	            AppendIo(l->d.sqrt.src, IO_TYPE_GENERAL, 0);
-            break;
-
-        case ELEM_RAND:
-			AppendIo(l->d.rand.var, IO_TYPE_GENERAL, 0);
-			if(!IsNumber(l->d.rand.min))
-	            AppendIo(l->d.rand.min, IO_TYPE_GENERAL, 0);
-			if(!IsNumber(l->d.rand.max))
-	            AppendIo(l->d.rand.max, IO_TYPE_GENERAL, 0);
-            break;
-
-        case ELEM_ABS:
-			AppendIo(l->d.abs.dest, IO_TYPE_GENERAL, 0);
-			if(!IsNumber(l->d.abs.src))
-	            AppendIo(l->d.abs.src, IO_TYPE_GENERAL, 0);
-            break;
-
-		case ELEM_READ_FORMATTED_STRING:
-		case ELEM_WRITE_FORMATTED_STRING:
-        case ELEM_FORMATTED_STRING:
-            if(strlen(l->d.fmtdStr.var) > 0) {
-                AppendIo(l->d.fmtdStr.var, IO_TYPE_UART_TX, 0);
-            }
-            break;
-
-		case ELEM_READ_SERVO_YASKAWA:
-            if(strlen(l->d.servoYaskawa.var) > 0) {
-                AppendIo(l->d.servoYaskawa.var, IO_TYPE_READ_YASKAWA, 0);
-            }
-            break;
-
-		case ELEM_WRITE_SERVO_YASKAWA:
-            if(strlen(l->d.servoYaskawa.var) > 0 && !IsNumber(l->d.servoYaskawa.var)) {
-                AppendIo(l->d.servoYaskawa.var, IO_TYPE_WRITE_YASKAWA, 0);
-            }
-            break;
-
-        case ELEM_UART_SEND:
-            AppendIo(l->d.uart.name, IO_TYPE_UART_TX, 0);
-            break;
-
-        case ELEM_UART_RECV:
-            AppendIo(l->d.uart.name, IO_TYPE_UART_RX, 0);
-            break;
-
-        case ELEM_SET_PWM:
-            AppendIo(l->d.setPwm.name, IO_TYPE_PWM_OUTPUT, 0);
-            break;
-
-        case ELEM_CTU:
-        case ELEM_CTD:
-        case ELEM_CTC:
-            AppendIo(l->d.counter.name, IO_TYPE_COUNTER, 0);
-            break;
-
-        case ELEM_READ_ADC:
-            AppendIo(l->d.readAdc.name, IO_TYPE_READ_ADC, 0);
-            break;
-
-        case ELEM_SET_DA:
-			if(!IsNumber(l->d.setDA.name))
-	            AppendIo(l->d.setDA.name, IO_TYPE_SET_DA, 0);
-            break;
-
-        case ELEM_READ_ENC:
-            AppendIo(l->d.readEnc.name, IO_TYPE_READ_ENC, 0);
-//			switch(GetPinEnc(l->d.readEnc.name)) {
-//			case 1:
-				AppendIo(InternalVars[0][INTVAR_INC_PERIMRODA], IO_TYPE_GENERAL, 0);
-				AppendIo(InternalVars[0][INTVAR_INC_PULSOS   ], IO_TYPE_GENERAL, 0);
-				AppendIo(InternalVars[0][INTVAR_INC_FATOR    ], IO_TYPE_GENERAL, 0);
-//				break;
-//			case 2:
-				AppendIo(InternalVars[0][INTVAR_ABS_PERIMRODA], IO_TYPE_GENERAL, 0);
-				AppendIo(InternalVars[0][INTVAR_ABS_FATOR    ], IO_TYPE_GENERAL, 0);
-//				break;
-//			}
-            break;
-
-        case ELEM_RESET_ENC:
-			AppendIo(l->d.resetEnc.name, IO_TYPE_RESET_ENC, 0);
-			break;
-
-		case ELEM_READ_USS:
-            AppendIo(l->d.readUSS.name, IO_TYPE_READ_USS, 0);
-            break;
-
-        case ELEM_WRITE_USS:
-            AppendIo(l->d.writeUSS.name, IO_TYPE_WRITE_USS, 0);
-            break;
-
-        case ELEM_READ_MODBUS:
-            AppendIo(l->d.readModbus.name, IO_TYPE_READ_MODBUS, 0);
-            break;
-
-        case ELEM_WRITE_MODBUS:
-            AppendIo(l->d.writeModbus.name, IO_TYPE_WRITE_MODBUS, 0);
-            break;
-
-        case ELEM_SHIFT_REGISTER: {
-            int i;
-            for(i = 0; i < l->d.shiftRegister.stages; i++) {
-                char str[MAX_NAME_LEN+10];
-                sprintf(str, "%s%d", l->d.shiftRegister.name, i);
-                AppendIo(str, IO_TYPE_GENERAL, 0);
-            }
-            break;
-        }
-
-        case ELEM_LOOK_UP_TABLE:
-            AppendIo(l->d.lookUpTable.dest , IO_TYPE_GENERAL, 0);
-			AppendIo(l->d.lookUpTable.index, IO_TYPE_GENERAL, 0);
-            break;
-
-        case ELEM_PIECEWISE_LINEAR:
-            AppendIo(l->d.piecewiseLinear.dest , IO_TYPE_GENERAL, 0);
-			AppendIo(l->d.piecewiseLinear.index, IO_TYPE_GENERAL, 0);
-            break;
-
-        case ELEM_EQU:
-        case ELEM_NEQ:
-        case ELEM_GRT:
-        case ELEM_GEQ:
-        case ELEM_LES:
-        case ELEM_LEQ:
-			if(!IsNumber(l->d.cmp.op1))
-	            AppendIo(l->d.cmp.op1, IO_TYPE_GENERAL, 0);
-			if(!IsNumber(l->d.cmp.op2))
-	            AppendIo(l->d.cmp.op2, IO_TYPE_GENERAL, 0);
-            break;
-
-        case ELEM_PERSIST:
-			AppendIo(l->d.persist.var, IO_TYPE_GENERAL, 0);
-			break;
-
-		case ELEM_MULTISET_DA:
-			if(!IsNumber(l->d.multisetDA.name))
-				AppendIo(l->d.multisetDA.name, IO_TYPE_GENERAL, 0);
-			if(!IsNumber(l->d.multisetDA.name1))
-				AppendIo(l->d.multisetDA.name1, IO_TYPE_GENERAL, 0);
-			break;
-
-		case ELEM_RTC:
-        case ELEM_PLACEHOLDER:
-        case ELEM_COMMENT:
-        case ELEM_SHORT:
-        case ELEM_OPEN:
-        case ELEM_MASTER_RELAY:
-        case ELEM_ONE_SHOT_RISING:
-        case ELEM_ONE_SHOT_FALLING:
-        case ELEM_RES:
-            break;
-
-        default:
-            oops();
-    }
-}
-
-void UpdateTypeInRung(char *name, unsigned int type, int which, void *any)
-{
-    ElemLeaf *l = (ElemLeaf *)any;
-
-    switch(which) {
-        case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int i;
-            for(i = 0; i < p->count; i++) {
-                UpdateTypeInRung(name, type, p->contents[i].which, p->contents[i].d.any);
-            }
-            break;
-        }
-        case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int i;
-            for(i = 0; i < s->count; i++) {
-                UpdateTypeInRung(name, type, s->contents[i].which, s->contents[i].d.any);
-            }
-            break;
-        }
-
-		case ELEM_CONTACTS:
-			if(!_stricmp(name, l->d.contacts.name))
-				l->d.contacts.type = type;
-            break;
-
-        case ELEM_COIL:
-			if(!_stricmp(name, l->d.coil.name))
-				l->d.coil.type = type;
-            break;
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Walk a subcircuit, calling ourselves recursively and extracting all the
-// I/O names out of it.
-//-----------------------------------------------------------------------------
-void UpdateTypeInCircuit(char *name, unsigned int type)
-{
-	int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-		UpdateTypeInRung(name, type, ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-    }
-}
-
-void UpdateTypeForInternalRelaysInRung(int which, void *any)
-{
-    ElemLeaf *l = (ElemLeaf *)any;
-
-    switch(which) {
-        case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int i;
-            for(i = 0; i < p->count; i++) {
-                UpdateTypeForInternalRelaysInRung(p->contents[i].which, p->contents[i].d.any);
-            }
-            break;
-        }
-        case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int i;
-            for(i = 0; i < s->count; i++) {
-                UpdateTypeForInternalRelaysInRung(s->contents[i].which, s->contents[i].d.any);
-            }
-            break;
-        }
-
-		case ELEM_CONTACTS:
-			if(l->d.contacts.type == IO_TYPE_PENDING)
-				l->d.contacts.type = IO_TYPE_INTERNAL_RELAY;
-            break;
-
-        case ELEM_COIL:
-			if(l->d.coil.type == IO_TYPE_PENDING)
-				l->d.coil.type = IO_TYPE_INTERNAL_RELAY;
-            break;
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Walk a subcircuit, calling ourselves recursively and extracting all the
-// I/O names out of it.
-//-----------------------------------------------------------------------------
-void UpdateTypeForInternalRelays()
-{
-	int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-		UpdateTypeForInternalRelaysInRung(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-    }
-}
-
-void UpdateTypesFromSeenPreviouslyList()
-{
-	int i;
-
-	// Search for Coils and Contacts in the loaded I/O List to update their types in Program Rungs.
-	for(i=0; i<IoSeenPreviouslyCount; i++) {
-		if(IoSeenPreviously[i].type == IO_TYPE_INTERNAL_RELAY ||
-		   IoSeenPreviously[i].type == IO_TYPE_DIG_INPUT ||
-		   IoSeenPreviously[i].type == IO_TYPE_DIG_OUTPUT ||
-		   IoSeenPreviously[i].type == IO_TYPE_INTERNAL_FLAG)
-				UpdateTypeInCircuit(IoSeenPreviously[i].name, IoSeenPreviously[i].type);
-	}
-}
-
-BOOL ExistsCoilWithNameInRung(char *name, int which, void *any)
-{
-    ElemLeaf *l = (ElemLeaf *)any;
-
-    switch(which) {
-        case ELEM_PARALLEL_SUBCKT: {
-            ElemSubcktParallel *p = (ElemSubcktParallel *)any;
-            int i;
-            for(i = 0; i < p->count; i++) {
-                if(ExistsCoilWithNameInRung(name, p->contents[i].which, p->contents[i].d.any))
-					return TRUE;
-            }
-            break;
-        }
-        case ELEM_SERIES_SUBCKT: {
-            ElemSubcktSeries *s = (ElemSubcktSeries *)any;
-            int i;
-            for(i = 0; i < s->count; i++) {
-                if(ExistsCoilWithNameInRung(name, s->contents[i].which, s->contents[i].d.any))
-					return TRUE;
-            }
-            break;
-        }
-
-        case ELEM_COIL:
-			if(!_stricmp(name, l->d.coil.name))
-				return TRUE;
-            break;
-	}
-
-	return FALSE;
-}
-
-BOOL ExistsCoilWithName(char *name)
-{
-	int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-		if(ExistsCoilWithNameInRung(name, ELEM_SERIES_SUBCKT, Prog.rungs[i]))
-			return TRUE;
-    }
-	return FALSE;
-}
-
-//-----------------------------------------------------------------------------
 // Compare function to qsort() the I/O list. Group by type, then 
 // alphabetically within each section.
 //-----------------------------------------------------------------------------
@@ -1174,6 +853,7 @@ static int CompareIoPin(const void *av, const void *bv)
 
 static int CompareIoPort(const void *av, const void *bv)
 {
+	McuIoInfo *mcu = ladder->getMCU();
     PlcProgramSingleIo *a = (PlcProgramSingleIo *)av;
     PlcProgramSingleIo *b = (PlcProgramSingleIo *)bv;
 
@@ -1187,7 +867,7 @@ static int CompareIoPort(const void *av, const void *bv)
     if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
     if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
 
-    if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
+    if(mcu && mcu->whichIsa == ISA_ANSIC) {
         i1 = 0;
     }
 
@@ -1199,59 +879,59 @@ static int CompareIoPort(const void *av, const void *bv)
     }
 
     int pin = a->pin;
-    if(pin == NO_PIN_ASSIGNED || !Prog.mcu) {
+    if(pin == NO_PIN_ASSIGNED || !mcu) {
         i1 = 0;
     }
 
-    if(UartFunctionUsed() && Prog.mcu) {
-        if((Prog.mcu->uartNeeds.rxPin == pin) ||
-            (Prog.mcu->uartNeeds.txPin == pin))
+    if(UartFunctionUsed() && mcu) {
+        if((mcu->uartNeeds.rxPin == pin) ||
+            (mcu->uartNeeds.txPin == pin))
         {
             i1 = 0; // "<UART needs!>"
         }
     }
 
-    if(PwmFunctionUsed() && Prog.mcu) {
-        if(Prog.mcu->pwmNeedsPin == pin) {
+    if(PwmFunctionUsed() && mcu) {
+        if(mcu->pwmNeedsPin == pin) {
             i1 = 0; // "<PWM needs!>"
         }
     }
 
     int j;
-    for(j = 0; j < Prog.mcu->pinCount; j++) 
+    for(j = 0; j < mcu->pinCount; j++) 
 	{
-        if(Prog.mcu->pinInfo[j].pin == pin) 
+        if(mcu->pinInfo[j].pin == pin) 
 		{
 			if (a->type == IO_TYPE_DIG_OUTPUT && a->pin == 17)
 				i1 = 90000;
 			else if (a->type == IO_TYPE_DIG_OUTPUT && a->pin == 18)
 				i1 = 90001;
 			else if (a->type == IO_TYPE_GENERAL && a->pin > 19)
-				i1 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit;
+				i1 = 50000 + (mcu->pinInfo[j].bit * 100) + a->bit;
 			else if (a->type == IO_TYPE_DIG_OUTPUT && a->pin > 19)
-				i1 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit; // "M%d.%d"
+				i1 = 50000 + (mcu->pinInfo[j].bit * 100) + a->bit; // "M%d.%d"
 			else if (a->type == IO_TYPE_DIG_OUTPUT)
-				i1 = 40000 + Prog.mcu->pinInfo[j].bit;
+				i1 = 40000 + mcu->pinInfo[j].bit;
 			else if (a->type == IO_TYPE_DIG_INPUT && a->pin > 19)
-				i1 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + a->bit;
+				i1 = 50000 + (mcu->pinInfo[j].bit * 100) + a->bit;
 			else if (a->type == IO_TYPE_DIG_INPUT)
-				i1 = 30000 + Prog.mcu->pinInfo[j].bit;
+				i1 = 30000 + mcu->pinInfo[j].bit;
 			else if (a->type == IO_TYPE_READ_ADC)
 				if (a->pin == 6)
 					i1 = 90003;
 				else
-					i1 = 60000 + Prog.mcu->pinInfo[j].bit;
+					i1 = 60000 + mcu->pinInfo[j].bit;
 			else if (a->type == IO_TYPE_READ_ENC || a->type == IO_TYPE_RESET_ENC)
-				i1 = 70000 + Prog.mcu->pinInfo[j].bit;
+				i1 = 70000 + mcu->pinInfo[j].bit;
             break;
         }
     }
-    if(j == Prog.mcu->pinCount) {
+    if(j == mcu->pinCount) {
         i1 = 0; // "<not an I/O!>";
     }
 
 	// 2o. parameter content compare 
-    if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
+    if(mcu && mcu->whichIsa == ISA_ANSIC) {
         i2 = 0;
     }
 
@@ -1263,53 +943,53 @@ static int CompareIoPort(const void *av, const void *bv)
     }
 
     pin = b->pin;
-    if(pin == NO_PIN_ASSIGNED || !Prog.mcu) {
+    if(pin == NO_PIN_ASSIGNED || !mcu) {
         i2 = 0;
     }
 
-    if(UartFunctionUsed() && Prog.mcu) {
-        if((Prog.mcu->uartNeeds.rxPin == pin) ||
-            (Prog.mcu->uartNeeds.txPin == pin))
+    if(UartFunctionUsed() && mcu) {
+        if((mcu->uartNeeds.rxPin == pin) ||
+            (mcu->uartNeeds.txPin == pin))
         {
             i2 = 0; // "<UART needs!>";
         }
     }
 
-    if(PwmFunctionUsed() && Prog.mcu) {
-        if(Prog.mcu->pwmNeedsPin == pin) {
+    if(PwmFunctionUsed() && mcu) {
+        if(mcu->pwmNeedsPin == pin) {
             i2 = 0; // "<PWM needs!>";
         }
     }
 
-    for(j = 0; j < Prog.mcu->pinCount; j++) 
+    for(j = 0; j < mcu->pinCount; j++) 
 	{
-        if(Prog.mcu->pinInfo[j].pin == pin) 
+        if(mcu->pinInfo[j].pin == pin) 
 		{
 			if (b->type == IO_TYPE_DIG_OUTPUT && b->pin == 17)
 				i2 = 90000;
 			else if (b->type == IO_TYPE_DIG_OUTPUT && b->pin == 18)
 				i2 = 90001;
 			else if (b->type == IO_TYPE_GENERAL && b->pin > 19)
-				i2 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit; // "M%d.%d"
+				i2 = 50000 + (mcu->pinInfo[j].bit * 100) + b->bit; // "M%d.%d"
 			else if (b->type == IO_TYPE_DIG_OUTPUT && b->pin > 19)
-				i2 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit; // "M%d.%d"
+				i2 = 50000 + (mcu->pinInfo[j].bit * 100) + b->bit; // "M%d.%d"
 			else if (b->type == IO_TYPE_DIG_OUTPUT)
-				i2 = 40000 + Prog.mcu->pinInfo[j].bit;
+				i2 = 40000 + mcu->pinInfo[j].bit;
 			else if (b->type == IO_TYPE_DIG_INPUT && b->pin > 19)
-				i2 = 50000 + (Prog.mcu->pinInfo[j].bit * 100) + b->bit;
+				i2 = 50000 + (mcu->pinInfo[j].bit * 100) + b->bit;
 			else if (b->type == IO_TYPE_DIG_INPUT)
-				i2 = 30000 + Prog.mcu->pinInfo[j].bit;
+				i2 = 30000 + mcu->pinInfo[j].bit;
 			else if (b->type == IO_TYPE_READ_ADC)
 				if (b->pin == 6)
 					i2 = 90003;
 				else
-					i2 = 60000 + Prog.mcu->pinInfo[j].bit;
+					i2 = 60000 + mcu->pinInfo[j].bit;
 			else if (b->type == IO_TYPE_READ_ENC || b->type == IO_TYPE_RESET_ENC)
-				i2 = 70000 + Prog.mcu->pinInfo[j].bit;
+				i2 = 70000 + mcu->pinInfo[j].bit;
             break;
         }
     }
-    if(j == Prog.mcu->pinCount) {
+    if(j == mcu->pinCount) {
         i2 = 0; // "<not an I/O!>";
     }
 
@@ -1374,179 +1054,19 @@ void SortList(int NewSortColumn)
 	}
 
 	// sort list
-	ListView_SortItems(IoList, CompareListItems, nSortColumn);
-/*	if (nSortColumn == 0)
-		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoName);
-	else if (nSortColumn == 1)
-		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoType);
-	else if (nSortColumn == 3)
-		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPin);
-	else if (nSortColumn == 4)
-		qsort(Prog.io.assignment, Prog.io.count, sizeof(PlcProgramSingleIo), CompareIoPort);*/
+	eSortBy sortby = eSortBy_Nothing;
 
-	RefreshControlsToSettings();
-}
-
-//-----------------------------------------------------------------------------
-// Wipe the I/O list and then re-extract it from the PLC program, taking
-// care not to forget the pin assignments. Gets passed the selected item
-// as an index into the list; modifies the list, so returns the new selected
-// item as an index into the new list.
-//-----------------------------------------------------------------------------
-int GenerateIoMapList(int prevSel)
-{
-    int i, j;
-
-    char selName[MAX_NAME_LEN];
-    if(prevSel >= 0) {
-        strcpy(selName, Prog.io.assignment[prevSel].name);
-    }
-
-    if(IoSeenPreviouslyCount > MAX_IO_SEEN_PREVIOUSLY/2) {
-        // flush it so there's lots of room, and we don't run out and
-        // forget important things
-        IoSeenPreviouslyCount = 0;
-    }
-    
-    // remember the pin assignments
-    for(i = 0; i < Prog.io.count; i++) {
-        AppendIoSeenPreviously(Prog.io.assignment[i].name,
-            Prog.io.assignment[i].type, Prog.io.assignment[i].pin, Prog.io.assignment[i].bit);
-    }
-    // wipe the list
-    Prog.io.count = 0;
-    // extract the new list so that it must be up to date
-    for(i = 0; i < Prog.numRungs; i++) {
-        ExtractNamesFromCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);
-    }
-
-    for(i = 0; i < Prog.io.count; i++) {
-        if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_GENERAL ||
-           Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
-           Prog.io.assignment[i].type == IO_TYPE_READ_ENC ||
-           Prog.io.assignment[i].type == IO_TYPE_RESET_ENC ||
-		   Prog.io.assignment[i].type == IO_TYPE_READ_USS || 
-		   Prog.io.assignment[i].type == IO_TYPE_WRITE_USS)
-        {
-            for(j = 0; j < IoSeenPreviouslyCount; j++) 
-			{
-                if(_stricmp(Prog.io.assignment[i].name, IoSeenPreviously[j].name) == 0 && Prog.io.assignment[i].type == IoSeenPreviously[j].type)
-                {
-                    Prog.io.assignment[i].pin = IoSeenPreviously[j].pin;
-					Prog.io.assignment[i].bit = IoSeenPreviously[j].bit;
-                    break;
-                }
-            }
-        }
-    }
-
-	SortList(-1);
-
-    if(prevSel >= 0) {
-        for(i = 0; i < Prog.io.count; i++) {
-            if(_stricmp(Prog.io.assignment[i].name, selName)==0)
-                break;
-        }
-        if(i < Prog.io.count)
-            return i;
-    }
-    // no previous, or selected was deleted
-    return -1;
-}
-
-//-----------------------------------------------------------------------------
-// Load the I/O list from a file. Since we are just loading pin assignments,
-// put it into IoSeenPreviously so that it will get used on the next
-// extraction.
-//-----------------------------------------------------------------------------
-BOOL LoadIoListFromFile(FILE *f, int version)
-{
-    char line[80];
-    char name[MAX_NAME_LEN];
-    int pin, bit = 0;
-	int i;
-    unsigned int type;
-
-	for (i = 0; i < MAX_IO_SEEN_PREVIOUSLY; i++)
-	{
-		memset(IoSeenPreviously[i].name, 0, sizeof(IoSeenPreviously[i].name));
-		IoSeenPreviously[i].type = 0;
-		IoSeenPreviously[i].pin = 0;
-		IoSeenPreviously[i].bit = 0;
+	switch(nSortColumn) {
+		case 0: sortby = eSortBy_Name; break;
+		case 1: sortby = eSortBy_Type; break;
+		case 3: sortby = eSortBy_Pin ; break;
+		case 4: sortby = eSortBy_Port; break;
 	}
-	IoSeenPreviouslyCount = 0;
 
-    while(fgets(line, sizeof(line), f)) {
-        if(_stricmp(line, "END\n")==0) {
-            return TRUE;
-        }
-        // Don't internationalize this! It's the file format, not UI.
-
-		if (version < 2)
-		{
-			if (sscanf(line, "    %s at %d", name, &pin) != 2) 
-			{
-				return FALSE;
-			}
-		}
-		else if (version < 3)
-		{
-			if(sscanf(line, "    %s at %d %d", name, &pin, &bit)!=3) 
-			{
-				return FALSE;
-			}
-
-			switch(name[0]) {
-				case 'X': type = IO_TYPE_DIG_INPUT; break;
-		        case 'Y': type = IO_TYPE_DIG_OUTPUT; break;
-	            case 'A': type = IO_TYPE_READ_ADC; break;
-				case 'E': type = IO_TYPE_READ_ENC; break;
-			    case 'Z': type = IO_TYPE_RESET_ENC; break;
-		        default: oops();
-	        }
-		}
-		else
-		{
-			if(sscanf(line, "    %s at %d %d type %u", name, &pin, &bit, &type)!=4) 
-			{
-				return FALSE;
-			}
-		}
-
-		if(type == IO_TYPE_DIG_OUTPUT && (pin == 17 || pin == 18)) { // Leds - change to internal relay type.
-			pin  = 0;
-			type = IO_TYPE_INTERNAL_RELAY;
-		}
-
-		AppendIoSeenPreviously(name, type, pin, bit);
-    }
-    return FALSE;
-}
-
-//-----------------------------------------------------------------------------
-// Write the I/O list to a file. Since everything except the pin assignment
-// can be extracted from the schematic, just write the Xs and Ys.
-//-----------------------------------------------------------------------------
-void SaveIoListToFile(FILE *f)
-{
-    int i;
-    for(i = 0; i < Prog.io.count; i++) {
-        if(Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT  ||
-           Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT ||
-           Prog.io.assignment[i].type == IO_TYPE_GENERAL ||
-		   Prog.io.assignment[i].type == IO_TYPE_INTERNAL_FLAG ||
-           Prog.io.assignment[i].type == IO_TYPE_READ_ADC ||
-           Prog.io.assignment[i].type == IO_TYPE_READ_ENC ||
-           Prog.io.assignment[i].type == IO_TYPE_RESET_ENC)
-        {
-            // Don't internationalize this! It's the file format, not UI.
-			if(Prog.io.assignment[i].type != IO_TYPE_GENERAL || Prog.io.assignment[i].pin)
-	            fprintf(f, "    %s at %d %d type %u\n", Prog.io.assignment[i].name,
-		            Prog.io.assignment[i].pin, Prog.io.assignment[i].bit, Prog.io.assignment[i].type);
-        }
-    }
+	if(sortby != eSortBy_Nothing) {
+		ladder->sortIO(sortby);
+		RefreshControlsToSettings();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1659,10 +1179,11 @@ static void MakeControls(void)
 
 void mapIO::ShowIoMapDialog(int item)
 {
+	McuIoInfo *mcu = diagram->getMCU();
 	unsigned long id = getID(item);
 	mapDetails detailsIO = getDetails(id);
 
-	if(!Prog.mcu) {
+	if(mcu == nullptr) {
         MessageBox(MainWindow,
             _("No microcontroller has been selected. You must select a "
             "microcontroller before you can assign I/O pins.\r\n\r\n"
@@ -1671,13 +1192,13 @@ void mapIO::ShowIoMapDialog(int item)
         return;
     }
 
-    if(Prog.mcu->whichIsa == ISA_ANSIC) {
+    if(mcu->whichIsa == ISA_ANSIC) {
         Error(_("Can't specify I/O assignment for ANSI C target; compile and "
             "see comments in generated source code."));
         return;
     }
 
-    if(Prog.mcu->whichIsa == ISA_INTERPRETED) {
+    if(mcu->whichIsa == ISA_INTERPRETED) {
         Error(_("Can't specify I/O assignment for interpretable target; see "
             "comments in reference implementation of interpreter."));
         return;
@@ -1705,12 +1226,12 @@ void mapIO::ShowIoMapDialog(int item)
         return;
     }
 
-    if(detailsIO.type == eType_ReadADC && Prog.mcu->adcCount == 0) {
+    if(detailsIO.type == eType_ReadADC && mcu->adcCount == 0) {
         Error(_("No ADC or ADC not supported for this micro."));
         return;
     }
 
-	if((detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) && Prog.mcu->encCount == 0) {
+	if((detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) && mcu->encCount == 0) {
         Error(_("No Encoder or Encoder not supported for selected micro."));
         return;
     }
@@ -1735,8 +1256,8 @@ void mapIO::ShowIoMapDialog(int item)
 	for (i = 0; i < sizeof(ComboboxBitItens) / sizeof(ComboboxBitItens[0]); i++)
 		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
 
-	SendMessage(BitCombobox, CB_SETCURSEL, Prog.io.assignment[item].bit, 0);
-	if(Prog.io.assignment[item].pin >= 20) {
+	SendMessage(BitCombobox, CB_SETCURSEL, detailsIO.bit, 0);
+	if(detailsIO.pin >= 20) {
 		EnableWindow(BitCombobox, TRUE);
 	}
 
@@ -1756,67 +1277,58 @@ void mapIO::ShowIoMapDialog(int item)
     SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
 	PinListItemCount++;
 
-	map<string, pair<unsigned long, mapDetails> >::iterator it;
-	for(i = 0; i < Prog.mcu->pinCount; i++) {
+	tMapIO::iterator it;
+	for(i = 0; i < mcu->pinCount; i++) {
         int j;
 		for(it = IO.begin(); it != IO.end(); it++) 
 		{
 			if(it->second.first == id) continue;
-			if(it->second.second.pin == Prog.mcu->pinInfo[i].pin && it->second.second.type == detailsIO.type && 
+			if(it->second.second.pin == mcu->pinInfo[i].pin && it->second.second.type == detailsIO.type && 
 				!((it->second.second.type == eType_DigInput && i > 18) || (it->second.second.type == eType_DigOutput && i > 66)) )
 			{
                 goto cant_use_this_io;
             }
 		}
 
-		if(UartFunctionUsed() && Prog.mcu &&
-                ((Prog.mcu->pinInfo[i].pin == Prog.mcu->uartNeeds.rxPin) ||
-                 (Prog.mcu->pinInfo[i].pin == Prog.mcu->uartNeeds.txPin)))
+		if(UartFunctionUsed() &&
+                ((mcu->pinInfo[i].pin == mcu->uartNeeds.rxPin) ||
+                 (mcu->pinInfo[i].pin == mcu->uartNeeds.txPin)))
         {
             goto cant_use_this_io;
         }
 
-        if(PwmFunctionUsed() && 
-            Prog.mcu->pinInfo[i].pin == Prog.mcu->pwmNeedsPin)
+        if(PwmFunctionUsed() && mcu->pinInfo[i].pin == mcu->pwmNeedsPin)
         {
             goto cant_use_this_io;
         }
 
 		if(detailsIO.type == eType_ReadADC) {
-            for(j = 0; j < Prog.mcu->adcCount; j++) 
+            for(j = 0; j < mcu->adcCount; j++) 
 			{
 				if (j == 4) continue;
-                //if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) 
-				//{
-				if (j == Prog.mcu->adcCount - 1)
-					sprintf(buf, "%3d TEMP", Prog.mcu->adcInfo[j].pin);
+				if (j == mcu->adcCount - 1)
+					sprintf(buf, "%3d TEMP", mcu->adcInfo[j].pin);
 				else
-					sprintf(buf, "%3d ADC%d", Prog.mcu->adcInfo[j].pin, Prog.mcu->adcInfo[j].muxRegValue);
+					sprintf(buf, "%3d ADC%d", mcu->adcInfo[j].pin, mcu->adcInfo[j].muxRegValue);
 
 				SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
 				PinListItemCount++;
-                //}
             }
-            if(j == Prog.mcu->adcCount) {
+            if(j == mcu->adcCount) {
 				break;
-                //goto cant_use_this_io;
             }
         }
 
 		if(detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) {
-            for(j = 0; j < Prog.mcu->encCount; j++) 
+            for(j = 0; j < mcu->encCount; j++) 
 			{
 				char *strEnc[] = { _("Enc. Inc."), _("Enc. Abs.") };
-                //if(Prog.mcu->adcInfo[j].pin == Prog.mcu->pinInfo[i].pin) 
-				//{
-					sprintf(buf, "%3d %s", Prog.mcu->encInfo[j].pin, strEnc[j]);
+					sprintf(buf, "%3d %s", mcu->encInfo[j].pin, strEnc[j]);
 					SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
 					PinListItemCount++;
-                //}
             }
-            if(j == Prog.mcu->encCount) {
+            if(j == mcu->encCount) {
 				break;
-                //goto cant_use_this_io;
             }
         }
 
@@ -1824,9 +1336,9 @@ void mapIO::ShowIoMapDialog(int item)
 			(detailsIO.type == eType_DigOutput && i > 50) ||
 			(detailsIO.type == eType_General   && i > 66))
 		{
-			sprintf(buf, "%3d %c%d", Prog.mcu->pinInfo[i].pin,
-				Prog.mcu->pinInfo[i].port,
-				Prog.mcu->pinInfo[i].bit);
+			sprintf(buf, "%3d %c%d", mcu->pinInfo[i].pin,
+				mcu->pinInfo[i].port,
+				mcu->pinInfo[i].bit);
 
 			SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
 			PinListItemCount++;
@@ -1880,6 +1392,8 @@ cant_use_this_io:;
 		SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
 
 		Assign(id, atoi(pin), atoi(buf));
+
+		updateGUI();
     }
 
     EnableWindow(MainWindow, TRUE);
@@ -1922,7 +1436,7 @@ static LRESULT CALLBACK WPDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 	return CallWindowProc((WNDPROC)PrevWPDialogProc, hwnd, msg, wParam, lParam);
 }
 
-int *ShowWatchPointDialog(char *name, int type, int *curval, int *newval)
+int *ShowWatchPointDialog(char *name, eType type, int *curval, int *newval)
 {
 	int *ret = NULL;
 	char buf[20];
@@ -1946,8 +1460,8 @@ int *ShowWatchPointDialog(char *name, int type, int *curval, int *newval)
         10, 10, 140, 21, WPDialog, NULL, Instance, NULL); 
     NiceFont(EnabledWP);
 
-	if(type == IO_TYPE_DIG_INPUT || type == IO_TYPE_DIG_OUTPUT ||
-			type == IO_TYPE_INTERNAL_RELAY || type == IO_TYPE_INTERNAL_FLAG) {
+	if(type == eType_DigInput || type == eType_DigOutput ||
+		type == eType_InternalRelay || type == eType_InternalFlag) {
 		CheckON = CreateWindowEx(0, WC_BUTTON, _("Ligado"),
 			WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
 			10, 35, 100, 20, WPDialog, NULL, Instance, NULL);
@@ -1992,8 +1506,9 @@ int *ShowWatchPointDialog(char *name, int type, int *curval, int *newval)
 			}
 		} else {
 			int val = *curval;
-			if(type == IO_TYPE_RTO || type == IO_TYPE_TON || type == IO_TYPE_TOF)
-				val = (val * Prog.settings.cycleTime) / 1000;
+			LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+			if(type == eType_RTO || type == eType_TON || type == eType_TOF)
+				val = (val * settings.cycleTime) / 1000;
 
 			sprintf(buf, "%d", val);
 			Edit_SetText(CheckVal, buf);
@@ -2035,8 +1550,9 @@ int *ShowWatchPointDialog(char *name, int type, int *curval, int *newval)
 			} else {
 				Edit_GetText(CheckVal, buf, sizeof(buf)-1);
 				*newval = atoi(buf);
-				if(type == IO_TYPE_RTO || type == IO_TYPE_TON || type == IO_TYPE_TOF)
-					*newval = (*newval * 1000) / Prog.settings.cycleTime;
+				LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+				if(type == eType_RTO || type == eType_TON || type == eType_TOF)
+					*newval = (*newval * 1000) / settings.cycleTime;
 			}
 
 			ret = newval;
@@ -2072,39 +1588,35 @@ void IoMapListProc(NMHDR *h)
 			}
 			break;
         case LVN_GETDISPINFO: {
+			McuIoInfo *mcu = ladder->getMCU();
             NMLVDISPINFO *i = (NMLVDISPINFO *)h;
             int item = i->item.iItem;
             switch(i->item.iSubItem) {
-                case LV_IO_PIN:
+                case LV_IO_PIN: {
+					string name = ladder->getNameIObyIndex(item);
+					mapDetails detailsIO = ladder->getDetailsIO(name);
+
 					if(InSimulationMode) {
 						int val;
-						if(GetValWP(Prog.io.assignment[item].name, &val) != NULL) {
-							DescribeForIoList(val, Prog.io.assignment[item].type, i->item.pszText);
+						if(GetValWP(name.c_str(), &val) != NULL) {
+							DescribeForIoList(val, detailsIO.type, i->item.pszText);
 						} else {
 							strcpy(i->item.pszText, "");
 						}
 					} else {
 						// Don't confuse people by displaying bogus pin assignments
 						// for the C target.
-						if(Prog.mcu && (Prog.mcu->whichIsa == ISA_ANSIC ||
-										Prog.mcu->whichIsa == ISA_INTERPRETED) )
+						if(mcu != nullptr && (mcu->whichIsa == ISA_ANSIC ||
+										mcu->whichIsa == ISA_INTERPRETED) )
 						{
 							strcpy(i->item.pszText, "");
 							break;
 						}
 
-						mapDetails detailsIO = ladder->getDetailsIO(ladder->getNameIObyIndex(item));
-						if(detailsIO.pin != 0) {
-							sprintf(i->item.pszText, "%d", detailsIO.pin);
-						} else if(detailsIO.type == eType_DigInput || detailsIO.type == eType_DigOutput ||
-							detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc ||
-							detailsIO.type == eType_ReadADC) {
-								strcpy(i->item.pszText, _("(not assigned)"));
-						} else {
-								strcpy(i->item.pszText, "");
-						}
+						strcpy(i->item.pszText, ladder->getPinNameIO(item).c_str());
 					}
                     break;
+				}
 
                 case LV_IO_TYPE: {
                     strcpy(i->item.pszText, ladder->getStringTypeIO(item));
@@ -2117,9 +1629,10 @@ void IoMapListProc(NMHDR *h)
 				}
 
                 case LV_IO_PORT: {
+					McuIoInfo *mcu = ladder->getMCU();
                     // Don't confuse people by displaying bogus pin assignments
                     // for the C target.
-                    if(Prog.mcu && Prog.mcu->whichIsa == ISA_ANSIC) {
+                    if(mcu != nullptr && mcu->whichIsa == ISA_ANSIC) {
                         strcpy(i->item.pszText, "");
                         break;
                     }
@@ -2130,9 +1643,11 @@ void IoMapListProc(NMHDR *h)
                 }
 
                 case LV_IO_STATE: {
-                    if(InSimulationMode) {
-                        char *name = Prog.io.assignment[item].name;
-                        DescribeForIoList(name, Prog.io.assignment[item].type, i->item.pszText);
+                    if(ladder->getContext().inSimulationMode) {
+						string name = ladder->getNameIObyIndex(item);
+						mapDetails detailsIO = ladder->getDetailsIO(name);
+
+						DescribeForIoList(name.c_str(), detailsIO.type, i->item.pszText);
                     } else {
                         strcpy(i->item.pszText, "");
                     }
@@ -2144,26 +1659,29 @@ void IoMapListProc(NMHDR *h)
         }
         case LVN_ITEMACTIVATE: {
 			NMITEMACTIVATE *i = (NMITEMACTIVATE *)h;
-            if(InSimulationMode) {
-				char *name = Prog.io.assignment[i->iItem].name;
+			if(ladder->getContext().inSimulationMode) {
+				char name[1024];
+				strcpy(name, ladder->getNameIObyIndex(i->iItem).c_str());;
+				mapDetails detailsIO = ladder->getDetailsIO(name);
+
 				if(i->iSubItem != LV_IO_PIN) {
-					if(Prog.io.assignment[i->iItem].type == IO_TYPE_DIG_INPUT) {
+					if(detailsIO.type == eType_DigInput) {
 						SimulationToggleContact(name);
-					} else if(Prog.io.assignment[i->iItem].type == IO_TYPE_READ_ADC) {
+					} else if(detailsIO.type == eType_ReadADC) {
 						ShowAnalogSliderPopup(name);
-					} else if(Prog.io.assignment[i->iItem].type == IO_TYPE_READ_ENC) {
+					} else if(detailsIO.type == eType_ReadEnc) {
 						ShowEncoderSliderPopup(name);
-					} else if(Prog.io.assignment[i->iItem].type == IO_TYPE_COUNTER ||
-							Prog.io.assignment[i->iItem].type == IO_TYPE_TOF ||
-							Prog.io.assignment[i->iItem].type == IO_TYPE_TON ||
-							Prog.io.assignment[i->iItem].type == IO_TYPE_GENERAL) {
+					} else if(detailsIO.type == eType_Counter ||
+							detailsIO.type == eType_TOF ||
+							detailsIO.type == eType_TON ||
+							detailsIO.type == eType_General) {
 						sprintf(val, "%d", GetSimulationVariable(name));
 						ShowSimulationVarSetDialog(name, val);
 						SetSimulationVariable(name, atoi(val));
 					}
 				} else {
 					int wpval;
-					if(ShowWatchPointDialog(name, Prog.io.assignment[i->iItem].type, GetValWP(name, &wpval), &wpval) != NULL) {
+					if(ShowWatchPointDialog(name, detailsIO.type, GetValWP(name, &wpval), &wpval) != NULL) {
 						AddWP(name, wpval);
 					} else {
 						RemoveWP(name);
@@ -2224,9 +1742,11 @@ void ShowAnalogSliderPopup(char *name)
 
     SWORD currentVal = GetAdcShadow(name);
 
+	McuIoInfo *mcu = ladder->getMCU();
+
     SWORD maxVal;
-    if(Prog.mcu) {
-        maxVal = Prog.mcu->adcMax;
+    if(mcu != nullptr) {
+        maxVal = mcu->adcMax;
     } else {
         maxVal = 1023;
     }
@@ -2301,7 +1821,7 @@ void ShowAnalogSliderPopup(char *name)
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(AnalogSliderMain);
-    ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+    ListView_RedrawItems(IoList, 0, ladder->getCountIO() - 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -2349,9 +1869,11 @@ void ShowEncoderSliderPopup(char *name)
 
     SWORD currentVal = GetEncShadow(name);
 
-    SWORD maxVal;
-    if(Prog.mcu) {
-        maxVal = Prog.mcu->encMax;
+	McuIoInfo *mcu = ladder->getMCU();
+
+	SWORD maxVal;
+    if(mcu != nullptr) {
+        maxVal = mcu->encMax;
     } else {
         maxVal = 0x7FFFFFFF;
     }
@@ -2429,18 +1951,13 @@ void ShowEncoderSliderPopup(char *name)
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(EncoderSliderMain);
-    ListView_RedrawItems(IoList, 0, Prog.io.count - 1);
+	ListView_RedrawItems(IoList, 0, ladder->getCountIO() - 1);
 }
 
 // Returns if io is associated to a ModBUS register or not.
-int IoMap_IsModBUS(PlcProgramSingleIo *io)
+bool IoMap_IsModBUS(mapDetails detailsIO)
 {
-	if(io == NULL || io->pin == NO_PIN_ASSIGNED) return 0;
-
-	if(io->pin < 20)
-		return 0;
-
-	return 1;
+	return detailsIO.pin >= 20;
 }
 
 // Returns index of register associated to pin. Examples:
@@ -2448,17 +1965,21 @@ int IoMap_IsModBUS(PlcProgramSingleIo *io)
 // Pin associated to ModBUS register 5: returns 4
 // Please note that there is no way to know if the index is for a Digital
 // Input or ModBUS register. To know this, please call IoMap_IsModBUS()
-int IoMap_GetIndex(PlcProgramSingleIo *io)
+unsigned int IoMap_GetIndex(mapDetails detailsIO)
 {
-	int ret = 0;
-	if(io == NULL || io->pin == NO_PIN_ASSIGNED) return 0;
+	unsigned int ret = 0;
 
-	if(io->type == IO_TYPE_DIG_INPUT) {
-		ret = IoMap_IsModBUS(io) ? io->pin - 20 : io->pin - 1;
-	} else if(io->type == IO_TYPE_DIG_OUTPUT) {
-		ret = IoMap_IsModBUS(io) ? io->pin - 20 : io->pin - 1;
-	} else if(io->type == IO_TYPE_GENERAL) {
-		ret = io->pin - 20;
+	if(detailsIO.pin > 0) {
+		switch(detailsIO.type) {
+			case eType_DigInput:
+			case eType_DigOutput:
+				ret = IoMap_IsModBUS(detailsIO) ? detailsIO.pin - 20 : detailsIO.pin - 1;
+				break;
+
+			case eType_General:
+				ret = detailsIO.pin - 20;
+				break;
+		}
 	}
 
 	return ret;

@@ -99,48 +99,28 @@ static char *MapSym(char *str)
 		}
 	}
 
-    for(i = 0; i < Prog.io.count; i++) 
-	{
-		if (_stricmp(Prog.io.assignment[i].name, str) == 0)
-		{
-			int pin = Prog.io.assignment[i].pin;
-
-			if (Prog.io.assignment[i].type == IO_TYPE_DIG_OUTPUT) 
-			{
-				if (pin > 18)
-				{
-					sprintf(ret, "MODBUS_REGISTER[%d]", pin - 20);
-					return ret;
-				}
-				else
-				{
-					sprintf(ret, "GPIO_OUTPUT_PORT%d", pin);
-					return ret;
-				}
-			} 
-			if (Prog.io.assignment[i].type == IO_TYPE_READ_ADC) 
-			{
-				sprintf(ret, "A%d", pin);
-				return ret;
-			} 
-			if (Prog.io.assignment[i].type == IO_TYPE_GENERAL && Prog.io.assignment[i].pin) 
-			{
-				sprintf(ret, "MODBUS_REGISTER[%d]", Prog.io.assignment[i].pin - 20);
-				return ret;
-			} 
-			if (Prog.io.assignment[i].type == IO_TYPE_DIG_INPUT) 
-			{
-				if (pin > 19)
-				{
-					sprintf(ret, "MODBUS_REGISTER[%d]", pin - 20);
-					return ret;
-				}
-				else
-				{
-					sprintf(ret, "GPIO_INPUT_PORT%d", pin);
-					return ret;
-				}
-			}
+	mapDetails detailsIO = ladder->getDetailsIO(str);
+	if (detailsIO.type == eType_DigOutput) {
+		if(IoMap_IsModBUS(detailsIO)) {
+			sprintf(ret, "MODBUS_REGISTER[%d]", IoMap_GetIndex(detailsIO));
+			return ret;
+		} else {
+			sprintf(ret, "GPIO_OUTPUT_PORT%d", detailsIO.pin);
+			return ret;
+		}
+	} else if(detailsIO.type == eType_ReadADC) {
+		sprintf(ret, "A%d", detailsIO.pin);
+		return ret;
+	} else if(detailsIO.type == eType_General && detailsIO.pin) {
+		sprintf(ret, "MODBUS_REGISTER[%d]", IoMap_GetIndex(detailsIO));
+		return ret;
+	} else if (detailsIO.type == eType_DigInput) {
+		if(IoMap_IsModBUS(detailsIO)) {
+			sprintf(ret, "MODBUS_REGISTER[%d]", IoMap_GetIndex(detailsIO));
+			return ret;
+		} else {
+			sprintf(ret, "GPIO_INPUT_PORT%d", detailsIO.pin);
+			return ret;
 		}
 	}
 
@@ -195,7 +175,7 @@ static void DeclareBit(FILE *f, char *rawStr)
 		return;
 	}
 
-	intflag = (!strncmp(str, "I_", 2) && IsInternalFlag(str+2));
+	intflag = (!strncmp(str, "I_", 2) /*&& IsInternalFlag(str+2)*/);
 
 	mode = (*rawStr == '$'  && !intflag) ? SEENVAR_MODE_SYSTEM : (!strncmp(str, "U_", 2) ? SEENVAR_MODE_USERBIT : SEENVAR_MODE_OTHERS);
 	if(!SeenVariable(str, mode) && mode == SEENVAR_MODE_OTHERS && !intflag) {
@@ -668,30 +648,30 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				break;
 
             case INT_READ_ENC: {
-				int ch = GetPinEnc(vectorIntCode[i].name1);
-				if(ch != NO_PIN_ASSIGNED) {
-					if(ch == 1) {
+				mapDetails detailsIO = ladder->getDetailsIO(vectorIntCode[i].name1);
+				if((detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) && detailsIO.pin) {
+					if(detailsIO.pin == 1) {
 						HasQEI = 1;
 					} else {
 						HasSSI = 1;
 					}
 
-					sprintf(buf2, "ENC_Read(%d)", ch - 1);
+					sprintf(buf2, "ENC_Read(%d)", detailsIO.pin - 1);
 					fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name1), buf2, GENVARCODE_MODE_WRITE));
 				}
 				break;
 				}
             case INT_RESET_ENC: {
-				int ch = GetPinEnc(vectorIntCode[i].name1);
 				char *name = GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ);
-				if(ch != NO_PIN_ASSIGNED) {
-					if(ch == 1) {
+				mapDetails detailsIO = ladder->getDetailsIO(vectorIntCode[i].name1);
+				if((detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) && detailsIO.pin) {
+					if(detailsIO.pin == 1) {
 						HasQEI = 1;
 					} else {
 						HasSSI = 1;
 					}
 
-					fprintf(f, "ENC_Reset(%d, %s);\n", ch-1, name);
+					fprintf(f, "ENC_Reset(%d, %s);\n", detailsIO.pin-1, name);
 				}
 				break;
 				}
@@ -1002,6 +982,14 @@ DWORD GenerateCFile(char *filename)
         return 0;
     }
 
+	LadderSettingsUART               settingsUart    = ladder->getSettingsUART              ();
+	LadderSettingsNetwork            settingsNetwork = ladder->getSettingsNetwork           ();
+	LadderSettingsSNTP               settingsSntp    = ladder->getSettingsSNTP              ();
+	LadderSettingsEncoderIncremental settingsEncInc  = ladder->getSettingsEncoderIncremental();
+	LadderSettingsEncoderSSI         settingsEncSSI  = ladder->getSettingsEncoderSSI        ();
+	LadderSettingsModbusSlave        settingsMbSlave = ladder->getSettingsModbusSlave       ();
+	LadderSettingsInformation        settingsInfo    = ladder->getSettingsInformation       ();
+
     if(setjmp(CompileErrorBuf) != 0) {
         fclose(f);
 		remove(filename);
@@ -1013,10 +1001,6 @@ DWORD GenerateCFile(char *filename)
 	HasDAC = 0;
 	HasQEI = 0;
 	HasSSI = 0;
-
-	// Set up the TRISx registers (direction). 1 means tri-stated (input).
-    BYTE isInput[MAX_IO_PORTS], isOutput[MAX_IO_PORTS];
-    BuildDirectionRegisters(isInput, isOutput);
 
 	CheckPinAssignments();
 
@@ -1030,37 +1014,13 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "/*****************************************************************************\n");
 	fprintf(f, " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n");
 	fprintf(f, " *****************************************************************************/\n");
-	/*fprintf(f, "#include <string.h>\n");
-	fprintf(f, "#include \"lwip/opt.h\"\n");
-	fprintf(f, "#include \"lwip/arch.h\"\n");
-	fprintf(f, "#include \"lwip/api.h\"\n");
-	fprintf(f, "#include \"coos.h\"\n");
-
-	fprintf(f, "\n");
-	fprintf(f, "#include \"rtc.h\"\n");
-	fprintf(f, "#include \"gpio.h\"\n");
-	fprintf(f, "#include \"rtc.h\"\n");
-	fprintf(f, "#include \"dac.h\"\n");
-	fprintf(f, "#include \"adc.h\"\n");
-	fprintf(f, "#include \"qei.h\"\n");
-	fprintf(f, "#include \"rs485.h\"\n");
-	fprintf(f, "#include \"rs232.h\"\n");
-	fprintf(f, "#include \"modbus.h\"\n");
-	fprintf(f, "#include \"uss.h\"\n");
-	fprintf(f, "#include \"yaskawa.h\"\n");
-	fprintf(f, "#include \"format_str.h\"\n");*/
 
 	fprintf(f, "#include \"ld.h\"\n");
 
 	fprintf(f, "\n");
-	//fprintf(f, "const volatile unsigned int 	CYCLE_TIME = %d;\n", Prog.settings.cycleTime / 1000);
-	//fprintf(f, "const volatile unsigned int		TIME_INTERVAL = ((25000000/1000) * %d) - 1;\n", Prog.settings.cycleTime / 1000);
-	
-	fprintf(f, "\n");
 	fprintf(f, "extern volatile unsigned char 	MODBUS_RS485_MASTER; // 0 = Slave, 1 = Master\n");
 	fprintf(f, "extern volatile unsigned char 	MODBUS_TCP_MASTER; // 0 = Slave, 1 = Master\n");
 	fprintf(f, "extern volatile int 			MODBUS_REGISTER[32];\n");
-	//fprintf(f, "extern volatile int 			ENCODER1;\n");
 	fprintf(f, "extern struct tm 				RTC_NowTM;\n");
 	fprintf(f, "struct tm 						RTC_StartTM;\n");
 	fprintf(f, "struct tm 						RTC_EndTM;\n");
@@ -1075,9 +1035,9 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "extern struct ip_addr			IP_DNS;\n");
 
 	fprintf(f, "\n");
-	fprintf(f, "char 							SNTP_SERVER_ADDRESS[] = \"%s\";\n", Prog.settings.sntp);
-	fprintf(f, "int								SNTP_GMT = %d;\n", Prog.settings.gmt > 12 ? Prog.settings.gmt - 12 : Prog.settings.gmt - 12);
-	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", Prog.settings.dailysave);
+	fprintf(f, "char 							SNTP_SERVER_ADDRESS[] = \"%s\";\n", settingsSntp.sntp_server);
+	fprintf(f, "int								SNTP_GMT = %d;\n", settingsSntp.gmt - 12);
+	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", settingsSntp.dailysave);
 
 	fprintf(f, "\n");
 	fprintf(f, "// Variaveis PLC\n");
@@ -1098,7 +1058,7 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "void PLC_Net_Init(void)\n");
 	fprintf(f, "{\n");
 
-	if(Prog.settings.sntp_enable) {
+	if(settingsSntp.sntp_enable) {
 		fprintf(f, "    SNTP_Init();\n");
 	}
 
@@ -1110,24 +1070,28 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "{\n");
 	fprintf(f, "	MODBUS_RS485_MASTER = %d;\n", MODBUS_RS485_MASTER);
 	fprintf(f, "	MODBUS_TCP_MASTER = %d;\n", MODBUS_TCP_MASTER);
-	fprintf(f, "	ModBUS_SetID(%d);\n", Prog.settings.ModBUSID);
-	fprintf(f, "	ModBUS_SetAppName(\"%s\");\n", Prog.settings.InfoName);
+	fprintf(f, "	ModBUS_SetID(%d);\n", settingsMbSlave.ModBUSID);
+	fprintf(f, "	ModBUS_SetAppName(\"%s\");\n", settingsInfo.Name.c_str());
 	fprintf(f, "\n");
-	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", Prog.settings.baudRate, SerialConfig[Prog.settings.UART].bByteSize,
-		SerialConfig[Prog.settings.UART].bParity, SerialConfig[Prog.settings.UART].bStopBits == ONESTOPBIT ? 1 : 2);
+	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", settingsUart.baudRate, SerialConfig[settingsUart.UART].bByteSize,
+		SerialConfig[settingsUart.UART].bParity, SerialConfig[settingsUart.UART].bStopBits == ONESTOPBIT ? 1 : 2);
 	fprintf(f, "\n");
-	fprintf(f, "	IP4_ADDR(&IP_ADDRESS, %d,%d,%d,%d);\n", Prog.settings.ip[0], Prog.settings.ip[1], Prog.settings.ip[2], Prog.settings.ip[3]);
-	fprintf(f, "	IP4_ADDR(&IP_NETMASK, %d,%d,%d,%d);\n", Prog.settings.mask[0], Prog.settings.mask[1], Prog.settings.mask[2], Prog.settings.mask[3]);
-	fprintf(f, "	IP4_ADDR(&IP_GATEWAY, %d,%d,%d,%d);\n", Prog.settings.gw[0], Prog.settings.gw[1], Prog.settings.gw[2], Prog.settings.gw[3]);
-	fprintf(f, "	IP4_ADDR(&IP_DNS, %d,%d,%d,%d);\n", Prog.settings.dns[0], Prog.settings.dns[1], Prog.settings.dns[2], Prog.settings.dns[3]);
+	fprintf(f, "	IP4_ADDR(&IP_ADDRESS, %d,%d,%d,%d);\n", FIRST_IPADDRESS(settingsNetwork.ip), SECOND_IPADDRESS(settingsNetwork.ip),
+		THIRD_IPADDRESS(settingsNetwork.ip), FOURTH_IPADDRESS(settingsNetwork.ip));
+	fprintf(f, "	IP4_ADDR(&IP_NETMASK, %d,%d,%d,%d);\n", FIRST_IPADDRESS(settingsNetwork.mask), SECOND_IPADDRESS(settingsNetwork.mask),
+		THIRD_IPADDRESS(settingsNetwork.mask), FOURTH_IPADDRESS(settingsNetwork.mask));
+	fprintf(f, "	IP4_ADDR(&IP_GATEWAY, %d,%d,%d,%d);\n", FIRST_IPADDRESS(settingsNetwork.gw), SECOND_IPADDRESS(settingsNetwork.gw),
+		THIRD_IPADDRESS(settingsNetwork.gw), FOURTH_IPADDRESS(settingsNetwork.gw));
+	fprintf(f, "	IP4_ADDR(&IP_DNS, %d,%d,%d,%d);\n", FIRST_IPADDRESS(settingsNetwork.dns), SECOND_IPADDRESS(settingsNetwork.dns),
+		THIRD_IPADDRESS(settingsNetwork.dns), FOURTH_IPADDRESS(settingsNetwork.dns));
 
 	if(HasQEI) {
 		fprintf(f, "\n");
 		// Incremental Encoder
-		fprintf(f, "    ENC_Config(%d, %d, %d, %f, %d);\n", 0, Prog.settings.enc_inc_conv_mode,
-			Prog.settings.perimeter, Prog.settings.factor, Prog.settings.pulses * (Prog.settings.x4 ? 4 : 2));
+		fprintf(f, "    ENC_Config(%d, %d, %d, %f, %d);\n", 0, settingsEncInc.conv_mode,
+			settingsEncInc.perimeter, settingsEncInc.factor, settingsEncInc.pulses * (settingsEncInc.x4 ? 4 : 2));
 
-		if(Prog.settings.x4) {
+		if(settingsEncInc.x4) {
 			fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_4X;\n");
 		} else {
 			fprintf(f, "    QEIConfig.CaptureMode = QEI_CAPMODE_2X;\n");
@@ -1139,10 +1103,10 @@ DWORD GenerateCFile(char *filename)
 	if(HasSSI) {
 		fprintf(f, "\n");
 		// Absolute Encoder
-		fprintf(f, "    ENC_Config(%d, %d, %d, %f, %d);\n", 1, Prog.settings.enc_ssi_conv_mode,
-			Prog.settings.ssi_perimeter, Prog.settings.ssi_factor, Prog.settings.ssi_size_bpr);
+		fprintf(f, "    ENC_Config(%d, %d, %d, %f, %d);\n", 1, settingsEncSSI.conv_mode,
+			settingsEncSSI.perimeter, settingsEncSSI.factor, settingsEncSSI.size_bpr);
 
-		fprintf(f, "    SSI_Init(%d, %d);\n", Prog.settings.ssi_size, Prog.settings.ssi_mode);
+		fprintf(f, "    SSI_Init(%d, %d);\n", settingsEncSSI.size, settingsEncSSI.mode);
 	}
 
 	if(HasADC) {
@@ -1190,7 +1154,7 @@ DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 	vectorIntCode = ladder->getVectorIntCode();
 	IntCodeLen = vectorIntCode.size();
 
-	if(ValidateDiagram() == DIAGRAM_VALIDATION_ERROR) {
+	if(ladder->Validate() == eValidateResult_Error) {
 		return 1;
 	}
 
@@ -1227,8 +1191,9 @@ DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 	DWORD err = 0;
 
 	if (!(err = InvokeGCC(CurrentCompileFile))) {
-		Prog.settings.InfoBuildNumber++;
-		Prog.settings.InfoCompileDate = time(NULL);
+		LadderSettingsInformation settings = ladder->getSettingsInformation();
+		settings.BuildNumber++;
+		settings.CompileDate = time(NULL);
 	}
 
 	return err;

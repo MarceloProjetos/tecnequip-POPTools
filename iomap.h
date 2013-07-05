@@ -11,7 +11,9 @@ private:
 
 	unsigned long countIO;
 	unsigned long selectedIO;
-	map<string, pair<unsigned long, mapDetails> > IO;
+
+	typedef map<string, pair<unsigned long, mapDetails> > tMapIO;
+	tMapIO IO;
 
 	vector<string> vectorInternalFlag;
 	vector<string> vectorReservedName;
@@ -62,7 +64,7 @@ public:
 	void           Select       (unsigned int index);
 
 	unsigned long Request(string name, bool isBit, eType type);
-	void Discard(unsigned long id, bool isBit);
+	void          Discard(unsigned long id, bool isBit);
 
 	bool Update(unsigned long id, string name, eType type, bool isUndoRedo = false);
 
@@ -72,7 +74,20 @@ public:
 	bool IsReserved    (string name);
 	bool IsInternalFlag(string name);
 
-	string getPortName(int index);
+	string          getPortName           (int index);
+	string          getPinName            (int index);
+	vector<string>  getVectorInternalFlags(void);
+
+	// Funcao para ordenar a lista de I/O conforme o campo especificado
+	void            Sort                  (eSortBy sortby);
+
+	// Funcao para checar os I/Os, buscando por erros como variaveis do tipo temporizador
+	// usadas em mais de 1 lugar ao mesmo tempo, I/Os nao associados a uma entrada / saida, etc.
+	bool Validate(eValidateIO mode);
+
+	// Funcoes para gravar / carregar o mapa de I/O do disco
+	bool Load(FILE *f, unsigned int version);
+	bool Save(FILE *f);
 
 	// Funcoes relacionadas com a interface grafica
 	void updateGUI      (void);

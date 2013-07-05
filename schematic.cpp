@@ -1,23 +1,5 @@
 #include "poptools.h"
 
-// I/O that we have seen recently, so that we don't forget pin assignments
-// when we re-extract the list
-#define MAX_IO_SEEN_PREVIOUSLY 512
-extern struct {
-    char    name[MAX_NAME_LEN];
-    int     type;
-    int     pin;
-	int		bit;
-} IoSeenPreviously[MAX_IO_SEEN_PREVIOUSLY];
-extern int IoSeenPreviouslyCount;
-
-// Not all options all available e.g. can't delete the only relay coil in
-// a rung, can't insert two coils in series, etc. Keep track of what is
-// allowed so we don't corrupt our program.
-BOOL CanInsertEnd;
-BOOL CanInsertOther;
-BOOL CanInsertComment;
-
 // Ladder logic program is laid out on a grid program; this matrix tells
 // us which leaf element is in which box on the grid, which allows us
 // to determine what element has just been selected when the user clicks
@@ -28,12 +10,6 @@ ElemLeaf *Selected;
 int SelectedWhich;
 
 ElemLeaf DisplayMatrixFiller;
-
-// Cursor within the ladder logic program. The paint routines figure out
-// where the cursor should go and calculate the coordinates (in pixels)
-// of the rectangle that describes it; then BlinkCursor just has to XOR
-// the requested rectangle at periodic intervals.
-PlcCursor Cursor;
 
 //-----------------------------------------------------------------------------
 // Find the address in the DisplayMatrix of the selected leaf element. Set
@@ -57,7 +33,7 @@ BOOL FindSelected(int *gx, int *gy)
 
 unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
 {
-	int x, y, i;
+	int x, y;
 	unsigned int matches=0;
 
 	if(search_text == NULL || !strlen(search_text)) {
@@ -248,21 +224,6 @@ unsigned int FindAndReplace(char *search_text, char *new_text, int mode)
 				}
 			}
 		}
-	}
-
-	// Program changed! Update internal references
-	if(matches && FAR_MODE_REPLACE(mode)) {
-		// There were matches when replacing all occurrences and the new name has IO_TYPE as pending...
-		// Probably it is an inexistent variable so we can securely use the previous assignment for this new one.
-		if(mode==FAR_REPLACE_ALL && GetTypeFromName(new_text)==IO_TYPE_PENDING) {
-			for(i=0; i<IoSeenPreviouslyCount; i++) {
-				if(!_stricmp(search_text, IoSeenPreviously[i].name)) {
-					strcpy(IoSeenPreviously[i].name, new_text);
-					break;
-				}
-			}
-		}
-		ProgramChanged();
 	}
 
 	return matches;
@@ -519,149 +480,6 @@ int FindRung(int gx, int gy)
 	return -1;
 }
 
-void ToggleBreakPoint(int y)
-{
-	int rung;
-
-    y += FONT_HEIGHT/2;
-
-    int gy = (y - Y_PADDING)/(POS_HEIGHT*FONT_HEIGHT);
-
-    gy += ScrollYOffset;
-
-	rung = FindRung(0, gy);
-	if(rung >= 0 && (Prog.rungs[rung]->contents[0].which != ELEM_COMMENT || Prog.rungHasBreakPoint[rung]))
-		Prog.rungHasBreakPoint[rung] = !Prog.rungHasBreakPoint[rung];
-}
-
-//-----------------------------------------------------------------------------
-// Edit the element under the mouse cursor. This will typically be the
-// selected element, since the first click would have selected it. If there
-// is no element under the mouser cursor then do nothing; do not edit the
-// selected element (which is elsewhere on screen), as that would be
-// confusing.
-//-----------------------------------------------------------------------------
-bool EditElementMouseDoubleclick(int x, int y)
-{
-	bool changed = false;
-    x += ScrollXOffset;
-
-    y += FONT_HEIGHT/2;
-
-    int gx = (x - X_PADDING)/(POS_WIDTH*FONT_WIDTH);
-    int gy = (y - Y_PADDING)/(POS_HEIGHT*FONT_HEIGHT);
-
-    gy += ScrollYOffset;
-
-    if(InSimulationMode) {
-        ElemLeaf *l = DisplayMatrix[gx][gy];
-        if(l && DisplayMatrixWhich[gx][gy] == ELEM_CONTACTS) {
-            char *name = l->d.contacts.name;
-			if(GetTypeFromName(name) == IO_TYPE_DIG_INPUT || GetTypeFromName(name) == IO_TYPE_INTERNAL_FLAG) {
-                SimulationToggleContact(name);
-            } 
-        } else if(l && DisplayMatrixWhich[gx][gy] == ELEM_READ_ADC) {
-            ShowAnalogSliderPopup(l->d.readAdc.name);
-        }
-    }
-
-	return changed;
-}
-
-//-----------------------------------------------------------------------------
-// Move the cursor in response to a mouse click. If they clicked in a leaf
-// element box then figure out which edge they're closest too (with appropriate
-// fudge factors to make all edges equally easy to click on) and put the
-// cursor there.
-//-----------------------------------------------------------------------------
-void MoveCursorMouseClick(int x, int y)
-{
-    x += ScrollXOffset;
-
-    y += FONT_HEIGHT/2;
-
-	y -= RibbonHeight;
-
-    int gx0 = (x - X_PADDING)/(POS_WIDTH*FONT_WIDTH);
-    int gy0 = (y - Y_PADDING)/(POS_HEIGHT*FONT_HEIGHT);
-
-    int gx = gx0;
-    int gy = gy0 + ScrollYOffset;
-
-    if(VALID_LEAF(DisplayMatrix[gx][gy])) {
-        int i, j;
-        for(i = 0; i < DISPLAY_MATRIX_X_SIZE; i++) {
-            for(j = 0; j < DISPLAY_MATRIX_Y_SIZE; j++) {
-                if(DisplayMatrix[i][j])
-                    DisplayMatrix[i][j]->selectedState = SELECTED_NONE;
-            }
-        }
-        int dx = x - (gx0*POS_WIDTH*FONT_WIDTH + X_PADDING);
-        int dy = y - (gy0*POS_HEIGHT*FONT_HEIGHT + Y_PADDING);
-
-        int dtop = dy;
-        int dbottom = POS_HEIGHT*FONT_HEIGHT - dy;
-        int dleft = dx;
-        int dright = POS_WIDTH*FONT_WIDTH - dx;
-
-        int extra = 1;
-        if(DisplayMatrixWhich[gx][gy] == ELEM_COMMENT) {
-            dleft += gx*POS_WIDTH*FONT_WIDTH;
-            dright += (ColsAvailable - gx - 1)*POS_WIDTH*FONT_WIDTH;
-            extra = ColsAvailable;
-        } else {
-            if((gx > 0) && (DisplayMatrix[gx-1][gy] == DisplayMatrix[gx][gy])) {
-                dleft += POS_WIDTH*FONT_WIDTH;
-                extra = 2;
-            }
-            if((gx < (DISPLAY_MATRIX_X_SIZE-1)) && 
-                (DisplayMatrix[gx+1][gy] == DisplayMatrix[gx][gy]))
-            {
-                dright += POS_WIDTH*FONT_WIDTH;
-                extra = 2;
-            }
-        }
-
-        int decideX = (dright - dleft);
-        int decideY = (dtop - dbottom);
-
-        decideY = decideY*3*extra;
-
-        int state;
-        if(abs(decideY) > abs(decideX)) {
-            if(decideY > 0) {
-                state = SELECTED_BELOW;
-            } else {
-                state = SELECTED_ABOVE;
-            }
-        } else {
-            if(decideX > 0) {
-                state = SELECTED_LEFT;
-            } else {
-                state = SELECTED_RIGHT;
-            }
-        }
-        SelectElement(gx, gy, state);
-	} else if (DisplayMatrix[gx][gy] && DisplayMatrix[gx][gy] == PADDING_IN_DISPLAY_MATRIX) {
-		int offset = 1;
-		while(gx+offset<DISPLAY_MATRIX_X_SIZE && DisplayMatrix[gx+offset][gy] &&
-				DisplayMatrix[gx+offset][gy] == PADDING_IN_DISPLAY_MATRIX) {
-			offset++;
-		}
-		if(VALID_LEAF(DisplayMatrix[gx+offset][gy])) {
-			SelectElement(gx+offset, gy, SELECTED_LEFT);
-		} else {
-			offset = -1;
-			while(gx+offset>0 && DisplayMatrix[gx+offset][gy] && DisplayMatrix[gx+offset][gy] == PADDING_IN_DISPLAY_MATRIX) {
-				offset--;
-			}
-			if(VALID_LEAF(DisplayMatrix[gx+offset][gy])) {
-				SelectElement(gx+offset, gy, SELECTED_RIGHT);
-			}
-		}
-	}
-}
-
 //-----------------------------------------------------------------------------
 // Place the cursor as near to the given point on the grid as possible. Used
 // after deleting an element, for example.
@@ -718,16 +536,35 @@ void MoveCursorNear(int gx, int gy)
 //-----------------------------------------------------------------------------
 bool NegateSelected(void)
 {
-    switch(SelectedWhich) {
-        case ELEM_CONTACTS:
-            Selected->d.contacts.negated = TRUE;
+	LadderContext context = ladder->getContext();
+	if(context.SelectedElem == nullptr) return false; // nenhum objeto selecionado
+
+	switch(context.SelectedElem->getWhich()) {
+        case ELEM_CONTACTS: {
+			LadderElemContactProp *prop = (LadderElemContactProp *)context.SelectedElem->getProperties();
+            if(prop->negated == false) {
+				prop->negated = true;
+				context.SelectedElem->setProperties(context, prop);
+				ladder->updateContext();
+			} else {
+				delete prop;
+				return false;
+			}
             break;
+		}
 
         case ELEM_COIL: {
-            ElemCoil *c = &Selected->d.coil;
-            c->negated = TRUE;
-            c->resetOnly = FALSE;
-            c->setOnly = FALSE;
+			LadderElemCoilProp *prop = (LadderElemCoilProp *)context.SelectedElem->getProperties();
+            if(!prop->negated || prop->setOnly || prop->resetOnly) {
+				prop->negated   = true;
+				prop->setOnly   = false;
+				prop->resetOnly = false;
+				context.SelectedElem->setProperties(context, prop);
+				ladder->updateContext();
+			} else {
+				delete prop;
+				return false;
+			}
             break;
         }
         default:
@@ -743,16 +580,35 @@ bool NegateSelected(void)
 //-----------------------------------------------------------------------------
 bool MakeNormalSelected(void)
 {
-    switch(SelectedWhich) {
-        case ELEM_CONTACTS:
-            Selected->d.contacts.negated = FALSE;
+	LadderContext context = ladder->getContext();
+	if(context.SelectedElem == nullptr) return false; // nenhum objeto selecionado
+
+	switch(context.SelectedElem->getWhich()) {
+        case ELEM_CONTACTS: {
+			LadderElemContactProp *prop = (LadderElemContactProp *)context.SelectedElem->getProperties();
+            if(prop->negated == true) {
+				prop->negated = false;
+				context.SelectedElem->setProperties(context, prop);
+				ladder->updateContext();
+			} else {
+				delete prop;
+				return false;
+			}
             break;
+		}
 
         case ELEM_COIL: {
-            ElemCoil *c = &Selected->d.coil;
-            c->negated = FALSE;
-            c->setOnly = FALSE;
-            c->resetOnly = FALSE;
+			LadderElemCoilProp *prop = (LadderElemCoilProp *)context.SelectedElem->getProperties();
+            if(prop->negated || prop->setOnly || prop->resetOnly) {
+				prop->negated   = false;
+				prop->setOnly   = false;
+				prop->resetOnly = false;
+				context.SelectedElem->setProperties(context, prop);
+				ladder->updateContext();
+			} else {
+				delete prop;
+				return false;
+			}
             break;
         }
         default:
@@ -768,12 +624,22 @@ bool MakeNormalSelected(void)
 //-----------------------------------------------------------------------------
 bool MakeSetOnlySelected(void)
 {
-    if(SelectedWhich != ELEM_COIL) return false;
+	LadderContext context = ladder->getContext();
+	if(context.SelectedElem == nullptr) return false; // nenhum objeto selecionado
 
-    ElemCoil *c = &Selected->d.coil;
-    c->setOnly = TRUE;
-    c->resetOnly = FALSE;
-    c->negated = FALSE;
+	if(context.SelectedElem->getWhich() == ELEM_COIL) {
+		LadderElemCoilProp *prop = (LadderElemCoilProp *)context.SelectedElem->getProperties();
+        if(prop->negated || !prop->setOnly || prop->resetOnly) {
+			prop->negated   = false;
+			prop->setOnly   = true;
+			prop->resetOnly = false;
+			context.SelectedElem->setProperties(context, prop);
+			ladder->updateContext();
+		} else {
+			delete prop;
+			return false; // nao alterado
+		}
+    }
 
 	return true;
 }
@@ -783,12 +649,22 @@ bool MakeSetOnlySelected(void)
 //-----------------------------------------------------------------------------
 bool MakeResetOnlySelected(void)
 {
-    if(SelectedWhich != ELEM_COIL) return false;
+	LadderContext context = ladder->getContext();
+	if(context.SelectedElem == nullptr) return false; // nenhum objeto selecionado
 
-    ElemCoil *c = &Selected->d.coil;
-    c->resetOnly = TRUE;
-    c->setOnly = FALSE;
-    c->negated = FALSE;
+	if(context.SelectedElem->getWhich() == ELEM_COIL) {
+		LadderElemCoilProp *prop = (LadderElemCoilProp *)context.SelectedElem->getProperties();
+        if(prop->negated || prop->setOnly || !prop->resetOnly) {
+			prop->negated   = false;
+			prop->setOnly   = false;
+			prop->resetOnly = true;
+			context.SelectedElem->setProperties(context, prop);
+			ladder->updateContext();
+		} else {
+			delete prop;
+			return false; // nao alterado
+		}
+    }
 
 	return true;
 }

@@ -13,6 +13,20 @@ static LONG_PTR PrevNameProc;
 
 static bool changed;
 
+#define IsValidNameAndType(...) true
+
+unsigned int GetTypeFromName(const char *name)
+{
+	int i;
+
+	for(i=0; i<Prog.io.count; i++) {
+		if(!_stricmp(name, Prog.io.assignment[i].name))
+			return Prog.io.assignment[i].type;
+	}
+
+	return IO_TYPE_PENDING;
+}
+
 //-----------------------------------------------------------------------------
 // Window proc for the dialog boxes. This Ok/Cancel stuff is common to a lot
 // of places, and there are no other callbacks from the children.
@@ -91,7 +105,7 @@ static void MakeControls(void)
         100, 16, 191, 321, FARDialog, NULL, Instance, NULL);
     FixedFont(SearchTextbox);
 
-	LoadIOListToComboBox(SearchTextbox, IO_TYPE_ALL);
+	LoadIOListToComboBox(SearchTextbox, vector<eType>()); // Vetor vazio, todos os tipos...
 	SendMessage(SearchTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Substituir por:"),
@@ -104,7 +118,7 @@ static void MakeControls(void)
         100, 46, 191, 321, FARDialog, NULL, Instance, NULL);
     FixedFont(ReplaceTextbox);
 
-	LoadIOListToComboBox(ReplaceTextbox, IO_TYPE_ALL);
+	LoadIOListToComboBox(ReplaceTextbox, vector<eType>()); // Vetor vazio, todos os tipos...
 	SendMessage(ReplaceTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("Sair"),

@@ -478,99 +478,6 @@ bool DeleteSelectedFromProgram(void)
 }
 
 //-----------------------------------------------------------------------------
-// Free the entire program.
-//-----------------------------------------------------------------------------
-void FreeEntireProgram(void)
-{
-    Prog.numRungs = 0;
-    Prog.settings.cycleTime = 10000;
-    Prog.settings.mcuClock = 100000000;
-    Prog.settings.baudRate = 9600;
-	Prog.settings.UART = 0;
-	Prog.settings.ModBUSID = 0;
-    Prog.io.count = 0;
-    Prog.mcu = NULL;
-
-	memset(&Prog.settings.ip, 0, sizeof(Prog.settings.ip));
-	memset(&Prog.settings.mask, 0, sizeof(Prog.settings.mask));
-	memset(&Prog.settings.gw, 0, sizeof(Prog.settings.gw));
-	memset(&Prog.settings.dns, 0, sizeof(Prog.settings.dns));
-	memset(&Prog.settings.sntp, 0, sizeof(Prog.settings.sntp));
-
-	memset(&Prog.rungHasBreakPoint, 0, sizeof(Prog.rungHasBreakPoint));
-
-	strcpy(Prog.settings.InfoName, "");
-	strcpy(Prog.settings.InfoDeveloper, "");
-	strcpy(Prog.settings.InfoDescription, "");
-	strcpy(Prog.settings.InfoFWVersion, "1.5");
-	Prog.settings.InfoBuildNumber = 0;
-	Prog.settings.InfoCompileDate = 0;
-	Prog.settings.InfoProgramDate = 0;
-
-	strcpy(Prog.settings.sntp, "br.pool.ntp.org");
-
-	Prog.settings.gmt = 9;
-	Prog.settings.dailysave = 0;
-
-	Prog.settings.ip[0] = 192;
-	Prog.settings.ip[1] = 168;
-	Prog.settings.ip[2] = 0;
-	Prog.settings.ip[3] = 254;
-
-	Prog.settings.mask[0] = 255;
-	Prog.settings.mask[1] = 255;
-	Prog.settings.mask[2] = 255;
-	Prog.settings.mask[3] = 0;
-
-	Prog.settings.gw[0] = 192;
-	Prog.settings.gw[1] = 168;
-	Prog.settings.gw[2] = 0;
-	Prog.settings.gw[3] = 1;
-
-	Prog.settings.dns[0] = 192;
-	Prog.settings.dns[1] = 168;
-	Prog.settings.dns[2] = 0;
-	Prog.settings.dns[3] = 1;
-
-	Prog.settings.enc_inc_conv_mode = ENCODER_MODE_RAW;
-	Prog.settings.perimeter = 400;
-	Prog.settings.pulses = 1024;
-	Prog.settings.factor = 1;
-	Prog.settings.x4 = 1;
-
-	Prog.settings.canSave = TRUE;
-
-	Prog.settings.ssi_mode = 0;
-	Prog.settings.ssi_size = 24;
-	Prog.settings.enc_ssi_conv_mode = ENCODER_MODE_RAW;
-	Prog.settings.ssi_perimeter = 400;
-	Prog.settings.ssi_factor = 1;
-	Prog.settings.ssi_size_bpr = 12;
-
-	Prog.settings.ramp_abort_mode = RAMP_ABORT_LEAVE;
-
-	int i;
-	for(i = 0; i < MAX_IO; i++)
-	{
-		memset(Prog.io.assignment[i].name, 0, sizeof(Prog.io.assignment[i].name));
-		Prog.io.assignment[i].bit = 0;
-		Prog.io.assignment[i].pin = 0;
-		Prog.io.assignment[i].type = 0;
-	}
-
-	for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
-	{
-		if(_stricmp(SupportedMcus[i].mcuName, DEFAULT_CPU)==0) 
-		{
-			Prog.mcu = &SupportedMcus[i];
-			break;
-		}
-	}
-
-    strcpy(CurrentCompileFile, "");
-}
-
-//-----------------------------------------------------------------------------
 // Delete the rung that contains the cursor.
 //-----------------------------------------------------------------------------
 bool DeleteSelectedRung(void)
@@ -615,7 +522,7 @@ bool PushRung(bool up)
 //-----------------------------------------------------------------------------
 void NewProgram(void)
 {
-	ladder->ClearDiagram();
+	ladder->NewDiagram();
 }
 
 //-----------------------------------------------------------------------------

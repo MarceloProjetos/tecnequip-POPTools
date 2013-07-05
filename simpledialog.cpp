@@ -97,7 +97,7 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask, DWORD us
 				80 + adj, 12 + 30*i, 120 - adj, 321,
 				SimpleDialog, NULL, Instance, NULL);
 
-			LoadIOListToComboBox(Textboxes[i], IO_TYPE_ALL);
+			LoadIOListToComboBox(Textboxes[i], vector<eType>()); // Vetor vazio, todos os tipos...
 			SendMessage(Textboxes[i], CB_SETDROPPEDWIDTH, 300, 0);
 		} else {
 	        Textboxes[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
@@ -258,10 +258,12 @@ bool ShowTimerDialog(int which, int *delay, unsigned long *idName)
 					*idName = pin.first;
 
 					*delay = 1000*atoi(delBuf);
-					if(*delay % Prog.settings.cycleTime) {
-						*delay = (1 + *delay / Prog.settings.cycleTime) * Prog.settings.cycleTime;
+
+					LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+					if(*delay % settings.cycleTime) {
+						*delay = (1 + *delay / settings.cycleTime) * settings.cycleTime;
 						Error(_("Tempo de ciclo deve ser múltiplo de %d! Será utilizado %d."),
-							Prog.settings.cycleTime/1000, *delay/1000);
+							settings.cycleTime/1000, *delay/1000);
 					}
 				}
 		}
@@ -814,7 +816,7 @@ void ShowSimulationVarSetDialog(char *name, char *val)
 	strcpy(val_tmp, val);
 
 	if(ShowSimpleDialog(_("Novo Valor"), 1, labels, 0x1, 0x0, 0x1, 0, dests)) {
-		if(IsValidNameAndType(val, val_tmp, _("Valor"), VALIDATE_IS_NUMBER, GetTypeFromName(val_tmp), 0, 0)) {
+		if(ladder->IsValidNameAndType(0, val_tmp, eType_Pending, _("Valor"), VALIDATE_IS_NUMBER, 0, 0)) {
 			strcpy(val, val_tmp);
 		}
 	}

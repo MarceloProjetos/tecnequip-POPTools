@@ -303,7 +303,6 @@
     <ClCompile Include="coildialog.cpp" />
     <ClCompile Include="commentdialog.cpp" />
     <ClCompile Include="CommonFileDialog.cpp" />
-    <ClCompile Include="compilecommon.cpp" />
     <ClCompile Include="confdialog.cpp" />
     <ClCompile Include="contactsdialog.cpp" />
     <ClCompile Include="EngineGUI.cpp" />
