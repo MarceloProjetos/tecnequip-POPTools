@@ -91,8 +91,18 @@ bool mapIO::Add(string name, eType type, bool isUndoRedo)
 		IO[name].second.bit  = 0;
 		IO[name].second.type = type;
 
-		IO[name].second.countRequestBit = 0;
-		IO[name].second.countRequestInt = 0;
+		// Inicializa a contagem de requisicoes de tipo de dado
+		IO[name].second.countRequestBit   = 0;
+		IO[name].second.countRequestInt   = 0;
+
+		// Inicializa a contagem de requisicoes de tipo de acesso
+		IO[name].second.countRequestRead  = 0;
+		IO[name].second.countRequestWrite = 0;
+
+		// Inicializa as flags que indicam se a variavel pode ser utilizada mais de 1 vez
+		// para cada acesso, ou seja, se nao pode ser utilizada por dois elementos ao mesmo tempo
+		IO[name].second.isUniqueRead      = false;
+		IO[name].second.isUniqueWrite     = false;
 
 		if(!isUndoRedo) {
 			// Registro da acao para desfazer / refazer
@@ -177,12 +187,18 @@ bool mapIO::Update(unsigned long id, string name, eType type, bool isUndoRedo)
 			// Para garantir que nao vai mesmo ocorrer, vamos gerar erro aqui!
 			// Se vier a ser alterado o tratamento em LadderDiagram::getIO, vai aparecer o erro e sera entao
 			// possivel corrigi-lo ao inves de prejudicar toda a logica
-			// Precisa de uma tarefa especifica de undo/redo para esta situacao e tambem mesclar as contagens
-			// de requests int/bit (o que ja esta sendo feito abaixo porem precisa de verificacao)
+			// Precisa de uma tarefa especifica de undo/redo para esta situacao e tambem mesclar as contagens de
+			// requests int/bit, read/write e flags (o que ja esta sendo feito abaixo porem precisa de verificacao)
 			oops();
 
-			IO[name].second.countRequestBit += it->second.second.countRequestBit;
-			IO[name].second.countRequestInt += it->second.second.countRequestInt;
+			IO[name].second.countRequestBit   += it->second.second.countRequestBit;
+			IO[name].second.countRequestInt   += it->second.second.countRequestInt;
+
+			IO[name].second.countRequestRead  += it->second.second.countRequestRead;
+			IO[name].second.countRequestWrite += it->second.second.countRequestWrite;
+
+			IO[name].second.isUniqueRead      &= it->second.second.isUniqueRead;
+			IO[name].second.isUniqueWrite     &= it->second.second.isUniqueWrite;
 		} else {
 			IO[name] = it->second;
 		}
@@ -199,60 +215,117 @@ bool mapIO::Update(unsigned long id, string name, eType type, bool isUndoRedo)
 	return true;
 }
 
-unsigned long mapIO::Request(string name, bool isBit, eType type)
+unsigned long mapIO::Request(tRequestIO infoIO)
 {
 	bool result;
 	unsigned long id = 0;
 
+	if(IsReserved(infoIO.name)) {
+		infoIO.access        = eRequestAccessType_ReadWrite;
+		infoIO.isUniqueRead  = false;
+		infoIO.isUniqueWrite = false;
+	}
+
+	bool isRequestRead  = (infoIO.access == eRequestAccessType_Read ) || (infoIO.access == eRequestAccessType_ReadWrite);
+	bool isRequestWrite = (infoIO.access == eRequestAccessType_Write) || (infoIO.access == eRequestAccessType_ReadWrite);
+
 	// Registro da acao para desfazer / refazer
 	diagram->CheckpointBegin(_("Solicitar I/O"));
 
-	if(IO.count(name) > 0) {
-		result = Update(getID(name), name, type);
+	if(IO.count(infoIO.name) > 0) {
+		// Verifica se podemos fazer o request conforme isUniqueRead e isUniqueWrite
+		if((isRequestRead && (infoIO.isUniqueRead || IO[infoIO.name].second.isUniqueRead) && IO[infoIO.name].second.countRequestRead > 0) ||
+			(isRequestWrite && (infoIO.isUniqueWrite || IO[infoIO.name].second.isUniqueWrite) && IO[infoIO.name].second.countRequestWrite > 0)) {
+				diagram->CheckpointRollback();
+				diagram->CheckpointEnd();
+				return 0;
+		}
+
+		result = Update(getID(infoIO.name), infoIO.name, infoIO.type);
 	} else {
-		result = Add(name, type);
+		result = Add(infoIO.name, infoIO.type);
 	}
 
 	if(result) {
-		if(isBit) {
-			IO[name].second.countRequestBit++;
-		} else {
-			IO[name].second.countRequestInt++;
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		id = getID(infoIO.name);
+
+		data->Request.id            = id;
+		data->Request.isBit         = infoIO.isBit;
+		data->Request.isDiscard     = false;
+		data->Request.accessType    = infoIO.access;
+		// Para as flags, devemos salvar o estado atual para que possamos recupera-lo
+		data->Request.isUniqueRead  = IO[infoIO.name].second.isUniqueRead;
+		data->Request.isUniqueWrite = IO[infoIO.name].second.isUniqueWrite;
+
+		action.action        = eRequest;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = diagram->getContext();
+		action.data          = data;
+		action.io            = this;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+
+		diagram->RegisterAction(action);
+
+		// Registra o tipo de acesso solicitado
+		if(isRequestRead) {
+			IO[infoIO.name].second.countRequestRead++;
+		}
+		if(isRequestWrite) {
+			IO[infoIO.name].second.countRequestWrite++;
 		}
 
-		id = getID(name);
+		// Configura as flags indicando se o tipo de acesso eh unico
+		if(infoIO.isUniqueRead) {
+			IO[infoIO.name].second.isUniqueRead  = infoIO.isUniqueRead;
+		}
+		if(infoIO.isUniqueWrite) {
+			IO[infoIO.name].second.isUniqueWrite = infoIO.isUniqueWrite;
+		}
+
+		// Registra o tipo de dado solicitado
+		if(infoIO.isBit) {
+			IO[infoIO.name].second.countRequestBit++;
+		} else {
+			IO[infoIO.name].second.countRequestInt++;
+		}
 	}
-
-	UndoRedoAction action;
-	UndoRedoData *data = new UndoRedoData;
-
-	data->Request.id        = id;
-	data->Request.isBit     = isBit;
-	data->Request.isDiscard = false;
-
-	action.action        = eRequest;
-	action.contextAfter  = getEmptyContext();
-	action.contextBefore = diagram->getContext();
-	action.data          = data;
-	action.io            = this;
-	action.elem          = nullptr;
-	action.subckt        = nullptr;
-
-	diagram->RegisterAction(action);
 
 	diagram->CheckpointEnd();
 
 	return id;
 }
 
-void mapIO::Discard(unsigned long id, bool isBit)
+void mapIO::Discard(tRequestIO infoIO)
 {
-	string name = getName(id);
+	string name = getName(infoIO.pin.first);
 	if(name.size() > 0) {
-		if(isBit) {
+		if(infoIO.isBit) {
 			IO[name].second.countRequestBit--;
 		} else {
 			IO[name].second.countRequestInt--;
+		}
+
+		// Decrementa a contagem do tipo de acesso solicitado
+		bool isRequestRead  = (infoIO.access == eRequestAccessType_Read ) || (infoIO.access == eRequestAccessType_ReadWrite);
+		bool isRequestWrite = (infoIO.access == eRequestAccessType_Write) || (infoIO.access == eRequestAccessType_ReadWrite);
+
+		if(isRequestRead) {
+			IO[name].second.countRequestRead--;
+		}
+		if(isRequestWrite) {
+			IO[name].second.countRequestWrite--;
+		}
+
+		// Configura as flags indicando se o tipo de acesso eh unico
+		if(infoIO.isUniqueRead) { // Descartando I/O que exigia acesso unico. Assim remove essa exigencia
+			IO[name].second.isUniqueRead  = false;
+		}
+		if(infoIO.isUniqueWrite) { // Descartando I/O que exigia acesso unico. Assim remove essa exigencia
+			IO[name].second.isUniqueWrite = false;
 		}
 
 		// Registro da acao para desfazer / refazer
@@ -261,9 +334,12 @@ void mapIO::Discard(unsigned long id, bool isBit)
 		UndoRedoAction action;
 		UndoRedoData *data = new UndoRedoData;
 
-		data->Request.id        = id;
-		data->Request.isBit     = isBit;
-		data->Request.isDiscard = true;
+		data->Request.id            = infoIO.pin.first;
+		data->Request.isBit         = infoIO.isBit;
+		data->Request.isDiscard     = true;
+		data->Request.accessType    = infoIO.access;
+		data->Request.isUniqueRead  = infoIO.isUniqueRead;
+		data->Request.isUniqueWrite = infoIO.isUniqueWrite;
 
 		action.action        = eRequest;
 		action.contextAfter  = getEmptyContext();
@@ -280,9 +356,9 @@ void mapIO::Discard(unsigned long id, bool isBit)
 			UndoRedoAction action;
 			UndoRedoData *data = new UndoRedoData;
 
-			data->Discard.id        = id;
+			data->Discard.id        = infoIO.pin.first;
 			data->Discard.name      = AllocCharFromString(name);
-			data->Discard.detailsIO = getDetails(id);
+			data->Discard.detailsIO = getDetails(infoIO.pin.first);
 
 			action.action        = eDiscard;
 			action.contextAfter  = getEmptyContext();
@@ -354,7 +430,7 @@ mapDetails mapIO::getDetails(unsigned long id)
 		return IO[name].second;
 	}
 
-	mapDetails m = { 0, 0, eType_Pending, 0, 0 };
+	mapDetails m = { 0, 0, 0, 0, false, false, eType_Pending, 0, 0 };
 	return m;
 }
 
@@ -516,7 +592,7 @@ vector<string> mapIO::getVectorInternalFlags(void)
 void mapIO::Sort(eSortBy sortby)
 {
 	int (*fnc)(const void *, const void *);
-
+/*
 	switch(sortby) {
 	case eSortBy_Name: fnc = CompareIoName; break;
 	case eSortBy_Type: fnc = CompareIoType; break;
@@ -524,27 +600,39 @@ void mapIO::Sort(eSortBy sortby)
 	case eSortBy_Port: fnc = CompareIoPort; break;
 	}
 
-	qsort(Prog.io.assignment, IO.size(), sizeof(PlcProgramSingleIo), fnc);
+//	qsort(Prog.io.assignment, IO.size(), sizeof(PlcProgramSingleIo), fnc);//*/
 }
 
 bool mapIO::Validate(eValidateIO mode)
 {
+	bool ret = true;
 	tMapIO::iterator it;
 
 	for(it = IO.begin(); it != IO.end(); it++) {
-		if(it->second.second.pin == 0 && (
-			it->second.second.pin == eType_ReadADC   ||
-			it->second.second.pin == eType_ReadEnc   ||
-			it->second.second.pin == eType_ResetEnc  ||
-			it->second.second.pin == eType_DigInput  ||
-			it->second.second.pin == eType_DigOutput
-			)) {
+		if(it->second.second.pin == 0) {
+			switch(it->second.second.type) {
+			case eType_ReadADC:
+				Error(_("Variável A/D '%s' deve ser associado a um canal válido!"), it->first.c_str());
+				ret = false;
+				break;
+			case eType_ReadEnc:
+				Error(_("Leitura de Encoder '%s' deve ser associada a um canal válido!"), it->first.c_str());
+				ret = false;
+				break;
+			case eType_ResetEnc:
+				Error(_("Escrita de Encoder '%s' deve ser associada a um canal válido!"), it->first.c_str());
+				ret = false;
+				break;
+			case eType_DigInput:
+			case eType_DigOutput:
 				Error(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), it->first.c_str());
-				return false;
+				ret = false;
+				break;
+			}
 		}
 	}
 
-	return true;
+	return ret;
 }
 
 bool mapIO::Save(FILE *f)
@@ -559,6 +647,10 @@ bool mapIO::Save(FILE *f)
 				!fwrite_ulong (f, it->second.first) || 
 				!fwrite_uint  (f, it->second.second.countRequestBit) || 
 				!fwrite_uint  (f, it->second.second.countRequestInt) || 
+				!fwrite_uint  (f, it->second.second.countRequestRead) || 
+				!fwrite_uint  (f, it->second.second.countRequestWrite) || 
+				!fwrite_bool  (f, it->second.second.isUniqueRead) || 
+				!fwrite_bool  (f, it->second.second.isUniqueWrite) || 
 				!fwrite_uint  (f, it->second.second.type) || 
 				!fwrite_uint  (f, it->second.second.pin) || 
 				!fwrite_uint  (f, it->second.second.bit)) {
@@ -594,6 +686,10 @@ bool mapIO::Load(FILE *f, unsigned int version)
 				!fread_ulong (f, &(pinID)) || 
 				!fread_uint  (f, &(detailsIO.countRequestBit)) || 
 				!fread_uint  (f, &(detailsIO.countRequestInt)) || 
+				!fread_uint  (f, &(detailsIO.countRequestRead)) || 
+				!fread_uint  (f, &(detailsIO.countRequestWrite)) || 
+				!fread_bool  (f, &(detailsIO.isUniqueRead)) || 
+				!fread_bool  (f, &(detailsIO.isUniqueWrite)) || 
 				!fread_uint  (f, &iType) || 
 				!fread_uint  (f, &(detailsIO.pin)) || 
 				!fread_uint  (f, &(detailsIO.bit))) {
@@ -704,16 +800,34 @@ bool mapIO::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 		if(isDiscard) {
 			// Nada a fazer...
 		} else {
+			// Calcula o offset conforme o tipo de operacao
 			int offset = data->Request.isDiscard ? -1 : +1;
 			if(IsUndo) {
 				offset *= -1;
 			}
 
+			// Atualiza contagem de solicitacao de tipo de dado
 			if(data->Request.isBit) {
 				IO[getName(data->Request.id)].second.countRequestBit += offset;
 			} else {
 				IO[getName(data->Request.id)].second.countRequestInt += offset;
 			}
+
+			// Atualiza contagem de solicitacao de tipo de acesso - leitura
+			if(data->Request.accessType == eRequestAccessType_Read ||
+				data->Request.accessType == eRequestAccessType_ReadWrite) {
+					IO[getName(data->Request.id)].second.countRequestRead += offset;
+			}
+
+			// Atualiza contagem de solicitacao de tipo de acesso - escrita
+			if(data->Request.accessType == eRequestAccessType_Write ||
+				data->Request.accessType == eRequestAccessType_ReadWrite) {
+					IO[getName(data->Request.id)].second.countRequestWrite += offset;
+			}
+
+			// Atualiza flags de permissao de acesso
+			IO[getName(data->Request.id)].second.isUniqueRead  = data->Request.isUniqueRead;
+			IO[getName(data->Request.id)].second.isUniqueWrite = data->Request.isUniqueWrite;
 		}
 		break;
 	}
@@ -828,7 +942,7 @@ const LPCTSTR ComboboxBitItens[] = { "0",  "1",  "2",  "3",  "4",  "5",  "6",  "
 // Compare function to qsort() the I/O list. Group by type, then 
 // alphabetically within each section.
 //-----------------------------------------------------------------------------
-static int CompareIoName(const void *av, const void *bv)
+/*static int CompareIoName(const void *av, const void *bv)
 {
     PlcProgramSingleIo *a = (PlcProgramSingleIo *)av;
     PlcProgramSingleIo *b = (PlcProgramSingleIo *)bv;
@@ -843,7 +957,7 @@ static int CompareIoPin(const void *av, const void *bv)
 
     /*if(a->type != b->type) {
         return a->type - b->type;
-    }*/
+    }*//*
 
     if(a->pin == NO_PIN_ASSIGNED && b->pin != NO_PIN_ASSIGNED) return  1;
     if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
@@ -1009,7 +1123,7 @@ static int CompareIoType(const void *av, const void *bv)
     //if(b->pin == NO_PIN_ASSIGNED && a->pin != NO_PIN_ASSIGNED) return -1;
 
 	return bSortAscending ? a->type - b->type : b->type - a->type;
-}
+}*/
 
 //-----------------------------------------------------------------------------
 // Called in response to a notify for the listview. Handles click, text-edit
@@ -1596,7 +1710,7 @@ void IoMapListProc(NMHDR *h)
 					string name = ladder->getNameIObyIndex(item);
 					mapDetails detailsIO = ladder->getDetailsIO(name);
 
-					if(InSimulationMode) {
+					if(ladder->getContext().inSimulationMode) {
 						int val;
 						if(GetValWP(name.c_str(), &val) != NULL) {
 							DescribeForIoList(val, detailsIO.type, i->item.pszText);

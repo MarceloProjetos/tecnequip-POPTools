@@ -3,8 +3,6 @@
 #include "EngineGUI.h"
 #include "EngineRenderD2D.h"
 
-#include <map>
-
 // Variavel que indica se o cursor deve ser exibido. Liga e Desliga a cada 800 ms, conforme timer.
 bool isCursorVisible = true;
 
@@ -12,6 +10,14 @@ bool isCursorVisible = true;
 extern SyntaxHighlightingColours HighlightColours;
 
 /*** Estruturas auxiliares ***/
+
+// Estrutura que contem a origem do comando, permitindo que tanto um elemento, um circuito ou o
+// proprio diagrama possa cadastrar acoes
+typedef struct {
+	LadderDiagram *diagram;
+	LadderCircuit *circuit;
+	LadderElem    *elem;
+} tCommandSource;
 
 // Dados passados para as funcoes DrawGUI
 typedef struct {
@@ -56,16 +62,27 @@ private:
 
 	LadderElem *MouseOverElement;
 
-	vector<RECT>         vectorConnectionDots;
-	vector<LadderElem *> vectorExpandedElements;
+	vector<RECT>                       vectorConnectionDots;
+	vector<LadderElem *>               vectorExpandedElements;
+	vector< pair<LadderElem *, RECT> > vectorAreaElements;
 
 	int HeaderHeight;
 
 	array<unsigned int, 3>    InterfaceColors;
 	SyntaxHighlightingColours HighlightColoursBrush;
 
-	multimap<LadderElem*, pair<RECT, void(*)(LadderElem*)> > CommandsSingleClick;
-	multimap<LadderElem*, pair<RECT, void(*)(LadderElem*)> > CommandsDoubleClick;
+	typedef struct {
+		RECT r;
+		void(*fnc)(tCommandSource, void *);
+		void *data;
+	} tCommandItem;
+	typedef pair<tCommandSource, tCommandItem>  tCommandListItem;
+	typedef vector<tCommandListItem>            tCommandsList;
+
+	tCommandsList CommandsSingleClick;
+	tCommandsList CommandsDoubleClick;
+
+	void ClearCommandLists(void);
 
 	bool MouseOver (RECT region);
 
@@ -73,9 +90,11 @@ private:
 
 public:
 	LadderGUI(void);
+	~LadderGUI(void) { ClearCommandLists(); }
 
 	inline RECT getRECT(POINT Start, POINT Size);
 	POINT       getGridSize(void) { return Grid1x1; }
+	POINT       getCenter(RECT r);
 
 	bool IsExpanded(LadderElem *elem);
 
@@ -88,6 +107,8 @@ public:
 	void DrawStart(int OffsetX, int OffsetY);
 	void DrawEnd  (void);
 
+	void registerElementArea(LadderElem *elem, POINT start, POINT size);
+
 	void DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft);
 	RECT DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, POINT GridSize, string ElemName = "teste", bool ShowExpand = true);
 	void DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, pair<string, string> txt);
@@ -96,9 +117,10 @@ public:
 
 	pair<POINT, POINT> DrawWire(POINT StartPoint, POINT EndPoint, bool StartHasConnectionDot);
 
-	void MouseClick(int x, int y, bool isDown, bool isDouble);
+	void        MouseClick(int x, int y, bool isDown, bool isDouble);
+	LadderElem *SearchElement(LadderElem *ref, eMoveCursor moveTo);
 
-	void AddCommand(LadderElem *elem, RECT region, void (*fnc)(LadderElem*), bool isDoubleClick = true);
+	void AddCommand(tCommandSource source, RECT region, void (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick = true);
 
 	void CmdExpand(LadderElem *elem);
 };
@@ -107,44 +129,44 @@ public:
 static LadderGUI gui;
 
 // Funcoes usadas nos comandos genericos
-void CmdExpand(LadderElem *elem)
+void CmdExpand(tCommandSource source, void *data)
 {
-	gui.CmdExpand(elem);
+	gui.CmdExpand(source.elem);
 }
 
-void CmdShowDialog(LadderElem *elem)
+void CmdShowDialog(tCommandSource source, void *data)
 {
-	if(elem != nullptr) {
+	if(source.elem != nullptr) {
 		ladder->CheckpointBegin("Editar Elemento");
-		elem->ShowDialog(ladder->getContext());
+		source.elem->ShowDialog(ladder->getContext());
 		ladder->CheckpointEnd();
 		ladder->updateContext();
 	}
 }
 
-void CmdSelect(LadderElem *elem, int SelectedState)
+void CmdSelect(tCommandSource source, int SelectedState)
 {
-	ladder->SelectElement(elem, SelectedState);
+	ladder->SelectElement(source.elem, SelectedState);
 }
 
-void CmdSelectLeft(LadderElem *elem)
+void CmdSelectLeft(tCommandSource source, void *data)
 {
-	CmdSelect(elem, SELECTED_LEFT);
+	CmdSelect(source, SELECTED_LEFT);
 }
 
-void CmdSelectRight(LadderElem *elem)
+void CmdSelectRight(tCommandSource source, void *data)
 {
-	CmdSelect(elem, SELECTED_RIGHT);
+	CmdSelect(source, SELECTED_RIGHT);
 }
 
-void CmdSelectAbove(LadderElem *elem)
+void CmdSelectAbove(tCommandSource source, void *data)
 {
-	CmdSelect(elem, SELECTED_ABOVE);
+	CmdSelect(source, SELECTED_ABOVE);
 }
 
-void CmdSelectBelow(LadderElem *elem)
+void CmdSelectBelow(tCommandSource source, void *data)
 {
-	CmdSelect(elem, SELECTED_BELOW);
+	CmdSelect(source, SELECTED_BELOW);
 }
 
 // Construtores
@@ -162,6 +184,27 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 }
 
 // Metodos privados
+void LadderGUI::ClearCommandLists(void)
+{
+	unsigned int i, count = CommandsSingleClick.size();
+
+	for(i = 0; i < count; i++) {
+		if(CommandsSingleClick[i].second.data != nullptr) {
+			delete CommandsSingleClick[i].second.data;
+		}
+	}
+
+	count = CommandsDoubleClick.size();
+	for(i = 0; i < count; i++) {
+		if(CommandsDoubleClick[i].second.data != nullptr) {
+			delete CommandsDoubleClick[i].second.data;
+		}
+	}
+
+	CommandsSingleClick.clear();
+	CommandsDoubleClick.clear();
+}
+
 bool LadderGUI::MouseOver(RECT region)
 {
 	POINT p = {  MousePosition.x + ScrollXOffset, MousePosition.y + ScrollYOffset*Grid1x1.y };
@@ -228,6 +271,16 @@ inline RECT LadderGUI::getRECT(POINT Start, POINT Size)
 	return r;
 }
 
+inline POINT LadderGUI::getCenter(RECT r)
+{
+	POINT p;
+
+	p.x = r.left + (r.right  - r.left)/2;
+	p.y = r.top  + (r.bottom - r.top )/2;
+
+	return p;
+}
+
 bool LadderGUI::IsExpanded(LadderElem *elem)
 {
 	vector<LadderElem *>::iterator it;
@@ -284,8 +337,10 @@ void LadderGUI::DrawStart(int OffsetX, int OffsetY)
 
 	MouseOverElement = nullptr;
 
-	CommandsSingleClick.clear();
-	CommandsDoubleClick.clear();
+	ClearCommandLists();
+
+	vectorAreaElements.clear();
+
 /*
 	RECT r;
 	GetClientRect(DrawWindow, &r);
@@ -339,9 +394,15 @@ void LadderGUI::DrawStart(int OffsetX, int OffsetY)
 
 void LadderGUI::DrawEnd(void)
 {
+	POINT start = { 0, 0 }, size = { 1, 1 };
+	RECT r = gui.getRECT(start, size);
+	r.left  -= Grid1x1.x/2;
+
 	vector<RECT>::iterator it;
 	for(it = vectorConnectionDots.begin(); it != vectorConnectionDots.end(); it++) {
-		DrawEllipse(*it, HighlightColoursBrush.breakpoint);
+		if(it->left > r.left) {
+			DrawEllipse(*it, HighlightColoursBrush.breakpoint);
+		}
 	}
 
 	vectorConnectionDots.clear();
@@ -349,6 +410,11 @@ void LadderGUI::DrawEnd(void)
 	PaintScrollAndSplitter();
 
 	EndDraw();
+}
+
+void LadderGUI::registerElementArea(LadderElem *elem, POINT start, POINT size)
+{
+	vectorAreaElements.push_back(pair<LadderElem *, RECT>(elem, getRECT(start, size)));
 }
 
 RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight)
@@ -366,16 +432,21 @@ RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGri
 	r.right += Grid1x1.x/2;
 
 	// Desenha os cursores
-	if(SelectedState != SELECTED_NONE) {
+	if(SelectedState != SELECTED_NONE && isCursorVisible) {
 		rCursor.left   = r.left + (r.right - r.left)/2 - 7;
 		rCursor.right  = r.left + (r.right - r.left)/2 + 7;
-		rCursor.top    = r.top - 7;
-		rCursor.bottom = r.top + 7;
-		DrawRectangle(rCursor, HighlightColoursBrush.breakpoint, true , 0, 0, 45);
 
-		rCursor.top    = r.bottom - 7;
-		rCursor.bottom = r.bottom + 7;
-		DrawRectangle(rCursor, HighlightColoursBrush.breakpoint, true , 0, 0, 45);
+		if(SelectedState == SELECTED_ABOVE) {
+			rCursor.top    = r.top - 7;
+			rCursor.bottom = r.top + 7;
+			DrawRectangle(rCursor, HighlightColoursBrush.breakpoint, true , 0, 0, 45);
+		}
+
+		if(SelectedState == SELECTED_BELOW) {
+			rCursor.top    = r.bottom - 7;
+			rCursor.bottom = r.bottom + 7;
+			DrawRectangle(rCursor, HighlightColoursBrush.breakpoint, true , 0, 0, 45);
+		}
 	}
 
 	// Desenha a barra
@@ -415,6 +486,9 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	// Desenha o indicador de selecao
 	RECT rSel, rCursor = { - 7, - 7, + 7, + 7 };
 
+	// Estrutura com a origem do comando
+	tCommandSource source = { nullptr, nullptr, elem };
+
 	// Selecao Acima
 	if(SelectedState == SELECTED_ABOVE) {
 		rCursor.left   += r.left + (r.right - r.left)/2;
@@ -426,7 +500,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 		rSel.bottom = r.top + HeaderHeight + Grid1x1.y/2;
 		rSel.left   = r.left;
 		rSel.right  = r.right;
-		AddCommand(elem, rSel, CmdSelectAbove, false);
+		AddCommand(source, rSel, CmdSelectAbove, nullptr, false);
 	}
 
 	// Selecao Abaixo
@@ -440,7 +514,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 		rSel.bottom = r.bottom + Grid1x1.y/2;
 		rSel.left   = r.left;
 		rSel.right  = r.right;
-		AddCommand(elem, rSel, CmdSelectBelow, false);
+		AddCommand(source, rSel, CmdSelectBelow, nullptr, false);
 	}
 
 	// Selecao Esquerda
@@ -456,7 +530,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 		rSel.right  = r.left + Grid1x1.x/2;
 		rSel.top    = r.top;
 		rSel.bottom = r.bottom;
-		AddCommand(elem, rSel, CmdSelectLeft, false);
+		AddCommand(source, rSel, CmdSelectLeft, nullptr, false);
 	}
 
 	// Selecao Direita
@@ -472,7 +546,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 		rSel.right  = r.right + Grid1x1.x/2;
 		rSel.top    = r.top;
 		rSel.bottom = r.bottom;
-		AddCommand(elem, rSel, CmdSelectRight, false);
+		AddCommand(source, rSel, CmdSelectRight, nullptr, false);
 	}
 
 	if(SelectedState != SELECTED_NONE && isCursorVisible) {
@@ -526,7 +600,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 			DrawLine(StartPoint, EndPoint, HighlightColoursBrush.name);
 
 			// Adiciona o comando do botao de expandir / retrair
-			AddCommand(elem, rExpand, ::CmdExpand, false);
+			AddCommand(source, rExpand, ::CmdExpand, nullptr, false);
 		}
 
 		// Desenha o texto do nome do controle
@@ -545,7 +619,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 		}
 	}
 
-	AddCommand(elem, r, CmdShowDialog);
+	AddCommand(source, r, CmdShowDialog, nullptr);
 
 	return r;
 }
@@ -614,47 +688,116 @@ pair<POINT, POINT> LadderGUI::DrawWire(POINT StartPoint, POINT EndPoint, bool St
 void LadderGUI::MouseClick(int x, int y, bool isDown, bool isDouble)
 {
 	POINT p = { x + ScrollXOffset, y + ScrollYOffset*Grid1x1.y };
-	multimap<LadderElem*, pair<RECT, void(*)(LadderElem*)> >::iterator it;
-	pair<multimap<LadderElem*, pair<RECT, void(*)(LadderElem*)> >::iterator,
-		multimap<LadderElem*, pair<RECT, void(*)(LadderElem*)> >::iterator> range;
+	tCommandsList::iterator it;
 
 	if(isDouble || isDown) {
-		multimap<LadderElem*, pair<RECT, void(*)(LadderElem*)> > *Commands;
+		tCommandsList *Commands;
 		Commands = isDouble ? &CommandsDoubleClick : &CommandsSingleClick;
 
 		if(Commands->size() <= 0) return; // Lista de comandos vazia! retorna...
 
-		if(MouseOverElement != nullptr && Commands->count(MouseOverElement) > 0) {
-			range = Commands->equal_range(MouseOverElement);
-		} else {
-			range.first  = Commands->begin();
-			range.second = Commands->end  ();
-		}
-
-		it = range.second;
+		it = Commands->end();
 		do {
 			it--;
-			if(it->second.second != nullptr && PointInsideRegion(p, it->second.first)) {
-				it->second.second(it->first);
+			if(it->second.fnc != nullptr && PointInsideRegion(p, it->second.r)) {
+				it->second.fnc(it->first, it->second.data);
 				break;
 			}
-		} while(it != range.first);
+		} while(it != Commands->begin());
 	}
 }
 
-void LadderGUI::AddCommand(LadderElem *elem, RECT region, void (*fnc)(LadderElem*), bool isDoubleClick)
+LadderElem *LadderGUI::SearchElement(LadderElem *ref, eMoveCursor moveTo)
 {
-	multimap<LadderElem*, pair<RECT, void(*)(LadderElem*)> > *Commands;
+	LadderElem *elem = nullptr;
+
+	if(ref != nullptr) {
+		unsigned int i;
+		LONG newxy, minxy = 0;
+		POINT refCenter, elemCenter;
+		RECT refArea = { 0, 0, 0, 0 }, elemArea;
+
+		// Primeiro buscamos a area do elemento de referencia
+		for(i = 0; i < vectorAreaElements.size(); i++) {
+			if(vectorAreaElements[i].first == ref) { // Encontrado!
+				refArea = vectorAreaElements[i].second;
+				break;
+			}
+		}
+
+		// Aqui criamos ponteiros para a coordenada que devemos comparar para decidir se o elemento deve ser considerado
+		// Exemplo: Se buscando para baixo, elementos com top <= ao elemento de referencia devem ser desconsiderados...
+		LONG *pMin, *pMax;
+		switch(moveTo) {
+			default                     :
+			case eMoveCursor_RungHome   :
+			case eMoveCursor_DiagramHome:
+			// As situacoes acima nao deveriam ocorrer, estao aqui apenas por seguranca
+			case eMoveCursor_Up         : pMin = &elemArea.top   ; pMax = &refArea .top   ; break;
+
+			case eMoveCursor_RungEnd    :
+			case eMoveCursor_DiagramEnd :
+			// As situacoes acima nao deveriam ocorrer, estao aqui apenas por seguranca
+			case eMoveCursor_Down       : pMin = &refArea .bottom; pMax = &elemArea.bottom; break;
+
+			case eMoveCursor_Left       : pMin = &elemArea.left  ; pMax = &refArea .left  ; break;
+
+			case eMoveCursor_Right      : pMin = &refArea .right ; pMax = &elemArea.right ; break;
+		}
+
+		// Agora comecamos o loop entre todos os elementos cadastrados, calculando a diagonal entre seus centros
+		for(i = 0; i < vectorAreaElements.size(); i++) {
+			if(vectorAreaElements[i].first != ref) { // Elemento nao eh o de referencia, calcula diagonal
+				elemArea   = vectorAreaElements[i].second;
+				if(*pMin < *pMax) {
+					refCenter  = getCenter(refArea);
+					elemCenter = getCenter(elemArea);
+
+					LONG x = abs(refCenter.x - elemCenter.x), y = abs(refCenter.y - elemCenter.y);
+					if(vectorAreaElements[i].first->IsComment()) {
+						if(moveTo == eMoveCursor_Up || moveTo == eMoveCursor_Down) {
+							// Comentario ocupa toda a tela, nao calcular a distancia ate seu centro
+							x = 0;
+						} else {
+							// Ao mover lateralmente nao devemos mudar o cursor para o comentario.
+							// Se o usuario quisesse ir para o comentario, teria feito o deslocamento
+							// para cima ou para baixo...
+							continue;
+						}
+					}
+					newxy = x + y;
+
+					if(!minxy || minxy > newxy) {
+						minxy = newxy;
+						elem  = vectorAreaElements[i].first;
+					}
+				}
+			}
+		}
+	}
+
+	return elem;
+}
+
+void LadderGUI::AddCommand(tCommandSource source, RECT region, void (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick)
+{
+	tCommandsList *Commands;
 	Commands = isDoubleClick ? &CommandsDoubleClick : &CommandsSingleClick;
 
-	Commands->insert(pair<LadderElem*, pair<RECT, void(*)(LadderElem*)> >(elem, pair<RECT, void(*)(LadderElem*)>(region, fnc)));
+	tCommandListItem item;
+	item.first       = source;
+	item.second.r    = region;
+	item.second.fnc  = fnc;
+	item.second.data = data;
+
+	Commands->push_back(item);
 }
 
 /*** Fim da definicao da classe LaderGUI ***/
 
 // Funcao para fazer o trabalho extra de um elemento de fim de linha:
 // Calcular a posicao a direita e desenhar a ligacao entre este elemento e o anterior
-void DoEOL(POINT &Start, POINT &DiagramSize, POINT &MySize)
+static void DoEOL(POINT &Start, POINT &DiagramSize, POINT &MySize)
 {
 	POINT OldStart = Start;
 
@@ -665,12 +808,11 @@ void DoEOL(POINT &Start, POINT &DiagramSize, POINT &MySize)
 }
 
 // Funcao para desenhar um elemento na tela, apenas para testes...
-void DrawGenericGUI(LadderElem *elem, void *data)
+static void DrawGenericGUI(LadderElem *elem, void *data)
 {
-	POINT start, size;
+	POINT size;
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
-	start = ddg->start;
 	size  = ddg->size;
 
 	if(ddg->expanded) {
@@ -684,11 +826,11 @@ void DrawGenericGUI(LadderElem *elem, void *data)
 	if(ddg->DontDraw) return;
 
 	if(elem->IsEOL()) {
-		DoEOL(start, size, ddg->size);
+		DoEOL(ddg->start, size, ddg->size);
 	}
 
 	int SelectedState = ddg->context->SelectedElem == elem ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(elem, SelectedState, start, ddg->size, _("???"));
+	RECT r = gui.DrawElementBox(elem, SelectedState, ddg->start, ddg->size, _("???"));
 	ddg->region = r;
 }
 
@@ -724,7 +866,8 @@ void LadderElemPlaceHolder::DrawGUI(void *data)
 	rCursor.bottom = WireCoords.first.y + 10;
 
 	if(SelectedState == SELECTED_NONE) {
-		gui.AddCommand(this, rCursor, CmdSelectRight, false);
+		tCommandSource source = { nullptr, nullptr, this };
+		gui.AddCommand(source, rCursor, CmdSelectRight, nullptr, false);
 	} else if(isCursorVisible) {
 		gui.DrawEllipse(rCursor, 1);
 	}
@@ -763,14 +906,15 @@ void LadderElemComment::DrawGUI(void *data)
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = ddg->region = gui.DrawElementBar(this, SelectedState, ddg->start.y, ddg->size.y);
-	gui.AddCommand(this, r, CmdSelectBelow, false);
+	tCommandSource source = { nullptr, nullptr, this };
+	gui.AddCommand(source, r, CmdSelectBelow, nullptr, false);
 
 	RECT rDialog = r;
 	rDialog.left   += GridSize.x;
 	rDialog.right  -= GridSize.x;
 	rDialog.top    += 10;
 	rDialog.bottom -= 10;
-	gui.AddCommand(this, rDialog, CmdShowDialog);
+	gui.AddCommand(source, rDialog, CmdShowDialog, nullptr);
 
 	r.left += GridSize.x;
 	r.top  += (GridSize.y - FONT_HEIGHT)/2;
@@ -782,16 +926,16 @@ void LadderElemComment::DrawGUI(void *data)
 }
 
 // Classe LadderElemContact
-void ContactCmdToggleNegated(LadderElem *elem)
+void ContactCmdToggleNegated(tCommandSource source, void *data)
 {
-	LadderElemContact *contact = dynamic_cast<LadderElemContact *>(elem);
-	LadderElemContactProp *data = (LadderElemContactProp *)contact->getProperties();
+	LadderElemContact *contact = dynamic_cast<LadderElemContact *>(source.elem);
+	LadderElemContactProp *prop = (LadderElemContactProp *)contact->getProperties();
 
 	ladder->CheckpointBegin("Inverter Contato");
 
-	data->negated = !data->negated;
+	prop->negated = !prop->negated;
 
-	contact->setProperties(ladder->getContext(), data);
+	contact->setProperties(ladder->getContext(), prop);
 
 	ladder->CheckpointEnd();
 	ladder->updateContext();
@@ -799,18 +943,24 @@ void ContactCmdToggleNegated(LadderElem *elem)
 
 bool LadderElemContact::ShowDialog(LadderContext context)
 {
-	bool NewNegated         = prop.negated;
-	unsigned long NewIdName = prop.idName.first;
+	eType  type       = Diagram->getDetailsIO(prop.idName.first).type;
+	bool   NewNegated = prop.negated;
+	string NewName    = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowContactsDialog(&NewNegated, &NewIdName);
+	bool changed = ShowContactsDialog(&NewNegated, &NewName, &type);
 
 	if(changed) {
-		LadderElemContactProp *data = (LadderElemContactProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {
+			LadderElemContactProp *data = (LadderElemContactProp *)getProperties();
 
-		data->negated      = NewNegated;
-		data->idName.first = NewIdName;
+			data->negated = NewNegated;
+			data->idName  = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -866,7 +1016,8 @@ void LadderElemContact::DrawGUI(void *data)
 	rCmd.right   = start.x;
 	rCmd.top     = start.y;
 	rCmd.bottom  = end.y;
-	gui.AddCommand(this, rCmd, ContactCmdToggleNegated);
+	tCommandSource source = { nullptr, nullptr, this };
+	gui.AddCommand(source, rCmd, ContactCmdToggleNegated, nullptr);
 
 	start.y = r.top + GridSize.y;
 	end.x   = r.right;
@@ -885,22 +1036,28 @@ void LadderElemContact::DrawGUI(void *data)
 // Classe LadderElemCoil
 bool LadderElemCoil::ShowDialog(LadderContext context)
 {
-	bool          NewNegated   = prop.negated;
-	bool          NewSetOnly   = prop.setOnly;
-	bool          NewResetOnly = prop.resetOnly;
-	unsigned long NewIdName    = prop.idName.first;
+	eType  type         = Diagram->getDetailsIO(prop.idName.first).type;
+	bool   NewNegated   = prop.negated;
+	bool   NewSetOnly   = prop.setOnly;
+	bool   NewResetOnly = prop.resetOnly;
+	string NewName      = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowCoilDialog(&NewNegated, &NewSetOnly, &NewResetOnly, &NewIdName);
+	bool changed = ShowCoilDialog(&NewNegated, &NewSetOnly, &NewResetOnly, &NewName, &type);
 
 	if(changed) {
-		LadderElemCoilProp *data = (LadderElemCoilProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {
+			LadderElemCoilProp *data = (LadderElemCoilProp *)getProperties();
 
-		data->setOnly      = NewSetOnly;
-		data->resetOnly    = NewResetOnly;
-		data->negated      = NewNegated;
-		data->idName.first = NewIdName;
+			data->setOnly   = NewSetOnly;
+			data->resetOnly = NewResetOnly;
+			data->negated   = NewNegated;
+			data->idName    = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -911,7 +1068,6 @@ void LadderElemCoil::DrawGUI(void *data)
 	POINT start, size, end, GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
-	start = ddg->start;
 	size  = ddg->size;
 
 	if(ddg->expanded) {
@@ -927,7 +1083,8 @@ void LadderElemCoil::DrawGUI(void *data)
 	string sname = ladder->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
 
-	DoEOL(start, size, ddg->size);
+	DoEOL(ddg->start, size, ddg->size);
+	start = ddg->start;
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = gui.DrawElementBox(this, SelectedState, start, ddg->size, _("BOBINA"));
@@ -966,18 +1123,23 @@ void LadderElemCoil::DrawGUI(void *data)
 // Classe LadderElemTimer
 bool LadderElemTimer::ShowDialog(LadderContext context)
 {
-	int NewDelay = prop.delay;
-	unsigned long NewIdName = prop.idName.first;
+	int NewDelay   = prop.delay;
+	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowTimerDialog(getWhich(), &NewDelay, &NewIdName);
+	bool changed = ShowTimerDialog(getWhich(), &NewDelay, &NewName);
 
 	if(changed) {
-		LadderElemTimerProp *data = (LadderElemTimerProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, getTimerTypeIO(getWhich()), infoIO_Name)) {
+			LadderElemTimerProp *data = (LadderElemTimerProp *)getProperties();
 
-		data->delay        = NewDelay;
-		data->idName.first = NewIdName;
+			data->delay  = NewDelay;
+			data->idName = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1021,17 +1183,22 @@ void LadderElemRTC::DrawGUI(void *data)
 bool LadderElemCounter::ShowDialog(LadderContext context)
 {
 	int NewMax = prop.max;
-	unsigned long NewIdName = prop.idName.first;
+	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowCounterDialog(getWhich(), &NewMax, &NewIdName);
+	bool changed = ShowCounterDialog(getWhich(), &NewMax, &NewName);
 
 	if(changed) {
-		LadderElemCounterProp *data = (LadderElemCounterProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, eType_Counter, infoIO_Name)) {
+			LadderElemCounterProp *data = (LadderElemCounterProp *)getProperties();
 
-		data->max  = NewMax;
-		data->idName.first = NewIdName;
+			data->max    = NewMax;
+			data->idName = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1045,16 +1212,27 @@ void LadderElemCounter::DrawGUI(void *data)
 // Classe LadderElemReset
 bool LadderElemReset::ShowDialog(LadderContext context)
 {
-	unsigned long NewIdName = prop.idName.first;
+	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowResetDialog(this, &NewIdName);
+	bool changed = ShowResetDialog(&NewName);
 
 	if(changed) {
-		LadderElemResetProp *data = (LadderElemResetProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		eType type = Diagram->getDetailsIO(NewName).type;
+		// No caso do reset, ele deve ser associado a uma variavel ja existente visto que ele deve
+		// zerar um contador / timer que existe! Assim checa diretamente com ele se aceita a variavel.
+		if(!acceptIO(prop.idName.first, type)) {
+			changed = false;
+			Diagram->ShowDialog(true, "Contador/Temporizador inválido", "Selecione um contador/temporizador válido!");
+		} else if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {// Variavel valida!
+			LadderElemResetProp *data = (LadderElemResetProp *)getProperties();
 
-		data->idName.first = NewIdName;
+			data->idName = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1146,18 +1324,44 @@ void LadderElemOneShot::DrawGUI(void *data)
 // Classe LadderElemCmp
 bool LadderElemCmp::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdOp1 = prop.idOp1;
-	pair<unsigned long, int> NewIdOp2 = prop.idOp2;
+	string CurrOp1 = Diagram->getNameIO(prop.idOp1);
+	string CurrOp2 = Diagram->getNameIO(prop.idOp2);
+	string NewOp1  = CurrOp1;
+	string NewOp2  = CurrOp2;
 
-	bool changed = ShowCmpDialog(getWhich(), &NewIdOp1, &NewIdOp2);
+	bool changed = ShowCmpDialog(getWhich(), &NewOp1, &NewOp2);
 
 	if(changed) {
-		LadderElemCmpProp *data = (LadderElemCmpProp *)getProperties();
+		// Se variavel sem tipo, usa tipo geral.
+		eType op1_type = ladder->getTypeIO(CurrOp1, NewOp1, eType_General, true);
+		eType op2_type = ladder->getTypeIO(CurrOp2, NewOp2, eType_General, true);
 
-		data->idOp1 = NewIdOp1;
-		data->idOp2 = NewIdOp2;
+		tRequestIO pin;
+		vector<tRequestIO> pins;
 
-		setProperties(context, data);
+		pin       = infoIO_Op1;
+		pin.pin   = prop.idOp1;
+		pin.name  = NewOp1;
+		pin.type  = op1_type;
+		pins.push_back(pin);
+
+		pin       = infoIO_Op2;
+		pin.pin   = prop.idOp2;
+		pin.name  = NewOp2;
+		pin.type  = op2_type;
+		pins.push_back(pin);
+
+		// Se variavel alterada e valida, atualiza o pino
+		if(Diagram->getIO(pins)) {
+			LadderElemCmpProp *data = (LadderElemCmpProp *)getProperties();
+
+			data->idOp1 = pins[0].pin;
+			data->idOp2 = pins[1].pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1171,20 +1375,53 @@ void LadderElemCmp::DrawGUI(void *data)
 // Classe LadderElemMath
 bool LadderElemMath::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdOp1  = prop.idOp1;
-	pair<unsigned long, int> NewIdOp2  = prop.idOp2;
-	pair<unsigned long, int> NewIdDest = prop.idDest;
+	string CurrOp1  = Diagram->getNameIO(prop.idOp1 );
+	string CurrOp2  = Diagram->getNameIO(prop.idOp2 );
+	string CurrDest = Diagram->getNameIO(prop.idDest);
+	string NewOp1   = CurrOp1;
+	string NewOp2   = CurrOp2;
+	string NewDest  = CurrDest;
 
-	bool changed = ShowMathDialog(getWhich(), &NewIdDest, &NewIdOp1, &NewIdOp2);
+	bool changed = ShowMathDialog(getWhich(), &NewDest, &NewOp1, &NewOp2);
 
 	if(changed) {
-		LadderElemMathProp *data = (LadderElemMathProp *)getProperties();
+		// Se variavel sem tipo, usa tipo geral.
+		eType op1_type = ladder->getTypeIO(CurrOp1, NewOp1, eType_General, true);
+		eType op2_type = ladder->getTypeIO(CurrOp2, NewOp2, eType_General, true);
 
-		data->idDest = NewIdDest;
-		data->idOp1  = NewIdOp1;
-		data->idOp2  = NewIdOp2;
+		tRequestIO pin;
+		vector<tRequestIO> pins;
 
-		setProperties(context, data);
+		pin       = infoIO_Dest;
+		pin.pin   = prop.idDest;
+		pin.name  = NewDest;
+		pin.type  = eType_General;
+		pins.push_back(pin);
+
+		pin       = infoIO_Op1;
+		pin.pin   = prop.idOp1;
+		pin.name  = NewOp1;
+		pin.type  = op1_type;
+		pins.push_back(pin);
+
+		pin       = infoIO_Op2;
+		pin.pin   = prop.idOp2;
+		pin.name  = NewOp2;
+		pin.type  = op2_type;
+		pins.push_back(pin);
+
+		// Se variavel alterada e valida, atualiza o pino
+		if(ladder->getIO(pins)) {
+			LadderElemMathProp *data = (LadderElemMathProp *)getProperties();
+
+			data->idDest = pins[0].pin;
+			data->idOp1  = pins[1].pin;
+			data->idOp2  = pins[2].pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1198,18 +1435,42 @@ void LadderElemMath::DrawGUI(void *data)
 // Classe LadderElemSqrt
 bool LadderElemSqrt::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdDest = prop.idDest;
-	pair<unsigned long, int> NewIdSrc  = prop.idSrc;
+	string NewDest = Diagram->getNameIO(prop.idDest);
+	string CurrSrc = Diagram->getNameIO(prop.idSrc);
+	string NewSrc  = CurrSrc;
 
-	bool changed = ShowSqrtDialog(&NewIdDest, &NewIdSrc);
+	bool changed = ShowSqrtDialog(&NewDest, &NewSrc);
 
 	if(changed) {
-		LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
+		// Se variavel sem tipo, usa tipo geral.
+		eType src_type = ladder->getTypeIO(CurrSrc, NewSrc, eType_General, true);
 
-		data->idDest = NewIdDest;
-		data->idSrc  = NewIdSrc;
+		tRequestIO pin;
+		vector<tRequestIO> pins;
 
-		setProperties(context, data);
+		pin       = infoIO_Dest;
+		pin.pin   = prop.idDest;
+		pin.name  = NewDest;
+		pin.type  = eType_General;
+		pins.push_back(pin);
+
+		pin       = infoIO_Src;
+		pin.pin   = prop.idSrc;
+		pin.name  = NewSrc;
+		pin.type  = src_type;
+		pins.push_back(pin);
+
+		// Se variavel alterada e valida, atualiza o pino
+		if(ladder->getIO(pins)) {
+			LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
+
+			data->idDest = pins[0].pin;
+			data->idSrc  = pins[1].pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1223,20 +1484,46 @@ void LadderElemSqrt::DrawGUI(void *data)
 // Classe LadderElemRand
 bool LadderElemRand::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdVar = prop.idVar;
-	pair<unsigned long, int> NewIdMin = prop.idMin;
-	pair<unsigned long, int> NewIdMax = prop.idMax;
+	string NewVar = Diagram->getNameIO(prop.idVar);
+	string NewMin = Diagram->getNameIO(prop.idMin);
+	string NewMax = Diagram->getNameIO(prop.idMax);
 
-	bool changed = ShowRandDialog(&NewIdVar, &NewIdMin, &NewIdMax);
+	bool changed = ShowRandDialog(&NewVar, &NewMin, &NewMax);
 
 	if(changed) {
-		LadderElemRandProp *data = (LadderElemRandProp *)getProperties();
+		tRequestIO pin;
+		vector<tRequestIO> pins;
 
-		data->idVar = NewIdVar;
-		data->idMin = NewIdMin;
-		data->idMax = NewIdMax;
+		pin       = infoIO_Var;
+		pin.pin   = prop.idVar;
+		pin.name  = NewVar;
+		pin.type  = eType_General;
+		pins.push_back(pin);
 
-		setProperties(context, data);
+		pin       = infoIO_Min;
+		pin.pin   = prop.idMin;
+		pin.name  = NewMin;
+		pin.type  = eType_General;
+		pins.push_back(pin);
+
+		pin       = infoIO_Max;
+		pin.pin   = prop.idMax;
+		pin.name  = NewMax;
+		pin.type  = eType_General;
+		pins.push_back(pin);
+
+		// Se variavel alterada e valida, atualiza o pino
+		if(ladder->getIO(pins)) {
+			LadderElemRandProp *data = (LadderElemRandProp *)getProperties();
+
+			data->idVar = pins[0].pin;
+			data->idMin = pins[1].pin;
+			data->idMax = pins[2].pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1250,18 +1537,42 @@ void LadderElemRand::DrawGUI(void *data)
 // Classe LadderElemAbs
 bool LadderElemAbs::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdDest = prop.idDest;
-	pair<unsigned long, int> NewIdSrc  = prop.idSrc;
+	string NewDest = Diagram->getNameIO(prop.idDest);
+	string CurrSrc = Diagram->getNameIO(prop.idSrc);
+	string NewSrc  = CurrSrc;
 
-	bool changed = ShowAbsDialog(&NewIdDest, &NewIdSrc);
+	bool changed = ShowAbsDialog(&NewDest, &NewSrc);
 
 	if(changed) {
-		LadderElemAbsProp *data = (LadderElemAbsProp *)getProperties();
+		// Se variavel sem tipo, usa tipo geral.
+		eType src_type = ladder->getTypeIO(CurrSrc, NewSrc, eType_General, true);
 
-		data->idDest = NewIdDest;
-		data->idSrc  = NewIdSrc;
+		tRequestIO pin;
+		vector<tRequestIO> pins;
 
-		setProperties(context, data);
+		pin       = infoIO_Dest;
+		pin.pin   = prop.idDest;
+		pin.name  = NewDest;
+		pin.type  = eType_General;
+		pins.push_back(pin);
+
+		pin       = infoIO_Src;
+		pin.pin   = prop.idSrc;
+		pin.name  = NewSrc;
+		pin.type  = src_type;
+		pins.push_back(pin);
+
+		// Se variavel alterada e valida, atualiza o pino
+		if(ladder->getIO(pins)) {
+			LadderElemAbsProp *data = (LadderElemAbsProp *)getProperties();
+
+			data->idDest = pins[0].pin;
+			data->idSrc  = pins[1].pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1275,18 +1586,42 @@ void LadderElemAbs::DrawGUI(void *data)
 // Classe LadderElemMove
 bool LadderElemMove::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdDest = prop.idDest;
-	pair<unsigned long, int> NewIdSrc  = prop.idSrc;
+	string NewDest = Diagram->getNameIO(prop.idDest);
+	string CurrSrc = Diagram->getNameIO(prop.idSrc);
+	string NewSrc  = CurrSrc;
 
-	bool changed = ShowMathDialog(getWhich(), &NewIdDest, &NewIdSrc, nullptr);
+	bool changed = ShowMathDialog(getWhich(), &NewDest, &NewSrc, nullptr);
 
 	if(changed) {
-		LadderElemMoveProp *data = (LadderElemMoveProp *)getProperties();
+		// Se variavel sem tipo, usa tipo geral.
+		eType src_type = ladder->getTypeIO(CurrSrc, NewSrc, eType_General, true);
 
-		data->idDest = NewIdDest;
-		data->idSrc  = NewIdSrc;
+		tRequestIO pin;
+		vector<tRequestIO> pins;
 
-		setProperties(context, data);
+		pin       = infoIO_Dest;
+		pin.pin   = prop.idDest;
+		pin.name  = NewDest;
+		pin.type  = eType_General;
+		pins.push_back(pin);
+
+		pin       = infoIO_Src;
+		pin.pin   = prop.idSrc;
+		pin.name  = NewSrc;
+		pin.type  = src_type;
+		pins.push_back(pin);
+
+		// Se variavel alterada e valida, atualiza o pino
+		if(ladder->getIO(pins)) {
+			LadderElemMoveProp *data = (LadderElemMoveProp *)getProperties();
+
+			data->idDest = pins[0].pin;
+			data->idSrc  = pins[1].pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1310,18 +1645,23 @@ bool LadderElemSetBit::ShowDialog(LadderContext context)
 {
 	bool NewSet = prop.set;
 	int  NewBit = prop.bit;
-	pair<unsigned long, int> NewIdName = prop.idName;
+	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowSetBitDialog(&NewIdName, &NewSet, &NewBit);
+	bool changed = ShowSetBitDialog(&NewName, &NewSet, &NewBit);
 
 	if(changed) {
-		LadderElemSetBitProp *data = (LadderElemSetBitProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, eType_General, infoIO_Name)) {
+			LadderElemSetBitProp *data = (LadderElemSetBitProp *)getProperties();
 
-		data->idName = NewIdName;
-		data->set    = NewSet;
-		data->bit    = NewBit;
+			data->set    = NewSet;
+			data->bit    = NewBit;
+			data->idName = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1337,18 +1677,27 @@ bool LadderElemCheckBit::ShowDialog(LadderContext context)
 {
 	bool NewSet = prop.set;
 	int  NewBit = prop.bit;
-	pair<unsigned long, int> NewIdName = prop.idName;
+	string CurrName = Diagram->getNameIO(prop.idName);
+	string NewName  = CurrName;
 
-	bool changed = ShowCheckBitDialog(&NewIdName, &NewSet, &NewBit);
+	bool changed = ShowCheckBitDialog(&NewName, &NewSet, &NewBit);
 
 	if(changed) {
-		LadderElemCheckBitProp *data = (LadderElemCheckBitProp *)getProperties();
+		// Se variavel sem tipo, usa tipo geral.
+		eType name_type = ladder->getTypeIO(CurrName, NewName, eType_General, true);
 
-		data->idName = NewIdName;
-		data->set    = NewSet;
-		data->bit    = NewBit;
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, name_type, infoIO_Name)) {
+			LadderElemCheckBitProp *data = (LadderElemCheckBitProp *)getProperties();
 
-		setProperties(context, data);
+			data->set    = NewSet;
+			data->bit    = NewBit;
+			data->idName = pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1362,16 +1711,21 @@ void LadderElemCheckBit::DrawGUI(void *data)
 // Classe LadderElemReadAdc
 bool LadderElemReadAdc::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdName = prop.idName;
+	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowReadAdcDialog(&NewIdName);
+	bool changed = ShowReadAdcDialog(&NewName);
 
 	if(changed) {
-		LadderElemReadAdcProp *data = (LadderElemReadAdcProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, eType_ReadADC, infoIO_Name)) {
+			LadderElemReadAdcProp *data = (LadderElemReadAdcProp *)getProperties();
 
-		data->idName = NewIdName;
+			data->idName = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1386,17 +1740,22 @@ void LadderElemReadAdc::DrawGUI(void *data)
 bool LadderElemSetDa::ShowDialog(LadderContext context)
 {
 	int NewMode = prop.mode;
-	pair<unsigned long, int> NewIdName = prop.idName;
+	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowSetDADialog(&NewIdName, &NewMode);
+	bool changed = ShowSetDADialog(&NewName, &NewMode);
 
 	if(changed) {
-		LadderElemSetDaProp *data = (LadderElemSetDaProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, eType_SetDAC, infoIO_Name)) {
+			LadderElemSetDaProp *data = (LadderElemSetDaProp *)getProperties();
 
-		data->idName = NewIdName;
-		data->mode   = NewMode;
+			data->mode   = NewMode;
+			data->idName = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1410,16 +1769,21 @@ void LadderElemSetDa::DrawGUI(void *data)
 // Classe LadderElemReadEnc
 bool LadderElemReadEnc::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdName = prop.idName;
+	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowReadEncDialog(&NewIdName);
+	bool changed = ShowReadEncDialog(&NewName);
 
 	if(changed) {
-		LadderElemReadEncProp *data = (LadderElemReadEncProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, eType_ReadEnc, infoIO_Name)) {
+			LadderElemReadEncProp *data = (LadderElemReadEncProp *)getProperties();
 
-		data->idName = NewIdName;
+			data->idName = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1433,16 +1797,21 @@ void LadderElemReadEnc::DrawGUI(void *data)
 // Classe LadderElemResetEnc
 bool LadderElemResetEnc::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdName = prop.idName;
+	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowResetEncDialog(&NewIdName);
+	bool changed = ShowResetEncDialog(&NewName);
 
 	if(changed) {
-		LadderElemResetEncProp *data = (LadderElemResetEncProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, eType_ResetEnc, infoIO_Name)) {
+			LadderElemResetEncProp *data = (LadderElemResetEncProp *)getProperties();
 
-		data->idName = NewIdName;
+			data->idName = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1456,15 +1825,40 @@ void LadderElemResetEnc::DrawGUI(void *data)
 // Classe LadderElemMultisetDA
 bool LadderElemMultisetDA::ShowDialog(LadderContext context)
 {
+	string NewTime = Diagram->getNameIO(prop.idTime);
+	string NewDesl = Diagram->getNameIO(prop.idDesl);
+
 	LadderElemMultisetDAProp dialogData = prop;
-	bool changed = ShowMultisetDADialog(&dialogData);
+	bool changed = ShowMultisetDADialog(&dialogData, &NewTime, &NewDesl);
 
 	if(changed) {
-		LadderElemMultisetDAProp *data = (LadderElemMultisetDAProp *)getProperties();
+		tRequestIO pin;
+		vector<tRequestIO> pins;
 
-		*data = dialogData;
+		pin       = infoIO_Time;
+		pin.pin   = prop.idTime;
+		pin.name  = NewTime;
+		pin.type  = eType_General;
+		pins.push_back(pin);
 
-		setProperties(context, data);
+		pin       = infoIO_Desl;
+		pin.pin   = prop.idDesl;
+		pin.name  = NewDesl;
+		pin.type  = eType_General;
+		pins.push_back(pin);
+
+		// Se variavel alterada e valida, atualiza o pino
+		if(ladder->getIO(pins)) {
+			LadderElemMultisetDAProp *data = (LadderElemMultisetDAProp *)getProperties();
+
+			*data = dialogData;
+			data->idTime = pins[0].pin;
+			data->idDesl = pins[1].pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1478,24 +1872,36 @@ void LadderElemMultisetDA::DrawGUI(void *data)
 // Classe LadderElemUSS
 bool LadderElemUSS::ShowDialog(LadderContext context)
 {
-	int NewId                          = prop.id;
-	int NewIndex                       = prop.index;                                                                                                                                                                                                                                                                                                                                                                                         
-	int NewParameter                   = prop.parameter;
-	int NewParameterSet                = prop.parameter_set;
-	pair<unsigned long, int> NewIdName = prop.idName;
+	int NewId           = prop.id;
+	int NewIndex        = prop.index;                                                                                                                                                                                                                                                                                                                                                                                         
+	int NewParameter    = prop.parameter;
+	int NewParameterSet = prop.parameter_set;
+	string NewName      = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowUSSDialog(getWhich(), &NewIdName, &NewId, &NewParameter, &NewParameterSet, &NewIndex);
+	bool changed = ShowUSSDialog(getWhich(), &NewName, &NewId, &NewParameter, &NewParameterSet, &NewIndex);
 
 	if(changed) {
-		LadderElemUSSProp *data = (LadderElemUSSProp *)getProperties();
+		eType type;
+		if(getWhich() == ELEM_READ_USS) {
+			type = eType_ReadUSS;
+		} else {
+			type = eType_WriteUSS;
+		}
 
-		data->idName        = NewIdName;
-		data->id            = NewId;
-		data->parameter     = NewParameter;
-		data->parameter_set = NewParameterSet;
-		data->index         = NewIndex;
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {
+			LadderElemUSSProp *data = (LadderElemUSSProp *)getProperties();
 
-		setProperties(context, data);
+			data->idName        = pin;
+			data->id            = NewId;
+			data->parameter     = NewParameter;
+			data->parameter_set = NewParameterSet;
+			data->index         = NewIndex;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1513,21 +1919,33 @@ bool LadderElemModBUS::ShowDialog(LadderContext context)
 	int  NewAddress      = prop.address;
 	bool NewInt32        = prop.int32;
 	bool NewRetransmitir = prop.retransmitir;
-	pair<unsigned long, int> NewIdName = prop.idName;
+	string NewName       = Diagram->getNameIO(prop.idName);
 
 	bool changed = ShowModbusDialog(getWhich() == ELEM_WRITE_MODBUS ? 1 : 0,
-					&NewIdName, &NewElem, &NewAddress, &NewInt32, &NewRetransmitir);
+					&NewName, &NewElem, &NewAddress, &NewInt32, &NewRetransmitir);
 
 	if(changed) {
-		LadderElemModBUSProp *data = (LadderElemModBUSProp *)getProperties();
+		eType type;
+		if(getWhich() == ELEM_READ_MODBUS) {
+			type = eType_ReadModbus;
+		} else {
+			type = eType_WriteModbus;
+		}
 
-		data->idName       = NewIdName;
-		data->elem         = NewElem;
-		data->address      = NewAddress;
-		data->int32        = NewInt32;
-		data->retransmitir = NewRetransmitir;
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {
+			LadderElemModBUSProp *data = (LadderElemModBUSProp *)getProperties();
 
-		setProperties(context, data);
+			data->idName       = pin;
+			data->elem         = NewElem;
+			data->address      = NewAddress;
+			data->int32        = NewInt32;
+			data->retransmitir = NewRetransmitir;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1542,17 +1960,22 @@ void LadderElemModBUS::DrawGUI(void *data)
 bool LadderElemSetPWM::ShowDialog(LadderContext context)
 {
 	int  NewTargetFreq = prop.targetFreq;
-	pair<unsigned long, int> NewIdName = prop.idName;
+	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowSetPwmDialog(&NewIdName, &NewTargetFreq);
+	bool changed = ShowSetPwmDialog(&NewName, &NewTargetFreq);
 
 	if(changed) {
-		LadderElemSetPWMProp *data = (LadderElemSetPWMProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, eType_PWM, infoIO_Name)) {
+			LadderElemSetPWMProp *data = (LadderElemSetPWMProp *)getProperties();
 
-		data->idName       = NewIdName;
-		data->targetFreq = NewTargetFreq;
+			data->idName     = pin;
+			data->targetFreq = NewTargetFreq;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1566,16 +1989,28 @@ void LadderElemSetPWM::DrawGUI(void *data)
 // Classe LadderElemUART
 bool LadderElemUART::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdName = prop.idName;
+	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowUartDialog(getWhich(), &NewIdName);
+	bool changed = ShowUartDialog(getWhich(), &NewName);
 
 	if(changed) {
-		LadderElemUARTProp *data = (LadderElemUARTProp *)getProperties();
+		eType type;
+		if(getWhich() == ELEM_UART_RECV) {
+			type = eType_RxUART;
+		} else {
+			type = eType_TxUART;
+		}
 
-		data->idName = NewIdName;
+		pair<unsigned long, int> pin = prop.idName;
+		if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {
+			LadderElemUARTProp *data = (LadderElemUARTProp *)getProperties();
 
-		setProperties(context, data);
+			data->idName = pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1611,6 +2046,8 @@ bool LadderElemShiftRegister::ShowDialog(LadderContext context)
 			data->nameReg = NewName;
 
 			setProperties(context, data);
+	} else {
+		changed = false;
 	}
 
 	return changed;
@@ -1624,16 +2061,45 @@ void LadderElemShiftRegister::DrawGUI(void *data)
 // Classe LadderElemLUT
 bool LadderElemLUT::ShowDialog(LadderContext context)
 {
+	string NewDest   = Diagram->getNameIO(prop.idDest);
+	string CurrIndex = Diagram->getNameIO(prop.idIndex);
+	string NewIndex  = CurrIndex;
+
 	LadderElemLUTProp Dialogdata = prop;
 
-	bool changed = ShowLookUpTableDialog(&Dialogdata);
+	bool changed = ShowLookUpTableDialog(&Dialogdata, &NewDest, &NewIndex);
 
 	if(changed) {
-		LadderElemLUTProp *data = (LadderElemLUTProp *)getProperties();
+		// Se variavel sem tipo, usa tipo geral.
+		eType index_type = ladder->getTypeIO(CurrIndex, NewIndex, eType_General, true);
 
-		*data = Dialogdata;
+		tRequestIO pin;
+		vector<tRequestIO> pins;
 
-		setProperties(context, data);
+		pin       = infoIO_Dest;
+		pin.pin   = prop.idDest;
+		pin.name  = NewDest;
+		pin.type  = eType_General;
+		pins.push_back(pin);
+
+		pin       = infoIO_Index;
+		pin.pin   = prop.idIndex;
+		pin.name  = NewIndex;
+		pin.type  = index_type;
+		pins.push_back(pin);
+
+		// Se variavel alterada e valida, atualiza o pino
+		if(ladder->getIO(pins)) {
+			LadderElemLUTProp *data = (LadderElemLUTProp *)getProperties();
+
+			*data = Dialogdata;
+			data->idDest  = pins[0].pin;
+			data->idIndex = pins[0].pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1647,15 +2113,44 @@ void LadderElemLUT::DrawGUI(void *data)
 // Classe LadderElemPiecewise
 bool LadderElemPiecewise::ShowDialog(LadderContext context)
 {
+	string NewDest   = Diagram->getNameIO(prop.idDest);
+	string CurrIndex = Diagram->getNameIO(prop.idIndex);
+	string NewIndex  = CurrIndex;
+
 	LadderElemPiecewiseProp Dialogdata = prop;
-	bool changed = ShowPiecewiseLinearDialog(&Dialogdata);
+	bool changed = ShowPiecewiseLinearDialog(&Dialogdata, &NewDest, &NewIndex);
 
 	if(changed) {
-		LadderElemPiecewiseProp *data = (LadderElemPiecewiseProp *)getProperties();
+		// Se variavel sem tipo, usa tipo geral.
+		eType index_type = ladder->getTypeIO(CurrIndex, NewIndex, eType_General, true);
 
-		*data = Dialogdata;
+		tRequestIO pin;
+		vector<tRequestIO> pins;
 
-		setProperties(context, data);
+		pin       = infoIO_Dest;
+		pin.pin   = prop.idDest;
+		pin.name  = NewDest;
+		pin.type  = eType_General;
+		pins.push_back(pin);
+
+		pin       = infoIO_Index;
+		pin.pin   = prop.idIndex;
+		pin.name  = NewIndex;
+		pin.type  = index_type;
+		pins.push_back(pin);
+
+		// Se variavel alterada e valida, atualiza o pino
+		if(ladder->getIO(pins)) {
+			LadderElemPiecewiseProp *data = (LadderElemPiecewiseProp *)getProperties();
+
+			*data = Dialogdata;
+			data->idDest  = pins[0].pin;
+			data->idIndex = pins[0].pin;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1669,20 +2164,32 @@ void LadderElemPiecewise::DrawGUI(void *data)
 // Classe LadderElemFmtString
 bool LadderElemFmtString::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdVar = prop.idVar;
+	string NewVar = Diagram->getNameIO(prop.idVar);
 
 	char NewTxt[MAX_NAME_LEN];
 	strcpy(NewTxt, prop.txt.c_str());
 
-	bool changed = ShowFormattedStringDialog(getWhich() == ELEM_WRITE_FORMATTED_STRING ? 1 : 0, &NewIdVar, NewTxt);
+	bool changed = ShowFormattedStringDialog(getWhich() == ELEM_WRITE_FORMATTED_STRING ? 1 : 0, &NewVar, NewTxt);
 
 	if(changed) {
-		LadderElemFmtStringProp *data = (LadderElemFmtStringProp *)getProperties();
+		eType type;
+		if(getWhich() == ELEM_READ_FORMATTED_STRING) {
+			type = eType_RxUART;
+		} else {
+			type = eType_TxUART;
+		}
 
-		data->idVar = NewIdVar;
-		data->txt = NewTxt;
+		pair<unsigned long, int> pin = prop.idVar;
+		if(Diagram->getIO(pin, NewVar, type, infoIO_Var)) {
+			LadderElemFmtStringProp *data = (LadderElemFmtStringProp *)getProperties();
 
-		setProperties(context, data);
+			data->idVar = pin;
+			data->txt = NewTxt;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1697,21 +2204,33 @@ void LadderElemFmtString::DrawGUI(void *data)
 bool LadderElemYaskawa::ShowDialog(LadderContext context)
 {
 	int NewId = prop.id;
-	pair<unsigned long, int> NewIdVar = prop.idVar;
+	string NewVar = Diagram->getNameIO(prop.idVar);
 
 	char NewTxt[MAX_NAME_LEN];
 	strcpy(NewTxt, prop.txt.c_str());
 
-	bool changed = ShowServoYaskawaDialog(getWhich() == ELEM_WRITE_SERVO_YASKAWA ? 1 : 0, &NewId, &NewIdVar, NewTxt);
+	bool changed = ShowServoYaskawaDialog(getWhich() == ELEM_WRITE_SERVO_YASKAWA ? 1 : 0, &NewId, &NewVar, NewTxt);
 
 	if(changed) {
-		LadderElemYaskawaProp *data = (LadderElemYaskawaProp *)getProperties();
+		eType type;
+		if(getWhich() == ELEM_READ_SERVO_YASKAWA) {
+			type = eType_ReadYaskawa;
+		} else {
+			type = eType_WriteYaskawa;
+		}
 
-		data->id    = NewId;
-		data->idVar = NewIdVar;
-		data->txt   = NewTxt;
+		pair<unsigned long, int> pin = prop.idVar;
+		if(Diagram->getIO(pin, NewVar, type, infoIO_Var)) {
+			LadderElemYaskawaProp *data = (LadderElemYaskawaProp *)getProperties();
 
-		setProperties(context, data);
+			data->id    = NewId;
+			data->idVar = pin;
+			data->txt = NewTxt;
+
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1725,15 +2244,20 @@ void LadderElemYaskawa::DrawGUI(void *data)
 // Classe LadderElemPersist
 bool LadderElemPersist::ShowDialog(LadderContext context)
 {
-	pair<unsigned long, int> NewIdVar = prop.idVar;
-	bool changed = ShowPersistDialog(&NewIdVar);
+	string NewVar = Diagram->getNameIO(prop.idVar);
+	bool changed = ShowPersistDialog(&NewVar);
 
 	if(changed) {
-		LadderElemPersistProp *data = (LadderElemPersistProp *)getProperties();
+		pair<unsigned long, int> pin = prop.idVar;
+		if(Diagram->getIO(pin, NewVar, eType_General, infoIO_Var)) {
+			LadderElemPersistProp *data = (LadderElemPersistProp *)getProperties();
 
-		data->idVar = NewIdVar;
+			data->idVar = pin;
 
-		setProperties(context, data);
+			setProperties(context, data);
+		} else {
+			changed = false;
+		}
 	}
 
 	return changed;
@@ -1757,7 +2281,7 @@ void LadderCircuit::DrawGUI(void *data)
 {
 	int max = 0;
 	bool FirstIsParallelStart = false;
-	POINT StartWire, EndWire, PreviousWire;
+	POINT StartWire, EndWire, PreviousWire, elemStart;
 	bool isFirstElement = true, HasEOL = false;
 	vector<Subckt>::iterator it;
 	vector<POINT> EndPoints;
@@ -1778,11 +2302,18 @@ void LadderCircuit::DrawGUI(void *data)
 		if(it->elem != nullptr) {
 			HasEOL |= it->elem->IsEOL();
 			ElemDDG.expanded = gui.IsExpanded(it->elem);
+			elemStart = ElemDDG.start;
 			it->elem->DrawGUI(&ElemDDG);
+
+			if(ElemDDG.DontDraw == false) {
+				gui.registerElementArea(it->elem, ElemDDG.start, ElemDDG.size);
+			}
 
 			if(it->elem == ddg->context->SelectedElem) {
 				ddg->regionSelected = gui.getRECT(ElemDDG.start, ElemDDG.size);
 			}
+
+			ElemDDG.start = elemStart;
 		} else {
 			HasEOL |= it->subckt->HasEOL();
 			it->subckt->DrawGUI(&ElemDDG);
@@ -1866,6 +2397,13 @@ void LadderCircuit::DrawGUI(void *data)
 	}
 }
 
+void cmdToggleBreakpoint(tCommandSource source, void *data)
+{
+	if(data != nullptr) {
+		ladder->ToggleBreakPoint(*(int *)data);
+	}
+}
+
 // Classe LadderDiagram
 void LadderDiagram::DrawGUI(void)
 {
@@ -1882,7 +2420,7 @@ void LadderDiagram::DrawGUI(void)
 	GetCursorPos(&xy);
 	gui.setMousePosition(xy);
 
-	gui.SetBackgroundColor(InSimulationMode ? HighlightColours.simBg : HighlightColours.bg);
+	gui.SetBackgroundColor(context.inSimulationMode ? HighlightColours.simBg : HighlightColours.bg);
 
 	char num[20];
 	POINT SizeMax = { 0, 0 };
@@ -1944,10 +2482,28 @@ void LadderDiagram::DrawGUI(void)
 
 		RECT r = gui.getRECT(RungDDG.start, RungDDG.size);
 		r.right = r.left;
+		r.left  = 0;
+
+		// Adicionando comando para o breakpoint
+		int *rung = new int;
+		*rung = i;
+		tCommandSource source = { this, nullptr, nullptr };
+		gui.AddCommand(source, r, cmdToggleBreakpoint, rung);
+
+		// Agora desenha o numero da linha
 		r.left  = 5;
 		r.top += (r.bottom - r.top - FONT_HEIGHT)/2;
 		sprintf(num, "%3d", i + 1);
 		gui.DrawText(num, r, 0, 2);
+
+		// Agora desenha o breakpoint, se ativo
+		if(rungs[i]->hasBreakpoint) {
+			r.top    += FONT_HEIGHT + 5;
+			r.bottom  = r.top + 10;
+			r.left    = Grid1x1.x/2 - 5;
+			r.right   = Grid1x1.x/2 + 5;
+			gui.DrawEllipse(r, 2);
+		}
 
 		RungDDG.start.y += RungDDG.size.y + 1;
 	}
@@ -2005,6 +2561,17 @@ bool LadderDiagram::IsSelectedVisible(void)
 void LadderDiagram::MouseClick(int x, int y, bool isDown, bool isDouble)
 {
 	gui.MouseClick(x, y, isDown, isDouble);
+}
+
+LadderElem *LadderDiagram::SearchElement(eMoveCursor moveTo)
+{
+	return gui.SearchElement(context.SelectedElem, moveTo);
+}
+
+void LadderDiagram::ShowIoMapDialog(int item)
+{
+	IO->ShowIoMapDialog(item);
+	updateContext();
 }
 
 // Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
@@ -2141,10 +2708,4 @@ void mapIO::updateGUI(void)
 		ListView_SetItemState (IoList, getIndex(selectedIO, true) - 1, LVIS_SELECTED, LVIS_SELECTED);
 		ListView_EnsureVisible(IoList, getIndex(selectedIO, true) - 1, FALSE);
 	}
-}
-
-void LadderDiagram::ShowIoMapDialog(int item)
-{
-	IO->ShowIoMapDialog(item);
-	updateContext();
 }

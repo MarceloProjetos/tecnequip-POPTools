@@ -165,7 +165,7 @@ static void MakeControls(void)
     //    (LONG_PTR)MyNameProc);
 }
 
-bool ShowModbusDialog(int mode_write, pair<unsigned long, int> *name, int *elem, int *address, bool *set, bool *retransmitir)
+bool ShowModbusDialog(int mode_write, string *name, int *elem, int *address, bool *set, bool *retransmitir)
 {
 	bool changed = false;
 
@@ -193,7 +193,7 @@ bool ShowModbusDialog(int mode_write, pair<unsigned long, int> *name, int *elem,
 	else
         SendMessage(RetransmitCheckbox, BM_SETCHECK, BST_UNCHECKED, 0);
 
-    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(ladder->getNameIO(*name).c_str()));
+    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name->c_str()));
 	SendMessage(AddressTextbox, WM_SETTEXT, 0, (LPARAM)(addr));
 
     EnableWindow(MainWindow, FALSE);
@@ -224,30 +224,27 @@ bool ShowModbusDialog(int mode_write, pair<unsigned long, int> *name, int *elem,
 
     if(!DialogCancel) {
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_temp));
-		if(ladder->IsValidNameAndType(name->first, name_temp, mode_write ? eType_WriteModbus : eType_ReadModbus)) {
-			pair<unsigned long, int> pin = *name;
-			if(ladder->getIO(pin, name_temp, false, mode_write ? eType_WriteModbus : eType_ReadModbus)) { // Variavel valida!
-				changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_temp, mode_write ? eType_WriteModbus : eType_ReadModbus)) {
+			changed = true;
 
-				*name = pin;
+			*name = name_temp;
 
-				if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-					*set = TRUE;
-				else
-					*set = FALSE;
+			if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
+				*set = TRUE;
+			else
+				*set = FALSE;
 
-				if(SendMessage(RetransmitCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED)
-					*retransmitir = TRUE;
-				else
-					*retransmitir = FALSE;
+			if(SendMessage(RetransmitCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED)
+				*retransmitir = TRUE;
+			else
+				*retransmitir = FALSE;
 
-				ladder->mbDelRef(*elem);
-				*elem = ladder->mbGetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
-				ladder->mbAddRef(*elem);
-				SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
+			ladder->mbDelRef(*elem);
+			*elem = ladder->mbGetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
+			ladder->mbAddRef(*elem);
+			SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
 
-				*address = atoi(addr);
-			}
+			*address = atoi(addr);
 		}
 	}
 

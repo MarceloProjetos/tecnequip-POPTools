@@ -110,13 +110,25 @@ enum eType  {
 };
 
 typedef struct {
+	// Numero de solicitacoes de I/O para cada tipo de dado
 	unsigned int countRequestBit;
 	unsigned int countRequestInt;
+
+	// Numero de solicitacoes de I/O para cada tipo de acesso
+	unsigned int countRequestRead;
+	unsigned int countRequestWrite;
+
+	// Flags indicando restricao de uso do I/O
+	bool         isUniqueRead;  // Somente permite o uso para leitura por 1 I/O
+	bool         isUniqueWrite; // Somente permite o uso para escrita por 1 I/O
 
 	eType        type;
 	unsigned int pin;
 	unsigned int bit;
 } mapDetails;
+
+// Enumeracao com o tipo de solicitacao do I/O: Leitura, Escrita ou Ambos
+enum eRequestAccessType { eRequestAccessType_Read = 0, eRequestAccessType_Write, eRequestAccessType_ReadWrite };
 
 // Enumeracao para informar o tipo de ordenacao que deve ser realizada na lista de I/O
 enum eSortBy { eSortBy_Nothing = 0, eSortBy_Name, eSortBy_Type, eSortBy_Pin, eSortBy_Port };
@@ -127,6 +139,22 @@ enum eValidateResult { eValidateResult_OK = 0, eValidateResult_Warning, eValidat
 // Enumeracao que indica o modo de validacao do I/O.
 // Exemplo: Para a simulacao, nao precisa checar por associacoes
 enum eValidateIO { eValidateIO_OnlyNames, eValidateIO_Full };
+
+// Enumeracao com os modos de Search & Replace
+enum eSearchAndReplaceMode { eSearchAndReplaceMode_FindFirst, eSearchAndReplaceMode_FindNext,
+	eSearchAndReplaceMode_ReplaceFirst, eSearchAndReplaceMode_ReplaceNext, eSearchAndReplaceMode_ReplaceAll };
+
+// Enumeracao que define os modos de movimentacao do cursor
+enum eMoveCursor  {
+	eMoveCursor_DiagramHome = 0,
+	eMoveCursor_RungHome,
+	eMoveCursor_DiagramEnd,
+	eMoveCursor_RungEnd,
+	eMoveCursor_Up,
+	eMoveCursor_Down,
+	eMoveCursor_Left,
+	eMoveCursor_Right,
+};
 
 // Estrutura auxiliar que representa um subcircuito
 typedef struct {
@@ -174,10 +202,13 @@ typedef struct {
 // Estrutura auxiliar para solicitar um I/O.
 typedef struct {
 	pair<unsigned long, int> pin;
-	string name;
-	bool isBit;
-	eType type;
-} tGetIO;
+	string                   name;
+	bool                     isBit;
+	eType                    type;
+	eRequestAccessType       access;
+	bool                     isUniqueRead;
+	bool                     isUniqueWrite;
+} tRequestIO;
 
 // Estrutura auxiliar que representa uma acao de desfazer / refazer
 typedef struct {
@@ -279,8 +310,9 @@ public:
 	virtual LadderElem *Clone(void) = 0;
 
 	// Funcoes relacionadas com I/O
-	virtual bool acceptIO(unsigned long id, eType type) = 0;
-	virtual void updateIO(bool isDiscard) = 0;
+	virtual bool acceptIO        (unsigned long id, eType type) = 0;
+	virtual void updateIO        (bool isDiscard) = 0;
+	virtual int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) = 0;
 
 	// Funcoes para ler / gravar elementos para o disco
 	bool Save(FILE *f);
@@ -323,6 +355,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
 	void updateIO(bool isDiscard) { }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -367,6 +400,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
 	void updateIO(bool isDiscard) { }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -381,6 +415,7 @@ struct LadderElemContactProp {
 class LadderElemContact : public LadderElem {
 private:
 	LadderElemContactProp prop;
+	tRequestIO            infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -412,6 +447,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -428,6 +464,7 @@ struct LadderElemCoilProp {
 class LadderElemCoil : public LadderElem {
 private:
 	LadderElemCoilProp prop;
+	tRequestIO         infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -459,6 +496,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -473,6 +511,7 @@ struct LadderElemTimerProp {
 class LadderElemTimer : public LadderElem {
 private:
 	LadderElemTimerProp prop;
+	tRequestIO          infoIO_Name;
 
 	int TimerPeriod(void);
 
@@ -506,6 +545,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -553,6 +593,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
 	void updateIO(bool isDiscard) { }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -567,6 +608,7 @@ struct LadderElemCounterProp {
 class LadderElemCounter : public LadderElem {
 private:
 	LadderElemCounterProp prop;
+	tRequestIO            infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -598,6 +640,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -611,6 +654,7 @@ struct LadderElemResetProp {
 class LadderElemReset : public LadderElem {
 private:
 	LadderElemResetProp prop;
+	tRequestIO          infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -642,6 +686,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -680,6 +725,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
 	void updateIO(bool isDiscard) { }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -694,6 +740,8 @@ struct LadderElemCmpProp {
 class LadderElemCmp : public LadderElem {
 private:
 	LadderElemCmpProp prop;
+	tRequestIO        infoIO_Op1;
+	tRequestIO        infoIO_Op2;
 
 	void internalSetProperties(void *data);
 
@@ -725,6 +773,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -740,6 +789,9 @@ struct LadderElemMathProp {
 class LadderElemMath : public LadderElem {
 private:
 	LadderElemMathProp prop;
+	tRequestIO         infoIO_Op1;
+	tRequestIO         infoIO_Op2;
+	tRequestIO         infoIO_Dest;
 
 	void internalSetProperties(void *data);
 
@@ -771,6 +823,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -785,6 +838,8 @@ struct LadderElemSqrtProp {
 class LadderElemSqrt : public LadderElem {
 private:
 	LadderElemSqrtProp prop;
+	tRequestIO         infoIO_Dest;
+	tRequestIO         infoIO_Src;
 
 	void internalSetProperties(void *data);
 
@@ -816,6 +871,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -831,6 +887,9 @@ struct LadderElemRandProp {
 class LadderElemRand : public LadderElem {
 private:
 	LadderElemRandProp prop;
+	tRequestIO         infoIO_Var;
+	tRequestIO         infoIO_Min;
+	tRequestIO         infoIO_Max;
 
 	void internalSetProperties(void *data);
 
@@ -862,6 +921,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -876,6 +936,8 @@ struct LadderElemAbsProp {
 class LadderElemAbs : public LadderElem {
 private:
 	LadderElemAbsProp prop;
+	tRequestIO        infoIO_Dest;
+	tRequestIO        infoIO_Src;
 
 	void internalSetProperties(void *data);
 
@@ -907,6 +969,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -921,6 +984,8 @@ struct LadderElemMoveProp {
 class LadderElemMove : public LadderElem {
 private:
 	LadderElemMoveProp prop;
+	tRequestIO         infoIO_Dest;
+	tRequestIO         infoIO_Src;
 
 	void internalSetProperties(void *data);
 
@@ -952,6 +1017,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -990,6 +1056,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
 	void updateIO(bool isDiscard) { }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1005,6 +1072,7 @@ struct LadderElemSetBitProp {
 class LadderElemSetBit : public LadderElem {
 private:
 	LadderElemSetBitProp prop;
+	tRequestIO           infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -1036,6 +1104,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1051,6 +1120,7 @@ struct LadderElemCheckBitProp {
 class LadderElemCheckBit : public LadderElem {
 private:
 	LadderElemCheckBitProp prop;
+	tRequestIO             infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -1082,6 +1152,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1095,6 +1166,7 @@ struct LadderElemReadAdcProp {
 class LadderElemReadAdc : public LadderElem {
 private:
 	LadderElemReadAdcProp prop;
+	tRequestIO            infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -1129,6 +1201,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1143,6 +1216,7 @@ struct LadderElemSetDaProp {
 class LadderElemSetDa : public LadderElem {
 private:
 	LadderElemSetDaProp prop;
+	tRequestIO          infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -1174,6 +1248,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1187,6 +1262,7 @@ struct LadderElemReadEncProp {
 class LadderElemReadEnc : public LadderElem {
 private:
 	LadderElemReadEncProp prop;
+	tRequestIO            infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -1218,6 +1294,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1231,6 +1308,7 @@ struct LadderElemResetEncProp {
 class LadderElemResetEnc : public LadderElem {
 private:
 	LadderElemResetEncProp prop;
+	tRequestIO             infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -1262,6 +1340,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1285,6 +1364,8 @@ struct LadderElemMultisetDAProp {
 class LadderElemMultisetDA : public LadderElem {
 private:
 	LadderElemMultisetDAProp prop;
+	tRequestIO               infoIO_Time;
+	tRequestIO               infoIO_Desl;
 
 	void internalSetProperties(void *data);
 
@@ -1316,6 +1397,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1333,6 +1415,7 @@ struct LadderElemUSSProp {
 class LadderElemUSS : public LadderElem {
 private:
 	LadderElemUSSProp prop;
+	tRequestIO        infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -1364,6 +1447,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1381,6 +1465,7 @@ struct LadderElemModBUSProp {
 class LadderElemModBUS : public LadderElem {
 private:
 	LadderElemModBUSProp prop;
+	tRequestIO           infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -1412,6 +1497,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1426,6 +1512,7 @@ struct LadderElemSetPWMProp {
 class LadderElemSetPWM : public LadderElem {
 private:
 	LadderElemSetPWMProp prop;
+	tRequestIO           infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -1457,6 +1544,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1470,6 +1558,7 @@ struct LadderElemUARTProp {
 class LadderElemUART : public LadderElem {
 private:
 	LadderElemUARTProp prop;
+	tRequestIO         infoIO_Name;
 
 	void internalSetProperties(void *data);
 
@@ -1501,6 +1590,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1539,6 +1629,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
 	void updateIO(bool isDiscard) { }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1554,6 +1645,7 @@ struct LadderElemShiftRegisterProp {
 class LadderElemShiftRegister : public LadderElem {
 private:
 	LadderElemShiftRegisterProp prop;
+	tRequestIO                  InfoIO_Regs;
 
 	void internalSetProperties(void *data);
 
@@ -1587,6 +1679,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1604,6 +1697,8 @@ struct LadderElemLUTProp {
 class LadderElemLUT : public LadderElem {
 private:
 	LadderElemLUTProp prop;
+	tRequestIO        infoIO_Dest;
+	tRequestIO        infoIO_Index;
 
 	void internalSetProperties(void *data);
 
@@ -1635,6 +1730,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1651,6 +1747,8 @@ struct LadderElemPiecewiseProp {
 class LadderElemPiecewise : public LadderElem {
 private:
 	LadderElemPiecewiseProp prop;
+	tRequestIO              infoIO_Dest;
+	tRequestIO              infoIO_Index;
 
 	void internalSetProperties(void *data);
 
@@ -1682,6 +1780,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1696,6 +1795,7 @@ struct LadderElemFmtStringProp {
 class LadderElemFmtString : public LadderElem {
 private:
 	LadderElemFmtStringProp prop;
+	tRequestIO              infoIO_Var;
 
 	void internalSetProperties(void *data);
 
@@ -1727,6 +1827,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1742,6 +1843,7 @@ struct LadderElemYaskawaProp {
 class LadderElemYaskawa : public LadderElem {
 private:
 	LadderElemYaskawaProp prop;
+	tRequestIO            infoIO_Var;
 
 	void internalSetProperties(void *data);
 
@@ -1773,6 +1875,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1786,6 +1889,7 @@ struct LadderElemPersistProp {
 class LadderElemPersist : public LadderElem {
 private:
 	LadderElemPersistProp prop;
+	tRequestIO            infoIO_Var;
 
 	void internalSetProperties(void *data);
 
@@ -1817,6 +1921,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1830,6 +1935,7 @@ class LadderElemX : public LadderElem {
 private:
 	// Sem propriedades privadas...
 	LadderElemXProp prop;
+	tRequestIO      infoIO_;
 
 	void internalSetProperties(void *data) { }
 
@@ -1861,6 +1967,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
 	void updateIO(bool isDiscard) { }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1923,6 +2030,14 @@ public:
 	LadderCircuit *getSubcktForElement(LadderElem *elem);
 	Subckt         getSubckt(unsigned int pos);
 
+	// Funcao que retorna o primeiro elemento (nao subcircuito) do circuito atual
+	// Se o primeiro elemento for um subcircuito, busca o primeiro elemento desde subcircuito
+	LadderElem *getFirstElement(void);
+
+	// Funcao que retorna o ultimo elemento (nao subcircuito) do circuito atual
+	// Se o ultimo elemento for um subcircuito, busca o ultimo elemento desde subcircuito
+	LadderElem *getLastElement(void);
+
 	int            getWidthTXT (int ColsAvailable);
 	int            getHeightTXT(void);
 
@@ -1948,6 +2063,8 @@ public:
 	// Funcoes relacionadas com I/O
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
+
+	int SearchAndReplace(LadderElem **refElem, unsigned long idSearch, string sNewText, eSearchAndReplaceMode mode);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -2108,7 +2225,9 @@ public:
 	void DrawTXT(int OffsetX);
 	void DrawGUI(void);
 
-	void MouseClick(int x, int y, bool isDown, bool isDouble);
+	void        MouseClick   (int x, int y, bool isDown, bool isDouble);
+	void        MoveCursor   (eMoveCursor moveTo);
+	LadderElem *SearchElement(eMoveCursor moveTo);
 
 	bool AddParallelStart(void);
 
@@ -2144,6 +2263,9 @@ public:
 	void                             setSettingsModbusSlave       (LadderSettingsModbusSlave        setMbSlave);
 	void                             setSettingsInformation       (LadderSettingsInformation        setInfo   );
 
+	// Funcao para configurar o modo de simulacao
+	void setSimulationState(bool state);
+
 	// Funcoes para manipular/acessar lista de nos do ModBUS
 	void         mbClearNode       (LadderMbNode *node);
 	int          mbCreateNode      (string NodeName);
@@ -2161,9 +2283,11 @@ public:
 
 	// Funcoes relacionadas com I/O
 	bool            acceptIO                (unsigned long  id, eType type);
-	void            updateIO                (pair<unsigned long, int> &pin, string defaultName, bool isBit, eType defaultType, bool isDiscard);
-	bool            getIO                   (pair<unsigned long, int> &pin, string name, bool isBit, eType type);
-	bool            getIO                   (vector<tGetIO> &vectorGetIO);
+	void            updateIO                (tRequestIO &infoIO, bool isDiscard);
+	bool            getIO                   (tRequestIO &infoIO);
+	bool            getIO                   (pair<unsigned long, int> &pin, string name, eType type, tRequestIO infoIO);
+	bool            getIO                   (vector<tRequestIO> &vectorGetIO);
+	unsigned long   getIdIO                 (string name);
 	eType           getTypeIO               (string previousName, string newName, eType default_type = eType_Pending, bool isGeneric = false);
 	string          getNameIO               (unsigned long id);
 	string          getNameIO               (pair<unsigned long, int> pin);
@@ -2181,6 +2305,9 @@ public:
 
 	// Funcao para ordenar a lista de I/O conforme o campo especificado
 	void            sortIO                  (eSortBy sortby);
+
+	// Funcao que busca / renomeia I/O
+	int SearchAndReplace(string sSearchText, string sNewText, eSearchAndReplaceMode mode);
 
 	// Funcoes relacionadas aos comandos de Desfazer / Refazer
 	void RegisterAction    (UndoRedoAction Action, bool isUndo = true);

@@ -8,7 +8,6 @@ static HWND SourceInputPinRadio;
 static HWND SourceOutputPinRadio;
 static HWND InternalFlagRadio;
 static HWND NameTextbox;
-static HWND BitTextbox;
 
 static LONG_PTR PrevNameProc;
 static LONG_PTR PrevContactsDialogProc;
@@ -71,18 +70,8 @@ static void MakeControls(void)
 
     NegatedCheckbox = CreateWindowEx(0, WC_BUTTON, _("|/| Negated"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        190, 85, 160, 20, ContactsDialog, NULL, Instance, NULL);
+        190, 54, 130, 20, ContactsDialog, NULL, Instance, NULL);
     NiceFont(NegatedCheckbox);
-
-    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        135, 54, 50, 21, ContactsDialog, NULL, Instance, NULL);
-    NiceFont(textLabel2);
-
-	BitTextbox = CreateWindowEx(0, WC_STATIC, _("0"),
-        WS_CHILD |  WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
-        190, 54, 65, 20, ContactsDialog, NULL, Instance, NULL);
-    NiceFont(BitTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
@@ -131,15 +120,11 @@ static LRESULT CALLBACK ContactsDialogProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	return CallWindowProc((WNDPROC)PrevContactsDialogProc, hwnd, msg, wParam, lParam);
 }
 
-bool ShowContactsDialog(bool *negated, unsigned long *idName)
+bool ShowContactsDialog(bool *negated, string *sName, eType *type)
 {
 	bool changed = false;
-	string sname = ladder->getNameIO(*idName);
-	const char *name = sname.c_str();
-	mapDetails detailsIO = ladder->getDetailsIO(*idName);
 
 	char name_tmp[MAX_NAME_LEN];
-	eType type;
 
 	ContactsDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Contacts"), WS_OVERLAPPED | WS_SYSMENU,
@@ -149,30 +134,26 @@ bool ShowContactsDialog(bool *negated, unsigned long *idName)
         (LONG_PTR)ContactsDialogProc);
 
     MakeControls();
- 
-	char cbit[10];
-	_itoa(detailsIO.bit, cbit, 10);
-	SetWindowText(BitTextbox, cbit );
 
-	if(detailsIO.type == eType_InternalRelay) {
+	if(*type == eType_InternalRelay) {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
-    } else if(detailsIO.type == eType_DigOutput) {
+    } else if(*type == eType_DigOutput) {
         SendMessage(SourceOutputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
-    } else if(detailsIO.type == eType_DigInput || detailsIO.type == eType_Reserved) {
+    } else if(*type == eType_DigInput || *type == eType_Reserved) {
         SendMessage(SourceInputPinRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else { // Internal Flag
         SendMessage(InternalFlagRadio, BM_SETCHECK, BST_CHECKED, 0);
     }
 
 	vector<eType> types;
-	types.push_back(detailsIO.type);
+	types.push_back(*type);
 	LoadIOListToComboBox(NameTextbox, types);
 
 	if(*negated) {
         SendMessage(NegatedCheckbox, BM_SETCHECK, BST_CHECKED, 0);
     }
 
-	strcpy(name_tmp, name);
+	strcpy(name_tmp, sName->c_str());
 	SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)name_tmp);
 
     EnableWindow(MainWindow, FALSE);
@@ -206,31 +187,28 @@ bool ShowContactsDialog(bool *negated, unsigned long *idName)
         if(SendMessage(SourceInternalRelayRadio, BM_GETSTATE, 0, 0)
 	        & BST_CHECKED)
 		{
-			type = eType_InternalRelay;
+			*type = eType_InternalRelay;
         } else if(SendMessage(SourceInputPinRadio, BM_GETSTATE, 0, 0)
 	        & BST_CHECKED)
 		{
-			type = eType_DigInput;
+			*type = eType_DigInput;
         } else if(SendMessage(InternalFlagRadio, BM_GETSTATE, 0, 0)
 	        & BST_CHECKED)
 		{
-			type = eType_InternalFlag;
+			*type = eType_InternalFlag;
         } else {
-			type = eType_DigOutput;
+			*type = eType_DigOutput;
 		}
 
-		if(ladder->IsValidNameAndType(*idName, name_tmp, type)) {
-			pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
-			if(ladder->getIO(pin, name_tmp, true, type)) { // Variavel valida!
-				changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*sName), name_tmp, *type)) {
+			changed = true;
 
-				*idName = pin.first;
+			*sName = name_tmp;
 
-				if(SendMessage(NegatedCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-					*negated = true;
-				} else {
-					*negated = false;
-				}
+			if(SendMessage(NegatedCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+				*negated = true;
+			} else {
+				*negated = false;
 			}
 		}
 

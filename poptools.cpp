@@ -46,7 +46,6 @@ char *InternalVars[][MAX_NAME_LEN] = { { "IncPerimRoda" , "IncPulsosVolta", "Inc
 // Everything relating to the PLC's program, I/O configuration, processor
 // choice, and so on--basically everything that would be saved in the
 // project file.
-PlcProgram Prog;
 LadderDiagram *ladder = nullptr;
 
 // Settings structure
@@ -934,7 +933,7 @@ void ProcessMenu(int code)
         case MNU_RECENT_START+7:
         case MNU_RECENT_START+8:
         case MNU_RECENT_START+9:
-			if(InSimulationMode) {
+			if(ladder->getContext().inSimulationMode) {
 				Error(_("Favor interromper a simulação primeiro!"));
 				break;
 			}
@@ -966,7 +965,7 @@ void ProcessMenu(int code)
             break;
 
         case MNU_EXIT:
-			if(InSimulationMode) {
+			if(ladder->getContext().inSimulationMode) {
 				ToggleSimulationMode();
 			} else {
 				if(CheckSaveUserCancels()) break;
@@ -1259,8 +1258,8 @@ cmp:
             break;
 
         case MNU_FIND_AND_REPLACE_NEXT:
-			if(!FindAndReplace(NULL, NULL, FAR_FIND_NEXT))
-				FindAndReplace(NULL, NULL, FAR_FIND_FIRST);
+			if(!FindAndReplace(NULL, NULL, eSearchAndReplaceMode_FindNext))
+				FindAndReplace(NULL, NULL, eSearchAndReplaceMode_FindFirst);
             break;
 
         case MNU_MCU_SETTINGS:
@@ -1274,7 +1273,7 @@ cmp:
             break;
 
         case MNU_SIMULATION_MODE:
-            if(!InSimulationMode && CheckSaveUserCancels()) break;
+            if(!ladder->getContext().inSimulationMode && CheckSaveUserCancels()) break;
             ToggleSimulationMode();
             break;
 
@@ -1572,7 +1571,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_CLOSE:
-			if(InSimulationMode) {
+			if(ladder->getContext().inSimulationMode) {
 				ProcessMenu(MNU_SIMULATION_MODE);
 				break;
 			}

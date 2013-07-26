@@ -71,23 +71,6 @@ static struct {
 } writeModbusEthShadows[MAX_IO];
 static int writeModbusEthShadowsCount;
 
-#define VAR_FLAG_TON  0x00000001
-#define VAR_FLAG_TOF  0x00000002
-#define VAR_FLAG_RTO  0x00000004
-#define VAR_FLAG_CTU  0x00000008
-#define VAR_FLAG_CTD  0x00000010
-#define VAR_FLAG_CTC  0x00000020
-#define VAR_FLAG_RES  0x00000040
-#define VAR_FLAG_ANY  0x00000080
-
-#define VAR_FLAG_OTHERWISE_FORGOTTEN  0x80000000
-
-
-// Schematic-drawing code needs to know whether we're in simulation mode or
-// note, as that changes how everything is drawn; also UI code, to disable
-// editing during simulation.
-BOOL InSimulationMode;
-
 // Don't want to redraw the screen unless necessary; track whether a coil
 // changed state or a timer output switched to see if anything could have
 // changed (not just coil, as we show the intermediate steps too).
@@ -164,7 +147,6 @@ static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int a
 static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned int address, char *name);
 
 static void SimulateIntCode(void);
-static char *MarkUsedVariable(const char *name, DWORD flag);
 
 struct WatchPoint *listWP = NULL;
 
@@ -608,7 +590,6 @@ static void SetSimulationBit(char *name, int bit)
             return;
         }
     }
-	MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     SetSimulationBit(name, bit);
 } 
 static void ClearSimulationBit(char *name, int bit)
@@ -622,7 +603,6 @@ static void ClearSimulationBit(char *name, int bit)
             return;
         }
     }
-	MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     SetSimulationBit(name, bit);
 }
 
@@ -634,7 +614,6 @@ static bool CheckSimulationBit(char *name, int bit)
             return (((Variables[i].val) & (1 << bit)) > 0);
         }
     }
-	MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     return CheckSimulationBit(name, bit);
 }
 
@@ -653,7 +632,6 @@ void SetSimulationVariable(const char *name, SWORD val)
             return;
         }
     }
-    MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     SetSimulationVariable(name, val);
 }
 
@@ -668,7 +646,6 @@ SWORD GetSimulationVariable(const char *name)
             return Variables[i].val;
         }
     }
-    MarkUsedVariable(name, VAR_FLAG_OTHERWISE_FORGOTTEN);
     return GetSimulationVariable(name);
 }
 
@@ -801,262 +778,6 @@ SWORD GetResetEncShadow(char *name)
 }
 
 //-----------------------------------------------------------------------------
-// Mark how a variable is used; a series of flags that we can OR together,
-// then we can check to make sure that only valid combinations have been used
-// (e.g. just a TON, an RTO with its reset, etc.). Returns NULL for success,
-// else an error string.
-//-----------------------------------------------------------------------------
-static char *MarkUsedVariable(const char *name, DWORD flag)
-{
-    int i;
-    for(i = 0; i < VariablesCount; i++) {
-        if(_stricmp(Variables[i].name, name)==0) {
-            break;
-        }
-    }
-    if(i >= MAX_IO) return "";
-
-    if(i == VariablesCount) {
-        strcpy(Variables[i].name, name);
-        Variables[i].usedFlags = 0;
-        Variables[i].val = 0;
-        VariablesCount++;
-    }
-
-    switch(flag) {
-        case VAR_FLAG_TOF:
-            if(Variables[i].usedFlags != 0) 
-                return _("TOF: variable cannot be used elsewhere");
-            break;
-
-        case VAR_FLAG_TON:
-            if(Variables[i].usedFlags != 0)
-                return _("TON: variable cannot be used elsewhere");
-            break;
-        
-        case VAR_FLAG_RTO:
-            if(Variables[i].usedFlags & ~VAR_FLAG_RES)
-                return _("RTO: variable can only be used for RES elsewhere");
-            break;
-
-        case VAR_FLAG_CTU:
-        case VAR_FLAG_CTD:
-        case VAR_FLAG_CTC:
-        case VAR_FLAG_RES:
-        case VAR_FLAG_ANY:
-            break;
-
-        case VAR_FLAG_OTHERWISE_FORGOTTEN:
-            if(name[0] != '$') 
-			{
-                /*Error(_("Variable '%s' not assigned to, e.g. with a "
-                    "MOV statement, an ADD statement, etc.\r\n\r\n"
-                    "This is probably a programming error; now it "
-                    "will always be zero."), name);*/
-            }
-            break;
-
-        default:
-            oops();
-    }
-
-    Variables[i].usedFlags |= flag;
-    return NULL;
-}
-
-//-----------------------------------------------------------------------------
-// Check for duplicate uses of a single variable. For example, there should
-// not be two TONs with the same name. On the other hand, it would be okay
-// to have an RTO with the same name as its reset; in fact, verify that
-// there must be a reset for each RTO.
-//-----------------------------------------------------------------------------
-static void MarkWithCheck(char *name, int flag)
-{
-    char *s = MarkUsedVariable(name, flag);
-    if(s) {
-        Error(_("Variable for '%s' incorrectly assigned: %s."), name, s);
-    }
-}
-static void CheckVariableNamesCircuit(int which, void *elem)
-{
-    ElemLeaf *l = (ElemLeaf *)elem;
-    char *name = NULL;
-    DWORD flag;
-
-    switch(which) {
-        case ELEM_SERIES_SUBCKT: {
-            int i;
-            ElemSubcktSeries *s = (ElemSubcktSeries *)elem;
-            for(i = 0; i < s->count; i++) {
-                CheckVariableNamesCircuit(s->contents[i].which,
-                    s->contents[i].d.any);
-            }
-            break;
-        }
-
-        case ELEM_PARALLEL_SUBCKT: {
-            int i;
-            ElemSubcktParallel *p = (ElemSubcktParallel *)elem;
-            for(i = 0; i < p->count; i++) {
-                CheckVariableNamesCircuit(p->contents[i].which,
-                    p->contents[i].d.any);
-            }
-            break;
-        }
-        
-        case ELEM_RTO:
-        case ELEM_TOF:
-        case ELEM_TON:
-            if(which == ELEM_RTO)
-                flag = VAR_FLAG_RTO;
-            else if(which == ELEM_TOF)
-                flag = VAR_FLAG_TOF;
-            else if(which == ELEM_TON)
-                flag = VAR_FLAG_TON;
-            else oops();
-
-            MarkWithCheck(l->d.timer.name, flag);
-
-            break;
-
-        case ELEM_CTU:
-        case ELEM_CTD:
-        case ELEM_CTC:
-            if(which == ELEM_CTU)
-                flag = VAR_FLAG_CTU;
-            else if(which == ELEM_CTD)
-                flag = VAR_FLAG_CTD;
-            else if(which == ELEM_CTC)
-                flag = VAR_FLAG_CTC;
-            else oops();
-
-            MarkWithCheck(l->d.counter.name, flag);
-
-            break;
-
-        case ELEM_RES:
-            MarkWithCheck(l->d.reset.name, VAR_FLAG_RES);
-            break;
-
-        case ELEM_MOVE:
-            MarkWithCheck(l->d.move.dest, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_SQRT:
-            MarkWithCheck(l->d.sqrt.dest, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_RAND:
-			MarkWithCheck(l->d.rand.var, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_ABS:
-            MarkWithCheck(l->d.abs.dest, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_LOOK_UP_TABLE:
-            MarkWithCheck(l->d.lookUpTable.dest, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_PIECEWISE_LINEAR:
-            MarkWithCheck(l->d.piecewiseLinear.dest, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_READ_ADC:
-            MarkWithCheck(l->d.readAdc.name, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_SET_DA:
-            MarkWithCheck(l->d.setDA.name, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_READ_ENC:
-            MarkWithCheck(l->d.readEnc.name, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_READ_USS:
-            MarkWithCheck(l->d.readUSS.name, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_WRITE_USS:
-            MarkWithCheck(l->d.writeUSS.name, VAR_FLAG_ANY);
-			MarkWithCheck("$USSReady", VAR_FLAG_ANY);
-            break;
-
-        case ELEM_READ_MODBUS:
-            MarkWithCheck(l->d.readModbus.name, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_WRITE_MODBUS:
-            MarkWithCheck(l->d.writeModbus.name, VAR_FLAG_ANY);
-			MarkWithCheck("$ModbusReady", VAR_FLAG_ANY);
-            break;
-
-        case ELEM_ADD:
-        case ELEM_SUB:
-        case ELEM_MUL:
-        case ELEM_DIV:
-        case ELEM_MOD:
-            MarkWithCheck(l->d.math.dest, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_UART_RECV:
-            MarkWithCheck(l->d.uart.name, VAR_FLAG_ANY);
-            break;
-
-        case ELEM_SHIFT_REGISTER: {
-            int i;
-            for(i = 1; i < l->d.shiftRegister.stages; i++) {
-                char str[MAX_NAME_LEN+10];
-                sprintf(str, "%s%d", l->d.shiftRegister.name, i);
-                MarkWithCheck(str, VAR_FLAG_ANY);
-            }
-            break;
-        }
-
-        case ELEM_PERSIST:
-        case ELEM_RESET_ENC:
-		case ELEM_READ_FORMATTED_STRING:
-		case ELEM_WRITE_FORMATTED_STRING:
-		case ELEM_READ_SERVO_YASKAWA:
-		case ELEM_WRITE_SERVO_YASKAWA:
-        case ELEM_FORMATTED_STRING:
-        case ELEM_SET_PWM:
-        case ELEM_MASTER_RELAY:
-        case ELEM_UART_SEND:
-        case ELEM_PLACEHOLDER:
-        case ELEM_COMMENT:
-        case ELEM_OPEN:
-        case ELEM_SHORT:
-        case ELEM_COIL:
-        case ELEM_CONTACTS:
-		case ELEM_SET_BIT:
-		case ELEM_CHECK_BIT:
-        case ELEM_ONE_SHOT_RISING:
-        case ELEM_ONE_SHOT_FALLING:
-        case ELEM_EQU:
-        case ELEM_NEQ:
-        case ELEM_GRT:
-        case ELEM_GEQ:
-        case ELEM_LES:
-        case ELEM_LEQ:
-		case ELEM_RTC:
-		case ELEM_MULTISET_DA:
-            break;
-
-        default:
-            oops();
-    }
-}
-static void CheckVariableNames(void)
-{
-    int i;
-    for(i = 0; i < Prog.numRungs; i++) {
-        CheckVariableNamesCircuit(ELEM_SERIES_SUBCKT, Prog.rungs[i]);	
-    }
-}
-
-//-----------------------------------------------------------------------------
 // The IF condition is true. Execute the body, up until the ELSE or the
 // END IF, and then skip the ELSE if it is present. Called with PC on the
 // IF, returns with PC on the END IF.
@@ -1138,9 +859,10 @@ static void SimulateIntCode(void)
         IntOp *a = &vectorIntCode[IntPc];
         switch(a->op) {
             case INT_SIMULATE_NODE_STATE:
-                if(*(a->poweredAfter) != SingleBitOn(a->name1))
+                if(*(a->poweredAfter) != SingleBitOn(a->name1)) {
                     NeedRedraw = TRUE;
-                *(a->poweredAfter) = SingleBitOn(a->name1);
+	                *(a->poweredAfter) = SingleBitOn(a->name1);
+				}
                 break;
 
             case INT_SET_BIT:
@@ -1615,6 +1337,12 @@ void ClearSimulationData(void)
 	SetSingleBit("$SerialReady", true);
 	SetSingleBit("$TcpReady", true);
 
+// A checagem deve ser realizada na classe de mapa de I/O
+// Deve ser criado codigo que permita reservar o I/O conforme descrito a seguir:
+// Flags independentes que marquem o I/O para apenas uso exclusivo (1 único lugar)
+// de leitura e escrita e variaveis para controle de numero de referencias para cada operacao
+// Variaveis TON e TOF so podem ser usadas em seu proprio elemento
+// Variaveis RTO e Contadores so podem ser lidas em seu elemento mas escritas quantas vezes quiser
 //	CheckVariableNames();
 
     SimulateRedrawAfterNextCycle = TRUE;

@@ -940,6 +940,6 @@ void DestroyRibbon(void)
 
 void SetApplicationMode(void)
 {
-	INT32 mode = InSimulationMode ? UI_MAKEAPPMODE(APP_SIMULATION_MODE) : UI_MAKEAPPMODE(APP_NORMAL_MODE);
+	INT32 mode = ladder->getContext().inSimulationMode ? UI_MAKEAPPMODE(APP_SIMULATION_MODE) : UI_MAKEAPPMODE(APP_NORMAL_MODE);
 	HRESULT hr = g_pFramework->SetModes(mode);
 }

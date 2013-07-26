@@ -29,9 +29,12 @@ private:
 			unsigned int   bit;
 		} Assign;
 		struct {
-			unsigned long  id;
-			bool           isBit;
-			bool           isDiscard;
+			unsigned long      id;
+			bool               isBit;
+			bool               isDiscard;
+			eRequestAccessType accessType;
+			bool               isUniqueRead;
+			bool               isUniqueWrite;
 		} Request;
 		struct {
 			unsigned long  id;
@@ -63,8 +66,8 @@ public:
 	unsigned int   getCount     (void);
 	void           Select       (unsigned int index);
 
-	unsigned long Request(string name, bool isBit, eType type);
-	void          Discard(unsigned long id, bool isBit);
+	unsigned long Request(tRequestIO infoIO);
+	void          Discard(tRequestIO infoIO);
 
 	bool Update(unsigned long id, string name, eType type, bool isUndoRedo = false);
 

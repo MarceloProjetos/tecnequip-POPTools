@@ -224,12 +224,10 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     return !didCancel;
 }
 
-bool ShowTimerDialog(int which, int *delay, unsigned long *idName)
+bool ShowTimerDialog(int which, int *delay, string *sName)
 {
 	bool changed = false;
-	string sname = ladder->getNameIO(*idName);
-	const char *name = sname.c_str();
-	mapDetails detailsIO = ladder->getDetailsIO(*idName);
+	mapDetails detailsIO = ladder->getDetailsIO(*sName);
 
 	char *s;
     switch(which) 
@@ -245,26 +243,23 @@ bool ShowTimerDialog(int which, int *delay, unsigned long *idName)
     char delBuf[20];
     char nameBuf[20];
     sprintf(delBuf, "%d", *delay / 1000);
-    strcpy(nameBuf, name);
+	strcpy(nameBuf, sName->c_str());
     char *dests[] = { nameBuf, delBuf };
 
     if(ShowSimpleDialog(s, 2, labels, (1 << 1), (1 << 0), (1 << 0), (1 << 0), dests)) {
-		if(ladder->IsValidNameAndType(*idName, nameBuf, detailsIO.type, _("Nome" ), VALIDATE_IS_VAR   , 0, 0) &&
-		   ladder->IsValidNameAndType(0      , delBuf , eType_Pending , _("Tempo"), VALIDATE_IS_NUMBER, 1, 2147483)) {
-				pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
-				if(ladder->getIO(pin, nameBuf, false, getTimerTypeIO(which))) { // Variavel valida!
-					changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*sName), nameBuf, detailsIO.type, _("Nome" ), VALIDATE_IS_VAR   , 0, 0) &&
+		   ladder->IsValidNameAndType(0                      , delBuf , eType_Pending , _("Tempo"), VALIDATE_IS_NUMBER, 1, 2147483)) {
+				changed = true;
 
-					*idName = pin.first;
+				*sName = nameBuf;
 
-					*delay = 1000*atoi(delBuf);
+				*delay = 1000*atoi(delBuf);
 
-					LadderSettingsGeneral settings = ladder->getSettingsGeneral();
-					if(*delay % settings.cycleTime) {
-						*delay = (1 + *delay / settings.cycleTime) * settings.cycleTime;
-						Error(_("Tempo de ciclo deve ser múltiplo de %d! Será utilizado %d."),
-							settings.cycleTime/1000, *delay/1000);
-					}
+				LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+				if(*delay % settings.cycleTime) {
+					*delay = (1 + *delay / settings.cycleTime) * settings.cycleTime;
+					Error(_("Tempo de ciclo deve ser múltiplo de %d! Será utilizado %d."),
+						settings.cycleTime/1000, *delay/1000);
 				}
 		}
     }
@@ -272,11 +267,9 @@ bool ShowTimerDialog(int which, int *delay, unsigned long *idName)
 	return changed;
 }
 
-bool ShowCounterDialog(int which, int *maxV, unsigned long *idName)
+bool ShowCounterDialog(int which, int *maxV, string *sName)
 {
 	bool changed = false;
-	string sname = ladder->getNameIO(*idName);
-	const char *name = sname.c_str();
 
 	char *title;
 
@@ -292,25 +285,22 @@ bool ShowCounterDialog(int which, int *maxV, unsigned long *idName)
 		(which == ELEM_CTU ? _("True if >= :") : _("True if <= :"))) };
     char maxS[MAX_NAME_LEN], name_tmp[MAX_NAME_LEN];
     sprintf(maxS, "%d", *maxV);
-	strcpy(name_tmp, name);
+	strcpy(name_tmp, sName->c_str());
     char *dests[] = { name_tmp, maxS };
     if(ShowSimpleDialog(title, 2, labels, 0x2, 0x1, 0x1, 0x1, dests)) {
-		if(ladder->IsValidNameAndType(*idName, name_tmp, eType_Counter, _("Nome" ), VALIDATE_IS_VAR   , 0, 0) &&
-		   ladder->IsValidNameAndType(0      , maxS    , eType_Pending, _("Valor"), VALIDATE_IS_NUMBER, 0, 0)) {
-				pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
-				if(ladder->getIO(pin, name_tmp, false, eType_Counter)) { // Variavel valida!
-					changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*sName), name_tmp, eType_Counter, _("Nome" ), VALIDATE_IS_VAR   , 0, 0) &&
+		   ladder->IsValidNameAndType(0                      , maxS    , eType_Pending, _("Valor"), VALIDATE_IS_NUMBER, 0, 0)) {
+				changed = true;
 
-					*idName = pin.first;
-					*maxV   = atoi(maxS);
-				}
+				*sName = name_tmp;
+				*maxV  = atoi(maxS);
 		}
 	}
 
 	return changed;
 }
 
-bool ShowCmpDialog(int which, pair<unsigned long, int> *op1, pair<unsigned long, int> *op2)
+bool ShowCmpDialog(int which, string *op1, string *op2)
 {
 	bool changed = false;
 
@@ -355,44 +345,26 @@ bool ShowCmpDialog(int which, pair<unsigned long, int> *op1, pair<unsigned long,
     char *labels[] = { _("'Closed' if:"), l2 };
     char *dests[] = { op1_tmp, op2_tmp };
 
-	strcpy(op1_tmp, ladder->getNameIO(*op1).c_str());
-	strcpy(op2_tmp, ladder->getNameIO(*op2).c_str());
+	strcpy(op1_tmp, op1->c_str());
+	strcpy(op2_tmp, op2->c_str());
 
 	if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
 		// Se variavel sem tipo, usa tipo geral.
-		eType op1_type = ladder->getTypeIO(ladder->getNameIO(op1->first), op1_tmp, eType_General, true);
-		eType op2_type = ladder->getTypeIO(ladder->getNameIO(op2->first), op2_tmp, eType_General, true);
+		eType op1_type = ladder->getTypeIO(*op1, op1_tmp, eType_General, true);
+		eType op2_type = ladder->getTypeIO(*op2, op2_tmp, eType_General, true);
 
-		if(ladder->IsValidNameAndType(op1->first, op1_tmp, op1_type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
-			ladder->IsValidNameAndType(op2->first, op2_tmp, op2_type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				tGetIO pin;
-				vector<tGetIO> pins;
-
-				pin.pin   = pair<unsigned long, int>(op1->first, 0);
-				pin.name  = op1_tmp;
-				pin.isBit = false;
-				pin.type  = op1_type;
-				pins.push_back(pin);
-
-				pin.pin   = pair<unsigned long, int>(op2->first, 0);
-				pin.name  = op2_tmp;
-				pin.isBit = false;
-				pin.type  = op2_type;
-				pins.push_back(pin);
-
-				// Se variavel alterada e valida, atualiza o pino
-				if(ladder->getIO(pins)) {
-					changed = true;
-					*op1 = pins[0].pin;
-					*op2 = pins[1].pin;
-				}
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*op1), op1_tmp, op1_type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
+			ladder->IsValidNameAndType(ladder->getIdIO(*op2), op2_tmp, op2_type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+				changed = true;
+				*op1 = op1_tmp;
+				*op2 = op2_tmp;
 		}
 	}
 
 	return changed;
 }
 
-bool ShowSqrtDialog(pair<unsigned long, int> *dest, pair<unsigned long, int> *src)
+bool ShowSqrtDialog(string *dest, string *src)
 {
 	bool changed = false;
 
@@ -400,43 +372,25 @@ bool ShowSqrtDialog(pair<unsigned long, int> *dest, pair<unsigned long, int> *sr
     char *labels[] = { _("Destination:"), _("Source:") };
     char *dests[] = { dest_tmp, src_tmp };
 
-	strcpy(src_tmp , ladder->getNameIO(*src ).c_str());
-	strcpy(dest_tmp, ladder->getNameIO(*dest).c_str());
+	strcpy(src_tmp , src ->c_str());
+	strcpy(dest_tmp, dest->c_str());
 
 	if(ShowSimpleDialog(_("Square Root"), 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
 		// Se variavel sem tipo, usa tipo geral.
-		eType src_type = ladder->getTypeIO(ladder->getNameIO(src->first), src_tmp, eType_General, true);
+		eType src_type = ladder->getTypeIO(*src, src_tmp, eType_General, true);
 
-		if(ladder->IsValidNameAndType(dest->first, dest_tmp, eType_General, _("Destino"), VALIDATE_IS_VAR          , 0, 0) &&
-			ladder->IsValidNameAndType(src->first, src_tmp , src_type, _("Origem") , VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				tGetIO pin;
-				vector<tGetIO> pins;
-
-				pin.pin   = pair<unsigned long, int>(src->first, 0);
-				pin.name  = src_tmp;
-				pin.isBit = false;
-				pin.type  = src_type;
-				pins.push_back(pin);
-
-				pin.pin   = pair<unsigned long, int>(dest->first, 0);
-				pin.name  = dest_tmp;
-				pin.isBit = false;
-				pin.type  = eType_General;
-				pins.push_back(pin);
-
-				// Se variavel alterada e valida, atualiza o pino
-				if(ladder->getIO(pins)) {
-					changed = true;
-					*src  = pins[0].pin;
-					*dest = pins[1].pin;
-				}
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*dest), dest_tmp, eType_General, _("Destino"), VALIDATE_IS_VAR          , 0, 0) &&
+			ladder->IsValidNameAndType(ladder->getIdIO(*src), src_tmp , src_type, _("Origem") , VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+				changed = true;
+				*src  = src_tmp;
+				*dest = dest_tmp;
 		}
 	}
 
 	return changed;
 }
 
-bool ShowRandDialog(pair<unsigned long, int> *var, pair<unsigned long, int> *min, pair<unsigned long, int> *max)
+bool ShowRandDialog(string *var, string *min, string *max)
 {
 	bool changed = false;
 
@@ -444,49 +398,25 @@ bool ShowRandDialog(pair<unsigned long, int> *var, pair<unsigned long, int> *min
     char *labels[] = { _("Destination:"), _("Mínimo:"), _("Máximo:") };
     char *dests [] = { var_tmp, min_tmp, max_tmp };
 
-	strcpy(var_tmp , ladder->getNameIO(*var).c_str());
-	strcpy(min_tmp , ladder->getNameIO(*min).c_str());
-	strcpy(max_tmp , ladder->getNameIO(*max).c_str());
+	strcpy(var_tmp , var->c_str());
+	strcpy(min_tmp , min->c_str());
+	strcpy(max_tmp , max->c_str());
 
 	if(ShowSimpleDialog(_("Rand"), 3, labels, 0, 0x7, 0x7, 0x7, dests)) {
-		if(ladder->IsValidNameAndType(var->first, var_tmp, eType_General , _("Destino"), VALIDATE_IS_VAR          , 0, 0) &&
-			ladder->IsValidNameAndType(min->first, min_tmp, eType_General, _("Mínimo") , VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
-			ladder->IsValidNameAndType(max->first, max_tmp, eType_General, _("Máximo") , VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				tGetIO pin;
-				vector<tGetIO> pins;
-
-				pin.pin   = pair<unsigned long, int>(var->first, 0);
-				pin.name  = var_tmp;
-				pin.isBit = false;
-				pin.type  = eType_General;
-				pins.push_back(pin);
-
-				pin.pin   = pair<unsigned long, int>(min->first, 0);
-				pin.name  = min_tmp;
-				pin.isBit = false;
-				pin.type  = eType_General;
-				pins.push_back(pin);
-
-				pin.pin   = pair<unsigned long, int>(max->first, 0);
-				pin.name  = max_tmp;
-				pin.isBit = false;
-				pin.type  = eType_General;
-				pins.push_back(pin);
-
-				// Se variavel alterada e valida, atualiza o pino
-				if(ladder->getIO(pins)) {
-					changed = true;
-					*var = pins[0].pin;
-					*min = pins[1].pin;
-					*max = pins[2].pin;
-				}
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*var), var_tmp, eType_General , _("Destino"), VALIDATE_IS_VAR          , 0, 0) &&
+			ladder->IsValidNameAndType(ladder->getIdIO(*min), min_tmp, eType_General, _("Mínimo") , VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
+			ladder->IsValidNameAndType(ladder->getIdIO(*max), max_tmp, eType_General, _("Máximo") , VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+				changed = true;
+				*var = var_tmp;
+				*min = min_tmp;
+				*max = max_tmp;
 		}
 	}
 
 	return changed;
 }
 
-bool ShowAbsDialog(pair<unsigned long, int> *dest, pair<unsigned long, int> *src)
+bool ShowAbsDialog(string *dest, string *src)
 {
 	bool changed = false;
 
@@ -494,43 +424,25 @@ bool ShowAbsDialog(pair<unsigned long, int> *dest, pair<unsigned long, int> *src
     char *labels[] = { _("Destination:"), _("Source:") };
     char *dests[] = { dest_tmp, src_tmp };
 
-	strcpy(src_tmp , ladder->getNameIO(*src ).c_str());
-	strcpy(dest_tmp, ladder->getNameIO(*dest).c_str());
+	strcpy(src_tmp , src ->c_str());
+	strcpy(dest_tmp, dest->c_str());
 
 	if(ShowSimpleDialog(_("Abs"), 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
 		// Se variavel sem tipo, usa tipo geral.
-		eType src_type = ladder->getTypeIO(ladder->getNameIO(src->first), src_tmp, eType_General, true);
+		eType src_type = ladder->getTypeIO(*src, src_tmp, eType_General, true);
 
-		if(ladder->IsValidNameAndType(dest->first, dest_tmp, eType_General, _("Destino"), VALIDATE_IS_VAR          , 0, 0) &&
-			ladder->IsValidNameAndType(src->first, src_tmp , src_type     , _("Origem") , VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				tGetIO pin;
-				vector<tGetIO> pins;
-
-				pin.pin   = pair<unsigned long, int>(src->first, 0);
-				pin.name  = src_tmp;
-				pin.isBit = false;
-				pin.type  = src_type;
-				pins.push_back(pin);
-
-				pin.pin   = pair<unsigned long, int>(dest->first, 0);
-				pin.name  = dest_tmp;
-				pin.isBit = false;
-				pin.type  = eType_General;
-				pins.push_back(pin);
-
-				// Se variavel alterada e valida, atualiza o pino
-				if(ladder->getIO(pins)) {
-					changed = true;
-					*src  = pins[0].pin;
-					*dest = pins[1].pin;
-				}
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*dest), dest_tmp, eType_General, _("Destino"), VALIDATE_IS_VAR          , 0, 0) &&
+			ladder->IsValidNameAndType(ladder->getIdIO(*src), src_tmp , src_type     , _("Origem") , VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+				changed = true;
+				*src  = src_tmp;
+				*dest = dest_tmp;
 		}
 	}
 
 	return changed;
 }
 
-bool ShowReadAdcDialog(pair<unsigned long, int> *name)
+bool ShowReadAdcDialog(string *name)
 {
 	bool changed = false;
 
@@ -538,23 +450,20 @@ bool ShowReadAdcDialog(pair<unsigned long, int> *name)
     char *labels[] = { _("Destination:") };
     char *dests[] = { name_tmp };
 
-	strcpy(name_tmp, ladder->getNameIO(*name).c_str());
+	strcpy(name_tmp, name->c_str());
 
 	if(ShowSimpleDialog(_("Read A/D Converter"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
-		if(ladder->IsValidNameAndType(name->first, name_tmp, eType_ReadADC, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
-			pair<unsigned long, int> pin = *name;
-			if(ladder->getIO(pin, name_tmp, false, eType_ReadADC)) { // Variavel valida!
-				changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_tmp, eType_ReadADC, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
+			changed = true;
 
-				*name = pin;
-			}
+			*name = name_tmp;
 		}
 	}
 
 	return changed;
 }
 
-bool ShowReadEncDialog(pair<unsigned long, int> *name)
+bool ShowReadEncDialog(string *name)
 {
 	bool changed = false;
 
@@ -563,23 +472,20 @@ bool ShowReadEncDialog(pair<unsigned long, int> *name)
     char *labels[] = { _("Destination:") };
     char *dests[] = { name_tmp };
 
-	strcpy(name_tmp, ladder->getNameIO(*name).c_str());
+	strcpy(name_tmp, name->c_str());
 
 	if(ShowSimpleDialog(_("Read Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
-		if(ladder->IsValidNameAndType(name->first, name_tmp, eType_ReadEnc, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
-			pair<unsigned long, int> pin = *name;
-			if(ladder->getIO(pin, name_tmp, false, eType_ReadEnc)) { // Variavel valida!
-				changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_tmp, eType_ReadEnc, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
+			changed = true;
 
-				*name = pin;
-			}
+			*name = name_tmp;
 		}
 	}
 
 	return changed;
 }
 
-bool ShowResetEncDialog(pair<unsigned long, int> *name)
+bool ShowResetEncDialog(string *name)
 {
 	bool changed = false;
 
@@ -588,28 +494,25 @@ bool ShowResetEncDialog(pair<unsigned long, int> *name)
     char *labels[] = { _("Destination:") };
     char *dests[] = { name_tmp };
 
-	strcpy(name_tmp, ladder->getNameIO(*name).c_str());
+	strcpy(name_tmp, name->c_str());
 
 	if(ShowSimpleDialog(_("Write Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
-		if(ladder->IsValidNameAndType(name->first, name_tmp, eType_ResetEnc, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
-			pair<unsigned long, int> pin = *name;
-			if(ladder->getIO(pin, name_tmp, false, eType_ResetEnc)) { // Variavel valida!
-				changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_tmp, eType_ResetEnc, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
+			changed = true;
 
-				*name = pin;
-			}
+			*name = name_tmp;
 		}
 	}
 
 	return changed;
 }
 
-bool ShowUSSDialog(int which, pair<unsigned long, int> *name, int *id, int *parameter, int *parameter_set, int *index)
+bool ShowUSSDialog(int which, string *name, int *id, int *parameter, int *parameter_set, int *index)
 {
 	bool changed = false;
 
 	char name_temp[100];
-	strcpy(name_temp, ladder->getNameIO(*name).c_str());
+	strcpy(name_temp, name->c_str());
 
     char i[100];
     sprintf(i, "%d", *id);
@@ -640,28 +543,25 @@ bool ShowUSSDialog(int which, pair<unsigned long, int> *name, int *id, int *para
 	char *labels[] = { VarName, _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
     char *dests[] = { name_temp, i, param, param_set, idx };
     if(ShowSimpleDialog(DialogName, 5, labels, 0x1E, 0x1, 0x1E, 0x1, dests)) {
-		if(ladder->IsValidNameAndType(name->first, name_temp, type         , _("Nome"            ), VALIDATE_IS_VAR   , 0, 0) &&
-			ladder->IsValidNameAndType(0         , i        , eType_Pending, _("ID"              ), VALIDATE_IS_NUMBER, 0, 0) &&
-			ladder->IsValidNameAndType(0         , param    , eType_Pending, _("Parâmetro"       ), VALIDATE_IS_NUMBER, 0, 0) &&
-			ladder->IsValidNameAndType(0         , param_set, eType_Pending, _("Set de Parâmetro"), VALIDATE_IS_NUMBER, 0, 3) &&
-			ladder->IsValidNameAndType(0         , idx      , eType_Pending, _("Índice"          ), VALIDATE_IS_NUMBER, 0, 0)) {
-				pair<unsigned long, int> pin = *name;
-				if(ladder->getIO(pin, name_temp, false, type)) { // Variavel valida!
-					changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_temp, type         , _("Nome"            ), VALIDATE_IS_VAR   , 0, 0) &&
+			ladder->IsValidNameAndType(0                    , i        , eType_Pending, _("ID"              ), VALIDATE_IS_NUMBER, 0, 0) &&
+			ladder->IsValidNameAndType(0                    , param    , eType_Pending, _("Parâmetro"       ), VALIDATE_IS_NUMBER, 0, 0) &&
+			ladder->IsValidNameAndType(0                    , param_set, eType_Pending, _("Set de Parâmetro"), VALIDATE_IS_NUMBER, 0, 3) &&
+			ladder->IsValidNameAndType(0                    , idx      , eType_Pending, _("Índice"          ), VALIDATE_IS_NUMBER, 0, 0)) {
+				changed = true;
 
-					*name = pin;
-					*id = atoi(i);
-					*parameter = atoi(param);
-					*parameter_set = atoi(param_set);
-					*index = atoi(idx);
-				}
+				*name = name_temp;
+				*id = atoi(i);
+				*parameter = atoi(param);
+				*parameter_set = atoi(param_set);
+				*index = atoi(idx);
 		}
 	}
 
 	return changed;
 }
 
-bool ShowSetPwmDialog(pair<unsigned long, int> *name, int *targetFreq)
+bool ShowSetPwmDialog(string *name, int *targetFreq)
 {
 	bool changed = false;
 
@@ -671,25 +571,22 @@ bool ShowSetPwmDialog(pair<unsigned long, int> *name, int *targetFreq)
     char *labels[] = { _("Duty cycle var:"), _("Frequency (Hz):") };
     char *dests[] = { name_tmp, freq };
 
-	strcpy(name_tmp, ladder->getNameIO(*name).c_str());
+	strcpy(name_tmp, name->c_str());
 
 	if(ShowSimpleDialog(_("Set PWM Duty Cycle"), 2, labels, 0x2, 0x1, 0x1, 0x1, dests)) {
-		if(ladder->IsValidNameAndType(name->first, name_tmp, eType_PWM    , _("Variável"  ), VALIDATE_IS_VAR   , 0,    0) &&
-		   ladder->IsValidNameAndType(0          , freq    , eType_Pending, _("Frequência"), VALIDATE_IS_NUMBER, 1, 2000)) {
-				pair<unsigned long, int> pin = *name;
-				if(ladder->getIO(pin, name_tmp, false, eType_PWM)) { // Variavel valida!
-					changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_tmp, eType_PWM    , _("Variável"  ), VALIDATE_IS_VAR   , 0,    0) &&
+		   ladder->IsValidNameAndType(0                     , freq    , eType_Pending, _("Frequência"), VALIDATE_IS_NUMBER, 1, 2000)) {
+				changed = true;
 
-					*name = pin;
-					*targetFreq = atoi(freq);
-				}
+				*name = name_tmp;
+				*targetFreq = atoi(freq);
 		}
 	}
 
 	return changed;
 }
 
-bool ShowUartDialog(int which, pair<unsigned long, int> *name)
+bool ShowUartDialog(int which, string *name)
 {
 	bool changed = false;
 
@@ -699,17 +596,14 @@ bool ShowUartDialog(int which, pair<unsigned long, int> *name)
     char *dests[] = { name_tmp };
 	eType type = (which == ELEM_UART_RECV) ? eType_RxUART : eType_TxUART;
 
-	strcpy(name_tmp, ladder->getNameIO(*name).c_str());
+	strcpy(name_tmp, name->c_str());
 
     if(ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") :
         _("Send to UART"), 1, labels, 0, 0x1, 0x1, 0x1, dests)) {
-			if(ladder->IsValidNameAndType(name->first, name_tmp, type, (which == ELEM_UART_RECV) ? _("Destino") : _("Origem"), (which == ELEM_UART_RECV) ? VALIDATE_IS_VAR : VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				pair<unsigned long, int> pin = *name;
-				if(ladder->getIO(pin, name_tmp, false, type)) { // Variavel valida!
-					changed = true;
+			if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_tmp, type, (which == ELEM_UART_RECV) ? _("Destino") : _("Origem"), (which == ELEM_UART_RECV) ? VALIDATE_IS_VAR : VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+				changed = true;
 
-					*name = pin;
-				}
+				*name = name_tmp;
 		}
 	}
 
@@ -740,7 +634,7 @@ bool ShowShiftRegisterDialog(char *name, int *stages)
 	return changed;
 }
 
-bool ShowFormattedStringDialog(int mode_write, pair<unsigned long, int> *var, char *string)
+bool ShowFormattedStringDialog(int mode_write, string *var, char *string)
 {
 	bool changed = false;
 
@@ -749,20 +643,17 @@ bool ShowFormattedStringDialog(int mode_write, pair<unsigned long, int> *var, ch
     char *dests[] = { var_tmp, string_tmp };
 	eType type = mode_write ? eType_TxUART : eType_RxUART;
 
-	strcpy(var_tmp, ladder->getNameIO(*var).c_str());
+	strcpy(var_tmp, var->c_str());
 	strcpy(string_tmp, string);
 
 	NoCheckingOnBox[0] = TRUE;
     NoCheckingOnBox[1] = TRUE;
     if(ShowSimpleDialog(mode_write ? _("Send Formatted String Over UART") : _("Receive Formatted String Over UART"), 2, labels, 0x0, 0x1, 0x3, 0x1, dests)) {
-		if(ladder->IsValidNameAndType(var->first, var_tmp, type, _("Variável"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				pair<unsigned long, int> pin = *var;
-				if(ladder->getIO(pin, var_tmp, false, type)) { // Variavel valida!
-					changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*var), var_tmp, type, _("Variável"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+				changed = true;
 
-					*var = pin;
-					strcpy(string, string_tmp);
-				}
+				*var = var_tmp;
+				strcpy(string, string_tmp);
 		}
 	}
 
@@ -772,7 +663,7 @@ bool ShowFormattedStringDialog(int mode_write, pair<unsigned long, int> *var, ch
 	return changed;
 }
 
-bool ShowServoYaskawaDialog(int mode_write, int * id, pair<unsigned long, int> *var, char *string)
+bool ShowServoYaskawaDialog(int mode_write, int * id, string *var, char *string)
 {
 	bool changed = false;
 
@@ -782,23 +673,20 @@ bool ShowServoYaskawaDialog(int mode_write, int * id, pair<unsigned long, int> *
     NoCheckingOnBox[1] = TRUE;
 
     sprintf(id_tmp, "%d", *id);
-	strcpy(var_tmp, ladder->getNameIO(*var).c_str());
+	strcpy(var_tmp, var->c_str());
 	strcpy(string_tmp, string);
 
 	eType type = mode_write ? eType_WriteYaskawa : eType_ReadYaskawa;
 
     if(ShowSimpleDialog(mode_write ? _("Write Servo Yaskawa") : _("Read Servo Yaskawa"), 3, labels, 0x1, 0x2, 0x7, 0x2, dests)) {
-		if(ladder->IsValidNameAndType(var->first, var_tmp, type, _("Variável"), VALIDATE_IS_VAR   , 0, 0) &&
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*var), var_tmp, type, _("Variável"), VALIDATE_IS_VAR   , 0, 0) &&
 		   ladder->IsValidNameAndType(0, id_tmp , eType_Pending, _("ID"      ), VALIDATE_IS_NUMBER, 0, 0)) {
-				pair<unsigned long, int> pin = *var;
-				if(ladder->getIO(pin, var_tmp, false, type)) { // Variavel valida!
-					changed = true;
+				changed = true;
 
-					*var = pin;
+				*var = var_tmp;
 
-					*id = atoi(id_tmp);
-					strcpy(string, string_tmp);
-				}
+				*id = atoi(id_tmp);
+				strcpy(string, string_tmp);
 		}
 	}
 
@@ -822,7 +710,7 @@ void ShowSimulationVarSetDialog(char *name, char *val)
 	}
 }
 
-bool ShowPersistDialog(pair<unsigned long, int> *var)
+bool ShowPersistDialog(string *var)
 {
 	bool changed = false;
 
@@ -830,16 +718,13 @@ bool ShowPersistDialog(pair<unsigned long, int> *var)
     char *labels[] = { _("Variable:") };
     char *dests[] = { var_tmp };
 
-	strcpy(var_tmp, ladder->getNameIO(*var).c_str());
+	strcpy(var_tmp, var->c_str());
 
 	if(ShowSimpleDialog(_("Make Persistent"), 1, labels, 0, 1, 1, 1, dests)) {
-		if(ladder->IsValidNameAndType(var->first, var_tmp, eType_General, _("Variável"), VALIDATE_IS_VAR, 0, 0)) {
-				pair<unsigned long, int> pin = *var;
-				if(ladder->getIO(pin, var_tmp, false, eType_General)) { // Variavel valida!
-					changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*var), var_tmp, eType_General, _("Variável"), VALIDATE_IS_VAR, 0, 0)) {
+			changed = true;
 
-					*var = pin;
-				}
+			*var = var_tmp;
 		}
 	}
 

@@ -351,8 +351,6 @@ struct strSerialConfig {
 // parallel subcircuits. A parallel subcircuit contains elements or series
 // subcircuits. An element is a set of contacts (possibly negated) or a coil.
 
-#define MAX_ELEMENTS_IN_SUBCKT  50
-
 #define ELEM_PLACEHOLDER        0x01
 #define ELEM_SERIES_SUBCKT      0x02
 #define ELEM_PARALLEL_SUBCKT    0x03
@@ -417,378 +415,25 @@ struct strSerialConfig {
 #define MAX_COMMENT_LEN             384
 #define MAX_LOOK_UP_TABLE_LEN        60
 
-typedef struct ElemSubckParallelTag ElemSubcktParallel;
-
-typedef struct ElemCommentTag {
-    char    str[MAX_COMMENT_LEN];
-} ElemComment;
-
-typedef struct ElemContactsTag {
-    char    name[MAX_NAME_LEN];
-    BOOL    negated;
-	unsigned int type;
-	unsigned char bit;
-} ElemContacts;
-
-typedef struct ElemCoilTag {
-    char    name[MAX_NAME_LEN];
-    BOOL    negated;
-    BOOL    setOnly;
-    BOOL    resetOnly;
-	unsigned int  type;
-	unsigned char bit;
-} ElemCoil;
-
-typedef struct ElemTimeTag {
-    char    name[MAX_NAME_LEN];
-    int     delay;
-} ElemTimer;
-
-typedef struct ElemResetTag {
-    char    name[MAX_NAME_LEN];
-} ElemReset;
-
 #define ELEM_RTC_MODE_FIXED        0
 #define ELEM_RTC_MODE_CONTINUOUS   1
 #define ELEM_RTC_MODE_INTERMITTENT 2
 
-typedef struct ElemRTCTag {
-	int           mode;  // Continuous or Intermittent (when using date/hour range) or only a fixed date/hour.
-    unsigned char wday;  // [0:0] Sum, [0:1] Mon, [0:2] Tue, [0:3] Wed, [0:4] Thu, [0:5] Fri, [0:6] Sat, [0:7] WDay 1=YES, 0=No
-	struct tm     start; // Start date/time of the range or the fixed one
-	struct tm     end;   // End date/time when using range.
-} ElemRTC;
-
-typedef struct ElemMoveTag {
-    char    src[MAX_NAME_LEN];
-    char    dest[MAX_NAME_LEN];
-} ElemMove;
-
-typedef struct ElemMathTag {
-    char    op1[MAX_NAME_LEN];
-    char    op2[MAX_NAME_LEN];
-    char    dest[MAX_NAME_LEN];
-} ElemMath;
-
-typedef struct ElemSqrtTag {
-    char    src[MAX_NAME_LEN];
-    char    dest[MAX_NAME_LEN];
-} ElemSqrt;
-
-typedef struct ElemCmpTag {
-    char    op1[MAX_NAME_LEN];
-    char    op2[MAX_NAME_LEN];
-} ElemCmp;
-
-typedef struct ElemCounterTag {
-    char    name[MAX_NAME_LEN];
-    int     max;
-} ElemCounter;
-
-typedef struct ElemReadAdcTag {
-    char    name[MAX_NAME_LEN];
-} ElemReadAdc;
-
 #define ELEM_SET_DA_MODE_RAW 0
 #define ELEM_SET_DA_MODE_MV  1
 #define ELEM_SET_DA_MODE_PCT 2
-
-typedef struct ElemSetDATag {
-    char    name[MAX_NAME_LEN];
-	int		value;
-	int		mode;
-} ElemSetDA;
-
-typedef struct ElemReadEncTag {
-    char    name[MAX_NAME_LEN];
-} ElemReadEnc;
-
-typedef struct ElemResetEncTag {
-    char    name[MAX_NAME_LEN];
-} ElemResetEnc;
-
-typedef struct ElemMultisetDATag {
-	char    name[MAX_NAME_LEN];		// Tempo
-	char    name1[MAX_NAME_LEN];	// Deslocamento
-	BOOL	linear;					// 1 = Linear, 0 = Curva Ascendente/Descendente
-	BOOL	forward;				// 1 = Avança, 0 = Recua
-	BOOL	speedup;				// 1 = Aceleração, 0 = Desaceleração
-	int		time;					// tempo total da rampa
-	int		initval;				// valor inicial do DA na rampa
-	int		type;					// 0 = Valor saida do DA (2048 ~ -2048), 1 = milivolt (mV) (10V ~-10V), 2 = percentual (%)
-	int		gaint;					// tempo da curva de ganho em %
-	int		gainr;					// resolução da curva de ganho em %
-	BOOL	StartFromCurrentValue;	// 0 = Iniciar ou ir para zero, conforme speedup. 1 = partir do valor atual até o valor configurado
-	int		ramp_abort_mode;
-} ElemMultisetDA;
-
-typedef struct ElemReadUSSTag {
-    char    name[MAX_NAME_LEN];
-	int		id;
-	int		parameter;
-	int		parameter_set;
-	int		index;
-} ElemReadUSS;
-
-typedef struct ElemWriteUSSTag {
-    char    name[MAX_NAME_LEN];
-	int		id;
-	int		parameter;
-	int		parameter_set;
-	int		index;
-} ElemWriteUSS;
-
-typedef struct ElemReadModbusTag {
-    char    name[MAX_NAME_LEN];
-	int		elem;
-	int		address;
-	bool	int32;
-	bool	retransmitir;
-} ElemReadModbus;
-
-typedef struct ElemWriteModbusTag {
-    char    name[MAX_NAME_LEN];
-	int		elem;
-	int		address;
-	bool	int32;
-	bool	retransmitir;
-} ElemWriteModbus;
-
-typedef struct ElemSetPwmTag {
-    char    name[MAX_NAME_LEN];
-    int     targetFreq;
-} ElemSetPwm;
-
-typedef struct ElemUartTag {
-    char    name[MAX_NAME_LEN];
-} ElemUart;
-
-typedef struct ElemSetBitTag {
-    char    name[MAX_NAME_LEN];
-    int		bit;
-	int		set;
-} ElemSetBit;
-
-typedef struct ElemCheckBitTag {
-    char    name[MAX_NAME_LEN];
-    int		bit;
-	int		set;
-} ElemCheckBit;
-
-typedef struct ElemShiftRegisterTag {
-    char    name[MAX_NAME_LEN];
-    int     stages;
-} ElemShiftRegister;
-
-typedef struct ElemLookUpTableTag {
-    char    dest[MAX_NAME_LEN];
-    char    index[MAX_NAME_LEN];
-    int     count;
-    BOOL    editAsString;
-    SWORD   vals[MAX_LOOK_UP_TABLE_LEN];
-} ElemLookUpTable;
-
-typedef struct ElemPiecewiseLinearTag {
-    char    dest[MAX_NAME_LEN];
-    char    index[MAX_NAME_LEN];
-    int     count;
-    SWORD   vals[MAX_LOOK_UP_TABLE_LEN];
-} ElemPiecewiseLinear;
-
-typedef struct ElemFormattedStringTag {
-    char    var[MAX_NAME_LEN];
-    char    string[MAX_LOOK_UP_TABLE_LEN];
-} ElemFormattedString;
-
-typedef struct ElemServoYaskawaTag {
-    char    id[MAX_NAME_LEN];
-    char    var[MAX_NAME_LEN];
-    char    string[MAX_LOOK_UP_TABLE_LEN];
-} ElemServoYaskawa;
-
-typedef struct ElemPerisistTag {
-    char    var[MAX_NAME_LEN];
-} ElemPersist;
-
-typedef struct ElemRandTag {
-    char    var[MAX_NAME_LEN];
-    char    min[MAX_NAME_LEN];
-    char    max[MAX_NAME_LEN];
-} ElemRand;
-
-typedef struct ElemAbsTag {
-    char    src[MAX_NAME_LEN];
-    char    dest[MAX_NAME_LEN];
-} ElemAbs;
 
 #define SELECTED_NONE       0
 #define SELECTED_ABOVE      1
 #define SELECTED_BELOW      2
 #define SELECTED_RIGHT      3
 #define SELECTED_LEFT       4
-typedef struct ElemLeafTag {
-    int     selectedState;
-    BOOL    poweredAfter;
-    union {
-        ElemComment         comment;
-        ElemContacts        contacts;
-        ElemCoil            coil;
-        ElemTimer           timer;
-		ElemRTC				rtc;
-        ElemReset           reset;
-        ElemMove            move;
-        ElemMath            math;
-        ElemSqrt            sqrt;
-		ElemRand            rand;
-		ElemAbs             abs;
-        ElemCmp             cmp;
-        ElemCounter         counter;
-        ElemReadAdc         readAdc;
-		ElemSetDA			setDA;
-        ElemReadEnc         readEnc;
-		ElemResetEnc        resetEnc;
-		ElemMultisetDA      multisetDA;
-        ElemReadUSS         readUSS;
-        ElemWriteUSS        writeUSS;
-        ElemReadModbus      readModbus;
-        ElemWriteModbus     writeModbus;
-        ElemSetPwmTag       setPwm;
-        ElemUart            uart;
-		ElemSetBit			setBit;
-		ElemCheckBit		checkBit;
-        ElemShiftRegister   shiftRegister;
-        ElemFormattedString fmtdStr;
-		ElemServoYaskawa	servoYaskawa;
-        ElemLookUpTable     lookUpTable;
-        ElemPiecewiseLinear piecewiseLinear;
-        ElemPersist         persist;
-    }       d;
-} ElemLeaf;
-
-typedef struct ElemSubcktSeriesTag {
-    struct {
-        int     which;
-        union {
-            void                   *any;
-            ElemSubcktParallel     *parallel;
-            ElemLeaf               *leaf;
-        } d;
-    } contents[MAX_ELEMENTS_IN_SUBCKT];
-    int count;
-} ElemSubcktSeries;
-
-typedef struct ElemSubckParallelTag {
-    struct {
-        int     which;
-        union {
-            void                   *any;
-            ElemSubcktSeries       *series;
-            ElemLeaf               *leaf;
-        } d;
-    } contents[MAX_ELEMENTS_IN_SUBCKT];
-    int count;
-} ElemSubcktParallel;
 
 #include "intcode.h"
 
 typedef struct McuIoInfoTag McuIoInfo;
 
-typedef struct PlcProgramSingleIoTag {
-    char        name[MAX_NAME_LEN];
-#define IO_TYPE_PENDING         0x00000000
-#define IO_TYPE_ALL             0x7FFFFFFF
-
-#define IO_TYPE_DIG_INPUT        0x00000001
-#define IO_TYPE_DIG_OUTPUT       0x00000002
-#define IO_TYPE_READ_ADC         0x00000004
-#define IO_TYPE_UART_TX          0x00000008
-#define IO_TYPE_UART_RX          0x00000010
-#define IO_TYPE_PWM_OUTPUT       0x00000020
-#define IO_TYPE_INTERNAL_RELAY   0x00000040
-#define IO_TYPE_TON              0x00000080
-#define IO_TYPE_TOF              0x00000100
-#define IO_TYPE_RTO              0x00000200
-#define IO_TYPE_COUNTER          0x00000400
-#define IO_TYPE_GENERAL          0x00000800
-#define IO_TYPE_READ_ENC         0x00001000
-#define IO_TYPE_RESET_ENC        0x00002000
-#define IO_TYPE_READ_USS         0x00004000
-#define IO_TYPE_WRITE_USS        0x00008000
-#define IO_TYPE_SET_DA			 0x00010000
-#define IO_TYPE_READ_MODBUS      0x00020000
-#define IO_TYPE_WRITE_MODBUS     0x00040000
-#define IO_TYPE_READ_YASKAWA	 0x00200000
-#define IO_TYPE_WRITE_YASKAWA	 0x00400000
-#define IO_TYPE_INTERNAL_FLAG	 0x80000000
-
-#define IO_TYPE_VAR             (IO_TYPE_GENERAL          | \
-								 IO_TYPE_READ_ADC         | \
-								 IO_TYPE_COUNTER          | \
-								 IO_TYPE_READ_ENC         | \
-								 IO_TYPE_READ_USS         | \
-								 IO_TYPE_WRITE_USS        | \
-								 IO_TYPE_SET_DA           | \
-								 IO_TYPE_READ_MODBUS      | \
-								 IO_TYPE_WRITE_MODBUS     | \
-								 IO_TYPE_READ_YASKAWA     | \
-								 IO_TYPE_WRITE_YASKAWA      \
-								)
-
-    unsigned int  type;
-#define NO_PIN_ASSIGNED         0
-    int         pin;
-	unsigned char bit;
-} PlcProgramSingleIo;
-
 #define MAX_IO  4096
-typedef struct PlcProgramTag {
-    struct {
-        PlcProgramSingleIo  assignment[MAX_IO];
-        int                 count;
-    }           io;
-	struct {
-		int         cycleTime;
-		int         mcuClock;
-		int         baudRate;	// RS485 baudrate
-		int			UART;
-		int			ModBUSID;
-		unsigned char ip[4];
-		unsigned char mask[4];
-		unsigned char gw[4];
-		unsigned char dns[4];
-		char		sntp[126];
-		int			gmt;
-		unsigned char dailysave;
-		int			perimeter;
-		int			pulses;
-		float		factor;
-		unsigned char x4;
-		BOOL canSave;
-		int ssi_size;
-		int ssi_mode;
-		int ramp_abort_mode;
-		int enc_inc_conv_mode;
-		int enc_ssi_conv_mode;
-		int ssi_perimeter;
-		float ssi_factor;
-		int ssi_size_bpr;
-		int sntp_enable;
-		// Project Information
-		char   InfoName       [MAX_NAME_LEN];
-		char   InfoDeveloper  [MAX_NAME_LEN];
-		char   InfoDescription[MAX_NAME_LEN];
-		char   InfoFWVersion  [MAX_NAME_LEN];
-		long   InfoBuildNumber;
-		time_t InfoCompileDate;
-		time_t InfoProgramDate;
-	} settings;
-
-#define MAX_RUNGS 999
-    ElemSubcktSeries *rungs[MAX_RUNGS];
-    BOOL              rungHasBreakPoint[MAX_RUNGS];
-    BOOL              rungPowered[MAX_RUNGS];
-    int               numRungs;
-} PlcProgram;
 
 #include "LadderObjects.h"
 #include "iomap.h"
@@ -801,17 +446,6 @@ typedef struct PlcProgramTag {
 // dimensions, in characters, of the area reserved for 1 leaf element
 #define POS_WIDTH   22
 #define POS_HEIGHT  3
-
-// offset from the top left of the window at which we start drawing, in pixels
-#define X_PADDING    35
-#define Y_PADDING    14
-
-typedef struct PlcCursorTag {
-    int left;
-    int top;
-    int width;
-    int height;
-} PlcCursor;
 
 #define MAX_RECENT_ITEMS     10
 #define MAX_RECENT_MENU_LEN 100
@@ -931,18 +565,15 @@ extern vector<eType> vectorTypesVar;
 
 void ProcessMenu(int code);
 void SetMenusEnabled(LadderContext *context);
-void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled);
 void RefreshScrollbars(void);
 extern HINSTANCE Instance;
 extern HWND MainWindow;
 extern HDC Hdc;
-extern PlcProgram Prog;
 extern LadderDiagram *ladder;
 extern Settings POPSettings;
 extern XMLWrapper XmlSettings;
 extern char CurrentCompileFile[MAX_PATH];
 extern McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS];
-extern char *InternalFlags[]; // Internal flags available to the users.
 
 // Internal variables available to the users.
 extern char *InternalVars[][MAX_NAME_LEN];
@@ -1016,7 +647,6 @@ void CheckHeap(char *file, int line);
 
 // maincontrols.cpp
 void MakeMainWindowControls(void);
-HMENU MakeMainWindowMenus(void);
 void VscrollProc(WPARAM wParam);
 void HscrollProc(WPARAM wParam);
 void RefreshControlsToSettings(void);
@@ -1041,10 +671,7 @@ extern BOOL RealTimeSimulationRunning;
 
 // draw.cpp
 extern int ColsAvailable;
-extern BOOL SelectionActive;
-extern BOOL ThisHighlighted;
 
-void PoweredText(BOOL powered);
 int FormattedStrlen(const char *str);
 void CenterWithSpaces(int cx, int cy, char *str, BOOL powered, BOOL isName);
 void CenterWithSpaces(int cx, int cy, char *str, BOOL powered, BOOL isName, int extra);
@@ -1058,47 +685,20 @@ void PaintWindow(void);
 void ExportDrawingAsText(char *file);
 void InitForDrawing(void);
 void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert);
-extern HFONT FixedWidthFont;
-extern HFONT FixedWidthFontBold;
-extern int SelectedGxAfterNextPaint;
-extern int SelectedGyAfterNextPaint;
-extern BOOL ScrollSelectedIntoViewAfterNextPaint;
 extern int ScrollXOffset;
 extern int ScrollYOffset;
 extern int ScrollXOffsetMax;
 extern int ScrollYOffsetMax;
 
 // schematic.cpp
-void SelectElement(int gx, int gy, int state);
 void MoveCursorKeyboard(int keyCode, int shiftPressed);
-BOOL MoveCursorTopLeft(void);
 bool EditSelectedElement(void);
 bool MakeResetOnlySelected(void);
 bool MakeSetOnlySelected(void);
 bool MakeNormalSelected(void);
 bool NegateSelected(void);
-BOOL FindSelected(int *gx, int *gy);
-void MoveCursorNear(int gx, int gy);
 
-#define DISPLAY_MATRIX_X_SIZE 32
-#define DISPLAY_MATRIX_Y_SIZE 4096
-extern ElemLeaf *DisplayMatrix[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
-extern int DisplayMatrixWhich[DISPLAY_MATRIX_X_SIZE][DISPLAY_MATRIX_Y_SIZE];
-extern ElemLeaf DisplayMatrixFiller;
-#define PADDING_IN_DISPLAY_MATRIX (&DisplayMatrixFiller)
-#define VALID_LEAF(x) ((x) != NULL && (x) != PADDING_IN_DISPLAY_MATRIX)
-extern ElemLeaf *Selected;
-extern int SelectedWhich;
-
-#define FAR_FIND_FIRST    0x01
-#define FAR_FIND_NEXT     0x02
-#define FAR_REPLACE_FIRST 0x11
-#define FAR_REPLACE_NEXT  0x12
-#define FAR_REPLACE_ALL   0x13
-
-#define FAR_MODE_REPLACE(mode) (mode & 0x10)
-
-unsigned int FindAndReplace(char *search_text, char *new_text, int mode);
+unsigned int FindAndReplace(string search_text, string new_text, eSearchAndReplaceMode mode);
 
 // circuit.cpp
 bool AddTimer(int which);
@@ -1146,14 +746,8 @@ bool DeleteSelectedRung(void);
 bool InsertRung(bool afterCursor);
 BOOL UartFunctionUsed(void);
 BOOL PwmFunctionUsed(void);
-void CopyRung(ElemSubcktSeries *rung);
-bool PasteRung(bool after);
-void CopyLeaf(ElemLeaf *leaf, int which);
-bool PasteLeaf(void);
 bool PushRung(bool up);
 void NewProgram(void);
-void FreeCircuit(int which, void *any);
-BOOL ContainsElem(int which, void *any, ElemLeaf *seek);
 
 // loadsave.cpp
 bool fwrite_uint   (FILE *f, unsigned int   var);
@@ -1185,9 +779,6 @@ void SetAutoSaveInterval(int interval);
 void CALLBACK AutoSaveNow(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 
 // iolist.cpp
-int GenerateIoList(int prevSel);
-void SaveIoListToFile(FILE *f);
-BOOL LoadIoListFromFile(FILE *f, int version);
 void ShowIoDialog(int item);
 void IoListProc(NMHDR *h);
 void IoMapListProc(NMHDR *h);
@@ -1197,36 +788,36 @@ void ShowEncoderSliderPopup(char *name);
 // commentdialog.cpp
 bool ShowCommentDialog(char *comment);
 // contactsdialog.cpp
-bool ShowContactsDialog(bool *negated, unsigned long *idName);
+bool ShowContactsDialog(bool *negated, string *sName, eType *type);
 // coildialog.cpp
-bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, unsigned long *idName);
-bool ShowMultisetDADialog(LadderElemMultisetDAProp *l);
+bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, string *sName, eType *type);
+bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *time, string *desl);
 // simpledialog.cpp
-bool ShowTimerDialog(int which, int *delay, unsigned long *idName);
+bool ShowTimerDialog(int which, int *delay, string *sName);
 bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end);
-bool ShowCounterDialog(int which, int *maxV, unsigned long *idName);
-bool ShowReadAdcDialog(pair<unsigned long, int> *name);
-bool ShowSetBitDialog(pair<unsigned long, int> *name, bool * set, int * bit);
-bool ShowCheckBitDialog(pair<unsigned long, int> *name, bool * set, int * bit);
-bool ShowSetDADialog(pair<unsigned long, int> *name, int *mode);
-bool ShowReadEncDialog(pair<unsigned long, int> *name);
-bool ShowResetEncDialog(pair<unsigned long, int> *name);
-bool ShowUSSDialog(int which, pair<unsigned long, int> *name, int *id, int *parameter, int *parameter_set, int *index);
-bool ShowModbusDialog(int mode_write, pair<unsigned long, int> *name, int *id, int *address, bool *set, bool *retransmitir);
-bool ShowSetPwmDialog(pair<unsigned long, int> *name, int *targetFreq);
-bool ShowPersistDialog(pair<unsigned long, int> *var);
-bool ShowUartDialog(int which, pair<unsigned long, int> *name);
-bool ShowCmpDialog(int which, pair<unsigned long, int> *op1, pair<unsigned long, int> *op2);
+bool ShowCounterDialog(int which, int *maxV, string *sName);
+bool ShowReadAdcDialog(string *name);
+bool ShowSetBitDialog(string *name, bool * set, int * bit);
+bool ShowCheckBitDialog(string *name, bool * set, int * bit);
+bool ShowSetDADialog(string *name, int *mode);
+bool ShowReadEncDialog(string *name);
+bool ShowResetEncDialog(string *name);
+bool ShowUSSDialog(int which, string *name, int *id, int *parameter, int *parameter_set, int *index);
+bool ShowModbusDialog(int mode_write, string *name, int *id, int *address, bool *set, bool *retransmitir);
+bool ShowSetPwmDialog(string *name, int *targetFreq);
+bool ShowPersistDialog(string *var);
+bool ShowUartDialog(int which, string *name);
+bool ShowCmpDialog(int which, string *op1, string *op2);
 bool ShowShiftRegisterDialog(char *name, int *stages);
-bool ShowFormattedStringDialog(int mode_write, pair<unsigned long, int> *var, char *string);
-bool ShowServoYaskawaDialog(int mode_write, int *id, pair<unsigned long, int> *var, char *string);
+bool ShowFormattedStringDialog(int mode_write, string *var, char *string);
+bool ShowServoYaskawaDialog(int mode_write, int *id, string *var, char *string);
 void ShowSimulationVarSetDialog(char *name, char *val);
-bool ShowLookUpTableDialog(LadderElemLUTProp *t);
-bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t);
-bool ShowResetDialog(LadderElemReset *elem, unsigned long *idName);
-bool ShowSqrtDialog(pair<unsigned long, int> *dest, pair<unsigned long, int> *src);
-bool ShowRandDialog(pair<unsigned long, int> *var, pair<unsigned long, int> *min, pair<unsigned long, int> *max);
-bool ShowAbsDialog(pair<unsigned long, int> *dest, pair<unsigned long, int> *src);
+bool ShowLookUpTableDialog(LadderElemLUTProp *t, string *dest, string *index);
+bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, string *dest, string *index);
+bool ShowResetDialog(string *sName);
+bool ShowSqrtDialog(string *dest, string *src);
+bool ShowRandDialog(string *var, string *min, string *max);
+bool ShowAbsDialog(string *dest, string *src);
 // confdialog.cpp
 extern struct strSerialConfig SerialConfig[];
 extern char *SerialParityString[];
@@ -1332,8 +923,6 @@ void SetSimulationVariable(const char *name, SWORD val);
 SWORD GetSimulationVariable(const char *name);
 void DestroyUartSimulationWindow(void);
 void ShowUartSimulationWindow(void);
-extern BOOL InSimulationMode; 
-extern BOOL SimulateRedrawAfterNextCycle;
 #define MAX_SCROLLBACK 16384
 
 // WatchPoint declarations
@@ -1388,8 +977,6 @@ void GenerateDeclarations(FILE *f);
 void CompileAnsiC(char *outFile);
 DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage);
 DWORD GenerateCFile(char *filename);
-// interpreted.c
-void CompileInterpreted(char *outFile);
 
 BOOL FlashProgram(char * hexFile, int ComPort, long BaudRate);
 
@@ -1403,7 +990,7 @@ void SimulationServer_Stop   (void);
 void SimulationServer_Message(WPARAM wParam, LPARAM lParam);
 
 // mathdialog.cpp
-bool ShowMathDialog(int which, pair<unsigned long, int> *dest, pair<unsigned long, int> *op1, pair<unsigned long, int> *op2);
+bool ShowMathDialog(int which, string *dest, string *op1, string *op2);
 
 // modbus_usb.cpp
 bool          USB_SetDateTime(struct tm *t);

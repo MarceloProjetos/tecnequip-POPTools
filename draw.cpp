@@ -4,15 +4,6 @@
 // know this so that we can right-justify the coils.
 int ColsAvailable;
 
-// Set when we draw the selected element in the program. If there is no
-// element selected then we ought to put the cursor at the top left of
-// the screen.
-BOOL SelectionActive;
-
-// Is the element currently being drawn highlighted because it is selected?
-// If so we must not do further syntax highlighting.
-BOOL ThisHighlighted;
-
 //-----------------------------------------------------------------------------
 // Count the length of a string, in characters. Nonstandard because the
 // string may contain special characters to indicate formatting (syntax

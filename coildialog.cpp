@@ -9,7 +9,6 @@ static HWND NormalRadio;
 static HWND SetOnlyRadio;
 static HWND ResetOnlyRadio;
 static HWND NameTextbox;
-static HWND BitTextbox;
 
 static LONG_PTR PrevNameProc;
 static LONG_PTR PrevCoilDialogProc;
@@ -90,16 +89,6 @@ static void MakeControls(void)
 	LoadIOListToComboBox(NameTextbox, types);
 	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
-    HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        135, 105, 50, 21, CoilDialog, NULL, Instance, NULL);
-    NiceFont(textLabel2);
-
-	BitTextbox = CreateWindowEx(0, WC_STATIC, _("0"),
-        WS_CHILD |  WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
-        190, 105, 65, 20, CoilDialog, NULL, Instance, NULL);
-    NiceFont(BitTextbox);
-
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         276, 10, 70, 23, CoilDialog, NULL, Instance, NULL); 
@@ -143,19 +132,15 @@ static LRESULT CALLBACK CoilDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	return CallWindowProc((WNDPROC)PrevCoilDialogProc, hwnd, msg, wParam, lParam);
 }
 
-bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, unsigned long *idName)
+bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, string *sName, eType *type)
 {
 	bool changed = false;
-	string sname = ladder->getNameIO(*idName);
-	const char *name = sname.c_str();
-	mapDetails detailsIO = ladder->getDetailsIO(*idName);
 
-	eType type;
 	char name_tmp[MAX_NAME_LEN];
 
 	CoilDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Coil"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 359, 135, MainWindow, NULL, Instance, NULL);
+        100, 100, 359, 115, MainWindow, NULL, Instance, NULL);
     RECT r;
     GetClientRect(CoilDialog, &r);
 
@@ -164,21 +149,17 @@ bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, unsigned long
 
     MakeControls();
 
-	char cbit[10];
-	_itoa(detailsIO.bit, cbit, 10);
-	SetWindowText(BitTextbox, cbit );
-
-	if(detailsIO.type == eType_InternalRelay) {
+	if(*type == eType_InternalRelay) {
         SendMessage(SourceInternalRelayRadio, BM_SETCHECK, BST_CHECKED, 0);
     } else {
         SendMessage(SourceMcuPinRadio, BM_SETCHECK, BST_CHECKED, 0);
     }
 
 	vector<eType> types;
-	types.push_back(detailsIO.type);
+	types.push_back(*type);
 	LoadIOListToComboBox(NameTextbox, types);
 
-	strcpy(name_tmp, name);
+	strcpy(name_tmp, sName->c_str());
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)name_tmp);
 
 	if(*negated) {
@@ -222,35 +203,32 @@ bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, unsigned long
         if(SendMessage(SourceInternalRelayRadio, BM_GETSTATE, 0, 0)
             & BST_CHECKED)
         {
-            type = eType_InternalRelay;
+            *type = eType_InternalRelay;
         } else {
-            type = eType_DigOutput;
+            *type = eType_DigOutput;
         }
 
-		if(ladder->IsValidNameAndType(*idName, name_tmp, type)) {
-			pair<unsigned long, int> pin = pair<unsigned long, int>(*idName, 0);
-			if(ladder->getIO(pin, name_tmp, true, type)) { // Variavel valida!
-				changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*sName), name_tmp, *type)) {
+			changed = true;
 
-				*idName = pin.first;
+			*sName = name_tmp;
 
-				if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-					*negated = false;
-					*setOnly = false;
-					*resetOnly = false;
-				} else if(SendMessage(NegatedRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-					*negated = true;
-					*setOnly = false;
-					*resetOnly = false;
-				} else if(SendMessage(SetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-					*negated = false;
-					*setOnly = true;
-					*resetOnly = false;
-				} else if(SendMessage(ResetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-					*negated = false;
-					*setOnly = false;
-					*resetOnly = true;
-				}
+			if(SendMessage(NormalRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+				*negated = false;
+				*setOnly = false;
+				*resetOnly = false;
+			} else if(SendMessage(NegatedRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+				*negated = true;
+				*setOnly = false;
+				*resetOnly = false;
+			} else if(SendMessage(SetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+				*negated = false;
+				*setOnly = true;
+				*resetOnly = false;
+			} else if(SendMessage(ResetOnlyRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+				*negated = false;
+				*setOnly = false;
+				*resetOnly = true;
 			}
 		}
     }

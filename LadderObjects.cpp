@@ -21,6 +21,8 @@ LadderContext getEmptyContext(void)
 	context.SelectedElem     = nullptr;
 	context.SelectedState    = SELECTED_NONE;
 
+	context.inSimulationMode = false;
+
 	context.Diagram          = nullptr;
 	context.ParallelStart    = nullptr;
 
@@ -286,10 +288,19 @@ LadderElemContact::LadderElemContact(LadderDiagram *diagram) : LadderElem(false,
 {
 	Diagram      = diagram;
 
-	prop.negated = false;
-	prop.idName  = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("in");
+	infoIO_Name.isBit         = true;
+	infoIO_Name.type          = eType_DigInput;
+	infoIO_Name.access        = eRequestAccessType_Read;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idName, _("in"), true, eType_DigInput);
+	Diagram->getIO(infoIO_Name);
+
+	prop.negated = false;
+	prop.idName  = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemContact::DrawTXT(void)
@@ -409,7 +420,36 @@ bool LadderElemContact::acceptIO(unsigned long id, eType type)
 
 void LadderElemContact::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("in"), true, eType_DigInput, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
+}
+
+int LadderElemContact::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(prop.idName.first).type;
+			if(type == eType_Reserved) {
+				type = eType_DigInput;
+			}
+
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, type, infoIO_Name)) {
+				LadderElemContactProp *data = (LadderElemContactProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemContact::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -422,12 +462,21 @@ LadderElemCoil::LadderElemCoil(LadderDiagram *diagram) : LadderElem(true, false,
 {
 	Diagram        = diagram;
 
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("out");
+	infoIO_Name.isBit         = true;
+	infoIO_Name.type          = eType_DigOutput;
+	infoIO_Name.access        = eRequestAccessType_Write;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Name);
+
 	prop.negated   = false;
 	prop.setOnly   = false;
 	prop.resetOnly = false;
-	prop.idName    = pair<unsigned long, int>(0, 0);
-
-	Diagram->getIO(prop.idName, _("out"), true, eType_DigOutput);
+	prop.idName    = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemCoil::DrawTXT(void)
@@ -545,7 +594,36 @@ bool LadderElemCoil::acceptIO(unsigned long id, eType type)
 
 void LadderElemCoil::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("out"), true, eType_DigOutput, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
+}
+
+int LadderElemCoil::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(prop.idName.first).type;
+			if(type == eType_Reserved) {
+				type = eType_DigOutput;
+			}
+
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, type, infoIO_Name)) {
+				LadderElemCoilProp *data = (LadderElemCoilProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemCoil::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -558,10 +636,19 @@ LadderElemTimer::LadderElemTimer(LadderDiagram *diagram, int which) : LadderElem
 {
 	Diagram     = diagram;
 
-	prop.delay  = 100000;
-	prop.idName = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = getTimerTypeIO(getWhich());
+	infoIO_Name.access        = which == ELEM_RTO ? eRequestAccessType_Read : eRequestAccessType_ReadWrite;
+	infoIO_Name.isUniqueRead  = true;
+	infoIO_Name.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idName, _("new"), false, getTimerTypeIO(getWhich()));
+	Diagram->getIO(infoIO_Name);
+
+	prop.delay  = 100000;
+	prop.idName = infoIO_Name.pin;
 }
 
 //-----------------------------------------------------------------------------
@@ -748,7 +835,31 @@ bool LadderElemTimer::acceptIO(unsigned long id, eType type)
 
 void LadderElemTimer::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, getTimerTypeIO(getWhich()), isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
+}
+
+int LadderElemTimer::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, getTimerTypeIO(getWhich()), infoIO_Name)) {
+				LadderElemTimerProp *data = (LadderElemTimerProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemTimer::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -911,10 +1022,20 @@ bool LadderElemRTC::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoActi
 LadderElemCounter::LadderElemCounter(LadderDiagram *diagram, int which) : LadderElem(which == ELEM_CTC ? true : false, false, false, which)
 {
 	Diagram   = diagram;
-	prop.max  = 0;
-	prop.idName = pair<unsigned long, int>(0, 0);
 
-	Diagram->getIO(prop.idName, _("new"), false, eType_Counter);
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = eType_Counter;
+	infoIO_Name.access        = eRequestAccessType_Read;
+	infoIO_Name.isUniqueRead  = true;
+	infoIO_Name.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Name);
+
+	prop.max    = 0;
+	prop.idName = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemCounter::DrawTXT(void)
@@ -1055,7 +1176,31 @@ bool LadderElemCounter::acceptIO(unsigned long id, eType type)
 
 void LadderElemCounter::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, eType_Counter, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
+}
+
+int LadderElemCounter::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, eType_Counter, infoIO_Name)) {
+				LadderElemCounterProp *data = (LadderElemCounterProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemCounter::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -1068,9 +1213,18 @@ LadderElemReset::LadderElemReset(LadderDiagram *diagram) : LadderElem(true, fals
 {
 	Diagram   = diagram;
 
-	prop.idName = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = eType_Pending;
+	infoIO_Name.access        = eRequestAccessType_Write;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idName, _("new"), false, eType_Pending);
+	Diagram->getIO(infoIO_Name);
+
+	prop.idName = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemReset::DrawTXT(void)
@@ -1149,7 +1303,34 @@ bool LadderElemReset::acceptIO(unsigned long id, eType type)
 
 void LadderElemReset::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, eType_Pending, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
+}
+
+int LadderElemReset::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type == eType_Counter) {
+				pair<unsigned long, int> pin = prop.idName;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Name)) {
+					LadderElemResetProp *data = (LadderElemResetProp *)getProperties();
+
+					data->idName  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					return 1;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemReset::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -1235,11 +1416,29 @@ LadderElemCmp::LadderElemCmp(LadderDiagram *diagram, int which) : LadderElem(fal
 {
 	Diagram  = diagram;
 
-	prop.idOp1 = pair<unsigned long, int>(0, 0);
-	prop.idOp2 = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Op1
+	infoIO_Op1.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Op1.name          = _("var");
+	infoIO_Op1.isBit         = false;
+	infoIO_Op1.type          = eType_General;
+	infoIO_Op1.access        = eRequestAccessType_Read;
+	infoIO_Op1.isUniqueRead  = false;
+	infoIO_Op1.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idOp1, _("var"), false, eType_General);
-	Diagram->getIO(prop.idOp2,   "1"   , false, eType_Pending);
+	// Caracteristicas do I/O Op2
+	infoIO_Op2.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Op2.name          = "1";
+	infoIO_Op2.isBit         = false;
+	infoIO_Op2.type          = eType_Pending;
+	infoIO_Op2.access        = eRequestAccessType_Read;
+	infoIO_Op2.isUniqueRead  = false;
+	infoIO_Op2.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Op1);
+	Diagram->getIO(infoIO_Op2);
+
+	prop.idOp1 = infoIO_Op1.pin;
+	prop.idOp2 = infoIO_Op2.pin;
 }
 
 pair<string, string> LadderElemCmp::DrawTXT(void)
@@ -1385,8 +1584,66 @@ bool LadderElemCmp::acceptIO(unsigned long id, eType type)
 
 void LadderElemCmp::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idOp1, _("var"), false, eType_General, isDiscard);
-	Diagram->updateIO(prop.idOp2,   "1"   , false, eType_Pending, isDiscard);
+	infoIO_Op1.pin = prop.idOp1;
+	Diagram->updateIO(infoIO_Op1, isDiscard);
+	prop.idOp1 = infoIO_Op1.pin;
+
+	infoIO_Op2.pin = prop.idOp2;
+	Diagram->updateIO(infoIO_Op2, isDiscard);
+	prop.idOp2 = infoIO_Op2.pin;
+}
+
+int LadderElemCmp::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idOp1.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idOp1;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Op1)) {
+					LadderElemCmpProp *data = (LadderElemCmpProp *)getProperties();
+
+					data->idOp1  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idOp2.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idOp2;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Op2)) {
+					LadderElemCmpProp *data = (LadderElemCmpProp *)getProperties();
+
+					data->idOp2  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
 }
 
 bool LadderElemCmp::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -1399,13 +1656,40 @@ LadderElemMath::LadderElemMath(LadderDiagram *diagram, int which) : LadderElem(t
 {
 	Diagram   = diagram;
 
-	prop.idDest = pair<unsigned long, int>(0, 0);
-	prop.idOp1  = pair<unsigned long, int>(0, 0);
-	prop.idOp2  = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Dest
+	infoIO_Dest.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Dest.name          = _("dest");
+	infoIO_Dest.isBit         = false;
+	infoIO_Dest.type          = eType_General;
+	infoIO_Dest.access        = eRequestAccessType_Write;
+	infoIO_Dest.isUniqueRead  = false;
+	infoIO_Dest.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idDest, _("dest"), false, eType_General);
-	Diagram->getIO(prop.idOp1 , _("src" ), false, eType_General);
-	Diagram->getIO(prop.idOp2 ,   "1"    , false, eType_Pending);
+	// Caracteristicas do I/O Op1
+	infoIO_Op1.pin            = pair<unsigned long, int>(0, 0);
+	infoIO_Op1.name           = _("src");
+	infoIO_Op1.isBit          = false;
+	infoIO_Op1.type           = eType_General;
+	infoIO_Op1.access         = eRequestAccessType_Read;
+	infoIO_Op1.isUniqueRead   = false;
+	infoIO_Op1.isUniqueWrite  = false;
+
+	// Caracteristicas do I/O Op2
+	infoIO_Op2.pin            = pair<unsigned long, int>(0, 0);
+	infoIO_Op2.name           = "1";
+	infoIO_Op2.isBit          = false;
+	infoIO_Op2.type           = eType_Pending;
+	infoIO_Op2.access         = eRequestAccessType_Read;
+	infoIO_Op2.isUniqueRead   = false;
+	infoIO_Op2.isUniqueWrite  = false;
+
+	Diagram->getIO(infoIO_Dest);
+	Diagram->getIO(infoIO_Op1 );
+	Diagram->getIO(infoIO_Op2 );
+
+	prop.idDest = infoIO_Dest.pin;
+	prop.idOp1  = infoIO_Op1 .pin;
+	prop.idOp2  = infoIO_Op2 .pin;
 }
 
 pair<string, string> LadderElemMath::DrawTXT(void)
@@ -1566,9 +1850,17 @@ bool LadderElemMath::acceptIO(unsigned long id, eType type)
 
 void LadderElemMath::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idDest, _("dest"), false, eType_General, isDiscard);
-	Diagram->updateIO(prop.idOp1 , _("src" ), false, eType_General, isDiscard);
-	Diagram->updateIO(prop.idOp2 ,   "1"    , false, eType_Pending, isDiscard);
+	infoIO_Dest.pin = prop.idDest;
+	Diagram->updateIO(infoIO_Dest, isDiscard);
+	prop.idDest = infoIO_Dest.pin;
+
+	infoIO_Op1.pin = prop.idOp1;
+	Diagram->updateIO(infoIO_Op1, isDiscard);
+	prop.idOp1 = infoIO_Op1.pin;
+
+	infoIO_Op2.pin = prop.idOp2;
+	Diagram->updateIO(infoIO_Op2, isDiscard);
+	prop.idOp2 = infoIO_Op2.pin;
 }
 
 bool LadderElemMath::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -1581,11 +1873,29 @@ LadderElemSqrt::LadderElemSqrt(LadderDiagram *diagram) : LadderElem(true, false,
 {
 	Diagram   = diagram;
 
-	prop.idDest = pair<unsigned long, int>(0, 0);
-	prop.idSrc  = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Dest
+	infoIO_Dest.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Dest.name          = _("dest");
+	infoIO_Dest.isBit         = false;
+	infoIO_Dest.type          = eType_General;
+	infoIO_Dest.access        = eRequestAccessType_Write;
+	infoIO_Dest.isUniqueRead  = false;
+	infoIO_Dest.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idDest, _("dest"), false, eType_General);
-	Diagram->getIO(prop.idSrc , _("src" ), false, eType_General);
+	// Caracteristicas do I/O Src
+	infoIO_Src.pin            = pair<unsigned long, int>(0, 0);
+	infoIO_Src.name           = _("src");
+	infoIO_Src.isBit          = false;
+	infoIO_Src.type           = eType_General;
+	infoIO_Src.access         = eRequestAccessType_Read;
+	infoIO_Src.isUniqueRead   = false;
+	infoIO_Src.isUniqueWrite  = false;
+
+	Diagram->getIO(infoIO_Dest);
+	Diagram->getIO(infoIO_Src );
+
+	prop.idDest = infoIO_Dest.pin;
+	prop.idSrc  = infoIO_Src .pin;
 }
 
 pair<string, string> LadderElemSqrt::DrawTXT(void)
@@ -1694,8 +2004,13 @@ bool LadderElemSqrt::acceptIO(unsigned long id, eType type)
 
 void LadderElemSqrt::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idDest, _("dest"), false, eType_General, isDiscard);
-	Diagram->updateIO(prop.idSrc , _("src" ), false, eType_General, isDiscard);
+	infoIO_Dest.pin = prop.idDest;
+	Diagram->updateIO(infoIO_Dest, isDiscard);
+	prop.idDest = infoIO_Dest.pin;
+
+	infoIO_Src.pin = prop.idSrc;
+	Diagram->updateIO(infoIO_Src, isDiscard);
+	prop.idSrc = infoIO_Src.pin;
 }
 
 bool LadderElemSqrt::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -1708,13 +2023,40 @@ LadderElemRand::LadderElemRand(LadderDiagram *diagram) : LadderElem(true, false,
 {
 	Diagram  = diagram;
 
-	prop.idVar = pair<unsigned long, int>(0, 0);
-	prop.idMin = pair<unsigned long, int>(0, 0);
-	prop.idMax = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Var
+	infoIO_Var.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Var.name          = _("var");
+	infoIO_Var.isBit         = false;
+	infoIO_Var.type          = eType_General;
+	infoIO_Var.access        = eRequestAccessType_Write;
+	infoIO_Var.isUniqueRead  = false;
+	infoIO_Var.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idVar, _("var"), false, eType_General);
-	Diagram->getIO(prop.idMin,     "0" , false, eType_Pending);
-	Diagram->getIO(prop.idMax,   "100" , false, eType_Pending);
+	// Caracteristicas do I/O Min
+	infoIO_Min.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Min.name          = "0";
+	infoIO_Min.isBit         = false;
+	infoIO_Min.type          = eType_Pending;
+	infoIO_Min.access        = eRequestAccessType_Read;
+	infoIO_Min.isUniqueRead  = false;
+	infoIO_Min.isUniqueWrite = false;
+
+	// Caracteristicas do I/O Max
+	infoIO_Max.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Max.name          = "100";
+	infoIO_Max.isBit         = false;
+	infoIO_Max.type          = eType_Pending;
+	infoIO_Max.access        = eRequestAccessType_Read;
+	infoIO_Max.isUniqueRead  = false;
+	infoIO_Max.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Var);
+	Diagram->getIO(infoIO_Min);
+	Diagram->getIO(infoIO_Max);
+
+	prop.idVar = infoIO_Var.pin;
+	prop.idMin = infoIO_Min.pin;
+	prop.idMax = infoIO_Max.pin;
 }
 
 pair<string, string> LadderElemRand::DrawTXT(void)
@@ -1828,9 +2170,17 @@ bool LadderElemRand::acceptIO(unsigned long id, eType type)
 
 void LadderElemRand::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idVar, _("dest"), false, eType_General, isDiscard);
-	Diagram->updateIO(prop.idMin,     "0"  , false, eType_Pending, isDiscard);
-	Diagram->updateIO(prop.idMax,   "100"  , false, eType_Pending, isDiscard);
+	infoIO_Var.pin = prop.idVar;
+	Diagram->updateIO(infoIO_Var, isDiscard);
+	prop.idVar = infoIO_Var.pin;
+
+	infoIO_Min.pin = prop.idMin;
+	Diagram->updateIO(infoIO_Min, isDiscard);
+	prop.idMin = infoIO_Min.pin;
+
+	infoIO_Max.pin = prop.idMax;
+	Diagram->updateIO(infoIO_Max, isDiscard);
+	prop.idMax = infoIO_Max.pin;
 }
 
 bool LadderElemRand::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -1843,11 +2193,29 @@ LadderElemAbs::LadderElemAbs(LadderDiagram *diagram) : LadderElem(true, false, f
 {
 	Diagram   = diagram;
 
-	prop.idDest = pair<unsigned long, int>(0, 0);
-	prop.idSrc  = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Dest
+	infoIO_Dest.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Dest.name          = _("dest");
+	infoIO_Dest.isBit         = false;
+	infoIO_Dest.type          = eType_General;
+	infoIO_Dest.access        = eRequestAccessType_Write;
+	infoIO_Dest.isUniqueRead  = false;
+	infoIO_Dest.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idDest, _("dest"), false, eType_General);
-	Diagram->getIO(prop.idSrc , _("src" ), false, eType_General);
+	// Caracteristicas do I/O Src
+	infoIO_Src.pin            = pair<unsigned long, int>(0, 0);
+	infoIO_Src.name           = _("src");
+	infoIO_Src.isBit          = false;
+	infoIO_Src.type           = eType_General;
+	infoIO_Src.access         = eRequestAccessType_Read;
+	infoIO_Src.isUniqueRead   = false;
+	infoIO_Src.isUniqueWrite  = false;
+
+	Diagram->getIO(infoIO_Dest);
+	Diagram->getIO(infoIO_Src );
+
+	prop.idDest = infoIO_Dest.pin;
+	prop.idSrc  = infoIO_Src .pin;
 }
 
 pair<string, string> LadderElemAbs::DrawTXT(void)
@@ -1958,8 +2326,13 @@ bool LadderElemAbs::acceptIO(unsigned long id, eType type)
 
 void LadderElemAbs::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idDest, _("dest"), false, eType_General, isDiscard);
-	Diagram->updateIO(prop.idSrc , _("src" ), false, eType_General, isDiscard);
+	infoIO_Dest.pin = prop.idDest;
+	Diagram->updateIO(infoIO_Dest, isDiscard);
+	prop.idDest = infoIO_Dest.pin;
+
+	infoIO_Src.pin = prop.idSrc;
+	Diagram->updateIO(infoIO_Src, isDiscard);
+	prop.idSrc = infoIO_Src.pin;
 }
 
 bool LadderElemAbs::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -1972,11 +2345,29 @@ LadderElemMove::LadderElemMove(LadderDiagram *diagram) : LadderElem(true, false,
 {
 	Diagram   = diagram;
 
-	prop.idDest = pair<unsigned long, int>(0, 0);
-	prop.idSrc  = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Dest
+	infoIO_Dest.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Dest.name          = _("dest");
+	infoIO_Dest.isBit         = false;
+	infoIO_Dest.type          = eType_General;
+	infoIO_Dest.access        = eRequestAccessType_Write;
+	infoIO_Dest.isUniqueRead  = false;
+	infoIO_Dest.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idDest, _("dest"), false, eType_General);
-	Diagram->getIO(prop.idSrc , _("src" ), false, eType_General);
+	// Caracteristicas do I/O Src
+	infoIO_Src.pin            = pair<unsigned long, int>(0, 0);
+	infoIO_Src.name           = _("src");
+	infoIO_Src.isBit          = false;
+	infoIO_Src.type           = eType_General;
+	infoIO_Src.access         = eRequestAccessType_Read;
+	infoIO_Src.isUniqueRead   = false;
+	infoIO_Src.isUniqueWrite  = false;
+
+	Diagram->getIO(infoIO_Dest);
+	Diagram->getIO(infoIO_Src );
+
+	prop.idDest = infoIO_Dest.pin;
+	prop.idSrc  = infoIO_Src .pin;
 }
 
 pair<string, string> LadderElemMove::DrawTXT(void)
@@ -2084,8 +2475,13 @@ bool LadderElemMove::acceptIO(unsigned long id, eType type)
 
 void LadderElemMove::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idDest, _("dest"), false, eType_General, isDiscard);
-	Diagram->updateIO(prop.idSrc , _("src" ), false, eType_General, isDiscard);
+	infoIO_Dest.pin = prop.idDest;
+	Diagram->updateIO(infoIO_Dest, isDiscard);
+	prop.idDest = infoIO_Dest.pin;
+
+	infoIO_Src.pin = prop.idSrc;
+	Diagram->updateIO(infoIO_Src, isDiscard);
+	prop.idSrc = infoIO_Src.pin;
 }
 
 bool LadderElemMove::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2142,11 +2538,20 @@ LadderElemSetBit::LadderElemSetBit(LadderDiagram *diagram) : LadderElem(false, f
 {
 	Diagram   = diagram;
 
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = eType_General;
+	infoIO_Name.access        = eRequestAccessType_Write;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Name);
+
 	prop.bit    = 0;
 	prop.set    = false;
-	prop.idName = pair<unsigned long, int>(0, 0);
-
-	Diagram->getIO(prop.idName, _("new"), false, eType_General);
+	prop.idName = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemSetBit::DrawTXT(void)
@@ -2236,7 +2641,9 @@ bool LadderElemSetBit::acceptIO(unsigned long id, eType type)
 
 void LadderElemSetBit::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, eType_General, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
 }
 
 bool LadderElemSetBit::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2249,11 +2656,20 @@ LadderElemCheckBit::LadderElemCheckBit(LadderDiagram *diagram) : LadderElem(fals
 {
 	Diagram   = diagram;
 
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = eType_General;
+	infoIO_Name.access        = eRequestAccessType_Read;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Name);
+
 	prop.bit    = 0;
 	prop.set    = false;
-	prop.idName = pair<unsigned long, int>(0, 0);
-
-	Diagram->getIO(prop.idName, _("new"), false, eType_General);
+	prop.idName = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemCheckBit::DrawTXT(void)
@@ -2345,7 +2761,9 @@ bool LadderElemCheckBit::acceptIO(unsigned long id, eType type)
 
 void LadderElemCheckBit::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, eType_General, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
 }
 
 bool LadderElemCheckBit::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2358,9 +2776,18 @@ LadderElemReadAdc::LadderElemReadAdc(LadderDiagram *diagram) : LadderElem(true, 
 {
 	Diagram   = diagram;
 
-	prop.idName = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = eType_ReadADC;
+	infoIO_Name.access        = eRequestAccessType_Write;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idName, _("new"), false, eType_ReadADC);
+	Diagram->getIO(infoIO_Name);
+
+	prop.idName = infoIO_Name.pin;
 }
 
 string LadderElemReadAdc::GetNameADC(void)
@@ -2466,7 +2893,9 @@ bool LadderElemReadAdc::acceptIO(unsigned long id, eType type)
 
 void LadderElemReadAdc::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, eType_ReadADC, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
 }
 
 bool LadderElemReadAdc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2479,10 +2908,19 @@ LadderElemSetDa::LadderElemSetDa(LadderDiagram *diagram) : LadderElem(true, fals
 {
 	Diagram    = diagram;
 
-	prop.mode   = ELEM_SET_DA_MODE_RAW;
-	prop.idName = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = eType_SetDAC;
+	infoIO_Name.access        = eRequestAccessType_Read;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idName, _("new"), false, eType_SetDAC);
+	Diagram->getIO(infoIO_Name);
+
+	prop.mode   = ELEM_SET_DA_MODE_RAW;
+	prop.idName = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemSetDa::DrawTXT(void)
@@ -2579,7 +3017,9 @@ bool LadderElemSetDa::acceptIO(unsigned long id, eType type)
 
 void LadderElemSetDa::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, eType_SetDAC, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
 }
 
 bool LadderElemSetDa::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2592,9 +3032,18 @@ LadderElemReadEnc::LadderElemReadEnc(LadderDiagram *diagram) : LadderElem(true, 
 {
 	Diagram   = diagram;
 
-	prop.idName = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = eType_ReadEnc;
+	infoIO_Name.access        = eRequestAccessType_Write;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idName, _("new"), false, eType_ReadEnc);
+	Diagram->getIO(infoIO_Name);
+
+	prop.idName = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemReadEnc::DrawTXT(void)
@@ -2670,7 +3119,9 @@ bool LadderElemReadEnc::acceptIO(unsigned long id, eType type)
 
 void LadderElemReadEnc::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, eType_ReadEnc, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
 }
 
 bool LadderElemReadEnc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2683,9 +3134,18 @@ LadderElemResetEnc::LadderElemResetEnc(LadderDiagram *diagram) : LadderElem(true
 {
 	Diagram   = diagram;
 
-	prop.idName = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = eType_ResetEnc;
+	infoIO_Name.access        = eRequestAccessType_Read;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idName, _("new"), false, eType_ResetEnc);
+	Diagram->getIO(infoIO_Name);
+
+	prop.idName = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemResetEnc::DrawTXT(void)
@@ -2761,7 +3221,9 @@ bool LadderElemResetEnc::acceptIO(unsigned long id, eType type)
 
 void LadderElemResetEnc::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, eType_ResetEnc, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
 }
 
 bool LadderElemResetEnc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2774,6 +3236,27 @@ LadderElemMultisetDA::LadderElemMultisetDA(LadderDiagram *diagram) : LadderElem(
 {
 	Diagram                    = diagram;
 
+	// Caracteristicas do I/O Time
+	infoIO_Time.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Time.name          = "600";
+	infoIO_Time.isBit         = false;
+	infoIO_Time.type          = eType_Pending;
+	infoIO_Time.access        = eRequestAccessType_Read;
+	infoIO_Time.isUniqueRead  = false;
+	infoIO_Time.isUniqueWrite = false;
+
+	// Caracteristicas do I/O Desl
+	infoIO_Desl.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Desl.name          = "2047";
+	infoIO_Desl.isBit         = false;
+	infoIO_Desl.type          = eType_Pending;
+	infoIO_Desl.access        = eRequestAccessType_Read;
+	infoIO_Desl.isUniqueRead  = false;
+	infoIO_Desl.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Time);
+	Diagram->getIO(infoIO_Desl);
+
 	prop.gaint                 = 10;
 	prop.gainr                 = 5;
 	prop.initval               = DA_RESOLUTION - 1;
@@ -2781,11 +3264,8 @@ LadderElemMultisetDA::LadderElemMultisetDA(LadderDiagram *diagram) : LadderElem(
 	prop.forward               = true;  // true = avanço, false = recuo
 	prop.speedup               = false; // true = aceleração, false = desaceleração
 	prop.StartFromCurrentValue = false; // false = Iniciar ou ir para zero, conforme speedup. true = partir do valor atual até o valor configurado
-	prop.idTime                = pair<unsigned long, int>(0, 0);
-	prop.idDesl                = pair<unsigned long, int>(0, 0);
-
-	Diagram->getIO(prop.idTime,  "600", false, eType_Pending);
-	Diagram->getIO(prop.idDesl, "2047", false, eType_Pending);
+	prop.idTime                = infoIO_Time.pin;
+	prop.idDesl                = infoIO_Desl.pin;
 }
 
 pair<string, string> LadderElemMultisetDA::DrawTXT(void)
@@ -2919,8 +3399,13 @@ bool LadderElemMultisetDA::acceptIO(unsigned long id, eType type)
 
 void LadderElemMultisetDA::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idTime,  "600", false, eType_Pending, isDiscard);
-	Diagram->updateIO(prop.idDesl, "2047", false, eType_Pending, isDiscard);
+	infoIO_Time.pin = prop.idTime;
+	Diagram->updateIO(infoIO_Time, isDiscard);
+	prop.idTime = infoIO_Time.pin;
+
+	infoIO_Desl.pin = prop.idDesl;
+	Diagram->updateIO(infoIO_Desl, isDiscard);
+	prop.idDesl = infoIO_Desl.pin;
 }
 
 bool LadderElemMultisetDA::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2933,13 +3418,22 @@ LadderElemUSS::LadderElemUSS(LadderDiagram *diagram, int which) : LadderElem(fal
 {
 	Diagram            = diagram;
 
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = (getWhich() == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS;
+	infoIO_Name.access        = (getWhich() == ELEM_READ_USS) ? eRequestAccessType_Write : eRequestAccessType_Read;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Name);
+
 	prop.id            = 0;
 	prop.parameter     = 0;
 	prop.parameter_set = 0;
 	prop.index         = 0;
-	prop.idName        = pair<unsigned long, int>(0, 0);
-
-	Diagram->getIO(prop.idName, _("new"), false, (getWhich() == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS);
+	prop.idName        = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemUSS::DrawTXT(void)
@@ -3055,7 +3549,9 @@ bool LadderElemUSS::acceptIO(unsigned long id, eType type)
 
 void LadderElemUSS::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, (getWhich() == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
 }
 
 bool LadderElemUSS::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3073,13 +3569,22 @@ LadderElemModBUS::LadderElemModBUS(LadderDiagram *diagram, int which) : LadderEl
 		NodeID = Diagram->mbCreateNode("Default");
 	}
 
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("new");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = (getWhich() == ELEM_READ_MODBUS) ? eType_ReadModbus : eType_WriteModbus;
+	infoIO_Name.access        = (getWhich() == ELEM_READ_MODBUS) ? eRequestAccessType_Write : eRequestAccessType_Read;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Name);
+
 	prop.address      = 0;
 	prop.retransmitir = true;
 	prop.int32        = false;
 	prop.elem         = NodeID;
-	prop.idName       = pair<unsigned long, int>(0, 0);
-
-	Diagram->getIO(prop.idName, _("new"), false, (getWhich() == ELEM_READ_MODBUS) ? eType_ReadModbus : eType_WriteModbus);
+	prop.idName       = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemModBUS::DrawTXT(void)
@@ -3231,7 +3736,9 @@ bool LadderElemModBUS::acceptIO(unsigned long id, eType type)
 
 void LadderElemModBUS::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, (getWhich() == ELEM_READ_MODBUS) ? eType_ReadModbus : eType_WriteModbus, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
 }
 
 bool LadderElemModBUS::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3244,10 +3751,19 @@ LadderElemSetPWM::LadderElemSetPWM(LadderDiagram *diagram) : LadderElem(true, fa
 {
 	Diagram         = diagram;
 
-	prop.targetFreq = 1000;
-	prop.idName       = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("duty_cycle");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = eType_PWM;
+	infoIO_Name.access        = eRequestAccessType_Read;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idName, _("duty_cycle"), false, eType_PWM);
+	Diagram->getIO(infoIO_Name);
+
+	prop.targetFreq = 1000;
+	prop.idName     = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemSetPWM::DrawTXT(void)
@@ -3346,7 +3862,9 @@ bool LadderElemSetPWM::acceptIO(unsigned long id, eType type)
 
 void LadderElemSetPWM::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, eType_PWM, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
 }
 
 bool LadderElemSetPWM::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3359,9 +3877,18 @@ LadderElemUART::LadderElemUART(LadderDiagram *diagram, int which) : LadderElem(f
 {
 	Diagram   = diagram;
 
-	prop.idName        = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("char");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = (getWhich() == ELEM_UART_RECV) ? eType_RxUART : eType_TxUART;
+	infoIO_Name.access        = (getWhich() == ELEM_UART_RECV) ? eRequestAccessType_Write : eRequestAccessType_Read;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idName, _("char"), false, (getWhich() == ELEM_UART_RECV) ? eType_RxUART : eType_TxUART);
+	Diagram->getIO(infoIO_Name);
+
+	prop.idName     = infoIO_Name.pin;
 }
 
 pair<string, string> LadderElemUART::DrawTXT(void)
@@ -3444,7 +3971,9 @@ bool LadderElemUART::acceptIO(unsigned long id, eType type)
 
 void LadderElemUART::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idName, _("new"), false, (getWhich() == ELEM_UART_RECV) ? eType_RxUART : eType_TxUART, isDiscard);
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
 }
 
 bool LadderElemUART::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3504,6 +4033,15 @@ LadderElemShiftRegister::LadderElemShiftRegister(LadderDiagram *diagram) : Ladde
 	prop.stages  = 7;
 	prop.nameReg = _("reg");
 
+	// Caracteristicas dos I/Os
+	InfoIO_Regs.pin           = pair<unsigned long, int>(0, 0);
+	InfoIO_Regs.name          = prop.nameReg;
+	InfoIO_Regs.isBit         = false;
+	InfoIO_Regs.type          = eType_General;
+	InfoIO_Regs.access        = eRequestAccessType_ReadWrite;
+	InfoIO_Regs.isUniqueRead  = false;
+	InfoIO_Regs.isUniqueWrite = false;
+
 	createRegs();
 }
 
@@ -3514,7 +4052,7 @@ void LadderElemShiftRegister::createRegs(void)
 
 	// Primeiro descarta os I/Os anteriores, solicitando I/O para o valor zero.
 	for(it = prop.vectorIdRegs.begin(); it != prop.vectorIdRegs.end(); it++) {
-		Diagram->getIO(*it, "0", false, eType_General);
+		Diagram->getIO(*it, "0", eType_General, InfoIO_Regs);
 	}
 
 	// Limpa o vetor anterior
@@ -3526,7 +4064,7 @@ void LadderElemShiftRegister::createRegs(void)
 	for(i = 0; i < prop.stages; i++) {
 		pin = pair<unsigned long, int>(0, 0);
 		sprintf(cname, "%s%d", prop.nameReg.c_str(), i);
-		if(!Diagram->getIO(pin, _(cname), false, eType_General)) {
+		if(!Diagram->getIO(pin, _(cname), eType_General, InfoIO_Regs)) {
 			// Ocorreu algum erro ao registrar os I/Os. Solicita novamente com valor padrao
 			prop.nameReg = _("reg");
 			createRegs();
@@ -3662,11 +4200,18 @@ void LadderElemShiftRegister::updateIO(bool isDiscard)
 {
 	int i;
 	char cname[MAX_NAME_LEN + 10];
+	string previous_name = InfoIO_Regs.name;
 
 	for(i = 0; i < prop.stages; i++) {
-		sprintf(cname, "reg%d", i);
-		Diagram->updateIO(prop.vectorIdRegs[i], cname, false, eType_General, isDiscard);
+		sprintf(cname, "%s%d", InfoIO_Regs.name.c_str(), i);
+
+		InfoIO_Regs.name = cname;
+		InfoIO_Regs.pin  = prop.vectorIdRegs[i];
+
+		Diagram->updateIO(InfoIO_Regs, isDiscard);
 	}
+
+	InfoIO_Regs.name = previous_name;
 }
 
 bool LadderElemShiftRegister::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3679,13 +4224,31 @@ LadderElemLUT::LadderElemLUT(LadderDiagram *diagram) : LadderElem(true, false, f
 {
 	Diagram           = diagram;
 
+	// Caracteristicas do I/O Dest
+	infoIO_Dest.pin            = pair<unsigned long, int>(0, 0);
+	infoIO_Dest.name           = _("dest");
+	infoIO_Dest.isBit          = false;
+	infoIO_Dest.type           = eType_General;
+	infoIO_Dest.access         = eRequestAccessType_Write;
+	infoIO_Dest.isUniqueRead   = false;
+	infoIO_Dest.isUniqueWrite  = false;
+
+	// Caracteristicas do I/O Index
+	infoIO_Index.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Index.name          = _("index");
+	infoIO_Index.isBit         = false;
+	infoIO_Index.type          = eType_General;
+	infoIO_Index.access        = eRequestAccessType_Read;
+	infoIO_Index.isUniqueRead  = false;
+	infoIO_Index.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Dest );
+	Diagram->getIO(infoIO_Index);
+
 	prop.count        = 0;
 	prop.editAsString = false;
-	prop.idDest       = pair<unsigned long, int>(0, 0);
-	prop.idIndex      = pair<unsigned long, int>(0, 0);
-
-	Diagram->getIO(prop.idDest , _("dest" ), false, eType_General);
-	Diagram->getIO(prop.idIndex, _("index"), false, eType_General);
+	prop.idDest       = infoIO_Dest .pin;
+	prop.idIndex      = infoIO_Index.pin;
 
 	prop.vals.fill(0);
 }
@@ -3833,8 +4396,13 @@ bool LadderElemLUT::acceptIO(unsigned long id, eType type)
 
 void LadderElemLUT::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idDest , _("dest" ), false, eType_General, isDiscard);
-	Diagram->updateIO(prop.idIndex, _("index"), false, eType_General, isDiscard);
+	infoIO_Dest.pin = prop.idDest;
+	Diagram->updateIO(infoIO_Dest, isDiscard);
+	prop.idDest = infoIO_Dest.pin;
+
+	infoIO_Index.pin = prop.idIndex;
+	Diagram->updateIO(infoIO_Index, isDiscard);
+	prop.idIndex = infoIO_Index.pin;
 }
 
 bool LadderElemLUT::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3847,12 +4415,30 @@ LadderElemPiecewise::LadderElemPiecewise(LadderDiagram *diagram) : LadderElem(tr
 {
 	Diagram      = diagram;
 
-	prop.count   = 0;
-	prop.idDest  = pair<unsigned long, int>(0, 0);
-	prop.idIndex = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Dest
+	infoIO_Dest.pin            = pair<unsigned long, int>(0, 0);
+	infoIO_Dest.name           = _("yvar");
+	infoIO_Dest.isBit          = false;
+	infoIO_Dest.type           = eType_General;
+	infoIO_Dest.access         = eRequestAccessType_Write;
+	infoIO_Dest.isUniqueRead   = false;
+	infoIO_Dest.isUniqueWrite  = false;
 
-	Diagram->getIO(prop.idDest , _("yvar"), false, eType_General);
-	Diagram->getIO(prop.idIndex, _("xvar"), false, eType_General);
+	// Caracteristicas do I/O Index
+	infoIO_Index.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Index.name          = _("xvar");
+	infoIO_Index.isBit         = false;
+	infoIO_Index.type          = eType_General;
+	infoIO_Index.access        = eRequestAccessType_Read;
+	infoIO_Index.isUniqueRead  = false;
+	infoIO_Index.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Dest );
+	Diagram->getIO(infoIO_Index);
+
+	prop.count   = 0;
+	prop.idDest  = infoIO_Dest .pin;
+	prop.idIndex = infoIO_Index.pin;
 
 	prop.vals.fill(0);
 }
@@ -4040,8 +4626,13 @@ bool LadderElemPiecewise::acceptIO(unsigned long id, eType type)
 
 void LadderElemPiecewise::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idDest , _("yvar"), false, eType_General, isDiscard);
-	Diagram->updateIO(prop.idIndex, _("xvar"), false, eType_General, isDiscard);
+	infoIO_Dest.pin = prop.idDest;
+	Diagram->updateIO(infoIO_Dest, isDiscard);
+	prop.idDest = infoIO_Dest.pin;
+
+	infoIO_Index.pin = prop.idIndex;
+	Diagram->updateIO(infoIO_Index, isDiscard);
+	prop.idIndex = infoIO_Index.pin;
 }
 
 bool LadderElemPiecewise::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -4054,10 +4645,19 @@ LadderElemFmtString::LadderElemFmtString(LadderDiagram *diagram, int which) : La
 {
 	Diagram  = diagram;
 
-	prop.txt = _("value: %d\\r\\n");
-	prop.idVar = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Var
+	infoIO_Var.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Var.name          = _("var");
+	infoIO_Var.isBit         = false;
+	infoIO_Var.type          = (which == ELEM_READ_FORMATTED_STRING) ? eType_RxUART : eType_TxUART;
+	infoIO_Var.access        = (which == ELEM_READ_FORMATTED_STRING) ? eRequestAccessType_Write : eRequestAccessType_Read;
+	infoIO_Var.isUniqueRead  = false;
+	infoIO_Var.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idVar , _("var"), false, (which == ELEM_READ_FORMATTED_STRING) ? eType_RxUART : eType_TxUART);
+	Diagram->getIO(infoIO_Var);
+
+	prop.txt   = _("value: %d\\r\\n");
+	prop.idVar = infoIO_Var.pin;
 }
 
 pair<string, string> LadderElemFmtString::DrawTXT(void)
@@ -4167,7 +4767,9 @@ bool LadderElemFmtString::acceptIO(unsigned long id, eType type)
 
 void LadderElemFmtString::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idVar, _("var"), false, (getWhich() == ELEM_READ_FORMATTED_STRING) ? eType_RxUART : eType_TxUART, isDiscard);
+	infoIO_Var.pin = prop.idVar;
+	Diagram->updateIO(infoIO_Var, isDiscard);
+	prop.idVar = infoIO_Var.pin;
 }
 
 bool LadderElemFmtString::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -4180,11 +4782,20 @@ LadderElemYaskawa::LadderElemYaskawa(LadderDiagram *diagram, int which) : Ladder
 {
 	Diagram  = diagram;
 
-	prop.id  = 0;
-	prop.txt = _("0ZSET%d");
-	prop.idVar = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Var
+	infoIO_Var.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Var.name          = _("var");
+	infoIO_Var.isBit         = false;
+	infoIO_Var.type          = (which == ELEM_READ_SERVO_YASKAWA) ? eType_ReadYaskawa : eType_WriteYaskawa;
+	infoIO_Var.access        = (which == ELEM_READ_SERVO_YASKAWA) ? eRequestAccessType_Write : eRequestAccessType_Read;
+	infoIO_Var.isUniqueRead  = false;
+	infoIO_Var.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idVar , _("var"), false, (which == ELEM_READ_SERVO_YASKAWA) ? eType_ReadYaskawa : eType_WriteYaskawa);
+	Diagram->getIO(infoIO_Var);
+
+	prop.id    = 0;
+	prop.txt   = _("0ZSET%d");
+	prop.idVar = infoIO_Var.pin;
 }
 
 pair<string, string> LadderElemYaskawa::DrawTXT(void)
@@ -4301,7 +4912,9 @@ bool LadderElemYaskawa::acceptIO(unsigned long id, eType type)
 
 void LadderElemYaskawa::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idVar, _("var"), false, (getWhich() == ELEM_READ_SERVO_YASKAWA) ? eType_ReadYaskawa : eType_WriteYaskawa, isDiscard);
+	infoIO_Var.pin = prop.idVar;
+	Diagram->updateIO(infoIO_Var, isDiscard);
+	prop.idVar = infoIO_Var.pin;
 }
 
 bool LadderElemYaskawa::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -4314,9 +4927,18 @@ LadderElemPersist::LadderElemPersist(LadderDiagram *diagram) : LadderElem(true, 
 {
 	Diagram  = diagram;
 
-	prop.idVar = pair<unsigned long, int>(0, 0);
+	// Caracteristicas do I/O Var
+	infoIO_Var.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Var.name          = _("var");
+	infoIO_Var.isBit         = false;
+	infoIO_Var.type          = eType_General;
+	infoIO_Var.access        = eRequestAccessType_ReadWrite;
+	infoIO_Var.isUniqueRead  = false;
+	infoIO_Var.isUniqueWrite = false;
 
-	Diagram->getIO(prop.idVar , _("var"), false, eType_General);
+	Diagram->getIO(infoIO_Var);
+
+	prop.idVar = infoIO_Var.pin;
 }
 
 pair<string, string> LadderElemPersist::DrawTXT(void)
@@ -4422,7 +5044,9 @@ bool LadderElemPersist::acceptIO(unsigned long id, eType type)
 
 void LadderElemPersist::updateIO(bool isDiscard)
 {
-	Diagram->updateIO(prop.idVar, _("var"), false, eType_General, isDiscard);
+	infoIO_Var.pin = prop.idVar;
+	Diagram->updateIO(infoIO_Var, isDiscard);
+	prop.idVar = infoIO_Var.pin;
 }
 
 bool LadderElemPersist::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -4600,10 +5224,6 @@ bool LadderCircuit::DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *
 				justDrewHeight = it->subckt->getHeightTXT();
 			}
 
-			if(InSimulationMode) {
-				if(poweredThis) poweredAfter = true;
-			}
-
 			while((*cx - cx0) < widthMax*POS_WIDTH) {
 				int gx = *cx/POS_WIDTH;
 				int gy = *cy/POS_HEIGHT;
@@ -4649,10 +5269,6 @@ bool LadderCircuit::DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *
 					needWire = true;
 				}
 				if(needWire) VerticalWireTXT(*cx - 1, *cy + j*POS_HEIGHT);
-			}
-			// stupid special case
-			if(lowestPowered == 0 && InSimulationMode) {
-				DrawChars(*cx - 1, *cy + (POS_HEIGHT/2), "+");
 			}
 		}
 
@@ -4769,6 +5385,34 @@ LadderCircuit *LadderCircuit::getSubcktForElement(LadderElem *elem)
 	}
 
 	return subckt;
+}
+
+LadderElem *LadderCircuit::getFirstElement(void)
+{
+	if(vectorSubckt.size() > 0) {
+		if(vectorSubckt[0].elem != nullptr) {
+			return vectorSubckt[0].elem;
+		} else if(vectorSubckt[0].subckt != nullptr) {
+			return vectorSubckt[0].subckt->getFirstElement();
+		}
+	}
+
+	return nullptr;
+}
+
+LadderElem *LadderCircuit::getLastElement(void)
+{
+	unsigned int index = vectorSubckt.size();
+	if(index > 0) {
+		index--;
+		if(vectorSubckt[index].elem != nullptr) {
+			return vectorSubckt[index].elem;
+		} else if(vectorSubckt[index].subckt != nullptr) {
+			return vectorSubckt[index].subckt->getLastElement();
+		}
+	}
+
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -5445,6 +6089,58 @@ void LadderCircuit::updateIO(bool isDiscard)
 	}
 }
 
+int LadderCircuit::SearchAndReplace(LadderElem **refElem, unsigned long idSearch, string sNewText, eSearchAndReplaceMode mode)
+{
+	int matches = 0;
+	// Sem o que buscar ou sem ponteiro para objeto de referencia, retorna erro!
+	if(refElem == nullptr || idSearch == 0) return -1;
+
+	vector<Subckt>::size_type it = 0;
+
+	if(*refElem != nullptr) { // Procurando o objeto de referencia para a busca
+		for(it = 0; it < vectorSubckt.size(); it++) {
+			if(vectorSubckt[it].elem != nullptr) {
+				if(vectorSubckt[it].elem == *refElem) { //Achou o elemento de referencia!
+					*refElem = nullptr; // Limpa o ponteiro para indicar que nao estamos mais procurando
+					it++; // Se este era o elemento de referencia, avancamos pois devemos iniciar a busca no proximo elemento
+					break;
+				}
+			} else {
+				matches = vectorSubckt[it].subckt->SearchAndReplace(refElem, idSearch, sNewText, mode);
+				if(matches < 0) {
+					// Ocorreu algum erro, retornando...
+					return matches;
+				}
+
+				if(*refElem == nullptr) { // Elemento de referencia encontrado no subcircuito!
+					it++; // Se encontrou o elemento de referencia, avancamos pois devemos iniciar a busca no proximo elemento
+					break;
+				}
+			}
+		}
+	}
+
+	if(*refElem == nullptr) { // Procurando o objeto de referencia para a busca
+		// Nao inicializamos it. Ou ele sera 0 (inicializacao da variavel) ou sera o elemento
+		for(; it < vectorSubckt.size(); it++) {
+			// Se encontrou correspondencia e nao for para substituir todos, interrompe busca.
+			if(matches > 0 && mode != eSearchAndReplaceMode_ReplaceAll) break;
+
+			if(vectorSubckt[it].elem != nullptr) {
+				bool isReplace = !(mode == eSearchAndReplaceMode_FindFirst || mode == eSearchAndReplaceMode_FindNext);
+				matches += vectorSubckt[it].elem  ->SearchAndReplace(idSearch, sNewText, isReplace);
+				if(matches > 0) { // Encontrou correspondencia nesse elemento!
+					*refElem = vectorSubckt[it].elem;
+				}
+			} else {
+				matches += vectorSubckt[it].subckt->SearchAndReplace(refElem, idSearch, sNewText, mode);
+			}
+		}
+	}
+
+	return matches;
+}
+
 bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	UndoRedoData *data = (UndoRedoData *)action.data;
@@ -5701,6 +6397,11 @@ void LadderDiagram::SelectElement(LadderElem *elem, int state)
 {
 	if(elem == nullptr) return;
 
+	// Comentarios somente devem ter selecao para cima ou para baixo
+	if(elem->IsComment() && (state == SELECTED_LEFT || state == SELECTED_RIGHT)) {
+		state = SELECTED_BELOW;
+	}
+
 	if(elem != context.SelectedElem) {
 		context.SelectedElem    = elem;
 		context.SelectedCircuit = getSubcktForElement(elem);
@@ -5741,6 +6442,94 @@ LadderCircuit *LadderDiagram::getSubcktForElement(LadderElem *elem)
 	return subckt;
 }
 
+void LadderDiagram::MoveCursor(eMoveCursor moveTo)
+{
+	LadderElem *elem = nullptr;
+
+	switch(moveTo) {
+	case eMoveCursor_DiagramHome:
+		elem = rungs[0]->rung->getFirstElement();
+		break;
+
+	case eMoveCursor_RungHome: {
+		int index = this->RungContainingSelected();
+		if(index >= 0) {
+			elem = rungs[index]->rung->getFirstElement();
+		}
+		break;
+		}
+
+	case eMoveCursor_DiagramEnd:
+		elem = rungs[rungs.size() - 1]->rung->getLastElement();
+		break;
+
+	case eMoveCursor_RungEnd: {
+		int index = this->RungContainingSelected();
+		if(index >= 0) {
+			elem = rungs[index]->rung->getLastElement();
+		}
+		break;
+		}
+
+	case eMoveCursor_Up:
+		if(context.SelectedState != SELECTED_ABOVE) {
+			elem = context.SelectedElem;
+		} else {
+			elem = SearchElement(moveTo);
+			// se encontrar um elemento, deve ser selecionado na extremidade inferior
+			moveTo = eMoveCursor_Down;
+		}
+		break;
+
+	case eMoveCursor_Down:
+		if(context.SelectedState != SELECTED_BELOW) {
+			elem = context.SelectedElem;
+		} else {
+			elem = SearchElement(moveTo);
+			// se encontrar um elemento, deve ser selecionado na extremidade superior
+			moveTo = eMoveCursor_Up;
+		}
+		break;
+
+	case eMoveCursor_Left:
+		if(context.SelectedState != SELECTED_LEFT) {
+			elem = context.SelectedElem;
+		} else {
+			elem = SearchElement(moveTo);
+			// se encontrar um elemento, deve ser selecionado na extremidade direita
+			moveTo = eMoveCursor_Right;
+		}
+		break;
+
+	case eMoveCursor_Right:
+		if(context.SelectedState != SELECTED_RIGHT) {
+			elem = context.SelectedElem;
+		} else {
+			elem = SearchElement(moveTo);
+			// se encontrar um elemento, deve ser selecionado na extremidade esquerda
+			moveTo = eMoveCursor_Left;
+		}
+		break;
+
+	default: return;
+	}
+
+	if(elem != nullptr) {
+		int state = elem->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT;
+
+		switch(moveTo) {
+			case eMoveCursor_Up   : state = SELECTED_ABOVE; break;
+			case eMoveCursor_Down : state = SELECTED_BELOW; break;
+			case eMoveCursor_Left : state = SELECTED_LEFT ; break;
+			case eMoveCursor_Right: state = SELECTED_RIGHT; break;
+		}
+
+		SelectElement(elem, state);
+
+		updateContext();
+	}
+}
+
 void LadderDiagram::updateUndoContextAfter(bool forceNotNull)
 {
 	deque<UndoRedoAction>::iterator it;
@@ -5766,89 +6555,103 @@ void LadderDiagram::updateUndoContextAfter(bool forceNotNull)
 
 void LadderDiagram::updateContext(void)
 {
-	context.canNegate        = false;
-	context.canNormal        = false;
-	context.canSetOnly       = false;
-	context.canResetOnly     = false;
-	context.canPushUp        = true;
-	context.canPushDown      = true;
-	context.canDelete        = true;
-	context.canDeleteRung    = false;
-	context.canInsertEnd     = false;
-	context.canInsertOther   = true;
-	context.canInsertComment = false;
-
-    int i = RungContainingSelected();
-    if(i >= 0) {
-        if(i == 0) context.canPushUp = false;
-		if(i == rungs.size() - 1) context.canPushDown = false;
-
-        if(context.SelectedCircuit->IsEmpty())
-        {
-            context.canDelete = false;
-        }
-    }
-
-	if(rungs.size() > 1) {
-		context.canDeleteRung = true;
-	}
-
-	if(context.SelectedElem == nullptr) {
-		context.canDelete      = false;
-		context.canInsertEnd   = false;
-		context.canInsertOther = false;
+	if(context.inSimulationMode) {
+		context.canNegate        = false;
+		context.canNormal        = false;
+		context.canSetOnly       = false;
+		context.canResetOnly     = false;
+		context.canPushUp        = false;
+		context.canPushDown      = false;
+		context.canDelete        = false;
+		context.canDeleteRung    = false;
+		context.canInsertEnd     = false;
+		context.canInsertOther   = false;
+		context.canInsertComment = false;
 	} else {
-		if(context.SelectedElem->IsEOL()) {
-			if(context.SelectedElem->getWhich() == ELEM_COIL) {
-				context.canNegate    = true;
-				context.canNormal    = true;
-				context.canResetOnly = true;
-				context.canSetOnly   = true;
+		context.canNegate        = false;
+		context.canNormal        = false;
+		context.canSetOnly       = false;
+		context.canResetOnly     = false;
+		context.canPushUp        = true;
+		context.canPushDown      = true;
+		context.canDelete        = true;
+		context.canDeleteRung    = false;
+		context.canInsertEnd     = false;
+		context.canInsertOther   = true;
+		context.canInsertComment = false;
+
+		int i = RungContainingSelected();
+		if(i >= 0) {
+			if(i == 0) context.canPushUp = false;
+			if(i == rungs.size() - 1) context.canPushDown = false;
+
+			if(context.SelectedCircuit->IsEmpty())
+			{
+				context.canDelete = false;
+			}
+		}
+
+		if(rungs.size() > 1) {
+			context.canDeleteRung = true;
+		}
+
+		if(context.SelectedElem == nullptr) {
+			context.canDelete      = false;
+			context.canInsertEnd   = false;
+			context.canInsertOther = false;
+		} else {
+			if(context.SelectedElem->IsEOL()) {
+				if(context.SelectedElem->getWhich() == ELEM_COIL) {
+					context.canNegate    = true;
+					context.canNormal    = true;
+					context.canResetOnly = true;
+					context.canSetOnly   = true;
+				}
+
+				if(context.SelectedState == SELECTED_ABOVE ||
+				   context.SelectedState == SELECTED_BELOW)
+				{
+					context.canInsertEnd   = true;
+					context.canInsertOther = false;
+				} else if(context.SelectedState == SELECTED_RIGHT) {
+					context.canInsertEnd   = false;
+					context.canInsertOther = false;
+				}
+			} else {
+				if(context.SelectedElem->getWhich() == ELEM_PLACEHOLDER &&
+					context.SelectedElem != context.ParallelStart) {
+						context.canDelete = false;
+				}
+
+				if(context.SelectedState == SELECTED_RIGHT || 
+					context.SelectedElem->getWhich() == ELEM_PLACEHOLDER) {
+						vector<LadderRung *>::iterator it;
+						if(i >= 0) {
+							it = rungs.begin() + i;
+							context.canInsertEnd = (*it)->rung->IsLast(context.SelectedElem);
+						} else {
+							context.canInsertEnd = false;
+						}
+				}
+
+				if(context.SelectedElem->getWhich() == ELEM_CONTACTS) {
+					context.canNegate = true;
+					context.canNormal = true;
+				}
 			}
 
-			if(context.SelectedState == SELECTED_ABOVE ||
-			   context.SelectedState == SELECTED_BELOW)
-			{
-				context.canInsertEnd   = true;
-				context.canInsertOther = false;
-			} else if(context.SelectedState == SELECTED_RIGHT) {
+			if(context.SelectedCircuit->IsEmpty()) {
+				// a comment must be the only element in its rung, and it will fill
+				// the rung entirely
+				context.canInsertComment = true;
+			}
+
+			if(context.SelectedElem->IsComment()) {
+				// if there's a comment there already then don't let anything else
+				// into the rung
 				context.canInsertEnd   = false;
 				context.canInsertOther = false;
 			}
-		} else {
-			if(context.SelectedElem->getWhich() == ELEM_PLACEHOLDER &&
-				context.SelectedElem != context.ParallelStart) {
-					context.canDelete = false;
-			}
-
-			if(context.SelectedState == SELECTED_RIGHT || 
-				context.SelectedElem->getWhich() == ELEM_PLACEHOLDER) {
-					vector<LadderRung *>::iterator it;
-					if(i >= 0) {
-						it = rungs.begin() + i;
-						context.canInsertEnd = (*it)->rung->IsLast(context.SelectedElem);
-					} else {
-						context.canInsertEnd = false;
-					}
-			}
-
-			if(context.SelectedElem->getWhich() == ELEM_CONTACTS) {
-				context.canNegate = true;
-				context.canNormal = true;
-			}
-		}
-
-		if(context.SelectedCircuit->IsEmpty()) {
-			// a comment must be the only element in its rung, and it will fill
-			// the rung entirely
-			context.canInsertComment = true;
-		}
-
-		if(context.SelectedElem->IsComment()) {
-			// if there's a comment there already then don't let anything else
-			// into the rung
-			context.canInsertEnd   = false;
-			context.canInsertOther = false;
 		}
 	}
 
@@ -6222,6 +7025,9 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 		if(elem == context.ParallelStart) {
 			context.ParallelStart = nullptr;
 		}
+
+		LadderElem *first = rungs[rung]->rung->getFirstElement();
+		SelectElement(first, first->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT);
 
 		updateContext();
 		CheckpointEnd();
@@ -6949,6 +7755,13 @@ void LadderDiagram::setSettingsInformation(LadderSettingsInformation setInfo)
 	LadderSettings.Info = setInfo;
 }
 
+// Funcao para configurar o modo de simulacao
+void LadderDiagram::setSimulationState(bool state)
+{
+	context.inSimulationMode = state;
+	updateContext();
+}
+
 /*** Funcoes relacionadas com lista de nos do ModBUS ***/
 
 // Clears a node to its default values
@@ -7234,35 +8047,37 @@ bool LadderDiagram::acceptIO(unsigned long id, enum eType type)
 	return true;
 }
 
-void LadderDiagram::updateIO(pair<unsigned long, int> &pin, string defaultName, bool isBit, eType defaultType, bool isDiscard)
+void LadderDiagram::updateIO(tRequestIO &infoIO, bool isDiscard)
 {
-	if(pin.first == 0) return; // id nao esta em uso, indica que eh um numero e nao um I/O
+	if(infoIO.pin.first == 0) return; // id nao esta em uso, indica que eh um numero e nao um I/O
 
 	if(isDiscard) {
-		IO->Discard(pin.first, isBit);
+		IO->Discard(infoIO);
 	} else {
 		// Se nao for descarte, indica que devemos atualizar o I/O conforme os passos abaixo:
 		// 1) Verifica se id eh valido
 		// 1.1) Se for valido, verifica se o tipo ainda eh valido e entao faz um request
 		// 1.2) Se nao for valido, devemos criar um novo I/O e atualizar o id
-		if(IO->getName(pin.first).size() > 0) { // id valido!
-			mapDetails DetailsIO = IO->getDetails(pin.first);
-			if(acceptIO(pin.first, DetailsIO.type)) {
-				IO->Request(IO->getName(pin.first), isBit, DetailsIO.type);
+		if(IO->getName(infoIO.pin.first).size() > 0) { // id valido!
+			mapDetails DetailsIO = IO->getDetails(infoIO.pin.first);
+			if(acceptIO(infoIO.pin.first, DetailsIO.type)) {
+				tRequestIO copyInfoIO = infoIO;
+				copyInfoIO.name = IO->getName(infoIO.pin.first);
+				IO->Request(copyInfoIO);
 			} else {
-				pin.first = 0;
+				infoIO.pin.first = 0;
 			}
 		} else {
-			pin.first = 0;
+			infoIO.pin.first = 0;
 		}
 
-		if(pin.first == 0) { // id invalido! Cria o novo I/O
-			getIO(pin, defaultName, isBit, defaultType);
+		if(infoIO.pin.first == 0) { // id invalido! Cria o novo I/O
+			getIO(infoIO);
 		}
 	}
 }
 
-bool LadderDiagram::getIO(pair<unsigned long, int> &pin, string name, bool isBit, eType type)
+bool LadderDiagram::getIO(tRequestIO &infoIO)
 {
 	bool ret = true;
 	pair<unsigned long, int> newpin;
@@ -7276,16 +8091,16 @@ bool LadderDiagram::getIO(pair<unsigned long, int> &pin, string name, bool isBit
 	// 4 - Atualizar o IO se houve alteracao de tipo
 
 	// O valor solicitado eh um numero, carrega no par de retorno.
-	if(IsNumber(name.c_str())) {
+	if(IsNumber(infoIO.name.c_str())) {
 		newpin.first  = 0;
-		newpin.second = atoi(name.c_str());
+		newpin.second = atoi(infoIO.name.c_str());
 	} else {
-		mapDetails detailsIO = IO->getDetails(pin.first);
-		newpin.first  = IO->getID(name);
+		mapDetails detailsIO = IO->getDetails(infoIO.pin.first);
+		newpin.first  = IO->getID(infoIO.name);
 		newpin.second = 0;
 
-		if(!newpin.first && !IO->IsReserved(IO->getName(pin.first))) { // variavel inexistente
-			newpin.first = pin.first; // O novo pino vai utilizar o mesmo id, ou seja, nao cria nova variavel
+		if(!newpin.first && !IO->IsReserved(IO->getName(infoIO.pin.first))) { // variavel inexistente
+			newpin.first = infoIO.pin.first; // O novo pino vai utilizar o mesmo id, ou seja, nao cria nova variavel
 
 			// Se houver mais de 1 elemento usando a variavel, precisamos perguntar ao usuario se ele
 			// deseja criar uma nova variavel ou se ele quer atualizar o nome da variavel para todos
@@ -7301,20 +8116,20 @@ bool LadderDiagram::getIO(pair<unsigned long, int> &pin, string name, bool isBit
 		}
 
 		// Verifica se o tipo do I/O eh aceito pelos outros elementos que ja o utilizam
-		if(newpin.first && !acceptIO(newpin.first, type)) {
+		if(newpin.first && !acceptIO(newpin.first, infoIO.type)) {
 			// Alguem compartilhando desta variavel nao aceita a alteracao de tipo. Cancela a alteracao!
 			ShowDialog(true, "Tipo Inválido", "Conflito entre tipos para '%s' ! Operação não permitida.", IO->getName(newpin.first).c_str());
 			return false; // retorna pino invalido
 		}
 
 		// I/O diferente do anterior ou inexistente, fazer o request
-		if(newpin.first != pin.first || newpin.first == 0) {
-			newpin.first = IO->Request(name, isBit, type);
+		if(newpin.first != infoIO.pin.first || newpin.first == 0) {
+			newpin.first = IO->Request(infoIO);
 			if(newpin.first == 0) { // Erro no request
 				ret = false;
 			}
 		// Mesmo que a variavel nao mudou, o tipo pode ter sido alterado. Tenta atualizar
-		} else if(!IO->Update(newpin.first, name, type)) {
+		} else if(!IO->Update(newpin.first, infoIO.name, infoIO.type)) {
 			// Houve erro na atualizacao! Retorna falso para informar que houve o erro.
 			// O procedimento correto nesse caso eh que o objeto nao seja atualizado devido
 			// ao erro, mantendo o pino antigo. Dessa forma nao podemos descartar o id antigo.
@@ -7325,28 +8140,46 @@ bool LadderDiagram::getIO(pair<unsigned long, int> &pin, string name, bool isBit
 	// Se estiver sem erro, descarta o id antigo e atualiza o pino
 	if(ret == true) {
 		// Se id era valido, o novo pino for valido e id mudou, entao a variavel foi atualizada
-		if(pin.first && newpin.first != pin.first) {
+		if(infoIO.pin.first && newpin.first != infoIO.pin.first) {
 			// id mudou, devemos descartar o antigo
-			IO->Discard(pin.first, isBit);
+			IO->Discard(infoIO);
 		}
 
 		// Tudo ok, atualiza o pino atual com o novo
-		pin = newpin;
+		infoIO.pin = newpin;
 	}
 
 	return ret;
 }
 
-bool LadderDiagram::getIO(vector<tGetIO> &vectorGetIO)
+bool LadderDiagram::getIO(pair<unsigned long, int> &pin, string name, eType type, tRequestIO infoIO)
+{
+	infoIO.pin  = pin;
+	infoIO.name = name;
+	infoIO.type = type;
+
+	bool ret = getIO(infoIO);
+	
+	pin = infoIO.pin;
+
+	return ret;
+}
+
+bool LadderDiagram::getIO(vector<tRequestIO> &vectorGetIO)
 {
 	bool ret = true;
-	vector<tGetIO>::iterator it;
+	vector<tRequestIO>::iterator it;
 
 	for(it = vectorGetIO.begin(); it != vectorGetIO.end(); it++) {
-		ret &= getIO(it->pin, it->name, it->isBit, it->type);
+		ret &= getIO(*it);
 	}
 
 	return ret;
+}
+
+unsigned long LadderDiagram::getIdIO(string name)
+{
+	return IO->getID(name);
 }
 
 eType LadderDiagram::getTypeIO(string previousName, string newName, eType default_type, bool isGeneric)
@@ -7446,6 +8279,95 @@ bool LadderDiagram::IsValidNumber(string varnumber)
 void LadderDiagram::sortIO(eSortBy sortby)
 {
 	IO->Sort(sortby);
+}
+
+int LadderDiagram::SearchAndReplace(string sSearchText, string sNewText, eSearchAndReplaceMode mode)
+{
+	int rungMatches, matches = 0;
+	unsigned long idSearch = IO->getID(sSearchText);
+	LadderElem *firstElem = rungs[0]->rung->getFirstElement();
+
+	if(idSearch == IO->getID(sNewText)) {
+		// Textos equivalentes ou invalidos! De qualquer forma, nao podemos continuar
+		return -1;
+	}
+
+	if(context.SelectedElem == nullptr) {
+		SelectElement(firstElem, SELECTED_RIGHT);
+
+		if(context.SelectedElem == nullptr) { // Ainda nulo? Nao deveria...
+			return -1; // Retorna erro pois nao podemos iniciar a busca sem um elemento selecionado
+		}
+	}
+
+	// Se existe I/O sendo pesquisado, continua
+	if(idSearch > 0) {
+		LadderElem *refElem = nullptr;
+		unsigned int i, startRung = 0, count = rungs.size();
+		bool doSearchAndReplace = true, firstPass = true, refElemNotFirstNorNull = false;
+
+		// Iniciando a busca. Aqui criamos um checkpoint para que operacoes de substituicao possam ser desfeitas
+		// Nao precisamos verificar se estamos apenas buscando. Se nada for registrado, o checkpoint sera descartado.
+		CheckpointBegin(_("Localizar e Substituir"));
+
+		// A busca pode partir de um elemento de referencia ou do inicio.
+		// O ponteiro para o elemento de referencia deve ser nulo se deve iniciar a busca do primeiro elemento
+		// Quando devemos buscar o proximo elemento, iniciamos a busca a partir da linha contendo o elemento atual
+		// pois nao faz sentido iniciar a logica de uma linha anterior ao elemento de referencia
+		if(mode == eSearchAndReplaceMode_FindNext || mode == eSearchAndReplaceMode_ReplaceNext) {
+			refElem = context.SelectedElem;
+			// Podemos seguramente converter para unsigned int aqui pois se nao houvesse elemento selecionado,
+			// ja teriamos retornado no inicio desta funcao
+			startRung = (unsigned int)RungContainingSelected();
+		}
+
+		if(refElem != nullptr && refElem != firstElem) {
+			refElemNotFirstNorNull = true;
+		}
+
+		do {
+			// Agora fazemos a busca, partindo da linha e elemento de referencia carregados no codigo acima.
+			for(i = startRung; i < count; i++) {
+				rungMatches = rungs[i]->rung->SearchAndReplace(&refElem, idSearch, sNewText, mode);
+				if(rungMatches < 0) { // Ocorreu um erro ao realizar a busca! Aborta...
+					CheckpointRollback();
+					matches = -1;
+					break;
+				}
+
+				matches += rungMatches;
+
+				if(mode != eSearchAndReplaceMode_ReplaceAll && matches > 0) {
+					// Estava buscando por uma correspondencia e encontrou! interrompe a busca.
+					SelectElement(refElem, SELECTED_RIGHT);
+
+					// Retorna o numero de correspondencias encontrada
+					return matches;
+				}
+			}
+
+			// Terminamos uma busca, devemos checar se devemos reiniciar a busca do comeco.
+			// Se o elemento de referencia nao for nulo e o modo seja Substituir Tudo ou se
+			// nao houve correspondencias e for a primeira passagem, reinicia da primeira linha
+			if(refElemNotFirstNorNull && firstPass && matches >= 0 &&
+				(mode == eSearchAndReplaceMode_ReplaceAll || matches == 0)) {
+					i                  = 0;
+					count              = startRung + 1;
+					firstPass          = false;
+					doSearchAndReplace = true;
+			} else {
+					doSearchAndReplace = false;
+			}
+		} while(doSearchAndReplace);
+
+		// Operacao finalizada, encerra o breakpoint
+		CheckpointEnd();
+
+		// Atualiza o contexto
+		updateContext();
+	}
+
+	return matches;
 }
 
 bool LadderDiagram::IsValidVarName(string varname)
@@ -7591,38 +8513,14 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 
 eValidateResult LadderDiagram::Validate(void)
 {
-	unsigned int i;
 	char msg_error[1024] = "", msg_warning[1024] = "";
 	int  WarningPersist = 0, CountPWM = 0;
 	eValidateResult ret = eValidateResult_OK;
 
 	// Validate I/O Pin Assignment
-	// Only if not in Simulation Mode
-	if(!context.inSimulationMode) {
-		mapDetails detailsIO;
-		unsigned int count = IO->getCount();
-		for(i = 0; i < count; i++) {
-			unsigned long id = IO->getID(i);
-			detailsIO = IO->getDetails(id);
-			switch(detailsIO.type) {
-			case eType_ReadADC:
-				if(detailsIO.pin == 0) {
-					Error(_("Variável A/D '%s' deve ser associado a um canal válido!"), IO->getName(id).c_str());
-					ret = eValidateResult_Error;
-				}
-				break;
-			case eType_ReadEnc:
-				if(detailsIO.pin == 0) {
-					Error(_("Leitura de Encoder '%s' deve ser associada a um canal válido!"), IO->getName(id).c_str());
-					ret = eValidateResult_Error;
-				}
-			case eType_ResetEnc:
-				if(detailsIO.pin == 0) {
-					Error(_("Escrita de Encoder '%s' deve ser associada a um canal válido!"), IO->getName(id).c_str());
-					ret = eValidateResult_Error;
-				}
-			}
-		}
+	// Only Names if in Simulation Mode
+	if(IO->Validate(context.inSimulationMode ? eValidateIO_OnlyNames : eValidateIO_Full)) {
+		ret = eValidateResult_Error;
 	}
 
 	// Validate Generated IntCode

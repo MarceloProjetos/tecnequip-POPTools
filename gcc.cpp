@@ -960,15 +960,8 @@ DWORD InvokeGCC(char* dest)
 
 void CheckPinAssignments(void)
 {
-	int i;
-	unsigned int type;
-	for(i=0; i < Prog.io.count; i++) {
-		type = Prog.io.assignment[i].type;
-		if(Prog.io.assignment[i].pin == NO_PIN_ASSIGNED &&
-			(type == IO_TYPE_READ_ADC || type == IO_TYPE_READ_ENC || type == IO_TYPE_RESET_ENC)) {
-				Error(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), Prog.io.assignment[i].name);
-				CompileError();
-		}
+	if(ladder->Validate() == eValidateResult_Error) {
+		CompileError();
 	}
 }
 
@@ -1024,8 +1017,10 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "extern struct tm 				RTC_NowTM;\n");
 	fprintf(f, "struct tm 						RTC_StartTM;\n");
 	fprintf(f, "struct tm 						RTC_EndTM;\n");
-	for(i=0; *InternalFlags[i]; i++) {
-		fprintf(f, "extern volatile unsigned int 	I_%s;\n", InternalFlags[i]);
+
+	vector<string> vInternalFlags = ladder->getVectorInternalFlagsIO();
+	for(i=0; i < vInternalFlags.size(); i++) {
+		fprintf(f, "extern volatile unsigned int 	I_%s;\n", vInternalFlags[i].c_str());
 	}
 
 	fprintf(f, "\n");

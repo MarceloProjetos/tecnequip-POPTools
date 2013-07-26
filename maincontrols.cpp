@@ -183,7 +183,7 @@ void UpdateMainWindowTitleBar(void)
 	}
 
     char line[MAX_PATH+100];
-    if(InSimulationMode) {
+    if(ladder->getContext().inSimulationMode) {
         if(RealTimeSimulationRunning) {
             strcpy(line, _("POPTools - Simulation (Running)"));
         } else {
@@ -290,15 +290,6 @@ void SetMenusEnabled(LadderContext *context)
 	EnableInterfaceItem(MNU_READ_FMTD_STR, t);
 	EnableInterfaceItem(MNU_WRITE_FMTD_STR, t);
 	EnableInterfaceItem(MNU_INSERT_PARALLEL, t);
-}
-
-//-----------------------------------------------------------------------------
-// Set the enabled state of the undo/redo menus.
-//-----------------------------------------------------------------------------
-void SetUndoEnabled(BOOL undoEnabled, BOOL redoEnabled)
-{
-    EnableMenuItem(EditMenu, MNU_UNDO, undoEnabled ? MF_ENABLED : MF_GRAYED);
-    EnableMenuItem(EditMenu, MNU_REDO, redoEnabled ? MF_ENABLED : MF_GRAYED);
 }
 
 //-----------------------------------------------------------------------------
@@ -533,12 +524,12 @@ void ToggleSimulationMode(void)
 	LVCOLUMN col;
 	col.mask = LVCF_TEXT;
 
-	InSimulationMode = !InSimulationMode;
+	ladder->setSimulationState(!ladder->getContext().inSimulationMode);
 	ClearListWP();
 
 	SetApplicationMode();
 
-    if(InSimulationMode) {
+    if(ladder->getContext().inSimulationMode) {
 		RibbonSetCmdState(cmdFileSave             , FALSE);
 		RibbonSetCmdState(cmdUndo                 , FALSE);
 		RibbonSetCmdState(cmdRedo                 , FALSE);
@@ -549,7 +540,7 @@ void ToggleSimulationMode(void)
 
         // Recheck InSimulationMode, because there could have been a compile
         // error, which would have kicked us out of simulation mode.
-        if(UartFunctionUsed() && InSimulationMode) {
+        if(UartFunctionUsed() && ladder->getContext().inSimulationMode) {
             ShowUartSimulationWindow();
         }
 
@@ -557,7 +548,7 @@ void ToggleSimulationMode(void)
 		
 		ClearSimulationData();
 
-		if(InSimulationMode)
+		if(ladder->getContext().inSimulationMode)
 			SimulationServer_Start();
 	} else {
         RealTimeSimulationRunning = FALSE;

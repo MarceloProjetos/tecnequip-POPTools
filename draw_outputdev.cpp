@@ -1,34 +1,10 @@
 #include "poptools.h"
 
 void (*DrawChars)(int, int, char *);
-void DrawCharsToEngineGUI(int cx, int cy, char *str);
-
-// After an undo all the memory addresses change but make an effort to put
-// the cursor roughly where it should be.
-int SelectedGxAfterNextPaint = -1;
-int SelectedGyAfterNextPaint = -1;
-
-// After pushing a rung up or down the position of that rung in the table
-// changes, but the cursor should stay where it was.
-BOOL ScrollSelectedIntoViewAfterNextPaint;
 
 // Buffer that we write to when exporting (drawing) diagram to a text file. 
 // Dynamically allocated so that we're at least slightly efficient.
 static char **ExportBuffer;
-
-// The fonts that we will use to draw the ladder diagram: fixed width, one
-// normal-weight, one bold.
-HFONT       FixedWidthFont;
-HFONT       FixedWidthFontBold;
-
-// Different colour brushes for right and left buses in simulation, but same
-// colour for both in edit mode; also for the backgrounds in simulation and
-// edit modes.
-static HBRUSH   BusRightBus;
-static HBRUSH   BusLeftBrush;
-static HBRUSH   BusBrush;
-static HBRUSH   BgBrush;
-static HBRUSH   SimBgBrush;
 
 // Parameters that determine our offset if we are scrolled
 int ScrollXOffset;
@@ -36,13 +12,8 @@ int ScrollYOffset;
 int ScrollXOffsetMax;
 int ScrollYOffsetMax;
 
-// Is the cursor currently drawn? We XOR it so this gets toggled.
-BOOL CursorDrawn;
-
 // Colours with which to do syntax highlighting, configurable
 SyntaxHighlightingColours HighlightColours;
-
-#define X_RIGHT_PADDING 30
 
 HRESULT InitRibbon(HWND hWindowFrame);
 HRESULT UpdateRibbonHeight(void);
@@ -116,59 +87,6 @@ static void SetSyntaxHighlightingColours(void)
 void InitForDrawing(void)
 {
     SetSyntaxHighlightingColours();
-
-    FixedWidthFont = CreateFont(
-        FONT_HEIGHT, FONT_WIDTH,
-        0, 0,
-#if CORES_CONSOLE
-        FW_REGULAR,
-#else
-		FW_MEDIUM,
-#endif
-        FALSE, // Italic 
-        FALSE, // Underline
-        FALSE,
-        ANSI_CHARSET,
-        OUT_DEFAULT_PRECIS,
-        CLIP_DEFAULT_PRECIS,
-        DEFAULT_QUALITY,
-        FF_DONTCARE,
-        "Lucida Console");
-
-    FixedWidthFontBold = CreateFont(
-        FONT_HEIGHT, FONT_WIDTH,
-        0, 0,
-#if CORES_CONSOLE
-        FW_REGULAR,
-#else
-		FW_MEDIUM,
-#endif
-        FALSE, // Italic 
-        FALSE, // Underline
-        FALSE,
-        ANSI_CHARSET,
-        OUT_DEFAULT_PRECIS,
-        CLIP_DEFAULT_PRECIS,
-        DEFAULT_QUALITY,
-        FF_DONTCARE,
-        "Lucida Console");
-
-    LOGBRUSH lb;
-    lb.lbStyle = BS_SOLID;
-    lb.lbColor = HighlightColours.simBusRight;
-    BusRightBus = CreateBrushIndirect(&lb);
-
-    lb.lbColor = HighlightColours.simBusLeft;
-    BusLeftBrush = CreateBrushIndirect(&lb);
-
-    lb.lbColor = HighlightColours.bus;
-    BusBrush = CreateBrushIndirect(&lb);
-
-    lb.lbColor = HighlightColours.bg;
-    BgBrush = CreateBrushIndirect(&lb);
-
-    lb.lbColor = HighlightColours.simBg;
-    SimBgBrush = CreateBrushIndirect(&lb);
 }
 
 //-----------------------------------------------------------------------------

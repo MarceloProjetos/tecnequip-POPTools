@@ -1340,13 +1340,11 @@ void PopulateAbortModeCombobox(HWND AbortModeCombobox, bool IncludeDefault)
 		SendMessage(AbortModeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)RampAbortModes[i]));
 }
 
-bool ShowMultisetDADialog(LadderElemMultisetDAProp *l)
+bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *stime, string *sdesl)
 {
 	bool changed = false;
-	string stime = ladder->getNameIO(l->idTime);
-	string sdesl = ladder->getNameIO(l->idDesl);
-	const char *time = stime.c_str();
-	const char *desl = sdesl.c_str();
+	const char *time = stime->c_str();
+	const char *desl = sdesl->c_str();
 
 	char num[12];
 
@@ -1400,8 +1398,8 @@ bool ShowMultisetDADialog(LadderElemMultisetDAProp *l)
         SendMessage(SpeedDownRadio, BM_SETCHECK, BST_CHECKED, 0);
     }
 
-	strcpy(time_tmp   , ladder->getNameIO(l->idTime).c_str());
-	strcpy(initval_tmp, ladder->getNameIO(l->idDesl).c_str());
+	strcpy(time_tmp   , stime->c_str());
+	strcpy(initval_tmp, sdesl->c_str());
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(MultisetDADialog, TRUE);
@@ -1441,30 +1439,12 @@ bool ShowMultisetDADialog(LadderElemMultisetDAProp *l)
     }
 
     if(!DialogCancel &&
-		ladder->IsValidNameAndType(l->idTime.first, time_tmp   , eType_General, _("Tempo"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
-		ladder->IsValidNameAndType(l->idDesl.first, initval_tmp, eType_General, _("Valor"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-			tGetIO pin;
-			vector<tGetIO> pins;
-
-			pin.pin   = l->idTime;
-			pin.name  = time_tmp;
-			pin.isBit = false;
-			pin.type  = eType_General;
-			pins.push_back(pin);
-
-			pin.pin   = l->idDesl;
-			pin.name  = initval_tmp;
-			pin.isBit = false;
-			pin.type  = eType_General;
-			pins.push_back(pin);
-
-			// Se variavel alterada e valida, atualiza o pino
-			if(ladder->getIO(pins)) {
-				changed = true;
-				*l = current;
-				l->idTime = pins[0].pin;
-				l->idDesl = pins[1].pin;
-			}
+		ladder->IsValidNameAndType(ladder->getIdIO(*stime), time_tmp   , eType_General, _("Tempo"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
+		ladder->IsValidNameAndType(ladder->getIdIO(*sdesl), initval_tmp, eType_General, _("Valor"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+			changed = true;
+			*l = current;
+			*stime = time_tmp;
+			*sdesl = initval_tmp;
 	}
 
 	DiscardDeviceResources();

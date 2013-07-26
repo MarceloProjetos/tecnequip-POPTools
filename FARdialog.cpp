@@ -13,20 +13,6 @@ static LONG_PTR PrevNameProc;
 
 static bool changed;
 
-#define IsValidNameAndType(...) true
-
-unsigned int GetTypeFromName(const char *name)
-{
-	int i;
-
-	for(i=0; i<Prog.io.count; i++) {
-		if(!_stricmp(name, Prog.io.assignment[i].name))
-			return Prog.io.assignment[i].type;
-	}
-
-	return IO_TYPE_PENDING;
-}
-
 //-----------------------------------------------------------------------------
 // Window proc for the dialog boxes. This Ok/Cancel stuff is common to a lot
 // of places, and there are no other callbacks from the children.
@@ -48,17 +34,18 @@ static LRESULT CALLBACK FARDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				validate_mode = IsValidNumber(search_text) ? VALIDATE_IS_NUMBER : VALIDATE_IS_VAR;
 
 				if(h == SearchNextButton) {
-					matches = FindAndReplace(search_text, NULL, FAR_FIND_NEXT);
+					matches = FindAndReplace(search_text, "", eSearchAndReplaceMode_FindNext);
 		            if(!matches) {
-						matches = FindAndReplace(search_text, NULL, FAR_FIND_FIRST);
+						matches = FindAndReplace(search_text, "", eSearchAndReplaceMode_FindFirst);
 						if(!matches)
 							Error(_("Nao encontrado!"));
 					}
 			    } else if(h == ReplaceButton) {
-					if(IsValidNameAndType(search_text, new_text, _("Substituir por"), validate_mode | VALIDATE_DONT_ASK | VALIDATE_TYPES_MUST_MATCH | VALIDATE_ACCEPT_IO_PENDING, GetTypeFromName(search_text), 0, 0)) {
-			            matches = FindAndReplace(search_text, new_text, FAR_REPLACE_NEXT);
+					if(ladder->IsValidNameAndType(ladder->getIdIO(search_text), new_text, ladder->getDetailsIO(new_text).type, _("Substituir por"),
+							validate_mode | VALIDATE_DONT_ASK | VALIDATE_TYPES_MUST_MATCH | VALIDATE_ACCEPT_IO_PENDING, 0, 0)) {
+						matches = FindAndReplace(search_text, new_text, eSearchAndReplaceMode_ReplaceNext);
 			            if(!matches) {
-							matches = FindAndReplace(search_text, new_text, FAR_REPLACE_FIRST);
+							matches = FindAndReplace(search_text, new_text, eSearchAndReplaceMode_ReplaceFirst);
 							if(!matches) {
 								Error(_("Nao encontrado!"));
 							} else {
@@ -69,8 +56,9 @@ static LRESULT CALLBACK FARDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						}
 					}
 	            } else if(h == ReplaceAllButton) {
-					if(IsValidNameAndType(search_text, new_text, _("Substituir por"), validate_mode | VALIDATE_DONT_ASK | VALIDATE_TYPES_MUST_MATCH | VALIDATE_ACCEPT_IO_PENDING, GetTypeFromName(search_text), 0, 0)) {
-			            matches = FindAndReplace(search_text, new_text, FAR_REPLACE_ALL);
+					if(ladder->IsValidNameAndType(ladder->getIdIO(search_text), new_text, ladder->getDetailsIO(new_text).type, _("Substituir por"),
+							validate_mode | VALIDATE_DONT_ASK | VALIDATE_TYPES_MUST_MATCH | VALIDATE_ACCEPT_IO_PENDING, 0, 0)) {
+						matches = FindAndReplace(search_text, new_text, eSearchAndReplaceMode_ReplaceAll);
 						// TODO: Internacionalizar
 						if(matches) {
 							swprintf(texto, sizeof(texto)/sizeof(*texto), L"Encontrada(s) %d ocorrência(s)", matches);

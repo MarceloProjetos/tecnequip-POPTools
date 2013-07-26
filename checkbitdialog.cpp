@@ -85,7 +85,7 @@ static void MakeControls(void)
         (LONG_PTR)MyNameProc);
 }
 
-bool ShowCheckBitDialog(pair<unsigned long, int> *name, bool * set, int * bit)
+bool ShowCheckBitDialog(string *name, bool * set, int * bit)
 {
 	bool changed = false;
 
@@ -109,7 +109,7 @@ bool ShowCheckBitDialog(pair<unsigned long, int> *name, bool * set, int * bit)
 	else
         SendMessage(ClearBitRadio, BM_SETCHECK, BST_CHECKED, 0);
 
-    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(ladder->getNameIO(*name).c_str()));
+    SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name->c_str()));
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(CheckBitDialog, TRUE);
@@ -139,27 +139,24 @@ bool ShowCheckBitDialog(pair<unsigned long, int> *name, bool * set, int * bit)
 
     if(!DialogCancel) {
 		// Se variavel sem tipo, usa tipo geral.
-		eType name_type = ladder->getTypeIO(ladder->getNameIO(name->first), name_tmp, eType_General, true);
+		eType name_type = ladder->getTypeIO(*name, name_tmp, eType_General, true);
 
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_tmp));
 
-		if(ladder->IsValidNameAndType(name->first, name_tmp, name_type, _("Nome"), VALIDATE_IS_VAR, 0, 0)) {
-			pair<unsigned long, int> pin = *name;
-			if(ladder->getIO(pin, name_tmp, false, name_type)) { // Variavel valida!
-				changed = true;
+		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_tmp, name_type, _("Nome"), VALIDATE_IS_VAR, 0, 0)) {
+			changed = true;
 
-				*name = pin;
+			*name = name_tmp;
 
-				if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-					*set = TRUE;
-				else
-					*set = FALSE;
+			if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
+				*set = TRUE;
+			else
+				*set = FALSE;
 
-				char buf[20];
-				SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
-					(LPARAM)(buf));
-				*bit = atoi(buf);
-			}
+			char buf[20];
+			SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
+				(LPARAM)(buf));
+			*bit = atoi(buf);
 		}
     }
 
