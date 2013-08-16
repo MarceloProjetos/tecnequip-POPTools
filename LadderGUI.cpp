@@ -6,9 +6,6 @@
 // Variavel que indica se o cursor deve ser exibido. Liga e Desliga a cada 800 ms, conforme timer.
 bool isCursorVisible = true;
 
-// Colours with which to do syntax highlighting, configurable
-extern SyntaxHighlightingColours HighlightColours;
-
 /*** Estruturas auxiliares ***/
 
 // Estrutura que contem a origem do comando, permitindo que tanto um elemento, um circuito ou o
@@ -29,6 +26,55 @@ typedef struct {
 	bool  DontDraw;
 	LadderContext *context;
 } tDataDrawGUI;
+
+// Estruturas que armazenam as cores do diagrama ladder
+typedef struct {
+	COLORREF Background;
+	COLORREF Foreground;
+	COLORREF Bus;
+	COLORREF Wire;
+	COLORREF WireOff;
+	COLORREF Selection;
+	COLORREF Breakpoint;
+	COLORREF ConnectionDot;
+
+	// Algumas cores padrao (branco, preto, etc...)
+	COLORREF White;
+	COLORREF Black;
+} tLadderColors;
+
+typedef struct {
+	COLORREF Background;
+	COLORREF Foreground;
+	COLORREF Border;
+	COLORREF BorderText;
+} tLadderColorGroup;
+
+// Definicao do ponteiro para os comandos dos itens expandidos
+typedef bool (*tFncExpandedItem)(LadderElem *, unsigned int) ;
+
+// Estruturas que definem os controles disponiveis para uso nos items expandidos
+typedef struct {
+	tFncExpandedItem fnc;
+	vector<string>   items;
+	int              selected;
+} tControlList;
+
+// Definicao que descreve um item expandido
+typedef pair < string, unsigned int > tExpandedItem;
+
+// Estrutura que armazena dados de comando em um controle de item expandido
+typedef struct {
+	tFncExpandedItem fnc;
+	unsigned int     index;
+} tCmdExpandedItem;
+
+// Estrutura passada para a funcao que altera o nome de um I/O, cadastrada como um comando
+// ao clicar no nome da variável em uma caixa de elemento
+typedef struct {
+	eType type;
+	bool  reply;
+} tCmdChangeNameData;
 
 /*** Fim das estruturas auxiliares ***/
 
@@ -69,7 +115,6 @@ private:
 	int HeaderHeight;
 
 	array<unsigned int, 3>    InterfaceColors;
-	SyntaxHighlightingColours HighlightColoursBrush;
 
 	typedef struct {
 		RECT r;
@@ -87,6 +132,10 @@ private:
 	bool MouseOver (RECT region);
 
 	void PaintScrollAndSplitter(void);
+
+	// Variaveis que armazenam as cores utilizadas no diagrama ladder
+	tLadderColors LadderColors;
+	map<int, tLadderColorGroup> LadderColorGroups;
 
 public:
 	LadderGUI(void);
@@ -115,6 +164,11 @@ public:
 
 	RECT DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight);
 
+	vector<RECT> DrawExpandedItems(tLadderColorGroup cg, RECT r, POINT GridSize, unsigned int GridOffset, vector<tExpandedItem> items);
+
+	// Funcoes para adicionar controles aos itens expandidos
+	void addControlList(LadderElem *elem, RECT r, tControlList list);
+
 	pair<POINT, POINT> DrawWire(POINT StartPoint, POINT EndPoint, bool StartHasConnectionDot);
 
 	void        MouseClick(int x, int y, bool isDown, bool isDouble);
@@ -123,6 +177,14 @@ public:
 	void AddCommand(tCommandSource source, RECT region, void (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick = true);
 
 	void CmdExpand(LadderElem *elem);
+
+	// Funcoes para configurar as cores do diagrama ladder
+	void              setLadderColors(tLadderColors colors);
+	tLadderColors     getLadderColors(void);
+
+	void              setLadderColorGroup(int elem, tLadderColorGroup colors);
+	tLadderColorGroup getLadderColorGroup(int elem);
+	void              delLadderColorGroup(int elem);
 };
 
 // Criacao do objeto que desenha a interface
@@ -138,7 +200,10 @@ void CmdShowDialog(tCommandSource source, void *data)
 {
 	if(source.elem != nullptr) {
 		ladder->CheckpointBegin("Editar Elemento");
-		source.elem->ShowDialog(ladder->getContext());
+		if(source.elem->ShowDialog(ladder->getContext()) == true) {
+			ladder->ProgramChanged();
+			UpdateMainWindowTitleBar();
+		}
 		ladder->CheckpointEnd();
 		ladder->updateContext();
 	}
@@ -169,6 +234,15 @@ void CmdSelectBelow(tCommandSource source, void *data)
 	CmdSelect(source, SELECTED_BELOW);
 }
 
+void cmdExpandedItem(tCommandSource source, void *data)
+{
+	tCmdExpandedItem *cmd = (tCmdExpandedItem *)data;
+
+	if(cmd->fnc != nullptr) {
+		(cmd->fnc)(source.elem, cmd->index);
+	}
+}
+
 // Construtores
 LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 {
@@ -181,6 +255,33 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	Grid1x1.y = 30;
 
 	HeaderHeight = FONT_HEIGHT + 5;
+
+	// Cria o grupo de cores padrao
+	tLadderColorGroup group;
+
+	group.Background = RGB(170, 170, 170);
+	group.Foreground = RGB(  0,   0, 255);
+	group.Border     = RGB( 85,  85,  85);
+	group.BorderText = RGB(255, 255, 255);
+
+	setLadderColorGroup(0, group);
+
+	// Carrega as cores padrao da interface
+	tLadderColors colors;
+
+	colors.Background    = RGB(  0,   0,   0);
+	colors.Foreground    = RGB(255, 255, 255);
+	colors.Selection     = RGB(255,   0,   0);
+	colors.Bus           = RGB(255, 255, 255);
+	colors.ConnectionDot = RGB(255,   0,   0);
+	colors.Wire          = RGB(255, 255, 255);
+	colors.WireOff       = RGB(255, 255, 255);
+	colors.Breakpoint    = RGB(255,   0,   0);
+
+	colors.White         = RGB(255, 255, 255);
+	colors.Black         = RGB(  0,   0,   0);
+
+	setLadderColors(colors);
 }
 
 // Metodos privados
@@ -305,27 +406,101 @@ void LadderGUI::setMousePosition(POINT xy)
 void LadderGUI::DrawInit(void)
 {
 	SetTarget(DrawWindow);
-	SetBackgroundColor(HighlightColours.bg);
-
-	HighlightColoursBrush.breakpoint       = CreateBrush(HighlightColours.breakpoint );
-	HighlightColoursBrush.bus              = CreateBrush(HighlightColours.bus        );
-	HighlightColoursBrush.comment          = CreateBrush(HighlightColours.comment    );
-	HighlightColoursBrush.def              = CreateBrush(HighlightColours.def        );
-	HighlightColoursBrush.lit              = CreateBrush(HighlightColours.lit        );
-	HighlightColoursBrush.name             = CreateBrush(HighlightColours.name       );
-	HighlightColoursBrush.op               = CreateBrush(HighlightColours.op         );
-	HighlightColoursBrush.punct            = CreateBrush(HighlightColours.punct      );
-	HighlightColoursBrush.rungNum          = CreateBrush(HighlightColours.rungNum    );
-	HighlightColoursBrush.selected         = CreateBrush(HighlightColours.selected   );
-	HighlightColoursBrush.simBusLeft       = CreateBrush(HighlightColours.simBusLeft );
-	HighlightColoursBrush.simBusRight      = CreateBrush(HighlightColours.simBusRight);
-	HighlightColoursBrush.simOff           = CreateBrush(HighlightColours.simOff     );
-	HighlightColoursBrush.simOn            = CreateBrush(HighlightColours.simOn      );
-	HighlightColoursBrush.simRungNum       = CreateBrush(HighlightColours.simRungNum );
+	SetBackgroundColor(LadderColors.Background);
 
 	InterfaceColors[INTERF_COLOR_3DLIGHT ] = CreateBrush(GetSysColor(COLOR_3DLIGHT   ));
 	InterfaceColors[INTERF_COLOR_3DFACE  ] = CreateBrush(GetSysColor(COLOR_3DFACE    ));
 	InterfaceColors[INTERF_COLOR_3DSHADOW] = CreateBrush(GetSysColor(COLOR_3DDKSHADOW));
+
+	/*** Grupos de Cores ***/
+	tLadderColorGroup group;
+
+	// Azul: I/O
+	group.Background = RGB(170, 170, 255);
+	group.Foreground = RGB(  0,   0, 255);
+	group.Border     = RGB( 85,  85, 170);
+	group.BorderText = RGB(255, 255, 255);
+
+	setLadderColorGroup(ELEM_COIL            , group);
+	setLadderColorGroup(ELEM_CONTACTS        , group);
+	setLadderColorGroup(ELEM_ONE_SHOT_RISING , group);
+	setLadderColorGroup(ELEM_ONE_SHOT_FALLING, group);
+	setLadderColorGroup(ELEM_OPEN            , group);
+	setLadderColorGroup(ELEM_MASTER_RELAY    , group);
+	setLadderColorGroup(ELEM_SHORT           , group);
+
+	// Verde: Temporizadores / Contadores
+	group.Background = RGB(170, 255, 170);
+	group.Foreground = RGB( 85, 170,  85);
+	group.Border     = RGB( 85, 170,  85);
+	group.BorderText = RGB(255, 255, 255);
+
+	setLadderColorGroup(ELEM_TON, group);
+	setLadderColorGroup(ELEM_TOF, group);
+	setLadderColorGroup(ELEM_RTO, group);
+	setLadderColorGroup(ELEM_CTU, group);
+	setLadderColorGroup(ELEM_CTD, group);
+	setLadderColorGroup(ELEM_CTC, group);
+	setLadderColorGroup(ELEM_RES, group);
+	setLadderColorGroup(ELEM_RTC, group);
+
+	// Laranja: Variaveis / Condicionais / Matematicos
+	group.Background = RGB(255, 200, 132);
+	group.Foreground = RGB(  0,   0, 255);
+	group.Border     = RGB(255, 140,   0);
+	group.BorderText = RGB(255, 255, 255);
+
+	setLadderColorGroup(ELEM_MOVE            , group);
+	setLadderColorGroup(ELEM_SET_BIT         , group);
+	setLadderColorGroup(ELEM_CHECK_BIT       , group);
+	setLadderColorGroup(ELEM_EQU             , group);
+	setLadderColorGroup(ELEM_NEQ             , group);
+	setLadderColorGroup(ELEM_LES             , group);
+	setLadderColorGroup(ELEM_LEQ             , group);
+	setLadderColorGroup(ELEM_GRT             , group);
+	setLadderColorGroup(ELEM_GEQ             , group);
+	setLadderColorGroup(ELEM_PERSIST         , group);
+	setLadderColorGroup(ELEM_ADD             , group);
+	setLadderColorGroup(ELEM_SUB             , group);
+	setLadderColorGroup(ELEM_DIV             , group);
+	setLadderColorGroup(ELEM_MUL             , group);
+	setLadderColorGroup(ELEM_SQRT            , group);
+	setLadderColorGroup(ELEM_ABS             , group);
+	setLadderColorGroup(ELEM_MOD             , group);
+	setLadderColorGroup(ELEM_RAND            , group);
+	setLadderColorGroup(ELEM_LOOK_UP_TABLE   , group);
+	setLadderColorGroup(ELEM_PIECEWISE_LINEAR, group);
+	setLadderColorGroup(ELEM_SHIFT_REGISTER  , group);
+
+	// Amarelo: Analogicos / Motores / Encoders
+	group.Background = RGB(255, 255, 170);
+	group.Foreground = RGB(255, 255, 170);
+	group.Border     = RGB(220, 220,   0);
+	group.BorderText = RGB(255, 255, 255);
+
+	setLadderColorGroup(ELEM_SET_DA     , group);
+	setLadderColorGroup(ELEM_READ_ADC   , group);
+	setLadderColorGroup(ELEM_READ_ENC   , group);
+	setLadderColorGroup(ELEM_RESET_ENC  , group);
+	setLadderColorGroup(ELEM_MULTISET_DA, group);
+	setLadderColorGroup(ELEM_SET_PWM    , group);
+
+	// Roxo: Comunicacao
+	group.Background = RGB(255, 170, 255);
+	group.Foreground = RGB(255,   0, 255);
+	group.Border     = RGB(170,  85, 170);
+	group.BorderText = RGB(255, 255, 255);
+
+	setLadderColorGroup(ELEM_READ_MODBUS           , group);
+	setLadderColorGroup(ELEM_WRITE_MODBUS          , group);
+	setLadderColorGroup(ELEM_READ_FORMATTED_STRING , group);
+	setLadderColorGroup(ELEM_WRITE_FORMATTED_STRING, group);
+	setLadderColorGroup(ELEM_UART_RECV             , group);
+	setLadderColorGroup(ELEM_UART_SEND             , group);
+	setLadderColorGroup(ELEM_READ_USS              , group);
+	setLadderColorGroup(ELEM_WRITE_USS             , group);
+	setLadderColorGroup(ELEM_READ_SERVO_YASKAWA    , group);
+	setLadderColorGroup(ELEM_WRITE_SERVO_YASKAWA   , group);
 }
 
 void LadderGUI::DrawStart(int OffsetX, int OffsetY)
@@ -340,56 +515,6 @@ void LadderGUI::DrawStart(int OffsetX, int OffsetY)
 	ClearCommandLists();
 
 	vectorAreaElements.clear();
-
-/*
-	RECT r;
-	GetClientRect(DrawWindow, &r);
-	r.top += 100;
-
-	DrawText("breakpoint", r, 0, HighlightColoursBrush.breakpoint);
-	r.top += 20;
-
-	DrawText("bus", r, 0, HighlightColoursBrush.bus);
-	r.top += 20;
-
-	DrawText("comment", r, 0, HighlightColoursBrush.comment);
-	r.top += 20;
-
-	DrawText("def", r, 0, HighlightColoursBrush.def);
-	r.top += 20;
-
-	DrawText("lit", r, 0, HighlightColoursBrush.lit);
-	r.top += 20;
-
-	DrawText("name", r, 0, HighlightColoursBrush.name);
-	r.top += 20;
-
-	DrawText("op", r, 0, HighlightColoursBrush.op);
-	r.top += 20;
-
-	DrawText("punct", r, 0, HighlightColoursBrush.punct);
-	r.top += 20;
-
-	DrawText("rungNum", r, 0, HighlightColoursBrush.rungNum);
-	r.top += 20;
-
-	DrawText("selected", r, 0, HighlightColoursBrush.selected);
-	r.top += 20;
-
-	DrawText("simBusLeft", r, 0, HighlightColoursBrush.simBusLeft);
-	r.top += 20;
-
-	DrawText("simBusRight", r, 0, HighlightColoursBrush.simBusRight);
-	r.top += 20;
-
-	DrawText("simOff", r, 0, HighlightColoursBrush.simOff);
-	r.top += 20;
-
-	DrawText("simOn", r, 0, HighlightColoursBrush.simOn);
-	r.top += 20;
-
-	DrawText("simRungNum", r, 0, HighlightColoursBrush.simRungNum);
-	r.top += 20;*/
 }
 
 void LadderGUI::DrawEnd(void)
@@ -401,7 +526,7 @@ void LadderGUI::DrawEnd(void)
 	vector<RECT>::iterator it;
 	for(it = vectorConnectionDots.begin(); it != vectorConnectionDots.end(); it++) {
 		if(it->left > r.left) {
-			DrawEllipse(*it, HighlightColoursBrush.breakpoint);
+			DrawEllipse(*it, LadderColors.ConnectionDot);
 		}
 	}
 
@@ -422,6 +547,8 @@ RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGri
 	RECT r, rCursor;
 	POINT start, size = DiagramSize;
 
+	tLadderColorGroup colorgroup = getLadderColorGroup(elem->getWhich());
+
 	start.x = 0;
 	start.y = StartGridY;
 
@@ -439,27 +566,27 @@ RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGri
 		if(SelectedState == SELECTED_ABOVE) {
 			rCursor.top    = r.top - 7;
 			rCursor.bottom = r.top + 7;
-			DrawRectangle(rCursor, HighlightColoursBrush.breakpoint, true , 0, 0, 45);
+			DrawRectangle(rCursor, LadderColors.Selection, true , 0, 0, 45);
 		}
 
 		if(SelectedState == SELECTED_BELOW) {
 			rCursor.top    = r.bottom - 7;
 			rCursor.bottom = r.bottom + 7;
-			DrawRectangle(rCursor, HighlightColoursBrush.breakpoint, true , 0, 0, 45);
+			DrawRectangle(rCursor, LadderColors.Selection, true , 0, 0, 45);
 		}
 	}
 
 	// Desenha a barra
-	DrawRectangle(r, HighlightColoursBrush.simBusRight);
+	DrawRectangle(r, colorgroup.Background);
 
 	// Desenha as linhas de seleção superior / inferior
 	if(SelectedState != SELECTED_NONE) {
 		POINT start = { r.left, r.top }, end = { r.right, r.top };
-		DrawLine(start, end, HighlightColoursBrush.breakpoint);
+		DrawLine(start, end, LadderColors.Selection);
 
 		start.y = r.bottom;
 		end.y   = r.bottom;
-		DrawLine(start, end, HighlightColoursBrush.breakpoint);
+		DrawLine(start, end, LadderColors.Selection);
 	}
 
 	return r;
@@ -467,27 +594,60 @@ RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGri
 
 RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, POINT GridSize, string ElemName, bool ShowExpand)
 {
+	unsigned int SizeZ = 30;
+
 	bool isMouseOver;
 	RECT r = getRECT(StartTopLeft, GridSize);
+	r.bottom += 10; // Aumenta um pouco alem do grid para a linha de conexao entrar na caixa ao ines de ficar por baixo
 
-	isMouseOver = MouseOver(r);
-
-	// Desenha a linha de barramento do elemento, ou seja, 1 para baixo no grid e 1/2 grid para cada lado
+	// Calcula a posicao da linha do barramento
+	POINT MidPoint;
 	POINT StartPoint = { r.left  - Grid1x1.x / 2, r.top + HeaderHeight + Grid1x1.y };
 	POINT EndPoint   = { r.right + Grid1x1.x / 2, r.top + HeaderHeight + Grid1x1.y };
-	DrawLine(StartPoint, EndPoint, HighlightColoursBrush.bus);
 
-	// Desenha os losangos que conectam a caixa do elemento ao barramento
-//	RECT rLosangoLeft  = { r.left  - 5, r.top + HeaderHeight + Grid1x1.y - 5, r.left  + 5, r.top + HeaderHeight + Grid1x1.y + 5 };
-//	RECT rLosangoRight = { r.right - 5, r.top + HeaderHeight + Grid1x1.y - 5, r.right + 5, r.top + HeaderHeight + Grid1x1.y + 5 };
-//	DrawRectangle(rLosangoLeft , HighlightColoursBrush.bus, true , 0, 0, 45);
-//	DrawRectangle(rLosangoRight, HighlightColoursBrush.bus, true , 0, 0, 45);
+	// Centraliza o objeto, descontando metade da profundidade
+	r.left  -= SizeZ/2;
+	r.right -= SizeZ/2;
+
+	if(elem == nullptr) return r;
+
+	tLadderColorGroup colorgroup = getLadderColorGroup(elem->getWhich());
+
+	isMouseOver = MouseOver(r);
 
 	// Desenha o indicador de selecao
 	RECT rSel, rCursor = { - 7, - 7, + 7, + 7 };
 
 	// Estrutura com a origem do comando
 	tCommandSource source = { nullptr, nullptr, elem };
+
+	// Selecao Direita
+	if(SelectedState == SELECTED_RIGHT) {
+		rCursor.left   += r.right;
+		rCursor.right  += r.right;
+		rCursor.top    += r.top + HeaderHeight + Grid1x1.y;
+		rCursor.bottom += r.top + HeaderHeight + Grid1x1.y;
+	} else {
+		rSel.left   = r.left;
+		rSel.right  = r.right + Grid1x1.x/2;
+		rSel.top    = r.top;
+		rSel.bottom = r.bottom;
+		AddCommand(source, rSel, CmdSelectRight, nullptr, false);
+	}
+
+	// Selecao Esquerda
+	if(SelectedState == SELECTED_LEFT) {
+		rCursor.left   += r.left;
+		rCursor.right  += r.left;
+		rCursor.top    += r.top + HeaderHeight + Grid1x1.y;
+		rCursor.bottom += r.top + HeaderHeight + Grid1x1.y;
+	} else {
+		rSel.left   = r.left - Grid1x1.x/2;
+		rSel.right  = r.left + Grid1x1.x/2;
+		rSel.top    = r.top;
+		rSel.bottom = r.bottom;
+		AddCommand(source, rSel, CmdSelectLeft, nullptr, false);
+	}
 
 	// Selecao Acima
 	if(SelectedState == SELECTED_ABOVE) {
@@ -517,57 +677,42 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 		AddCommand(source, rSel, CmdSelectBelow, nullptr, false);
 	}
 
-	// Selecao Esquerda
-	if(SelectedState == SELECTED_LEFT) {
-		rCursor.left   += r.left;
-		rCursor.right  += r.left;
-		rCursor.top    += r.top + HeaderHeight + Grid1x1.y;
-		rCursor.bottom += r.top + HeaderHeight + Grid1x1.y;
-//		rCursor.top    += r.top + (r.bottom - r.top)/2;
-//		rCursor.bottom += r.top + (r.bottom - r.top)/2;
-	} else {
-		rSel.left   = r.left - Grid1x1.x/2;
-		rSel.right  = r.left + Grid1x1.x/2;
-		rSel.top    = r.top;
-		rSel.bottom = r.bottom;
-		AddCommand(source, rSel, CmdSelectLeft, nullptr, false);
-	}
-
-	// Selecao Direita
-	if(SelectedState == SELECTED_RIGHT) {
-		rCursor.left   += r.right;
-		rCursor.right  += r.right;
-		rCursor.top    += r.top + HeaderHeight + Grid1x1.y;
-		rCursor.bottom += r.top + HeaderHeight + Grid1x1.y;
-//		rCursor.top    += r.top + (r.bottom - r.top)/2;
-//		rCursor.bottom += r.top + (r.bottom - r.top)/2;
-	} else {
-		rSel.left   = r.right - Grid1x1.x/2;
-		rSel.right  = r.right + Grid1x1.x/2;
-		rSel.top    = r.top;
-		rSel.bottom = r.bottom;
-		AddCommand(source, rSel, CmdSelectRight, nullptr, false);
-	}
-
 	if(SelectedState != SELECTED_NONE && isCursorVisible) {
-		DrawRectangle(rCursor, HighlightColoursBrush.breakpoint, true , 0, 0, 45);
+		rCursor.left  += 30;
+		rCursor.right += 30;
+		DrawRectangle(rCursor, LadderColors.Selection, true , 0, 0, 45);
 	}
+
+	// Desenha a caixa 3D
+	RECT r3D = r;
+	if(!isMouseOver) {
+		r3D.top += HeaderHeight;
+	}
+
+	COLORREF bgcolor = SelectedState != SELECTED_NONE ? LadderColors.Selection : colorgroup.Border;
+
+	DrawRectangle3D(r3D, (float)SizeZ, colorgroup.Background, bgcolor, bgcolor, true, 10, 10);
+
+	// Desenha a linha de barramento do elemento, ou seja, 1 para baixo no grid e 1/2 grid para cada lado
+	MidPoint.x = r3D.left - 2; // Desconta a borda
+	MidPoint.y = StartPoint.y;
+	DrawLine(StartPoint, MidPoint, LadderColors.Wire);
+
+	MidPoint.x = r3D.right + SizeZ/2;
+	MidPoint.y = EndPoint.y;
+	DrawLine(MidPoint  , EndPoint, LadderColors.Wire);
 
 	// Desenha a caixa em si. Se mouse estiver sobre o elemento, desenha com borda.
 	if(isMouseOver) {
 		MouseOverElement = elem;
 
-		DrawRectangle(r, HighlightColoursBrush.simBusRight, true , 5, 5);
+		RECT rHeader = r, rExpand = { 0, 0, 0, 0 };
 
-		RECT rHeader = r;
 		rHeader.bottom = rHeader.top + HeaderHeight;
-		DrawRectangle(rHeader, HighlightColoursBrush.simOff, true);
+		DrawRectangle(rHeader, colorgroup.Border, true, 10);
 
-		if(SelectedState != SELECTED_NONE) {
-			DrawRectangle(r, HighlightColoursBrush.breakpoint, false, 5, 5);
-		} else {
-			DrawRectangle(r, HighlightColoursBrush.simOff, false, 5, 5);
-		}
+		rHeader.top += HeaderHeight/2;
+		DrawRectangle(rHeader, colorgroup.Border, true);
 
 		r.left   += 3;
 		r.top    += 3;
@@ -575,7 +720,6 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 		r.bottom -= 3;
 
 		if(ShowExpand) {
-			RECT rExpand;
 			rExpand.left   = r.right - 15;
 			rExpand.right  = r.right;
 			rExpand.top    = r.top;
@@ -587,36 +731,38 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 			StartPoint.y = r.top + (expanded ? 10 : 5);
 			EndPoint.x = StartPoint.x + 5;
 			EndPoint.y = StartPoint.y + (expanded ? -5 : +5);
-			DrawLine(StartPoint, EndPoint, HighlightColoursBrush.name);
+			DrawLine(StartPoint, EndPoint, colorgroup.BorderText);
 
 			StartPoint.x += 10;
-			DrawLine(StartPoint, EndPoint, HighlightColoursBrush.name);
+			DrawLine(StartPoint, EndPoint, colorgroup.BorderText);
 
 			StartPoint.y -= 5;
 			EndPoint.y -= 5;
-			DrawLine(StartPoint, EndPoint, HighlightColoursBrush.name);
+			DrawLine(StartPoint, EndPoint, colorgroup.BorderText);
 
 			StartPoint.x -= 10;
-			DrawLine(StartPoint, EndPoint, HighlightColoursBrush.name);
+			DrawLine(StartPoint, EndPoint, colorgroup.BorderText);
 
 			// Adiciona o comando do botao de expandir / retrair
 			AddCommand(source, rExpand, ::CmdExpand, nullptr, false);
 		}
 
 		// Desenha o texto do nome do controle
-		DrawText(ElemName.c_str(), r, 0, HighlightColoursBrush.name);
+		RECT rText = r;
+		rText.right -= rExpand.right - rExpand.left;
+		DrawText(ElemName.c_str(), rText, 0, colorgroup.BorderText, eAlignMode_Center, eAlignMode_TopLeft);
 
 		r.top = rHeader.bottom;
 	} else {
 		r.top += HeaderHeight;
-		DrawRectangle(r, HighlightColoursBrush.simBusRight, true , 5, 5);
 
-		if(SelectedState != SELECTED_NONE) {
-			DrawRectangle(r, HighlightColoursBrush.breakpoint , false, 5, 5);
+		r.left   += 3;
+		r.right  -= 3;
+		r.bottom -= 3;
+	}
 
-			r.left   += 3;
-			r.right  -= 3;
-		}
+	if(SelectedState != SELECTED_NONE) {
+		DrawRectangle(r3D, LadderColors.Selection, false, 10, 10);
 	}
 
 	AddCommand(source, r, CmdShowDialog, nullptr);
@@ -637,16 +783,126 @@ void LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	POINT size;
 	int txt_size = max(txt.first.size(), txt.second.size()) * FONT_WIDTH;
 
+	tLadderColorGroup colorgroup = getLadderColorGroup(elem->getWhich());
+
 	size.x = 1 + (txt_size / Grid1x1.x);
 	size.y = 1;
 
 	r = DrawElementBox(elem, SelectedState, StartTopLeft, size);
 	r.top += 2;
 	r.left += (r.right - r.left - txt_size)/2;
-	DrawText(txt.first.c_str(), r, 0, HighlightColoursBrush.name);
+	DrawText(txt.first.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 
 	r.top += FONT_HEIGHT;
-	DrawText(txt.second.c_str(), r, 0, HighlightColoursBrush.name);
+	DrawText(txt.second.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+}
+
+vector<RECT> LadderGUI::DrawExpandedItems(tLadderColorGroup cg, RECT r, POINT GridSize, unsigned int GridOffset, vector<tExpandedItem> items)
+{
+	RECT rText, rExp;
+	vector<RECT> vectorRectExp;
+
+	r.top += Grid1x1.y * GridOffset;
+	rExp = r;
+
+	unsigned int i;
+	for(i = 0; i < items.size(); i++) {
+		rExp.left   = r.left  + 5;
+		rExp.right  = r.right - 5;
+		rExp.bottom = rExp.top + Grid1x1.y * items[i].second;
+		gui.DrawRectangle(rExp, cg.Border, true, 5);
+
+		rText       = rExp;
+		rText.left += 10;
+		gui.DrawText(items[i].first.c_str(), rText, 0, LadderColors.White, eAlignMode_TopLeft, eAlignMode_Center);
+
+		rExp.top    += 5;
+		rExp.left   += Grid1x1.x + 5;
+		rExp.right  -= 5;
+		rExp.bottom -= 5;
+		gui.DrawRectangle(rExp, LadderColors.White, true, 5);
+		vectorRectExp.push_back(rExp);
+
+		rExp.top = rExp.bottom + 10;
+	}
+
+	return vectorRectExp;
+}
+
+void LadderGUI::addControlList(LadderElem *elem, RECT r, tControlList list)
+ {
+	unsigned int offsetText = 3, itemBorder = 1;
+	unsigned int colWidth, colHeight, nCols, nLines;
+
+	// Esta funcao adiciona um controle no modo de lista. Ele tenta identificar o numero de colunas utilizaveis
+	// conforme a largura do retangulo e o tamanho dos textos
+	unsigned int i, maxlen = 0;
+	for(i = 0; i < list.items.size(); i++) {
+		if(list.items[i].size() > maxlen) {
+			maxlen = list.items[i].size();
+		}
+	}
+
+	maxlen *= FONT_WIDTH; // Multiplica os caracteres pela largura de cadaum deles
+	maxlen += offsetText + 2*itemBorder; // Cada elemento tambem deve considerar as bordas e o deslocamento do texto
+
+	if(maxlen == 0) return; // Maior texto tem tamanho zero ??? Ou lista vazia ou items com strings vazias...
+
+	r.top    += itemBorder;
+	r.left   += itemBorder;
+	r.bottom -= itemBorder;
+	r.right  -= itemBorder;
+
+	nCols  = (r.right - r.left) / maxlen;
+
+	if(nCols == 0) return; // Textos muito longos ou area muito pequena, impossivel montar a lista!
+	if(nCols > list.items.size()) {
+		nCols = list.items.size();
+	}
+
+	nLines = (list.items.size() / nCols) + ((list.items.size() % nCols) != 0);
+
+	colWidth  = (r.right - r.left) / nCols;
+	colHeight = (r.bottom - r.top) / nLines;
+
+	if(colHeight < FONT_HEIGHT + 2) return; // Sem espaco entre as linhas, ficaria tudo embaralhado... retorna!
+
+	// Nesse ponto ja temos as dimensoes da lista e todos os valores ja foram checados e sao validos
+	RECT rItem;
+	unsigned int offsetX, offsetY;
+
+	tLadderColorGroup cg = getLadderColorGroup(elem->getWhich());
+
+	for(i = 0; i < list.items.size(); i++) {
+		offsetX = (i % nCols) * colWidth;
+		offsetY = (i / nCols) * colHeight;
+
+		rItem = r;
+		rItem.top    += offsetY;
+		rItem.left   += offsetX;
+		rItem.bottom += offsetY;
+		rItem.right  += offsetX;
+
+		rItem.right   = rItem.left + colWidth - itemBorder;
+		rItem.bottom  = rItem.top + colHeight - itemBorder;
+		rItem.left   += itemBorder;
+		rItem.top    += itemBorder;
+
+		if(i == list.selected) {
+			gui.DrawRectangle(rItem, cg.Border, true, 3);
+		} else {
+			tCommandSource source = { nullptr, nullptr, nullptr };
+			source.elem = elem;
+
+			tCmdExpandedItem *cmd = new tCmdExpandedItem;
+			cmd->index = i;
+			cmd->fnc   = list.fnc;
+
+			AddCommand(source, rItem, cmdExpandedItem, cmd, false);
+		}
+
+		gui.DrawText(list.items[i].c_str(), rItem, 0, i == list.selected ? LadderColors.White : cg.Border, eAlignMode_Center, eAlignMode_Center);
+	}
 }
 
 pair<POINT, POINT> LadderGUI::DrawWire(POINT StartPoint, POINT EndPoint, bool StartHasConnectionDot)
@@ -668,7 +924,7 @@ pair<POINT, POINT> LadderGUI::DrawWire(POINT StartPoint, POINT EndPoint, bool St
 	}
 
 	// Desenha a linha (Horizontal ou Vertical)
-	DrawLine(StartPoint, EndPoint, HighlightColoursBrush.bus);
+	DrawLine(StartPoint, EndPoint, LadderColors.Wire);
 
 	// Se solicitado, desenha o ponto de conexao
 	if(StartHasConnectionDot) {
@@ -793,6 +1049,57 @@ void LadderGUI::AddCommand(tCommandSource source, RECT region, void (*fnc)(tComm
 	Commands->push_back(item);
 }
 
+// Funcoes para configurar as cores do diagrama ladder
+void LadderGUI::setLadderColors(tLadderColors colors)
+{
+	LadderColors.Background    = CreateBrush(colors.Background   );
+	LadderColors.Foreground    = CreateBrush(colors.Foreground   );
+	LadderColors.Selection     = CreateBrush(colors.Selection    );
+	LadderColors.Bus           = CreateBrush(colors.Bus          );
+	LadderColors.ConnectionDot = CreateBrush(colors.ConnectionDot);
+	LadderColors.Wire          = CreateBrush(colors.Wire         );
+	LadderColors.WireOff       = CreateBrush(colors.WireOff      );
+	LadderColors.Breakpoint    = CreateBrush(colors.Breakpoint   );
+	LadderColors.White         = CreateBrush(colors.White        );
+	LadderColors.Black         = CreateBrush(colors.Black        );
+}
+
+tLadderColors LadderGUI::getLadderColors(void)
+{
+	return LadderColors;
+}
+
+void LadderGUI::setLadderColorGroup(int elem, tLadderColorGroup colors)
+{
+	if(elem >= 0) {
+		LadderColorGroups[elem].Background = CreateBrush(colors.Background);
+		LadderColorGroups[elem].Foreground = CreateBrush(colors.Foreground);
+		LadderColorGroups[elem].Border     = CreateBrush(colors.Border    );
+		LadderColorGroups[elem].BorderText = CreateBrush(colors.BorderText);
+	}
+}
+
+tLadderColorGroup LadderGUI::getLadderColorGroup(int elem)
+{
+	if(LadderColorGroups.count(elem) == 0) {
+		elem = 0;
+	}
+
+	return LadderColorGroups[elem];
+}
+
+void LadderGUI::delLadderColorGroup(int elem)
+{
+	// Nao permite excluir o grupo padrao!
+	if(elem > 0) {
+		map<int, tLadderColorGroup>::iterator it;
+		it = LadderColorGroups.find(elem);
+		if(it != LadderColorGroups.end()) {
+			LadderColorGroups.erase(it);
+		}
+	}
+}
+
 /*** Fim da definicao da classe LaderGUI ***/
 
 // Funcao para fazer o trabalho extra de um elemento de fim de linha:
@@ -834,6 +1141,23 @@ static void DrawGenericGUI(LadderElem *elem, void *data)
 	ddg->region = r;
 }
 
+// Funcao que atualiza o Nome/Tipo de um I/O
+bool cmdChangeName(LadderElem *elem, unsigned int index, pair<unsigned long, int> pin, eType type,
+	vector<eType> types, char *title, char *field)
+{
+	bool ret    = false;
+	string name = ladder->getNameIO(pin);
+
+	if(ShowVarDialog(title, field, &name, types)) {
+		if(elem->updateNameTypeIO(index, name, type)) {
+			ret = true;
+			UpdateMainWindowTitleBar();
+		}
+	}
+
+	return ret;
+}
+
 // Classe LadderElemPlaceHolder
 bool LadderElemPlaceHolder::ShowDialog(LadderContext context) { return false; }
 
@@ -869,7 +1193,7 @@ void LadderElemPlaceHolder::DrawGUI(void *data)
 		tCommandSource source = { nullptr, nullptr, this };
 		gui.AddCommand(source, rCursor, CmdSelectRight, nullptr, false);
 	} else if(isCursorVisible) {
-		gui.DrawEllipse(rCursor, 1);
+		gui.DrawEllipse(rCursor, gui.getLadderColors().Selection);
 	}
 }
 
@@ -904,6 +1228,8 @@ void LadderElemComment::DrawGUI(void *data)
 
 	if(ddg->DontDraw) return;
 
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = ddg->region = gui.DrawElementBar(this, SelectedState, ddg->start.y, ddg->size.y);
 	tCommandSource source = { nullptr, nullptr, this };
@@ -919,30 +1245,120 @@ void LadderElemComment::DrawGUI(void *data)
 	r.left += GridSize.x;
 	r.top  += (GridSize.y - FONT_HEIGHT)/2;
 
-	gui.DrawText(txt.first .c_str(), r, 0, 1);
+	gui.DrawText(txt.first .c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 
 	r.top  += GridSize.y;
-	gui.DrawText(txt.second.c_str(), r, 0, 1);
+	gui.DrawText(txt.second.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 }
 
 // Classe LadderElemContact
-void ContactCmdToggleNegated(tCommandSource source, void *data)
+void ContactCmdChangeName(tCommandSource source, void *data)
 {
-	LadderElemContact *contact = dynamic_cast<LadderElemContact *>(source.elem);
+	bool                ret;
+	eType               type;
+	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
+	LadderElemContact  *contact        = dynamic_cast<LadderElemContact *>(source.elem);
+
+	// Le os dados do I/O para ver se ainda esta marcado como sendo do tipo reservado.
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemContactProp *prop      = (LadderElemContactProp *)contact->getProperties();
+	mapDetails             detailsIO = ladder->getDetailsIO(prop->idName.first);
+
+	vector<eType> types;
+
+	if(dataChangeName == nullptr) {
+		type = detailsIO.type;
+	} else {
+		type = dataChangeName->type;
+	}
+
+	types.push_back(type);
+
+	ret = cmdChangeName(source.elem, 0, prop->idName, type, types, _("Contacts"), _("Name:"));
+	if(dataChangeName != nullptr) {
+		dataChangeName->reply = ret;
+	}
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
+bool ContactCmdExpandedSource(LadderElem *elem, unsigned int selected)
+{
+	bool  ret;
+	eType type;
+	tCmdChangeNameData dataChangeName;
+	LadderElemContact *contact = dynamic_cast<LadderElemContact *>(elem);
+
+	switch(selected) {
+		case 0: type = eType_DigInput     ; break;
+		case 1: type = eType_DigOutput    ; break;
+		case 2: type = eType_InternalRelay; break;
+		case 3: type = eType_InternalFlag ; break;
+	}
+
+	// Le os dados do I/O para ver se ainda esta marcado como sendo do tipo reservado.
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemContactProp *prop      = (LadderElemContactProp *)contact->getProperties();
+	mapDetails             detailsIO = ladder->getDetailsIO(prop->idName.first);
+	string                 name      = ladder->getNameIO(prop->idName);
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+
+	ret = contact->updateNameTypeIO(0, name, type);
+
+	if(!ret || detailsIO.type == eType_Reserved) {
+		tCommandSource source = { nullptr, nullptr, elem };
+		dataChangeName.type   = type;
+
+		ContactCmdChangeName(source, &dataChangeName);
+		ret = dataChangeName.reply;
+	} else {
+		UpdateMainWindowTitleBar();
+	}
+
+	return ret;
+}
+
+bool ContactCmdExpandedNegated(LadderElem *elem, unsigned int negated)
+{
+	bool ret = false;
+	bool new_negated = negated ? true : false;
+	LadderElemContact *contact = dynamic_cast<LadderElemContact *>(elem);
 	LadderElemContactProp *prop = (LadderElemContactProp *)contact->getProperties();
 
-	ladder->CheckpointBegin("Inverter Contato");
+	if(prop->negated != new_negated) {
+		ladder->CheckpointBegin("Inverter Contato");
 
-	prop->negated = !prop->negated;
+		prop->negated = new_negated;
 
-	contact->setProperties(ladder->getContext(), prop);
+		contact->setProperties(ladder->getContext(), prop);
 
-	ladder->CheckpointEnd();
-	ladder->updateContext();
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
+	}
+
+	return ret;
+}
+
+void ContactCmdToggleNegated(tCommandSource source, void *data)
+{
+	LadderElemContactProp *prop = (LadderElemContactProp *)source.elem->getProperties();
+
+	ContactCmdExpandedNegated(source.elem, prop->negated ? 0 : 1); // Inverte o estado atual
+
+	delete prop;
 }
 
 bool LadderElemContact::ShowDialog(LadderContext context)
-{
+{/*
 	eType  type       = Diagram->getDetailsIO(prop.idName.first).type;
 	bool   NewNegated = prop.negated;
 	string NewName    = Diagram->getNameIO(prop.idName);
@@ -963,7 +1379,8 @@ bool LadderElemContact::ShowDialog(LadderContext context)
 		}
 	}
 
-	return changed;
+	return changed;*/
+	return false;
 }
 
 void LadderElemContact::DrawGUI(void *data)
@@ -973,14 +1390,19 @@ void LadderElemContact::DrawGUI(void *data)
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
 	if(ddg->expanded) {
-		ddg->size.x = 3;
-		ddg->size.y = 5;
+		ddg->size.x = 5;
+		ddg->size.y = 6;
 	} else {
 		ddg->size.x = 2;
 		ddg->size.y = 2;
 	}
 
 	if(ddg->DontDraw) return;
+
+	tCommandSource source = { nullptr, nullptr, this };
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
 
 	string sname = ladder->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
@@ -994,48 +1416,223 @@ void LadderElemContact::DrawGUI(void *data)
 	RECT rText = r;
 	rText.left += 5;
 	rText.top  += 5;
-	gui.DrawText(name, rText, 0, 1);
+	rText.bottom = rText.top + FONT_HEIGHT;
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.AddCommand(source, rText, ContactCmdChangeName, nullptr);
 
 	// Desenha o contato
 	start.x = r.left;
 	start.y = r.top + GridSize.y;
 	end.x   = r.left + (r.right - r.left)/2 - 5;
 	end.y   = r.top + GridSize.y;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
 
 	start.x  = end.x;
 	start.y -= 10;
 	end.y   += 10;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
 
 	start.x += 10;
 	end.x   += 10;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
 
 	rCmd.left    = start.x - 10;
 	rCmd.right   = start.x;
 	rCmd.top     = start.y;
 	rCmd.bottom  = end.y;
-	tCommandSource source = { nullptr, nullptr, this };
 	gui.AddCommand(source, rCmd, ContactCmdToggleNegated, nullptr);
 
 	start.y = r.top + GridSize.y;
 	end.x   = r.right;
 	end.y   = r.top + GridSize.y;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
+
+	// Exibe o texto que identifica o tipo de contato: Entrada, Saida, Rele Interno ou Flag interna
+	char ch[] = { 0, 0 };
+	int selected = 0;
+
+	switch(detailsIO.type) {
+	case eType_Reserved:
+		selected = -1;
+	case eType_DigInput:
+		ch[0] = 'E';
+		break;
+
+	case eType_DigOutput:
+		ch[0] = 'S';
+		selected = 1;
+		break;
+
+	case eType_InternalRelay:
+		ch[0] = 'R';
+		selected = 2;
+		break;
+
+	case eType_InternalFlag:
+		ch[0] = 'F';
+		selected = 3;
+		break;
+
+	default:
+		ch[0] = '?';
+		selected = -1;
+		break;
+	}
+
+	rText      = r;
+	rText.top  = end.y + 5;
+	rText.left = end.x - 15;
+	rText.bottom -= 5;
+	gui.DrawText(ch, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 
 	// Desenha o sinal de fechado, se ativado
 	if(prop.negated) {
 		start.y -= 10;
 		end.x    = start.x - 10;
 		end.y   += 10;
-		gui.DrawLine(start, end, 2);
+		gui.DrawLine(start, end, colors.Wire);
+	}
+
+	// Se expandido, desenha os itens do modo expandido
+	if(ddg->expanded) {
+		vector<tExpandedItem> items;
+		items.push_back(tExpandedItem(_("Source"), 2));
+		items.push_back(tExpandedItem(_("Negado"), 1));
+		
+		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 2, items);
+
+		// Caixas desenhadas. Agora criamos o conteudo
+		tControlList list;
+
+		list.items.push_back("Entrada");
+		list.items.push_back("Saida");
+		list.items.push_back("Rele Interno");
+		list.items.push_back("Flag Interna");
+
+		list.selected = selected;
+		list.fnc      = ContactCmdExpandedSource;
+
+		gui.addControlList(this, rExp[0], list);
+
+		list.items.clear();
+		list.items.push_back("Não");
+		list.items.push_back("Sim");
+
+		list.fnc      = ContactCmdExpandedNegated;
+		list.selected = prop.negated ? 1 : 0;
+
+		gui.addControlList(this, rExp[1], list);
 	}
 }
 
 // Classe LadderElemCoil
-bool LadderElemCoil::ShowDialog(LadderContext context)
+void CoilCmdChangeName(tCommandSource source, void *data)
 {
+	bool                ret;
+	eType               type;
+	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
+	LadderElemCoil     *coil           = dynamic_cast<LadderElemCoil *>(source.elem);
+
+	// Le os dados do I/O para ver se ainda esta marcado como sendo do tipo reservado.
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemCoilProp *prop      = (LadderElemCoilProp *)coil->getProperties();
+	mapDetails          detailsIO = ladder->getDetailsIO(prop->idName.first);
+
+	vector<eType> types;
+
+	if(dataChangeName == nullptr) {
+		type = detailsIO.type;
+	} else {
+		type = dataChangeName->type;
+	}
+
+	types.push_back(type);
+
+	ret = cmdChangeName(source.elem, 0, prop->idName, type, types, _("Coil"), _("Name:"));
+	if(dataChangeName != nullptr) {
+		dataChangeName->reply = ret;
+	}
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
+bool CoilCmdExpandedSource(LadderElem *elem, unsigned int selected)
+{
+	bool  ret;
+	eType type;
+	tCmdChangeNameData dataChangeName;
+	LadderElemCoil *coil = dynamic_cast<LadderElemCoil *>(elem);
+
+	switch(selected) {
+		case 0: type = eType_DigOutput    ; break;
+		case 1: type = eType_InternalRelay; break;
+	}
+
+	// Le os dados do I/O para ver se ainda esta marcado como sendo do tipo reservado.
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemCoilProp *prop      = (LadderElemCoilProp *)coil->getProperties();
+	mapDetails          detailsIO = ladder->getDetailsIO(prop->idName.first);
+	string              name      = ladder->getNameIO(prop->idName);
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+
+	ret = coil->updateNameTypeIO(0, name, type);
+
+	if(!ret || detailsIO.type == eType_Reserved) {
+		tCommandSource source = { nullptr, nullptr, elem };
+		dataChangeName.type   = type;
+
+		CoilCmdChangeName(source, &dataChangeName);
+		ret = dataChangeName.reply;
+	}
+
+	if(ret) {
+		UpdateMainWindowTitleBar();
+	}
+
+	return ret;
+}
+
+bool CoilCmdExpandedType(LadderElem *elem, unsigned int type)
+{
+	bool ret = false;
+	bool new_negated = false, new_setonly = false, new_resetonly = false;
+
+	LadderElemCoil *coil = dynamic_cast<LadderElemCoil *>(elem);
+	LadderElemCoilProp *prop = (LadderElemCoilProp *)coil->getProperties();
+
+	switch(type) {
+		case 1: new_negated   = true; break;
+		case 2: new_setonly   = true; break;
+		case 3: new_resetonly = true; break;
+	}
+
+	if(prop->negated != new_negated || prop->setOnly != new_setonly || prop->resetOnly != new_resetonly) {
+		ladder->CheckpointBegin("Alterar Tipo de Bobina");
+
+		prop->negated   = new_negated;
+		prop->setOnly   = new_setonly;
+		prop->resetOnly = new_resetonly;
+
+		coil->setProperties(ladder->getContext(), prop);
+
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
+	}
+
+	return ret;
+}
+
+bool LadderElemCoil::ShowDialog(LadderContext context)
+{/*
 	eType  type         = Diagram->getDetailsIO(prop.idName.first).type;
 	bool   NewNegated   = prop.negated;
 	bool   NewSetOnly   = prop.setOnly;
@@ -1060,7 +1657,8 @@ bool LadderElemCoil::ShowDialog(LadderContext context)
 		}
 	}
 
-	return changed;
+	return changed;*/
+	return false;
 }
 
 void LadderElemCoil::DrawGUI(void *data)
@@ -1071,14 +1669,19 @@ void LadderElemCoil::DrawGUI(void *data)
 	size  = ddg->size;
 
 	if(ddg->expanded) {
-		ddg->size.x = 2;
-		ddg->size.y = 5;
+		ddg->size.x = 4;
+		ddg->size.y = 9;
 	} else {
 		ddg->size.x = 2;
 		ddg->size.y = 2;
 	}
 
 	if(ddg->DontDraw) return;
+
+	tCommandSource source = { nullptr, nullptr, this };
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
 
 	string sname = ladder->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
@@ -1091,24 +1694,64 @@ void LadderElemCoil::DrawGUI(void *data)
 	ddg->region = r;
 
 	// Escreve o nome da bobina
-	RECT rText = r;
-	rText.left += 5;
-	rText.top  += 5;
-	gui.DrawText(name, rText, 0, 1);
+	RECT rText    = r;
+	rText.left   += 5;
+	rText.top    += 5;
+	rText.bottom  = rText.top + FONT_HEIGHT;
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.AddCommand(source, rText, CoilCmdChangeName, nullptr);
 
 	// Desenha a bobina
 	start.x = r.left;
 	start.y = r.top + GridSize.y;
 	end.x   = r.left + (r.right - r.left)/2 - 9;
 	end.y   = r.top + GridSize.y;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
 
 	start.x  = end.x + 10;
-	gui.DrawEllipse(start, 10, 10, 2, false);
+	gui.DrawEllipse(start, 10, 10, colors.Wire, false);
+
+	if(prop.setOnly || prop.resetOnly) {
+		rText.top    = start.y - 10;
+		rText.left   = start.x - 10;
+		rText.bottom = start.y + 10;
+		rText.right  = start.x + 10;
+
+		gui.DrawText(prop.setOnly ? "S" : "R", rText, 0, colors.Wire, eAlignMode_Center, eAlignMode_Center);
+	}
 
 	start.x += 10;
 	end.x    = r.right;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
+
+	// Exibe o texto que identifica o tipo de contato: Entrada, Saida, Rele Interno ou Flag interna
+	char ch[] = { 0, 0 };
+	unsigned int selected;
+	mapDetails detailsIO = ladder->getDetailsIO(prop.idName.first);
+
+	switch(detailsIO.type) {
+	case eType_Reserved:
+	case eType_DigOutput:
+		ch[0] = 'S';
+		selected = 0;
+		break;
+
+	case eType_InternalRelay:
+		ch[0] = 'R';
+		selected = 1;
+		break;
+
+	default:
+		ch[0] = '?';
+		selected = 0;
+		break;
+	}
+
+	rText      = r;
+	rText.top  = end.y + 5;
+	rText.left = end.x - 15;
+	rText.bottom -= 5;
+	gui.DrawText(ch, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 
 	// Desenha o sinal de fechado, se ativado
 	if(prop.negated) {
@@ -1116,13 +1759,125 @@ void LadderElemCoil::DrawGUI(void *data)
 		start.y -= 7;
 		end.x    = start.x - 14;
 		end.y   += 7;
-		gui.DrawLine(start, end, 2);
+		gui.DrawLine(start, end, colors.Wire);
+	}
+
+	// Se expandido, desenha os itens do modo expandido
+	if(ddg->expanded) {
+		vector<tExpandedItem> items;
+		items.push_back(tExpandedItem(_("Source"), 2));
+		items.push_back(tExpandedItem(_("Type"  ), 4));
+
+		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 2, items);
+
+		// Caixas desenhadas. Agora criamos o conteudo
+		tControlList list;
+
+		list.items.push_back(_("Pin on MCU"));
+		list.items.push_back(_("Internal Relay"));
+
+		list.selected = selected;
+		list.fnc      = CoilCmdExpandedSource;
+
+		gui.addControlList(this, rExp[0], list);
+
+		list.items.clear();
+		list.items.push_back(_("( ) Normal"    ));
+		list.items.push_back(_("(/) Negated"   ));
+		list.items.push_back(_("(S) Set-Only"  ));
+		list.items.push_back(_("(R) Reset-Only"));
+
+		list.fnc      = CoilCmdExpandedType;
+
+		if(prop.negated) {
+			list.selected = 1;
+		} else if(prop.setOnly) {
+			list.selected = 2;
+		} else if(prop.resetOnly) {
+			list.selected = 3;
+		} else {
+			list.selected = 0;
+		}
+
+		gui.addControlList(this, rExp[1], list);
 	}
 }
 
 // Classe LadderElemTimer
-bool LadderElemTimer::ShowDialog(LadderContext context)
+void TimerCmdChangeName(tCommandSource source, void *data)
 {
+	int              which = source.elem->getWhich();
+	eType            type  = getTimerTypeIO(which);
+	LadderElemTimer *timer = dynamic_cast<LadderElemTimer *>(source.elem);
+
+	char *s;
+    switch(which) 
+	{ 
+        case ELEM_TON: s = _("Turn-On Delay"); break;
+        case ELEM_TOF: s = _("Turn-Off Delay"); break;
+        case ELEM_RTO: s = _("Retentive Turn-On Delay"); break;
+        default: oops(); break;
+    }
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemTimerProp *prop = (LadderElemTimerProp *)timer->getProperties();
+
+	vector<eType> types;
+	types.push_back(type);
+
+	cmdChangeName(source.elem, 0, prop->idName, type, types, s, _("Name:"));
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
+void TimerCmdChangeTime(tCommandSource source, void *data)
+{
+	int              which = source.elem->getWhich();
+	eType            type  = getTimerTypeIO(which);
+	LadderElemTimer *timer = dynamic_cast<LadderElemTimer *>(source.elem);
+
+	char *s;
+    switch(which) 
+	{ 
+        case ELEM_TON: s = _("Turn-On Delay"); break;
+        case ELEM_TOF: s = _("Turn-Off Delay"); break;
+        case ELEM_RTO: s = _("Retentive Turn-On Delay"); break;
+        default: oops(); break;
+    }
+
+	// Le os dados do Timer para atualizar o delay
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemTimerProp *prop = (LadderElemTimerProp *)timer->getProperties();
+
+	char cname[100];
+	sprintf(cname, "%d", prop->delay / 1000);
+	string name = cname;
+
+	vector<eType> types;
+	types.push_back(eType_General);
+
+	if(ShowVarDialog(s, _("Delay (ms):"), &name, types) &&
+		ladder->IsValidNameAndType(0, name.c_str(), eType_Pending , _("Tempo"), VALIDATE_IS_NUMBER, 1, 2147483)) {
+			prop->delay = 1000*atoi(name.c_str());
+
+			LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+			if(prop->delay % settings.cycleTime) {
+				prop->delay = (1 + prop->delay / settings.cycleTime) * settings.cycleTime;
+				Error(_("Tempo de ciclo deve ser múltiplo de %d! Será utilizado %d."),
+					settings.cycleTime/1000, prop->delay/1000);
+			}
+
+			source.elem->setProperties(ladder->getContext(), prop);
+	} else {
+		// Se foi cancelada a alteracao, devemos desalocar as propriedades
+		delete prop;
+	}
+}
+
+bool LadderElemTimer::ShowDialog(LadderContext context)
+{/*
 	int NewDelay   = prop.delay;
 	string NewName = Diagram->getNameIO(prop.idName);
 
@@ -1142,12 +1897,133 @@ bool LadderElemTimer::ShowDialog(LadderContext context)
 		}
 	}
 
-	return changed;
+	return changed;*/
+	return false;
 }
 
 void LadderElemTimer::DrawGUI(void *data)
 {
-	DrawGenericGUI(this, data);
+	POINT start, end, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	if(ddg->expanded) {
+		ddg->size.x = 2;
+		ddg->size.y = 3;
+	} else {
+		ddg->size.x = 2;
+		ddg->size.y = 2;
+	}
+
+	if(ddg->DontDraw) return;
+
+	tCommandSource source = { nullptr, nullptr, this };
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
+	string sname = ladder->getNameIO(prop.idName.first);
+	const char *name = sname.c_str();
+	mapDetails detailsIO = ladder->getDetailsIO(prop.idName.first);
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("ATRASO"));
+	ddg->region = r;
+
+	// Flag que indica se o desenho deve iniciar com nivel alto ou baixo
+	bool doHighStart = (getWhich() == ELEM_TOF) ? true : false;
+
+	// Primeiro calculamos as coordenadas do relogio
+	RECT rClock = r;
+	if(!doHighStart) {
+		rClock.top += GridSize.y - 10;
+	}
+	rClock.bottom = rClock.top + 20;
+	rClock.left += 5;
+	rClock.right = rClock.left + (rClock.bottom - rClock.top);
+
+	// Desenha o a linha inicial do timer
+	start.x = r.left;
+	start.y = r.top + (doHighStart ? 10 : GridSize.y);
+	end.x   = rClock.right + 10;
+	end.y   = start.y;
+	gui.DrawLine(start, end, colors.Wire);
+
+	// Agora desenha o circulo do relogio
+	gui.DrawEllipse(rClock, colorgroup.Background);
+	gui.DrawEllipse(rClock, colorgroup.Foreground, false);
+
+	if(ladder->getContext().inSimulationMode) {
+	} else {
+		// Em seguida, desenha os ponteiros
+		POINT start, end;
+		start.x = rClock.left + (rClock.right - rClock.left)/2;
+		start.y = rClock.top + 5;
+
+		end.x = start.x;
+		end.y = rClock.top + (rClock.bottom - rClock.top)/2;
+
+		gui.DrawLine(start, end, colorgroup.Foreground);
+
+		start.x = end.x + 5;
+		start.y = end.y + 5;
+
+		gui.DrawLine(start, end, colorgroup.Foreground);
+	}
+
+	// Desenha a linha vertical
+	start.x  = end.x;
+	if(doHighStart) {
+		start.y += GridSize.y - 10;
+	} else {
+		start.y -= GridSize.y - 10;
+	}
+	gui.DrawLine(start, end, colors.Wire);
+
+	// Desenha a seta
+	POINT StartArrow = start, EndArrow = end;
+
+	if(doHighStart) {
+		StartArrow.y -= 5;
+		EndArrow.y    = StartArrow.y - 10;
+	} else {
+		StartArrow.y += 5;
+		EndArrow.y    = StartArrow.y + 10;
+	}
+	EndArrow.x   -= 5;
+	gui.DrawLine(StartArrow, EndArrow, colors.Wire);
+
+	EndArrow.x   += 10;
+	gui.DrawLine(StartArrow, EndArrow, colors.Wire);
+
+	// Desenha o texto indicando o tempo do timer
+	RECT rText = r;
+	char buf[1024];
+
+	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+	DescribeForIoList(prop.delay / settings.cycleTime, getTimerTypeIO(getWhich()), buf);
+
+	rText.top = (doHighStart ? end.y - 5 : start.y + 5);
+	rText.bottom = (doHighStart ? start.y : end.y);
+	rText.left = start.x + 10;
+	rText.right = r.right;
+	gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+	gui.AddCommand(source, rText, TimerCmdChangeTime, nullptr);
+
+	// Desenha a linha final, ligando ao final do elemento
+	end.x = r.right;
+	end.y = start.y;
+	gui.DrawLine(start, end, colors.Wire);
+
+	// Se expandido, desenha o texto com o nome da variavel
+	if(ddg->expanded) {
+		string txt = _("Nome: ") + Diagram->getNameIO(prop.idName);
+		rText.top = r.bottom - GridSize.y + 5;
+		rText.bottom = r.bottom;
+		rText.left = r.left + 10;
+		rText.right = r.right;
+		gui.DrawText(txt.c_str(), rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+		gui.AddCommand(source, rText, TimerCmdChangeName, nullptr);
+	}
 }
 
 // Classe LadderElemRTC
@@ -1176,10 +2052,153 @@ bool LadderElemRTC::ShowDialog(LadderContext context)
 
 void LadderElemRTC::DrawGUI(void *data)
 {
-	DrawGenericGUI(this, data);
+	POINT GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	ddg->size.x = 3;
+	ddg->size.y = 2;
+
+	if(ddg->DontDraw) return;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("RTC"), false);
+	ddg->region = r;
+
+	POINT start, size = { 42, 42 };
+
+	start.x = r.left + 3;
+	start.y = r.top + 5;
+	gui.DrawPictureFromResource(IDB_LADDER_RTC, start, size);
+
+	int linha;
+	char bufs[256], bufe[256];
+
+	char mday [10];
+	char month[10];
+	char year [10];
+
+	memset(month, 0, sizeof(month));
+	memset(year , 0, sizeof(year));
+
+	for(linha=0; linha<2; linha++) {
+		struct tm *ptm = linha ? &prop.end : &prop.start;
+
+		if(prop.wday & (1 << 7)) 
+		{
+			int i;
+
+			sprintf(linha ? bufe : bufs, "%s %02d:%02d:%02d", _("SMTWTFS"),
+				ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
+
+			if(linha || prop.mode == ELEM_RTC_MODE_FIXED) {
+				for(i=0; i<7; i++) {
+					if(!(prop.wday & (1<<i))) {
+						(linha ? bufe : bufs)[i] = ' ';
+					} else if(linha) {
+						bufe[i] = '*';
+					}
+				}
+			}
+		} else {
+			if (ptm->tm_mday)
+				sprintf(mday, "%02d", ptm->tm_mday);
+			else
+				sprintf(mday, " *");
+
+			if (ptm->tm_mon)
+				sprintf(month, "%02d", ptm->tm_mon);
+			else
+				sprintf(month, " *");
+
+			if (ptm->tm_year)
+				sprintf(year, "%02d", ptm->tm_year);			
+			else
+				sprintf(year, " *  ");
+
+			sprintf(linha ? bufe : bufs, "%s/%s/%s %02d:%02d:%02d", mday, month, year, ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
+		} 
+	}
+
+	if(prop.mode == ELEM_RTC_MODE_FIXED) {
+		strcpy(bufe, bufs);
+		strcpy(bufs, _("Mode Fixed"));
+	}
+
+	r.top  += 10;
+	r.left += size.x + 6;
+	gui.DrawText(bufs, r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+	r.top += FONT_HEIGHT + 5;
+	gui.DrawText(bufe, r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 }
 
 // Classe LadderElemCounter
+void CounterCmdChangeName(tCommandSource source, void *data)
+{
+	int                which = source.elem->getWhich();
+	LadderElemCounter *counter = dynamic_cast<LadderElemCounter *>(source.elem);
+
+	char *title;
+    switch(which) 
+	{ 
+        case ELEM_CTU: title = _("Count Up"        ); break;
+        case ELEM_CTD: title = _("Count Down"      ); break;
+        case ELEM_CTC: title = _("Circular Counter"); break;
+        default: oops(); break;
+    }
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemCounterProp *prop = (LadderElemCounterProp *)counter->getProperties();
+
+	vector<eType> types;
+	types.push_back(eType_Counter);
+
+	cmdChangeName(source.elem, 0, prop->idName, eType_Counter, types, title, _("Name:"));
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
+void CounterCmdChangeValue(tCommandSource source, void *data)
+{
+	int                which = source.elem->getWhich();
+	LadderElemCounter *counter = dynamic_cast<LadderElemCounter *>(source.elem);
+
+	char *title, *desc;
+    switch(which) 
+	{ 
+        case ELEM_CTU: desc = _("True if >= :"); title = _("Count Up"        ); break;
+        case ELEM_CTD: desc = _("True if <= :"); title = _("Count Down"      ); break;
+        case ELEM_CTC: desc = _("Max value:"  ); title = _("Circular Counter"); break;
+        default: oops(); break;
+    }
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemCounterProp *prop = (LadderElemCounterProp *)counter->getProperties();
+
+	char cname[100];
+	sprintf(cname, "%d", prop->max);
+	string name = cname;
+
+	vector<eType> types;
+	types.push_back(eType_Counter);
+
+	if(ShowVarDialog(title, desc, &name, types) &&
+		ladder->IsValidNameAndType(0, name.c_str(), eType_Pending, _("Valor"), VALIDATE_IS_NUMBER, 0, 0)) {
+			prop->max = atoi(name.c_str());
+
+			source.elem->setProperties(ladder->getContext(), prop);
+	} else {
+		// Se foi cancelada a alteracao, devemos desalocar as propriedades
+		delete prop;
+	}
+}
+
 bool LadderElemCounter::ShowDialog(LadderContext context)
 {
 	int NewMax = prop.max;
@@ -1266,6 +2285,8 @@ void LadderElemOneShot::DrawGUI(void *data)
 
 	if(ddg->DontDraw) return;
 
+	tLadderColors colors = gui.getLadderColors    ();
+
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = gui.DrawElementBox(this, SelectedState, start, ddg->size, ddg->expanded ? (isOSR ? _("BORDA DE SUBIDA") : _("BORDA DE DESCIDA")) : _("BORDA"), true);
 	ddg->region = r;
@@ -1278,11 +2299,11 @@ void LadderElemOneShot::DrawGUI(void *data)
 	start.y = r.top + GridSize.y;
 	end.x   = r.left + (r.right - r.left)/2 - 10;
 	end.y   = r.top + GridSize.y;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
 
 	start.x  = end.x;
 	start.y -= 20;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
 
 	if(isOSR) {
 		POINT StartArrow = start, EndArrow = end;
@@ -1290,19 +2311,19 @@ void LadderElemOneShot::DrawGUI(void *data)
 		StartArrow.y += 5;
 		EndArrow.x   -= 5;
 		EndArrow.y    = StartArrow.y + 10;
-		gui.DrawLine(StartArrow, EndArrow, 2);
+		gui.DrawLine(StartArrow, EndArrow, colors.Wire);
 
 		EndArrow.x   += 10;
-		gui.DrawLine(StartArrow, EndArrow, 2);
+		gui.DrawLine(StartArrow, EndArrow, colors.Wire);
 	}
 
 	end.x += 20;
 	end.y  = start.y;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
 
 	start.x  = end.x;
 	start.y += 20;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
 
 	if(!isOSR) {
 		POINT StartArrow = start, EndArrow = end;
@@ -1310,15 +2331,15 @@ void LadderElemOneShot::DrawGUI(void *data)
 		StartArrow.y -= 5;
 		EndArrow.x   -= 5;
 		EndArrow.y    = StartArrow.y - 10;
-		gui.DrawLine(StartArrow, EndArrow, 2);
+		gui.DrawLine(StartArrow, EndArrow, colors.Wire);
 
 		EndArrow.x   += 10;
-		gui.DrawLine(StartArrow, EndArrow, 2);
+		gui.DrawLine(StartArrow, EndArrow, colors.Wire);
 	}
 
 	end.x = r.right;
 	end.y = start.y;
-	gui.DrawLine(start, end, 2);
+	gui.DrawLine(start, end, colors.Wire);
 }
 
 // Classe LadderElemCmp
@@ -1369,7 +2390,50 @@ bool LadderElemCmp::ShowDialog(LadderContext context)
 
 void LadderElemCmp::DrawGUI(void *data)
 {
-	DrawGenericGUI(this, data);
+	char *s;
+	string op1 = Diagram->getNameIO(prop.idOp1);
+	string op2 = Diagram->getNameIO(prop.idOp2);
+
+	switch(getWhich()) {
+		case ELEM_EQU: s = "=="; break;
+		case ELEM_NEQ: s = "<>"; break;
+		case ELEM_GRT: s = ">" ; break;
+		case ELEM_GEQ: s = ">="; break;
+		case ELEM_LES: s = "<" ; break;
+		case ELEM_LEQ: s = "<="; break;
+		default: oops();
+	}
+
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	if(ddg->expanded) {
+		ddg->size.x = 4;
+		ddg->size.y = 4;
+	} else {
+		ddg->size.x = 3;
+		ddg->size.y = 3;
+	}
+
+	if(ddg->DontDraw) return;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("COMPARAR"), true);
+	ddg->region = r;
+
+	op1 += " ";
+	op1 += s;
+	r.left += 10;
+	r.top  += (GridSize.y - FONT_HEIGHT)/2;
+	gui.DrawText(op1.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+	r.top  += GridSize.y;
+	gui.DrawText(op2.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 }
 
 // Classe LadderElemMath
@@ -2417,10 +3481,12 @@ void LadderDiagram::DrawGUI(void)
 	RECT  r;
 	POINT xy, Grid1x1 = gui.getGridSize();
 
+	tLadderColors colors = gui.getLadderColors();
+
 	GetCursorPos(&xy);
 	gui.setMousePosition(xy);
 
-	gui.SetBackgroundColor(context.inSimulationMode ? HighlightColours.simBg : HighlightColours.bg);
+	gui.SetBackgroundColor(colors.Background);
 
 	char num[20];
 	POINT SizeMax = { 0, 0 };
@@ -2492,9 +3558,8 @@ void LadderDiagram::DrawGUI(void)
 
 		// Agora desenha o numero da linha
 		r.left  = 5;
-		r.top += (r.bottom - r.top - FONT_HEIGHT)/2;
 		sprintf(num, "%3d", i + 1);
-		gui.DrawText(num, r, 0, 2);
+		gui.DrawText(num, r, 0, colors.Foreground, eAlignMode_TopLeft, eAlignMode_Center);
 
 		// Agora desenha o breakpoint, se ativo
 		if(rungs[i]->hasBreakpoint) {
@@ -2502,7 +3567,7 @@ void LadderDiagram::DrawGUI(void)
 			r.bottom  = r.top + 10;
 			r.left    = Grid1x1.x/2 - 5;
 			r.right   = Grid1x1.x/2 + 5;
-			gui.DrawEllipse(r, 2);
+			gui.DrawEllipse(r, colors.Breakpoint);
 		}
 
 		RungDDG.start.y += RungDDG.size.y + 1;
@@ -2514,11 +3579,11 @@ void LadderDiagram::DrawGUI(void)
 	r.right += Grid1x1.x/2;
 
 	RECT rBus = { r.left - 5, 0, r.left, r.bottom };
-	gui.DrawRectangle(rBus, 2);
+	gui.DrawRectangle(rBus, colors.Bus);
 
 	rBus.left  = r.right;
 	rBus.right = r.right + 5;
-	gui.DrawRectangle(rBus, 2);
+	gui.DrawRectangle(rBus, colors.Bus);
 
 	gui.DrawEnd();
 }

@@ -184,6 +184,7 @@ typedef struct {
 
 	bool inSimulationMode;
 
+	bool   programChangedNotSaved;
 	string currentFilename;
 
 	bool canNegate;
@@ -272,6 +273,9 @@ private:
 
 	void Init(void);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	virtual bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) = 0;
+
 	// Funcao que executa uma acao de desfazer / refazer nas classes derivadas
 	virtual bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action) = 0;
 
@@ -314,6 +318,9 @@ public:
 	virtual void updateIO        (bool isDiscard) = 0;
 	virtual int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) = 0;
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool updateNameTypeIO(unsigned int index, string name, eType type);
+
 	// Funcoes para ler / gravar elementos para o disco
 	bool Save(FILE *f);
 	bool Load(FILE *f, unsigned int version);
@@ -330,6 +337,9 @@ class LadderElemPlaceHolder : public LadderElem {
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f) { return true; }
 	bool internalLoad(FILE *f, unsigned int version) { return true; }
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemPlaceHolder(LadderDiagram *diagram);
@@ -375,6 +385,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemComment(LadderDiagram *diagram);
@@ -423,6 +436,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
+
 public:
 	LadderElemContact(LadderDiagram *diagram);
 
@@ -449,7 +465,7 @@ public:
 	void updateIO(bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
-	// Funcao que executa uma acao de desfazer / refazer
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
@@ -471,6 +487,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemCoil(LadderDiagram *diagram);
@@ -521,6 +540,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
+
 public:
 	LadderElemTimer(LadderDiagram *diagram, int which);
 
@@ -569,6 +591,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemRTC(LadderDiagram *diagram);
 
@@ -616,6 +641,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
+
 public:
 	LadderElemCounter(LadderDiagram *diagram, int which);
 
@@ -662,6 +690,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemReset(LadderDiagram *diagram);
 
@@ -700,6 +731,9 @@ class LadderElemOneShot : public LadderElem {
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f) { return true; }
 	bool internalLoad(FILE *f, unsigned int version) { return true; }
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemOneShot(LadderDiagram *diagram, int which);
@@ -748,6 +782,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemCmp(LadderDiagram *diagram, int which);
@@ -799,6 +836,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemMath(LadderDiagram *diagram, int which);
 
@@ -823,7 +863,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -846,6 +886,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemSqrt(LadderDiagram *diagram);
@@ -871,7 +914,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -897,6 +940,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemRand(LadderDiagram *diagram);
 
@@ -921,7 +967,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -944,6 +990,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemAbs(LadderDiagram *diagram);
@@ -969,7 +1018,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -992,6 +1041,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemMove(LadderDiagram *diagram);
@@ -1017,7 +1069,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1031,6 +1083,9 @@ class LadderElemOpenShort : public LadderElem {
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f) { return true; }
 	bool internalLoad(FILE *f, unsigned int version) { return true; }
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemOpenShort(LadderDiagram *diagram, int which);
@@ -1080,6 +1135,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemSetBit(LadderDiagram *diagram);
 
@@ -1104,7 +1162,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1127,6 +1185,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemCheckBit(LadderDiagram *diagram);
@@ -1152,7 +1213,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1176,6 +1237,9 @@ private:
 
 	// Funcao que retorna o nome do A/D conforme atribuicao do pino
 	string GetNameADC(void);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemReadAdc(LadderDiagram *diagram);
@@ -1201,7 +1265,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1223,6 +1287,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemSetDa(LadderDiagram *diagram);
@@ -1248,7 +1315,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1269,6 +1336,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemReadEnc(LadderDiagram *diagram);
@@ -1294,7 +1364,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1315,6 +1385,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemResetEnc(LadderDiagram *diagram);
@@ -1340,7 +1413,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1373,6 +1446,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemMultisetDA(LadderDiagram *diagram);
 
@@ -1397,7 +1473,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1423,6 +1499,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemUSS(LadderDiagram *diagram, int which);
 
@@ -1447,7 +1526,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1473,6 +1552,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemModBUS(LadderDiagram *diagram, int which);
 
@@ -1497,7 +1579,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1519,6 +1601,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemSetPWM(LadderDiagram *diagram);
@@ -1544,7 +1629,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1565,6 +1650,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemUART(LadderDiagram *diagram, int which);
@@ -1590,7 +1678,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1604,6 +1692,9 @@ class LadderElemMasterRelay : public LadderElem {
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f) { return true; }
 	bool internalLoad(FILE *f, unsigned int version) { return true; }
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemMasterRelay(LadderDiagram *diagram);
@@ -1655,6 +1746,9 @@ private:
 
 	void createRegs(void);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemShiftRegister(LadderDiagram *diagram);
 
@@ -1679,7 +1773,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1706,6 +1800,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemLUT(LadderDiagram *diagram);
 
@@ -1730,7 +1827,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1756,6 +1853,9 @@ private:
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+
 public:
 	LadderElemPiecewise(LadderDiagram *diagram);
 
@@ -1780,7 +1880,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1802,6 +1902,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemFmtString(LadderDiagram *diagram, int which);
@@ -1827,7 +1930,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1850,6 +1953,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemYaskawa(LadderDiagram *diagram, int which);
@@ -1875,7 +1981,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1896,6 +2002,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemPersist(LadderDiagram *diagram);
@@ -1921,7 +2030,7 @@ public:
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
 	void updateIO(bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1942,6 +2051,9 @@ private:
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f) { return true; }
 	bool internalLoad(FILE *f, unsigned int version) { return true; }
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
 	LadderElemX(LadderDiagram *diagram);
@@ -2236,6 +2348,10 @@ public:
 	bool   Load              (string filename);
 	string getCurrentFilename(void);
 
+	// Funcao que indica que houve uma mudanca no diagrama ladder.
+	// Dessa forma sabemos que o arquivo precisa ser salvo e podemos alertar o usuario
+	void ProgramChanged(void);
+
 	// Funcao que retorna a estrutura que representa a CPU
 	McuIoInfo *getMCU(void) { return mcu; }
 
@@ -2305,6 +2421,10 @@ public:
 
 	// Funcao para ordenar a lista de I/O conforme o campo especificado
 	void            sortIO                  (eSortBy sortby);
+
+	// Funcoes que indicam se existe algum I/O que use a UART e o PWM, respectivamente
+	bool UartFunctionUsed(void);
+	bool PwmFunctionUsed (void);
 
 	// Funcao que busca / renomeia I/O
 	int SearchAndReplace(string sSearchText, string sNewText, eSearchAndReplaceMode mode);

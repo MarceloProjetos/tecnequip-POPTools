@@ -35,9 +35,6 @@ static BOOL         IoListOutOfSync;
 int                 IoListHeight;
 int                 IoListTop;
 
-// Program Changed and Not Saved ?
-extern BOOL ProgramChangedNotSaved;
-
 // whether the simulation is running in real time
 BOOL         RealTimeSimulationRunning;
 
@@ -200,7 +197,7 @@ void UpdateMainWindowTitleBar(void)
 			wBuild,
 			wRevision,
 			currentFilename.c_str(),
-			ProgramChangedNotSaved ? " *" : "");
+			ladder->getContext().programChangedNotSaved ? " *" : "");
     } else {
         sprintf(line+strlen(line), " - %d.%d.%d.%d%s", 
 			wMajor,
@@ -540,7 +537,7 @@ void ToggleSimulationMode(void)
 
         // Recheck InSimulationMode, because there could have been a compile
         // error, which would have kicked us out of simulation mode.
-        if(UartFunctionUsed() && ladder->getContext().inSimulationMode) {
+        if(ladder->UartFunctionUsed() && ladder->getContext().inSimulationMode) {
             ShowUartSimulationWindow();
         }
 
@@ -560,7 +557,7 @@ void ToggleSimulationMode(void)
 
 		col.pszText = _("Pin on Processor");
 
-		if(UartFunctionUsed()) {
+		if(ladder->UartFunctionUsed()) {
             DestroyUartSimulationWindow();
         }
 

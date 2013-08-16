@@ -1,6 +1,9 @@
 #ifndef ENGINERENDER_H
 #define ENGINERENDER_H
 
+// Enumeracao com os tipos de alinhamento suportados
+enum eAlignMode { eAlignMode_TopLeft = 0, eAlignMode_Center, eAlignMode_BottomRight };
+
 class EngineRender
 {
 private:
@@ -19,8 +22,14 @@ public:
 
 	virtual void DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned int radiusY = 0, unsigned int angle = 0)=0;
 	virtual HRESULT DrawEllipse(POINT center, float rx, float ry, unsigned int brush, bool filled = true)=0;
-	virtual void DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush)=0;
+	virtual void DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY)=0;
 	virtual HRESULT DrawLine(POINT start, POINT end, unsigned int brush)=0;
+
+	virtual HRESULT DrawPictureFromFile    (char *filename, POINT start, POINT size)=0;
+	virtual HRESULT DrawPictureFromResource(int   id      , POINT start, POINT size)=0;
+
+	virtual HRESULT DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
+		bool filled = true, float radiusX = 20.0f, float radiusY = 20.0f, float angle = 0.0f)=0;
 };
 
 #endif

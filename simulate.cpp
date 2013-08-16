@@ -7,69 +7,19 @@ static vector<IntOp>::size_type IntCodeLen;
 static vector<IntOp> vectorIntCode;
 
 map<string, bool> SingleBitItems;
-
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-    DWORD   usedFlags;
-} Variables[MAX_IO];
-static int VariablesCount;
-
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-} AdcShadows[MAX_IO];
-static int AdcShadowsCount;
+map<string, int > Variables;
+map<string, int > AdcShadows;
 
 SWORD DAShadow;
 
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-} EncShadows[MAX_IO];
-static int EncShadowsCount;
-
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-} ResetEncShadows[MAX_IO];
-static int ResetEncShadowsCount;
-
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-} readUSSShadows[MAX_IO];
-static int readUSSShadowsCount;
-
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-} writeUSSShadows[MAX_IO];
-static int writeUSSShadowsCount;
-
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-} readModbusShadows[MAX_IO];
-static int readModbusShadowsCount;
-
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-} writeModbusShadows[MAX_IO];
-static int writeModbusShadowsCount;
-
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-} readModbusEthShadows[MAX_IO];
-static int readModbusEthShadowsCount;
-
-static struct {
-    char    name[MAX_NAME_LEN];
-    SWORD   val;
-} writeModbusEthShadows[MAX_IO];
-static int writeModbusEthShadowsCount;
+map<string, int > EncShadows;
+map<string, int > ResetEncShadows;
+map<string, int > readUSSShadows;
+map<string, int > writeUSSShadows;
+map<string, int > readModbusShadows;
+map<string, int > writeModbusShadows;
+map<string, int > readModbusEthShadows;
+map<string, int > writeModbusEthShadows;
 
 // Don't want to redraw the screen unless necessary; track whether a coil
 // changed state or a timer output switched to see if anything could have
@@ -568,71 +518,68 @@ static void SetSingleBit(const char *name, bool state)
 //-----------------------------------------------------------------------------
 static void IncrementVariable(char *name)
 {
-    int i;
-    for(i = 0; i < VariablesCount; i++) {
-        if(_stricmp(Variables[i].name, name)==0) {
-            (Variables[i].val)++;
-			UpdateSimulation(name, Variables[i].val);
-            return;
-        }
-    }
-    oops();
+	if(Variables.count(name) == 0) {
+		Variables[name] = 0;
+	}
+
+	Variables[name]++;
+	UpdateSimulation(name, Variables[name]);
 }
 
 static void SetSimulationBit(char *name, int bit)
 {
-    int i;
-    for(i = 0; i < VariablesCount; i++) {
-        if(_stricmp(Variables[i].name, name)==0) {
-            (Variables[i].val) |= 1 << bit;
-			UpdateSimulation(name, Variables[i].val);
-			NeedRedraw = TRUE;
-            return;
-        }
-    }
-    SetSimulationBit(name, bit);
-} 
+	if(Variables.count(name) == 0) {
+		Variables[name] = 0;
+	}
+
+	Variables[name] |= 1 << bit;
+	UpdateSimulation(name, Variables[name]);
+	NeedRedraw = TRUE;
+}
+
 static void ClearSimulationBit(char *name, int bit)
 {
-    int i;
-    for(i = 0; i < VariablesCount; i++) {
-        if(_stricmp(Variables[i].name, name)==0) {
-            (Variables[i].val) &= ~(1 << bit);
-			UpdateSimulation(name, Variables[i].val);
-			NeedRedraw = TRUE;
-            return;
-        }
-    }
-    SetSimulationBit(name, bit);
+	if(Variables.count(name) == 0) {
+		Variables[name] = 0;
+	}
+
+	Variables[name] &= ~(1 << bit);
+	UpdateSimulation(name, Variables[name]);
+	NeedRedraw = TRUE;
 }
 
 static bool CheckSimulationBit(char *name, int bit)
 {
-    int i;
-    for(i = 0; i < VariablesCount; i++) {
-        if(_stricmp(Variables[i].name, name)==0) {
-            return (((Variables[i].val) & (1 << bit)) > 0);
-        }
-    }
-    return CheckSimulationBit(name, bit);
+	if(Variables.count(name) > 0) {
+		return ((Variables[name] & (1 << bit)) > 0);
+	}
+
+	return false;
 }
 
+// Funcoes para ler e escrever em uma lista de variaveis
+int getIntFromMap(map <string, int> *m, const char *name)
+{
+	if(m->count(name) > 0) {
+		return (*m)[name];
+	}
+
+	return 0;
+}
+
+void setIntInMap(map <string, int> *m, const char *name, int val)
+{
+	(*m)[name] = val;
+	UpdateSimulation(name, val);
+	NeedRedraw = TRUE;
+}
 
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
 void SetSimulationVariable(const char *name, SWORD val)
 {
-    int i;
-    for(i = 0; i < VariablesCount; i++) {
-        if(_stricmp(Variables[i].name, name)==0) {
-            Variables[i].val = val;
-			UpdateSimulation(name, val);
-			NeedRedraw = TRUE;
-            return;
-        }
-    }
-    SetSimulationVariable(name, val);
+	setIntInMap(&Variables, name, val);
 }
 
 //-----------------------------------------------------------------------------
@@ -640,13 +587,7 @@ void SetSimulationVariable(const char *name, SWORD val)
 //-----------------------------------------------------------------------------
 SWORD GetSimulationVariable(const char *name)
 {
-    int i;
-    for(i = 0; i < VariablesCount; i++) {
-        if(_stricmp(Variables[i].name, name)==0) {
-            return Variables[i].val;
-        }
-    }
-    return GetSimulationVariable(name);
+	return getIntFromMap(&Variables, name);
 }
 
 //-----------------------------------------------------------------------------
@@ -656,18 +597,7 @@ SWORD GetSimulationVariable(const char *name)
 //-----------------------------------------------------------------------------
 void SetAdcShadow(char *name, SWORD val)
 {
-    int i;
-    for(i = 0; i < AdcShadowsCount; i++) {
-        if(_stricmp(AdcShadows[i].name, name)==0) {
-            AdcShadows[i].val = val;
-			UpdateSimulation(name, val);
-            return;
-        }
-    }
-    strcpy(AdcShadows[i].name, name);
-    AdcShadows[i].val = val;
-	UpdateSimulation(name, val);
-    AdcShadowsCount++;
+	setIntInMap(&AdcShadows, name, val);
 }
 
 //-----------------------------------------------------------------------------
@@ -676,13 +606,7 @@ void SetAdcShadow(char *name, SWORD val)
 //-----------------------------------------------------------------------------
 SWORD GetAdcShadow(char *name)
 {
-    int i;
-    for(i = 0; i < AdcShadowsCount; i++) {
-        if(_stricmp(AdcShadows[i].name, name)==0) {
-            return AdcShadows[i].val;
-        }
-    }
-    return 0;
+	return getIntFromMap(&AdcShadows, name);
 }
 
 //-----------------------------------------------------------------------------
@@ -712,18 +636,7 @@ SWORD GetDAShadow(void)
 //-----------------------------------------------------------------------------
 void SetEncShadow(char *name, SWORD val)
 {
-    int i;
-    for(i = 0; i < EncShadowsCount; i++) {
-        if(_stricmp(EncShadows[i].name, name)==0) {
-            EncShadows[i].val = val;
-			UpdateSimulation(name, val);
-            return;
-        }
-    }
-    strcpy(EncShadows[i].name, name);
-    EncShadows[i].val = val;
-	UpdateSimulation(name, val);
-    EncShadowsCount++;
+	setIntInMap(&EncShadows, name, val);
 }
 
 //-----------------------------------------------------------------------------
@@ -732,13 +645,7 @@ void SetEncShadow(char *name, SWORD val)
 //-----------------------------------------------------------------------------
 SWORD GetEncShadow(char *name)
 {
-    int i;
-    for(i = 0; i < EncShadowsCount; i++) {
-        if(_stricmp(EncShadows[i].name, name)==0) {
-            return EncShadows[i].val;
-        }
-    }
-    return 0;
+	return getIntFromMap(&EncShadows, name);
 }
 
 //-----------------------------------------------------------------------------
@@ -748,18 +655,7 @@ SWORD GetEncShadow(char *name)
 //-----------------------------------------------------------------------------
 void SetResetEncShadow(char *name, SWORD val)
 {
-    int i;
-    for(i = 0; i < ResetEncShadowsCount; i++) {
-        if(_stricmp(ResetEncShadows[i].name, name)==0) {
-            ResetEncShadows[i].val = val;
-			UpdateSimulation(name, val);
-            return;
-        }
-    }
-    strcpy(ResetEncShadows[i].name, name);
-    ResetEncShadows[i].val = val;
-	UpdateSimulation(name, val);
-    ResetEncShadowsCount++;
+	setIntInMap(&ResetEncShadows, name, val);
 }
 
 //-----------------------------------------------------------------------------
@@ -768,13 +664,7 @@ void SetResetEncShadow(char *name, SWORD val)
 //-----------------------------------------------------------------------------
 SWORD GetResetEncShadow(char *name)
 {
-    int i;
-    for(i = 0; i < ResetEncShadowsCount; i++) {
-        if(_stricmp(ResetEncShadows[i].name, name)==0) {
-            return ResetEncShadows[i].val;
-        }
-    }
-    return 0;
+	return getIntFromMap(&ResetEncShadows, name);
 }
 
 //-----------------------------------------------------------------------------
@@ -1322,10 +1212,10 @@ void StartSimulationTimer(void)
 //-----------------------------------------------------------------------------
 void ClearSimulationData(void)
 {
-    VariablesCount = 0;
-    AdcShadowsCount = 0;
-	readUSSShadowsCount = 0;
-	writeUSSShadowsCount = 0;
+	Variables.clear();
+	AdcShadows.clear();
+	EncShadows.clear();
+	ResetEncShadows.clear();
     QueuedUartCharacter = -1;
     QueuedUSSCharacter = -1;
     SimulateUartTxCountdown = 0;

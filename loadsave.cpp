@@ -161,7 +161,7 @@ BOOL LoadProjectFromFile(char *filename)
 // Save the program in memory to the given file. Returns TRUE for success,
 // FALSE otherwise.
 //-----------------------------------------------------------------------------
-BOOL SaveProjectToFile(char *filename, bool isBackup)
+BOOL SaveProjectToFile(const char *filename, bool isBackup)
 {
 	char szfilename[MAX_PATH+1];
 

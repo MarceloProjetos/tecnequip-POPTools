@@ -103,10 +103,12 @@ bool AddEmpty(int which)
 	case ELEM_OPEN:
 	case ELEM_SHORT:
 		ret = ladder->AddElement(new LadderElemOpenShort(ladder, which));
+		break;
 
 	case ELEM_ONE_SHOT_RISING:
 	case ELEM_ONE_SHOT_FALLING:
 		ret = ladder->AddElement(new LadderElemOneShot(ladder, which));
+		break;
 	}
 
 	ladder->CheckpointEnd();
@@ -523,22 +525,4 @@ bool PushRung(bool up)
 void NewProgram(void)
 {
 	ladder->NewDiagram();
-}
-
-//-----------------------------------------------------------------------------
-// Are either of the UART functions (send or recv) used? Need to know this
-// to know whether we must receive their pins.
-//-----------------------------------------------------------------------------
-BOOL UartFunctionUsed(void)
-{
-    return FALSE;
-}
-
-//-----------------------------------------------------------------------------
-// Is the PWM function used? Need to know this to know whether we must reserve
-// the pin.
-//-----------------------------------------------------------------------------
-BOOL PwmFunctionUsed(void)
-{
-    return FALSE;
 }

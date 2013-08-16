@@ -49,10 +49,16 @@ public:
 	HRESULT EndDraw(void);
 
 	HRESULT DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned radiusY = 0, unsigned int angle = 0);
-	HRESULT DrawEllipse(RECT r, unsigned int brush, bool filled = true);
-	HRESULT DrawEllipse(POINT center, float rx, float ry, unsigned int brush, bool filled = true);
-	HRESULT DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush);
-	HRESULT DrawLine(POINT start, POINT end, unsigned int brush);
+	HRESULT DrawEllipse  (RECT r, unsigned int brush, bool filled = true);
+	HRESULT DrawEllipse  (POINT center, float rx, float ry, unsigned int brush, bool filled = true);
+	HRESULT DrawText     (const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY);
+	HRESULT DrawLine     (POINT start, POINT end, unsigned int brush);
+
+	HRESULT DrawPictureFromFile    (char *filename, POINT start, POINT size);
+	HRESULT DrawPictureFromResource(int   id      , POINT start, POINT size);
+
+	HRESULT DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
+		bool filled = true, float radiusX = 20.0f, float radiusY = 20.0f, float angle = 0.0f);
 };
 
 #endif

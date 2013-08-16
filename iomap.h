@@ -15,6 +15,8 @@ private:
 	typedef map<string, pair<unsigned long, mapDetails> > tMapIO;
 	tMapIO IO;
 
+	unsigned int maxNameSize;
+
 	vector<string> vectorInternalFlag;
 	vector<string> vectorReservedName;
 
@@ -52,6 +54,9 @@ private:
 		} Discard;
 	};
 
+	// Funcao que verifica o nome do I/O e retorna uma string valida
+	string getValidName(string name);
+
 public:
 	mapIO(LadderDiagram *pDiagram);
 
@@ -76,6 +81,10 @@ public:
 
 	bool IsReserved    (string name);
 	bool IsInternalFlag(string name);
+
+	// Funcoes que indicam se existe algum I/O que use a UART e o PWM, respectivamente
+	bool UartFunctionUsed(void);
+	bool PwmFunctionUsed (void);
 
 	string          getPortName           (int index);
 	string          getPinName            (int index);

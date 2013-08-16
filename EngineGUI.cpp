@@ -173,7 +173,7 @@ HRESULT EngineGUI::DrawRectangle(RECT r, unsigned int brush, bool filled, unsign
 	return hr;
 }
 
-HRESULT EngineGUI::DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush)
+HRESULT EngineGUI::DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
@@ -182,7 +182,7 @@ HRESULT EngineGUI::DrawText(const char *txt, RECT r, unsigned int format, unsign
 		r.right  += DrawOffset.x;
 		r.top    += DrawOffset.y;
 		r.bottom += DrawOffset.y;
-		pRender->DrawText(txt, r, format, brush + BrushOffset);
+		pRender->DrawText(txt, r, format, brush + BrushOffset, alignX, alignY);
 		hr = S_OK;
 	}
 
@@ -229,4 +229,45 @@ HRESULT EngineGUI::DrawEllipse(POINT center, float rx, float ry, unsigned int br
 	}
 
 	return hr;
+}
+
+HRESULT EngineGUI::DrawPictureFromFile(char *filename, POINT start, POINT size)
+{
+	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
+
+	if(pRender != NULL) {
+		start.x += DrawOffset.x;
+		start.y += DrawOffset.y;
+		hr = pRender->DrawPictureFromFile(filename, start, size);
+	}
+
+	return hr;
+}
+
+HRESULT EngineGUI::DrawPictureFromResource(int id, POINT start, POINT size)
+{
+	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
+
+	if(pRender != NULL) {
+		start.x += DrawOffset.x;
+		start.y += DrawOffset.y;
+		hr = pRender->DrawPictureFromResource(id, start, size);
+	}
+
+	return hr;
+}
+
+HRESULT EngineGUI::DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
+	bool filled, float radiusX, float radiusY, float angle)
+{
+	if(pRender != NULL) {
+		r.left   += DrawOffset.x;
+		r.right  += DrawOffset.x;
+		r.top    += DrawOffset.y;
+		r.bottom += DrawOffset.y;
+		return pRender->DrawRectangle3D(r, sizeZ, brushBG + BrushOffset, brushIntBorder + BrushOffset, brushExtBorder + BrushOffset,
+			filled, radiusX, radiusY, angle);
+	}
+
+	return HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 }

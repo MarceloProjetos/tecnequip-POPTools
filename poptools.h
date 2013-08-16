@@ -128,7 +128,7 @@ typedef SDWORD SWORD;
 #define PLC_CYCLE 10 // miliseconds
 
 // Size of the font that we will use to draw the ladder diagrams, in pixels
-#define FONT_WIDTH   8
+#define FONT_WIDTH  8
 #define FONT_HEIGHT 13
 
 #define DA_RESOLUTION		2048		// DA resolution 12 bits (4096 / 2) 
@@ -352,8 +352,6 @@ struct strSerialConfig {
 // subcircuits. An element is a set of contacts (possibly negated) or a coil.
 
 #define ELEM_PLACEHOLDER        0x01
-#define ELEM_SERIES_SUBCKT      0x02
-#define ELEM_PARALLEL_SUBCKT    0x03
 #define ELEM_PADDING            0x04
 #define ELEM_COMMENT            0x05
 
@@ -465,33 +463,6 @@ typedef struct SettingsTag {
 	// Interval in minutes between autosave calls
 	int	AutoSaveInterval;
 } Settings;
-
-//-----------------------------------------------
-// The syntax highlighting style colours; a structure for the palette.
-
-typedef struct SyntaxHighlightingColoursTag {
-    COLORREF    bg;             // background
-    COLORREF    def;            // default foreground
-    COLORREF    selected;       // selected element
-    COLORREF    op;             // `op code' (like OSR, OSF, ADD, ...)
-    COLORREF    punct;          // punctuation, like square or curly braces
-    COLORREF    lit;            // a literal number
-    COLORREF    name;           // the name of an item
-    COLORREF    rungNum;        // rung numbers
-    COLORREF    comment;        // user-written comment text
-
-    COLORREF    bus;            // the `bus' at the right and left of screen
-
-    COLORREF    breakpoint;     // the breakpoint circle
-
-	COLORREF    simBg;          // background, simulation mode
-    COLORREF    simRungNum;     // rung number, simulation mode
-    COLORREF    simOff;         // de-energized element, simulation mode
-    COLORREF    simOn;          // energzied element, simulation mode
-    COLORREF    simBusLeft;     // the `bus,' can be different colours for
-    COLORREF    simBusRight;    // right and left of the screen
-} SyntaxHighlightingColours;
-extern SyntaxHighlightingColours HighlightColours;
 
 //-----------------------------------------------
 // Processor definitions. These tables tell us where to find the I/Os on
@@ -683,7 +654,6 @@ extern void (*DrawChars)(int, int, char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow(void);
 void ExportDrawingAsText(char *file);
-void InitForDrawing(void);
 void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert);
 extern int ScrollXOffset;
 extern int ScrollYOffset;
@@ -744,8 +714,6 @@ bool AddParallelStart(void);
 bool DeleteSelectedFromProgram(void);
 bool DeleteSelectedRung(void);
 bool InsertRung(bool afterCursor);
-BOOL UartFunctionUsed(void);
-BOOL PwmFunctionUsed(void);
 bool PushRung(bool up);
 void NewProgram(void);
 
@@ -773,7 +741,7 @@ bool fread_time_t (FILE *f, time_t        *var);
 bool fread_pointer(FILE *f, void          *var, unsigned int size);
 
 BOOL LoadProjectFromFile(char *filename);
-BOOL SaveProjectToFile(char *filename, bool isBackup = false);
+BOOL SaveProjectToFile(const char *filename, bool isBackup = false);
 
 void SetAutoSaveInterval(int interval);
 void CALLBACK AutoSaveNow(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
@@ -793,6 +761,7 @@ bool ShowContactsDialog(bool *negated, string *sName, eType *type);
 bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, string *sName, eType *type);
 bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *time, string *desl);
 // simpledialog.cpp
+bool ShowVarDialog(char *title, char *varname, string *name, vector<eType> types = vector<eType>());
 bool ShowTimerDialog(int which, int *delay, string *sName);
 bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end);
 bool ShowCounterDialog(int which, int *maxV, string *sName);

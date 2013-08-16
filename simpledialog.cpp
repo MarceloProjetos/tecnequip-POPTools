@@ -60,7 +60,8 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     oops();
 }
 
-static void MakeControls(int boxes, char **labels, DWORD fixedFontMask, DWORD useComboBox)
+static void MakeControls(int boxes, char **labels, DWORD fixedFontMask,
+	DWORD useComboBox, vector<eType> types)
 {
     int i;
     HDC hdc = GetDC(SimpleDialog);
@@ -97,7 +98,7 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask, DWORD us
 				80 + adj, 12 + 30*i, 120 - adj, 321,
 				SimpleDialog, NULL, Instance, NULL);
 
-			LoadIOListToComboBox(Textboxes[i], vector<eType>()); // Vetor vazio, todos os tipos...
+			LoadIOListToComboBox(Textboxes[i], types);
 			SendMessage(Textboxes[i], CB_SETDROPPEDWIDTH, 300, 0);
 		} else {
 	        Textboxes[i] = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
@@ -126,8 +127,10 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask, DWORD us
     NiceFont(CancelButton);
 }
 
+// Default para types: Vetor vazio, todos os tipos...
 BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
-    DWORD alnumOnlyMask, DWORD fixedFontMask, DWORD useComboBox, char **dests)
+    DWORD alnumOnlyMask, DWORD fixedFontMask, DWORD useComboBox, char **dests,
+	vector<eType> types = vector<eType>())
 {
     BOOL didCancel;
 
@@ -138,7 +141,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
         100, 100, 304, 15 + 30*(boxes < 2 ? 2 : boxes), MainWindow, NULL,
         Instance, NULL);
 
-    MakeControls(boxes, labels, fixedFontMask, useComboBox);
+    MakeControls(boxes, labels, fixedFontMask, useComboBox, types);
   
     int i;
 
@@ -726,6 +729,25 @@ bool ShowPersistDialog(string *var)
 
 			*var = var_tmp;
 		}
+	}
+
+	return changed;
+}
+
+bool ShowVarDialog(char *title, char *varname, string *name, vector<eType> types)
+{
+	bool changed = false;
+
+	char name_tmp[MAX_NAME_LEN];
+
+	char *labels[] = { varname };
+    char *dests[] = { name_tmp };
+
+	strcpy(name_tmp, name->c_str());
+
+	if(ShowSimpleDialog(title, 1, labels, 0, 0x1, 0x1, 0x1, dests, types)) {
+		changed = true;
+		*name = name_tmp;
 	}
 
 	return changed;

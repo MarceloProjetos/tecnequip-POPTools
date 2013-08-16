@@ -175,7 +175,7 @@ static void DeclareBit(FILE *f, char *rawStr)
 		return;
 	}
 
-	intflag = (!strncmp(str, "I_", 2) /*&& IsInternalFlag(str+2)*/);
+	intflag = (!strncmp(str, "I_", 2) && ladder->getDetailsIO(str+2).type == eType_InternalFlag);
 
 	mode = (*rawStr == '$'  && !intflag) ? SEENVAR_MODE_SYSTEM : (!strncmp(str, "U_", 2) ? SEENVAR_MODE_USERBIT : SEENVAR_MODE_OTHERS);
 	if(!SeenVariable(str, mode) && mode == SEENVAR_MODE_OTHERS && !intflag) {

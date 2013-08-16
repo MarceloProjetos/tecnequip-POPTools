@@ -3,13 +3,25 @@
 
 #include <vector>
 
+#include <string.h>
+
 #include <d2d1.h>
 #include <dwrite.h>
+#include <wincodec.h>
 
 #pragma comment (lib, "d2d1.lib")
 #pragma comment (lib, "dwrite.lib")
 
 #include "EngineRender.h"
+
+using namespace std;
+
+// Estrutura que contem informacoes de um formato de texto
+typedef struct {
+	unsigned int       height;
+	unsigned int       width;
+	IDWriteTextFormat *format;
+} tTextFormat;
 
 class EngineRenderD2D : public EngineRender
 {
@@ -19,11 +31,14 @@ private:
 	void FreeRenderTarget(void);
 
 	ID2D1Factory          *pD2DFactory;
+	IWICImagingFactory    *pWICFactory;
 	IDWriteFactory        *pWriteFactory;
 	ID2D1HwndRenderTarget *pRT;
 
 	std::vector<ID2D1SolidColorBrush *> Brushes;
-	std::vector<IDWriteTextFormat    *> TextFormats;
+	std::vector<tTextFormat           > TextFormats;
+
+	HRESULT DrawPicture(IWICBitmapDecoder *pDecoder, POINT start, POINT size);
 
 public:
 	EngineRenderD2D(void);
@@ -39,8 +54,16 @@ public:
 
 	void DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned int radiusY = 0, unsigned int angle = 0);
 	HRESULT DrawEllipse(POINT center, float rx, float ry, unsigned int brush, bool filled = true);
-	void DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush);
+	void DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY);
 	HRESULT DrawLine(POINT start, POINT end, unsigned int brush);
+
+	HRESULT DrawPictureFromFile    (char *filename, POINT start, POINT size);
+	HRESULT DrawPictureFromResource(int   id      , POINT start, POINT size);
+
+	HRESULT DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
+		bool filled, float radiusX, float radiusY, float angle);
+
+	void Teste(void);
 };
 
 #endif

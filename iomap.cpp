@@ -19,6 +19,8 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 	countIO    = 0;
 	selectedIO = 0;
 
+	maxNameSize = 13;
+
 	diagram = pDiagram;
 
 	// Adicionando itens que sao flags internas
@@ -75,6 +77,48 @@ bool mapIO::IsInternalFlag(string name)
 	}
 
 	return false;
+}
+
+// Funcoes que indicam se existe algum I/O que use a UART e o PWM, respectivamente
+bool mapIO::UartFunctionUsed(void)
+{
+	tMapIO::iterator it;
+
+	for(it = IO.begin(); it != IO.end(); it++) {
+		if(it->second.second.type == eType_RxUART || it->second.second.type == eType_TxUART)
+			return true; // Encontrado!
+	}
+
+	return false;
+}
+
+bool mapIO::PwmFunctionUsed (void)
+{
+	tMapIO::iterator it;
+
+	for(it = IO.begin(); it != IO.end(); it++) {
+		if(it->second.second.type == eType_PWM)
+			return true; // Encontrado!
+	}
+
+	return false;
+}
+
+string mapIO::getValidName(string name)
+{
+	if(name.size() > maxNameSize) {
+		name.resize(maxNameSize);
+	}
+
+	tMapIO::iterator it;
+
+	for(it = IO.begin(); it != IO.end(); it++) {
+		if(!_stricmp(it->first.c_str(), name.c_str())) {
+			name = it->first;
+		}
+	}
+
+	return name;
 }
 
 bool mapIO::Add(string name, eType type, bool isUndoRedo)
@@ -139,6 +183,8 @@ bool mapIO::Update(unsigned long id, string name, eType type, bool isUndoRedo)
 {
 	string old_name = getName(id);
 	if(old_name.size() == 0) return false; // id invalido!
+
+	name = getValidName(name);
 
 	if(IsReserved(name)) {
 		type = eType_Reserved;
@@ -219,6 +265,8 @@ unsigned long mapIO::Request(tRequestIO infoIO)
 {
 	bool result;
 	unsigned long id = 0;
+
+	infoIO.name = getValidName(infoIO.name);
 
 	if(IsReserved(infoIO.name)) {
 		infoIO.access        = eRequestAccessType_ReadWrite;
@@ -436,6 +484,8 @@ mapDetails mapIO::getDetails(unsigned long id)
 
 unsigned long mapIO::getID(string name)
 {
+	name = getValidName(name);
+
 	// Retorna zero se o nome nao estiver no mapa
 	if(IO.count(name) == 0) {
 		return 0;
@@ -483,6 +533,8 @@ bool mapIO::Assign(unsigned long id, unsigned int pin, unsigned int bit, bool is
 
 bool mapIO::Assign(string name, unsigned int pin, unsigned int bit, bool isUndoRedo)
 {
+	name = getValidName(name);
+
 	if(IO.count(name) > 0) {
 		// Registro da acao para desfazer / refazer
 		if(!isUndoRedo) {

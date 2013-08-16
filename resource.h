@@ -12,6 +12,9 @@
 #define IDB_WAVE_REC_OK                5000
 #define IDB_WAVE_REC_ERRO              5001
 
+// Imagens dos elementos no diagrama
+#define IDB_LADDER_RTC                 6000
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

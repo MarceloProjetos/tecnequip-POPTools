@@ -24,6 +24,9 @@ IDB_NETWORK_CONFIG      BITMAP                  "imgs/network_config.bmp"
 IDB_RS485_CONFIG        BITMAP                  "imgs/RS485_config.bmp"
 IDB_TIME_CONFIG         BITMAP                  "imgs/time_config.bmp"
 IDB_ARROW_LEFT          BITMAP                  "imgs/ArrowLeft.bmp"
+
+IDB_LADDER_RTC			RCDATA					"imgs/Calendario.bmp"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Sound

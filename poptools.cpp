@@ -29,7 +29,6 @@ static int         MouseY;
 
 // For the open/save dialog boxes
 #define LDMICRO_PATTERN _("POPTools Projeto Ladder (*.ld)\0*.ld\0All files\0*\0\0")
-BOOL ProgramChangedNotSaved = FALSE;
 
 #define C_PATTERN    _("Linguagem C (*.c)\0*.c\0Todos os Arquivos\0*\0\0")
 char CurrentCompileFile[MAX_PATH];
@@ -232,7 +231,6 @@ static bool SaveAsDialog(void)
         return false;
     } else {
 		UpdateRecentList(CurrentSaveFile);
-        ProgramChangedNotSaved = false;
         return true;
     }
 }
@@ -372,11 +370,10 @@ static bool SaveProgram(void)
 {
 	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
 	if(ladder->getCurrentFilename().size() > 0 && settings.canSave) {
-        if(!SaveProjectToFile("")) {
+		if(!SaveProjectToFile(ladder->getCurrentFilename().c_str())) {
 			Error(_("Couldn't write to '%s'."), ladder->getCurrentFilename().c_str());
             return false;
         } else {
-            ProgramChangedNotSaved = false;
             return true;
         }
     } else {
@@ -682,12 +679,12 @@ static BOOL CompileProgram(BOOL ShowSuccessMessage)
         goto CompileProgramEnd;
     }
 
-    if(UartFunctionUsed() && mcu->uartNeeds.rxPin == 0) {
+    if(ladder->UartFunctionUsed() && mcu->uartNeeds.rxPin == 0) {
         Error(_("UART function used but not supported for this micro."));
         goto CompileProgramEnd;
     }
     
-    if(PwmFunctionUsed() && mcu->pwmNeedsPin == 0) {
+    if(ladder->PwmFunctionUsed() && mcu->pwmNeedsPin == 0) {
         Error(_("PWM function used but not supported for this micro."));
         goto CompileProgramEnd;
     }
@@ -807,7 +804,7 @@ static void WriteProgram(void)
 bool CheckSaveUserCancels(void)
 {
 	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
-	if(!ProgramChangedNotSaved || !settings.canSave) {
+	if(!ladder->getContext().programChangedNotSaved || !settings.canSave) {
         // no problem
         return false;
     }
@@ -853,13 +850,11 @@ static void OpenDialog(char *filename)
     if(!LoadProjectFromFile(tempSaveFile)) {
         Error(_("Couldn't open '%s'."), tempSaveFile);
     } else {
-        ProgramChangedNotSaved = FALSE;
 		UpdateRecentList(tempSaveFile);
 	}
 
     RefreshScrollbars();
 	RefreshControlsToSettings();
-    UpdateMainWindowTitleBar();
 }
 
 //-----------------------------------------------------------------------------
@@ -907,11 +902,9 @@ void ProcessMenu(int code)
         case MNU_NEW:
             if(CheckSaveUserCancels()) break;
             NewProgram();
-			ProgramChangedNotSaved = FALSE;
             strcpy(CurrentCompileFile, "");
             RefreshScrollbars();
 			RefreshControlsToSettings();
-            UpdateMainWindowTitleBar();
             break;
 
         case MNU_OPEN:
@@ -944,12 +937,10 @@ void ProcessMenu(int code)
 
         case MNU_SAVE:
             SaveProgram();
-            UpdateMainWindowTitleBar();
             break;
 
         case MNU_SAVE_AS:
             SaveAsDialog();
-            UpdateMainWindowTitleBar();
             break;
 
 		case MNU_SAVE_AS_C:
@@ -1427,6 +1418,8 @@ cmp:
 			mysplash.Show();
             break;
     }
+
+	UpdateMainWindowTitleBar();
 }
 
 //-----------------------------------------------------------------------------
@@ -1478,6 +1471,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_KEYDOWN: {
 			if(wParam != VK_SHIFT && wParam != VK_CONTROL) {
 				KeyboardHandlers_Execute(wParam);
+				UpdateMainWindowTitleBar();
                 InvalidateRect(DrawWindow, NULL, FALSE);
             }
             break;
@@ -1793,7 +1787,18 @@ void SaveSettings(void)
 	swprintf((wchar_t *)tmp, 10, L"%d", POPSettings.COMPortDebug);
 	XmlSettings.ChangeElement(0, tmp);
 
-	XmlSettings.Save(NULL);
+	PWSTR settings_path;
+	wchar_t *settings_file;
+	unsigned int totallen;
+
+	SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &settings_path);
+	totallen = wcslen(settings_path) + wcslen(SETTINGS_FILE) + 1;
+	settings_file = new wchar_t[totallen+1];
+	swprintf(settings_file, totallen+1, L"%s\\%s", settings_path, SETTINGS_FILE);
+
+	XmlSettings.Save(settings_file);
+
+	delete [] settings_file;
 }
 
 // Creates resources that are not bound to a particular device.
@@ -1867,7 +1872,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     ThawDWORD(IoListHeight);
 
     InitCommonControls();
-    InitForDrawing();
 	CreateDeviceIndependentResources();
 
     MakeMainWindowControls();

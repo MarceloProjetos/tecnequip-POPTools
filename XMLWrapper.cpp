@@ -90,6 +90,11 @@ bool XMLWrapper::Open(BSTR filename)
         // Failed to load xml, get last parsing error
         CHK_HR(pXMLDom->get_parseError(&pXMLErr));
         CHK_HR(pXMLErr->get_reason(&bstrErr));
+
+		// Error while loading, not inside parsing
+		// Cleanup errors now so we can save it later
+		bstrErr = NULL;
+		hr = S_OK;
     }
 
 CleanUp:

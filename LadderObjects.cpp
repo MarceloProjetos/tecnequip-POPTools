@@ -5,26 +5,29 @@ LadderContext getEmptyContext(void)
 {
 	LadderContext context;
 
-	context.canNegate        = false;
-	context.canNormal        = false;
-	context.canSetOnly       = false;
-	context.canResetOnly     = false;
-	context.canPushUp        = false;
-	context.canPushDown      = false;
-	context.canDelete        = false;
-	context.canDeleteRung    = false;
-	context.canInsertEnd     = false;
-	context.canInsertOther   = false;
-	context.canInsertComment = false;
+	context.canNegate              = false;
+	context.canNormal              = false;
+	context.canSetOnly             = false;
+	context.canResetOnly           = false;
+	context.canPushUp              = false;
+	context.canPushDown            = false;
+	context.canDelete              = false;
+	context.canDeleteRung          = false;
+	context.canInsertEnd           = false;
+	context.canInsertOther         = false;
+	context.canInsertComment       = false;
 
-	context.SelectedCircuit  = nullptr;
-	context.SelectedElem     = nullptr;
-	context.SelectedState    = SELECTED_NONE;
+	context.SelectedCircuit        = nullptr;
+	context.SelectedElem           = nullptr;
+	context.SelectedState          = SELECTED_NONE;
 
-	context.inSimulationMode = false;
+	context.currentFilename        = "";
+	context.programChangedNotSaved = false;
 
-	context.Diagram          = nullptr;
-	context.ParallelStart    = nullptr;
+	context.inSimulationMode       = false;
+
+	context.Diagram                = nullptr;
+	context.ParallelStart          = nullptr;
 
 	return context;
 }
@@ -112,6 +115,24 @@ bool LadderElem::Load(FILE *f, unsigned int version)
 {
 	updateIO(true); // Descarta o I/O referenciado quando da criacao do objeto
 	return internalLoad(f, version);
+}
+
+bool LadderElem::updateNameTypeIO(unsigned int index, string name, eType type)
+{
+	Diagram->CheckpointBegin("Alterar Nome/Tipo do I/O");
+
+	if(internalUpdateNameTypeIO(index, name, type)) {
+		Diagram->CheckpointEnd();
+		Diagram->updateContext();
+		Diagram->ProgramChanged();
+
+		return true;
+	} else {
+		Diagram->CheckpointRollback();
+		Diagram->CheckpointEnd();
+	}
+
+	return false;
 }
 
 // Funcao que executa uma acao de desfazer / refazer
@@ -452,6 +473,29 @@ int LadderElemContact::SearchAndReplace(unsigned long idSearch, string sNewText,
 	return 0;
 }
 
+bool LadderElemContact::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = prop.idName;
+
+	if(type == eType_Reserved) {
+		type = eType_DigInput;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+			LadderElemContactProp *data = (LadderElemContactProp *)getProperties();
+
+			data->idName  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool LadderElemContact::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -624,6 +668,29 @@ int LadderElemCoil::SearchAndReplace(unsigned long idSearch, string sNewText, bo
 	}
 
 	return 0;
+}
+
+bool LadderElemCoil::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = prop.idName;
+
+	if(type == eType_Reserved) {
+		type = eType_DigOutput;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+			LadderElemCoilProp *data = (LadderElemCoilProp *)getProperties();
+
+			data->idName  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool LadderElemCoil::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -860,6 +927,27 @@ int LadderElemTimer::SearchAndReplace(unsigned long idSearch, string sNewText, b
 	}
 
 	return 0;
+}
+
+bool LadderElemTimer::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = prop.idName;
+
+	type = getTimerTypeIO(getWhich());
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome" ), VALIDATE_IS_VAR, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+			LadderElemTimerProp *data = (LadderElemTimerProp *)getProperties();
+
+			data->idName  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool LadderElemTimer::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -1201,6 +1289,27 @@ int LadderElemCounter::SearchAndReplace(unsigned long idSearch, string sNewText,
 	}
 
 	return 0;
+}
+
+bool LadderElemCounter::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = prop.idName;
+
+	type = eType_Counter;
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome" ), VALIDATE_IS_VAR, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+			LadderElemCounterProp *data = (LadderElemCounterProp *)getProperties();
+
+			data->idName  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool LadderElemCounter::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -1863,6 +1972,82 @@ void LadderElemMath::updateIO(bool isDiscard)
 	prop.idOp2 = infoIO_Op2.pin;
 }
 
+int LadderElemMath::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idDest.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idDest;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Dest)) {
+					LadderElemMathProp *data = (LadderElemMathProp *)getProperties();
+
+					data->idDest  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idOp1.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idOp1;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Op1)) {
+					LadderElemMathProp *data = (LadderElemMathProp *)getProperties();
+
+					data->idOp1  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idOp2.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idOp2;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Op2)) {
+					LadderElemMathProp *data = (LadderElemMathProp *)getProperties();
+
+					data->idOp2  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
+}
+
 bool LadderElemMath::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -2011,6 +2196,59 @@ void LadderElemSqrt::updateIO(bool isDiscard)
 	infoIO_Src.pin = prop.idSrc;
 	Diagram->updateIO(infoIO_Src, isDiscard);
 	prop.idSrc = infoIO_Src.pin;
+}
+
+int LadderElemSqrt::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idDest.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idDest;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Dest)) {
+					LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
+
+					data->idDest  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idSrc.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idSrc;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Src)) {
+					LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
+
+					data->idSrc  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
 }
 
 bool LadderElemSqrt::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2183,6 +2421,82 @@ void LadderElemRand::updateIO(bool isDiscard)
 	prop.idMax = infoIO_Max.pin;
 }
 
+int LadderElemRand::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idVar.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idVar;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Var)) {
+					LadderElemRandProp *data = (LadderElemRandProp *)getProperties();
+
+					data->idVar  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idMin.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idMin;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Min)) {
+					LadderElemRandProp *data = (LadderElemRandProp *)getProperties();
+
+					data->idMin  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idMax.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idMax;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Max)) {
+					LadderElemRandProp *data = (LadderElemRandProp *)getProperties();
+
+					data->idMax  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
+}
+
 bool LadderElemRand::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -2335,6 +2649,59 @@ void LadderElemAbs::updateIO(bool isDiscard)
 	prop.idSrc = infoIO_Src.pin;
 }
 
+int LadderElemAbs::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idDest.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idDest;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Dest)) {
+					LadderElemAbsProp *data = (LadderElemAbsProp *)getProperties();
+
+					data->idDest  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idSrc.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idSrc;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Src)) {
+					LadderElemAbsProp *data = (LadderElemAbsProp *)getProperties();
+
+					data->idSrc  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
+}
+
 bool LadderElemAbs::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -2484,6 +2851,59 @@ void LadderElemMove::updateIO(bool isDiscard)
 	prop.idSrc = infoIO_Src.pin;
 }
 
+int LadderElemMove::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idDest.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idDest;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Dest)) {
+					LadderElemMoveProp *data = (LadderElemMoveProp *)getProperties();
+
+					data->idDest  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idSrc.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idSrc;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Src)) {
+					LadderElemMoveProp *data = (LadderElemMoveProp *)getProperties();
+
+					data->idSrc  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
+}
+
 bool LadderElemMove::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -2534,7 +2954,7 @@ bool LadderElemOpenShort::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRe
 }
 
 // Classe LadderElemSetBit
-LadderElemSetBit::LadderElemSetBit(LadderDiagram *diagram) : LadderElem(false, false, false, ELEM_PADDING)
+LadderElemSetBit::LadderElemSetBit(LadderDiagram *diagram) : LadderElem(false, false, false, ELEM_SET_BIT)
 {
 	Diagram   = diagram;
 
@@ -2644,6 +3064,35 @@ void LadderElemSetBit::updateIO(bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+int LadderElemSetBit::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+
+				pair<unsigned long, int> pin = prop.idName;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Name)) {
+					LadderElemSetBitProp *data = (LadderElemSetBitProp *)getProperties();
+
+					data->idName  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					return 1;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemSetBit::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2764,6 +3213,35 @@ void LadderElemCheckBit::updateIO(bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+int LadderElemCheckBit::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+
+				pair<unsigned long, int> pin = prop.idName;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Name)) {
+					LadderElemCheckBitProp *data = (LadderElemCheckBitProp *)getProperties();
+
+					data->idName  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					return 1;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemCheckBit::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2898,6 +3376,28 @@ void LadderElemReadAdc::updateIO(bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+int LadderElemReadAdc::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, eType_ReadADC, infoIO_Name)) {
+				LadderElemReadAdcProp *data = (LadderElemReadAdcProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 bool LadderElemReadAdc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -3022,6 +3522,28 @@ void LadderElemSetDa::updateIO(bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+int LadderElemSetDa::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, eType_SetDAC, infoIO_Name)) {
+				LadderElemSetDaProp *data = (LadderElemSetDaProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 bool LadderElemSetDa::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -3122,6 +3644,28 @@ void LadderElemReadEnc::updateIO(bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+int LadderElemReadEnc::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, eType_ReadEnc, infoIO_Name)) {
+				LadderElemReadEncProp *data = (LadderElemReadEncProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemReadEnc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3226,6 +3770,28 @@ void LadderElemResetEnc::updateIO(bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+int LadderElemResetEnc::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, eType_ResetEnc, infoIO_Name)) {
+				LadderElemResetEncProp *data = (LadderElemResetEncProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 bool LadderElemResetEnc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -3260,10 +3826,12 @@ LadderElemMultisetDA::LadderElemMultisetDA(LadderDiagram *diagram) : LadderElem(
 	prop.gaint                 = 10;
 	prop.gainr                 = 5;
 	prop.initval               = DA_RESOLUTION - 1;
+	prop.type                  = 0;
 	prop.linear                = true;  // true = linear, false = curva
 	prop.forward               = true;  // true = avanço, false = recuo
 	prop.speedup               = false; // true = aceleração, false = desaceleração
 	prop.StartFromCurrentValue = false; // false = Iniciar ou ir para zero, conforme speedup. true = partir do valor atual até o valor configurado
+	prop.ramp_abort_mode       = 0;
 	prop.idTime                = infoIO_Time.pin;
 	prop.idDesl                = infoIO_Desl.pin;
 }
@@ -3349,10 +3917,12 @@ bool LadderElemMultisetDA::internalSave(FILE *f)
 		fwrite_int  (f, prop.gainr) &&
 		fwrite_int  (f, prop.gaint) &&
 		fwrite_int  (f, prop.initval) &&
+		fwrite_int  (f, prop.type) &&
 		fwrite_bool (f, prop.linear) &&
 		fwrite_bool (f, prop.forward) &&
 		fwrite_bool (f, prop.speedup) &&
 		fwrite_bool (f, prop.StartFromCurrentValue) &&
+		fwrite_int  (f, prop.ramp_abort_mode) &&
 		fwrite_ulong(f, prop.idDesl.first) &&
 		fwrite_int  (f, prop.idDesl.second) &&
 		fwrite_ulong(f, prop.idTime.first) &&
@@ -3365,10 +3935,12 @@ bool LadderElemMultisetDA::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.gainr) &&
 		fread_int  (f, &prop.gaint) &&
 		fread_int  (f, &prop.initval) &&
+		fread_int  (f, &prop.type) &&
 		fread_bool (f, &prop.linear) &&
 		fread_bool (f, &prop.forward) &&
 		fread_bool (f, &prop.speedup) &&
 		fread_bool (f, &prop.StartFromCurrentValue) &&
+		fread_int  (f, &prop.ramp_abort_mode) &&
 		fread_ulong(f, &prop.idDesl.first) &&
 		fread_int  (f, &prop.idDesl.second) &&
 		fread_ulong(f, &prop.idTime.first) &&
@@ -3406,6 +3978,47 @@ void LadderElemMultisetDA::updateIO(bool isDiscard)
 	infoIO_Desl.pin = prop.idDesl;
 	Diagram->updateIO(infoIO_Desl, isDiscard);
 	prop.idDesl = infoIO_Desl.pin;
+}
+
+int LadderElemMultisetDA::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idDesl.first == idSearch) {
+		if(isReplace) {
+			pair<unsigned long, int> pin = prop.idDesl;
+			if(Diagram->getIO(pin, sNewText, eType_General, infoIO_Desl)) {
+				LadderElemMultisetDAProp *data = (LadderElemMultisetDAProp *)getProperties();
+
+				data->idDesl  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				n++;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idTime.first == idSearch) {
+		if(isReplace) {
+			pair<unsigned long, int> pin = prop.idTime;
+			if(Diagram->getIO(pin, sNewText, eType_General, infoIO_Time)) {
+				LadderElemMultisetDAProp *data = (LadderElemMultisetDAProp *)getProperties();
+
+				data->idTime  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				n++;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
 }
 
 bool LadderElemMultisetDA::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3552,6 +4165,29 @@ void LadderElemUSS::updateIO(bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+int LadderElemUSS::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			eType type = (getWhich() == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS;
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, type, infoIO_Name)) {
+				LadderElemUSSProp *data = (LadderElemUSSProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemUSS::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3741,6 +4377,29 @@ void LadderElemModBUS::updateIO(bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+int LadderElemModBUS::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			eType type = (getWhich() == ELEM_READ_MODBUS) ? eType_ReadModbus : eType_WriteModbus;
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, type, infoIO_Name)) {
+				LadderElemModBUSProp *data = (LadderElemModBUSProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 bool LadderElemModBUS::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -3867,6 +4526,28 @@ void LadderElemSetPWM::updateIO(bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+int LadderElemSetPWM::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, eType_PWM, infoIO_Name)) {
+				LadderElemSetPWMProp *data = (LadderElemSetPWMProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 bool LadderElemSetPWM::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -3974,6 +4655,29 @@ void LadderElemUART::updateIO(bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+int LadderElemUART::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			eType type = (getWhich() == ELEM_UART_RECV) ? eType_RxUART : eType_TxUART;
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(pin, sNewText, type, infoIO_Name)) {
+				LadderElemUARTProp *data = (LadderElemUARTProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemUART::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -4214,6 +4918,20 @@ void LadderElemShiftRegister::updateIO(bool isDiscard)
 	InfoIO_Regs.name = previous_name;
 }
 
+int LadderElemShiftRegister::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(!isReplace) {
+		unsigned int i;
+		for(i = 0; i < prop.vectorIdRegs.size(); i++) {
+			if(prop.vectorIdRegs[i].first == idSearch) {
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
 bool LadderElemShiftRegister::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -4403,6 +5121,59 @@ void LadderElemLUT::updateIO(bool isDiscard)
 	infoIO_Index.pin = prop.idIndex;
 	Diagram->updateIO(infoIO_Index, isDiscard);
 	prop.idIndex = infoIO_Index.pin;
+}
+
+int LadderElemLUT::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idDest.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idDest;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Dest)) {
+					LadderElemLUTProp *data = (LadderElemLUTProp *)getProperties();
+
+					data->idDest  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idIndex.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idIndex;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Index)) {
+					LadderElemLUTProp *data = (LadderElemLUTProp *)getProperties();
+
+					data->idIndex  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
 }
 
 bool LadderElemLUT::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -4635,6 +5406,59 @@ void LadderElemPiecewise::updateIO(bool isDiscard)
 	prop.idIndex = infoIO_Index.pin;
 }
 
+int LadderElemPiecewise::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idDest.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idDest;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Dest)) {
+					LadderElemPiecewiseProp *data = (LadderElemPiecewiseProp *)getProperties();
+
+					data->idDest  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idIndex.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idIndex;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Index)) {
+					LadderElemPiecewiseProp *data = (LadderElemPiecewiseProp *)getProperties();
+
+					data->idIndex  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
+}
+
 bool LadderElemPiecewise::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -4770,6 +5594,29 @@ void LadderElemFmtString::updateIO(bool isDiscard)
 	infoIO_Var.pin = prop.idVar;
 	Diagram->updateIO(infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
+}
+
+int LadderElemFmtString::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idVar.first == idSearch) {
+		if(isReplace) {
+			eType type = (getWhich() == ELEM_READ_FORMATTED_STRING) ? eType_RxUART : eType_TxUART;
+			pair<unsigned long, int> pin = prop.idVar;
+			if(Diagram->getIO(pin, sNewText, type, infoIO_Var)) {
+				LadderElemFmtStringProp *data = (LadderElemFmtStringProp *)getProperties();
+
+				data->idVar  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 bool LadderElemFmtString::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -4917,6 +5764,29 @@ void LadderElemYaskawa::updateIO(bool isDiscard)
 	prop.idVar = infoIO_Var.pin;
 }
 
+int LadderElemYaskawa::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idVar.first == idSearch) {
+		if(isReplace) {
+			eType type = (getWhich() == ELEM_READ_SERVO_YASKAWA) ? eType_ReadYaskawa : eType_WriteYaskawa;
+			pair<unsigned long, int> pin = prop.idVar;
+			if(Diagram->getIO(pin, sNewText, type, infoIO_Var)) {
+				LadderElemYaskawaProp *data = (LadderElemYaskawaProp *)getProperties();
+
+				data->idVar  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 bool LadderElemYaskawa::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -5049,6 +5919,35 @@ void LadderElemPersist::updateIO(bool isDiscard)
 	prop.idVar = infoIO_Var.pin;
 }
 
+int LadderElemPersist::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idVar.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+
+				pair<unsigned long, int> pin = prop.idVar;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Var)) {
+					LadderElemPersistProp *data = (LadderElemPersistProp *)getProperties();
+
+					data->idVar  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					return 1;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 bool LadderElemPersist::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -5134,9 +6033,6 @@ bool LadderCircuit::DrawElementTXT(vector< vector<int> > &DisplayMatrix, LadderE
 				int gx = *cx/POS_WIDTH;
 				int gy = *cy/POS_HEIGHT;
 
-//				if(CheckBoundsUndoIfFails(gx, gy)) return FALSE;
-
-//				DM_BOUNDS(gx, gy);
 				DisplayMatrix[gx][gy] = ELEM_PADDING;
 
 				char buf[256];
@@ -5228,9 +6124,6 @@ bool LadderCircuit::DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *
 				int gx = *cx/POS_WIDTH;
 				int gy = *cy/POS_HEIGHT;
 
-//				if(CheckBoundsUndoIfFails(gx, gy)) return FALSE;
-
-//				DM_BOUNDS(gx, gy);
 				if(gx>0 && DisplayMatrix[gx-1][gy] == ELEM_PLACEHOLDER)
 					break;
 				DisplayMatrix[gx][gy] = ELEM_PADDING;
@@ -5337,14 +6230,14 @@ bool LadderCircuit::GenerateIntCode(IntCode &ic)
 		parThis = ic.GenSymParThis();
 		parOut  = ic.GenSymParOut ();
 
-		const char *stateInOut = ic.getStateInOut();
+		string stateInOut = ic.getStateInOut();
 		ic.setStateInOut(parThis);
 
 		ic.Comment(_("start parallel ["));
 		ic.Op(INT_CLEAR_BIT, parOut.c_str());
 
         for(i = 0; i < vectorSubckt.size() && ret; i++) {
-			ic.Op(INT_COPY_BIT_TO_BIT, parThis.c_str(), stateInOut);
+			ic.Op(INT_COPY_BIT_TO_BIT, parThis.c_str(), stateInOut.c_str());
 
 			if(vectorSubckt[i].elem != nullptr) {
 				ret = vectorSubckt[i].elem->GenerateIntCode(ic);
@@ -5357,7 +6250,7 @@ bool LadderCircuit::GenerateIntCode(IntCode &ic)
 			ic.Op(INT_END_IF);
         }
 
-		ic.Op(INT_COPY_BIT_TO_BIT, stateInOut, parOut.c_str());
+		ic.Op(INT_COPY_BIT_TO_BIT, stateInOut.c_str(), parOut.c_str());
 		ic.setStateInOut(stateInOut);
 
 		ic.Comment(_("finish parallel ["));
@@ -6222,27 +7115,28 @@ bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 // Classe LadderDiagram
 void LadderDiagram::Init(void)
 {
-	context.Diagram            = this;
-	context.ParallelStart      = nullptr;
-	context.SelectedElem       = nullptr;
-	context.SelectedCircuit    = nullptr;
+	context.Diagram                = this;
+	context.ParallelStart          = nullptr;
+	context.SelectedElem           = nullptr;
+	context.SelectedCircuit        = nullptr;
 
-	context.SelectedState      = SELECTED_NONE;
+	context.SelectedState          = SELECTED_NONE;
 
-	context.inSimulationMode     = false;
+	context.inSimulationMode       = false;
 
-	context.currentFilename    = "";
+	context.currentFilename        = "";
+	context.programChangedNotSaved = false;
 
-	CheckPointLevels           =  0;
-	CheckPointLevelsMax        = 30;
-	CheckpointBeginCount       =  0;
-	CheckpointDoRollback       = false;
-	isCheckpointEmpty          = true;
+	CheckPointLevels               =  0;
+	CheckPointLevelsMax            = 30;
+	CheckpointBeginCount           =  0;
+	CheckpointDoRollback           = false;
+	isCheckpointEmpty              = true;
 
-	copiedElement              = nullptr;
-	copiedRung                 = nullptr;
+	copiedElement                  = nullptr;
+	copiedRung                     = nullptr;
 
-	NeedScrollSelectedIntoView = false;
+	NeedScrollSelectedIntoView     = false;
 
 	// Inicializacao das configuracoes
 	LadderSettings.General.canSave     = true; // Permite salvar o arquivo (sobreescrita)
@@ -6362,6 +7256,9 @@ void LadderDiagram::NewDiagram(void)
 	CheckPointLevels = 0;
 
 	updateContext();
+
+	// Limpa a flag que indica que o arquivo precisa ser salvo.
+	context.programChangedNotSaved = false;
 }
 
 vector<IntOp> LadderDiagram::getVectorIntCode(void)
@@ -6423,6 +7320,9 @@ bool LadderDiagram::EditSelectedElement(void)
 	if(context.SelectedElem != nullptr) {
 		CheckpointBegin("Editar Elemento");
 		ret = context.SelectedElem->ShowDialog(context);
+		if(ret) {
+			ProgramChanged();
+		}
 		CheckpointEnd();
 		updateContext();
 	}
@@ -6756,6 +7656,9 @@ void LadderDiagram::NewRung(bool isAfter)
 	SelectElement(elem, SELECTED_RIGHT);
 
 	CheckpointEnd();
+
+	// Indica que houve alteracao no programa
+	ProgramChanged();
 }
 
 bool LadderDiagram::PushRung(int rung, bool up)
@@ -6809,6 +7712,9 @@ bool LadderDiagram::PushRung(int rung, bool up)
 	RegisterAction(action);
 	CheckpointEnd();
 
+	// Indica que houve alteracao no programa
+	ProgramChanged();
+
 	// Atualiza o contexto
 	updateContext();
 
@@ -6849,11 +7755,18 @@ bool LadderDiagram::DeleteRung(int rung)
 		context.SelectedCircuit = nullptr;
 	}
 
+	if(rung == RungContainingElement(context.ParallelStart)) {
+		context.ParallelStart = nullptr;
+	}
+
 	(*it)->rung->doPostRemove();
 	(*it)->rung->updateIO(true);
 	rungs.erase(it);
 
 	CheckpointEnd();
+
+	// Indica que houve alteracao no programa
+	ProgramChanged();
 
 	updateContext();
 
@@ -6932,6 +7845,9 @@ bool LadderDiagram::PasteRung(bool isAfter)
 		copiedRung->isPowered     = false;
 		copiedRung->rung          = rungs[pos]->rung->Clone();
 
+		// Indica que houve alteracao no programa
+		ProgramChanged();
+
 		ret = true;
 	} else {
 		CheckpointRollback();
@@ -6974,6 +7890,9 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 
 	// Se adicionado com sucesso, atualiza o contexto
 	if(ret == true) {
+		// Indica que houve alteracao no programa
+		ProgramChanged();
+
 		int position = RungContainingSelected();
 		if(position >= 0) { // Se posicao menor que zero, insere no final
 			vector<LadderRung *>::iterator it = rungs.begin() + position;
@@ -6986,6 +7905,7 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 		elem->doPostInsert();
 
 		SelectElement(elem, elem->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT);
+
 		updateContext();
 	} else {
 		// Ocorreu um erro! Marca o checkpoint para remocao
@@ -7029,8 +7949,13 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 		LadderElem *first = rungs[rung]->rung->getFirstElement();
 		SelectElement(first, first->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT);
 
-		updateContext();
 		CheckpointEnd();
+
+		// Indica que houve alteracao no programa
+		ProgramChanged();
+
+		updateContext();
+
 		return true;
 	}
 
@@ -7081,6 +8006,9 @@ bool LadderDiagram::PasteElement(void)
 	if(AddElement(copiedElement)) {
 		copiedElement->updateIO(false);
 		ret = true;
+
+		// Indica que houve alteracao no programa
+		ProgramChanged();
 	} else {
 		CheckpointRollback();
 	}
@@ -7460,14 +8388,57 @@ bool LadderDiagram::Save(string filename, bool dontSaveFilename)
 
 	fclose(f);
 
-	if(failed) {
-		_unlink(filename.c_str());
-	}
-
 	// Agora executamos o rollback e encerramos o checkpoint.
 	// Dessa forma as acoes serao desfeitas e as listas de desfazer/refazer nao serao perdidas.
 	CheckpointRollback();
 	CheckpointEnd();
+
+	if(failed) {
+		_unlink(filename.c_str());
+	} else {
+		context.programChangedNotSaved = false;
+
+		// Atualiza a flag que indica se precisa salvar em todos os itens das listas de Desfazer/Refazer
+		deque<UndoRedoAction>::iterator it;
+
+		if(UndoList.size() > 0) {
+			for(it = UndoList.begin(); it != UndoList.end(); it++) {
+				it->contextAfter .programChangedNotSaved = true;
+				it->contextBefore.programChangedNotSaved = true;
+			}
+
+			it = UndoList.end() - 1;
+			while(it->action != eCheckpoint) {
+				it->contextAfter.programChangedNotSaved = false;
+
+				// Verifica se chegou ao final da lista
+				if(it == UndoList.begin()) {
+					break;
+				}
+
+				it--;
+			}
+		}
+
+		if(RedoList.size() > 0) {
+			for(it = RedoList.begin(); it != RedoList.end(); it++) {
+				it->contextAfter .programChangedNotSaved = true;
+				it->contextBefore.programChangedNotSaved = true;
+			}
+
+			it = RedoList.end() - 2; // Removemos 2 pois o primeiro eh a marcacao do checkpoint
+			while(it->action != eCheckpoint) {
+				it->contextBefore.programChangedNotSaved = false;
+
+				// Verifica se chegou ao final da lista
+				if(it == RedoList.begin()) {
+					break;
+				}
+
+				it--;
+			}
+		}
+	}
 
 	return !failed;
 }
@@ -7661,6 +8632,9 @@ bool LadderDiagram::Load(string filename)
 		DrawGUI();
 	}
 
+	// Se houve erro ou nao, sempre estaremos em uma situacao em que nao existem alteracoes...
+	context.programChangedNotSaved = false;
+
 	return !failed;
 }
 
@@ -7677,6 +8651,10 @@ void LadderDiagram::ToggleBreakPoint(unsigned int rung)
 	rungs[rung]->hasBreakpoint = !rungs[rung]->hasBreakpoint;
 }
 
+void LadderDiagram::ProgramChanged(void)
+{
+	context.programChangedNotSaved = true;
+}
 
 /*** Funcoes para gravar a configuracao do ladder ***/
 
@@ -7699,6 +8677,10 @@ void LadderDiagram::RegisterSettingsChanged(void)
 	action.subckt        = nullptr;
 
 	RegisterAction(action);
+
+	// Essa funcao somente eh chamada quando alguma configuracao estiver sendo alterada.
+	// Desta forma, indica que houve alteracao no programa
+	ProgramChanged();
 }
 
 void LadderDiagram::setSettingsGeneral(LadderSettingsGeneral setGeneral)
@@ -7821,6 +8803,9 @@ int LadderDiagram::mbCreateNode(LadderMbNode node)
 		RegisterAction(action);
 
 		vectorMbNodeList.push_back(nl);
+
+		// Indica que houve alteracao no programa
+		ProgramChanged();
 	}
 
 	return elem;
@@ -7856,6 +8841,9 @@ int LadderDiagram::mbUpdateNode(int NodeID, LadderMbNode node)
 
 			// Atualiza o no
 			vectorMbNodeList[index]->node = node;
+
+			// Indica que houve alteracao no programa
+			ProgramChanged();
 		} else {
 			elem = -1;
 		}
@@ -7890,6 +8878,9 @@ void LadderDiagram::mbDeleteNode(int NodeID)
 
 		// Remove o no
 		vectorMbNodeList.erase(vectorMbNodeList.begin() + index);
+
+		// Indica que houve alteracao no programa
+		ProgramChanged();
 	}
 }
 
@@ -8111,7 +9102,6 @@ bool LadderDiagram::getIO(tRequestIO &infoIO)
 					"Alterar o nome em todos os elementos que o utilizam?", IO->getName(newpin.first).c_str()) == eReply_No) {
 						newpin.first = 0;
 				}
-
 			}
 		}
 
@@ -8281,6 +9271,16 @@ void LadderDiagram::sortIO(eSortBy sortby)
 	IO->Sort(sortby);
 }
 
+bool LadderDiagram::UartFunctionUsed(void)
+{
+	return IO->UartFunctionUsed();
+}
+
+bool LadderDiagram::PwmFunctionUsed (void)
+{
+	return IO->PwmFunctionUsed ();
+}
+
 int LadderDiagram::SearchAndReplace(string sSearchText, string sNewText, eSearchAndReplaceMode mode)
 {
 	int rungMatches, matches = 0;
@@ -8426,7 +9426,7 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 
 	// Check for Variable and Number restrictions
 	if(!name_is_number && !IsValidVarName(name)) {
-		ShowDialog(true, "Nome Inválido", "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não inicar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", FieldName ? FieldName : "Nome", name.c_str());
+		ShowDialog(true, "Nome Inválido", "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não iniciar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", FieldName ? FieldName : "Nome", name.c_str());
 		return false;
 	} else if((Rules & VALIDATE_IS_VAR) && name_is_number) {
 		ShowDialog(true, "Nome Inválido", "'%s' não pode ser número!", FieldName ? FieldName : name.c_str());
@@ -8519,7 +9519,7 @@ eValidateResult LadderDiagram::Validate(void)
 
 	// Validate I/O Pin Assignment
 	// Only Names if in Simulation Mode
-	if(IO->Validate(context.inSimulationMode ? eValidateIO_OnlyNames : eValidateIO_Full)) {
+	if(IO->Validate(context.inSimulationMode ? eValidateIO_OnlyNames : eValidateIO_Full) == false) {
 		ret = eValidateResult_Error;
 	}
 
@@ -8673,10 +9673,16 @@ void LadderDiagram::CheckpointEnd(void)
 
 				do {
 					action = UndoList.back();
+
 					// Primeiro desfaz a acao
 					ExecuteAction(true , false, action);
+
+					// Restaura o contexto para o que era valido antes da acao desfeita
+					context = action.contextBefore;
+
 					// Agora descarta como Refazer pois a acao foi desfeita mas nao sera refeita...
 					ExecuteAction(false, true , action);
+
 					UndoList.pop_back();
 				} while(action.action != eCheckpoint);
 			} else if(isCheckpointEmpty) {
