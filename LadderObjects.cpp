@@ -699,7 +699,7 @@ bool LadderElemCoil::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAct
 }
 
 // Classe LadderElemTimer
-LadderElemTimer::LadderElemTimer(LadderDiagram *diagram, int which) : LadderElem(which == ELEM_RTO ? true : false, false, false, which)
+LadderElemTimer::LadderElemTimer(LadderDiagram *diagram, int which) : LadderElem(false, false, false, which)
 {
 	Diagram     = diagram;
 
@@ -846,7 +846,7 @@ bool LadderElemTimer::internalGenerateIntCode(IntCode &ic)
 
 bool LadderElemTimer::CanInsert(LadderContext context)
 {
-	return getWhich() == ELEM_RTO ? context.canInsertEnd : context.canInsertOther;
+	return context.canInsertOther;
 }
 
 void LadderElemTimer::internalSetProperties(void *data)
@@ -1442,6 +1442,29 @@ int LadderElemReset::SearchAndReplace(unsigned long idSearch, string sNewText, b
 	return 0;
 }
 
+bool LadderElemReset::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = prop.idName;
+
+	type = Diagram->getDetailsIO(name).type;
+
+	if(!acceptIO(prop.idName.first, type)) {
+		Diagram->ShowDialog(true, _("Contador/Temporizador inválido"), _("Selecione um contador/temporizador válido!"));
+	} else if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+			LadderElemCounterProp *data = (LadderElemCounterProp *)getProperties();
+
+			data->idName  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool LadderElemReset::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -1755,6 +1778,35 @@ int LadderElemCmp::SearchAndReplace(unsigned long idSearch, string sNewText, boo
 	return n;
 }
 
+bool LadderElemCmp::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = (index == 0) ? prop.idOp1 : prop.idOp2;
+
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Op1 : infoIO_Op2)) {
+			LadderElemCmpProp *data = (LadderElemCmpProp *)getProperties();
+
+			if(index == 0) {
+				data->idOp1 = pin;
+			} else {
+				data->idOp2 = pin;
+			}
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool LadderElemCmp::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -2048,6 +2100,64 @@ int LadderElemMath::SearchAndReplace(unsigned long idSearch, string sNewText, bo
 	return n;
 }
 
+bool LadderElemMath::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	bool isValid;
+	tRequestIO request;
+	pair<unsigned long, int> pin;
+
+	if(index == 0) {
+		request = infoIO_Op1;
+		pin     = prop.idOp1;
+
+		// Se variavel sem tipo, usa tipo geral.
+		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+		if(type == eType_Reserved) {
+			type = eType_General;
+		}
+
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+	} else if(index == 1) {
+		request = infoIO_Op2;
+		pin     = prop.idOp2;
+
+		// Se variavel sem tipo, usa tipo geral.
+		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+		if(type == eType_Reserved) {
+			type = eType_General;
+		}
+
+		type    = eType_General;
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+	} else {
+		request = infoIO_Dest;
+		pin     = prop.idDest;
+
+		type    = eType_General;
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
+	}
+
+	if(isValid) {
+		if(Diagram->getIO(pin, name, type, request)) {
+			LadderElemMathProp *data = (LadderElemMathProp *)getProperties();
+
+			if(index == 0) {
+				data->idOp1  = pin;
+			} else if(index == 1) {
+				data->idOp2  = pin;
+			} else {
+				data->idDest = pin;
+			}
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool LadderElemMath::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -2249,6 +2359,43 @@ int LadderElemSqrt::SearchAndReplace(unsigned long idSearch, string sNewText, bo
 	}
 
 	return n;
+}
+
+bool LadderElemSqrt::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	bool isValid;
+	pair<unsigned long, int> pin = (index == 0) ? prop.idSrc : prop.idDest;
+
+	if(index == 0) {
+		// Se variavel sem tipo, usa tipo geral.
+		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+		if(type == eType_Reserved) {
+			type = eType_General;
+		}
+
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Origem"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+	} else {
+		type    = eType_General;
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
+	}
+
+	if(isValid) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest)) {
+			LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
+
+			if(index == 0) {
+				data->idSrc  = pin;
+			} else {
+				data->idDest = pin;
+			}
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool LadderElemSqrt::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -2702,6 +2849,43 @@ int LadderElemAbs::SearchAndReplace(unsigned long idSearch, string sNewText, boo
 	return n;
 }
 
+bool LadderElemAbs::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	bool isValid;
+	pair<unsigned long, int> pin = (index == 0) ? prop.idSrc : prop.idDest;
+
+	if(index == 0) {
+		// Se variavel sem tipo, usa tipo geral.
+		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+		if(type == eType_Reserved) {
+			type = eType_General;
+		}
+
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Origem"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+	} else {
+		type    = eType_General;
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
+	}
+
+	if(isValid) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest)) {
+			LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
+
+			if(index == 0) {
+				data->idSrc  = pin;
+			} else {
+				data->idDest = pin;
+			}
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool LadderElemAbs::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
 	return true; // Nada a fazer
@@ -2902,6 +3086,43 @@ int LadderElemMove::SearchAndReplace(unsigned long idSearch, string sNewText, bo
 	}
 
 	return n;
+}
+
+bool LadderElemMove::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	bool isValid;
+	pair<unsigned long, int> pin = (index == 0) ? prop.idSrc : prop.idDest;
+
+	if(index == 0) {
+		// Se variavel sem tipo, usa tipo geral.
+		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+		if(type == eType_Reserved) {
+			type = eType_General;
+		}
+
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Origem"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+	} else {
+		type    = eType_General;
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
+	}
+
+	if(isValid) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest)) {
+			LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
+
+			if(index == 0) {
+				data->idSrc  = pin;
+			} else {
+				data->idDest = pin;
+			}
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool LadderElemMove::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -6773,6 +6994,13 @@ void LadderCircuit::RemoveUnnecessarySubckts(LadderContext context)
 			}
 		}
 	}
+
+	// Agora verifica se restou no circuito um placeholder no final e um elemento antes dele
+	unsigned int size = vectorSubckt.size();
+	if(isSeries && size > 1 && vectorSubckt[size-1].elem != nullptr &&
+		vectorSubckt[size-1].elem->getWhich() == ELEM_PLACEHOLDER && vectorSubckt[size-2].elem != nullptr) {
+			DelElement(vectorSubckt[size-1].elem, context);
+	}
 }
 
 LadderCircuit *LadderCircuit::Clone(void)
@@ -7525,10 +7753,8 @@ void LadderDiagram::updateContext(void)
 
 				if(context.SelectedState == SELECTED_RIGHT || 
 					context.SelectedElem->getWhich() == ELEM_PLACEHOLDER) {
-						vector<LadderRung *>::iterator it;
 						if(i >= 0) {
-							it = rungs.begin() + i;
-							context.canInsertEnd = (*it)->rung->IsLast(context.SelectedElem);
+							context.canInsertEnd = context.SelectedCircuit->IsLast(context.SelectedElem);
 						} else {
 							context.canInsertEnd = false;
 						}
@@ -7971,6 +8197,8 @@ bool LadderDiagram::CopyElement(LadderElem *elem)
 		elem = context.SelectedElem;
 		if(elem == nullptr) return false; // Sem elemento para copiar
 	}
+
+	if(elem->getWhich() == ELEM_PLACEHOLDER) return false; // Nao pode copiar PlaceHolder...
 
 	// As acoes de copia do objeto nao devem ser registradas pois o CTRL+Z nao desfaz a copia.
 	// Assim precisamos criar um checkpoint para que possamos descartar as acoes inscritas
@@ -9054,6 +9282,7 @@ void LadderDiagram::updateIO(tRequestIO &infoIO, bool isDiscard)
 			if(acceptIO(infoIO.pin.first, DetailsIO.type)) {
 				tRequestIO copyInfoIO = infoIO;
 				copyInfoIO.name = IO->getName(infoIO.pin.first);
+				copyInfoIO.type = DetailsIO.type;
 				IO->Request(copyInfoIO);
 			} else {
 				infoIO.pin.first = 0;
@@ -9525,7 +9754,7 @@ eValidateResult LadderDiagram::Validate(void)
 
 	// Validate Generated IntCode
 	if(ret != eValidateResult_Error) {
-		vector<IntOp> vectorIntCode = ladder->getVectorIntCode();
+		vector<IntOp> vectorIntCode = getVectorIntCode();
 		vector<IntOp>::size_type IntCodeLen = vectorIntCode.size(), i;
 
 		for(i = 0; i < IntCodeLen; i++) {

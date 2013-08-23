@@ -691,7 +691,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemReset(LadderDiagram *diagram);
@@ -784,7 +784,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemCmp(LadderDiagram *diagram, int which);
@@ -837,7 +837,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemMath(LadderDiagram *diagram, int which);
@@ -888,7 +888,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemSqrt(LadderDiagram *diagram);
@@ -992,7 +992,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemAbs(LadderDiagram *diagram);
@@ -1043,7 +1043,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemMove(LadderDiagram *diagram);

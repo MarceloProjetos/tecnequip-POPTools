@@ -26,6 +26,8 @@ IDB_TIME_CONFIG         BITMAP                  "imgs/time_config.bmp"
 IDB_ARROW_LEFT          BITMAP                  "imgs/ArrowLeft.bmp"
 
 IDB_LADDER_RTC			RCDATA					"imgs/Calendario.bmp"
+IDB_LADDER_AMPULHETA	RCDATA					"imgs/guiAmpulheta.png"
+IDB_LADDER_RELOGIO		RCDATA					"imgs/InstrTimerResetHS.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

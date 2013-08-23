@@ -969,6 +969,13 @@ DWORD GenerateCFile(char *filename)
 {
 	unsigned int i, ad_mask;
 
+	vectorIntCode = ladder->getVectorIntCode();
+	IntCodeLen = vectorIntCode.size();
+
+	if(ladder->Validate() == eValidateResult_Error) {
+		return 0;
+	}
+
 	FILE *f = fopen(filename, "w");
     if(!f) {
         Error(_("Couldn't open file '%s'"), filename);
@@ -1011,6 +1018,9 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "#include \"ld.h\"\n");
 
 	fprintf(f, "\n");
+	fprintf(f, "void Cycle_Init(void);\n");
+
+	fprintf(f, "\n");
 	fprintf(f, "extern volatile unsigned char 	MODBUS_RS485_MASTER; // 0 = Slave, 1 = Master\n");
 	fprintf(f, "extern volatile unsigned char 	MODBUS_TCP_MASTER; // 0 = Slave, 1 = Master\n");
 	fprintf(f, "extern volatile int 			MODBUS_REGISTER[32];\n");
@@ -1030,7 +1040,7 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "extern struct ip_addr			IP_DNS;\n");
 
 	fprintf(f, "\n");
-	fprintf(f, "char 							SNTP_SERVER_ADDRESS[] = \"%s\";\n", settingsSntp.sntp_server);
+	fprintf(f, "char 							SNTP_SERVER_ADDRESS[] = \"%s\";\n", settingsSntp.sntp_server.c_str());
 	fprintf(f, "int								SNTP_GMT = %d;\n", settingsSntp.gmt - 12);
 	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", settingsSntp.dailysave);
 
@@ -1145,13 +1155,6 @@ DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 	char szTempPath[MAX_PATH]		= "";
 	char szAppHeader[MAX_PATH]		= "";
 	char szAppSourceFile[MAX_PATH]	= "";
-
-	vectorIntCode = ladder->getVectorIntCode();
-	IntCodeLen = vectorIntCode.size();
-
-	if(ladder->Validate() == eValidateResult_Error) {
-		return 1;
-	}
 
 	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
 

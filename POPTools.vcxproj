@@ -300,11 +300,9 @@
   <ItemGroup>
     <ClCompile Include="checkbitdialog.cpp" />
     <ClCompile Include="circuit.cpp" />
-    <ClCompile Include="coildialog.cpp" />
     <ClCompile Include="commentdialog.cpp" />
     <ClCompile Include="CommonFileDialog.cpp" />
     <ClCompile Include="confdialog.cpp" />
-    <ClCompile Include="contactsdialog.cpp" />
     <ClCompile Include="EngineGUI.cpp" />
     <ClCompile Include="EngineRenderD2D.cpp" />
     <ClCompile Include="Firmware\App\modbus_rtu.c" />
@@ -312,7 +310,6 @@
     <ClCompile Include="KeyboardMap.cpp" />
     <ClCompile Include="LadderGUI.cpp" />
     <ClCompile Include="LadderObjects.cpp" />
-    <ClCompile Include="mathdialog.cpp" />
     <ClCompile Include="modbus_master.cpp" />
     <ClCompile Include="modbus_slave.cpp" />
     <ClCompile Include="modbus_usb.cpp" />
@@ -333,7 +330,6 @@
     <ClCompile Include="miscutil.cpp" />
     <ClCompile Include="modbusdialog.cpp" />
     <ClCompile Include="PropertySet.cpp" />
-    <ClCompile Include="resetdialog.cpp" />
     <ClCompile Include="Ribbon.cpp" />
     <ClCompile Include="rtcdialog.cpp" />
     <ClCompile Include="schematic.cpp" />

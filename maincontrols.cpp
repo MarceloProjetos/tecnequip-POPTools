@@ -327,20 +327,25 @@ void RefreshScrollbars(void)
 //-----------------------------------------------------------------------------
 void VscrollProc(WPARAM wParam)
 {
+	int offset = 2;
     int prevY = ScrollYOffset;
     switch(LOWORD(wParam)) {
         case SB_LINEUP:
         case SB_PAGEUP:
-            if(ScrollYOffset > 0) {
-                ScrollYOffset--;
-            }
+            if(ScrollYOffset > offset) {
+                ScrollYOffset -= offset;
+            } else {
+				ScrollYOffset = 0;
+			}
             break;
 
         case SB_LINEDOWN:
         case SB_PAGEDOWN:
-            if(ScrollYOffset < ScrollYOffsetMax) {
-                ScrollYOffset++;
-            }
+            if(ScrollYOffset < (ScrollYOffsetMax + offset)) {
+                ScrollYOffset += offset;
+            } else {
+				ScrollYOffset = ScrollYOffsetMax - 1;
+			}
             break;
 
         case SB_TOP:

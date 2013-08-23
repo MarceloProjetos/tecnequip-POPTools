@@ -14,6 +14,7 @@
 
 // Imagens dos elementos no diagrama
 #define IDB_LADDER_RTC                 6000
+#define IDB_LADDER_AMPULHETA           6001
 
 // Next default values for new objects
 // 

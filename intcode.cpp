@@ -267,30 +267,42 @@ int HexDigit(int c)
 //-----------------------------------------------------------------------------
 string IntCode::GenSymParThis(void)
 {
-	ostringstream oss;
-    oss << "$parThis_" << GenSymCountParOut++;
-	return oss.str();
+	char buf[100];
+	sprintf(buf, "$parThis_%d", GenSymCountParThis++);
+	return string(buf);
+//	ostringstream oss;
+//    oss << "$parThis_" << GenSymCountParOut++;
+//	return oss.str();
 }
 
 string IntCode::GenSymParOut(void)
 {
-	ostringstream oss;
-    oss << "$parOut_" << GenSymCountParOut++;
-	return oss.str();
+	char buf[100];
+	sprintf(buf, "$parOut_%d", GenSymCountParOut++);
+	return string(buf);
+//	ostringstream oss;
+//    oss << "$parOut_" << GenSymCountParOut++;
+//	return oss.str();
 }
 
 string IntCode::GenSymOneShot(void)
 {
-	ostringstream oss;
-    oss << "$oneShot_" << GenSymCountParOut++;
-	return oss.str();
+	char buf[100];
+	sprintf(buf, "$oneShot_%d", GenSymCountOneShot++);
+	return string(buf);
+//	ostringstream oss;
+//    oss << "$oneShot_" << GenSymCountParOut++;
+//	return oss.str();
 }
 
 string IntCode::GenSymFormattedString(void)
 {
-	ostringstream oss;
-    oss << "formattedString_" << GenSymCountParOut++;
-	return oss.str();
+	char buf[100];
+	sprintf(buf, "$formattedString_%d", GenSymCountFormattedString++);
+	return string(buf);
+//	ostringstream oss;
+//    oss << "formattedString_" << GenSymCountParOut++;
+//	return oss.str();
 }
 
 //-----------------------------------------------------------------------------
@@ -299,6 +311,8 @@ string IntCode::GenSymFormattedString(void)
 void IntCode::Op(int op, const char *name1, const char *name2, const char *name3, const char *name4, const char *name5, const char *name6, const char *name7, SWORD lit, unsigned char bit)
 {
 	IntOp iop;
+	memset(&iop, 0, sizeof(iop));
+
     iop.op = op;
 
 	if(name1) strcpy(iop.name1, name1);

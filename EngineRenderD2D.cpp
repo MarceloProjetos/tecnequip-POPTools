@@ -653,3 +653,49 @@ HRESULT EngineRenderD2D::DrawEllipse(POINT center, float rx, float ry, unsigned 
 
 	return hr;
 }
+
+HRESULT EngineRenderD2D::DrawArc(POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush)
+{
+	ID2D1PathGeometry *pGeometry;
+	HRESULT hr = pD2DFactory->CreatePathGeometry(&pGeometry);
+
+	if(SUCCEEDED(hr)) {
+		ID2D1GeometrySink *pSink = NULL;
+
+		hr = pGeometry->Open(&pSink);
+		if (SUCCEEDED(hr)) {
+			pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
+
+			// Iniciando o desenho da figura. Devido a forma que eu criei o teste, o desenho se inicia pelo canto
+			// inferior direito do retangulo e segue em sentido anti-horario.
+			// Agora que ja foi feito assim, nao sera mudado!
+
+			D2D1_POINT_2F point = D2D1::Point2F(float(start.x), float(start.y));
+			pSink->BeginFigure(point, D2D1_FIGURE_BEGIN_FILLED);
+
+			// Arco para o ponto final, usando os dados fornecidos
+			point = D2D1::Point2F(float(end.x), float(end.y));
+			pSink->AddArc(
+				D2D1::ArcSegment(
+					point,
+					D2D1::SizeF(rx, ry),
+					0.0f,
+					isClockWise ? D2D1_SWEEP_DIRECTION_CLOCKWISE : D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
+					D2D1_ARC_SIZE_SMALL
+				)
+			);
+
+			// Finaliza o arco em modo OPEN para que nao seja adicionada uma linha entre suas extremidades
+			pSink->EndFigure(D2D1_FIGURE_END_OPEN);
+
+			hr = pSink->Close();
+
+			SafeRelease(&pSink);
+
+			// Agora desenha o arco
+			pRT->DrawGeometry(pGeometry, Brushes[brush], 2);
+		}
+	}
+
+	return hr;
+}

@@ -755,10 +755,7 @@ void ShowEncoderSliderPopup(char *name);
 
 // commentdialog.cpp
 bool ShowCommentDialog(char *comment);
-// contactsdialog.cpp
-bool ShowContactsDialog(bool *negated, string *sName, eType *type);
-// coildialog.cpp
-bool ShowCoilDialog(bool *negated, bool *setOnly, bool *resetOnly, string *sName, eType *type);
+// multisetdadialog.cpp
 bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *time, string *desl);
 // simpledialog.cpp
 bool ShowVarDialog(char *title, char *varname, string *name, vector<eType> types = vector<eType>());
@@ -776,17 +773,13 @@ bool ShowModbusDialog(int mode_write, string *name, int *id, int *address, bool 
 bool ShowSetPwmDialog(string *name, int *targetFreq);
 bool ShowPersistDialog(string *var);
 bool ShowUartDialog(int which, string *name);
-bool ShowCmpDialog(int which, string *op1, string *op2);
 bool ShowShiftRegisterDialog(char *name, int *stages);
 bool ShowFormattedStringDialog(int mode_write, string *var, char *string);
 bool ShowServoYaskawaDialog(int mode_write, int *id, string *var, char *string);
 void ShowSimulationVarSetDialog(char *name, char *val);
 bool ShowLookUpTableDialog(LadderElemLUTProp *t, string *dest, string *index);
 bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, string *dest, string *index);
-bool ShowResetDialog(string *sName);
-bool ShowSqrtDialog(string *dest, string *src);
 bool ShowRandDialog(string *var, string *min, string *max);
-bool ShowAbsDialog(string *dest, string *src);
 // confdialog.cpp
 extern struct strSerialConfig SerialConfig[];
 extern char *SerialParityString[];
@@ -957,9 +950,6 @@ void Init_MBDev_Slave        (void);
 int  SimulationServer_Start  (void);
 void SimulationServer_Stop   (void);
 void SimulationServer_Message(WPARAM wParam, LPARAM lParam);
-
-// mathdialog.cpp
-bool ShowMathDialog(int which, string *dest, string *op1, string *op2);
 
 // modbus_usb.cpp
 bool          USB_SetDateTime(struct tm *t);

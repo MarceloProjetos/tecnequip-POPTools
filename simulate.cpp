@@ -1212,14 +1212,17 @@ void StartSimulationTimer(void)
 //-----------------------------------------------------------------------------
 void ClearSimulationData(void)
 {
-	Variables.clear();
-	AdcShadows.clear();
-	EncShadows.clear();
+	Variables      .clear();
+	AdcShadows     .clear();
+	EncShadows     .clear();
+	SingleBitItems .clear();
 	ResetEncShadows.clear();
-    QueuedUartCharacter = -1;
+
+	QueuedUartCharacter = -1;
     QueuedUSSCharacter = -1;
-    SimulateUartTxCountdown = 0;
-    SimulateUSSTxCountdown = -1;
+
+	SimulateUartTxCountdown    = 0;
+    SimulateUSSTxCountdown     = -1;
     SimulateModbus485Countdown = 0;
     SimulateModbusEthCountdown = 0;
 
@@ -1244,6 +1247,11 @@ void ClearSimulationData(void)
 
 	vectorIntCode = ladder->getVectorIntCode();
 	IntCodeLen = vectorIntCode.size();
+
+	if(ladder->Validate() == eValidateResult_Error) {
+        ToggleSimulationMode();
+        return;
+	}
 
 	HardwareRegisters_Init(&hwreg);
 

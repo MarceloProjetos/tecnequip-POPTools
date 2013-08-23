@@ -174,6 +174,8 @@ public:
 	void        MouseClick(int x, int y, bool isDown, bool isDouble);
 	LadderElem *SearchElement(LadderElem *ref, eMoveCursor moveTo);
 
+	RECT getElemArea(LadderElem *elem);
+
 	void AddCommand(tCommandSource source, RECT region, void (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick = true);
 
 	void CmdExpand(LadderElem *elem);
@@ -259,8 +261,8 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	// Cria o grupo de cores padrao
 	tLadderColorGroup group;
 
-	group.Background = RGB(170, 170, 170);
-	group.Foreground = RGB(  0,   0, 255);
+	group.Background = RGB(200, 200, 200);
+	group.Foreground = RGB( 55,  55,  55);
 	group.Border     = RGB( 85,  85,  85);
 	group.BorderText = RGB(255, 255, 255);
 
@@ -430,8 +432,8 @@ void LadderGUI::DrawInit(void)
 	setLadderColorGroup(ELEM_SHORT           , group);
 
 	// Verde: Temporizadores / Contadores
-	group.Background = RGB(170, 255, 170);
-	group.Foreground = RGB( 85, 170,  85);
+	group.Background = RGB(150, 235, 150);
+	group.Foreground = RGB( 65, 150,  65);
 	group.Border     = RGB( 85, 170,  85);
 	group.BorderText = RGB(255, 255, 255);
 
@@ -475,7 +477,7 @@ void LadderGUI::DrawInit(void)
 	// Amarelo: Analogicos / Motores / Encoders
 	group.Background = RGB(255, 255, 170);
 	group.Foreground = RGB(255, 255, 170);
-	group.Border     = RGB(220, 220,   0);
+	group.Border     = RGB(180, 180,   0);
 	group.BorderText = RGB(255, 255, 255);
 
 	setLadderColorGroup(ELEM_SET_DA     , group);
@@ -677,12 +679,6 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 		AddCommand(source, rSel, CmdSelectBelow, nullptr, false);
 	}
 
-	if(SelectedState != SELECTED_NONE && isCursorVisible) {
-		rCursor.left  += 30;
-		rCursor.right += 30;
-		DrawRectangle(rCursor, LadderColors.Selection, true , 0, 0, 45);
-	}
-
 	// Desenha a caixa 3D
 	RECT r3D = r;
 	if(!isMouseOver) {
@@ -701,6 +697,11 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	MidPoint.x = r3D.right + SizeZ/2;
 	MidPoint.y = EndPoint.y;
 	DrawLine(MidPoint  , EndPoint, LadderColors.Wire);
+
+	if(SelectedState != SELECTED_NONE && isCursorVisible) {
+		DrawRectangle(rCursor, LadderColors.Selection, true , 0, 0, 45);
+		DrawRectangle(r3D    , colorgroup.Background , true, 10, 10);
+	}
 
 	// Desenha a caixa em si. Se mouse estiver sobre o elemento, desenha com borda.
 	if(isMouseOver) {
@@ -1035,6 +1036,23 @@ LadderElem *LadderGUI::SearchElement(LadderElem *ref, eMoveCursor moveTo)
 	return elem;
 }
 
+RECT LadderGUI::getElemArea(LadderElem *elem)
+{
+	unsigned int i;
+
+	for(i = 0; i < vectorAreaElements.size(); i++) {
+		if(vectorAreaElements[i].first == elem) { // Encontrado!
+			return vectorAreaElements[i].second;
+		}
+	}
+
+	// Se chegou aqui significa que o elemento nao foi encontrado...
+	// Criamos entao um retangulo com as coordenadas zeradas para indicar o erro
+	RECT r = { 0, 0, 0, 0 };
+
+	return r;
+}
+
 void LadderGUI::AddCommand(tCommandSource source, RECT region, void (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick)
 {
 	tCommandsList *Commands;
@@ -1358,29 +1376,16 @@ void ContactCmdToggleNegated(tCommandSource source, void *data)
 }
 
 bool LadderElemContact::ShowDialog(LadderContext context)
-{/*
-	eType  type       = Diagram->getDetailsIO(prop.idName.first).type;
-	bool   NewNegated = prop.negated;
-	string NewName    = Diagram->getNameIO(prop.idName);
+{
+	tCommandSource source = { nullptr, nullptr, this };
+	tCmdChangeNameData dataChangeName;
 
-	bool changed = ShowContactsDialog(&NewNegated, &NewName, &type);
+	dataChangeName.reply = false;
+	dataChangeName.type  = Diagram->getDetailsIO(prop.idName.first).type;
 
-	if(changed) {
-		pair<unsigned long, int> pin = prop.idName;
-		if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {
-			LadderElemContactProp *data = (LadderElemContactProp *)getProperties();
+	ContactCmdChangeName(source, &dataChangeName);
 
-			data->negated = NewNegated;
-			data->idName  = pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
-	}
-
-	return changed;*/
-	return false;
+	return dataChangeName.reply;
 }
 
 void LadderElemContact::DrawGUI(void *data)
@@ -1632,33 +1637,16 @@ bool CoilCmdExpandedType(LadderElem *elem, unsigned int type)
 }
 
 bool LadderElemCoil::ShowDialog(LadderContext context)
-{/*
-	eType  type         = Diagram->getDetailsIO(prop.idName.first).type;
-	bool   NewNegated   = prop.negated;
-	bool   NewSetOnly   = prop.setOnly;
-	bool   NewResetOnly = prop.resetOnly;
-	string NewName      = Diagram->getNameIO(prop.idName);
+{
+	tCommandSource source = { nullptr, nullptr, this };
+	tCmdChangeNameData dataChangeName;
 
-	bool changed = ShowCoilDialog(&NewNegated, &NewSetOnly, &NewResetOnly, &NewName, &type);
+	dataChangeName.reply = false;
+	dataChangeName.type  = Diagram->getDetailsIO(prop.idName.first).type;
 
-	if(changed) {
-		pair<unsigned long, int> pin = prop.idName;
-		if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {
-			LadderElemCoilProp *data = (LadderElemCoilProp *)getProperties();
+	CoilCmdChangeName(source, &dataChangeName);
 
-			data->setOnly   = NewSetOnly;
-			data->resetOnly = NewResetOnly;
-			data->negated   = NewNegated;
-			data->idName    = pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
-	}
-
-	return changed;*/
-	return false;
+	return dataChangeName.reply;
 }
 
 void LadderElemCoil::DrawGUI(void *data)
@@ -1834,9 +1822,10 @@ void TimerCmdChangeName(tCommandSource source, void *data)
 
 void TimerCmdChangeTime(tCommandSource source, void *data)
 {
-	int              which = source.elem->getWhich();
-	eType            type  = getTimerTypeIO(which);
-	LadderElemTimer *timer = dynamic_cast<LadderElemTimer *>(source.elem);
+	int                 which = source.elem->getWhich();
+	eType               type  = getTimerTypeIO(which);
+	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
+	LadderElemTimer    *timer = dynamic_cast<LadderElemTimer *>(source.elem);
 
 	char *s;
     switch(which) 
@@ -1846,6 +1835,10 @@ void TimerCmdChangeTime(tCommandSource source, void *data)
         case ELEM_RTO: s = _("Retentive Turn-On Delay"); break;
         default: oops(); break;
     }
+
+	if(dataChangeName != nullptr) {
+		dataChangeName->reply = false;
+	}
 
 	// Le os dados do Timer para atualizar o delay
 	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
@@ -1870,6 +1863,10 @@ void TimerCmdChangeTime(tCommandSource source, void *data)
 			}
 
 			source.elem->setProperties(ladder->getContext(), prop);
+
+			if(dataChangeName != nullptr) {
+				dataChangeName->reply = true;
+			}
 	} else {
 		// Se foi cancelada a alteracao, devemos desalocar as propriedades
 		delete prop;
@@ -1877,28 +1874,16 @@ void TimerCmdChangeTime(tCommandSource source, void *data)
 }
 
 bool LadderElemTimer::ShowDialog(LadderContext context)
-{/*
-	int NewDelay   = prop.delay;
-	string NewName = Diagram->getNameIO(prop.idName);
+{
+	tCommandSource source = { nullptr, nullptr, this };
+	tCmdChangeNameData dataChangeName;
 
-	bool changed = ShowTimerDialog(getWhich(), &NewDelay, &NewName);
+	dataChangeName.reply = false;
+	dataChangeName.type  = Diagram->getDetailsIO(prop.idName.first).type;
 
-	if(changed) {
-		pair<unsigned long, int> pin = prop.idName;
-		if(Diagram->getIO(pin, NewName, getTimerTypeIO(getWhich()), infoIO_Name)) {
-			LadderElemTimerProp *data = (LadderElemTimerProp *)getProperties();
+	TimerCmdChangeTime(source, &dataChangeName);
 
-			data->delay  = NewDelay;
-			data->idName = pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
-	}
-
-	return changed;*/
-	return false;
+	return dataChangeName.reply;
 }
 
 void LadderElemTimer::DrawGUI(void *data)
@@ -1916,6 +1901,7 @@ void LadderElemTimer::DrawGUI(void *data)
 
 	if(ddg->DontDraw) return;
 
+	int which = getWhich();
 	tCommandSource source = { nullptr, nullptr, this };
 
 	tLadderColors     colors     = gui.getLadderColors    ();
@@ -1930,12 +1916,14 @@ void LadderElemTimer::DrawGUI(void *data)
 	ddg->region = r;
 
 	// Flag que indica se o desenho deve iniciar com nivel alto ou baixo
-	bool doHighStart = (getWhich() == ELEM_TOF) ? true : false;
+	bool doHighStart = (which == ELEM_TOF) ? true : false;
 
 	// Primeiro calculamos as coordenadas do relogio
 	RECT rClock = r;
 	if(!doHighStart) {
 		rClock.top += GridSize.y - 10;
+	} else {
+		rClock.top += 3;
 	}
 	rClock.bottom = rClock.top + 20;
 	rClock.left += 5;
@@ -1948,26 +1936,34 @@ void LadderElemTimer::DrawGUI(void *data)
 	end.y   = start.y;
 	gui.DrawLine(start, end, colors.Wire);
 
-	// Agora desenha o circulo do relogio
-	gui.DrawEllipse(rClock, colorgroup.Background);
-	gui.DrawEllipse(rClock, colorgroup.Foreground, false);
+	if(which != ELEM_RTO) {
+		// Agora desenha o circulo do relogio
+		gui.DrawEllipse(rClock, colorgroup.Background);
+		gui.DrawEllipse(rClock, colorgroup.Foreground, false);
 
-	if(ladder->getContext().inSimulationMode) {
+		if(ladder->getContext().inSimulationMode) {
+		} else {
+			// Em seguida, desenha os ponteiros
+			POINT start, end;
+			start.x = rClock.left + (rClock.right - rClock.left)/2;
+			start.y = rClock.top + 5;
+
+			end.x = start.x;
+			end.y = rClock.top + (rClock.bottom - rClock.top)/2;
+
+			gui.DrawLine(start, end, colorgroup.Foreground);
+
+			start.x = end.x + 5;
+			start.y = end.y + 5;
+
+			gui.DrawLine(start, end, colorgroup.Foreground);
+		}
 	} else {
-		// Em seguida, desenha os ponteiros
-		POINT start, end;
-		start.x = rClock.left + (rClock.right - rClock.left)/2;
-		start.y = rClock.top + 5;
+		POINT start, size = { 20, 20 };
 
-		end.x = start.x;
-		end.y = rClock.top + (rClock.bottom - rClock.top)/2;
-
-		gui.DrawLine(start, end, colorgroup.Foreground);
-
-		start.x = end.x + 5;
-		start.y = end.y + 5;
-
-		gui.DrawLine(start, end, colorgroup.Foreground);
+		start.x = r.left + 3;
+		start.y = r.top + 5;
+		gui.DrawPictureFromResource(IDB_LADDER_AMPULHETA, start, size);
 	}
 
 	// Desenha a linha vertical
@@ -2229,37 +2225,83 @@ void LadderElemCounter::DrawGUI(void *data)
 }
 
 // Classe LadderElemReset
-bool LadderElemReset::ShowDialog(LadderContext context)
+void ResetCmdChangeName(tCommandSource source, void *data)
 {
-	string NewName = Diagram->getNameIO(prop.idName);
+	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
+	LadderElemReset *move = dynamic_cast<LadderElemReset *>(source.elem);
 
-	bool changed = ShowResetDialog(&NewName);
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemResetProp *prop = (LadderElemResetProp *)move->getProperties();
 
-	if(changed) {
-		pair<unsigned long, int> pin = prop.idName;
-		eType type = Diagram->getDetailsIO(NewName).type;
-		// No caso do reset, ele deve ser associado a uma variavel ja existente visto que ele deve
-		// zerar um contador / timer que existe! Assim checa diretamente com ele se aceita a variavel.
-		if(!acceptIO(prop.idName.first, type)) {
-			changed = false;
-			Diagram->ShowDialog(true, "Contador/Temporizador inválido", "Selecione um contador/temporizador válido!");
-		} else if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {// Variavel valida!
-			LadderElemResetProp *data = (LadderElemResetProp *)getProperties();
+	mapDetails detailsIO = ladder->getDetailsIO(prop->idName.first);
 
-			data->idName = pin;
+	vector<eType> types;
+	types.push_back(eType_TOF);
+	types.push_back(eType_TON);
+	types.push_back(eType_RTO);
+	types.push_back(eType_Counter);
 
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
+	if(dataChangeName != nullptr) {
+		dataChangeName->reply = false;
 	}
 
-	return changed;
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, detailsIO.type,	types, _("Reset"), _("Name:"));
+
+	if(dataChangeName != nullptr) {
+		dataChangeName->reply = ret;
+	}
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
+bool LadderElemReset::ShowDialog(LadderContext context)
+{
+	tCommandSource source = { nullptr, nullptr, this };
+	tCmdChangeNameData dataChangeName;
+
+	dataChangeName.reply = false;
+
+	ResetCmdChangeName(source, &dataChangeName);
+
+	return dataChangeName.reply;
 }
 
 void LadderElemReset::DrawGUI(void *data)
 {
-	DrawGenericGUI(this, data);
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	ddg->size.x = 2;
+	ddg->size.y = 2;
+
+	if(ddg->DontDraw) return;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
+	string name = Diagram->getNameIO(prop.idName);
+
+	DoEOL(ddg->start, size, ddg->size);
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "ZERAR", false);
+	ddg->region = r;
+
+	tCommandSource source = { nullptr, nullptr, this };
+
+	// Desenha o nome da variavel
+	gui.DrawText(name.c_str(), r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
+
+	// Adiciona 10 a cada extremidade para que o comando a seguir nao sobreponha o comando de selecao do objeto
+	r.top    += 10;
+	r.left   += 10;
+	r.bottom -= 10;
+	r.right  -= 10;
+	gui.AddCommand(source, r, ResetCmdChangeName, nullptr, true);
 }
 
 // Classe LadderElemOneShot
@@ -2288,7 +2330,7 @@ void LadderElemOneShot::DrawGUI(void *data)
 	tLadderColors colors = gui.getLadderColors    ();
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, start, ddg->size, ddg->expanded ? (isOSR ? _("BORDA DE SUBIDA") : _("BORDA DE DESCIDA")) : _("BORDA"), true);
+	RECT r = gui.DrawElementBox(this, SelectedState, start, ddg->size, ddg->expanded ? (isOSR ? _("BORDA DE SUBIDA") : _("BORDA DE DESCIDA")) : _("BRD"), true);
 	ddg->region = r;
 
 	//                                                   _
@@ -2343,53 +2385,62 @@ void LadderElemOneShot::DrawGUI(void *data)
 }
 
 // Classe LadderElemCmp
-bool LadderElemCmp::ShowDialog(LadderContext context)
+void CmpCmdChangeOp(tCommandSource source, void *data)
 {
-	string CurrOp1 = Diagram->getNameIO(prop.idOp1);
-	string CurrOp2 = Diagram->getNameIO(prop.idOp2);
-	string NewOp1  = CurrOp1;
-	string NewOp2  = CurrOp2;
+	int            nOp   = *(int *)data;
+	int            which = source.elem->getWhich();
+	LadderElemCmp *cmp   = dynamic_cast<LadderElemCmp *>(source.elem);
 
-	bool changed = ShowCmpDialog(getWhich(), &NewOp1, &NewOp2);
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemCmpProp *prop = (LadderElemCmpProp *)cmp->getProperties();
 
-	if(changed) {
-		// Se variavel sem tipo, usa tipo geral.
-		eType op1_type = ladder->getTypeIO(CurrOp1, NewOp1, eType_General, true);
-		eType op2_type = ladder->getTypeIO(CurrOp2, NewOp2, eType_General, true);
+	mapDetails detailsIO = ladder->getDetailsIO(nOp == 0 ? prop->idOp1.first : prop->idOp2.first);
 
-		tRequestIO pin;
-		vector<tRequestIO> pins;
-
-		pin       = infoIO_Op1;
-		pin.pin   = prop.idOp1;
-		pin.name  = NewOp1;
-		pin.type  = op1_type;
-		pins.push_back(pin);
-
-		pin       = infoIO_Op2;
-		pin.pin   = prop.idOp2;
-		pin.name  = NewOp2;
-		pin.type  = op2_type;
-		pins.push_back(pin);
-
-		// Se variavel alterada e valida, atualiza o pino
-		if(Diagram->getIO(pins)) {
-			LadderElemCmpProp *data = (LadderElemCmpProp *)getProperties();
-
-			data->idOp1 = pins[0].pin;
-			data->idOp2 = pins[1].pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
+	char *s;
+	switch(which) {
+		case ELEM_EQU: s = _("If Equals"                  ); break;
+		case ELEM_NEQ: s = _("If Not Equals"              ); break;
+		case ELEM_GRT: s = _("If Greater Than"            ); break;
+		case ELEM_GEQ: s = _("If Greater Than or Equal To"); break;
+		case ELEM_LES: s = _("If Less Than"               ); break;
+		case ELEM_LEQ: s = _("If Less Than or Equal To"   ); break;
+		default: oops();
 	}
 
-	return changed;
+	vector<eType> types;
+	types.push_back(detailsIO.type);
+
+	cmdChangeName(source.elem, nOp, nOp == 0 ? prop->idOp1 : prop->idOp2, detailsIO.type, types, s, _("Name:"));
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
+bool LadderElemCmp::ShowDialog(LadderContext context)
+{
+	return false;
 }
 
 void LadderElemCmp::DrawGUI(void *data)
 {
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	ddg->size.x = 2;
+	ddg->size.y = 2;
+
+	if(ddg->DontDraw) return;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("COMPARAR"), false);
+	ddg->region = r;
+
 	char *s;
 	string op1 = Diagram->getNameIO(prop.idOp1);
 	string op2 = Diagram->getNameIO(prop.idOp2);
@@ -2404,145 +2455,288 @@ void LadderElemCmp::DrawGUI(void *data)
 		default: oops();
 	}
 
+	int *pInt1 = new int, *pInt2 = new int;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	*pInt1 = 0;
+	*pInt2 = 1;
+
+	r.left   += 5;
+	r.top    += 5;
+	r.bottom  = r.top + FONT_HEIGHT;
+	gui.DrawText(op1.c_str(), r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+	gui.AddCommand(source, r, CmpCmdChangeOp, pInt1, true);
+
+	r.top    += FONT_HEIGHT;
+	r.bottom += FONT_HEIGHT;
+	gui.DrawText(s          , r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+	r.top    += FONT_HEIGHT;
+	r.bottom += FONT_HEIGHT;
+	gui.DrawText(op2.c_str(), r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+	gui.AddCommand(source, r, CmpCmdChangeOp, pInt2, true);
+}
+
+// Classe LadderElemMath
+void MathCmdChangeName(tCommandSource source, void *data)
+{
+	int             nVar  = *(int *)data;
+	int             which = source.elem->getWhich();
+	LadderElemMath *math  = dynamic_cast<LadderElemMath *>(source.elem);
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemMathProp *prop = (LadderElemMathProp *)math->getProperties();
+
+	pair<unsigned long, int> pin;
+	switch(nVar) {
+	case 0: pin = prop->idOp1 ; break;
+	case 1: pin = prop->idOp2 ; break;
+	case 2: pin = prop->idDest; break;
+	}
+
+	mapDetails detailsIO = ladder->getDetailsIO(pin.first);
+
+	vector<eType> types;
+	types.push_back(detailsIO.type);
+
+	char *title;
+	switch(which) {
+		case ELEM_ADD: title = _("Add"     ); break;
+		case ELEM_SUB: title = _("Subtract"); break;
+		case ELEM_DIV: title = _("Divide"  ); break;
+		case ELEM_MUL: title = _("Multiply"); break;
+		case ELEM_MOD: title = _("Modulo"  ); break;
+		default: oops();
+	}
+
+	cmdChangeName(source.elem, nVar, pin, detailsIO.type,
+		types, title, nVar == 0 ? _("Operator 1") : (nVar == 1 ? _("Operator 2") : _("Destination:")));
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
+bool LadderElemMath::ShowDialog(LadderContext context)
+{
+	return false;
+}
+
+void LadderElemMath::DrawGUI(void *data)
+{
+	bool canExpand = true;
+	int which = getWhich();
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	char *s, *title;
+	switch(which) {
+		case ELEM_ADD: s = "+"; title = _("SOMAR"      ); break;
+		case ELEM_SUB: s = "-"; title = _("SUBTRAIR"   ); break;
+		case ELEM_DIV: s = "" ; title = _("DIVIDIR"    ); break; // Sem sinal! Divisao tem um formato diferente
+		case ELEM_MUL: s = "*"; title = _("MULTIPLICAR"); break;
+		case ELEM_MOD: s = "" ; title = _("RESTO"      ); break; // Sem sinal! Divisao tem um formato diferente
+		default: oops();
+	}
+
+	size  = ddg->size;
+
+	if(*s) {
+		if(ddg->expanded) {
+			ddg->size.x = 3;
+			ddg->size.y = 3;
+		} else {
+			ddg->size.x = 2;
+			ddg->size.y = 3;
+		}
+	} else {
+		canExpand = false;
+		ddg->size.x = 4;
+		ddg->size.y = 2;
+	}
+
+	if(ddg->DontDraw) return;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(which);
+
+	string op1  = Diagram->getNameIO(prop.idOp1 );
+	string op2  = Diagram->getNameIO(prop.idOp2 );
+	string dest = Diagram->getNameIO(prop.idDest);
+
+	DoEOL(ddg->start, size, ddg->size);
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, title, canExpand);
+	ddg->region = r;
+
+	int *pIntOp1 = new int, *pIntOp2 = new int, *pIntDest = new int;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	*pIntOp1  = 0;
+	*pIntOp2  = 1;
+	*pIntDest = 2;
+
+	if(*s) { // Existe sinal, desenha no modo padrao
+		// Desenha o primeiro operador
+		r.right -= 5;
+		r.top   += (GridSize.y - FONT_HEIGHT)/2;
+		gui.DrawText(op1.c_str(), r, 0, colorgroup.Foreground, eAlignMode_BottomRight, eAlignMode_TopLeft);
+		gui.AddCommand(source, r, MathCmdChangeName, pIntOp1, true);
+
+		// Cria o retangulo para desenhar o sinal, salvando o retangulo que identifica o texto superior
+		RECT rSinal = r;
+
+		// Desenha o segundo operador
+		r.top  += FONT_HEIGHT + 10;
+		gui.DrawText(op2.c_str(), r, 0, colorgroup.Foreground, eAlignMode_BottomRight, eAlignMode_TopLeft);
+		gui.AddCommand(source, r, MathCmdChangeName, pIntOp2, true);
+
+		// Desenha o sinal centralizado entre a parte de baixo do texto inferior e o topo do texto superior
+		rSinal.left   += 5;
+		rSinal.bottom  = r.top + FONT_HEIGHT;
+		gui.DrawText(s, rSinal, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_Center);
+
+		// Desenha a linha inferior que separa os operadores do resultado
+		POINT StartPoint = { r.left + 10, r.top + FONT_HEIGHT + 5 }, EndPoint = { r.right, r.top + FONT_HEIGHT + 5 };
+		gui.DrawLine(StartPoint, EndPoint, colorgroup.Foreground);
+
+		// Desenha o destino
+		r.top  += FONT_HEIGHT + 10;
+		gui.DrawText(dest.c_str(), r, 0, colorgroup.Foreground, eAlignMode_BottomRight, eAlignMode_TopLeft);
+		gui.AddCommand(source, r, MathCmdChangeName, pIntDest, true);
+	} else { // Sem sinal! Divisao, desenha o seu simbolo...
+		RECT rText = r;
+		rText.top   += (GridSize.y - FONT_HEIGHT)/2;
+		rText.left  += 5;
+		rText.right -= 5;
+
+		// Desenha as linhas que compoem o simbolo da divisao
+		POINT StartPoint = { rText.left + (rText.right - rText.left)/2, rText.top };
+		POINT EndPoint   = { StartPoint.x, rText.top + FONT_HEIGHT + 5 };
+		gui.DrawLine(StartPoint, EndPoint, colorgroup.Foreground);
+
+		StartPoint.x = rText.right;
+		StartPoint.y = EndPoint.y;
+		gui.DrawLine(StartPoint, EndPoint, colorgroup.Foreground);
+
+		// Desenha os operadores (Dividendo e Divisor)
+		RECT rTextLeft = rText;
+		rTextLeft.right = EndPoint.x;
+		gui.DrawText(op1.c_str(), rTextLeft, 0, colorgroup.Foreground, eAlignMode_TopLeft    , eAlignMode_TopLeft);
+		gui.AddCommand(source, rTextLeft, MathCmdChangeName, pIntOp1, true);
+
+		rText.left = rTextLeft.right;
+		gui.DrawText(op2.c_str(), rText    , 0, colorgroup.Foreground, eAlignMode_BottomRight, eAlignMode_TopLeft);
+		gui.AddCommand(source, rText, MathCmdChangeName, pIntOp2, true);
+
+		// Desenha o destino
+		enum eAlignMode align = (which == ELEM_MOD) ? eAlignMode_TopLeft : eAlignMode_BottomRight;
+		RECT rDest            = (which == ELEM_MOD) ? rTextLeft : rText;
+		rDest.top  += FONT_HEIGHT + 10;
+		gui.DrawText(dest.c_str(), rDest, 0, colorgroup.Foreground, align, eAlignMode_TopLeft);
+		gui.AddCommand(source, rDest, MathCmdChangeName, pIntDest, true);
+	}
+}
+
+// Classe LadderElemSqrt
+void SqrtCmdChangeName(tCommandSource source, void *data)
+{
+	int             nVar = *(int *)data;
+	LadderElemSqrt *sqrt = dynamic_cast<LadderElemSqrt *>(source.elem);
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemSqrtProp *prop = (LadderElemSqrtProp *)sqrt->getProperties();
+
+	mapDetails detailsIO = ladder->getDetailsIO(nVar == 0 ? prop->idSrc.first : prop->idDest.first);
+
+	vector<eType> types;
+	types.push_back(detailsIO.type);
+
+	cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
+		types, _("Square Root"), nVar == 0 ? _("Destination:") : _("Source:"));
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
+bool LadderElemSqrt::ShowDialog(LadderContext context)
+{
+	return false;
+}
+
+void LadderElemSqrt::DrawGUI(void *data)
+{
 	POINT size, GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
 	size  = ddg->size;
 
-	if(ddg->expanded) {
-		ddg->size.x = 4;
-		ddg->size.y = 4;
-	} else {
-		ddg->size.x = 3;
-		ddg->size.y = 3;
-	}
+	ddg->size.x = 4;
+	ddg->size.y = 2;
 
 	if(ddg->DontDraw) return;
 
 	tLadderColors     colors     = gui.getLadderColors    ();
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
 
+	string src  = Diagram->getNameIO(prop.idSrc );
+	string dest = Diagram->getNameIO(prop.idDest);
+
+	DoEOL(ddg->start, size, ddg->size);
+
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("COMPARAR"), true);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "RAIZ", false);
 	ddg->region = r;
 
-	op1 += " ";
-	op1 += s;
-	r.left += 10;
-	r.top  += (GridSize.y - FONT_HEIGHT)/2;
-	gui.DrawText(op1.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+	int *pInt1 = new int, *pInt2 = new int;
+	tCommandSource source = { nullptr, nullptr, this };
 
-	r.top  += GridSize.y;
-	gui.DrawText(op2.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
-}
+	*pInt1 = 0;
+	*pInt2 = 1;
 
-// Classe LadderElemMath
-bool LadderElemMath::ShowDialog(LadderContext context)
-{
-	string CurrOp1  = Diagram->getNameIO(prop.idOp1 );
-	string CurrOp2  = Diagram->getNameIO(prop.idOp2 );
-	string CurrDest = Diagram->getNameIO(prop.idDest);
-	string NewOp1   = CurrOp1;
-	string NewOp2   = CurrOp2;
-	string NewDest  = CurrDest;
+	r.top   += (r.bottom - r.top - FONT_HEIGHT)/2;
+	r.left  += 2;
+	r.right -= 2;
 
-	bool changed = ShowMathDialog(getWhich(), &NewDest, &NewOp1, &NewOp2);
+	// Desenha os operadores (Origem e Destino)
+	RECT rText = r;
+	rText.right -= (r.right - r.left)/2;
 
-	if(changed) {
-		// Se variavel sem tipo, usa tipo geral.
-		eType op1_type = ladder->getTypeIO(CurrOp1, NewOp1, eType_General, true);
-		eType op2_type = ladder->getTypeIO(CurrOp2, NewOp2, eType_General, true);
+	RECT rDest = rText;
+	rDest.right -= 7;
+	gui.DrawText(dest.c_str(), rDest, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.AddCommand(source, rDest, SqrtCmdChangeName, pInt2, true);
 
-		tRequestIO pin;
-		vector<tRequestIO> pins;
+	rDest.left  = rDest.right - 2;
+	rDest.right = rDest.left + FONT_WIDTH;
+	gui.DrawText("=", rDest, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 
-		pin       = infoIO_Dest;
-		pin.pin   = prop.idDest;
-		pin.name  = NewDest;
-		pin.type  = eType_General;
-		pins.push_back(pin);
+	rText.left  = rText.right + 10;
+	rText.right = r.right;
+	gui.DrawText(src .c_str(), rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.AddCommand(source, rText, SqrtCmdChangeName, pInt1, true);
 
-		pin       = infoIO_Op1;
-		pin.pin   = prop.idOp1;
-		pin.name  = NewOp1;
-		pin.type  = op1_type;
-		pins.push_back(pin);
+	// Desenha as linhas que compoem o simbolo da raiz
+	POINT StartPoint = { rText.left - 2, r.top - 5 };
+	POINT EndPoint   = { StartPoint.x, r.top + FONT_HEIGHT + 5 };
+	gui.DrawLine(StartPoint, EndPoint, colorgroup.Foreground);
 
-		pin       = infoIO_Op2;
-		pin.pin   = prop.idOp2;
-		pin.name  = NewOp2;
-		pin.type  = op2_type;
-		pins.push_back(pin);
+	POINT angleStart, angleEnd = EndPoint;
+	angleStart.x = EndPoint.x - (EndPoint.y - StartPoint.y)/3;
+	angleStart.y = EndPoint.y - (EndPoint.y - StartPoint.y)/2;
+	gui.DrawLine(angleStart, angleEnd, colorgroup.Foreground);
 
-		// Se variavel alterada e valida, atualiza o pino
-		if(ladder->getIO(pins)) {
-			LadderElemMathProp *data = (LadderElemMathProp *)getProperties();
+	StartPoint.x = r.right;
+	EndPoint  .y = StartPoint.y;
+	gui.DrawLine(StartPoint, EndPoint, colorgroup.Foreground);
 
-			data->idDest = pins[0].pin;
-			data->idOp1  = pins[1].pin;
-			data->idOp2  = pins[2].pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
-	}
-
-	return changed;
-}
-
-void LadderElemMath::DrawGUI(void *data)
-{
-	DrawGenericGUI(this, data);
-}
-
-// Classe LadderElemSqrt
-bool LadderElemSqrt::ShowDialog(LadderContext context)
-{
-	string NewDest = Diagram->getNameIO(prop.idDest);
-	string CurrSrc = Diagram->getNameIO(prop.idSrc);
-	string NewSrc  = CurrSrc;
-
-	bool changed = ShowSqrtDialog(&NewDest, &NewSrc);
-
-	if(changed) {
-		// Se variavel sem tipo, usa tipo geral.
-		eType src_type = ladder->getTypeIO(CurrSrc, NewSrc, eType_General, true);
-
-		tRequestIO pin;
-		vector<tRequestIO> pins;
-
-		pin       = infoIO_Dest;
-		pin.pin   = prop.idDest;
-		pin.name  = NewDest;
-		pin.type  = eType_General;
-		pins.push_back(pin);
-
-		pin       = infoIO_Src;
-		pin.pin   = prop.idSrc;
-		pin.name  = NewSrc;
-		pin.type  = src_type;
-		pins.push_back(pin);
-
-		// Se variavel alterada e valida, atualiza o pino
-		if(ladder->getIO(pins)) {
-			LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
-
-			data->idDest = pins[0].pin;
-			data->idSrc  = pins[1].pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
-	}
-
-	return changed;
-}
-
-void LadderElemSqrt::DrawGUI(void *data)
-{
-	DrawGenericGUI(this, data);
+	EndPoint.x  = StartPoint.x;
+	EndPoint.y += 5;
+	gui.DrawLine(StartPoint, EndPoint, colorgroup.Foreground);
 }
 
 // Classe LadderElemRand
@@ -2599,101 +2793,172 @@ void LadderElemRand::DrawGUI(void *data)
 }
 
 // Classe LadderElemAbs
+void AbsCmdChangeName(tCommandSource source, void *data)
+{
+	int             nVar = *(int *)data;
+	LadderElemAbs *abs = dynamic_cast<LadderElemAbs *>(source.elem);
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemAbsProp *prop = (LadderElemAbsProp *)abs->getProperties();
+
+	mapDetails detailsIO = ladder->getDetailsIO(nVar == 0 ? prop->idSrc.first : prop->idDest.first);
+
+	vector<eType> types;
+	types.push_back(detailsIO.type);
+
+	cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
+		types, _("Abs"), nVar == 0 ? _("Destination:") : _("Source:"));
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
 bool LadderElemAbs::ShowDialog(LadderContext context)
 {
-	string NewDest = Diagram->getNameIO(prop.idDest);
-	string CurrSrc = Diagram->getNameIO(prop.idSrc);
-	string NewSrc  = CurrSrc;
-
-	bool changed = ShowAbsDialog(&NewDest, &NewSrc);
-
-	if(changed) {
-		// Se variavel sem tipo, usa tipo geral.
-		eType src_type = ladder->getTypeIO(CurrSrc, NewSrc, eType_General, true);
-
-		tRequestIO pin;
-		vector<tRequestIO> pins;
-
-		pin       = infoIO_Dest;
-		pin.pin   = prop.idDest;
-		pin.name  = NewDest;
-		pin.type  = eType_General;
-		pins.push_back(pin);
-
-		pin       = infoIO_Src;
-		pin.pin   = prop.idSrc;
-		pin.name  = NewSrc;
-		pin.type  = src_type;
-		pins.push_back(pin);
-
-		// Se variavel alterada e valida, atualiza o pino
-		if(ladder->getIO(pins)) {
-			LadderElemAbsProp *data = (LadderElemAbsProp *)getProperties();
-
-			data->idDest = pins[0].pin;
-			data->idSrc  = pins[1].pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
-	}
-
-	return changed;
+	return false;
 }
 
 void LadderElemAbs::DrawGUI(void *data)
 {
-	DrawGenericGUI(this, data);
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	ddg->size.x = 4;
+	ddg->size.y = 2;
+
+	if(ddg->DontDraw) return;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
+	string src  = Diagram->getNameIO(prop.idSrc );
+	string dest = Diagram->getNameIO(prop.idDest);
+
+	DoEOL(ddg->start, size, ddg->size);
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "RAIZ", false);
+	ddg->region = r;
+
+	int *pInt1 = new int, *pInt2 = new int;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	*pInt1 = 0;
+	*pInt2 = 1;
+
+	r.top   += (r.bottom - r.top - FONT_HEIGHT)/2;
+	r.left  += 2;
+	r.right -= 2;
+
+	// Desenha os operadores (Origem e Destino)
+	RECT rText = r;
+	rText.right -= (r.right - r.left)/2;
+
+	RECT rDest = rText;
+	rDest.right -= 7;
+	gui.DrawText(dest.c_str(), rDest, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.AddCommand(source, rDest, AbsCmdChangeName, pInt2, true);
+
+	rDest.left  = rDest.right - 2;
+	rDest.right = rDest.left + FONT_WIDTH;
+	gui.DrawText("=", rDest, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+	rText.left  = rText.right + 5;
+	rText.right = r.right - 3;
+	gui.DrawText(src .c_str(), rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.AddCommand(source, rText, AbsCmdChangeName, pInt1, true);
+
+	// Desenha as linhas que compoem o simbolo do absoluto
+	POINT StartPoint = { rText.left - 2, r.top - 5 };
+	POINT EndPoint   = { StartPoint.x, r.top + FONT_HEIGHT + 5 };
+	gui.DrawLine(StartPoint, EndPoint, colorgroup.Foreground);
+
+	StartPoint.x = r.right - 3;
+	EndPoint  .x = r.right - 3;
+	gui.DrawLine(StartPoint, EndPoint, colorgroup.Foreground);
 }
 
 // Classe LadderElemMove
+void MoveCmdChangeName(tCommandSource source, void *data)
+{
+	int             nVar = *(int *)data;
+	LadderElemMove *move = dynamic_cast<LadderElemMove *>(source.elem);
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemMoveProp *prop = (LadderElemMoveProp *)move->getProperties();
+
+	mapDetails detailsIO = ladder->getDetailsIO(nVar == 0 ? prop->idSrc.first : prop->idDest.first);
+
+	vector<eType> types;
+	types.push_back(detailsIO.type);
+
+	cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
+		types, _("Move"), nVar == 0 ? _("Destination:") : _("Source:"));
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
 bool LadderElemMove::ShowDialog(LadderContext context)
 {
-	string NewDest = Diagram->getNameIO(prop.idDest);
-	string CurrSrc = Diagram->getNameIO(prop.idSrc);
-	string NewSrc  = CurrSrc;
-
-	bool changed = ShowMathDialog(getWhich(), &NewDest, &NewSrc, nullptr);
-
-	if(changed) {
-		// Se variavel sem tipo, usa tipo geral.
-		eType src_type = ladder->getTypeIO(CurrSrc, NewSrc, eType_General, true);
-
-		tRequestIO pin;
-		vector<tRequestIO> pins;
-
-		pin       = infoIO_Dest;
-		pin.pin   = prop.idDest;
-		pin.name  = NewDest;
-		pin.type  = eType_General;
-		pins.push_back(pin);
-
-		pin       = infoIO_Src;
-		pin.pin   = prop.idSrc;
-		pin.name  = NewSrc;
-		pin.type  = src_type;
-		pins.push_back(pin);
-
-		// Se variavel alterada e valida, atualiza o pino
-		if(ladder->getIO(pins)) {
-			LadderElemMoveProp *data = (LadderElemMoveProp *)getProperties();
-
-			data->idDest = pins[0].pin;
-			data->idSrc  = pins[1].pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
-	}
-
-	return changed;
+	return false;
 }
 
 void LadderElemMove::DrawGUI(void *data)
 {
-	DrawGenericGUI(this, data);
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	ddg->size.x = 4;
+	ddg->size.y = 2;
+
+	if(ddg->DontDraw) return;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
+	string src  = Diagram->getNameIO(prop.idSrc );
+	string dest = Diagram->getNameIO(prop.idDest);
+
+	DoEOL(ddg->start, size, ddg->size);
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "MOVER", false);
+	ddg->region = r;
+
+	int *pInt1 = new int, *pInt2 = new int;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	*pInt1 = 0;
+	*pInt2 = 1;
+
+	r.top   += (r.bottom - r.top - FONT_HEIGHT)/2;
+	r.left  += 2;
+	r.right -= 2;
+
+	// Desenha os operadores (Origem e Destino)
+	RECT rText = r;
+	rText.right -= (r.right - r.left)/2;
+
+	RECT rDest = rText;
+	rDest.right -= FONT_WIDTH/2 + 2;
+	gui.DrawText(dest.c_str(), rDest, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.AddCommand(source, rDest, MoveCmdChangeName, pInt2, true);
+
+	rDest.left  = rDest.right + 2;
+	rDest.right = rDest.left + FONT_WIDTH;
+	gui.DrawText("=", rDest, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+	rText.left  = rDest.right + 2;
+	rText.right = r.right;
+	gui.DrawText(src .c_str(), rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.AddCommand(source, rText, MoveCmdChangeName, pInt1, true);
 }
 
 // Classe LadderElemOpenShort
@@ -2701,7 +2966,49 @@ bool LadderElemOpenShort::ShowDialog(LadderContext context) { return false; }
 
 void LadderElemOpenShort::DrawGUI(void *data)
 {
-	DrawGenericGUI(this, data);
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	if(ddg->expanded) {
+		ddg->size.x = 2;
+		ddg->size.y = 2;
+	} else {
+		ddg->size.x = 1;
+		ddg->size.y = 2;
+	}
+
+	if(ddg->DontDraw) return;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("COMPARAR"), true);
+	ddg->region = r;
+
+	// Desenha a linha esquerda
+	POINT start, end;
+	start.x = r.left;
+	start.y = r.top + GridSize.y;
+	end.x   = r.left + (r.right - r.left)/2 - 10;
+	end.y   = r.top + GridSize.y;
+	gui.DrawLine(start, end, colors.Wire);
+
+	// Desenha o arco central
+	start.x = end.x + 20;
+	gui.DrawArc(end, start, 10, 10, 180, true, colors.Wire);
+
+	// Se aberto, desenha um retangulo no centro do arco para criar o efeito de corte
+	if(getWhich() == ELEM_OPEN) {
+		RECT rCut = { start.x - 3, start.y + 2, end.x + 3, end.y - 12 };
+		gui.DrawRectangle(rCut, colorgroup.Background);
+	}
+
+	// Desenha a linha direita
+	end.x = r.right;
+	gui.DrawLine(start, end, colors.Wire);
 }
 
 // Classe LadderElemSetBit
@@ -2930,7 +3237,160 @@ bool LadderElemMultisetDA::ShowDialog(LadderContext context)
 
 void LadderElemMultisetDA::DrawGUI(void *data)
 {
-	DrawGenericGUI(this, data);
+	POINT offsetGraph = { 0, 0 };
+	POINT sizeGraph   = { 2, 4 };
+	POINT start, size, end, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size = ddg->size;
+
+	if(ddg->expanded) {
+		ddg->size.x = 2;
+		ddg->size.y = 5;
+
+		// Calcula a diferenca do tamanho do elemento para o tamanho do grafico
+		offsetGraph.x = (ddg->size.x - sizeGraph.x) * GridSize.x;
+		offsetGraph.y = (ddg->size.y - sizeGraph.y) * GridSize.y;
+	} else {
+		ddg->size = sizeGraph;
+	}
+
+	if(ddg->DontDraw) return;
+
+	DoEOL(ddg->start, size, ddg->size);
+	start = ddg->start;
+
+	tCommandSource source = { nullptr, nullptr, this };
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
+	string sdesl = ladder->getNameIO(prop.idDesl.first);
+	const char *name = sdesl.c_str();
+	mapDetails detailsIO = ladder->getDetailsIO(prop.idTime.first);
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("RAMPA D/A"));
+	ddg->region = r;
+	RECT rGraph = r;
+
+	/*** Agora desenhamos o grafico ***/
+
+	// Desconta o offset que temos que considerar
+	rGraph.bottom -= offsetGraph.y;
+	rGraph.right  -= offsetGraph.x;
+
+	// Primeiro identificamos se a rampa sera de baixo para cima ou de cima para baixo.
+	bool isUpDown;
+	if((prop.forward && prop.speedup) || (!prop.forward && !prop.speedup)) { // Curva/Rampa de baixo para cima
+		isUpDown = false;
+	} else { // Curva/Rampa de cima para baixo
+		isUpDown = true;
+	}
+
+	// Desenha o eixo Y
+	start.x = rGraph.left   + 10;
+	start.y = rGraph.top    + (isUpDown ? 5 : 10);
+	end  .x = start.x;
+	end  .y = rGraph.bottom - (isUpDown ? 10 : 5);
+	gui.DrawLine(start, end, colorgroup.Border);
+
+	if(isUpDown) {
+		start = end;
+		end.y = start.y - 10;
+	} else {
+		end.y = start.y + 10;
+	}
+
+	end.x -= 5;
+	gui.DrawLine(start, end, colorgroup.Border);
+
+	end.x += 10;
+	gui.DrawLine(start, end, colorgroup.Border);
+
+	// Desenha o eixo X
+	start.x = rGraph.left   +  5;
+	start.y = (isUpDown ? rGraph.top + 10 : rGraph.bottom - 10);
+	end  .x = rGraph.right  - 10;
+	end  .y = start.y;
+	gui.DrawLine(start, end, colorgroup.Border);
+
+	start.x  = end.x - 10;
+	start.y -= 5;
+	gui.DrawLine(start, end, colorgroup.Border);
+
+	start.y += 10;
+	gui.DrawLine(start, end, colorgroup.Border);
+
+	// Devemos descontar a area usada pelos eixos da area do grafico
+	rGraph.top    += 10;
+	rGraph.left   += 10;
+	rGraph.bottom -= 10;
+	rGraph.right  -= 10;
+
+	// Desconta tambem o espaco ocupado pelas setas, conforme a posicao em que foi desenhada (acima ou abaixo)
+	if(isUpDown) {
+		rGraph.bottom -= 12;
+	} else {
+		rGraph.top    += 12;
+	}
+
+	// A seguir desenhamos a linha do gráfico conforme o tipo escolhido: curva/linear, acelerar/desacelerar, etc.
+
+	// Agora calculamos os pontos inicial/final da rampa
+	if(isUpDown) { // Curva/Rampa de cima para baixo
+		start.x = rGraph.left;
+		start.y = rGraph.top;
+		end  .x = rGraph.right;
+		end  .y = rGraph.bottom;
+	} else { // Curva/Rampa de baixo para cima
+		start.x = rGraph.left;
+		start.y = rGraph.bottom;
+		end  .x = rGraph.right;
+		end  .y = rGraph.top;
+	}
+
+	if(prop.linear) {
+		// Calcula o valor do amortecimento da rampa (ganhos)
+		POINT startGain = start, endGain = end, diff = { rGraph.right - rGraph.left, rGraph.bottom - rGraph.top };
+
+		diff.x = (diff.x * prop.gaint) / 100;
+		diff.y = (diff.y * prop.gainr) / 100;
+
+		if(diff.x) { // amortecimento ativo
+			// Calcula os pontos do amortecimento da rampa conforme os valores previamente calculados (ganhos)
+			startGain.x += diff.x;
+			endGain  .x -= diff.x;
+
+			if(isUpDown) {
+				startGain.y += diff.y;
+				endGain  .y -= diff.y;
+			} else {
+				startGain.y -= diff.y;
+				endGain  .y += diff.y;
+			}
+
+			// Desenha as linhas que representam o amortecimento
+			gui.DrawLine(start  , startGain, colorgroup.Border);
+			gui.DrawLine(endGain, end      , colorgroup.Border);
+		}
+
+		// Desenha a linha que representa a rampa entre as linhas que representam o amortecimento
+		gui.DrawLine(startGain, endGain, colorgroup.Border);
+	} else {
+		// Calcula o ponto central
+		POINT midGraph = { rGraph.left + (rGraph.right - rGraph.left)/2,
+			rGraph.top + (rGraph.bottom - rGraph.top)/2 };
+
+		// Calcula o raio da curva. Nao usa o raio exato para suavizar a rampa
+		// Se o raio fosse exato, o ponto central estaria a 90 graus, o que signigica uma aceleracao instantanea!
+		float radiusX = float(midGraph.x - rGraph.left)*1.5f;
+		float radiusY = float(midGraph.y - rGraph.top )*1.5f;
+
+		// Desenha as linhas
+		gui.DrawArc(start   , midGraph, radiusX, radiusY, 90, isUpDown , colorgroup.Border);
+		gui.DrawArc(midGraph, end     , radiusX, radiusY, 90, !isUpDown, colorgroup.Border);
+	}
 }
 
 // Classe LadderElemUSS
@@ -3090,7 +3550,62 @@ bool LadderElemMasterRelay::ShowDialog(LadderContext context) { return false; }
 
 void LadderElemMasterRelay::DrawGUI(void *data)
 {
-	DrawGenericGUI(this, data);
+	static bool isTurnOFF = true;
+
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	if(ddg->expanded) {
+		ddg->size.x = 4;
+		ddg->size.y = 2;
+	} else {
+		ddg->size.x = 2;
+		ddg->size.y = 2;
+	}
+
+	if(ddg->DontDraw) {
+		isTurnOFF = true;
+		return;
+	}
+
+	DoEOL(ddg->start, size, ddg->size);
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich());
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, ddg->expanded ? (isTurnOFF ? _("CHAVE MESTRE - DESLIGAR") : _("CHAVE MESTRE - LIGAR")) : _("CHAVE MESTRE"), true);
+	ddg->region = r;
+
+	// Primeiro desenha o contorno da chave
+	r.top    += 10;
+	r.left   += 10;
+	r.bottom -= 10;
+	r.right  -= 10;
+	gui.DrawRectangle(r, colorgroup.Border, true, 5);
+
+	// Agora calcula as coordenadas internas e das partes esquerda e direita
+	r.top    += 5;
+	r.left   += 5;
+	r.bottom -= 5;
+	r.right  -= 5;
+
+	RECT rLeft = r, rRight = r;
+
+	rLeft.right -= (rLeft.right - rLeft.left)/2;
+	rRight.left  = rLeft.right;
+
+	// Desenha o lado ativo
+	gui.DrawRectangle(isTurnOFF ? rRight : rLeft, colorgroup.Background, true, 5);
+
+	// Desenha os textos ON/OFF
+	gui.DrawText("ON" , rLeft , 0, isTurnOFF ? colorgroup.Background : colors.White, eAlignMode_Center, eAlignMode_Center);
+	gui.DrawText("OFF", rRight, 0, isTurnOFF ? colors.White : colorgroup.Background, eAlignMode_Center, eAlignMode_Center);
+
+	// Inverte o estado para que o proximo elemento seja desenhado diferente
+	isTurnOFF = !isTurnOFF;
 }
 
 // Classe LadderElemShiftRegister
@@ -3592,32 +4107,22 @@ bool LadderDiagram::IsSelectedVisible(void)
 {
 	if(context.SelectedElem == nullptr) return false;
 
-	vector<LadderCircuit>::size_type i;
-	tDataDrawGUI RungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, &context };
-
-	for(i = 0; i < rungs.size(); i++) {
-		rungs[i]->rung->DrawGUI(&RungDDG);
-
-		if(!IsRegionZero(RungDDG.regionSelected)) { // Selecionado encontrado.
-			RECT rWindow = { 0, 0, 0, 0 };
-			GetClientRect(DrawWindow, &rWindow);
-			if(IsRegionZero(rWindow)) {
-				// Nao foi possivel receber as coordenadas da janela. Talvez ainda nao
-				// foi criada ou esta minimizada.
-				// De qualquer forma, considere que o objeto esteja visivel...
-				return true;
-			}
-
-			POINT Grid1x1 = gui.getGridSize();
-			POINT TopLeft = { RungDDG.regionSelected.left - ScrollXOffset,
-				RungDDG.regionSelected.top - ScrollYOffset*Grid1x1.y };
-			POINT BottomRight = { RungDDG.regionSelected.right - ScrollXOffset,
-				RungDDG.regionSelected.bottom - ScrollYOffset*Grid1x1.y };
-
-			return PointInsideRegion(TopLeft, rWindow) && PointInsideRegion(BottomRight, rWindow);
+	RECT r = gui.getElemArea(context.SelectedElem);
+	if(!IsRegionZero(r)) { // Selecionado encontrado.
+		RECT rWindow = { 0, 0, 0, 0 };
+		GetClientRect(DrawWindow, &rWindow);
+		if(IsRegionZero(rWindow)) {
+			// Nao foi possivel receber as coordenadas da janela. Talvez ainda nao
+			// foi criada ou esta minimizada.
+			// De qualquer forma, considere que o objeto esteja visivel...
+			return true;
 		}
 
-		RungDDG.start.y += RungDDG.size.y + 1;
+		POINT Grid1x1 = gui.getGridSize();
+		POINT TopLeft = { r.left - ScrollXOffset, r.top - ScrollYOffset*Grid1x1.y };
+		POINT BottomRight = { r.right - ScrollXOffset, r.bottom - ScrollYOffset*Grid1x1.y };
+
+		return PointInsideRegion(TopLeft, rWindow) && PointInsideRegion(BottomRight, rWindow);
 	}
 
 	return false;

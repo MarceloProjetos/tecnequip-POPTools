@@ -51,6 +51,7 @@ public:
 	HRESULT DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned radiusY = 0, unsigned int angle = 0);
 	HRESULT DrawEllipse  (RECT r, unsigned int brush, bool filled = true);
 	HRESULT DrawEllipse  (POINT center, float rx, float ry, unsigned int brush, bool filled = true);
+	HRESULT DrawArc      (POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush);
 	HRESULT DrawText     (const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY);
 	HRESULT DrawLine     (POINT start, POINT end, unsigned int brush);
 

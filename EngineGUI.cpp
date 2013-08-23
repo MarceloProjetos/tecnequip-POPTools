@@ -231,6 +231,21 @@ HRESULT EngineGUI::DrawEllipse(POINT center, float rx, float ry, unsigned int br
 	return hr;
 }
 
+HRESULT EngineGUI::DrawArc(POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush)
+{
+	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
+
+	if(pRender != NULL) {
+		start.x += DrawOffset.x;
+		end.x   += DrawOffset.x;
+		start.y += DrawOffset.y;
+		end.y   += DrawOffset.y;
+		hr = pRender->DrawArc(start, end, rx, ry, angle, isClockWise, brush + BrushOffset);
+	}
+
+	return hr;
+}
+
 HRESULT EngineGUI::DrawPictureFromFile(char *filename, POINT start, POINT size)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);

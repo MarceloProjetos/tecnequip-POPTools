@@ -303,96 +303,6 @@ bool ShowCounterDialog(int which, int *maxV, string *sName)
 	return changed;
 }
 
-bool ShowCmpDialog(int which, string *op1, string *op2)
-{
-	bool changed = false;
-
-	char op1_tmp[MAX_NAME_LEN], op2_tmp[MAX_NAME_LEN];
-
-	char *title;
-    char *l2;
-    switch(which) {
-        case ELEM_EQU:
-            title = _("If Equals");
-            l2 = "= :";
-            break;
-
-        case ELEM_NEQ:
-            title = _("If Not Equals");
-            l2 = "<> :";
-            break;
-
-        case ELEM_GRT:
-            title = _("If Greater Than");
-            l2 = "> :";
-            break;
-
-        case ELEM_GEQ:
-            title = _("If Greater Than or Equal To");
-            l2 = ">= :";
-            break;
-
-        case ELEM_LES:
-            title = _("If Less Than");
-            l2 = "< :";
-            break;
-
-        case ELEM_LEQ:
-            title = _("If Less Than or Equal To");
-            l2 = "<= :";
-            break;
-
-        default:
-            oops();
-    }
-    char *labels[] = { _("'Closed' if:"), l2 };
-    char *dests[] = { op1_tmp, op2_tmp };
-
-	strcpy(op1_tmp, op1->c_str());
-	strcpy(op2_tmp, op2->c_str());
-
-	if(ShowSimpleDialog(title, 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
-		// Se variavel sem tipo, usa tipo geral.
-		eType op1_type = ladder->getTypeIO(*op1, op1_tmp, eType_General, true);
-		eType op2_type = ladder->getTypeIO(*op2, op2_tmp, eType_General, true);
-
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*op1), op1_tmp, op1_type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
-			ladder->IsValidNameAndType(ladder->getIdIO(*op2), op2_tmp, op2_type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				changed = true;
-				*op1 = op1_tmp;
-				*op2 = op2_tmp;
-		}
-	}
-
-	return changed;
-}
-
-bool ShowSqrtDialog(string *dest, string *src)
-{
-	bool changed = false;
-
-	char dest_tmp[MAX_NAME_LEN], src_tmp[MAX_NAME_LEN];
-    char *labels[] = { _("Destination:"), _("Source:") };
-    char *dests[] = { dest_tmp, src_tmp };
-
-	strcpy(src_tmp , src ->c_str());
-	strcpy(dest_tmp, dest->c_str());
-
-	if(ShowSimpleDialog(_("Square Root"), 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
-		// Se variavel sem tipo, usa tipo geral.
-		eType src_type = ladder->getTypeIO(*src, src_tmp, eType_General, true);
-
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*dest), dest_tmp, eType_General, _("Destino"), VALIDATE_IS_VAR          , 0, 0) &&
-			ladder->IsValidNameAndType(ladder->getIdIO(*src), src_tmp , src_type, _("Origem") , VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				changed = true;
-				*src  = src_tmp;
-				*dest = dest_tmp;
-		}
-	}
-
-	return changed;
-}
-
 bool ShowRandDialog(string *var, string *min, string *max)
 {
 	bool changed = false;
@@ -413,32 +323,6 @@ bool ShowRandDialog(string *var, string *min, string *max)
 				*var = var_tmp;
 				*min = min_tmp;
 				*max = max_tmp;
-		}
-	}
-
-	return changed;
-}
-
-bool ShowAbsDialog(string *dest, string *src)
-{
-	bool changed = false;
-
-	char dest_tmp[MAX_NAME_LEN], src_tmp[MAX_NAME_LEN];
-    char *labels[] = { _("Destination:"), _("Source:") };
-    char *dests[] = { dest_tmp, src_tmp };
-
-	strcpy(src_tmp , src ->c_str());
-	strcpy(dest_tmp, dest->c_str());
-
-	if(ShowSimpleDialog(_("Abs"), 2, labels, 0, 0x3, 0x3, 0x3, dests)) {
-		// Se variavel sem tipo, usa tipo geral.
-		eType src_type = ladder->getTypeIO(*src, src_tmp, eType_General, true);
-
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*dest), dest_tmp, eType_General, _("Destino"), VALIDATE_IS_VAR          , 0, 0) &&
-			ladder->IsValidNameAndType(ladder->getIdIO(*src), src_tmp , src_type     , _("Origem") , VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				changed = true;
-				*src  = src_tmp;
-				*dest = dest_tmp;
 		}
 	}
 
