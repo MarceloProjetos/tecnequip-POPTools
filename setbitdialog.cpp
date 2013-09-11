@@ -2,8 +2,6 @@
 
 static HWND SetBitDialog;
 
-static HWND SetBitRadio;
-static HWND ClearBitRadio;
 static HWND NameTextbox;
 static HWND BitCombobox;
 
@@ -31,71 +29,56 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
     return CallWindowProc((WNDPROC)PrevNameProc, hwnd, msg, wParam, lParam);
 }
 
-static void MakeControls(void)
+static void MakeControls(char *varname, vector<eType> types)
 {
-    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Operação bit"),
-        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        7, 3, 120, 65, SetBitDialog, NULL, Instance, NULL);
-    NiceFont(grouper);
-
-    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
+    HWND textLabel = CreateWindowEx(0, WC_STATIC, varname,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        135, 16, 50, 21, SetBitDialog, NULL, Instance, NULL);
+        7, 16, 50, 21, SetBitDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
-
-    SetBitRadio = CreateWindowEx(0, WC_BUTTON, _("Ligar"),
-        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        16, 21, 100, 20, SetBitDialog, NULL, Instance, NULL);
-    NiceFont(SetBitRadio);
-
-    ClearBitRadio = CreateWindowEx(0, WC_BUTTON, _("Desligar"),
-        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        16, 41, 100, 20, SetBitDialog, NULL, Instance, NULL);
-    NiceFont(ClearBitRadio);
 
     NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
         WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
-        190, 16, 115, 21, SetBitDialog, NULL, Instance, NULL);
+        62, 16, 115, 21, SetBitDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-	LoadIOListToComboBox(NameTextbox, vector<eType>()); // Vetor vazio, todos os tipos...
+	LoadIOListToComboBox(NameTextbox, types); // Vetor vazio, todos os tipos...
 	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
 	HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Bit:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        135, 41, 50, 21, SetBitDialog, NULL, Instance, NULL);
+        7, 41, 50, 21, SetBitDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
 	BitCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        190, 41, 65, 140, SetBitDialog, NULL, Instance, NULL);
+        62, 41, 65, 140, SetBitDialog, NULL, Instance, NULL);
     NiceFont(BitCombobox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        321, 10, 70, 23, SetBitDialog, NULL, Instance, NULL); 
+        193, 10, 70, 23, SetBitDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        321, 40, 70, 23, SetBitDialog, NULL, Instance, NULL); 
+        193, 40, 70, 23, SetBitDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 
     PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC, 
         (LONG_PTR)MyNameProc);
 }
 
-bool ShowSetBitDialog(string *name, bool * set, int * bit)
+bool ShowVarBitDialog(char *title, char *varname, string *name, int * bit, vector<eType> types)
 {
 	bool changed = false;
 
 	char name_tmp[MAX_NAME_LEN];
 
     SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
-        _("Set Bit"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 404, 75, MainWindow, NULL, Instance, NULL);
+        title, WS_OVERLAPPED | WS_SYSMENU,
+        100, 100, 276, 75, MainWindow, NULL, Instance, NULL);
 
-    MakeControls();
+    MakeControls(varname, types);
    
 	int i;
 
@@ -103,12 +86,6 @@ bool ShowSetBitDialog(string *name, bool * set, int * bit)
 		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
 
 	SendMessage(BitCombobox, CB_SETCURSEL, *bit, 0);
-
-    if (*set)
-        SendMessage(SetBitRadio, BM_SETCHECK, BST_CHECKED, 0);
-	else
-        SendMessage(ClearBitRadio, BM_SETCHECK, BST_CHECKED, 0);
-
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name->c_str()));
 
     EnableWindow(MainWindow, FALSE);
@@ -139,21 +116,13 @@ bool ShowSetBitDialog(string *name, bool * set, int * bit)
 
     if(!DialogCancel) {
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_tmp));
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_tmp, eType_General, _("Nome"), VALIDATE_IS_VAR, 0, 0)) {
-			changed = true;
+		changed = true;
 
-			*name = name_tmp;
+		*name = name_tmp;
 
-			if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-				*set = true;
-			else
-				*set = false;
-
-			char buf[20];
-			SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
-				(LPARAM)(buf));
-			*bit = atoi(buf);
-		}
+		char buf[20];
+		SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		*bit = atoi(buf);
     }
 
     EnableWindow(MainWindow, TRUE);

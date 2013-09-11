@@ -20,11 +20,11 @@ public:
 	virtual void    Clear(unsigned int brush)=0;
 	virtual HRESULT EndDraw(void)=0;
 
-	virtual void DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned int radiusY = 0, unsigned int angle = 0)=0;
-	virtual HRESULT DrawEllipse(POINT center, float rx, float ry, unsigned int brush, bool filled = true)=0;
-	virtual HRESULT DrawArc    (POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush)=0;
-	virtual void DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY)=0;
-	virtual HRESULT DrawLine(POINT start, POINT end, unsigned int brush)=0;
+	virtual void    DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned int radiusY = 0, unsigned int angle = 0, float brushWidth = 2.0f)=0;
+	virtual HRESULT DrawEllipse  (POINT center, float rx, float ry, unsigned int brush, bool filled = true, float brushWidth = 2.0f)=0;
+	virtual HRESULT DrawArc      (POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush, float brushWidth = 2.0f)=0;
+	virtual void    DrawText     (const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY)=0;
+	virtual HRESULT DrawLine     (POINT start, POINT end, unsigned int brush, float brushWidth = 2.0f)=0;
 
 	virtual HRESULT DrawPictureFromFile    (char *filename, POINT start, POINT size)=0;
 	virtual HRESULT DrawPictureFromResource(int   id      , POINT start, POINT size)=0;

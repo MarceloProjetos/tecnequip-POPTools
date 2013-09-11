@@ -42,9 +42,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="checkbitdialog.cpp">
-      <Filter>Source Files\Diálogos</Filter>
-    </ClCompile>
     <ClCompile Include="commentdialog.cpp">
       <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
@@ -67,9 +64,6 @@
       <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
     <ClCompile Include="setbitdialog.cpp">
-      <Filter>Source Files\Diálogos</Filter>
-    </ClCompile>
-    <ClCompile Include="setdadialog.cpp">
       <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
     <ClCompile Include="simpledialog.cpp">

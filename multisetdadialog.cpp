@@ -812,7 +812,7 @@ void Render()
 void UpdateWindow(void)
 {
 	char msg[512];
-	char num[12];
+	char num[20];
 
 	if(SendMessage(LinearRadio, BM_GETCHECK, 0, 0) & BST_CHECKED && !SendMessage(CurveRadio, BM_GETCHECK, 0, 0) & BST_CHECKED)
 		current.linear = TRUE;
@@ -848,7 +848,7 @@ void UpdateWindow(void)
 	current.gaint = max(0, min(MAX_GAIN_TIME_VAL, abs(atoi(num))));
 	gaint = current.gaint;
 
-	SendMessage(GainInitValTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
+	SendMessage(GainInitValTextbox, WM_GETTEXT, 14, (LPARAM)(num));
 
 	if (atoi(num) > MAX_GAIN_RESOLUTION_VAL || atoi(num) > current.gaint)
 	{
@@ -862,7 +862,7 @@ void UpdateWindow(void)
 	current.gainr = min(current.gaint, current.gainr);
 	gainr = current.gainr;
 
-	SendMessage(TimeTextbox, WM_GETTEXT, (WPARAM)sizeof(num) - 1, (LPARAM)(num));
+	SendMessage(TimeTextbox, WM_GETTEXT, 14, (LPARAM)(num));
 
 	if(IsNumber(num)) {
 		if (atoi(num) > MAX_TIME_VAL || atoi(num) < MIN_TIME_VAL)

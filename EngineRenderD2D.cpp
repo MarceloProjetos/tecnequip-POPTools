@@ -560,7 +560,7 @@ HRESULT EngineRenderD2D::EndDraw(void)
 	return hr;
 }
 
-void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled, unsigned int radiusX, unsigned int radiusY, unsigned int angle)
+void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled, unsigned int radiusX, unsigned int radiusY, unsigned int angle, float brushWidth)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
@@ -578,9 +578,9 @@ void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled, uns
 		}
 
 		if(filled) {
-			rf.radiusX == 0.0 ? pRT->FillRectangle(rf.rect, Brushes[brush]) : pRT->FillRoundedRectangle(rf, Brushes[brush]);
+			rf.radiusX == 0.0 ? pRT->FillRectangle(rf.rect, Brushes[brush]            ) : pRT->FillRoundedRectangle(rf, Brushes[brush]            );
 		} else {
-			rf.radiusX == 0.0 ? pRT->DrawRectangle(rf.rect, Brushes[brush]) : pRT->DrawRoundedRectangle(rf, Brushes[brush], 5);
+			rf.radiusX == 0.0 ? pRT->DrawRectangle(rf.rect, Brushes[brush], brushWidth) : pRT->DrawRoundedRectangle(rf, Brushes[brush], brushWidth);
 		}
 
 		if(angle) pRT->SetTransform(D2D1::Matrix3x2F::Rotation(0.0f, xy));
@@ -619,20 +619,20 @@ void EngineRenderD2D::DrawText(const char *txt, RECT r, unsigned int format, uns
 	}
 }
 
-HRESULT EngineRenderD2D::DrawLine(POINT start, POINT end, unsigned int brush)
+HRESULT EngineRenderD2D::DrawLine(POINT start, POINT end, unsigned int brush, float brushWidth)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
 	if(pRT != NULL && brush < Brushes.size()) {
 		pRT->DrawLine(D2D1::Point2F((float)start.x, (float)start.y),
-					  D2D1::Point2F((float)  end.x, (float)  end.y), Brushes[brush], 2);
+					  D2D1::Point2F((float)  end.x, (float)  end.y), Brushes[brush], brushWidth);
 		hr = S_OK;
 	}
 
 	return hr;
 }
 
-HRESULT EngineRenderD2D::DrawEllipse(POINT center, float rx, float ry, unsigned int brush, bool filled)
+HRESULT EngineRenderD2D::DrawEllipse(POINT center, float rx, float ry, unsigned int brush, bool filled, float brushWidth)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 	D2D1_ELLIPSE ellipse;
@@ -645,7 +645,7 @@ HRESULT EngineRenderD2D::DrawEllipse(POINT center, float rx, float ry, unsigned 
 		if(filled) {
 			pRT->FillEllipse(&ellipse, Brushes[brush]);
 		} else {
-			pRT->DrawEllipse(&ellipse, Brushes[brush]);
+			pRT->DrawEllipse(&ellipse, Brushes[brush], brushWidth);
 		}
 
 		hr = S_OK;
@@ -654,7 +654,7 @@ HRESULT EngineRenderD2D::DrawEllipse(POINT center, float rx, float ry, unsigned 
 	return hr;
 }
 
-HRESULT EngineRenderD2D::DrawArc(POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush)
+HRESULT EngineRenderD2D::DrawArc(POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush, float brushWidth)
 {
 	ID2D1PathGeometry *pGeometry;
 	HRESULT hr = pD2DFactory->CreatePathGeometry(&pGeometry);
@@ -693,7 +693,7 @@ HRESULT EngineRenderD2D::DrawArc(POINT start, POINT end, float rx, float ry, flo
 			SafeRelease(&pSink);
 
 			// Agora desenha o arco
-			pRT->DrawGeometry(pGeometry, Brushes[brush], 2);
+			pRT->DrawGeometry(pGeometry, Brushes[brush], brushWidth);
 		}
 	}
 

@@ -183,9 +183,9 @@ typedef struct {
 	int SelectedState;
 
 	bool inSimulationMode;
+	bool isLoadingFile;
 
 	bool   programChangedNotSaved;
-	string currentFilename;
 
 	bool canNegate;
 	bool canNormal;
@@ -256,7 +256,7 @@ private:
 	bool isFormatted;
 	int  which;
 
-	virtual void internalSetProperties(void *data) = 0;
+	virtual bool internalSetProperties(void *data, bool isUndoRedo) = 0;
 
 	virtual bool internalGenerateIntCode(IntCode &ic) = 0;
 
@@ -289,7 +289,7 @@ public:
 	LadderElem(bool EOL, bool Comment, bool Formatted, int elemWhich);
 
 	virtual pair<string, string> DrawTXT(void) = 0;
-	virtual void DrawGUI(void *data) = 0;
+	virtual bool DrawGUI(bool poweredBefore, void *data) = 0;
 
 	virtual bool ShowDialog(LadderContext context) = 0;
 
@@ -332,7 +332,7 @@ public:
 // Classe do elemento PlaceHolder
 class LadderElemPlaceHolder : public LadderElem {
 	// Sem propriedades privadas...
-	void internalSetProperties(void *data) { }
+	bool internalSetProperties(void *data, bool isUndoRedo = false) { return true; }
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f) { return true; }
@@ -345,7 +345,7 @@ public:
 	LadderElemPlaceHolder(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -380,7 +380,7 @@ class LadderElemComment : public LadderElem {
 private:
 	LadderElemCommentProp prop;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -393,7 +393,7 @@ public:
 	LadderElemComment(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -430,7 +430,7 @@ private:
 	LadderElemContactProp prop;
 	tRequestIO            infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -443,7 +443,7 @@ public:
 	LadderElemContact(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -482,7 +482,7 @@ private:
 	LadderElemCoilProp prop;
 	tRequestIO         infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -495,7 +495,7 @@ public:
 	LadderElemCoil(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -534,7 +534,7 @@ private:
 
 	int TimerPeriod(void);
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -547,7 +547,7 @@ public:
 	LadderElemTimer(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -585,7 +585,7 @@ class LadderElemRTC : public LadderElem {
 private:
 	LadderElemRTCProp prop;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -598,7 +598,7 @@ public:
 	LadderElemRTC(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -635,7 +635,7 @@ private:
 	LadderElemCounterProp prop;
 	tRequestIO            infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -648,7 +648,7 @@ public:
 	LadderElemCounter(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -684,7 +684,7 @@ private:
 	LadderElemResetProp prop;
 	tRequestIO          infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -697,7 +697,7 @@ public:
 	LadderElemReset(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -726,7 +726,7 @@ public:
 // Classe do elemento One Shot
 class LadderElemOneShot : public LadderElem {
 	// Sem propriedades privadas...
-	void internalSetProperties(void *data) { }
+	bool internalSetProperties(void *data, bool isUndoRedo = false) { return true; }
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f) { return true; }
@@ -739,7 +739,7 @@ public:
 	LadderElemOneShot(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -777,7 +777,7 @@ private:
 	tRequestIO        infoIO_Op1;
 	tRequestIO        infoIO_Op2;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -790,7 +790,7 @@ public:
 	LadderElemCmp(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -830,7 +830,7 @@ private:
 	tRequestIO         infoIO_Op2;
 	tRequestIO         infoIO_Dest;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -843,7 +843,7 @@ public:
 	LadderElemMath(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -881,7 +881,7 @@ private:
 	tRequestIO         infoIO_Dest;
 	tRequestIO         infoIO_Src;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -894,7 +894,7 @@ public:
 	LadderElemSqrt(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -934,20 +934,20 @@ private:
 	tRequestIO         infoIO_Min;
 	tRequestIO         infoIO_Max;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemRand(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -985,7 +985,7 @@ private:
 	tRequestIO        infoIO_Dest;
 	tRequestIO        infoIO_Src;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -998,7 +998,7 @@ public:
 	LadderElemAbs(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1036,7 +1036,7 @@ private:
 	tRequestIO         infoIO_Dest;
 	tRequestIO         infoIO_Src;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1049,7 +1049,7 @@ public:
 	LadderElemMove(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1078,7 +1078,7 @@ public:
 // Classe do elemento Open & Short
 class LadderElemOpenShort : public LadderElem {
 	// Sem propriedades privadas...
-	void internalSetProperties(void *data) { }
+	bool internalSetProperties(void *data, bool isUndoRedo = false) { return true; }
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f) { return true; }
@@ -1091,7 +1091,7 @@ public:
 	LadderElemOpenShort(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1129,7 +1129,7 @@ private:
 	LadderElemSetBitProp prop;
 	tRequestIO           infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1142,7 +1142,7 @@ public:
 	LadderElemSetBit(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1180,7 +1180,7 @@ private:
 	LadderElemCheckBitProp prop;
 	tRequestIO             infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1193,7 +1193,7 @@ public:
 	LadderElemCheckBit(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1229,7 +1229,7 @@ private:
 	LadderElemReadAdcProp prop;
 	tRequestIO            infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1239,13 +1239,13 @@ private:
 	string GetNameADC(void);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemReadAdc(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1282,20 +1282,20 @@ private:
 	LadderElemSetDaProp prop;
 	tRequestIO          infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemSetDa(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1304,6 +1304,8 @@ public:
 	void *getProperties(void);
 
 	bool CanInsert(LadderContext context);
+
+	bool isValidDaValue(string new_name, int new_mode);
 
 	void doPostInsert(void) { }
 	void doPostRemove(void) { }
@@ -1331,7 +1333,7 @@ private:
 	LadderElemReadEncProp prop;
 	tRequestIO            infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1344,7 +1346,7 @@ public:
 	LadderElemReadEnc(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1380,7 +1382,7 @@ private:
 	LadderElemResetEncProp prop;
 	tRequestIO             infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1393,7 +1395,7 @@ public:
 	LadderElemResetEnc(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1440,7 +1442,7 @@ private:
 	tRequestIO               infoIO_Time;
 	tRequestIO               infoIO_Desl;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1453,7 +1455,7 @@ public:
 	LadderElemMultisetDA(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1493,7 +1495,7 @@ private:
 	LadderElemUSSProp prop;
 	tRequestIO        infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1506,7 +1508,7 @@ public:
 	LadderElemUSS(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1546,7 +1548,7 @@ private:
 	LadderElemModBUSProp prop;
 	tRequestIO           infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1559,7 +1561,7 @@ public:
 	LadderElemModBUS(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1596,20 +1598,20 @@ private:
 	LadderElemSetPWMProp prop;
 	tRequestIO           infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemSetPWM(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1645,7 +1647,7 @@ private:
 	LadderElemUARTProp prop;
 	tRequestIO         infoIO_Name;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1658,7 +1660,7 @@ public:
 	LadderElemUART(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1687,7 +1689,7 @@ public:
 // Classe do elemento Master Relay
 class LadderElemMasterRelay : public LadderElem {
 	// Sem propriedades privadas...
-	void internalSetProperties(void *data) { }
+	bool internalSetProperties(void *data, bool isUndoRedo = false) { return true; }
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f) { return true; }
@@ -1700,7 +1702,7 @@ public:
 	LadderElemMasterRelay(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1738,7 +1740,7 @@ private:
 	LadderElemShiftRegisterProp prop;
 	tRequestIO                  InfoIO_Regs;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1753,7 +1755,7 @@ public:
 	LadderElemShiftRegister(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1794,20 +1796,20 @@ private:
 	tRequestIO        infoIO_Dest;
 	tRequestIO        infoIO_Index;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemLUT(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1847,20 +1849,20 @@ private:
 	tRequestIO              infoIO_Dest;
 	tRequestIO              infoIO_Index;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemPiecewise(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1897,7 +1899,7 @@ private:
 	LadderElemFmtStringProp prop;
 	tRequestIO              infoIO_Var;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1910,7 +1912,7 @@ public:
 	LadderElemFmtString(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1948,7 +1950,7 @@ private:
 	LadderElemYaskawaProp prop;
 	tRequestIO            infoIO_Var;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -1961,7 +1963,7 @@ public:
 	LadderElemYaskawa(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -1997,20 +1999,20 @@ private:
 	LadderElemPersistProp prop;
 	tRequestIO            infoIO_Var;
 
-	void internalSetProperties(void *data);
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemPersist(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -2046,7 +2048,7 @@ private:
 	LadderElemXProp prop;
 	tRequestIO      infoIO_;
 
-	void internalSetProperties(void *data) { }
+	bool internalSetProperties(void *data, bool isUndoRedo = false) { return true; }
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f) { return true; }
@@ -2059,7 +2061,7 @@ public:
 	LadderElemX(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool ShowDialog(LadderContext context);
 
@@ -2128,7 +2130,7 @@ public:
 	~LadderCircuit(void);
 
 	bool DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *cy, bool poweredBefore, int ColsAvailable);
-	void DrawGUI(void *data);
+	bool DrawGUI(bool poweredBefore, void *data);
 
 	bool IsComment(void);
 	bool IsEmpty(void);
@@ -2286,6 +2288,8 @@ private:
 
 	IntCode ic;
 
+	string currentFilename;
+
 	LadderElem *copiedElement;
 	LadderRung *copiedRung;
 
@@ -2418,6 +2422,7 @@ public:
 	string          getPinNameIO            (int index);
 	void            ShowIoMapDialog         (int item);
 	vector<string>  getVectorInternalFlagsIO(void);
+	vector<eType>   getGeneralTypes         (void);
 
 	// Funcao para ordenar a lista de I/O conforme o campo especificado
 	void            sortIO                  (eSortBy sortby);

@@ -4,9 +4,7 @@ static HWND LutDialog;
 
 static HWND AsStringCheckbox;
 static HWND CountTextbox;
-static HWND DestTextbox;
-static HWND IndexTextbox;
-static HWND Labels[3];
+static HWND Labels;
 
 static HWND StringTextbox;
 
@@ -64,29 +62,6 @@ static LRESULT CALLBACK MyDigitsProc(HWND hwnd, UINT msg, WPARAM wParam,
 }
 
 //-----------------------------------------------------------------------------
-// Don't allow any characters other than A-Za-z0-9_ in the name.
-//-----------------------------------------------------------------------------
-static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
-    LPARAM lParam)
-{
-    if(msg == WM_CHAR) {
-        if(!(isalpha(wParam) || isdigit(wParam) || wParam == '_' ||
-            wParam == '\b'))
-        {
-            return 0;
-        }
-    }
-
-    WNDPROC w;
-    if(hwnd == DestTextbox) {
-        w = (WNDPROC)PrevDestProc;
-    } else if(hwnd == IndexTextbox) {
-        w = (WNDPROC)PrevIndexProc;
-    }
-    return CallWindowProc(w, hwnd, msg, wParam, lParam);
-}
-
-//-----------------------------------------------------------------------------
 // Make the controls that are guaranteed not to move around as the count/
 // as string settings change. This is different for the piecewise linear,
 // because in that case we should not provide a checkbox to change whether
@@ -94,47 +69,26 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
 //-----------------------------------------------------------------------------
 static void MakeFixedControls(BOOL forPwl)
 {
-    Labels[0] = CreateWindowEx(0, WC_STATIC, _("Destination:"),
+    Labels = CreateWindowEx(0,WC_STATIC, forPwl ? _("Points:") : _("Count:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         0, 10, 78, 21, LutDialog, NULL, Instance, NULL);
-    NiceFont(Labels[0]);
-
-    DestTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
-        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
-        85, 10, 120, 321, LutDialog, NULL, Instance, NULL);
-    FixedFont(DestTextbox);
-
-	LoadIOListToComboBox(DestTextbox, vector<eType>()); // Vetor vazio, todos os tipos...
-	SendMessage(DestTextbox, CB_SETDROPPEDWIDTH, 300, 0);
-
-    Labels[1] = CreateWindowEx(0, WC_STATIC, _("Index:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 40, 68, 21, LutDialog, NULL, Instance, NULL);
-    NiceFont(Labels[1]);
-
-    IndexTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
-        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
-        85, 40, 120, 321, LutDialog, NULL, Instance, NULL);
-    FixedFont(IndexTextbox);
-
-	LoadIOListToComboBox(IndexTextbox, vector<eType>()); // Vetor vazio, todos os tipos...
-	SendMessage(IndexTextbox, CB_SETDROPPEDWIDTH, 300, 0);
-
-    Labels[2] = CreateWindowEx(0,WC_STATIC, forPwl ? _("Points:") : _("Count:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        0, 70, 78, 21, LutDialog, NULL, Instance, NULL);
-    NiceFont(Labels[2]);
+    NiceFont(Labels);
 
     CountTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        85, 70, 120, 21, LutDialog, NULL, Instance, NULL);
+        85, 10, 120, 21, LutDialog, NULL, Instance, NULL);
     NiceFont(CountTextbox);
 
     if(!forPwl) {
-        AsStringCheckbox = CreateWindowEx(0, WC_BUTTON, 
-            _("Edit table of ASCII values like a string"), WS_CHILD |
+		Labels = CreateWindowEx(0,WC_STATIC, _("Edit table of ASCII values like a string"),
+			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
+			27, 35, 205, 34, LutDialog, NULL, Instance, NULL);
+		NiceFont(Labels);
+
+		AsStringCheckbox = CreateWindowEx(0, WC_BUTTON, 
+            "", WS_CHILD |
                 WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_AUTOCHECKBOX,
-            10, 100, 300, 21, LutDialog, NULL, Instance, NULL);
+            10, 40, 220, 21, LutDialog, NULL, Instance, NULL);
         NiceFont(AsStringCheckbox);
     }
 
@@ -148,10 +102,6 @@ static void MakeFixedControls(BOOL forPwl)
         231, 40, 70, 23, LutDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 
-    PrevDestProc = SetWindowLongPtr(DestTextbox, GWLP_WNDPROC, 
-        (LONG_PTR)MyNameProc);
-    PrevIndexProc = SetWindowLongPtr(IndexTextbox, GWLP_WNDPROC, 
-        (LONG_PTR)MyNameProc);
     PrevCountProc = SetWindowLongPtr(CountTextbox, GWLP_WNDPROC, 
         (LONG_PTR)MyDigitsProc);
 }
@@ -231,27 +181,23 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
         StringTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, str,
             WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | 
                 WS_VISIBLE,
-            10, 130, 294, 21, LutDialog, NULL, Instance, NULL);
+            10, 70, 294, 21, LutDialog, NULL, Instance, NULL);
         FixedFont(StringTextbox);
         SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)TRUE, 0);
-        MoveWindow(LutDialog, 100, 30, 320, 185, TRUE);
+        MoveWindow(LutDialog, 100, 30, 320, 125, TRUE);
     } else {
-        int i;
-        int base;
-        if(forPwl) {
-            base = 100;
-        } else {
-            base = 140;
-        }
-        for(i = 0; i < count; i++) {
+        int i, breakpoint = (count+1)/2;
+        int base = 80;
+
+		for(i = 0; i < count; i++) {
             int x, y;
 
-            if(i < 16) {
+            if(i < breakpoint) {
                 x = 10;
                 y = base+30*i;
             } else {
                 x = 160;
-                y = base+30*(i-16);
+                y = base+30*(i-breakpoint);
             }
 
             char buf[20];
@@ -275,10 +221,9 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
             PrevValuesProc[i] = SetWindowLongPtr(ValuesTextbox[i],
                 GWLP_WNDPROC, (LONG_PTR)MyNumberProc);
         }
-        if(count > 16) count = 16;
         SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)FALSE, 0);
 
-        MoveWindow(LutDialog, 100, 30, 320, base + 30 + count*30, TRUE);
+        MoveWindow(LutDialog, 100, 30, 320, base + (count > 0 ? (breakpoint + 1)*30 : 20), TRUE);
     }
 }
 
@@ -325,11 +270,9 @@ BOOL StringToValuesCache(char *str, int *c)
 // I should convert between those two representations on the fly, as the user
 // edit things, so I do.
 //-----------------------------------------------------------------------------
-bool ShowLookUpTableDialog(LadderElemLUTProp *t, string *dest, string *index)
+bool ShowLookUpTableDialog(LadderElemLUTProp *t)
 {
 	bool changed = false;
-
-	char dest_tmp[MAX_NAME_LEN], index_tmp[MAX_NAME_LEN];
 
     // First copy over all the stuff from the leaf structure; in particular,
     // we need our own local copy of the table entries, because it would be
@@ -352,8 +295,6 @@ bool ShowLookUpTableDialog(LadderElemLUTProp *t, string *dest, string *index)
     MakeLutControls(asString, count, FALSE);
   
     // Set up the controls to reflect the initial configuration.
-	SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(dest->c_str()));
-    SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(index->c_str()));
     char buf[30];
     sprintf(buf, "%d", t->count);
     SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -364,8 +305,8 @@ bool ShowLookUpTableDialog(LadderElemLUTProp *t, string *dest, string *index)
     // And show the window
     EnableWindow(MainWindow, FALSE);
     ShowWindow(LutDialog, TRUE);
-    SetFocus(DestTextbox);
-    SendMessage(DestTextbox, EM_SETSEL, 0, -1);
+    SetFocus(CountTextbox);
+    SendMessage(CountTextbox, EM_SETSEL, 0, -1);
 
     char PrevTableAsString[1024] = "";
 
@@ -432,30 +373,18 @@ bool ShowLookUpTableDialog(LadderElemLUTProp *t, string *dest, string *index)
     }
 
     if(!DialogCancel) {
-        SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(dest_tmp));
-        SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(index_tmp));
-
-		// Se variavel sem tipo, usa tipo geral.
-		eType index_type = ladder->getTypeIO(ladder->getNameIO(t->idIndex.first), index_tmp, eType_General, true);
-
         DestroyLutControls();
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*dest), dest_tmp , eType_General, _("Destino"), VALIDATE_IS_VAR, 0, 0) &&
-			ladder->IsValidNameAndType(ladder->getIdIO(*index), index_tmp, index_type, _("Indice" ), VALIDATE_IS_VAR, 0, 0)) {
-				changed = true;
+		changed = true;
 
-				// The call to DestroyLutControls updated ValuesCache, so just read
-				// them out of there (whichever mode we were in before).
-				int i;
-				for(i = 0; i < count; i++) {
-					t->vals[i] = ValuesCache[i];
-				}
-
-				*dest  = dest_tmp;
-				*index = index_tmp;
-
-				t->count = count;
-				t->editAsString = asString;
+		// The call to DestroyLutControls updated ValuesCache, so just read
+		// them out of there (whichever mode we were in before).
+		int i;
+		for(i = 0; i < count; i++) {
+			t->vals[i] = ValuesCache[i];
 		}
+
+		t->count = count;
+		t->editAsString = asString;
     }
 
     EnableWindow(MainWindow, TRUE);
@@ -468,7 +397,7 @@ bool ShowLookUpTableDialog(LadderElemLUTProp *t, string *dest, string *index)
 // Show the piecewise linear table dialog. This one can only be edited in
 // only a single format, which makes things easier than before.
 //-----------------------------------------------------------------------------
-bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, string *dest, string *index)
+bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t)
 {
 	bool changed = false;
 
@@ -492,8 +421,6 @@ bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, string *dest, string 
     MakeLutControls(FALSE, count*2, TRUE);
   
     // Set up the controls to reflect the initial configuration.
-	SendMessage(DestTextbox, WM_SETTEXT, 0, (LPARAM)(dest->c_str()));
-    SendMessage(IndexTextbox, WM_SETTEXT, 0, (LPARAM)(index->c_str()));
     char buf[30];
     sprintf(buf, "%d", t->count);
     SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -501,8 +428,8 @@ bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, string *dest, string 
     // And show the window
     EnableWindow(MainWindow, FALSE);
     ShowWindow(LutDialog, TRUE);
-    SetFocus(DestTextbox);
-    SendMessage(DestTextbox, EM_SETSEL, 0, -1);
+    SetFocus(CountTextbox);
+    SendMessage(CountTextbox, EM_SETSEL, 0, -1);
 
     MSG msg;
     DWORD ret;
@@ -541,32 +468,17 @@ bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, string *dest, string 
     }
 
     if(!DialogCancel) {
-		char dest_tmp[MAX_NAME_LEN], index_tmp[MAX_NAME_LEN];
-
-        SendMessage(DestTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(dest_tmp));
-        SendMessage(IndexTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(index_tmp));
-
-		// Se variavel sem tipo, usa tipo geral.
-		eType index_type = ladder->getTypeIO(ladder->getNameIO(t->idIndex.first), index_tmp, eType_General, true);
-
 		DestroyLutControls();
+		changed = true;
 
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*dest), dest_tmp , eType_General, _("Destino"), VALIDATE_IS_VAR, 0, 0) &&
-			ladder->IsValidNameAndType(ladder->getIdIO(*index), index_tmp, index_type, _("Indice" ), VALIDATE_IS_VAR, 0, 0)) {
-				changed = true;
-
-				// The call to DestroyLutControls updated ValuesCache, so just read
-				// them out of there.
-				int i;
-				for(i = 0; i < count*2; i++) {
-					t->vals[i] = ValuesCache[i];
-				}
-
-				*dest  = dest_tmp;
-				*index = index_tmp;
-
-				t->count = count;
+		// The call to DestroyLutControls updated ValuesCache, so just read
+		// them out of there.
+		int i;
+		for(i = 0; i < count*2; i++) {
+			t->vals[i] = ValuesCache[i];
 		}
+
+		t->count = count;
     }
 
     EnableWindow(MainWindow, TRUE);

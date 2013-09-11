@@ -35,6 +35,8 @@ void EngineGUI::Init(void)
 	BrushOffset = 0;
 	Brushes.push_back(RGB(0, 0, 0));
 
+	brushWidth = 2.0f;
+
 	DrawOffset.x = DrawOffset.y = 0;
 
 	TargetInvalid = true;
@@ -166,7 +168,7 @@ HRESULT EngineGUI::DrawRectangle(RECT r, unsigned int brush, bool filled, unsign
 		r.right  += DrawOffset.x;
 		r.top    += DrawOffset.y;
 		r.bottom += DrawOffset.y;
-		pRender->DrawRectangle(r, brush + BrushOffset, filled, radiusX, radiusY, angle);
+		pRender->DrawRectangle(r, brush + BrushOffset, filled, radiusX, radiusY, angle, brushWidth);
 		hr = S_OK;
 	}
 
@@ -198,7 +200,7 @@ HRESULT EngineGUI::DrawLine(POINT start, POINT end, unsigned int brush)
 		end.x   += DrawOffset.x;
 		start.y += DrawOffset.y;
 		end.y   += DrawOffset.y;
-		hr = pRender->DrawLine(start, end, brush + BrushOffset);
+		hr = pRender->DrawLine(start, end, brush + BrushOffset, brushWidth);
 	}
 
 	return hr;
@@ -225,7 +227,7 @@ HRESULT EngineGUI::DrawEllipse(POINT center, float rx, float ry, unsigned int br
 	if(pRender != NULL) {
 		center.x += DrawOffset.x;
 		center.y += DrawOffset.y;
-		hr = pRender->DrawEllipse(center, rx, ry, brush + BrushOffset, filled);
+		hr = pRender->DrawEllipse(center, rx, ry, brush + BrushOffset, filled, brushWidth);
 	}
 
 	return hr;
@@ -240,7 +242,7 @@ HRESULT EngineGUI::DrawArc(POINT start, POINT end, float rx, float ry, float ang
 		end.x   += DrawOffset.x;
 		start.y += DrawOffset.y;
 		end.y   += DrawOffset.y;
-		hr = pRender->DrawArc(start, end, rx, ry, angle, isClockWise, brush + BrushOffset);
+		hr = pRender->DrawArc(start, end, rx, ry, angle, isClockWise, brush + BrushOffset, brushWidth);
 	}
 
 	return hr;

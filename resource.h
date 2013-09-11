@@ -14,7 +14,12 @@
 
 // Imagens dos elementos no diagrama
 #define IDB_LADDER_RTC                 6000
-#define IDB_LADDER_AMPULHETA           6001
+#define IDB_LADDER_HOURGLASS           6001
+#define IDB_LADDER_CLOCK               6002
+#define IDB_LADDER_COUNTER             6003
+#define IDB_LADDER_TERMOMETHER         6004
+#define IDB_LADDER_AD                  6005
+#define IDB_LADDER_CYCLE               6006
 
 // Next default values for new objects
 // 

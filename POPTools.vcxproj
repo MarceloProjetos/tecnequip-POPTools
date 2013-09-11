@@ -298,7 +298,6 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="checkbitdialog.cpp" />
     <ClCompile Include="circuit.cpp" />
     <ClCompile Include="commentdialog.cpp" />
     <ClCompile Include="CommonFileDialog.cpp" />
@@ -337,7 +336,6 @@
     <ClCompile Include="FARdialog.cpp" />
     <ClCompile Include="prefdialog.cpp" />
     <ClCompile Include="debugdialog.cpp" />
-    <ClCompile Include="setdadialog.cpp" />
     <ClCompile Include="simpledialog.cpp" />
     <ClCompile Include="simulate.cpp" />
     <ClCompile Include="splash.cpp" />

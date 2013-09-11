@@ -17,6 +17,8 @@ private:
 
 	void InvalidateTarget(void);
 
+	float brushWidth;
+
 	EngineRender *pRender;
 
 	std::vector<COLORREF> Brushes;
@@ -43,6 +45,9 @@ public:
 
 	HRESULT SetBackgroundColor(COLORREF rgb);
 	unsigned int CreateBrush(COLORREF rgb);
+
+	float getBrushWidth(void)        { return brushWidth; }
+	void  setBrushWidth(float width) { brushWidth = width; }
 
 	HRESULT StartDraw(void);
 	HRESULT SetDrawOffset(POINT Offset);
