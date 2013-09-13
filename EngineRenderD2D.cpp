@@ -401,6 +401,7 @@ HRESULT EngineRenderD2D::DrawPicture(IWICBitmapDecoder *pDecoder, POINT start, P
 			0.f,                             // Alpha threshold
 			WICBitmapPaletteTypeCustom       // Palette translation type
 			);
+		SafeRelease(&pFrame);
 	}
 
 	// D2DBitmap may have been released due to device loss. 
