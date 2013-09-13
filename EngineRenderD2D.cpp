@@ -170,6 +170,9 @@ void EngineRenderD2D::Teste(void)
 HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
 	bool filled, float radiusX, float radiusY, float angle)
 {
+//	DrawRectangle(r, brushBG       , true , (unsigned int)radiusX, (unsigned int)radiusY, angle);
+//	DrawRectangle(r, brushExtBorder, false, (unsigned int)radiusX, (unsigned int)radiusY, angle);
+//	return S_OK;
 	ID2D1PathGeometry *pGeometry;
 	HRESULT hr = pD2DFactory->CreatePathGeometry(&pGeometry);
 
@@ -357,6 +360,9 @@ HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ, unsigned int brush
 
 			// Se usando rotacao, volta ao normal
 			if(angle) pRT->SetTransform(D2D1::Matrix3x2F::Rotation(0.0f, xy));
+
+			// Descarta a geometria criada
+			SafeRelease(&pGeometry);
 		}
 	}
 
@@ -402,6 +408,7 @@ HRESULT EngineRenderD2D::DrawPicture(IWICBitmapDecoder *pDecoder, POINT start, P
 	if (m_pConvertedSourceBitmap)
 	{
 		pRT->CreateBitmapFromWicBitmap(m_pConvertedSourceBitmap, NULL, &m_pD2DBitmap);
+		SafeRelease(&m_pConvertedSourceBitmap);
 	}
 
 	// Draws an image and scales it to the current window size
@@ -417,6 +424,8 @@ HRESULT EngineRenderD2D::DrawPicture(IWICBitmapDecoder *pDecoder, POINT start, P
 			float(start.x + size.x), float(start.y + size.y) };
 
 		pRT->DrawBitmap(m_pD2DBitmap, rectangle);
+
+		SafeRelease(&m_pD2DBitmap);
 	}
 
 	return hr;
@@ -497,6 +506,9 @@ HRESULT EngineRenderD2D::DrawPictureFromResource(int id, POINT start, POINT size
 
 	if (SUCCEEDED(hr)){
 		DrawPicture(pDecoder, start, size);
+
+		SafeRelease(&pIWICStream);
+		SafeRelease(&pDecoder);
 	}
 
 	return hr;
@@ -506,8 +518,6 @@ HRESULT EngineRenderD2D::DrawPictureFromFile(char *filename, POINT start, POINT 
 {
 	HRESULT hr;
     
-    ID2D1Bitmap            *m_pD2DBitmap = NULL;
-    IWICFormatConverter    *m_pConvertedSourceBitmap = NULL;
 	IWICBitmapDecoder *pDecoder = NULL;
 
 	if(pWICFactory == NULL) {
@@ -542,6 +552,8 @@ HRESULT EngineRenderD2D::DrawPictureFromFile(char *filename, POINT start, POINT 
 
 	if (SUCCEEDED(hr)){
 		DrawPicture(pDecoder, start, size);
+
+		SafeRelease(&pDecoder);
 	}
 
 	return hr;
@@ -694,6 +706,8 @@ HRESULT EngineRenderD2D::DrawArc(POINT start, POINT end, float rx, float ry, flo
 
 			// Agora desenha o arco
 			pRT->DrawGeometry(pGeometry, Brushes[brush], brushWidth);
+
+			SafeRelease(&pGeometry);
 		}
 	}
 

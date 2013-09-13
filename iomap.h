@@ -12,8 +12,13 @@ private:
 	unsigned long countIO;
 	unsigned long selectedIO;
 
-	typedef map<string, pair<unsigned long, mapDetails> > tMapIO;
+	eSortBy currentSortBy;
+
+	typedef map <string, pair<unsigned long, mapDetails> > tMapIO;
 	tMapIO IO;
+
+	typedef pair<string, pair<unsigned long, mapDetails> > tVectorIO;
+	vector<tVectorIO> vectorIO;
 
 	unsigned int maxNameSize;
 
@@ -57,6 +62,9 @@ private:
 	// Funcao que verifica o nome do I/O e retorna uma string valida
 	string getValidName(string name);
 
+	// Funcao que sincroniza o mapa de I/O com o vetor ordenado
+	void SyncVectorIO(void);
+
 public:
 	mapIO(LadderDiagram *pDiagram);
 
@@ -66,7 +74,7 @@ public:
 	string         getName      (unsigned long id);
 	mapDetails     getDetails   (unsigned long id);
 	unsigned long  getID        (string name);
-	unsigned long  getID        (unsigned int  index);
+	unsigned long  getID        (unsigned int  index, bool fromVectorIO = false);
 	char          *getTypeString(eType type);
 	unsigned int   getCount     (void);
 	void           Select       (unsigned int index);

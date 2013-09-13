@@ -713,7 +713,6 @@ void ShowDebugDialog(void)
 
 	SendMessage(SendRadio         , BM_SETCHECK, BST_CHECKED,  0);
 	SendMessage(ModeTCPRadio      , BM_SETCHECK, BST_CHECKED,  0);
-	SendMessage(RetransmitCheckbox, BM_SETCHECK, BST_CHECKED,  0);
 
 	USB_GetInfo(MODBUS_DEVID_VENDORNAME, InfoVendor);
 	USB_GetInfo(MODBUS_DEVID_PRODUCTCODE, InfoProduct);

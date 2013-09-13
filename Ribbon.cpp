@@ -812,6 +812,7 @@ void EnableInterfaceItem(int item, BOOL enabled)
 	switch(item) {
 //			RIBBON_UPDATE_CMD_STATE(cmdInstrTimerReset        , MNU_INSERT_RES             );
 //			RIBBON_UPDATE_CMD_STATE(cmdInstrCounterReset      , MNU_INSERT_RES             );
+	// Para o Inserir Reset nao podemos usar a macro pois para 1 comando sao 2 acoes
 	case MNU_INSERT_RES:
 		RibbonSetCmdState(cmdInstrTimerReset  , enabled);
 		RibbonSetCmdState(cmdInstrCounterReset, enabled);
@@ -933,6 +934,15 @@ void DestroyRibbon(void)
         g_pFramework->Release();
         g_pFramework = NULL;
     }
+
+	// Descarrega a lista de elementos do Ribbon
+	unsigned long count = 0;
+	struct strCmdStateList *sCurrCmd = CmdStateList.next, *tmp;
+	while(sCurrCmd) {
+		tmp = sCurrCmd;
+		sCurrCmd = sCurrCmd->next;
+		delete tmp;
+	}
 }
 
 #define APP_NORMAL_MODE     0

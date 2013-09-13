@@ -45,7 +45,7 @@ char *InternalVars[][MAX_NAME_LEN] = { { "IncPerimRoda" , "IncPulsosVolta", "Inc
 // Everything relating to the PLC's program, I/O configuration, processor
 // choice, and so on--basically everything that would be saved in the
 // project file.
-LadderDiagram *ladder = nullptr;
+LadderDiagram *ladder = nullptr, *ladderbg = nullptr;
 
 // Settings structure
 Settings POPSettings;
@@ -907,7 +907,19 @@ void ProcessMenu(int code)
 			RefreshControlsToSettings();
             break;
 
-        case MNU_OPEN:
+        case MNU_OPEN: /* {
+			LadderDiagram *tmp = ladder;
+			ladder   = ladderbg;
+			ladderbg = tmp;
+
+			LadderContext context = ladder->getContext();
+
+            InvalidateRect(MainWindow, NULL, FALSE);
+
+			RefreshControlsToSettings();
+			SetMenusEnabled(&context);
+			} */
+
             if(CheckSaveUserCancels()) break;
             OpenDialog(NULL);
             break;
@@ -1891,6 +1903,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ladder = new LadderDiagram;
 	NewProgram();
 
+//	ladderbg = ladder;
+//	ladder = new LadderDiagram;
+//	LoadProjectFromFile("f:\\Testes\\ConnectionDots.ld");
+
 	// Preenche o vetor com tipos de uso geral
 	vectorTypesVar.push_back(eType_General);
 	vectorTypesVar.push_back(eType_ReadADC);
@@ -1953,6 +1969,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
 
 	ShowWindow(MainWindow, SW_HIDE);
+
+	delete ladder;
 
 	FreezeWindowPos(MainWindow);
     FreezeDWORD(IoListHeight);

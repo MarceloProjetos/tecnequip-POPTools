@@ -106,7 +106,8 @@ enum eType  {
 	eType_RxUART,
 	eType_TxUART,
 	eType_ReadYaskawa,
-	eType_WriteYaskawa
+	eType_WriteYaskawa,
+	eType_Last
 };
 
 typedef struct {

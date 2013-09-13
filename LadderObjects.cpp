@@ -7432,6 +7432,7 @@ bool LadderCircuit::Load(LadderDiagram *diagram, FILE *f, unsigned int version)
 						case ELEM_LEQ                   :
 						case ELEM_NEQ                   :
 						case ELEM_EQU                   : s.elem = new LadderElemCmp          (diagram, which); break;
+						case ELEM_MOD                   :
 						case ELEM_ADD                   :
 						case ELEM_SUB                   :
 						case ELEM_MUL                   :
@@ -7465,18 +7466,23 @@ bool LadderCircuit::Load(LadderDiagram *diagram, FILE *f, unsigned int version)
 						case ELEM_READ_SERVO_YASKAWA    :
 						case ELEM_WRITE_SERVO_YASKAWA   : s.elem = new LadderElemYaskawa      (diagram, which); break;
 						case ELEM_PERSIST               : s.elem = new LadderElemPersist      (diagram);        break;
-						default: break; // Elemento nao suportado. Novo elemento nao cadastrado aqui???
+						// Elemento nao suportado. Novo elemento nao cadastrado aqui???
+						default                         : s.elem = nullptr; break;
 						}
 
-						s.elem->Load(f, version);
-						s.subckt = this;
+						if(s.elem == nullptr) { // Erro carregando elemento! Sai do loop...
+							break;
+						} else {
+							s.elem->Load(f, version);
+							s.subckt = this;
+						}
 					} else {
 						break; // erro carregando elemento, interrompe carregamento
 					}
 				} else {
 					s.elem   = nullptr;
 					s.subckt = new LadderCircuit;
-					s.subckt->Load(diagram, f, version);
+					if(s.subckt->Load(diagram, f, version) == false) break; // Se deu erro no carregamento, aborta...
 				}
 
 				vectorSubckt.push_back(s);
@@ -7798,8 +7804,10 @@ void LadderDiagram::NewDiagram(void)
 	NewRung(false);
 
 	// As acoes executadas durante a inicializacao (criacao da linha e PlaceHolder) nao devem ser desfeitas
-	UndoList.clear();
-	CheckPointLevels = 0;
+	// Porem as acoes registradas devem ser desalocadas. Assim executamos o discard para todas as acoes
+	while(UndoList.size() > 0) {
+		DiscardCheckpoint(true);
+	}
 
 	updateContext();
 
@@ -9198,9 +9206,10 @@ bool LadderDiagram::Load(string filename)
 		NewDiagram();
 	} else {
 		// Carregmento finalizado com sucesso!
-		// As acoes executadas durante o carregamento nao devem ser desfeitas
-		UndoList.clear();
-		CheckPointLevels = 0;
+		// As acoes executadas durante o carregamento nao devem ser desfeitas, apenas descartadas
+		while(UndoList.size() > 0) {
+			DiscardCheckpoint(true);
+		}
 
 		// Garante que o contexto esta OK
 		updateContext();
@@ -9794,7 +9803,7 @@ string LadderDiagram::getNameIO(unsigned long id)
 
 string LadderDiagram::getNameIObyIndex(unsigned int index)
 {
-	return IO->getName(IO->getID(index));
+	return IO->getName(IO->getID(index, true));
 }
 
 mapDetails LadderDiagram::getDetailsIO(unsigned long id)
@@ -9809,7 +9818,7 @@ mapDetails LadderDiagram::getDetailsIO(string name)
 
 char *LadderDiagram::getStringTypeIO(unsigned int index)
 {
-	return IO->getTypeString(IO->getDetails(IO->getID(index)).type);
+	return IO->getTypeString(IO->getDetails(IO->getID(index, true)).type);
 }
 
 unsigned int LadderDiagram::getCountIO(void)
@@ -9848,6 +9857,7 @@ bool LadderDiagram::IsValidNumber(string varnumber)
 void LadderDiagram::sortIO(eSortBy sortby)
 {
 	IO->Sort(sortby);
+	IO->updateGUI();
 }
 
 bool LadderDiagram::UartFunctionUsed(void)

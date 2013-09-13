@@ -1,10 +1,85 @@
 #include "poptools.h"
 
+static int nSortColumn = 0;
+static BOOL bSortAscending = TRUE;
+
 // Funcoes para ordenacao
-static int CompareIoName(const void *av, const void *bv);
-static int CompareIoPin (const void *av, const void *bv);
-static int CompareIoPort(const void *av, const void *bv);
-static int CompareIoType(const void *av, const void *bv);
+template<class T>
+	struct CompareIoName : std::binary_function<T,T,bool>
+	{
+		inline bool operator ()(const T& _left, const T& _right)
+		{
+			return bSortAscending ?
+				_stricmp(_left .first.c_str(), _right.first.c_str()) < 0 :
+				_stricmp(_right.first.c_str(), _left .first.c_str()) < 0;
+		}
+	};
+
+template<class T>
+	struct CompareIoType : std::binary_function<T,T,bool>
+	{
+		inline bool operator ()(const T& _left, const T& _right)
+		{
+			return bSortAscending ?
+				_left .second.second.type < _right.second.second.type :
+				_right.second.second.type < _left .second.second.type;
+		}
+	};
+
+template<class T>
+	struct CompareIoPin : std::binary_function<T,T,bool>
+	{
+		inline bool operator ()(const T& _left, const T& _right)
+		{
+			// Se algum dos pinos nao tiver associacao, o que tem deve sempre ser considerado menor
+			if(!_left .second.second.pin &&  _right.second.second.pin) return false;
+			if( _left .second.second.pin && !_right.second.second.pin) return true;
+
+			return bSortAscending ?
+				_left .second.second.pin < _right.second.second.pin :
+				_right.second.second.pin < _left .second.second.pin;
+		}
+	};
+
+template<class T>
+	struct CompareIoPort : std::binary_function<T,T,bool>
+	{
+		inline bool operator ()(const T& _left, const T& _right)
+		{
+			unsigned int iLeft, iRight;
+
+			// Se algum dos pinos nao tiver associacao, o que tem deve sempre ser considerado menor
+			if(!_left .second.second.pin &&  _right.second.second.pin) return false;
+			if( _left .second.second.pin && !_right.second.second.pin) return true;
+
+			// Calcula o valor conforme o peso de cada variavel
+			eType type       = _left .second.second.type;
+			unsigned int bit = _left .second.second.bit;
+
+			if(IoMap_IsModBUS(_left .second.second)) {
+				if(type != eType_General) {
+					bit++;
+				}
+				type = eType_Last;
+			}
+			iLeft  = (int(type)*10000) + (_left .second.second.pin*100) + bit;
+
+			type = _right.second.second.type;
+			bit  = _right.second.second.bit;
+
+			if(IoMap_IsModBUS(_right.second.second)) {
+				if(type != eType_General) {
+					bit++;
+				}
+				type = eType_Last;
+			}
+			iRight = (int(type)*10000) + (_right.second.second.pin*100) + bit;
+
+			return bSortAscending ?
+				iLeft  < iRight :
+				iRight < iLeft;
+		}
+	};
 
 // Funcao auxiliar que retorna um char* de uma string passada como parametro, alocando a memoria necessaria
 char *AllocCharFromString(string s)
@@ -18,6 +93,8 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 {
 	countIO    = 0;
 	selectedIO = 0;
+
+	currentSortBy = eSortBy_Name;
 
 	maxNameSize = 13;
 
@@ -102,6 +179,13 @@ bool mapIO::PwmFunctionUsed (void)
 	}
 
 	return false;
+}
+
+void mapIO::SyncVectorIO(void)
+{
+	vectorIO.clear();
+	vectorIO = vector<tVectorIO>(IO.begin(), IO.end());
+	Sort(currentSortBy);
 }
 
 string mapIO::getValidName(string name)
@@ -494,20 +578,24 @@ unsigned long mapIO::getID(string name)
 	return IO[name].first;
 }
 
-unsigned long mapIO::getID(unsigned int index)
+unsigned long mapIO::getID(unsigned int index, bool fromVectorIO)
 {
 	// Retorna zero se o indice for maior que o numero de elementos do mapa
 	if(index >= IO.size()) {
 		return 0;
 	}
 
-	tMapIO::iterator it = IO.begin();
+	if(fromVectorIO) {
+		return vectorIO[index].second.first;
+	} else {
+		tMapIO::iterator it = IO.begin();
 
-	while(index--) {
-		it++;
+		while(index--) {
+			it++;
+		}
+
+		return it->second.first;
 	}
-
-	return it->second.first;
 }
 
 unsigned int mapIO::getCount(void)
@@ -517,7 +605,7 @@ unsigned int mapIO::getCount(void)
 
 void mapIO::Select(unsigned int index)
 {
-	selectedIO = getID(index);
+	selectedIO = getID(index, true);
 }
 
 bool mapIO::Assign(unsigned long id, unsigned int pin, unsigned int bit, bool isUndoRedo)
@@ -564,6 +652,9 @@ bool mapIO::Assign(string name, unsigned int pin, unsigned int bit, bool isUndoR
 		IO[name].second.pin = pin;
 		IO[name].second.bit = bit;
 
+		// Indica que houve alteracao no programa
+		diagram->ProgramChanged();
+
 		return true;
 	}
 
@@ -574,7 +665,7 @@ string mapIO::getPortName(int index)
 {
 	char buf[1024];
 	McuIoInfo *mcu = diagram->getMCU();
-	mapDetails detailsIO = getDetails(getID(index));
+	mapDetails detailsIO = getDetails(getID(index, true));
 
 	if((detailsIO.type != eType_DigInput && detailsIO.type != eType_DigOutput && detailsIO.type != eType_General
 		&& detailsIO.type != eType_ReadADC && detailsIO.type != eType_ReadEnc && detailsIO.type != eType_ResetEnc
@@ -621,7 +712,7 @@ string mapIO::getPortName(int index)
 string mapIO::getPinName(int index)
 {
 	char buf[1024];
-	mapDetails detailsIO = getDetails(getID(index));
+	mapDetails detailsIO = getDetails(getID(index, true));
 
 	if(detailsIO.pin != 0) {
 		sprintf(buf, "%d", detailsIO.pin);
@@ -643,16 +734,14 @@ vector<string> mapIO::getVectorInternalFlags(void)
 
 void mapIO::Sort(eSortBy sortby)
 {
-	int (*fnc)(const void *, const void *);
-/*
-	switch(sortby) {
-	case eSortBy_Name: fnc = CompareIoName; break;
-	case eSortBy_Type: fnc = CompareIoType; break;
-	case eSortBy_Pin : fnc = CompareIoPin ; break;
-	case eSortBy_Port: fnc = CompareIoPort; break;
-	}
+	currentSortBy = sortby;
 
-//	qsort(Prog.io.assignment, IO.size(), sizeof(PlcProgramSingleIo), fnc);//*/
+	switch(sortby) {
+		case eSortBy_Name: sort(vectorIO.begin(), vectorIO.end(), CompareIoName<tVectorIO>()); break;
+		case eSortBy_Type: sort(vectorIO.begin(), vectorIO.end(), CompareIoType<tVectorIO>()); break;
+		case eSortBy_Pin : sort(vectorIO.begin(), vectorIO.end(), CompareIoPin <tVectorIO>()); break;
+		case eSortBy_Port: sort(vectorIO.begin(), vectorIO.end(), CompareIoPort<tVectorIO>()); break;
+	}
 }
 
 bool mapIO::Validate(eValidateIO mode)
@@ -975,9 +1064,6 @@ static HWND EncoderSliderMain;
 static HWND EncoderSliderTrackbar;
 static BOOL EncoderSliderDone;
 static BOOL EncoderSliderCancel;
-
-static int nSortColumn = 0;
-static BOOL bSortAscending = TRUE;
 
 // stuff for the popup that lets you set the simulated value of an encode in
 /*static HWND EncoderSliderMain;
@@ -1346,7 +1432,7 @@ static void MakeControls(void)
 void mapIO::ShowIoMapDialog(int item)
 {
 	McuIoInfo *mcu = diagram->getMCU();
-	unsigned long id = getID(item);
+	unsigned long id = getID(item, true);
 	mapDetails detailsIO = getDetails(id);
 
 	if(mcu == nullptr) {
@@ -1856,6 +1942,7 @@ void IoMapListProc(NMHDR *h)
 				}
             } else {
                 ladder->ShowIoMapDialog(i->iItem);
+				UpdateMainWindowTitleBar();
                 InvalidateRect(MainWindow, NULL, FALSE);
             }
             break;

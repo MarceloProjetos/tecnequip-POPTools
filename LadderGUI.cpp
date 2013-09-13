@@ -3290,7 +3290,7 @@ bool LadderElemAbs::DrawGUI(bool poweredBefore, void *data)
 	DoEOL(ddg->start, size, ddg->size, poweredBefore);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "RAIZ", false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "ABSOLUTO", false, poweredBefore);
 	ddg->region = r;
 
 	int *pInt1 = new int, *pInt2 = new int;
@@ -3436,7 +3436,7 @@ bool LadderElemOpenShort::DrawGUI(bool poweredBefore, void *data)
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("COMPARAR"), true, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (getWhich() == ELEM_OPEN) ? _("ABERTO") : _("FECHADO"), true, poweredBefore);
 	ddg->region = r;
 
 	// Desenha a linha esquerda
@@ -3896,10 +3896,8 @@ bool LadderElemSetDa::DrawGUI(bool poweredBefore, void *data)
 
 	// Escreve o nome do I/O
 	RECT rText = r;
-	rText.left += 5;
-	rText.top  += 5;
-	rText.bottom = rText.top + FONT_HEIGHT;
-	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, SetDaCmdChangeName, nullptr, true, false);
 
 	// Se expandido, desenha os itens do modo expandido
@@ -5671,7 +5669,10 @@ void mapIO::updateGUI(void)
 	// Nao atualiza a lista de I/Os enquanto carregando o arquivo
 	if(diagram->getContext().isLoadingFile == true) return;
 
-    int i, iocount = ladder->getCountIO();
+	// Sincroniza o mapa com o vetor ordenado
+	SyncVectorIO();
+
+	int i, iocount = ladder->getCountIO();
 
     ListView_DeleteAllItems(IoList);
     for(i = 0; i < iocount; i++) {

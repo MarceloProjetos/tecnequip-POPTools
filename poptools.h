@@ -1,6 +1,11 @@
 #ifndef __POPTOOLS_H
 #define __POPTOOLS_H
 
+// Visual Leak Detector
+#ifdef _DEBUG
+#include <vld.h>
+#endif
+
 #pragma warning(push)
 #pragma warning(disable : 4995) //Disable warning related to deprecated functions (unsecure): strcpy, sprintf...
 #include <windows.h>
@@ -28,7 +33,6 @@
 #include <atlcom.h>
 #include <initguid.h>
 #include <winspool.h>
-
 
 // Direct2D Header Files
 #include <d2d1.h>
