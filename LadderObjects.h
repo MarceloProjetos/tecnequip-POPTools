@@ -255,6 +255,7 @@ private:
 	bool isEndOfLine;
 	bool isComment;
 	bool isFormatted;
+	bool isUART;
 	int  which;
 
 	virtual bool internalSetProperties(void *data, bool isUndoRedo) = 0;
@@ -286,8 +287,12 @@ protected:
 	LadderDiagram *Diagram;
 
 public:
+	// Construtores
 	LadderElem(void);
-	LadderElem(bool EOL, bool Comment, bool Formatted, int elemWhich);
+	LadderElem(bool EOL, bool Comment, bool Formatted, bool UART, int elemWhich);
+
+	// Destrutor
+	~LadderElem(void) { }
 
 	virtual pair<string, string> DrawTXT(void) = 0;
 	virtual bool DrawGUI(bool poweredBefore, void *data) = 0;
@@ -296,11 +301,14 @@ public:
 
 	bool GenerateIntCode(IntCode &ic);
 
-	inline bool IsComment     (void) { return isComment;    }
-	inline bool IsEOL         (void) { return isEndOfLine;  }
-	inline bool IsPoweredAfter(void) { return poweredAfter; }
-	inline bool IsFormatted   (void) { return isFormatted;  }
-	inline int  getWhich      (void) { return which;        }
+	inline bool           IsComment     (void) { return isComment;    }
+	inline bool           IsEOL         (void) { return isEndOfLine;  }
+	inline bool           IsPoweredAfter(void) { return poweredAfter; }
+	inline bool           IsFormatted   (void) { return isFormatted;  }
+	inline bool           IsUART        (void) { return isUART;       }
+
+	inline int            getWhich      (void) { return which;        }
+	inline LadderDiagram *getDiagram    (void) { return Diagram;      }
 
 	virtual bool CanInsert(LadderContext context) = 0;
 
@@ -1341,7 +1349,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemReadEnc(LadderDiagram *diagram);
@@ -1390,7 +1398,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemResetEnc(LadderDiagram *diagram);
@@ -1556,7 +1564,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemModBUS(LadderDiagram *diagram, int which);
@@ -2138,6 +2146,7 @@ public:
 	bool IsLast(LadderElem *elem);
 	bool IsSeries(void) { return isSeries; }
 	bool HasEOL(void);
+	bool UartFunctionUsed(void);
 
 	bool GenerateIntCode(IntCode &ic);
 

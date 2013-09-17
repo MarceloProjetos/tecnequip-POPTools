@@ -121,6 +121,7 @@ void mapIO::Clear(void)
 	IO.clear();
 	countIO = 0;
 	selectedIO = 0;
+	SyncVectorIO();
 }
 
 bool mapIO::IsReserved(string name)

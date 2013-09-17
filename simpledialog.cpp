@@ -253,53 +253,9 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(SimpleDialog);
 
+	delete [] tmp;
+
     return !didCancel;
-}
-
-bool ShowReadEncDialog(string *name)
-{
-	bool changed = false;
-	POINT start = { 0, 0 }, size = { 0, 0 }, GridSize = { 0, 0 };
-
-	char name_tmp[MAX_NAME_LEN];
-
-    char *labels[] = { _("Destination:") };
-    char *dests[] = { name_tmp };
-
-	strcpy(name_tmp, name->c_str());
-
-	if(ShowSimpleDialog(_("Read Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests, start, size, GridSize)) {
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_tmp, eType_ReadEnc, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
-			changed = true;
-
-			*name = name_tmp;
-		}
-	}
-
-	return changed;
-}
-
-bool ShowResetEncDialog(string *name)
-{
-	bool changed = false;
-	POINT start = { 0, 0 }, size = { 0, 0 }, GridSize = { 0, 0 };
-
-	char name_tmp[MAX_NAME_LEN];
-
-    char *labels[] = { _("Destination:") };
-    char *dests[] = { name_tmp };
-
-	strcpy(name_tmp, name->c_str());
-
-	if(ShowSimpleDialog(_("Write Encoder"), 1, labels, 0, 0x1, 0x1, 0x1, dests, start, size, GridSize)) {
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_tmp, eType_ResetEnc, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
-			changed = true;
-
-			*name = name_tmp;
-		}
-	}
-
-	return changed;
 }
 
 bool ShowUSSDialog(int which, string *name, int *id, int *parameter, int *parameter_set, int *index)

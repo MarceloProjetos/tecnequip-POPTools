@@ -14,12 +14,9 @@ static BOOL NoCheckingOnBox[MAX_BOXES];
 
 static HWND SetBitDialog;
 
-static HWND SetBitRadio;
-static HWND ClearBitRadio;
 static HWND NameTextbox;
 static HWND AddressTextbox;
 static HWND ElemTextbox;
-static HWND RetransmitCheckbox;
 
 static LONG_PTR PrevNameProc;
 
@@ -97,25 +94,14 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static void MakeControls(void)
 {
-
-    SetBitRadio = CreateWindowEx(0, WC_BUTTON, _("32 bits"),
-        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        16, 21, 65, 20, SetBitDialog, NULL, Instance, NULL);
-    NiceFont(SetBitRadio);
-
-    ClearBitRadio = CreateWindowEx(0, WC_BUTTON, _("16 bits"),
-        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        16, 41, 65, 20, SetBitDialog, NULL, Instance, NULL);
-    NiceFont(ClearBitRadio);
-
     HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Variavel:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        115, 16, 60, 21, SetBitDialog, NULL, Instance, NULL);
+        7, 16, 60, 21, SetBitDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     NameTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
         WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | CBS_SORT | CBS_DROPDOWN | WS_VSCROLL,
-        190, 16, 115, 321, SetBitDialog, NULL, Instance, NULL);
+        82, 16, 115, 321, SetBitDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
 	LoadIOListToComboBox(NameTextbox, vector<eType>()); // Vetor vazio, todos os tipos...
@@ -123,56 +109,46 @@ static void MakeControls(void)
 
     HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("Elemento:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        115, 41, 60, 21, SetBitDialog, NULL, Instance, NULL);
+        7, 41, 60, 21, SetBitDialog, NULL, Instance, NULL);
     NiceFont(textLabel1);
 
     ElemTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, "",
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        190, 41, 115, 100, SetBitDialog, NULL, Instance, NULL);
+        82, 41, 115, 100, SetBitDialog, NULL, Instance, NULL);
     NiceFont(ElemTextbox);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Endereço:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        115, 71, 60, 21, SetBitDialog, NULL, Instance, NULL);
+        7, 71, 60, 21, SetBitDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
     AddressTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        190, 71, 115, 21, SetBitDialog, NULL, Instance, NULL);
+        82, 71, 115, 21, SetBitDialog, NULL, Instance, NULL);
     FixedFont(AddressTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        321, 10, 70, 23, SetBitDialog, NULL, Instance, NULL); 
+        213, 10, 70, 23, SetBitDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        321, 40, 70, 23, SetBitDialog, NULL, Instance, NULL); 
+        213, 40, 70, 23, SetBitDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
-
-    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Registrador"),
-        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        7, 3, 85, 65, SetBitDialog, NULL, Instance, NULL);
-    NiceFont(grouper);
-
-    RetransmitCheckbox = CreateWindowEx(0, WC_BUTTON, _("Retransmitir"),
-        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        7, 70, 100, 40, SetBitDialog, NULL, Instance, NULL);
-    NiceFont(RetransmitCheckbox);
 
     //PrevNameProc = SetWindowLongPtr(NameTextbox, GWLP_WNDPROC, 
     //    (LONG_PTR)MyNameProc);
 }
 
-bool ShowModbusDialog(int mode_write, string *name, int *elem, int *address, bool *set, bool *retransmitir)
+bool ShowModbusDialog(int mode_write, string *name, int *elem, int *address)
 {
 	bool changed = false;
 
 	char name_temp[MAX_NAME_LEN];
     SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
         mode_write ? _("Write ModBUS") : _("Read ModBUS"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 404, 115, MainWindow, NULL, Instance, NULL);
+        100, 100, 296, 99, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
 
@@ -182,16 +158,6 @@ bool ShowModbusDialog(int mode_write, string *name, int *elem, int *address, boo
 	PopulateModBUSMasterCombobox(ElemTextbox, false);
 	SendMessage(ElemTextbox, CB_SETCURSEL, ladder->mbGetIndexByNodeID(*elem), 0);
 	SendMessage(ElemTextbox, CB_SETDROPPEDWIDTH, 200, 0);
-
-	if (*set)
-        SendMessage(SetBitRadio, BM_SETCHECK, BST_CHECKED, 0);
-	else
-        SendMessage(ClearBitRadio, BM_SETCHECK, BST_CHECKED, 0);
-
-    if (*retransmitir)
-        SendMessage(RetransmitCheckbox, BM_SETCHECK, BST_CHECKED, 0);
-	else
-        SendMessage(RetransmitCheckbox, BM_SETCHECK, BST_UNCHECKED, 0);
 
     SendMessage(NameTextbox, WM_SETTEXT, 0, (LPARAM)(name->c_str()));
 	SendMessage(AddressTextbox, WM_SETTEXT, 0, (LPARAM)(addr));
@@ -224,28 +190,17 @@ bool ShowModbusDialog(int mode_write, string *name, int *elem, int *address, boo
 
     if(!DialogCancel) {
         SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_temp));
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_temp, mode_write ? eType_WriteModbus : eType_ReadModbus)) {
-			changed = true;
 
-			*name = name_temp;
+		changed = true;
 
-			if(SendMessage(SetBitRadio, BM_GETSTATE, 0, 0) & BST_CHECKED)
-				*set = TRUE;
-			else
-				*set = FALSE;
+		*name = name_temp;
 
-			if(SendMessage(RetransmitCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED)
-				*retransmitir = TRUE;
-			else
-				*retransmitir = FALSE;
+		ladder->mbDelRef(*elem);
+		*elem = ladder->mbGetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
+		ladder->mbAddRef(*elem);
+		SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
 
-			ladder->mbDelRef(*elem);
-			*elem = ladder->mbGetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
-			ladder->mbAddRef(*elem);
-			SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
-
-			*address = atoi(addr);
-		}
+		*address = atoi(addr);
 	}
 
     EnableWindow(MainWindow, TRUE);

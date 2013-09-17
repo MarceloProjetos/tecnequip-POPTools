@@ -1331,9 +1331,6 @@ bool cmdChangeName(LadderElem *elem, unsigned int index, pair<unsigned long, int
 	POINT start, size, GridSize = gui.getGridSize();
 	RECT rArea = gui.getElemArea(elem);
 
-	RECT rWindow;
-	GetWindowRect(DrawWindow, &rWindow);
-
 	start.x = rArea.left   ;
 	start.y = rArea.top    ;
 	size .x = rArea.right  - rArea.left;
@@ -1395,9 +1392,16 @@ bool LadderElemPlaceHolder::DrawGUI(bool poweredBefore, void *data)
 bool LadderElemComment::ShowDialog(LadderContext context)
 {
 	char txt[MAX_COMMENT_LEN];
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(this);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
 
 	strcpy(txt, prop.str.c_str());
-	bool changed = ShowCommentDialog(txt);
+	bool changed = ShowCommentDialog(txt, start, size, GridSize);
 
 	if(changed) {
 		LadderElemCommentProp *data = (LadderElemCommentProp *)getProperties();
@@ -3924,61 +3928,125 @@ bool LadderElemSetDa::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemReadEnc
+void ReadEncCmdChangeName(tCommandSource source, void *data)
+{
+	int                which = source.elem->getWhich();
+	LadderElemReadEnc *elem = dynamic_cast<LadderElemReadEnc *>(source.elem);
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemReadEncProp *prop = (LadderElemReadEncProp *)elem->getProperties();
+
+	vector<eType> types;
+	types.push_back(eType_ReadEnc);
+	types.push_back(eType_General);
+
+	cmdChangeName(source.elem, 0, prop->idName, eType_ReadEnc, types, _("Read Encoder"), _("Destination:"));
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
 bool LadderElemReadEnc::ShowDialog(LadderContext context)
 {
-	string NewName = Diagram->getNameIO(prop.idName);
-
-	bool changed = ShowReadEncDialog(&NewName);
-
-	if(changed) {
-		pair<unsigned long, int> pin = prop.idName;
-		if(Diagram->getIO(pin, NewName, eType_ReadEnc, infoIO_Name)) {
-			LadderElemReadEncProp *data = (LadderElemReadEncProp *)getProperties();
-
-			data->idName = pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
-	}
-
-	return changed;
+	return false;
 }
 
 bool LadderElemReadEnc::DrawGUI(bool poweredBefore, void *data)
 {
-	DrawGenericGUI(this, data, poweredBefore, _("LER ENCODER"));
+	POINT start, size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size = ddg->size;
+
+	ddg->size.x = 2;
+	ddg->size.y = 2;
+
+	if(ddg->DontDraw) return poweredAfter;
+
+	tCommandSource source = { nullptr, nullptr, this };
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
+
+	string sname = Diagram->getNameIO(prop.idName);
+	const char *name = sname.c_str();
+	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
+
+	DoEOL(ddg->start, size, ddg->size, poweredBefore);
+	start = ddg->start;
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("LER ENCODER"), false, poweredBefore);
+	ddg->region = r;
+
+	// Escreve o nome do I/O
+	RECT rText = r;
+	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
+	gui.AddCommand(source, rText, ReadEncCmdChangeName, nullptr, true, false);
 
 	return poweredAfter;
 }
 
 // Classe LadderElemResetEnc
+void ResetEncCmdChangeName(tCommandSource source, void *data)
+{
+	int                which = source.elem->getWhich();
+	LadderElemResetEnc *elem = dynamic_cast<LadderElemResetEnc *>(source.elem);
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemResetEncProp *prop = (LadderElemResetEncProp *)elem->getProperties();
+
+	vector<eType> types;
+	types.push_back(eType_ResetEnc);
+	types.push_back(eType_General);
+
+	cmdChangeName(source.elem, 0, prop->idName, eType_ResetEnc, types, _("Write Encoder"), _("Destination:"));
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
 bool LadderElemResetEnc::ShowDialog(LadderContext context)
 {
-	string NewName = Diagram->getNameIO(prop.idName);
-
-	bool changed = ShowResetEncDialog(&NewName);
-
-	if(changed) {
-		pair<unsigned long, int> pin = prop.idName;
-		if(Diagram->getIO(pin, NewName, eType_ResetEnc, infoIO_Name)) {
-			LadderElemResetEncProp *data = (LadderElemResetEncProp *)getProperties();
-
-			data->idName = pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
-	}
-
-	return changed;
+	return false;
 }
 
 bool LadderElemResetEnc::DrawGUI(bool poweredBefore, void *data)
 {
-	DrawGenericGUI(this, data, poweredBefore, _("ZERAR ENCODER"));
+	POINT start, size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size = ddg->size;
+
+	ddg->size.x = 2;
+	ddg->size.y = 2;
+
+	if(ddg->DontDraw) return poweredAfter;
+
+	tCommandSource source = { nullptr, nullptr, this };
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
+
+	string sname = Diagram->getNameIO(prop.idName);
+	const char *name = sname.c_str();
+	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
+
+	DoEOL(ddg->start, size, ddg->size, poweredBefore);
+	start = ddg->start;
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("ESCR. ENCODER"), false, poweredBefore);
+	ddg->region = r;
+
+	// Escreve o nome do I/O
+	RECT rText = r;
+	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
+	gui.AddCommand(source, rText, ResetEncCmdChangeName, nullptr, true, false);
 
 	return poweredAfter;
 }
@@ -4251,16 +4319,70 @@ bool LadderElemUSS::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemModBUS
+bool ModBUSCmdExpandedMode(LadderElem *elem, unsigned int selected)
+{
+	bool ret = false;
+	bool int32 = selected ? true : false;
+
+	LadderElemModBUS *mb = dynamic_cast<LadderElemModBUS *>(elem);
+	LadderElemModBUSProp *prop = (LadderElemModBUSProp *)mb->getProperties();
+
+	if(prop->int32 != int32) {
+		ladder->CheckpointBegin("Alterar ModBUS");
+
+		prop->int32 = int32;
+
+		mb->setProperties(ladder->getContext(), prop);
+
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
+	}
+
+	return ret;
+}
+
+bool ModBUSCmdExpandedResend(LadderElem *elem, unsigned int selected)
+{
+	bool ret = false;
+	bool retransmitir = selected ? true : false;
+
+	LadderElemModBUS *mb = dynamic_cast<LadderElemModBUS *>(elem);
+	LadderElemModBUSProp *prop = (LadderElemModBUSProp *)mb->getProperties();
+
+	if(prop->retransmitir != retransmitir) {
+		ladder->CheckpointBegin("Alterar ModBUS");
+
+		prop->retransmitir = retransmitir;
+
+		mb->setProperties(ladder->getContext(), prop);
+
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
+	}
+
+	return ret;
+}
+
 bool LadderElemModBUS::ShowDialog(LadderContext context)
 {
 	int  NewElem         = prop.elem;
 	int  NewAddress      = prop.address;
-	bool NewInt32        = prop.int32;
-	bool NewRetransmitir = prop.retransmitir;
 	string NewName       = Diagram->getNameIO(prop.idName);
 
 	bool changed = ShowModbusDialog(getWhich() == ELEM_WRITE_MODBUS ? 1 : 0,
-					&NewName, &NewElem, &NewAddress, &NewInt32, &NewRetransmitir);
+					&NewName, &NewElem, &NewAddress);
 
 	if(changed) {
 		eType type;
@@ -4277,8 +4399,6 @@ bool LadderElemModBUS::ShowDialog(LadderContext context)
 			data->idName       = pin;
 			data->elem         = NewElem;
 			data->address      = NewAddress;
-			data->int32        = NewInt32;
-			data->retransmitir = NewRetransmitir;
 
 			setProperties(context, data);
 		} else {
@@ -4291,7 +4411,69 @@ bool LadderElemModBUS::ShowDialog(LadderContext context)
 
 bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 {
-	DrawGenericGUI(this, data, poweredBefore, (getWhich() == ELEM_READ_MODBUS) ? _("LER MB") : _("ESCREVER MB"));
+	POINT start, size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	if(ddg->expanded) {
+		ddg->size.x = 4;
+		ddg->size.y = 5;
+	} else {
+		ddg->size.x = 2;
+		ddg->size.y = 2;
+	}
+
+	if(ddg->DontDraw) return poweredAfter;
+
+	tCommandSource source = { nullptr, nullptr, this };
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
+
+	string sname = ladder->getNameIO(prop.idName.first);
+	const char *name = sname.c_str();
+
+	DoEOL(ddg->start, size, ddg->size, poweredBefore);
+	start = ddg->start;
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, start, ddg->size, (getWhich() == ELEM_READ_MODBUS) ? _("LER MB") : _("ESCREVER MB"), true, poweredBefore);
+	ddg->region = r;
+
+	// Escreve o nome do I/O
+	RECT rText = r;
+	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
+
+	// Se expandido, desenha os itens do modo expandido
+	if(ddg->expanded) {
+		vector<tExpandedItem> items;
+		items.push_back(tExpandedItem(_("Modo" ), 1));
+		items.push_back(tExpandedItem(_("Retr.?"), 1));
+
+		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 2, items);
+
+		// Caixas desenhadas. Agora criamos o conteudo
+		tControlList list;
+
+		list.items.push_back(_("16 bits"));
+		list.items.push_back(_("32 bits"));
+
+		list.selected = prop.int32 ? 1 : 0;
+		list.fnc      = ModBUSCmdExpandedMode;
+
+		gui.addControlList(this, rExp[0], list);
+
+		list.items.clear();
+		list.items.push_back("Não");
+		list.items.push_back("Sim");
+
+		list.fnc      = ModBUSCmdExpandedResend;
+		list.selected = prop.retransmitir ? 1 : 0;
+
+		gui.addControlList(this, rExp[1], list);
+	}
 
 	return poweredAfter;
 }
