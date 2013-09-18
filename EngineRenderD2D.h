@@ -40,6 +40,8 @@ private:
 
 	HRESULT DrawPicture(IWICBitmapDecoder *pDecoder, POINT start, POINT size);
 
+	HRESULT Flush(void);
+
 public:
 	EngineRenderD2D(void);
 	~EngineRenderD2D(void);

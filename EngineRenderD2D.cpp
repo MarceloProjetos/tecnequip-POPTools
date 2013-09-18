@@ -560,14 +560,39 @@ HRESULT EngineRenderD2D::DrawPictureFromFile(char *filename, POINT start, POINT 
 	return hr;
 }
 
+HRESULT EngineRenderD2D::Flush(void)
+{
+	static bool locked = false;
+	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
+
+	if(pRT != NULL) {
+		hr = pRT->Flush();
+		if(FAILED(hr) && !locked) {
+			locked = true;
+//			char buf[1024];
+//			sprintf(buf, "erro em Flush: %ld", hr);
+//			MessageBox(NULL, buf, "ERRO D2D", MB_OK);
+		}
+	}
+
+	return hr;
+}
+
 HRESULT EngineRenderD2D::EndDraw(void)
 {
+	static bool locked = false;
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
 	Teste();
 
 	if(pRT != NULL) {
 		hr = pRT->EndDraw();
+		if(FAILED(hr) && !locked) {
+			locked = true;
+//			char buf[1024];
+//			sprintf(buf, "erro em EndDraw: %ld", hr);
+//			MessageBox(NULL, buf, "ERRO D2D", MB_OK);
+		}
 	}
 
 	return hr;
@@ -603,9 +628,15 @@ void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled, uns
 void EngineRenderD2D::DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY)
 {
 	if(pRT != NULL && brush < Brushes.size() && format < TextFormats.size()) {
+		unsigned int nchars = strlen(txt);
+		unsigned int maxlen = r.right - r.left, len = nchars * TextFormats[format].width;
+
 		// Calcula alinhamento horizontal
 		if(alignX != eAlignMode_TopLeft) {
-			unsigned int len = strlen(txt) * TextFormats[format].width;
+			if(len > maxlen) {
+				nchars = maxlen / TextFormats[format].width;
+				len    = maxlen;
+			}
 
 			if(alignX == eAlignMode_Center) {
 				r.left += (r.right - r.left - len)/2;
@@ -623,12 +654,16 @@ void EngineRenderD2D::DrawText(const char *txt, RECT r, unsigned int format, uns
 
 		int size = strlen(txt) * 2 + 1;
 		WCHAR *wtxt = new WCHAR[size];
+		char  *ctxt = new char[nchars + 1];
 		D2D1_RECT_F rf = D2D1::RectF((float)r.left, (float)r.top, (float)r.right, (float)r.bottom);
 
-		swprintf(wtxt, size, L"%S", txt);
+		strncpy(ctxt, txt, nchars);
+		ctxt[nchars] = 0;
+		swprintf(wtxt, size, L"%S", ctxt);
 		pRT->DrawText(wtxt, static_cast<UINT>(wcslen(wtxt)), TextFormats[format].format, &rf, Brushes[brush]);
 
 		delete [] wtxt;
+		delete [] ctxt;
 	}
 }
 
