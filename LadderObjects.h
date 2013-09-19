@@ -265,14 +265,6 @@ private:
 	virtual bool internalSave(FILE *f) = 0;
 	virtual bool internalLoad(FILE *f, unsigned int version) = 0;
 
-	// Estrutura de dados para acoes de Desfazer / Refazer
-	enum UndoRedoActionsEnum { eCheckpoint = 0, eSetProp, eActionsEnd };
-	union UndoRedoData {
-		struct {
-			void *data;
-		} SetProp;
-	};
-
 	void Init(void);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
@@ -285,6 +277,16 @@ protected:
 	bool poweredAfter;
 
 	LadderDiagram *Diagram;
+
+	// Estrutura de dados para acoes de Desfazer / Refazer
+	union UndoRedoData {
+		struct {
+			void *data;
+		} SetProp;
+	};
+
+	// Enumeracao com os tipos de eventos de Undo/Redo suportados pela classe base (LadderElem)
+	enum UndoRedoActionsEnum { eCheckpoint = 0, eSetProp, eActionsEnd };
 
 public:
 	// Construtores
@@ -1511,7 +1513,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemUSS(LadderDiagram *diagram, int which);
@@ -1663,7 +1665,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemUART(LadderDiagram *diagram, int which);
@@ -1915,7 +1917,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemFmtString(LadderDiagram *diagram, int which);
@@ -1966,7 +1968,7 @@ private:
 	bool internalLoad(FILE *f, unsigned int version);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
-	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
 	LadderElemYaskawa(LadderDiagram *diagram, int which);

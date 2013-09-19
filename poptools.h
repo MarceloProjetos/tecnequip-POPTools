@@ -766,12 +766,8 @@ bool ShowVarDialog(char *title, char *varname, string *name, vector<eType> types
 bool ShowVarDialog(char *title, char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types = vector<eType>());
 bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end);
 bool ShowVarBitDialog(char *title, char *varname, string *name, int * bit, vector<eType> types);
-bool ShowUSSDialog(int which, string *name, int *id, int *parameter, int *parameter_set, int *index);
 bool ShowModbusDialog(int mode_write, string *name, int *id, int *address);
-bool ShowUartDialog(int which, string *name);
-bool ShowFormattedStringDialog(int mode_write, string *var, char *string);
-bool ShowServoYaskawaDialog(int mode_write, int *id, string *var, char *string);
-void ShowSimulationVarSetDialog(char *name, char *val);
+void ShowSimulationVarSetDialog(const char *name, char *val);
 bool ShowLookUpTableDialog(LadderElemLUTProp *t);
 bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t);
 // confdialog.cpp
@@ -870,7 +866,7 @@ void StartSimulationTimer(void);
 void ClearSimulationData(void);
 void DescribeForIoList(int val, eType type, char *out);
 void DescribeForIoList(const char *name, eType type, char *out);
-void SimulationToggleContact(char *name);
+void SimulationToggleContact(const char *name);
 void SetAdcShadow(char *name, SWORD val);
 SWORD GetAdcShadow(char *name);
 void SetEncShadow(char *name, SWORD val);

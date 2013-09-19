@@ -432,6 +432,11 @@ void LadderGUI::PaintScrollAndSplitter(void)
 // Metodos Publicos
 void LadderGUI::CmdExpand(LadderElem *elem)
 {
+	if(elem == nullptr) { // Quando elem for nulo significa que devemos limpar a lista inteira!
+		vectorExpandedElements.clear();
+		return;
+	}
+
 	vector<LadderElem *>::iterator it;
 	for(it = vectorExpandedElements.begin(); it != vectorExpandedElements.end(); it++) {
 		if(elem == *it) {
@@ -574,7 +579,7 @@ void LadderGUI::DrawInit(void)
 
 	// Roxo: Comunicacao
 	group.Background = RGB(235, 150, 235);
-	group.Foreground = RGB(255,   0, 255);
+	group.Foreground = RGB(170,  85, 170);
 	group.Border     = RGB(170,  85, 170);
 	group.BorderText = RGB(255, 255, 255);
 
@@ -850,7 +855,9 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 			DrawLine(StartPoint, EndPoint, colorgroup.BorderText);
 
 			// Adiciona o comando do botao de expandir / retrair
+			// Adiciona duas vezes pois a expansao pode ser ativada tanto em modo normal como em simulacao
 			AddCommand(source, rExpand, ::CmdExpand, nullptr, false, false);
+			AddCommand(source, rExpand, ::CmdExpand, nullptr, false, true );
 		}
 
 		// Desenha o texto do nome do controle
@@ -1346,6 +1353,20 @@ bool cmdChangeName(LadderElem *elem, unsigned int index, pair<unsigned long, int
 	return ret;
 }
 
+// Funcao que exibe uma janela de dialogo e atualiza o valor de uma variavel de tipo Geral durante a simulacao
+void ElemSimCmdSetVariable(tCommandSource source, void *data)
+{
+	char val[1024];
+	unsigned long id = *(unsigned long *)data;
+	string name = ladder->getNameIO(id);
+
+	if(name.size() > 0 && ladder->getDetailsIO(name).type == eType_General) {
+		sprintf(val, "%d", GetSimulationVariable(name.c_str()));
+		ShowSimulationVarSetDialog(name.c_str(), val);
+		SetSimulationVariable(name.c_str(), atoi(val));
+	}
+}
+
 // Classe LadderElemPlaceHolder
 bool LadderElemPlaceHolder::ShowDialog(LadderContext context) { return false; }
 
@@ -1557,6 +1578,17 @@ void ContactCmdToggleNegated(tCommandSource source, void *data)
 	delete prop;
 }
 
+void ContactCmdSimToggleState(tCommandSource source, void *data)
+{
+	LadderElemContactProp *prop = (LadderElemContactProp *)source.elem->getProperties();
+
+	if(ladder->getDetailsIO(prop->idName.first).type == eType_DigInput) {
+		SimulationToggleContact(ladder->getNameIO(prop->idName).c_str());
+	}
+
+	delete prop;
+}
+
 bool LadderElemContact::ShowDialog(LadderContext context)
 {
 	tCommandSource source = { nullptr, nullptr, this };
@@ -1598,6 +1630,9 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("CONTATO"), true, poweredBefore);
 	ddg->region = r;
+
+	// Comando de simulacao para inverter o estado do contato
+	gui.AddCommand(source, r, ContactCmdSimToggleState, nullptr, true, true);
 
 	// Escreve o nome do contato
 	RECT rText = r;
@@ -2814,6 +2849,7 @@ bool LadderElemCmp::DrawGUI(bool poweredBefore, void *data)
 	}
 
 	int *pInt1 = new int, *pInt2 = new int;
+	unsigned long *pULong;
 	tCommandSource source = { nullptr, nullptr, this };
 
 	*pInt1 = 0;
@@ -2826,6 +2862,10 @@ bool LadderElemCmp::DrawGUI(bool poweredBefore, void *data)
 
 	gui.AddCommand(source, r, CmpCmdChangeOp, pInt1, true, false);
 
+	pULong = new unsigned long;
+	*pULong = prop.idOp1.first;
+	gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
+
 	r.top    += FONT_HEIGHT;
 	r.bottom += FONT_HEIGHT;
 	gui.DrawText(s          , r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
@@ -2835,6 +2875,10 @@ bool LadderElemCmp::DrawGUI(bool poweredBefore, void *data)
 	gui.DrawText(op2.c_str(), r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 
 	gui.AddCommand(source, r, CmpCmdChangeOp, pInt2, true, false);
+
+	pULong = new unsigned long;
+	*pULong = prop.idOp2.first;
+	gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
 
 	return poweredAfter;
 }
@@ -2929,6 +2973,7 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, title, canExpand, poweredBefore);
 	ddg->region = r;
 
+	unsigned long *pULong;
 	int *pIntOp1 = new int, *pIntOp2 = new int, *pIntDest = new int;
 	tCommandSource source = { nullptr, nullptr, this };
 
@@ -2943,6 +2988,10 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 		gui.DrawText(op1.c_str(), r, 0, colorgroup.Foreground, eAlignMode_BottomRight, eAlignMode_TopLeft);
 		gui.AddCommand(source, r, MathCmdChangeName, pIntOp1, true, false);
 
+		pULong = new unsigned long;
+		*pULong = prop.idOp1.first;
+		gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
+
 		// Cria o retangulo para desenhar o sinal, salvando o retangulo que identifica o texto superior
 		RECT rSinal = r;
 
@@ -2950,6 +2999,10 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 		r.top  += FONT_HEIGHT + 10;
 		gui.DrawText(op2.c_str(), r, 0, colorgroup.Foreground, eAlignMode_BottomRight, eAlignMode_TopLeft);
 		gui.AddCommand(source, r, MathCmdChangeName, pIntOp2, true, false);
+
+		pULong = new unsigned long;
+		*pULong = prop.idOp2.first;
+		gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
 
 		// Desenha o sinal centralizado entre a parte de baixo do texto inferior e o topo do texto superior
 		rSinal.left   += 5;
@@ -2964,6 +3017,10 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 		r.top  += FONT_HEIGHT + 10;
 		gui.DrawText(dest.c_str(), r, 0, colorgroup.Foreground, eAlignMode_BottomRight, eAlignMode_TopLeft);
 		gui.AddCommand(source, r, MathCmdChangeName, pIntDest, true, false);
+
+		pULong = new unsigned long;
+		*pULong = prop.idDest.first;
+		gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
 	} else { // Sem sinal! Divisao, desenha o seu simbolo...
 		RECT rText = r;
 		rText.top   += (GridSize.y - FONT_HEIGHT)/2;
@@ -2985,9 +3042,17 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 		gui.DrawText(op1.c_str(), rTextLeft, 0, colorgroup.Foreground, eAlignMode_TopLeft    , eAlignMode_TopLeft);
 		gui.AddCommand(source, rTextLeft, MathCmdChangeName, pIntOp1, true, false);
 
+		pULong = new unsigned long;
+		*pULong = prop.idOp1.first;
+		gui.AddCommand(source, rTextLeft, ElemSimCmdSetVariable, pULong, true, true);
+
 		rText.left = rTextLeft.right;
 		gui.DrawText(op2.c_str(), rText    , 0, colorgroup.Foreground, eAlignMode_BottomRight, eAlignMode_TopLeft);
 		gui.AddCommand(source, rText, MathCmdChangeName, pIntOp2, true, false);
+
+		pULong = new unsigned long;
+		*pULong = prop.idOp2.first;
+		gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
 
 		// Desenha o destino
 		enum eAlignMode align = (which == ELEM_MOD) ? eAlignMode_TopLeft : eAlignMode_BottomRight;
@@ -2995,6 +3060,10 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 		rDest.top  += FONT_HEIGHT + 10;
 		gui.DrawText(dest.c_str(), rDest, 0, colorgroup.Foreground, align, eAlignMode_TopLeft);
 		gui.AddCommand(source, rDest, MathCmdChangeName, pIntDest, true, false);
+
+		pULong = new unsigned long;
+		*pULong = prop.idDest.first;
+		gui.AddCommand(source, rDest, ElemSimCmdSetVariable, pULong, true, true);
 	}
 
 	return poweredAfter;
@@ -3048,6 +3117,7 @@ bool LadderElemSqrt::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "RAIZ", false, poweredBefore);
 	ddg->region = r;
 
+	unsigned long *pULong;
 	int *pInt1 = new int, *pInt2 = new int;
 	tCommandSource source = { nullptr, nullptr, this };
 
@@ -3067,6 +3137,10 @@ bool LadderElemSqrt::DrawGUI(bool poweredBefore, void *data)
 	gui.DrawText(dest.c_str(), rDest, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, rDest, SqrtCmdChangeName, pInt2, true, false);
 
+	pULong = new unsigned long;
+	*pULong = prop.idDest.first;
+	gui.AddCommand(source, rDest, ElemSimCmdSetVariable, pULong, true, true);
+
 	rDest.left  = rDest.right - 2;
 	rDest.right = rDest.left + FONT_WIDTH;
 	gui.DrawText("=", rDest, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
@@ -3075,6 +3149,10 @@ bool LadderElemSqrt::DrawGUI(bool poweredBefore, void *data)
 	rText.right = r.right;
 	gui.DrawText(src .c_str(), rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, rText, SqrtCmdChangeName, pInt1, true, false);
+
+	pULong = new unsigned long;
+	*pULong = prop.idSrc.first;
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
 
 	// Desenha as linhas que compoem o simbolo da raiz
 	POINT StartPoint = { rText.left - 2, r.top - 5 };
@@ -3158,6 +3236,7 @@ bool LadderElemRand::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("ALEATORIO"), false, poweredBefore);
 	ddg->region = r;
 
+	unsigned long *pULong;
 	int *pInt1 = new int, *pInt2 = new int, *pInt3 = new int;
 	tCommandSource source = { nullptr, nullptr, this };
 
@@ -3232,6 +3311,10 @@ bool LadderElemRand::DrawGUI(bool poweredBefore, void *data)
 		eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, rText, RandCmdChangeVar, pInt1, true, false);
 
+	pULong = new unsigned long;
+	*pULong = prop.idMin.first;
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
+
 	// A seguir desenha a variavel de destino
 	rText.top    = rText.bottom + 3;
 	rText.bottom = rText.top + FONT_HEIGHT;
@@ -3239,12 +3322,20 @@ bool LadderElemRand::DrawGUI(bool poweredBefore, void *data)
 		eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, rText, RandCmdChangeVar, pInt2, true, false);
 
+	pULong = new unsigned long;
+	*pULong = prop.idVar.first;
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
+
 	// Por ultimo desenha o limite superior
 	rText.top    = rText.bottom + 3;
 	rText.bottom = rText.top + FONT_HEIGHT;
 	gui.DrawText(Diagram->getNameIO(prop.idMax).c_str(), rText, 0, colorgroup.Foreground,
 		eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, rText, RandCmdChangeVar, pInt3, true, false);
+
+	pULong = new unsigned long;
+	*pULong = prop.idMax.first;
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
 
 	return poweredAfter;
 }
@@ -3297,6 +3388,7 @@ bool LadderElemAbs::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "ABSOLUTO", false, poweredBefore);
 	ddg->region = r;
 
+	unsigned long *pULong;
 	int *pInt1 = new int, *pInt2 = new int;
 	tCommandSource source = { nullptr, nullptr, this };
 
@@ -3316,6 +3408,10 @@ bool LadderElemAbs::DrawGUI(bool poweredBefore, void *data)
 	gui.DrawText(dest.c_str(), rDest, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, rDest, AbsCmdChangeName, pInt2, true, false);
 
+	pULong = new unsigned long;
+	*pULong = prop.idDest.first;
+	gui.AddCommand(source, rDest, ElemSimCmdSetVariable, pULong, true, true);
+
 	rDest.left  = rDest.right - 2;
 	rDest.right = rDest.left + FONT_WIDTH;
 	gui.DrawText("=", rDest, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
@@ -3324,6 +3420,10 @@ bool LadderElemAbs::DrawGUI(bool poweredBefore, void *data)
 	rText.right = r.right - 3;
 	gui.DrawText(src .c_str(), rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, rText, AbsCmdChangeName, pInt1, true, false);
+
+	pULong = new unsigned long;
+	*pULong = prop.idSrc.first;
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
 
 	// Desenha as linhas que compoem o simbolo do absoluto
 	POINT StartPoint = { rText.left - 2, r.top - 5 };
@@ -3385,6 +3485,7 @@ bool LadderElemMove::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "MOVER", false, poweredBefore);
 	ddg->region = r;
 
+	unsigned long *pULong;
 	int *pInt1 = new int, *pInt2 = new int;
 	tCommandSource source = { nullptr, nullptr, this };
 
@@ -3404,6 +3505,10 @@ bool LadderElemMove::DrawGUI(bool poweredBefore, void *data)
 	gui.DrawText(dest.c_str(), rDest, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, rDest, MoveCmdChangeName, pInt2, true, false);
 
+	pULong = new unsigned long;
+	*pULong = prop.idDest.first;
+	gui.AddCommand(source, rDest, ElemSimCmdSetVariable, pULong, true, true);
+
 	rDest.left  = rDest.right + 2;
 	rDest.right = rDest.left + FONT_WIDTH;
 	gui.DrawText("=", rDest, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
@@ -3412,6 +3517,10 @@ bool LadderElemMove::DrawGUI(bool poweredBefore, void *data)
 	rText.right = r.right;
 	gui.DrawText(src .c_str(), rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, rText, MoveCmdChangeName, pInt1, true, false);
+
+	pULong = new unsigned long;
+	*pULong = prop.idSrc.first;
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
 
 	return poweredAfter;
 }
@@ -3560,6 +3669,10 @@ bool LadderElemSetBit::DrawGUI(bool poweredBefore, void *data)
 	rText.bottom = rText.top + FONT_HEIGHT;
 	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 
+	unsigned long *pULong = new unsigned long;
+	*pULong = prop.idName.first;
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
+
 	// Escreve o modo (liga ou desliga) e o bit
 	char buf[1024];
 	sprintf(buf, _("%s bit %d"), prop.set ? _("Ligar") : _("Desligar"), prop.bit);
@@ -3684,6 +3797,10 @@ bool LadderElemCheckBit::DrawGUI(bool poweredBefore, void *data)
 	rText.top  += 5;
 	rText.bottom = rText.top + FONT_HEIGHT;
 	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+	unsigned long *pULong = new unsigned long;
+	*pULong = prop.idName.first;
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
 
 	// Escreve o modo (liga ou desliga) e o bit
 	char buf[1024];
@@ -4263,57 +4380,179 @@ bool LadderElemMultisetDA::DrawGUI(bool poweredBefore, void *data)
 		rText.bottom = rText.top + FONT_HEIGHT;
 		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 
+		unsigned long *pULong = new unsigned long;
+		*pULong = prop.idTime.first;
+		gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
+
 		sprintf(buf, "%s %s", _("Valor:"), Diagram->getNameIO(prop.idDesl).c_str());
 
 		rText.top    = rText.bottom + 10;
 		rText.bottom = rText.top    + FONT_HEIGHT;
 		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+		pULong = new unsigned long;
+		*pULong = prop.idDesl.first;
+		gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
 	}
 
 	return poweredAfter;
 }
 
 // Classe LadderElemUSS
-bool LadderElemUSS::ShowDialog(LadderContext context)
+void USSCmdChangeValue(tCommandSource source, void *data)
 {
-	int NewId           = prop.id;
-	int NewIndex        = prop.index;                                                                                                                                                                                                                                                                                                                                                                                         
-	int NewParameter    = prop.parameter;
-	int NewParameterSet = prop.parameter_set;
-	string NewName      = Diagram->getNameIO(prop.idName);
+	int            which = source.elem->getWhich(), field = *(int *)data;
+	LadderElemUSS *elem  = dynamic_cast<LadderElemUSS *>(source.elem);
 
-	bool changed = ShowUSSDialog(getWhich(), &NewName, &NewId, &NewParameter, &NewParameterSet, &NewIndex);
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemUSSProp *prop = (LadderElemUSSProp *)elem->getProperties();
 
-	if(changed) {
-		eType type;
-		if(getWhich() == ELEM_READ_USS) {
-			type = eType_ReadUSS;
+	int max = 0;
+	char cname[100];
+	char *title = (which == ELEM_READ_USS) ? _("Ler Parâmetro por USS") : _("Escrever Parâmetro por USS"), *desc, *FieldName;
+    switch(field) 
+	{
+        case 0:
+			strcpy(cname, ladder->getNameIO(prop->idName).c_str());
+			desc = (which == ELEM_READ_USS) ? _("Destination:") : _("Source:");
+			FieldName = _("Nome");
+			break;
+        case 1:
+			sprintf(cname, "%d", prop->id);
+			desc      = _("ID:");
+			FieldName = _("ID" );
+			break;
+        case 2:
+			sprintf(cname, "%d", prop->parameter);
+			desc      = _("Parametro:");
+			FieldName = _("Parametro" );
+			break;
+        case 3:
+			sprintf(cname, "%d", prop->parameter_set);
+			desc      = _("Set de Parametro:");
+			FieldName = _("Set de Parametro" );
+			break;
+        case 4:
+			sprintf(cname, "%d", prop->index);
+			desc      = _("Indice:");
+			FieldName = _("Indice" );
+			break;
+        default:
+			oops();
+			break;
+    }
+
+	string name = cname;
+
+	// Passa a posicao do objeto para a janela para que seja exibida centralizada ao elemento
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(source.elem);
+
+	RECT rWindow;
+	GetWindowRect(DrawWindow, &rWindow);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
+
+	if(field == 0) { // idName, Variavel
+		vector<eType> types;
+		types.push_back((which == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS);
+		types.push_back(eType_General);
+
+		cmdChangeName(source.elem, 0, prop->idName, eType_ResetEnc, types, title, desc);
+
+		// Aqui desalocamos as propriedades
+		delete prop;
+	} else { // Outros parametros, todos numericos
+		vector<eType> types;
+		types.push_back(eType_Pending);
+
+		if(ShowVarDialog(title, desc, &name, start, size, GridSize, types) &&
+			ladder->IsValidNameAndType(0, name.c_str(), eType_Pending, FieldName, VALIDATE_IS_NUMBER, 0, 0)) {
+				int val = atoi(name.c_str());
+				switch(field) 
+				{
+					case 1: prop->id            = val; break;
+					case 2: prop->parameter     = val; break;
+					case 3: prop->parameter_set = val; break;
+					case 4: prop->index         = val; break;
+					default: oops(); break;
+				}
+
+				source.elem->setProperties(ladder->getContext(), prop);
 		} else {
-			type = eType_WriteUSS;
-		}
-
-		pair<unsigned long, int> pin = prop.idName;
-		if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {
-			LadderElemUSSProp *data = (LadderElemUSSProp *)getProperties();
-
-			data->idName        = pin;
-			data->id            = NewId;
-			data->parameter     = NewParameter;
-			data->parameter_set = NewParameterSet;
-			data->index         = NewIndex;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
+			// Se foi cancelada a alteracao, devemos desalocar as propriedades
+			delete prop;
 		}
 	}
+}
 
-	return changed;
+bool LadderElemUSS::ShowDialog(LadderContext context)
+{
+	return false;
 }
 
 bool LadderElemUSS::DrawGUI(bool poweredBefore, void *data)
 {
-	DrawGenericGUI(this, data, poweredBefore, (getWhich() == ELEM_READ_USS) ? _("LER USS") : _("ESCREVER USS"));
+	int which = getWhich();
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	ddg->size.x = 3;
+	ddg->size.y = 4;
+
+	if(ddg->DontDraw) return poweredAfter;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(which, poweredAfter);
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (which == ELEM_READ_USS) ? _("LER USS") : _("ESCREVER USS"), false, poweredBefore);
+	ddg->region = r;
+
+	char buf[1024];
+	int *pInt, count = 0;
+	vector<string> FieldList;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	// Cria a lista com os campos
+
+	sprintf(buf, "%s %s", (which == ELEM_READ_USS) ? _("Destination:") : _("Source:"), Diagram->getNameIO(prop.idName).c_str());
+	FieldList.push_back(string(buf));
+
+	sprintf(buf, "%s %d", _("ID:"), prop.id);
+	FieldList.push_back(string(buf));
+
+	sprintf(buf, "%s %d", _("Parametro:"), prop.parameter);
+	FieldList.push_back(string(buf));
+
+	sprintf(buf, "%s %d", _("Set de Parametro:"), prop.parameter_set);
+	FieldList.push_back(string(buf));
+
+	sprintf(buf, "%s %d", _("Indice:"), prop.index);
+	FieldList.push_back(string(buf));
+
+	// Agora desenha os campos na tela
+
+	r.left   +=  5;
+	r.top    += 10;
+
+	vector<string>::iterator it;
+	for(it = FieldList.begin(); it != FieldList.end(); it++) {
+		r.bottom  = r.top + FONT_HEIGHT;
+		gui.DrawText(it->c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+		pInt  = new int;
+		*pInt = count++;
+		gui.AddCommand(source, r, USSCmdChangeValue, pInt, true, false);
+
+		r.top = r.bottom + 5;
+	}
 
 	return poweredAfter;
 }
@@ -4411,10 +4650,8 @@ bool LadderElemModBUS::ShowDialog(LadderContext context)
 
 bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 {
-	POINT start, size, GridSize = gui.getGridSize();
+	POINT GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
-
-	size  = ddg->size;
 
 	if(ddg->expanded) {
 		ddg->size.x = 4;
@@ -4434,11 +4671,8 @@ bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 	string sname = ladder->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
 
-	DoEOL(ddg->start, size, ddg->size, poweredBefore);
-	start = ddg->start;
-
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, start, ddg->size, (getWhich() == ELEM_READ_MODBUS) ? _("LER MB") : _("ESCREVER MB"), true, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (getWhich() == ELEM_READ_MODBUS) ? _("LER MB") : _("ESCREVER MB"), true, poweredBefore);
 	ddg->region = r;
 
 	// Escreve o nome do I/O
@@ -4564,7 +4798,7 @@ bool LadderElemSetPWM::DrawGUI(bool poweredBefore, void *data)
 	DoEOL(ddg->start, size, ddg->size, poweredBefore);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("PWM"), true, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("PWM"), false, poweredBefore);
 	ddg->region = r;
 
 	tCommandSource source = { nullptr, nullptr, this };
@@ -4615,38 +4849,59 @@ bool LadderElemSetPWM::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemUART
+void UARTCmdChangeName(tCommandSource source, void *data)
+{
+	int             which = source.elem->getWhich();
+	LadderElemUART *elem  = dynamic_cast<LadderElemUART *>(source.elem);
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemUARTProp *prop = (LadderElemUARTProp *)elem->getProperties();
+
+	vector<eType> types;
+	types.push_back((which == ELEM_UART_SEND) ? eType_TxUART : eType_RxUART);
+	types.push_back(eType_General);
+
+	cmdChangeName(source.elem, 0, prop->idName, (which == ELEM_UART_SEND) ? eType_TxUART : eType_RxUART, types,
+		(which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"),
+		(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"));
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+}
+
 bool LadderElemUART::ShowDialog(LadderContext context)
 {
-	string NewName = Diagram->getNameIO(prop.idName);
-
-	bool changed = ShowUartDialog(getWhich(), &NewName);
-
-	if(changed) {
-		eType type;
-		if(getWhich() == ELEM_UART_RECV) {
-			type = eType_RxUART;
-		} else {
-			type = eType_TxUART;
-		}
-
-		pair<unsigned long, int> pin = prop.idName;
-		if(Diagram->getIO(pin, NewName, type, infoIO_Name)) {
-			LadderElemUARTProp *data = (LadderElemUARTProp *)getProperties();
-
-			data->idName = pin;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
-		}
-	}
-
-	return changed;
+	return false;
 }
 
 bool LadderElemUART::DrawGUI(bool poweredBefore, void *data)
 {
-	DrawGenericGUI(this, data, poweredBefore, (getWhich() == ELEM_UART_RECV) ? _("LER SERIAL") : _("ESCREVER SERIAL"));
+	POINT GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	ddg->size.x = 2;
+	ddg->size.y = 2;
+
+	if(ddg->DontDraw) return poweredAfter;
+
+	tCommandSource source = { nullptr, nullptr, this };
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
+
+	string sname = ladder->getNameIO(prop.idName.first);
+	const char *name = sname.c_str();
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (getWhich() == ELEM_UART_RECV) ? _("LER SERIAL") : _("ESCR. SERIAL"), false, poweredBefore);
+	ddg->region = r;
+
+	// Escreve o nome do I/O
+	RECT rText = r;
+	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
+	gui.AddCommand(source, rText, UARTCmdChangeName, nullptr, true, false);
 
 	return poweredAfter;
 }
@@ -4958,6 +5213,7 @@ bool LadderElemLUT::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("TABELA DE BUSCA"), false, poweredBefore);
 	ddg->region = r;
 
+	unsigned long *pULong;
 	int *pInt1 = new int, *pInt2 = new int;
 	tCommandSource source = { nullptr, nullptr, this };
 
@@ -4974,12 +5230,20 @@ bool LadderElemLUT::DrawGUI(bool poweredBefore, void *data)
 	gui.DrawText(buf, r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, r, LUTCmdChangeName, pInt2, true, false);
 
+	pULong = new unsigned long;
+	*pULong = prop.idDest.first;
+	gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
+
 	sprintf(buf, "%s %s", _("Index:"), Diagram->getNameIO(prop.idIndex).c_str());
 
 	r.top    += FONT_HEIGHT;
 	r.bottom += FONT_HEIGHT;
 	gui.DrawText(buf, r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 	gui.AddCommand(source, r, LUTCmdChangeName, pInt1, true, false);
+
+	pULong = new unsigned long;
+	*pULong = prop.idIndex.first;
+	gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
 
 	sprintf(buf, "%s %d", _("Count:"), prop.count);
 
@@ -5186,6 +5450,7 @@ bool LadderElemPiecewise::DrawGUI(bool poweredBefore, void *data)
 		char buf[1024];
 		RECT rText = { r.left + 3, rGraph.bottom + 20, r.right - 3, 0 };
 
+		unsigned long *pULong;
 		int *pInt1 = new int, *pInt2 = new int;
 
 		*pInt1 = 0;
@@ -5197,97 +5462,269 @@ bool LadderElemPiecewise::DrawGUI(bool poweredBefore, void *data)
 		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 		gui.AddCommand(source, rText, PiecewiseCmdChangeName, pInt1, true, false);
 
+		pULong = new unsigned long;
+		*pULong = prop.idIndex.first;
+		gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
+
 		sprintf(buf, _("Eixo Y: %s"), Diagram->getNameIO(prop.idDest).c_str());
 
 		rText.top    = rText.bottom + 5;
 		rText.bottom = rText.top    + FONT_HEIGHT;
 		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 		gui.AddCommand(source, rText, PiecewiseCmdChangeName, pInt2, true, false);
+
+		pULong = new unsigned long;
+		*pULong = prop.idDest.first;
+		gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
 	}
 
 	return poweredAfter;
 }
 
 // Classe LadderElemFmtString
-bool LadderElemFmtString::ShowDialog(LadderContext context)
+void FmtStringCmdChangeValue(tCommandSource source, void *data)
 {
-	string NewVar = Diagram->getNameIO(prop.idVar);
+	int            which = source.elem->getWhich(), field = *(int *)data;
+	LadderElemFmtString *elem  = dynamic_cast<LadderElemFmtString *>(source.elem);
 
-	char NewTxt[MAX_NAME_LEN];
-	strcpy(NewTxt, prop.txt.c_str());
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemFmtStringProp *prop = (LadderElemFmtStringProp *)elem->getProperties();
 
-	bool changed = ShowFormattedStringDialog(getWhich() == ELEM_WRITE_FORMATTED_STRING ? 1 : 0, &NewVar, NewTxt);
+	char *title = (which == ELEM_READ_FORMATTED_STRING) ? _("Receive Formatted String Over UART") : _("Send Formatted String Over UART");
 
-	if(changed) {
-		eType type;
-		if(getWhich() == ELEM_READ_FORMATTED_STRING) {
-			type = eType_RxUART;
+	// Passa a posicao do objeto para a janela para que seja exibida centralizada ao elemento
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(source.elem);
+
+	RECT rWindow;
+	GetWindowRect(DrawWindow, &rWindow);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
+
+	if(field == 0) { // idVar, Variavel
+		eType type = (which == ELEM_READ_FORMATTED_STRING) ? eType_RxUART : eType_TxUART;
+		vector<eType> types;
+		types.push_back(type);
+		types.push_back(eType_General);
+
+		cmdChangeName(source.elem, 0, prop->idVar, type, types, title, (which == ELEM_READ_FORMATTED_STRING) ? _("Destination:") : _("Source:"));
+
+		// Aqui desalocamos as propriedades
+		delete prop;
+	} else { // txt, Texto
+		vector<eType> types;
+		types.push_back(eType_Pending);
+		string name = prop->txt;
+
+		if(ShowVarDialog(title,  _("String:"), &name, start, size, GridSize, types)) {
+			prop->txt = name;
+			source.elem->setProperties(ladder->getContext(), prop);
 		} else {
-			type = eType_TxUART;
-		}
-
-		pair<unsigned long, int> pin = prop.idVar;
-		if(Diagram->getIO(pin, NewVar, type, infoIO_Var)) {
-			LadderElemFmtStringProp *data = (LadderElemFmtStringProp *)getProperties();
-
-			data->idVar = pin;
-			data->txt = NewTxt;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
+			// Se foi cancelada a alteracao, devemos desalocar as propriedades
+			delete prop;
 		}
 	}
+}
 
-	return changed;
+bool LadderElemFmtString::ShowDialog(LadderContext context)
+{
+	return false;
 }
 
 bool LadderElemFmtString::DrawGUI(bool poweredBefore, void *data)
 {
-	DrawGenericGUI(this, data, poweredBefore, (getWhich() == ELEM_READ_FORMATTED_STRING) ? _("LER STRING") : _("ESCREVER STRING"));
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	ddg->size.x = 2;
+	ddg->size.y = 2;
+
+	if(ddg->DontDraw) return poweredAfter;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
+
+	int which = getWhich();
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (getWhich() == ELEM_READ_FORMATTED_STRING) ? _("LER STRING") : _("ESCR. STRING"), false, poweredBefore);
+	ddg->region = r;
+
+	int *pInt;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	// Desenha o nome da variavel
+	r.top  += 10;
+	r.left += 5;
+	gui.DrawText(Diagram->getNameIO(prop.idVar).c_str(), r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+	pInt = new int;
+	*pInt = 0;
+	gui.AddCommand(source, r, FmtStringCmdChangeValue, pInt, true, false);
+
+	// Desenha o limite do contador
+	r.top += FONT_HEIGHT + 5;
+	gui.DrawText(prop.txt.c_str(), r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+	pInt = new int;
+	*pInt = 1;
+	gui.AddCommand(source, r, FmtStringCmdChangeValue, pInt, true, false);
 
 	return poweredAfter;
 }
 
 // Classe LadderElemYaskawa
-bool LadderElemYaskawa::ShowDialog(LadderContext context)
+void YaskawaCmdChangeValue(tCommandSource source, void *data)
 {
-	int NewId = prop.id;
-	string NewVar = Diagram->getNameIO(prop.idVar);
+	int            which = source.elem->getWhich(), field = *(int *)data;
+	LadderElemYaskawa *elem  = dynamic_cast<LadderElemYaskawa *>(source.elem);
 
-	char NewTxt[MAX_NAME_LEN];
-	strcpy(NewTxt, prop.txt.c_str());
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemYaskawaProp *prop = (LadderElemYaskawaProp *)elem->getProperties();
 
-	bool changed = ShowServoYaskawaDialog(getWhich() == ELEM_WRITE_SERVO_YASKAWA ? 1 : 0, &NewId, &NewVar, NewTxt);
+	int max = 0;
+	char cname[100];
+	char *title = (which == ELEM_READ_SERVO_YASKAWA) ? _("Read Servo Yaskawa") : _("Write Servo Yaskawa"), *desc, *FieldName;
+    switch(field) 
+	{
+        case 0:
+			strcpy(cname, ladder->getNameIO(prop->idVar).c_str());
+			desc      = _("Variable:");
+			FieldName = _("Variavel" );
+			break;
+        case 1:
+			sprintf(cname, "%d", prop->id);
+			desc      = _("ID:");
+			FieldName = _("ID" );
+			break;
+        case 2:
+			strcpy(cname, prop->txt.c_str());
+			desc      = _("String:");
+			FieldName = _("String" );
+			break;
+        default:
+			oops();
+			break;
+    }
 
-	if(changed) {
-		eType type;
-		if(getWhich() == ELEM_READ_SERVO_YASKAWA) {
-			type = eType_ReadYaskawa;
+	string name = cname;
+
+	// Passa a posicao do objeto para a janela para que seja exibida centralizada ao elemento
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(source.elem);
+
+	RECT rWindow;
+	GetWindowRect(DrawWindow, &rWindow);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
+
+	if(field == 0) { // idVar, Variavel
+		eType type = (which == ELEM_READ_SERVO_YASKAWA) ? eType_ReadYaskawa : eType_WriteYaskawa;
+		vector<eType> types;
+		types.push_back(type);
+		types.push_back(eType_General);
+
+		cmdChangeName(source.elem, 0, prop->idVar, type, types, title, desc);
+
+		// Aqui desalocamos as propriedades
+		delete prop;
+	} else { // Outros parametros, todos numericos
+		vector<eType> types;
+		types.push_back(eType_Pending);
+
+		if(ShowVarDialog(title, desc, &name, start, size, GridSize, types)) {
+			bool isValid = true;
+			if(field != 2) {
+				isValid = ladder->IsValidNameAndType(0, name.c_str(), eType_Pending, FieldName, VALIDATE_IS_NUMBER, 0, 0);
+			}
+
+			if(isValid) {
+				switch(field) 
+				{
+					case 1: prop->id  = atoi(name.c_str()); break;
+					case 2: prop->txt = name; break;
+					default: oops(); break;
+				}
+
+				source.elem->setProperties(ladder->getContext(), prop);
+			} else {
+				// Se foi cancelada a alteracao, devemos desalocar as propriedades
+				delete prop;
+			}
 		} else {
-			type = eType_WriteYaskawa;
-		}
-
-		pair<unsigned long, int> pin = prop.idVar;
-		if(Diagram->getIO(pin, NewVar, type, infoIO_Var)) {
-			LadderElemYaskawaProp *data = (LadderElemYaskawaProp *)getProperties();
-
-			data->id    = NewId;
-			data->idVar = pin;
-			data->txt = NewTxt;
-
-			setProperties(context, data);
-		} else {
-			changed = false;
+			// Se foi cancelada a alteracao, devemos desalocar as propriedades
+			delete prop;
 		}
 	}
+}
 
-	return changed;
+bool LadderElemYaskawa::ShowDialog(LadderContext context)
+{
+	return false;
 }
 
 bool LadderElemYaskawa::DrawGUI(bool poweredBefore, void *data)
 {
-	DrawGenericGUI(this, data, poweredBefore, (getWhich() == ELEM_READ_SERVO_YASKAWA) ? _("LER NS-600") : _("ESCREVER NS-600"));
+	int which = getWhich();
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	ddg->size.x = 3;
+	ddg->size.y = 3;
+
+	if(ddg->DontDraw) return poweredAfter;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(which, poweredAfter);
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (which == ELEM_READ_SERVO_YASKAWA) ? _("LER NS-600") : _("ESCREVER NS-600"), false, poweredBefore);
+	ddg->region = r;
+
+	char buf[1024];
+	int *pInt, count = 0;
+	vector<string> FieldList;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	// Cria a lista com os campos
+
+	sprintf(buf, "%s %s", _("Variable:"), Diagram->getNameIO(prop.idVar).c_str());
+	FieldList.push_back(string(buf));
+
+	sprintf(buf, "%s %d", _("ID:"), prop.id);
+	FieldList.push_back(string(buf));
+
+	sprintf(buf, "%s %s", _("String:"), prop.txt.c_str());
+	FieldList.push_back(string(buf));
+
+	// Agora desenha os campos na tela
+
+	r.left   +=  5;
+	r.top    += 10;
+
+	vector<string>::iterator it;
+	for(it = FieldList.begin(); it != FieldList.end(); it++) {
+		r.bottom  = r.top + FONT_HEIGHT;
+		gui.DrawText(it->c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+		pInt  = new int;
+		*pInt = count++;
+		gui.AddCommand(source, r, YaskawaCmdChangeValue, pInt, true, false);
+
+		r.top = r.bottom + 5;
+	}
 
 	return poweredAfter;
 }
@@ -5339,6 +5776,7 @@ bool LadderElemPersist::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "PERSISTENTE", false, poweredBefore);
 	ddg->region = r;
 
+	unsigned long *pULong;
 	tCommandSource source = { nullptr, nullptr, this };
 
 	// Desenha a imagem
@@ -5407,6 +5845,10 @@ bool LadderElemPersist::DrawGUI(bool poweredBefore, void *data)
 	r.right -= 5;
 	gui.DrawText(name.c_str(), r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, r, PersistCmdChangeVar, nullptr, true, false);
+
+	pULong = new unsigned long;
+	*pULong = prop.idVar.first;
+	gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
 
 	return poweredAfter;
 }

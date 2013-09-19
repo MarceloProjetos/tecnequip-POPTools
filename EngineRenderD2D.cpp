@@ -113,11 +113,12 @@ HRESULT EngineRenderD2D::CreateTextFormat(unsigned int rgb, unsigned int &index)
 		tTextFormat txt;
 		txt.format = NULL;
 		txt.height = 13;
-		txt.width  = 8;
+		txt.width  =  8;
 
 		// Create a DirectWrite text format object.
 		hr = pWriteFactory->CreateTextFormat(
 			L"Lucida Console",
+//			L"POPTOOLS",
 			NULL,
 			DWRITE_FONT_WEIGHT_NORMAL,
 			DWRITE_FONT_STYLE_NORMAL,

@@ -223,10 +223,10 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     if(!didCancel) {
         for(i = 0; i < boxes; i++) {
             if(NoCheckingOnBox[i]) {
-                SendMessage(Textboxes[i], WM_GETTEXT, 17, (LPARAM)get);
+                SendMessage(Textboxes[i], WM_GETTEXT, 14, (LPARAM)get);
                 strcpy(tmp + (i * sizeof(get)), get);
             } else {
-                SendMessage(Textboxes[i], WM_GETTEXT, (WPARAM)17, (LPARAM)get);
+                SendMessage(Textboxes[i], WM_GETTEXT, (WPARAM)14, (LPARAM)get);
 
                 if( (!strchr(get, '\'')) ||
                         (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )
@@ -258,150 +258,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     return !didCancel;
 }
 
-bool ShowUSSDialog(int which, string *name, int *id, int *parameter, int *parameter_set, int *index)
-{
-	bool changed = false;
-	POINT start = { 0, 0 }, size = { 0, 0 }, GridSize = { 0, 0 };
-
-	char name_temp[100];
-	strcpy(name_temp, name->c_str());
-
-    char i[100];
-    sprintf(i, "%d", *id);
-
-    char param[100];
-    sprintf(param, "%d", *parameter);
-
-    char param_set[100];
-    sprintf(param_set, "%d", *parameter_set);
-
-    char idx[100];
-    sprintf(idx, "%d", *index);
-
-	char *DialogName;
-	char *VarName;
-	eType type;
-
-	if(which == ELEM_READ_USS) {
-		type = eType_ReadUSS;
-		DialogName = _("Ler Parâmetro por USS");
-		VarName    = _("Destination:");
-	} else if(which == ELEM_WRITE_USS) {
-		type = eType_WriteUSS;
-		DialogName = _("Escrever Parâmetro por USS");
-		VarName    = _("Origem:");
-	} else oops();
-
-	char *labels[] = { VarName, _("ID:"), _("Parametro:"), _("Set de Parametro:"), _("Indice:") };
-    char *dests[] = { name_temp, i, param, param_set, idx };
-    if(ShowSimpleDialog(DialogName, 5, labels, 0x1E, 0x1, 0x1E, 0x1, dests, start, size, GridSize)) {
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_temp, type         , _("Nome"            ), VALIDATE_IS_VAR   , 0, 0) &&
-			ladder->IsValidNameAndType(0                    , i        , eType_Pending, _("ID"              ), VALIDATE_IS_NUMBER, 0, 0) &&
-			ladder->IsValidNameAndType(0                    , param    , eType_Pending, _("Parâmetro"       ), VALIDATE_IS_NUMBER, 0, 0) &&
-			ladder->IsValidNameAndType(0                    , param_set, eType_Pending, _("Set de Parâmetro"), VALIDATE_IS_NUMBER, 0, 3) &&
-			ladder->IsValidNameAndType(0                    , idx      , eType_Pending, _("Índice"          ), VALIDATE_IS_NUMBER, 0, 0)) {
-				changed = true;
-
-				*name = name_temp;
-				*id = atoi(i);
-				*parameter = atoi(param);
-				*parameter_set = atoi(param_set);
-				*index = atoi(idx);
-		}
-	}
-
-	return changed;
-}
-
-bool ShowUartDialog(int which, string *name)
-{
-	bool changed = false;
-	POINT start = { 0, 0 }, size = { 0, 0 }, GridSize = { 0, 0 };
-
-	char name_tmp[MAX_NAME_LEN];
-    char *labels[] = { (which == ELEM_UART_RECV) ? _("Destination:") :
-        _("Source:") };
-    char *dests[] = { name_tmp };
-	eType type = (which == ELEM_UART_RECV) ? eType_RxUART : eType_TxUART;
-
-	strcpy(name_tmp, name->c_str());
-
-    if(ShowSimpleDialog((which == ELEM_UART_RECV) ? _("Receive from UART") :
-        _("Send to UART"), 1, labels, 0, 0x1, 0x1, 0x1, dests, start, size, GridSize)) {
-			if(ladder->IsValidNameAndType(ladder->getIdIO(*name), name_tmp, type, (which == ELEM_UART_RECV) ? _("Destino") : _("Origem"), (which == ELEM_UART_RECV) ? VALIDATE_IS_VAR : VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				changed = true;
-
-				*name = name_tmp;
-		}
-	}
-
-	return changed;
-}
-
-bool ShowFormattedStringDialog(int mode_write, string *var, char *string)
-{
-	bool changed = false;
-	POINT start = { 0, 0 }, size = { 0, 0 }, GridSize = { 0, 0 };
-
-	char var_tmp[MAX_NAME_LEN], string_tmp[MAX_LOOK_UP_TABLE_LEN];
-    char *labels[] = { _("Destination:"), _("String:") };
-    char *dests[] = { var_tmp, string_tmp };
-	eType type = mode_write ? eType_TxUART : eType_RxUART;
-
-	strcpy(var_tmp, var->c_str());
-	strcpy(string_tmp, string);
-
-	NoCheckingOnBox[0] = TRUE;
-    NoCheckingOnBox[1] = TRUE;
-    if(ShowSimpleDialog(mode_write ? _("Send Formatted String Over UART") : _("Receive Formatted String Over UART"), 2, labels, 0x0, 0x1, 0x3, 0x1, dests, start, size, GridSize)) {
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*var), var_tmp, type, _("Variável"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-				changed = true;
-
-				*var = var_tmp;
-				strcpy(string, string_tmp);
-		}
-	}
-
-	NoCheckingOnBox[0] = FALSE;
-    NoCheckingOnBox[1] = FALSE;
-
-	return changed;
-}
-
-bool ShowServoYaskawaDialog(int mode_write, int * id, string *var, char *string)
-{
-	bool changed = false;
-	POINT start = { 0, 0 }, size = { 0, 0 }, GridSize = { 0, 0 };
-
-	char var_tmp[MAX_NAME_LEN], string_tmp[MAX_LOOK_UP_TABLE_LEN], id_tmp[MAX_NAME_LEN];
-    char *labels[] = { _("Id:"), _("Variable:"), _("String:") };
-    char *dests[] = { id_tmp, var_tmp, string_tmp };
-    NoCheckingOnBox[1] = TRUE;
-
-    sprintf(id_tmp, "%d", *id);
-	strcpy(var_tmp, var->c_str());
-	strcpy(string_tmp, string);
-
-	eType type = mode_write ? eType_WriteYaskawa : eType_ReadYaskawa;
-
-    if(ShowSimpleDialog(mode_write ? _("Write Servo Yaskawa") : _("Read Servo Yaskawa"), 3, labels, 0x1, 0x2, 0x7, 0x2, dests, start, size, GridSize)) {
-		if(ladder->IsValidNameAndType(ladder->getIdIO(*var), var_tmp, type, _("Variável"), VALIDATE_IS_VAR   , 0, 0) &&
-		   ladder->IsValidNameAndType(0, id_tmp , eType_Pending, _("ID"      ), VALIDATE_IS_NUMBER, 0, 0)) {
-				changed = true;
-
-				*var = var_tmp;
-
-				*id = atoi(id_tmp);
-				strcpy(string, string_tmp);
-		}
-	}
-
-	NoCheckingOnBox[1] = FALSE;
-
-	return changed;
-}
-
-void ShowSimulationVarSetDialog(char *name, char *val)
+void ShowSimulationVarSetDialog(const char *name, char *val)
 {
 	POINT start = { 0, 0 }, size = { 0, 0 }, GridSize = { 0, 0 };
 

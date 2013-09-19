@@ -493,7 +493,7 @@ int RTC_OutputState(struct tm start, struct tm end, struct tm now, int mode, int
 // Looks in the SingleBitItems list; if an item is not present then it is
 // FALSE by default.
 //-----------------------------------------------------------------------------
-static bool SingleBitOn(char *name)
+static bool SingleBitOn(const char *name)
 {
 	if(SingleBitItems.count(name) > 0) {
 		return SingleBitItems[name];
@@ -1333,7 +1333,7 @@ void DescribeForIoList(const char *name, eType type, char *out)
 // Toggle the state of a contact input; for simulation purposes, so that we
 // can set the input state of the program.
 //-----------------------------------------------------------------------------
-void SimulationToggleContact(char *name)
+void SimulationToggleContact(const char *name)
 {
     SetSingleBit(name, !SingleBitOn(name));
     ListView_RedrawItems(IoList, 0, ladder->getCountIO() - 1);

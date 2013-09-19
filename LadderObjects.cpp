@@ -163,6 +163,8 @@ void LadderElem::setProperties(LadderContext context, void *propData)
 	// Altera as propriedades do elemento
 	if(internalSetProperties(propData, false) == false) { // Retornou erro, cancela!
 		context.Diagram->CheckpointRollback();
+		// Se nao atualizou, devemos desalocar *propData
+		delete propData;
 	}
 
 	// Finaliza a operacao
@@ -220,9 +222,6 @@ bool LadderElem::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 	case eSetProp: {
 		if(isDiscard) {
 			ret = internalDoUndoRedo(IsUndo, isDiscard, action);
-			if(ret) {
-				delete data->SetProp.data;
-			}
 		} else {
 			olddata = getProperties();
 			internalSetProperties(data->SetProp.data, true);
@@ -377,7 +376,11 @@ LadderElem *LadderElemComment::Clone(void)
 
 bool LadderElemComment::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemCommentProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemContact
@@ -577,7 +580,11 @@ bool LadderElemContact::internalUpdateNameTypeIO(unsigned int index, string name
 
 bool LadderElemContact::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemContactProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemCoil
@@ -777,7 +784,11 @@ bool LadderElemCoil::internalUpdateNameTypeIO(unsigned int index, string name, e
 
 bool LadderElemCoil::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemCoilProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemTimer
@@ -1037,7 +1048,11 @@ bool LadderElemTimer::internalUpdateNameTypeIO(unsigned int index, string name, 
 
 bool LadderElemTimer::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemTimerProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemRTC
@@ -1191,7 +1206,11 @@ LadderElem *LadderElemRTC::Clone(void)
 
 bool LadderElemRTC::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemRTCProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemCounter
@@ -1405,7 +1424,11 @@ bool LadderElemCounter::internalUpdateNameTypeIO(unsigned int index, string name
 
 bool LadderElemCounter::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemCounterProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemReset
@@ -1561,7 +1584,11 @@ bool LadderElemReset::internalUpdateNameTypeIO(unsigned int index, string name, 
 
 bool LadderElemReset::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemResetProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemOneShot
@@ -1906,7 +1933,11 @@ bool LadderElemCmp::internalUpdateNameTypeIO(unsigned int index, string name, eT
 
 bool LadderElemCmp::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemCmpProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemMath
@@ -2260,7 +2291,11 @@ bool LadderElemMath::internalUpdateNameTypeIO(unsigned int index, string name, e
 
 bool LadderElemMath::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemMathProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemSqrt
@@ -2503,7 +2538,11 @@ bool LadderElemSqrt::internalUpdateNameTypeIO(unsigned int index, string name, e
 
 bool LadderElemSqrt::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemSqrtProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemRand
@@ -2799,7 +2838,11 @@ bool LadderElemRand::internalUpdateNameTypeIO(unsigned int index, string name, e
 
 bool LadderElemRand::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemRandProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemAbs
@@ -3044,7 +3087,11 @@ bool LadderElemAbs::internalUpdateNameTypeIO(unsigned int index, string name, eT
 
 bool LadderElemAbs::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemAbsProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemMove
@@ -3286,7 +3333,11 @@ bool LadderElemMove::internalUpdateNameTypeIO(unsigned int index, string name, e
 
 bool LadderElemMove::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemMoveProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemOpenShort
@@ -3330,7 +3381,7 @@ LadderElem *LadderElemOpenShort::Clone(void)
 
 bool LadderElemOpenShort::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemSetBit
@@ -3480,7 +3531,11 @@ int LadderElemSetBit::SearchAndReplace(unsigned long idSearch, string sNewText, 
 
 bool LadderElemSetBit::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemSetBitProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemCheckBit
@@ -3632,7 +3687,11 @@ int LadderElemCheckBit::SearchAndReplace(unsigned long idSearch, string sNewText
 
 bool LadderElemCheckBit::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemCheckBitProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemReadAdc
@@ -3810,7 +3869,11 @@ bool LadderElemReadAdc::internalUpdateNameTypeIO(unsigned int index, string name
 
 bool LadderElemReadAdc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemReadAdcProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemSetDa
@@ -4003,7 +4066,11 @@ bool LadderElemSetDa::internalUpdateNameTypeIO(unsigned int index, string name, 
 
 bool LadderElemSetDa::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemSetDaProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemReadEnc
@@ -4151,7 +4218,11 @@ bool LadderElemReadEnc::internalUpdateNameTypeIO(unsigned int index, string name
 
 bool LadderElemReadEnc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemReadEncProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemResetEnc
@@ -4299,7 +4370,11 @@ bool LadderElemResetEnc::internalUpdateNameTypeIO(unsigned int index, string nam
 
 bool LadderElemResetEnc::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemResetEncProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemMultisetDA
@@ -4531,7 +4606,11 @@ int LadderElemMultisetDA::SearchAndReplace(unsigned long idSearch, string sNewTe
 
 bool LadderElemMultisetDA::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemMultisetDAProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemUSS
@@ -4701,9 +4780,34 @@ int LadderElemUSS::SearchAndReplace(unsigned long idSearch, string sNewText, boo
 	return 0;
 }
 
+bool LadderElemUSS::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = prop.idName;
+
+	type = (getWhich() == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS;
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome" ), VALIDATE_IS_VAR, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+			LadderElemReadAdcProp *data = (LadderElemReadAdcProp *)getProperties();
+
+			data->idName  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool LadderElemUSS::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemUSSProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemModBUS
@@ -4937,7 +5041,11 @@ bool LadderElemModBUS::internalUpdateNameTypeIO(unsigned int index, string name,
 
 bool LadderElemModBUS::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemModBUSProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemSetPWM
@@ -5109,7 +5217,11 @@ bool LadderElemSetPWM::internalUpdateNameTypeIO(unsigned int index, string name,
 
 bool LadderElemSetPWM::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemSetPWMProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemUART
@@ -5242,9 +5354,36 @@ int LadderElemUART::SearchAndReplace(unsigned long idSearch, string sNewText, bo
 	return 0;
 }
 
+bool LadderElemUART::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	int which = getWhich();
+	pair<unsigned long, int> pin = prop.idName;
+
+	type = (which == ELEM_UART_SEND) ? eType_TxUART : eType_RxUART;
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, (which == ELEM_UART_RECV) ? _("Destino") : _("Origem"),
+		(which == ELEM_UART_RECV) ? VALIDATE_IS_VAR : VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+			if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+				LadderElemUARTProp *data = (LadderElemUARTProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return true;
+			}
+	}
+
+	return false;
+}
+
 bool LadderElemUART::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemUARTProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemMasterRelay
@@ -5288,7 +5427,7 @@ LadderElem *LadderElemMasterRelay::Clone(void)
 
 bool LadderElemMasterRelay::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemShiftRegister
@@ -5507,7 +5646,11 @@ int LadderElemShiftRegister::SearchAndReplace(unsigned long idSearch, string sNe
 
 bool LadderElemShiftRegister::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemShiftRegisterProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemLUT
@@ -5791,7 +5934,11 @@ bool LadderElemLUT::internalUpdateNameTypeIO(unsigned int index, string name, eT
 
 bool LadderElemLUT::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemLUTProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemPiecewise
@@ -6129,7 +6276,11 @@ bool LadderElemPiecewise::internalUpdateNameTypeIO(unsigned int index, string na
 
 bool LadderElemPiecewise::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemPiecewiseProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemFmtString
@@ -6290,9 +6441,35 @@ int LadderElemFmtString::SearchAndReplace(unsigned long idSearch, string sNewTex
 	return 0;
 }
 
+bool LadderElemFmtString::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	bool mode_read = (getWhich() == ELEM_READ_FORMATTED_STRING);
+	pair<unsigned long, int> pin = prop.idVar;
+
+	type = mode_read ? eType_RxUART : eType_TxUART;
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Variável"), mode_read ? VALIDATE_IS_VAR : VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Var)) {
+			LadderElemFmtStringProp *data = (LadderElemFmtStringProp *)getProperties();
+
+			data->idVar  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool LadderElemFmtString::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemFmtStringProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemYaskawa
@@ -6461,9 +6638,34 @@ int LadderElemYaskawa::SearchAndReplace(unsigned long idSearch, string sNewText,
 	return 0;
 }
 
+bool LadderElemYaskawa::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = prop.idVar;
+
+	type = (getWhich() == ELEM_READ_SERVO_YASKAWA) ? eType_ReadYaskawa : eType_WriteYaskawa;
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Variável"), VALIDATE_IS_VAR, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Var)) {
+			LadderElemYaskawaProp *data = (LadderElemYaskawaProp *)getProperties();
+
+			data->idVar  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool LadderElemYaskawa::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemYaskawaProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemPersist
@@ -6648,7 +6850,11 @@ bool LadderElemPersist::internalUpdateNameTypeIO(unsigned int index, string name
 
 bool LadderElemPersist::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemPersistProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 // Classe LadderElemX
@@ -6683,7 +6889,11 @@ LadderElem *LadderElemX::Clone(void)
 
 bool LadderElemX::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 {
-	return true; // Nada a fazer
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemXProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
 }
 
 //Classe LadderCircuit
