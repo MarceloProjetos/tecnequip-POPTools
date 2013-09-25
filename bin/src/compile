@@ -78,7 +78,7 @@ LIB_POP  = ./libpop.a
 # -fstack-protector "no memory region specified for loadable section `__libc_freeres_fn'"
 # -fomit-frame-pointer -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Wdeclaration-after-statement -Wno-pointer-sign
 # -static
-GCC_FLAGS_OPT=-nostartfiles -nodefaultlibs -nostdlib -Wall -ffunction-sections -fdata-sections -Wl,--gc-sections -mcpu=cortex-m3 -mthumb -static -O0 -I. -T./link.ld -L $(TEMP_PATH) -I . ./startup_LPC17xx.o $(TEMP_PATH)/ld.c -lpop -lc -lgcc ./syscalls.o
+GCC_FLAGS_OPT=-nostartfiles -nodefaultlibs -nostdlib -Wall -ffunction-sections -fdata-sections -Wl,--gc-sections -mcpu=cortex-m3 -mthumb -static -O0 -I. -T./link.ld -L $(TEMP_PATH) -I . ./startup_LPC17xx.o $(TEMP_PATH)/poptools.c -lpop -lc -lgcc ./syscalls.o
 CFLAGS0=$(GCC_FLAGS_OPT)
 CFLAGS1=$(CFLAGS0)
 
@@ -100,7 +100,7 @@ LIB_LIST		=  $(LIB_POP) $(LIB_M) $(LIB_C) $(LIB_GCC)
 # Implicit rule to compile all C files in the directory
 #------------------------------------------------------------------------------
 
-$(BIN)/ld.o : $(BIN)/ld.c
+$(BIN)/poptools.o : $(BIN)/poptools.c
 	$(CC) $(CFLAGS1) -c $< -o $@
 
 #------------------------------------------------------------------------------
@@ -117,8 +117,8 @@ $(DIR_OBJ)/$(PROG_NAME).elf:
 	"$(OBJCOPY)" -O binary $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).bin"
 	"$(OBJCOPY)" -O ihex $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).hex"
 #	cs-rm --force $(TEMP_PATH)/pop.elf
-#	cs-rm --force $(TEMP_PATH)/ld.o
-#	cs-rm --force $(TEMP_PATH)/ld.c
+#	cs-rm --force $(TEMP_PATH)/poptools.o
+#	cs-rm --force $(TEMP_PATH)/poptools.c
 
 #------------------------------------------------------------------------------
 # release target: Generates application with optimization
@@ -140,5 +140,5 @@ debug: $(DIR_OBJ)/$(PROG_NAME).elf
 
 clean:
 	cs-rm --force $(DIR_OBJ)/pop.elf
-	cs-rm --force $(DIR_OBJ)/ld.o
+	cs-rm --force $(DIR_OBJ)/poptools.o
 

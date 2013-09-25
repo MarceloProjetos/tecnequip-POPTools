@@ -169,6 +169,7 @@ struct strSerialConfig {
 
 #define MNU_NEW                 0x01
 #define MNU_OPEN                0x02
+#define MNU_CLOSE               0x0d
 #define MNU_SAVE                0x03
 #define MNU_SAVE_AS             0x04
 #define MNU_SAVE_AS_C           0x08
@@ -541,10 +542,13 @@ extern vector<eType> vectorTypesVar;
 void ProcessMenu(int code);
 void SetMenusEnabled(LadderContext *context);
 void RefreshScrollbars(void);
+bool CheckSaveUserCancels(void);
+
 extern HINSTANCE Instance;
 extern HWND MainWindow;
 extern HDC Hdc;
 extern LadderDiagram *ladder;
+extern vector<LadderDiagram *> ladderList;
 extern Settings POPSettings;
 extern XMLWrapper XmlSettings;
 extern char CurrentCompileFile[MAX_PATH];
@@ -633,11 +637,14 @@ void StartSimulation(void);
 void UpdateMainWindowTitleBar(void);
 void StatusBarSetText(int bar, char * text);
 void RefreshDrawWindow();
+void ShowTabCtrl(bool visible);
+extern int TabHeight;
 extern int ScrollWidth;
 extern int ScrollHeight;
 extern BOOL NeedHoriz;
 extern HWND IoList;
 extern HWND DrawWindow;
+extern HWND TabCtrl;
 extern int IoListTop;
 extern int IoListHeight;
 extern HWND UartSimulationWindow;
@@ -719,7 +726,10 @@ bool DeleteSelectedFromProgram(void);
 bool DeleteSelectedRung(void);
 bool InsertRung(bool afterCursor);
 bool PushRung(bool up);
-void NewProgram(void);
+bool NewProgram(void);
+void SwitchProgram(LadderDiagram *newladder);
+bool CloseProgram(LadderDiagram *diagram, bool isPOPToolsExiting = false);
+bool CloseAllPrograms(bool isPOPToolsExiting = false);
 
 // loadsave.cpp
 bool fwrite_uint   (FILE *f, unsigned int   var);
@@ -754,8 +764,8 @@ void CALLBACK AutoSaveNow(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void ShowIoDialog(int item);
 void IoListProc(NMHDR *h);
 void IoMapListProc(NMHDR *h);
-void ShowAnalogSliderPopup(char *name);
-void ShowEncoderSliderPopup(char *name);
+void ShowAnalogSliderPopup (const char *name);
+void ShowEncoderSliderPopup(const char *name);
 
 // commentdialog.cpp
 bool ShowCommentDialog(char *comment, POINT ElemStart, POINT ElemSize, POINT GridSize);
@@ -813,7 +823,6 @@ bool IsNumber(const char *str);
 void LoadIOListToComboBox(HWND ComboBox, vector<eType> allowedTypes);
 int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto);
 bool IsInternalVar(char *name);
-bool IsValidNumber(char *number);
 void ChangeFileExtension(char *name, char *ext);
 unsigned short int CRC16(unsigned char *puchMsg, unsigned int usDataLen);
 extern HFONT MyNiceFont;
@@ -867,10 +876,10 @@ void ClearSimulationData(void);
 void DescribeForIoList(int val, eType type, char *out);
 void DescribeForIoList(const char *name, eType type, char *out);
 void SimulationToggleContact(const char *name);
-void SetAdcShadow(char *name, SWORD val);
-SWORD GetAdcShadow(char *name);
-void SetEncShadow(char *name, SWORD val);
-SWORD GetEncShadow(char *name);
+void  SetAdcShadow(const char *name, SWORD val);
+SWORD GetAdcShadow(const char *name);
+void  SetEncShadow(const char *name, SWORD val);
+SWORD GetEncShadow(const char *name);
 void SetSimulationVariable(const char *name, SWORD val);
 SWORD GetSimulationVariable(const char *name);
 void DestroyUartSimulationWindow(void);

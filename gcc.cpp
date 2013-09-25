@@ -1015,7 +1015,7 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, " * Tecnequip Tecnologia em Equipamentos Ltda                                 *\n");
 	fprintf(f, " *****************************************************************************/\n");
 
-	fprintf(f, "#include \"ld.h\"\n");
+	fprintf(f, "#include \"poptools.h\"\n");
 
 	fprintf(f, "\n");
 	fprintf(f, "void Cycle_Init(void);\n");
@@ -1180,8 +1180,8 @@ DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 	}
 
 	strncpy(szAppSourceFile, szTempPath, strrchr(szTempPath, '\\') - szTempPath);
-	sprintf(CurrentCompileFile, "%s\\ld.hex", szAppSourceFile);
-	strcat(szAppSourceFile, "\\ld.c");
+	sprintf(CurrentCompileFile, "%s\\poptools.hex", szAppSourceFile);
+	strcat(szAppSourceFile, "\\poptools.c");
 
 	if(!GenerateCFile(szAppSourceFile))
 		return 1;

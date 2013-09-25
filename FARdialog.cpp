@@ -31,7 +31,7 @@ static LRESULT CALLBACK FARDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				SendMessage(SearchTextbox , WM_GETTEXT, (WPARAM)MAX_NAME_LEN, (LPARAM)(search_text));
 				SendMessage(ReplaceTextbox, WM_GETTEXT, (WPARAM)MAX_NAME_LEN, (LPARAM)(new_text   ));
 
-				validate_mode = IsValidNumber(search_text) ? VALIDATE_IS_NUMBER : VALIDATE_IS_VAR;
+				validate_mode = ladder->IsValidNumber(search_text) ? VALIDATE_IS_NUMBER : VALIDATE_IS_VAR;
 
 				if(h == SearchNextButton) {
 					matches = FindAndReplace(search_text, "", eSearchAndReplaceMode_FindNext);

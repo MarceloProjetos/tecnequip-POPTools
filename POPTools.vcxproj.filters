@@ -239,6 +239,9 @@
     <ClInclude Include="iomap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="bin\src\poptools.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc">
@@ -252,9 +255,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\src\ld.h">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="bin\settings.xml">
       <Filter>Resource Files</Filter>
     </None>

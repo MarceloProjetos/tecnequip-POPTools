@@ -595,7 +595,7 @@ SWORD GetSimulationVariable(const char *name)
 // will get committed to the real copy when the rung-in condition to the
 // READ ADC is true.
 //-----------------------------------------------------------------------------
-void SetAdcShadow(char *name, SWORD val)
+void SetAdcShadow(const char *name, SWORD val)
 {
 	setIntInMap(&AdcShadows, name, val);
 }
@@ -604,7 +604,7 @@ void SetAdcShadow(char *name, SWORD val)
 // Return the shadow value of a variable associated with a READ ADC. This is
 // what gets copied into the real variable when an ADC read is simulated.
 //-----------------------------------------------------------------------------
-SWORD GetAdcShadow(char *name)
+SWORD GetAdcShadow(const char *name)
 {
 	return getIntFromMap(&AdcShadows, name);
 }
@@ -634,7 +634,7 @@ SWORD GetDAShadow(void)
 // will get committed to the real copy when the rung-in condition to the
 // READ ADC is true.
 //-----------------------------------------------------------------------------
-void SetEncShadow(char *name, SWORD val)
+void SetEncShadow(const char *name, SWORD val)
 {
 	setIntInMap(&EncShadows, name, val);
 }
@@ -643,7 +643,7 @@ void SetEncShadow(char *name, SWORD val)
 // Return the shadow value of a variable associated with a READ ADC. This is
 // what gets copied into the real variable when an ADC read is simulated.
 //-----------------------------------------------------------------------------
-SWORD GetEncShadow(char *name)
+SWORD GetEncShadow(const char *name)
 {
 	return getIntFromMap(&EncShadows, name);
 }
@@ -1314,6 +1314,14 @@ void DescribeForIoList(const char *name, eType type, char *out)
 
 		case eType_SetDAC:
             val = GetDAShadow();
+            break;
+
+		case eType_ReadADC:
+			val = GetAdcShadow(varname);
+            break;
+
+		case eType_ReadEnc:
+            val = GetEncShadow(varname);
             break;
 
 		case eType_TOF:

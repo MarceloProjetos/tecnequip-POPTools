@@ -1787,7 +1787,7 @@ static LRESULT CALLBACK AnalogSliderDialogProc(HWND hwnd, UINT msg,
 // A little toolbar-style window that pops up to allow the user to set the
 // simulated value of an ADC pin.
 //-----------------------------------------------------------------------------
-void ShowAnalogSliderPopup(char *name)
+void ShowAnalogSliderPopup(const char *name)
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
@@ -1914,7 +1914,7 @@ static LRESULT CALLBACK EncoderSliderDialogProc(HWND hwnd, UINT msg,
 // A little toolbar-style window that pops up to allow the user to set the
 // simulated value of an ADC pin.
 //-----------------------------------------------------------------------------
-void ShowEncoderSliderPopup(char *name)
+void ShowEncoderSliderPopup(const char *name)
 {
     WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));

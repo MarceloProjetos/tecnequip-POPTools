@@ -168,6 +168,17 @@
       </Command.LargeImages>
     </Command>
 
+    <Command Name       = "FileClose"
+             Symbol     = "cmdFileClose"
+             Id         = "30111"
+             LabelTitle = "Fechar">
+      <Command.TooltipTitle      >Fechar</Command.TooltipTitle>
+      <Command.TooltipDescription>Fechar o diagrama atual.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/FileCloseHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
+
     <Command Name     = "Print"
      Symbol           = "cmdPrint"
      Id               = "30109"
@@ -2584,7 +2595,8 @@
             </SplitButton>
           </MenuGroup>
           <MenuGroup>
-            <Button CommandName="Print"  ApplicationModes="0,1" />
+            <Button CommandName="Print" />
+            <Button CommandName="FileClose" />
           </MenuGroup>
           <MenuGroup>
             <Button CommandName="About"  ApplicationModes="0,1" />

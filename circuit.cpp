@@ -1,5 +1,15 @@
 #include "poptools.h"
 
+// Everything relating to the PLC's program, I/O configuration, processor
+// choice, and so on--basically everything that would be saved in the
+// project file.
+LadderDiagram *ladder = nullptr;
+vector<LadderDiagram *> ladderList;
+
+/*** Funcoes para manipular a lista de diagramas abertos: novo, abrir, fechar, alternar ***/
+
+/*** Fim das funcoes de manipulacao da lista de diagramas abertos ***/
+
 //-----------------------------------------------------------------------------
 // Routines to allocate memory for a new circuit element (contact, coil, etc.)
 // and insert it into the current program with AddLeaf. Fill in some default
@@ -519,10 +529,110 @@ bool PushRung(bool up)
 }
 
 //-----------------------------------------------------------------------------
+// Alterna entre o diagrama aberto e o diagrama passado como parametro
+//-----------------------------------------------------------------------------
+void SwitchProgram(LadderDiagram *newladder)
+{
+	if(ladder == newladder) return; // ja selecionado, nada a fazer...
+
+	ladder = newladder;
+
+	unsigned int i;
+	for(i = 0; i < ladderList.size(); i++) {
+		if(ladder == ladderList[i]) {
+			TabCtrl_SetCurSel(TabCtrl, i);
+			break;
+		}
+	}
+
+	// Se houver apenas 1 aba, oculta o TabCtrl
+	ShowTabCtrl(ladderList.size() < 2 ? false : true);
+
+    InvalidateRect(MainWindow, NULL, FALSE);
+
+	RefreshControlsToSettings();
+
+	LadderContext context = ladder->getContext();
+	SetMenusEnabled(&context);
+}
+
+//-----------------------------------------------------------------------------
 // Start a new project. Give them one rung, with a coil (that they can
 // never delete) and nothing else.
 //-----------------------------------------------------------------------------
-void NewProgram(void)
+bool NewProgram(void)
 {
-	ladder->NewDiagram();
+	if(ladderList.size() > 15) {
+		Error(_("Muitos diagramas abertos!"));
+		return false;
+	}
+
+	LadderDiagram *newladder = new LadderDiagram;
+	ladderList.push_back(newladder);
+
+	TCITEM container_tabs;
+	container_tabs.mask   = TCIF_TEXT;
+
+	container_tabs.pszText = _("-");
+	TabCtrl_InsertItem(TabCtrl, ladderList.size() - 1, &container_tabs);
+
+	SwitchProgram(newladder);
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Fecha e desaloca o diagrama atual, selecionando o diagrama anterior na lista
+// ou, se não for possível, o seguinte. Se mesmo assim nao existir um diagrama,
+// cria-se um novo.
+//-----------------------------------------------------------------------------
+bool CloseProgram(LadderDiagram *diagram, bool isPOPToolsExiting)
+{
+	unsigned int i;
+	LadderDiagram *switchTo = nullptr;
+
+	if(isPOPToolsExiting == false && CheckSaveUserCancels()) {
+		return false; // Usuario cancelou!
+	}
+
+	for(i = 0; i < ladderList.size(); i++) {
+		if(ladderList[i] == diagram) {
+			if(switchTo == nullptr && i < (ladderList.size() - 1)) {
+				switchTo = ladderList[i + 1];
+			}
+
+			ladderList.erase(ladderList.begin() + i);
+			TabCtrl_DeleteItem(TabCtrl, i);
+
+			break;
+		}
+
+		switchTo = ladderList[i];
+	}
+
+	delete diagram;
+
+	if(!isPOPToolsExiting) {
+		if(switchTo == nullptr) {
+			NewProgram();
+		} else {
+			SwitchProgram(switchTo);
+		}
+	}
+
+	return true;
+}
+
+bool CloseAllPrograms(bool isPOPToolsExiting)
+{
+	unsigned int i = ladderList.size();
+	while(i-- > 0) {
+		if(CloseProgram(isPOPToolsExiting ? *(ladderList.begin()) : ladder, isPOPToolsExiting) == false) {
+			// Ou ocorreu um erro ao fechar o diagrama ou o usuario cancelou.
+			// De qualquer forma, cancela a operacao.
+			return false;
+		}
+	}
+
+	return true;
 }

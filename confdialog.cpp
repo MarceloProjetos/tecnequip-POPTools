@@ -302,7 +302,7 @@ static LRESULT CALLBACK ConfDialogProc_ModBusMasterGrouper(HWND hwnd, UINT msg, 
 						new_node.name = buf;
 
 						SendMessage(MBid, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)buf);
-						new_node.id = atoi(buf);
+						new_node.id = min(max(0, atoi(buf)), 127);
 
 						switch(SendMessage(MBiface, CB_GETCURSEL, 0, 0)) {
 						default:
@@ -474,7 +474,7 @@ static void MakeControls(void)
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("Preencha abaixo os dados referentes ao projeto para sua referência."),
 		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
-        5, 5, 195, 54, GroupInfoProject, NULL, Instance, NULL);
+        5, 5, 285, 54, GroupInfoProject, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Nome do Projeto:"),
@@ -515,7 +515,7 @@ static void MakeControls(void)
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("Abaixo são exibidas informações sobre o projeto."),
 		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
-        5, 5, 195, 54, GroupInfoDetails, NULL, Instance, NULL);
+        5, 5, 285, 54, GroupInfoDetails, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Versão do Firmware:"),
@@ -710,7 +710,7 @@ static void MakeControls(void)
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Este Modo de Abandono será utilizado em todas as rampas de D/A selecionadas para o modo Padrão."),
 		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
-        5, 5, 195, 74, GroupInterfaceDA, NULL, Instance, NULL);
+        5, 5, 285, 74, GroupInterfaceDA, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     HWND Label = CreateWindowEx(0, WC_STATIC, _("Modo de Abandono:"),
@@ -928,14 +928,19 @@ static void MakeControls(void)
         215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupModBUSSlave);
 
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Preencha aqui o ID utilizado pela interface ModBUS quando atuando em modo escravo.\r\nPreencha com valor entre 0 e 127"),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        5, 5, 285, 74, GroupModBUSSlave, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
     textLabel = CreateWindowEx(0, WC_STATIC, _("ModBUS ID:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 1, 140, 21, GroupModBUSSlave, NULL, Instance, NULL);
+        5, 85, 140, 21, GroupModBUSSlave, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     ModBUSIDTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
         WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 0, 140, 21, GroupModBUSSlave, NULL, Instance, NULL);
+        155, 84, 140, 21, GroupModBUSSlave, NULL, Instance, NULL);
     NiceFont(ModBUSIDTextbox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
@@ -1150,7 +1155,7 @@ bool ShowConfDialog(bool NetworkSection)
 		ladder->setSettingsUART(settingsUart);
 
         SendMessage(ModBUSIDTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
-		settingsMbSlave.ModBUSID = max(0, atoi(buf));
+		settingsMbSlave.ModBUSID = min(max(0, atoi(buf)), 127);
 
 		ladder->setSettingsModbusSlave(settingsMbSlave);
 

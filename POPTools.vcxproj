@@ -66,7 +66,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>Windows7.1SDK</PlatformToolset>
     <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'" Label="Configuration">
@@ -111,50 +111,50 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)Firmware\App;C:\Program Files %28x86%29\Visual Leak Detector\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)Firmware\App;$(ProjectDir)VLD\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)VLD\lib\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)Firmware\App;C:\Program Files %28x86%29\Visual Leak Detector\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Firmware\App;$(ProjectDir)VLD\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_en</TargetName>
-    <LibraryPath>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)VLD\lib\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - ES|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)Firmware\App;C:\Program Files %28x86%29\Visual Leak Detector\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Firmware\App;$(ProjectDir)VLD\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_es</TargetName>
-    <LibraryPath>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)VLD\lib\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>true</EmbedManifest>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)Firmware\App;C:\Program Files %28x86%29\Visual Leak Detector\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)Firmware\App;$(ProjectDir)VLD\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)VLD\lib\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>true</EmbedManifest>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)Firmware\App;C:\Program Files %28x86%29\Visual Leak Detector\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Firmware\App;$(ProjectDir)VLD\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_en</TargetName>
-    <LibraryPath>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)VLD\lib\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - ES|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>true</EmbedManifest>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)Firmware\App;C:\Program Files %28x86%29\Visual Leak Detector\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Firmware\App;$(ProjectDir)VLD\include;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_es</TargetName>
-    <LibraryPath>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)VLD\lib\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -348,6 +348,7 @@
     <ClCompile Include="XMLWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bin\src\poptools.h" />
     <ClInclude Include="EngineGUI.h" />
     <ClInclude Include="EngineRender.h" />
     <ClInclude Include="EngineRenderD2D.h" />
@@ -362,7 +363,6 @@
     <ClInclude Include="PropertySet.h" />
     <ClInclude Include="XMLWrapper.h" />
     <None Include="bin\settings.xml" />
-    <None Include="bin\src\ld.h" />
     <ClInclude Include="flashmagicarmcortex.h" />
     <ClInclude Include="flashmagiccommon.h" />
     <ClInclude Include="freeze.h" />

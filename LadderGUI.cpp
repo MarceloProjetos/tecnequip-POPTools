@@ -401,31 +401,34 @@ bool LadderGUI::MouseOver(RECT region)
 void LadderGUI::PaintScrollAndSplitter(void)
 {
 	RECT r;
+
 	// Fill around the scroll bars
 	if(NeedHoriz) {
-		r.top = IoListTop - ScrollHeight - 2 + ScrollYOffset*Grid1x1.y;
-		r.bottom = IoListTop - 2 + ScrollYOffset*Grid1x1.y;
+		GetClientRect(DrawWindow, &r);
+
+		r.right  += ScrollXOffset;
+		r.left    = r.right - ScrollWidth;
+		r.bottom += ScrollYOffset*Grid1x1.y - 2;
+		r.top     = r.bottom - ScrollHeight;
+
 		DrawRectangle(r, InterfaceColors[INTERF_COLOR_3DFACE]);
 	}
-	GetClientRect(MainWindow, &r);
-	r.bottom += ScrollYOffset*Grid1x1.y;
-	r.right += ScrollXOffset;
-	r.left = r.right - ScrollWidth - 2;
-	DrawRectangle(r, InterfaceColors[INTERF_COLOR_3DFACE]);
 
 	// Draw the splitter thing to grab to resize the I/O listview.
 	GetClientRect(DrawWindow, &r);
-	r.left  += ScrollXOffset;
-	r.right += ScrollXOffset;
+	r.left   += ScrollXOffset;
+	r.right  += ScrollXOffset;
+	r.bottom += ScrollYOffset*Grid1x1.y - 1;
+	r.top     = r.bottom - 1;
 
-	r.top = IoListTop - 2 - RibbonHeight + ScrollYOffset*Grid1x1.y;
-	r.bottom = IoListTop - RibbonHeight + ScrollYOffset*Grid1x1.y;
 	DrawRectangle(r, InterfaceColors[INTERF_COLOR_3DFACE  ]);
-	r.top = IoListTop - 2 - RibbonHeight + ScrollYOffset*Grid1x1.y;
-	r.bottom = IoListTop - 1 - RibbonHeight + ScrollYOffset*Grid1x1.y;
+
+	r.bottom++;
+	r.top   ++;
 	DrawRectangle(r, InterfaceColors[INTERF_COLOR_3DLIGHT ]);
-	r.top = IoListTop - RibbonHeight + ScrollYOffset*Grid1x1.y;
-	r.bottom = IoListTop + 1 - RibbonHeight + ScrollYOffset*Grid1x1.y;
+
+	r.bottom++;
+	r.top   ++;
 	DrawRectangle(r, InterfaceColors[INTERF_COLOR_3DSHADOW]);
 }
 
@@ -1172,6 +1175,11 @@ LadderElem *LadderGUI::SearchElement(LadderElem *ref, eMoveCursor moveTo)
 							continue;
 						}
 					}
+
+					if((moveTo == eMoveCursor_Left || moveTo == eMoveCursor_Right) && refArea.top != elemArea.top) {
+						y += 5000;
+					}
+
 					newxy = x + y;
 
 					if(!minxy || minxy > newxy) {
@@ -1360,10 +1368,29 @@ void ElemSimCmdSetVariable(tCommandSource source, void *data)
 	unsigned long id = *(unsigned long *)data;
 	string name = ladder->getNameIO(id);
 
-	if(name.size() > 0 && ladder->getDetailsIO(name).type == eType_General) {
-		sprintf(val, "%d", GetSimulationVariable(name.c_str()));
-		ShowSimulationVarSetDialog(name.c_str(), val);
-		SetSimulationVariable(name.c_str(), atoi(val));
+	if(name.size() > 0) {
+		switch(ladder->getDetailsIO(name).type) {
+		case eType_DigInput:
+			SimulationToggleContact(name.c_str());
+			break;
+
+		case eType_ReadADC:
+			ShowAnalogSliderPopup(name.c_str());
+			break;
+
+		case eType_ReadEnc:
+			ShowEncoderSliderPopup(name.c_str());
+			break;
+
+		case eType_Counter:
+		case eType_TOF:
+		case eType_TON:
+		case eType_General:
+			sprintf(val, "%d", GetSimulationVariable(name.c_str()));
+			ShowSimulationVarSetDialog(name.c_str(), val);
+			SetSimulationVariable(name.c_str(), atoi(val));
+			break;
+		}
 	}
 }
 
@@ -1438,6 +1465,10 @@ bool LadderElemComment::ShowDialog(LadderContext context)
 bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 {
 	pair<string, string> txt = DrawTXT();
+
+	txt.first  = txt.first .substr(txt.first .find_first_of(';') + 1);
+	txt.second = txt.second.substr(txt.second.find_first_of(';') + 1);
+
 	POINT GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 	int size = 1 + (max(txt.first.size(), txt.second.size()) * FONT_WIDTH) / GridSize.x;
@@ -1524,10 +1555,12 @@ bool ContactCmdExpandedSource(LadderElem *elem, unsigned int selected)
 	mapDetails             detailsIO = ladder->getDetailsIO(prop->idName.first);
 	string                 name      = ladder->getNameIO(prop->idName);
 
-	// Aqui desalocamos as propriedades
-	delete prop;
-
-	ret = contact->updateNameTypeIO(0, name, type);
+	// Apenas atualiza o tipo do I/O diretamente se mais ninguem estiver utilizando
+	if(detailsIO.countRequestBit == 1) {
+		ret = contact->updateNameTypeIO(0, name, type);
+	} else {
+		ret = false;
+	}
 
 	if(!ret || detailsIO.type == eType_Reserved) {
 		tCommandSource source = { nullptr, nullptr, elem };
@@ -1538,6 +1571,9 @@ bool ContactCmdExpandedSource(LadderElem *elem, unsigned int selected)
 	} else {
 		UpdateMainWindowTitleBar();
 	}
+
+	// Aqui desalocamos as propriedades
+	delete prop;
 
 	return ret;
 }
@@ -1574,17 +1610,6 @@ void ContactCmdToggleNegated(tCommandSource source, void *data)
 	LadderElemContactProp *prop = (LadderElemContactProp *)source.elem->getProperties();
 
 	ContactCmdExpandedNegated(source.elem, prop->negated ? 0 : 1); // Inverte o estado atual
-
-	delete prop;
-}
-
-void ContactCmdSimToggleState(tCommandSource source, void *data)
-{
-	LadderElemContactProp *prop = (LadderElemContactProp *)source.elem->getProperties();
-
-	if(ladder->getDetailsIO(prop->idName.first).type == eType_DigInput) {
-		SimulationToggleContact(ladder->getNameIO(prop->idName).c_str());
-	}
 
 	delete prop;
 }
@@ -1632,7 +1657,9 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 	ddg->region = r;
 
 	// Comando de simulacao para inverter o estado do contato
-	gui.AddCommand(source, r, ContactCmdSimToggleState, nullptr, true, true);
+	unsigned long *pULong = new unsigned long;
+	*pULong = prop.idName.first;
+	gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
 
 	// Escreve o nome do contato
 	RECT rText = r;
@@ -2848,8 +2875,8 @@ bool LadderElemCmp::DrawGUI(bool poweredBefore, void *data)
 		default: oops();
 	}
 
-	int *pInt1 = new int, *pInt2 = new int;
 	unsigned long *pULong;
+	int *pInt1 = new int, *pInt2 = new int;
 	tCommandSource source = { nullptr, nullptr, this };
 
 	*pInt1 = 0;
@@ -3929,6 +3956,10 @@ bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
 		eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, r, ReadAdcCmdChangeName, nullptr, true, false);
 
+	unsigned long *pULong = new unsigned long;
+	*pULong = prop.idName.first;
+	gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
+
 	return poweredAfter;
 }
 
@@ -4103,6 +4134,10 @@ bool LadderElemReadEnc::DrawGUI(bool poweredBefore, void *data)
 	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, ReadEncCmdChangeName, nullptr, true, false);
 
+	unsigned long *pULong = new unsigned long;
+	*pULong = prop.idName.first;
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
+
 	return poweredAfter;
 }
 
@@ -4164,6 +4199,10 @@ bool LadderElemResetEnc::DrawGUI(bool poweredBefore, void *data)
 	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
 	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, ResetEncCmdChangeName, nullptr, true, false);
+
+	unsigned long *pULong = new unsigned long;
+	*pULong = prop.idName.first;
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
 
 	return poweredAfter;
 }
@@ -4897,9 +4936,18 @@ bool LadderElemUART::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (getWhich() == ELEM_UART_RECV) ? _("LER SERIAL") : _("ESCR. SERIAL"), false, poweredBefore);
 	ddg->region = r;
 
+	// Desenha a seta indicando o sentido (Enviar / Receber)
+	RECT rArrow    = r;
+	rArrow.top    += 5;
+	rArrow.bottom  = rArrow.top + 20;
+	rArrow.left    = rArrow.left + (rArrow.right - rArrow.left)/2 - 10;
+	rArrow.right   = rArrow.left + 20;
+	gui.DrawRectangle(rArrow, colors.Black, true, 0, 0, 45);
+
 	// Escreve o nome do I/O
-	RECT rText = r;
-	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
+	RECT rText   = r;
+	rText.top    = rText.top + GridSize.y;
+	rText.bottom = rText.top + FONT_HEIGHT;
 	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, UARTCmdChangeName, nullptr, true, false);
 
@@ -6180,8 +6228,9 @@ void LadderDiagram::ShowIoMapDialog(int item)
 }
 
 // Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
-eReply LadderDiagram::ShowDialog(bool isMessage, char *title, char *message, ...)
+eReply LadderDiagram::ShowDialog(bool isMessage, bool hasCancel, char *title, char *message, ...)
 {
+	UINT msgType;
 	eReply reply = eReply_Yes;
 	message = _(message);
 
@@ -6189,13 +6238,18 @@ eReply LadderDiagram::ShowDialog(bool isMessage, char *title, char *message, ...
 	va_start(f, message);
 
 	if(isMessage) {
-		Error(title, message, f);
+		msgType = MB_ICONEXCLAMATION | (hasCancel ? MB_OKCANCEL : MB_OK);
 	} else {
-		char buf[1024];
-		vsprintf(buf, message, f);
-		if(MessageBox(MainWindow, buf, _(title), MB_YESNO | MB_ICONQUESTION) != IDYES) {
-			reply = eReply_No;
-		}
+		msgType = MB_ICONQUESTION    | (hasCancel ? MB_YESNOCANCEL : MB_YESNO);
+	}
+
+	char buf[1024];
+	vsprintf(buf, message, f);
+	switch(MessageBox(MainWindow, buf, _(title), msgType)) {
+		case IDYES: reply = eReply_Yes   ; break;
+		case IDNO : reply = eReply_No    ; break;
+		case IDOK : reply = eReply_Ok    ; break;
+		default   : reply = eReply_Cancel; break;
 	}
 
 	return reply;

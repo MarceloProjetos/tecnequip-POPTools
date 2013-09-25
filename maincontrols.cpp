@@ -9,6 +9,7 @@ BOOL                NeedHoriz;
 
 // Window where to draw schematic
 HWND                DrawWindow;
+HWND                TabCtrl;
 static LONG_PTR     PrevDrawWindowProc;
 
 // status bar at the bottom of the screen, to display settings
@@ -37,6 +38,9 @@ int                 IoListTop;
 
 // whether the simulation is running in real time
 BOOL         RealTimeSimulationRunning;
+
+// Altura das abas
+int TabHeight = 25;
 
 void StatusBarSetText(int bar, char * text)
 {
@@ -98,7 +102,12 @@ void MakeMainWindowControls(void)
     GetWindowRect(VertScrollBar, &scroll);
     ScrollWidth = scroll.right - scroll.left;
 
-    DrawWindow = CreateWindowEx(0, WC_STATIC, "", WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
+    TabCtrl = CreateWindowEx(0, WC_TABCONTROL, _("TabControl"),
+		WS_CLIPSIBLINGS | WS_VISIBLE | WS_CHILD,
+		0, 0, 1, 1, MainWindow, NULL, Instance, NULL);// The tabCtrl size inside windows
+	NiceFont(TabCtrl);
+
+	DrawWindow = CreateWindowEx(0, WC_STATIC, "", WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
 		0, 0, 1, 1, MainWindow, NULL, Instance, NULL);
 	PrevDrawWindowProc = SetWindowLongPtr(DrawWindow, GWLP_WNDPROC, (LONG_PTR)DrawWindowProc);
 	RefreshDrawWindow();
@@ -189,6 +198,8 @@ void UpdateMainWindowTitleBar(void)
     } else {
         strcpy(line, _("POPTools - Program Editor"));
     }
+
+	char buf[1024];
 	string currentFilename = ladder->getCurrentFilename();
     if(currentFilename.size() > 0) {
         sprintf(line+strlen(line), " - %d.%d.%d.%d - %s%s", 
@@ -198,16 +209,27 @@ void UpdateMainWindowTitleBar(void)
 			wRevision,
 			currentFilename.c_str(),
 			ladder->getContext().programChangedNotSaved ? " *" : "");
+
+		unsigned int pos = currentFilename.find_last_of("\\");
+		string basename = currentFilename.substr(pos + 1);
+		strcpy(buf, basename.c_str());
     } else {
+		strcpy(buf, _(" - (not yet saved)"));
         sprintf(line+strlen(line), " - %d.%d.%d.%d%s", 
 			wMajor,
 			wMinor,
 			wBuild,
 			wRevision,
-			_(" - (not yet saved)"));
+			buf);
     }
 
-    SetWindowText(MainWindow, line);
+	TCITEM container_tabs;
+	container_tabs.mask   = TCIF_TEXT;
+
+	container_tabs.pszText = buf;
+	TabCtrl_SetItem(TabCtrl, TabCtrl_GetCurSel(TabCtrl), &container_tabs);
+
+	SetWindowText(MainWindow, line);
 }
 
 //-----------------------------------------------------------------------------
@@ -306,19 +328,14 @@ void RefreshScrollbars(void)
 
     if(NeedHoriz) {
         MoveWindow(HorizScrollBar, 0, IoListTop - ScrollHeight - 2,
-            main.right - ScrollWidth - 2, ScrollHeight, TRUE);
+            main.right - ScrollWidth, ScrollHeight, TRUE);
         ShowWindow(HorizScrollBar, SW_SHOW);
         EnableWindow(HorizScrollBar, TRUE);
     } else {
         ShowWindow(HorizScrollBar, SW_HIDE);
     }
-    MoveWindow(VertScrollBar, main.right - ScrollWidth - 2, RibbonHeight + 1, ScrollWidth,
-        NeedHoriz ? (IoListTop - ScrollHeight - RibbonHeight - 4) : (IoListTop - RibbonHeight - 3), TRUE);
-
-//    MoveWindow(VertScrollBar, main.right - ScrollWidth - 2, 1, ScrollWidth,
-//        NeedHoriz ? (IoListTop - ScrollHeight - 4) : (IoListTop - 3), TRUE);
-
-//    InvalidateRect(MainWindow, NULL, FALSE);
+    MoveWindow(VertScrollBar, main.right - ScrollWidth, RibbonHeight + 1 + TabHeight, ScrollWidth,
+        IoListTop - RibbonHeight - TabHeight - 3 - (NeedHoriz ? ScrollHeight : 0), TRUE);
 }
 
 //-----------------------------------------------------------------------------
@@ -466,7 +483,25 @@ void RefreshDrawWindow()
     RECT main;
     GetClientRect(MainWindow, &main);
 
-    MoveWindow(DrawWindow, 0, RibbonHeight, main.right, IoListTop - RibbonHeight, TRUE);
+	// Move a janela de abas
+	MoveWindow(TabCtrl, 0, RibbonHeight, main.right, TabHeight, TRUE);
+
+	// Move a janela de desenho
+    MoveWindow(DrawWindow, 0, RibbonHeight + TabHeight, main.right, IoListTop - RibbonHeight - TabHeight, TRUE);
+}
+
+// Funcao que oculta/exibe as abas com os diagramas abertos
+void ShowTabCtrl(bool visible)
+{
+	if(visible) {
+		TabHeight = 25;
+		ShowWindow(TabCtrl, SW_SHOW);
+	} else {
+		TabHeight = 0;
+		ShowWindow(TabCtrl, SW_HIDE);
+	}
+
+	RefreshDrawWindow();
 }
 
 //-----------------------------------------------------------------------------
@@ -531,7 +566,9 @@ void ToggleSimulationMode(void)
 
 	SetApplicationMode();
 
-    if(ladder->getContext().inSimulationMode) {
+	ShowTabCtrl(ladder->getContext().inSimulationMode ? false : true);
+
+	if(ladder->getContext().inSimulationMode) {
 		RibbonSetCmdState(cmdFileSave             , FALSE);
 		RibbonSetCmdState(cmdUndo                 , FALSE);
 		RibbonSetCmdState(cmdRedo                 , FALSE);

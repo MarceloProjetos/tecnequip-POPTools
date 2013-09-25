@@ -42,11 +42,6 @@ char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "Ramp
 char *InternalVars[][MAX_NAME_LEN] = { { "IncPerimRoda" , "IncPulsosVolta", "IncFatorCorr" , "AbsPerimRoda" , "AbsFatorCorr" , "" },
 									   { "INC_Perimeter", "INC_PPR"       , "INC_Factor10k", "ABS_Perimeter", "ABS_Factor10k", "" } };
 
-// Everything relating to the PLC's program, I/O configuration, processor
-// choice, and so on--basically everything that would be saved in the
-// project file.
-LadderDiagram *ladder = nullptr, *ladderbg = nullptr;
-
 // Settings structure
 Settings POPSettings;
 XMLWrapper XmlSettings;
@@ -837,7 +832,20 @@ bool CheckSaveUserCancels(void)
 //-----------------------------------------------------------------------------
 static void OpenDialog(char *filename)
 {
+	bool newProgramCreated = false;
     char tempSaveFile[MAX_PATH] = "";
+
+	// Se o programa atual tiver sido carregado/salvo ou possuir modificacoes,
+	// abrimos o ladder em uma nova aba. Caso contrario abrimos na aba atual.
+	if(ladder->getCurrentFilename().size() > 0 || ladder->getContext().programChangedNotSaved) {
+		if(!NewProgram()) {
+			if(CheckSaveUserCancels()) {
+				return;
+			}
+		} else {
+			newProgramCreated = true;
+		}
+	}
 
 	if(filename != NULL && strlen(filename)) {
 		strcpy(tempSaveFile, filename);
@@ -845,6 +853,55 @@ static void OpenDialog(char *filename)
 		FileDialogShow(LoadLadder, "ld", tempSaveFile);
 		if(!strlen(tempSaveFile))
 			return;
+	}
+
+	// Antes de abrir o projeto, verifica se ele ja esta aberto
+	unsigned int i;
+	for(i = 0; i < ladderList.size(); i++) {
+		if(ladderList[i]->getCurrentFilename() == tempSaveFile) {
+			bool openNewCopy = false;
+			// Existe o mesmo ladder ja aberto em outra aba. Agora precisamos identificar
+			// se existem alteracoes nao salvas! Se nao existirem, seleciona a aba ao
+			// inves de abrir uma nova aba. Se houverem modificacoes, perguntar se devemos
+			// abrir uma nova copia.
+			if(ladderList[i]->getContext().programChangedNotSaved) {
+				int r = MessageBox(MainWindow, 
+					_("Este diagrama já está aberto e possui modificações\r\n\r\n"
+					"Você deseja abrir uma nova cópia?"), "POPTools",
+					MB_YESNOCANCEL | MB_ICONWARNING);
+				switch(r) {
+					case IDYES:
+						openNewCopy = true; // Abre nova copia
+						break;
+
+					case IDNO:
+						break; // Nao faz nada. Realiza acao padrao: seleciona aba
+
+					case IDCANCEL:
+						// Operacao cancelada! Exclui o novo programa, se criado...
+						if(newProgramCreated) {
+							CloseProgram(ladder);
+						}
+						return;
+
+					default:
+						oops();
+				}
+			}
+
+			if(openNewCopy == false) {
+				// Nao devemos abrir uma copia. Dessa forma devemos apenas selecionar
+				// a aba com o diagrama solicitado.
+
+				if(newProgramCreated) {
+					CloseProgram(ladder);
+				}
+
+				SwitchProgram(ladderList[i]);
+
+				return;
+			}
+		}
 	}
 
     if(!LoadProjectFromFile(tempSaveFile)) {
@@ -900,29 +957,19 @@ void ProcessMenu(int code)
 
     switch(code) {
         case MNU_NEW:
-            if(CheckSaveUserCancels()) break;
             NewProgram();
             strcpy(CurrentCompileFile, "");
             RefreshScrollbars();
 			RefreshControlsToSettings();
             break;
 
-        case MNU_OPEN: /* {
-			LadderDiagram *tmp = ladder;
-			ladder   = ladderbg;
-			ladderbg = tmp;
-
-			LadderContext context = ladder->getContext();
-
-            InvalidateRect(MainWindow, NULL, FALSE);
-
-			RefreshControlsToSettings();
-			SetMenusEnabled(&context);
-			} */
-
-            if(CheckSaveUserCancels()) break;
+        case MNU_OPEN:
             OpenDialog(NULL);
             break;
+
+		case MNU_CLOSE:
+			CloseProgram(ladder);
+			break;
 
         case MNU_RECENT_CLEAR:
 			memset(POPSettings.recent_list, 0, sizeof(POPSettings.recent_list));
@@ -942,7 +989,6 @@ void ProcessMenu(int code)
 				Error(_("Favor interromper a simulação primeiro!"));
 				break;
 			}
-            if(CheckSaveUserCancels()) break;
 			recent_index = code - MNU_RECENT_START;
 			OpenDialog(POPSettings.recent_list[recent_index]);
             break;
@@ -971,7 +1017,7 @@ void ProcessMenu(int code)
 			if(ladder->getContext().inSimulationMode) {
 				ToggleSimulationMode();
 			} else {
-				if(CheckSaveUserCancels()) break;
+				if(CloseAllPrograms() == false) break;
 				PostQuitMessage(0);
 			}
             break;
@@ -1434,6 +1480,12 @@ cmp:
 	UpdateMainWindowTitleBar();
 }
 
+// Funcao executada quando uma aba de selecao de diagrama eh clicada
+void OnTabChange(void)
+{
+	SwitchProgram(ladderList[TabCtrl_GetCurSel(TabCtrl)]);
+}
+
 //-----------------------------------------------------------------------------
 // WndProc for MainWindow.
 //-----------------------------------------------------------------------------
@@ -1523,7 +1575,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 MouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL,
                         (HOOKPROC)MouseHook, Instance, 0);
             } else {
-				ladder->MouseClick(x, y - RibbonHeight, true, false);
+				ladder->MouseClick(x, y - RibbonHeight - TabHeight, true, false);
 			}
 
             SetFocus(MainWindow);
@@ -1560,8 +1612,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             NMHDR *h = (NMHDR *)lParam;
             if(h->hwndFrom == IoList) {
                 IoMapListProc(h);
+			} else if(h->code == TCN_SELCHANGE) {
+				OnTabChange();
 			}
-            return 0;
+
+			return 0;
         }
         case WM_VSCROLL:
             VscrollProc(wParam);
@@ -1577,15 +1632,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_CLOSE:
-			if(ladder->getContext().inSimulationMode) {
-				ProcessMenu(MNU_SIMULATION_MODE);
-				break;
-			}
         case WM_DESTROY:
-            if(CheckSaveUserCancels()) break;
-
-            PostQuitMessage(0);
-            return 1;
+			ProcessMenu(MNU_EXIT);
+            break;
 
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -1900,12 +1949,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	KeyboardHandlers_Init();
 
-	ladder = new LadderDiagram;
 	NewProgram();
-
-//	ladderbg = ladder;
-//	ladder = new LadderDiagram;
-//	LoadProjectFromFile("f:\\Testes\\ConnectionDots.ld");
 
 	// Preenche o vetor com tipos de uso geral
 	vectorTypesVar.push_back(eType_General);
@@ -1970,7 +2014,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	ShowWindow(MainWindow, SW_HIDE);
 
-	delete ladder;
+	CloseAllPrograms(true);
 
 	FreezeWindowPos(MainWindow);
     FreezeDWORD(IoListHeight);

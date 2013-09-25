@@ -80,7 +80,7 @@ typedef struct {
 } LadderSettingsInformation;
 
 // Estruturas auxiliares relacionadas com o I/O
-enum eReply { eReply_No = 0, eReply_Yes, eReply_Ask };
+enum eReply { eReply_No = 0, eReply_Yes, eReply_Ok, eReply_Cancel, eReply_Ask };
 
 enum eType  {
 	eType_Pending = 0,
@@ -2459,13 +2459,13 @@ public:
 
 	bool IsValidNumber     (string varnumber);
 	bool IsValidVarName    (string varname);
-	bool IsValidNameAndType(unsigned long id, string name, eType type, const char *FieldName, unsigned int Rules, int MinVal, int MaxVal, eReply canUpdate = eReply_Ask);
-	bool IsValidNameAndType(unsigned long id, string name, eType type, eReply canUpdate = eReply_Ask);
+	bool IsValidNameAndType(unsigned long id, string name, eType type, const char *FieldName, unsigned int Rules, int MinVal, int MaxVal, eReply canUpdate = eReply_Ask, eReply *reply = nullptr);
+	bool IsValidNameAndType(unsigned long id, string name, eType type, eReply canUpdate = eReply_Ask, eReply *reply = nullptr);
 
 	eValidateResult Validate(void);
 
 	// Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
-	eReply ShowDialog(bool isMessage, char *title, char *message, ...);
+	eReply ShowDialog(bool isMessage, bool hasCancel, char *title, char *message, ...);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);

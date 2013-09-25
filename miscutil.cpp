@@ -430,40 +430,6 @@ bool IsInternalVar(char *name)
 	return false;	
 }
 
-bool IsValidNumber(char *number)
-{
-	if(!IsNumber(number))
-		return false;
-
-	number++;
-	while(*number) {
-		if(*number < '0' || *number > '9')
-			return false;
-
-		number++;
-	}
-
-	return true;
-}
-
-bool IsValidVarName(char *name)
-{
-	bool first = true;
-
-	if(name == NULL || !strlen(name)) return false; // If text in white return false
-
-	while(*name) {
-		// If char isn't letter nor '_' or is number in the first position, returns false
-		if((toupper(*name) < 'A' || toupper(*name) > 'Z') && *name != '_' && !(!first && (*name >= '0' && *name <= '9')))
-			return false;
-
-		name++;
-		first = false;
-	}
-
-	return true;
-}
-
 #define KEY_CONTROL_A  1
 #define KEY_CONTROL_C  3
 #define KEY_CONTROL_V 22

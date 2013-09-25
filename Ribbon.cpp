@@ -382,6 +382,7 @@ public:
 
 			EXEC_OPCODE(cmdFileNew                , MNU_NEW                    );
 			EXEC_OPCODE(cmdFileOpen               , MNU_OPEN                   );
+			EXEC_OPCODE(cmdFileClose              , MNU_CLOSE                  );
 			EXEC_OPCODE(cmdFileSave               , MNU_SAVE                   );
 			EXEC_OPCODE(cmdFileSaveAsLadder       , MNU_SAVE_AS                );
 			EXEC_OPCODE(cmdFileSaveAsC            , MNU_SAVE_AS_C              );
@@ -822,6 +823,7 @@ void EnableInterfaceItem(int item, BOOL enabled)
 
 			RIBBON_UPDATE_CMD_STATE(cmdFileNew                , MNU_NEW                    );
 			RIBBON_UPDATE_CMD_STATE(cmdFileOpen               , MNU_OPEN                   );
+			RIBBON_UPDATE_CMD_STATE(cmdFileClose              , MNU_CLOSE                  );
 			RIBBON_UPDATE_CMD_STATE(cmdFileSave               , MNU_SAVE                   );
 			RIBBON_UPDATE_CMD_STATE(cmdFileSaveAsLadder       , MNU_SAVE_AS                );
 			RIBBON_UPDATE_CMD_STATE(cmdFileSaveAsC            , MNU_SAVE_AS_C              );
