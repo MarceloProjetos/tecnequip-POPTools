@@ -396,7 +396,7 @@ LRESULT CALLBACK DebugDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 					Button_Enable(ConfigButton, FALSE);
 
 					if(SendMessage(ModeTCPRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
-						ShowConfDialog(true);
+						ShowConfDialog(eConfSection_Network);
 					} else {
 						ShowPrefDialog();
 					}

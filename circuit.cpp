@@ -535,6 +535,10 @@ void SwitchProgram(LadderDiagram *newladder)
 {
 	if(ladder == newladder) return; // ja selecionado, nada a fazer...
 
+	if(ladder != nullptr) {
+		ladder->Activate(false);
+	}
+
 	ladder = newladder;
 
 	unsigned int i;
@@ -552,6 +556,7 @@ void SwitchProgram(LadderDiagram *newladder)
 
 	RefreshControlsToSettings();
 
+	ladder->Activate(true);
 	LadderContext context = ladder->getContext();
 	SetMenusEnabled(&context);
 }

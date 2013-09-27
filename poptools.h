@@ -532,13 +532,17 @@ typedef struct McuIoInfoTag {
 
 #define NUM_SUPPORTED_MCUS 16
 
+enum eConfSection {
+	eConfSection_Default = 0,
+	eConfSection_Network,
+	eConfSection_EncInc,
+	eConfSection_EncSSI
+};
 
 //-----------------------------------------------
 // Function prototypes
 
 // poptools.cpp
-extern vector<eType> vectorTypesVar;
-
 void ProcessMenu(int code);
 void SetMenusEnabled(LadderContext *context);
 void RefreshScrollbars(void);
@@ -553,9 +557,6 @@ extern Settings POPSettings;
 extern XMLWrapper XmlSettings;
 extern char CurrentCompileFile[MAX_PATH];
 extern McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS];
-
-// Internal variables available to the users.
-extern char *InternalVars[][MAX_NAME_LEN];
 
 #define INTVAR_INC_PERIMRODA 0
 #define INTVAR_INC_PULSOS    1
@@ -783,7 +784,9 @@ bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t);
 // confdialog.cpp
 extern struct strSerialConfig SerialConfig[];
 extern char *SerialParityString[];
-bool ShowConfDialog(bool NetworkSection);
+bool ShowConfDialog(eConfSection confSection);
+extern char *EncAbsConfig[];
+extern char *EncoderConvModes[];
 // modbusdialog.cpp
 void PopulateModBUSMasterCombobox(HWND h, bool has_new);
 // helpdialog.cpp
@@ -822,7 +825,6 @@ void ProgramSuccessfulMessage(char *str);
 bool IsNumber(const char *str);
 void LoadIOListToComboBox(HWND ComboBox, vector<eType> allowedTypes);
 int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto);
-bool IsInternalVar(char *name);
 void ChangeFileExtension(char *name, char *ext);
 unsigned short int CRC16(unsigned char *puchMsg, unsigned int usDataLen);
 extern HFONT MyNiceFont;

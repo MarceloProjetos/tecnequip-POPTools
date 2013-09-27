@@ -108,6 +108,13 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 	vectorInternalFlag.push_back("TcpReady"     );
 	vectorInternalFlag.push_back("TcpTimeout"   );
 
+	// Adicionando itens que sao variaveis internas
+	vectorInternalVar.push_back(pair<string, string>("IncPerimRoda"  ,"INC_Perimeter"));
+	vectorInternalVar.push_back(pair<string, string>("IncPulsosVolta","INC_PPR"      ));
+	vectorInternalVar.push_back(pair<string, string>("IncFatorCorr"  ,"INC_Factor10k"));
+	vectorInternalVar.push_back(pair<string, string>("AbsPerimRoda"  ,"ABS_Perimeter"));
+	vectorInternalVar.push_back(pair<string, string>("AbsFatorCorr"  ,"ABS_Factor10k"));
+
 	// Adicionando variaveis reservadas
 	vectorReservedName.push_back(_("in"  ));
 	vectorReservedName.push_back(_("out" ));
@@ -152,6 +159,16 @@ bool mapIO::IsInternalFlag(string name)
 	vector<string>::size_type i;
 	for(i = 0; i < vectorInternalFlag.size(); i++) {
 		if(name == vectorInternalFlag[i]) return true; // Encontrado!
+	}
+
+	return false;
+}
+
+bool mapIO::IsInternalVar(string name)
+{
+	vector<string>::size_type i;
+	for(i = 0; i < vectorInternalVar.size(); i++) {
+		if(name == vectorInternalVar[i].first) return true; // Encontrado!
 	}
 
 	return false;
@@ -365,6 +382,13 @@ unsigned long mapIO::Request(tRequestIO infoIO)
 	// Registro da acao para desfazer / refazer
 	diagram->CheckpointBegin(_("Solicitar I/O"));
 
+	// Se for variavel interna, o tipo obrigatoriamente deve ser Geral.
+	if(IsInternalVar(infoIO.name) && infoIO.type != eType_General) {
+		diagram->CheckpointRollback();
+		diagram->CheckpointEnd();
+		return 0;
+	}
+
 	if(IO.count(infoIO.name) > 0) {
 		// Verifica se podemos fazer o request conforme isUniqueRead e isUniqueWrite
 		if((isRequestRead && (infoIO.isUniqueRead || IO[infoIO.name].second.isUniqueRead) && IO[infoIO.name].second.countRequestRead > 0) ||
@@ -549,6 +573,18 @@ string mapIO::getName(unsigned long id)
 	for(it = IO.begin(); it != IO.end(); it++) {
 		if(it->second.first == id) {
 			return it->first;
+		}
+	}
+
+	return "";
+}
+
+string mapIO::getInternalVarName(string name)
+{
+	vector<string>::size_type i;
+	for(i = 0; i < vectorInternalVar.size(); i++) {
+		if(name == vectorInternalVar[i].first) {
+			return vectorInternalVar[i].second; // Encontrado!
 		}
 	}
 
@@ -751,7 +787,7 @@ bool mapIO::Validate(eValidateIO mode)
 	tMapIO::iterator it;
 
 	for(it = IO.begin(); it != IO.end(); it++) {
-		if(it->second.second.pin == 0) {
+		if(it->second.second.pin == 0 && mode == eValidateIO_Full) {
 			switch(it->second.second.type) {
 			case eType_ReadADC:
 				Error(_("Variável A/D '%s' deve ser associado a um canal válido!"), it->first.c_str());
@@ -1276,7 +1312,7 @@ void mapIO::ShowIoMapDialog(int item)
         return;
     }
 
-	if(IsInternalFlag(getName(id))) {
+	if(IsInternalFlag(getName(id)) || IsInternalVar(getName(id))) {
         Error(_("Variáveis internas não podem ser atribuídas."));
         return;
     }
@@ -1328,8 +1364,8 @@ void mapIO::ShowIoMapDialog(int item)
 	}
 
 	if(detailsIO.type != eType_DigInput && detailsIO.type != eType_DigOutput) {
-		ShowWindow(BitCombobox, 0);
-		ShowWindow(lblBit     , 0);
+		ShowWindow(BitCombobox, SW_HIDE);
+		ShowWindow(lblBit     , SW_HIDE);
 
 		RECT r, rOK;
 		GetWindowRect(PinList , &r  );

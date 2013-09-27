@@ -22,8 +22,9 @@ private:
 
 	unsigned int maxNameSize;
 
-	vector<string> vectorInternalFlag;
-	vector<string> vectorReservedName;
+	vector<string>                 vectorInternalFlag;
+	vector<string>                 vectorReservedName;
+	vector< pair<string, string> > vectorInternalVar;
 
 	bool Add(string name, eType type, bool isUndoRedo = false);
 
@@ -70,14 +71,15 @@ public:
 
 	void Clear(void); // Descarrega a lista de I/Os
 
-	unsigned long  getIndex     (unsigned long id, bool isTotal = true);
-	string         getName      (unsigned long id);
-	mapDetails     getDetails   (unsigned long id);
-	unsigned long  getID        (string name);
-	unsigned long  getID        (unsigned int  index, bool fromVectorIO = false);
-	char          *getTypeString(eType type);
-	unsigned int   getCount     (void);
-	void           Select       (unsigned int index);
+	unsigned long  getIndex          (unsigned long id, bool isTotal = true);
+	string         getName           (unsigned long id);
+	string         getInternalVarName(string name);
+	mapDetails     getDetails        (unsigned long id);
+	unsigned long  getID             (string name);
+	unsigned long  getID             (unsigned int  index, bool fromVectorIO = false);
+	char          *getTypeString     (eType type);
+	unsigned int   getCount          (void);
+	void           Select            (unsigned int index);
 
 	unsigned long Request(tRequestIO infoIO);
 	void          Discard(tRequestIO infoIO);
@@ -89,6 +91,7 @@ public:
 
 	bool IsReserved    (string name);
 	bool IsInternalFlag(string name);
+	bool IsInternalVar (string name);
 
 	// Funcoes que indicam se existe algum I/O que use a UART e o PWM, respectivamente
 	bool UartFunctionUsed(void);

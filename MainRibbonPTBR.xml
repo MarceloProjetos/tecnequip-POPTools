@@ -127,15 +127,12 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name       = "FileSaveAs"
-             Symbol     = "cmdFileSaveAs"
+    <Command Name       = "FileExport"
+             Symbol     = "cmdFileExport"
              Id         = "30103"
-             LabelTitle = "Salvar como...">
-      <Command.TooltipTitle      >Salvar como... (Ctrl+O)</Command.TooltipTitle>
-      <Command.TooltipDescription>Salvar o Diagrama Ladder atual como um novo arquivo.</Command.TooltipDescription>
-      <Command.LargeImages>
-        <Image Source="imgs/FileSaveAsHH.bmp"/>
-      </Command.LargeImages>
+             LabelTitle = "Exportar...">
+      <Command.TooltipTitle      >Exportar...</Command.TooltipTitle>
+      <Command.TooltipDescription>Exportar Diagrama Ladder atual como um novo arquivo.</Command.TooltipDescription>
     </Command>
 
     <Command Name             = "FileSaveAsLadder"
@@ -151,8 +148,8 @@
     <Command Name             = "FileSaveAsC"
              Symbol           = "cmdFileSaveAsC"
              Id               = "30105"
-             LabelTitle       = "Salvar como arquivo C"
-             LabelDescription = "Salvar o Diagrama Ladder atual como um novo arquivo em Linguagem C.">
+             LabelTitle       = "Exportar como arquivo C"
+             LabelDescription = "Exportar o Diagrama Ladder atual como um novo arquivo em Linguagem C.">
       <Command.LargeImages>
         <Image Source="imgs/FileSaveAsCHH.bmp"/>
       </Command.LargeImages>
@@ -161,8 +158,8 @@
     <Command Name             = "FileSaveAsText"
              Symbol           = "cmdFileSaveAsText"
              Id               = "30106"
-             LabelTitle       = "Salvar como arquivo texto"
-             LabelDescription = "Salvar o Diagrama Ladder atual como um novo arquivo de texto.">
+             LabelTitle       = "Exportar como arquivo texto"
+             LabelDescription = "Exportar o Diagrama Ladder atual como um novo arquivo de texto.">
       <Command.LargeImages>
         <Image Source="imgs/FileSaveAsTextHH.bmp"/>
       </Command.LargeImages>
@@ -2581,13 +2578,10 @@
             <Button CommandName="FileNew"  />
             <Button CommandName="FileOpen" />
             <Button CommandName="FileSave" />
-            <SplitButton CommandName="FileSaveAs" >
-              <SplitButton.ButtonItem>
-                <Button CommandName="FileSaveAsLadder"/>
-              </SplitButton.ButtonItem>
+            <Button CommandName="FileSaveAsLadder" />
+            <SplitButton CommandName="FileExport" >
               <SplitButton.MenuGroups>
                 <MenuGroup Class="MajorItems">
-                  <Button CommandName="FileSaveAsLadder"/>
                   <Button CommandName="FileSaveAsC"/>
                   <Button CommandName="FileSaveAsText"/>
                 </MenuGroup>

@@ -47,6 +47,7 @@ public:
 	~EngineRenderD2D(void);
 
 	HRESULT CreateRenderTarget(HWND hwnd);
+	HRESULT ResizeRenderTarget(HWND hwnd);
 	HRESULT CreateBrush(unsigned int rgb, unsigned int &index);
 	HRESULT CreateTextFormat(unsigned int rgb, unsigned int &index);
 

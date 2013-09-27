@@ -189,7 +189,7 @@ bool LadderElem::Save(FILE *f)
 
 bool LadderElem::Load(FILE *f, unsigned int version)
 {
-	updateIO(true); // Descarta o I/O referenciado quando da criacao do objeto
+	updateIO(Diagram, true); // Descarta o I/O referenciado quando da criacao do objeto
 	return internalLoad(f, version);
 }
 
@@ -266,7 +266,7 @@ bool LadderElemPlaceHolder::CanInsert(LadderContext context)
 LadderElem *LadderElemPlaceHolder::Clone(void)
 {
 	LadderElemPlaceHolder *clone = new LadderElemPlaceHolder(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -368,7 +368,7 @@ inline int LadderElemComment::getWidthTXT(void)
 LadderElem *LadderElemComment::Clone(void)
 {
 	LadderElemComment *clone = new LadderElemComment(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -505,7 +505,7 @@ bool LadderElemContact::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemContact::Clone(void)
 {
 	LadderElemContact *clone = new LadderElemContact(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -521,10 +521,10 @@ bool LadderElemContact::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemContact::updateIO(bool isDiscard)
+void LadderElemContact::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -719,7 +719,7 @@ bool LadderElemCoil::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemCoil::Clone(void)
 {
 	LadderElemCoil *clone = new LadderElemCoil(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -734,10 +734,10 @@ bool LadderElemCoil::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemCoil::updateIO(bool isDiscard)
+void LadderElemCoil::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -999,7 +999,7 @@ bool LadderElemTimer::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemTimer::Clone(void)
 {
 	LadderElemTimer *clone = new LadderElemTimer(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -1014,10 +1014,10 @@ bool LadderElemTimer::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemTimer::updateIO(bool isDiscard)
+void LadderElemTimer::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -1216,7 +1216,7 @@ bool LadderElemRTC::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemRTC::Clone(void)
 {
 	LadderElemRTC *clone = new LadderElemRTC(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -1375,7 +1375,7 @@ bool LadderElemCounter::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemCounter::Clone(void)
 {
 	LadderElemCounter *clone = new LadderElemCounter(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -1390,10 +1390,10 @@ bool LadderElemCounter::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemCounter::updateIO(bool isDiscard)
+void LadderElemCounter::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -1529,7 +1529,7 @@ bool LadderElemReset::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemReset::Clone(void)
 {
 	LadderElemReset *clone = new LadderElemReset(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -1545,10 +1545,10 @@ bool LadderElemReset::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemReset::updateIO(bool isDiscard)
+void LadderElemReset::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -1672,7 +1672,7 @@ bool LadderElemOneShot::CanInsert(LadderContext context)
 LadderElem *LadderElemOneShot::Clone(void)
 {
 	LadderElemOneShot *clone = new LadderElemOneShot(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -1837,7 +1837,7 @@ bool LadderElemCmp::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemCmp::Clone(void)
 {
 	LadderElemCmp *clone = new LadderElemCmp(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -1856,14 +1856,14 @@ bool LadderElemCmp::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemCmp::updateIO(bool isDiscard)
+void LadderElemCmp::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Op1.pin = prop.idOp1;
-	Diagram->updateIO(infoIO_Op1, isDiscard);
+	Diagram->updateIO(owner, infoIO_Op1, isDiscard);
 	prop.idOp1 = infoIO_Op1.pin;
 
 	infoIO_Op2.pin = prop.idOp2;
-	Diagram->updateIO(infoIO_Op2, isDiscard);
+	Diagram->updateIO(owner, infoIO_Op2, isDiscard);
 	prop.idOp2 = infoIO_Op2.pin;
 }
 
@@ -2135,7 +2135,7 @@ bool LadderElemMath::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemMath::Clone(void)
 {
 	LadderElemMath *clone = new LadderElemMath(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -2158,18 +2158,18 @@ bool LadderElemMath::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemMath::updateIO(bool isDiscard)
+void LadderElemMath::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Op1.pin = prop.idOp1;
-	Diagram->updateIO(infoIO_Op1, isDiscard);
+	Diagram->updateIO(owner, infoIO_Op1, isDiscard);
 	prop.idOp1 = infoIO_Op1.pin;
 
 	infoIO_Op2.pin = prop.idOp2;
-	Diagram->updateIO(infoIO_Op2, isDiscard);
+	Diagram->updateIO(owner, infoIO_Op2, isDiscard);
 	prop.idOp2 = infoIO_Op2.pin;
 }
 
@@ -2434,7 +2434,7 @@ bool LadderElemSqrt::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemSqrt::Clone(void)
 {
 	LadderElemSqrt *clone = new LadderElemSqrt(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -2453,14 +2453,14 @@ bool LadderElemSqrt::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemSqrt::updateIO(bool isDiscard)
+void LadderElemSqrt::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Src.pin = prop.idSrc;
-	Diagram->updateIO(infoIO_Src, isDiscard);
+	Diagram->updateIO(owner, infoIO_Src, isDiscard);
 	prop.idSrc = infoIO_Src.pin;
 }
 
@@ -2693,7 +2693,7 @@ bool LadderElemRand::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemRand::Clone(void)
 {
 	LadderElemRand *clone = new LadderElemRand(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -2716,18 +2716,18 @@ bool LadderElemRand::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemRand::updateIO(bool isDiscard)
+void LadderElemRand::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Var.pin = prop.idVar;
-	Diagram->updateIO(infoIO_Var, isDiscard);
+	Diagram->updateIO(owner, infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
 
 	infoIO_Min.pin = prop.idMin;
-	Diagram->updateIO(infoIO_Min, isDiscard);
+	Diagram->updateIO(owner, infoIO_Min, isDiscard);
 	prop.idMin = infoIO_Min.pin;
 
 	infoIO_Max.pin = prop.idMax;
-	Diagram->updateIO(infoIO_Max, isDiscard);
+	Diagram->updateIO(owner, infoIO_Max, isDiscard);
 	prop.idMax = infoIO_Max.pin;
 }
 
@@ -2983,7 +2983,7 @@ bool LadderElemAbs::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemAbs::Clone(void)
 {
 	LadderElemAbs *clone = new LadderElemAbs(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -3002,14 +3002,14 @@ bool LadderElemAbs::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemAbs::updateIO(bool isDiscard)
+void LadderElemAbs::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Src.pin = prop.idSrc;
-	Diagram->updateIO(infoIO_Src, isDiscard);
+	Diagram->updateIO(owner, infoIO_Src, isDiscard);
 	prop.idSrc = infoIO_Src.pin;
 }
 
@@ -3229,7 +3229,7 @@ bool LadderElemMove::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemMove::Clone(void)
 {
 	LadderElemMove *clone = new LadderElemMove(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -3248,14 +3248,14 @@ bool LadderElemMove::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemMove::updateIO(bool isDiscard)
+void LadderElemMove::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Src.pin = prop.idSrc;
-	Diagram->updateIO(infoIO_Src, isDiscard);
+	Diagram->updateIO(owner, infoIO_Src, isDiscard);
 	prop.idSrc = infoIO_Src.pin;
 }
 
@@ -3392,7 +3392,7 @@ bool LadderElemOpenShort::CanInsert(LadderContext context)
 LadderElem *LadderElemOpenShort::Clone(void)
 {
 	LadderElemOpenShort *clone = new LadderElemOpenShort(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -3496,7 +3496,7 @@ bool LadderElemSetBit::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemSetBit::Clone(void)
 {
 	LadderElemSetBit *clone = new LadderElemSetBit(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -3511,10 +3511,10 @@ bool LadderElemSetBit::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemSetBit::updateIO(bool isDiscard)
+void LadderElemSetBit::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -3652,7 +3652,7 @@ bool LadderElemCheckBit::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemCheckBit::Clone(void)
 {
 	LadderElemCheckBit *clone = new LadderElemCheckBit(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -3667,10 +3667,10 @@ bool LadderElemCheckBit::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemCheckBit::updateIO(bool isDiscard)
+void LadderElemCheckBit::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -3820,7 +3820,7 @@ bool LadderElemReadAdc::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemReadAdc::Clone(void)
 {
 	LadderElemReadAdc *clone = new LadderElemReadAdc(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -3835,10 +3835,10 @@ bool LadderElemReadAdc::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemReadAdc::updateIO(bool isDiscard)
+void LadderElemReadAdc::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -3994,7 +3994,7 @@ bool LadderElemSetDa::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemSetDa::Clone(void)
 {
 	LadderElemSetDa *clone = new LadderElemSetDa(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -4009,10 +4009,10 @@ bool LadderElemSetDa::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemSetDa::updateIO(bool isDiscard)
+void LadderElemSetDa::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -4108,6 +4108,61 @@ LadderElemReadEnc::LadderElemReadEnc(LadderDiagram *diagram) : LadderElem(true, 
 	Diagram->getIO(infoIO_Name);
 
 	prop.idName = infoIO_Name.pin;
+
+	// Caracteristicas do I/O IncPerimRoda
+	infoIO_IncPerimRoda.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_IncPerimRoda.name          = "IncPerimRoda";
+	infoIO_IncPerimRoda.isBit         = false;
+	infoIO_IncPerimRoda.type          = eType_General;
+	infoIO_IncPerimRoda.access        = eRequestAccessType_ReadWrite;
+	infoIO_IncPerimRoda.isUniqueRead  = false;
+	infoIO_IncPerimRoda.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_IncPerimRoda);
+
+	// Caracteristicas do I/O IncPulsosVolta
+	infoIO_IncPulsosVolta.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_IncPulsosVolta.name          = "IncPulsosVolta";
+	infoIO_IncPulsosVolta.isBit         = false;
+	infoIO_IncPulsosVolta.type          = eType_General;
+	infoIO_IncPulsosVolta.access        = eRequestAccessType_ReadWrite;
+	infoIO_IncPulsosVolta.isUniqueRead  = false;
+	infoIO_IncPulsosVolta.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_IncPulsosVolta);
+
+	// Caracteristicas do I/O IncFatorCorr
+	infoIO_IncFatorCorr.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_IncFatorCorr.name          = "IncFatorCorr";
+	infoIO_IncFatorCorr.isBit         = false;
+	infoIO_IncFatorCorr.type          = eType_General;
+	infoIO_IncFatorCorr.access        = eRequestAccessType_ReadWrite;
+	infoIO_IncFatorCorr.isUniqueRead  = false;
+	infoIO_IncFatorCorr.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_IncFatorCorr);
+
+	// Caracteristicas do I/O AbsPerimRoda
+	infoIO_AbsPerimRoda.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_AbsPerimRoda.name          = "AbsPerimRoda";
+	infoIO_AbsPerimRoda.isBit         = false;
+	infoIO_AbsPerimRoda.type          = eType_General;
+	infoIO_AbsPerimRoda.access        = eRequestAccessType_ReadWrite;
+	infoIO_AbsPerimRoda.isUniqueRead  = false;
+	infoIO_AbsPerimRoda.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_AbsPerimRoda);
+
+	// Caracteristicas do I/O AbsFatorCorr
+	infoIO_AbsFatorCorr.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_AbsFatorCorr.name          = "AbsFatorCorr";
+	infoIO_AbsFatorCorr.isBit         = false;
+	infoIO_AbsFatorCorr.type          = eType_General;
+	infoIO_AbsFatorCorr.access        = eRequestAccessType_ReadWrite;
+	infoIO_AbsFatorCorr.isUniqueRead  = false;
+	infoIO_AbsFatorCorr.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_AbsFatorCorr);
 }
 
 pair<string, string> LadderElemReadEnc::DrawTXT(void)
@@ -4169,7 +4224,7 @@ bool LadderElemReadEnc::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemReadEnc::Clone(void)
 {
 	LadderElemReadEnc *clone = new LadderElemReadEnc(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -4181,14 +4236,41 @@ bool LadderElemReadEnc::acceptIO(unsigned long id, eType type)
 		return false;
 	}
 
+	if(id == infoIO_IncPerimRoda.pin.first && type != eType_General) {
+		return false;
+	}
+
+	if(id == infoIO_IncPulsosVolta.pin.first && type != eType_General) {
+		return false;
+	}
+
+	if(id == infoIO_IncFatorCorr.pin.first && type != eType_General) {
+		return false;
+	}
+
+	if(id == infoIO_AbsPerimRoda.pin.first && type != eType_General) {
+		return false;
+	}
+
+	if(id == infoIO_AbsFatorCorr.pin.first && type != eType_General) {
+		return false;
+	}
+
 	return true;
 }
 
-void LadderElemReadEnc::updateIO(bool isDiscard)
+void LadderElemReadEnc::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+
+	// Atualizacao de variaveis internas
+	Diagram->updateIO(owner, infoIO_IncPerimRoda  , isDiscard);
+	Diagram->updateIO(owner, infoIO_IncPulsosVolta, isDiscard);
+	Diagram->updateIO(owner, infoIO_IncFatorCorr  , isDiscard);
+	Diagram->updateIO(owner, infoIO_AbsPerimRoda  , isDiscard);
+	Diagram->updateIO(owner, infoIO_AbsFatorCorr  , isDiscard);
 }
 
 int LadderElemReadEnc::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -4260,6 +4342,61 @@ LadderElemResetEnc::LadderElemResetEnc(LadderDiagram *diagram) : LadderElem(true
 	Diagram->getIO(infoIO_Name);
 
 	prop.idName = infoIO_Name.pin;
+
+	// Caracteristicas do I/O IncPerimRoda
+	infoIO_IncPerimRoda.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_IncPerimRoda.name          = "IncPerimRoda";
+	infoIO_IncPerimRoda.isBit         = false;
+	infoIO_IncPerimRoda.type          = eType_General;
+	infoIO_IncPerimRoda.access        = eRequestAccessType_ReadWrite;
+	infoIO_IncPerimRoda.isUniqueRead  = false;
+	infoIO_IncPerimRoda.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_IncPerimRoda);
+
+	// Caracteristicas do I/O IncPulsosVolta
+	infoIO_IncPulsosVolta.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_IncPulsosVolta.name          = "IncPulsosVolta";
+	infoIO_IncPulsosVolta.isBit         = false;
+	infoIO_IncPulsosVolta.type          = eType_General;
+	infoIO_IncPulsosVolta.access        = eRequestAccessType_ReadWrite;
+	infoIO_IncPulsosVolta.isUniqueRead  = false;
+	infoIO_IncPulsosVolta.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_IncPulsosVolta);
+
+	// Caracteristicas do I/O IncFatorCorr
+	infoIO_IncFatorCorr.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_IncFatorCorr.name          = "IncFatorCorr";
+	infoIO_IncFatorCorr.isBit         = false;
+	infoIO_IncFatorCorr.type          = eType_General;
+	infoIO_IncFatorCorr.access        = eRequestAccessType_ReadWrite;
+	infoIO_IncFatorCorr.isUniqueRead  = false;
+	infoIO_IncFatorCorr.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_IncFatorCorr);
+
+	// Caracteristicas do I/O AbsPerimRoda
+	infoIO_AbsPerimRoda.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_AbsPerimRoda.name          = "AbsPerimRoda";
+	infoIO_AbsPerimRoda.isBit         = false;
+	infoIO_AbsPerimRoda.type          = eType_General;
+	infoIO_AbsPerimRoda.access        = eRequestAccessType_ReadWrite;
+	infoIO_AbsPerimRoda.isUniqueRead  = false;
+	infoIO_AbsPerimRoda.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_AbsPerimRoda);
+
+	// Caracteristicas do I/O AbsFatorCorr
+	infoIO_AbsFatorCorr.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_AbsFatorCorr.name          = "AbsFatorCorr";
+	infoIO_AbsFatorCorr.isBit         = false;
+	infoIO_AbsFatorCorr.type          = eType_General;
+	infoIO_AbsFatorCorr.access        = eRequestAccessType_ReadWrite;
+	infoIO_AbsFatorCorr.isUniqueRead  = false;
+	infoIO_AbsFatorCorr.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_AbsFatorCorr);
 }
 
 pair<string, string> LadderElemResetEnc::DrawTXT(void)
@@ -4321,7 +4458,7 @@ bool LadderElemResetEnc::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemResetEnc::Clone(void)
 {
 	LadderElemResetEnc *clone = new LadderElemResetEnc(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -4333,14 +4470,41 @@ bool LadderElemResetEnc::acceptIO(unsigned long id, eType type)
 		return false;
 	}
 
+	if(id == infoIO_IncPerimRoda.pin.first && type != eType_General) {
+		return false;
+	}
+
+	if(id == infoIO_IncPulsosVolta.pin.first && type != eType_General) {
+		return false;
+	}
+
+	if(id == infoIO_IncFatorCorr.pin.first && type != eType_General) {
+		return false;
+	}
+
+	if(id == infoIO_AbsPerimRoda.pin.first && type != eType_General) {
+		return false;
+	}
+
+	if(id == infoIO_AbsFatorCorr.pin.first && type != eType_General) {
+		return false;
+	}
+
 	return true;
 }
 
-void LadderElemResetEnc::updateIO(bool isDiscard)
+void LadderElemResetEnc::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+
+	// Atualizacao de variaveis internas
+	Diagram->updateIO(owner, infoIO_IncPerimRoda  , isDiscard);
+	Diagram->updateIO(owner, infoIO_IncPulsosVolta, isDiscard);
+	Diagram->updateIO(owner, infoIO_IncFatorCorr  , isDiscard);
+	Diagram->updateIO(owner, infoIO_AbsPerimRoda  , isDiscard);
+	Diagram->updateIO(owner, infoIO_AbsFatorCorr  , isDiscard);
 }
 
 int LadderElemResetEnc::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -4551,7 +4715,7 @@ bool LadderElemMultisetDA::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemMultisetDA::Clone(void)
 {
 	LadderElemMultisetDA *clone = new LadderElemMultisetDA(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -4570,14 +4734,14 @@ bool LadderElemMultisetDA::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemMultisetDA::updateIO(bool isDiscard)
+void LadderElemMultisetDA::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Time.pin = prop.idTime;
-	Diagram->updateIO(infoIO_Time, isDiscard);
+	Diagram->updateIO(owner, infoIO_Time, isDiscard);
 	prop.idTime = infoIO_Time.pin;
 
 	infoIO_Desl.pin = prop.idDesl;
-	Diagram->updateIO(infoIO_Desl, isDiscard);
+	Diagram->updateIO(owner, infoIO_Desl, isDiscard);
 	prop.idDesl = infoIO_Desl.pin;
 }
 
@@ -4753,7 +4917,7 @@ bool LadderElemUSS::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemUSS::Clone(void)
 {
 	LadderElemUSS *clone = new LadderElemUSS(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -4768,10 +4932,10 @@ bool LadderElemUSS::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemUSS::updateIO(bool isDiscard)
+void LadderElemUSS::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -4991,7 +5155,7 @@ bool LadderElemModBUS::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemModBUS::Clone(void)
 {
 	LadderElemModBUS *clone = new LadderElemModBUS(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -5006,10 +5170,10 @@ bool LadderElemModBUS::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemModBUS::updateIO(bool isDiscard)
+void LadderElemModBUS::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -5168,7 +5332,7 @@ bool LadderElemSetPWM::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemSetPWM::Clone(void)
 {
 	LadderElemSetPWM *clone = new LadderElemSetPWM(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -5183,10 +5347,10 @@ bool LadderElemSetPWM::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemSetPWM::updateIO(bool isDiscard)
+void LadderElemSetPWM::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -5327,7 +5491,7 @@ bool LadderElemUART::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemUART::Clone(void)
 {
 	LadderElemUART *clone = new LadderElemUART(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -5342,10 +5506,10 @@ bool LadderElemUART::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemUART::updateIO(bool isDiscard)
+void LadderElemUART::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -5438,7 +5602,7 @@ bool LadderElemMasterRelay::CanInsert(LadderContext context)
 LadderElem *LadderElemMasterRelay::Clone(void)
 {
 	LadderElemMasterRelay *clone = new LadderElemMasterRelay(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -5611,7 +5775,7 @@ bool LadderElemShiftRegister::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemShiftRegister::Clone(void)
 {
 	LadderElemShiftRegister *clone = new LadderElemShiftRegister(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -5630,7 +5794,7 @@ bool LadderElemShiftRegister::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemShiftRegister::updateIO(bool isDiscard)
+void LadderElemShiftRegister::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	int i;
 	char cname[MAX_NAME_LEN + 10];
@@ -5642,7 +5806,7 @@ void LadderElemShiftRegister::updateIO(bool isDiscard)
 		InfoIO_Regs.name = cname;
 		InfoIO_Regs.pin  = prop.vectorIdRegs[i];
 
-		Diagram->updateIO(InfoIO_Regs, isDiscard);
+		Diagram->updateIO(owner, InfoIO_Regs, isDiscard);
 	}
 
 	InfoIO_Regs.name = previous_name;
@@ -5830,7 +5994,7 @@ bool LadderElemLUT::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemLUT::Clone(void)
 {
 	LadderElemLUT *clone = new LadderElemLUT(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -5849,14 +6013,14 @@ bool LadderElemLUT::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemLUT::updateIO(bool isDiscard)
+void LadderElemLUT::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Index.pin = prop.idIndex;
-	Diagram->updateIO(infoIO_Index, isDiscard);
+	Diagram->updateIO(owner, infoIO_Index, isDiscard);
 	prop.idIndex = infoIO_Index.pin;
 }
 
@@ -6172,7 +6336,7 @@ bool LadderElemPiecewise::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemPiecewise::Clone(void)
 {
 	LadderElemPiecewise *clone = new LadderElemPiecewise(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -6191,14 +6355,14 @@ bool LadderElemPiecewise::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemPiecewise::updateIO(bool isDiscard)
+void LadderElemPiecewise::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Index.pin = prop.idIndex;
-	Diagram->updateIO(infoIO_Index, isDiscard);
+	Diagram->updateIO(owner, infoIO_Index, isDiscard);
 	prop.idIndex = infoIO_Index.pin;
 }
 
@@ -6414,7 +6578,7 @@ bool LadderElemFmtString::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemFmtString::Clone(void)
 {
 	LadderElemFmtString *clone = new LadderElemFmtString(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -6429,10 +6593,10 @@ bool LadderElemFmtString::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemFmtString::updateIO(bool isDiscard)
+void LadderElemFmtString::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Var.pin = prop.idVar;
-	Diagram->updateIO(infoIO_Var, isDiscard);
+	Diagram->updateIO(owner, infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
 }
 
@@ -6611,7 +6775,7 @@ bool LadderElemYaskawa::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemYaskawa::Clone(void)
 {
 	LadderElemYaskawa *clone = new LadderElemYaskawa(Diagram, getWhich());
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -6626,10 +6790,10 @@ bool LadderElemYaskawa::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemYaskawa::updateIO(bool isDiscard)
+void LadderElemYaskawa::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Var.pin = prop.idVar;
-	Diagram->updateIO(infoIO_Var, isDiscard);
+	Diagram->updateIO(owner, infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
 }
 
@@ -6794,7 +6958,7 @@ bool LadderElemPersist::internalLoad(FILE *f, unsigned int version)
 LadderElem *LadderElemPersist::Clone(void)
 {
 	LadderElemPersist *clone = new LadderElemPersist(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -6809,10 +6973,10 @@ bool LadderElemPersist::acceptIO(unsigned long id, eType type)
 	return true;
 }
 
-void LadderElemPersist::updateIO(bool isDiscard)
+void LadderElemPersist::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Var.pin = prop.idVar;
-	Diagram->updateIO(infoIO_Var, isDiscard);
+	Diagram->updateIO(owner, infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
 }
 
@@ -6899,7 +7063,7 @@ bool LadderElemX::CanInsert(LadderContext context)
 LadderElem *LadderElemX::Clone(void)
 {
 	LadderElemX *clone = new LadderElemX(Diagram);
-	clone->updateIO(true); // Descarta os I/Os registrados
+	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -7315,6 +7479,19 @@ int LadderCircuit::getWidthTXT(int ColsAvailable)
 	}
 
 	return width;
+}
+
+void LadderCircuit::setDiagram(LadderDiagram *newDiagram)
+{
+	vector<Subckt>::size_type i;
+
+	for(i = 0; i < vectorSubckt.size(); i++) {
+		if(vectorSubckt[i].elem != nullptr) {
+			vectorSubckt[i].elem  ->setDiagram(newDiagram);
+		} else {
+			vectorSubckt[i].subckt->setDiagram(newDiagram);
+		}
+	}
 }
 
 void LadderCircuit::AddPlaceHolderIfNoEOL(LadderContext context)
@@ -7932,15 +8109,15 @@ bool LadderCircuit::acceptIO(unsigned long id, enum eType type)
 	return ret;
 }
 
-void LadderCircuit::updateIO(bool isDiscard)
+void LadderCircuit::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	vector<Subckt>::size_type it;
 
 	for(it = 0; it < vectorSubckt.size(); it++) {
 		if(vectorSubckt[it].elem != nullptr) {
-			vectorSubckt[it].elem  ->updateIO(isDiscard);
+			vectorSubckt[it].elem  ->updateIO(owner, isDiscard);
 		} else {
-			vectorSubckt[it].subckt->updateIO(isDiscard);
+			vectorSubckt[it].subckt->updateIO(owner, isDiscard);
 		}
 	}
 }
@@ -8098,9 +8275,6 @@ void LadderDiagram::Init(void)
 
 	currentFilename                = "";
 
-	copiedElement                  = nullptr;
-	copiedRung                     = nullptr;
-
 	NeedScrollSelectedIntoView     = false;
 
 	// Inicializacao das configuracoes
@@ -8187,15 +8361,6 @@ void LadderDiagram::FreeDiagram(void)
 {
 	unsigned int i;
 
-	if(copiedElement != nullptr) {
-		UnallocElem(copiedElement);
-	}
-
-	if(copiedRung != nullptr) {
-		delete copiedRung->rung;
-		delete copiedRung;
-	}
-
 	while(rungs.size() > 0) {
 		DeleteRung(0);
 	}
@@ -8215,6 +8380,13 @@ void LadderDiagram::FreeDiagram(void)
 		delete vectorMbNodeList[i];
 	}
 	vectorMbNodeList.clear();
+}
+
+void LadderDiagram::Activate(bool isActive)
+{
+	if(isActive) {
+		IO->updateGUI();
+	}
 }
 
 void LadderDiagram::NewDiagram(void)
@@ -8746,7 +8918,7 @@ bool LadderDiagram::DeleteRung(int rung)
 	}
 
 	(*it)->rung->doPostRemove();
-	(*it)->rung->updateIO(true);
+	(*it)->rung->updateIO(this, true);
 	rungs.erase(it);
 
 	CheckpointEnd();
@@ -8759,8 +8931,11 @@ bool LadderDiagram::DeleteRung(int rung)
 	return true;
 }
 
-bool LadderDiagram::CopyRung(LadderElem *elem)
+bool LadderDiagram::CopyRung(LadderClipboard *clipboard, LadderElem *elem)
 {
+	// Se nao recebemos a estrutura que contem as informacoes de copiar/colar, retorna.
+	if(clipboard == nullptr) return false;
+
 	int pos;
 	if(elem == nullptr) {
 		elem = context.SelectedElem;
@@ -8770,23 +8945,24 @@ bool LadderDiagram::CopyRung(LadderElem *elem)
 	pos = RungContainingElement(elem);
 
 	// Primeiro descarta uma linha previamente copiada
-	if(copiedRung != nullptr) {
-		delete copiedRung->rung;
-		delete copiedRung;
+	if(clipboard->rungCopy != nullptr) {
+		delete clipboard->rungCopy->rung;
+		delete clipboard->rungCopy;
 	}
 
 	// Copia a linha
-	copiedRung                = new LadderRung;
+	clipboard->rungCopy                = new LadderRung;
+	clipboard->rungOwner               = this;
 
-	copiedRung->hasBreakpoint = false;
-	copiedRung->isPowered     = false;
-	copiedRung->rung          = rungs[pos]->rung->Clone();
+	clipboard->rungCopy->hasBreakpoint = false;
+	clipboard->rungCopy->isPowered     = false;
+	clipboard->rungCopy->rung          = rungs[pos]->rung->Clone();
 
 	// Retorna com sucesso!
 	return true;
 }
 
-bool LadderDiagram::PasteRung(bool isAfter)
+bool LadderDiagram::PasteRung(LadderClipboard clipboard, bool isAfter)
 {
 	int pos;
 	bool ret = false;
@@ -8795,7 +8971,7 @@ bool LadderDiagram::PasteRung(bool isAfter)
 	if(context.inSimulationMode) return false;
 
 	// Nao existe linha copiada ou nao existe ponto de insercao definido
-	if(copiedRung == nullptr || context.SelectedElem == nullptr) return false;
+	if(clipboard.rungCopy == nullptr || context.SelectedElem == nullptr) return false;
 
 	CheckpointBegin(_("Colar Linha"));
 
@@ -8806,9 +8982,17 @@ bool LadderDiagram::PasteRung(bool isAfter)
 			pos++;
 		}
 
+		// Cria uma copia de si mesma para que seja possivel inserir uma nova copia
+		LadderRung *copiedRung    = new LadderRung;
+
+		copiedRung->hasBreakpoint = false;
+		copiedRung->isPowered     = false;
+		copiedRung->rung          = clipboard.rungCopy->rung->Clone();
+		copiedRung->rung->setDiagram(this);
+
 		rungs.insert(rungs.begin() + pos, copiedRung);
 		copiedRung->rung->doPostInsert();
-		copiedRung->rung->updateIO(false);
+		copiedRung->rung->updateIO(clipboard.rungOwner, false);
 
 		// Registro da acao para desfazer / refazer
 		UndoRedoAction action;
@@ -8826,13 +9010,6 @@ bool LadderDiagram::PasteRung(bool isAfter)
 		action.subckt        = nullptr;
 
 		RegisterAction(action);
-
-		// Cria uma copia de si mesma para que seja possivel inserir uma nova copia
-		copiedRung                = new LadderRung;
-
-		copiedRung->hasBreakpoint = false;
-		copiedRung->isPowered     = false;
-		copiedRung->rung          = rungs[pos]->rung->Clone();
 
 		// Indica que houve alteracao no programa
 		ProgramChanged();
@@ -8859,7 +9036,7 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 	// Se nao existe um elemento selecionado, descarta o elemento que nos foi passado e retorna
 	if(context.SelectedElem == nullptr || context.SelectedCircuit == nullptr) {
 		// Se o elemento for descartado, deve descartar todos os I/Os que ele houver registrado.
-		elem->updateIO(true);
+		elem->updateIO(this, true);
 
 		// Apos o recebimento de elem, a classe LadderDiagram passa a ser responsavel por ele.
 		// Se por qualquer motivo houver uma falha ao inserir, a classe tem a responsabilidade
@@ -8934,12 +9111,12 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 
 	CheckpointBegin(_("Remover Elemento"));
 	if(rungs[rung]->rung->DelElement(elem, context)) {
-		// Elemento adicionado, chama a funcao para que o elemento realize qualquer etapa
-		// adicional apos a sua inclusao no circuito.
+		// Elemento removido, chama a funcao para que o elemento realize qualquer etapa
+		// adicional apos a sua exclusao no circuito.
 		// Especificamente para o caso do ModBUS, que precisa referenciar o node que ele usa.
 		elem->doPostRemove();
 
-		elem->updateIO(true);
+		elem->updateIO(this, true);
 		rungs[rung]->rung->RemoveUnnecessarySubckts(context);
 		rungs[rung]->rung->AddPlaceHolderIfNoEOL(context);
 
@@ -8966,8 +9143,11 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 	return false;
 }
 
-bool LadderDiagram::CopyElement(LadderElem *elem)
+bool LadderDiagram::CopyElement(LadderClipboard *clipboard, LadderElem *elem)
 {
+	// Se nao recebemos a estrutura que contem as informacoes de copiar/colar, retorna.
+	if(clipboard == nullptr) return false;
+
 	if(elem == nullptr) {
 		elem = context.SelectedElem;
 		if(elem == nullptr) return false; // Sem elemento para copiar
@@ -8980,12 +9160,13 @@ bool LadderDiagram::CopyElement(LadderElem *elem)
 	CheckpointBegin(_("Copiar Elemento"));
 
 	// Primeiro descarta um elemento previamente copiado
-	if(copiedElement != nullptr) {
-		UnallocElem(copiedElement);
+	if(clipboard->elemCopy != nullptr) {
+		UnallocElem(clipboard->elemCopy);
 	}
 
 	// Copia o elemento
-	copiedElement = elem->Clone();
+	clipboard->elemCopy  = elem->Clone();
+	clipboard->elemOwner = this;
 
 	// Copia finalizada. Executa o rollback e fecha o checkpoint e assim todas as acoes registradas
 	// desde a criacao do checkpoint serao descartadas
@@ -8996,21 +9177,22 @@ bool LadderDiagram::CopyElement(LadderElem *elem)
 	return true;
 }
 
-bool LadderDiagram::PasteElement(void)
+bool LadderDiagram::PasteElement(LadderClipboard clipboard)
 {
 	bool ret = false;
 
 	// Se em simulacao, retorna
 	if(context.inSimulationMode) return false;
 
-	if(copiedElement == nullptr) return false; // Nao existe elemento copiado
+	if(clipboard.elemCopy == nullptr) return false; // Nao existe elemento copiado
 
 	CheckpointBegin(_("Colar Elemento"));
 
-	LadderElem *newCopiedElement = copiedElement->Clone();
+	LadderElem *newCopiedElement = clipboard.elemCopy->Clone();
+	newCopiedElement->setDiagram(this);
 
-	if(AddElement(copiedElement)) {
-		copiedElement->updateIO(false);
+	if(AddElement(newCopiedElement)) {
+		newCopiedElement->updateIO(clipboard.elemOwner, false);
 		ret = true;
 
 		// Indica que houve alteracao no programa
@@ -9020,8 +9202,6 @@ bool LadderDiagram::PasteElement(void)
 	}
 
 	CheckpointEnd();
-
-	copiedElement = newCopiedElement;
 
 	updateContext();
 
@@ -9256,6 +9436,17 @@ bool LadderDiagram::Save(string filename, bool dontSaveFilename)
 		filename = currentFilename;
 		if(filename.size() == 0) return false; // Continua vazio! Retorna erro...
 	}
+
+	// A seguir verificamos se o arquivo esta sendo sobrescrito e se esta acao eh permitida.
+	if(filename == currentFilename && !LadderSettings.General.canSave) {
+		return false; // Nome do arquivo carregado e flag nao permite sobrescrever! Retorna erro.
+	}
+
+	// Alguns arquivos (como exemplos) nao podem ser sobrescritos. Dessa forma existe uma flag
+	// interna nas configuracoes do projeto que inibe esse salvamento. A linha a seguir usa
+	// essa flag para que o arquivo salvo neste momento tenha essa protecao.
+	// Desative a linha abaixo apenas quando desejar impedir que o arquivo seja sobrescrito.
+	//LadderSettings.General.canSave = false;
 
 	FILE *f = fopen(filename.c_str(), "wb+");
     if(!f) return failed;
@@ -9680,6 +9871,9 @@ void LadderDiagram::ProgramChanged(void)
 // Funcao que Registra no Undo/Redo a configuracao atual para que possa ser desfeito
 void LadderDiagram::RegisterSettingsChanged(void)
 {
+	// Cria um checkpoint para evitar registrar uma ação fora de um checkpoint
+	CheckpointBegin(_("Alterar Configurações"));
+
 	// Registro da acao para desfazer / refazer
 	UndoRedoAction action;
 	UndoRedoData *data = new UndoRedoData;
@@ -9700,6 +9894,8 @@ void LadderDiagram::RegisterSettingsChanged(void)
 	// Essa funcao somente eh chamada quando alguma configuracao estiver sendo alterada.
 	// Desta forma, indica que houve alteracao no programa
 	ProgramChanged();
+
+	CheckpointEnd();
 }
 
 void LadderDiagram::setSettingsGeneral(LadderSettingsGeneral setGeneral)
@@ -10057,7 +10253,7 @@ bool LadderDiagram::acceptIO(unsigned long id, enum eType type)
 	return true;
 }
 
-void LadderDiagram::updateIO(tRequestIO &infoIO, bool isDiscard)
+void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDiscard)
 {
 	if(infoIO.pin.first == 0) return; // id nao esta em uso, indica que eh um numero e nao um I/O
 
@@ -10065,9 +10261,37 @@ void LadderDiagram::updateIO(tRequestIO &infoIO, bool isDiscard)
 		IO->Discard(infoIO);
 	} else {
 		// Se nao for descarte, indica que devemos atualizar o I/O conforme os passos abaixo:
-		// 1) Verifica se id eh valido
-		// 1.1) Se for valido, verifica se o tipo ainda eh valido e entao faz um request
-		// 1.2) Se nao for valido, devemos criar um novo I/O e atualizar o id
+		// 1) Se o I/O tem como origem outro diagrama ladder, verificar se existe um compativel
+		// no diagrama atual
+		// 2) Verifica se id eh valido
+		// 2.1) Se for valido, verifica se o tipo ainda eh valido e entao faz um request
+		// 2.2) Se nao for valido, devemos criar um novo I/O e atualizar o id
+
+		// Etapa 1
+		if(owner != this) { // I/O veio de outro diagrama!!!
+			string name          = owner->getNameIO   (infoIO.pin);
+			mapDetails detailsIO = owner->getDetailsIO(infoIO.pin.first);
+
+			pair <unsigned long, int> pin = pair<unsigned long, int>(0, 0);
+			pin.first = getIdIO(name);
+
+			if(pin.first == 0) {
+				// Se pin.first for 0, significa que nao existe um I/O no diagrama atual um
+				// I/O com o mesmo nome que no diagrama de onde foi copiado este elemento.
+				// Assim, para tentar manter a logica o mais proxima da original possivel,
+				// vamos atualizar a estrutura que solicita o I/O para usar o nome e tipo
+				// do I/O original. Como o I/O ja existe no diagrama original, podemos
+				// considerar que o I/O tem nome e tipo validos.
+				infoIO.name = name;
+				infoIO.type = detailsIO.type;
+			} else if(getDetailsIO(pin.first).type == detailsIO.type) { // Compativel!
+				infoIO.pin = pin;
+			} else {
+				infoIO.pin.first = 0;
+			}
+		}
+
+		// Etapa 2
 		if(IO->getName(infoIO.pin.first).size() > 0) { // id valido!
 			mapDetails DetailsIO = IO->getDetails(infoIO.pin.first);
 			if(acceptIO(infoIO.pin.first, DetailsIO.type)) {
@@ -10263,6 +10487,16 @@ void LadderDiagram::selectIO(unsigned int index)
 	IO->Select(index);
 }
 
+bool LadderDiagram::IsInternalVarIO(string name)
+{
+	return IO->IsInternalVar(name);
+}
+
+string LadderDiagram::getInternalVarNameIO(string name)
+{
+	return IO->getInternalVarName(name);
+}
+
 bool LadderDiagram::equalsNameIO(string name1, string name2)
 {
 	return name1 == name2;
@@ -10433,9 +10667,22 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 	int val;
 	bool ret = false;
 	eType current_type;
+	bool  name_is_internal_var  = IO->IsInternalVar (name);
 	bool  name_is_internal_flag = IO->IsInternalFlag(name);
 	bool  name_is_reserved      = IO->IsReserved(name);
 	bool  name_is_number        = IsNumber(name.c_str());
+
+	// As variaveis internas sao variaveis que podem ser utilizadas pela logica mas que precisam
+	// ja existir previamente. Sao criadas por certos elementos como leitura de encoder, por exemplo.
+	// Dessa forma, se a variavel ainda nao existir, devera ser considerada como de uso reservado.
+	if(name_is_internal_var && getDetailsIO(name).countRequestInt == 0) {
+		name_is_reserved = true; // Variavel interna sem request para int indica variavel nao utilizada.
+	}
+
+	// Para variaveis internas, o tipo deve ser obrigatoriamente Geral.
+	if(name_is_internal_var && type != eType_General) {
+		ShowDialog(true, false, _("Tipo Inválido"), _("Conflito entre tipos! Operação não permitida."));
+	}
 
 	unsigned long newid = IO->getID(name);
 	mapDetails newdetailsIO = IO->getDetails(newid);

@@ -60,18 +60,10 @@ void ExportDrawingAsText(char *file)
         return;
     }
 
-    fprintf(f, _("POPTools - Diagrama Ladder exportado\n"));
+    fprintf(f, _("POPTools - Diagrama Ladder exportado\n\n"));
 
 	McuIoInfo *mcu = ladder->getMCU();
 	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
-
-	if(mcu != nullptr) {
-        fprintf(f, _("Para '%s', cristal de %.6f MHz, tempo de ciclo de %.1f ms\n\n"),
-            mcu->mcuName, settings.mcuClock/1e6, settings.cycleTime/1e3);
-    } else {
-        fprintf(f, _("no MCU assigned, %.6f MHz crystal, %.1f ms cycle time\n\n"),
-            settings.mcuClock/1e6, settings.cycleTime/1e3);
-    }
 
     fprintf(f, _("\nDiagrama Ladder:\n\n"));
 

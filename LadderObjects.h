@@ -247,6 +247,29 @@ typedef struct {
 	eMbTypeNode   iface;
 } LadderMbNode;
 
+// Estrutura que define uma linha do ladder.
+// Basicamente um LadderCircuit com algumas informacoes adicionais
+struct LadderRung {
+	LadderCircuit *rung;
+	bool           hasBreakpoint;
+	bool           isPowered;
+};
+
+// Estrutura que armazena informacoes sobre objetos copiados (Linhas / Elementos)
+typedef struct {
+	// Informacoes de elemento copiado
+	LadderElem    *elemCopy;
+	LadderDiagram *elemOwner;
+
+	// Informacoes de linha copiada
+	LadderRung    *rungCopy;
+	LadderDiagram *rungOwner;
+} LadderClipboard;
+
+// Funcao auxiliar que converte um ponteiro da classe base (LadderElem) para uma classe
+// derivada (LadderElemCoil, LadderElemContact, etc) e entao o desaloca da memoria
+void UnallocElem(LadderElem *elem);
+
 /*** Classes representando os elementos do Ladder ***/
 
 // Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base
@@ -303,14 +326,15 @@ public:
 
 	bool GenerateIntCode(IntCode &ic);
 
-	inline bool           IsComment     (void) { return isComment;    }
-	inline bool           IsEOL         (void) { return isEndOfLine;  }
-	inline bool           IsPoweredAfter(void) { return poweredAfter; }
-	inline bool           IsFormatted   (void) { return isFormatted;  }
-	inline bool           IsUART        (void) { return isUART;       }
+	inline bool           IsComment     (void)                      { return isComment;    }
+	inline bool           IsEOL         (void)                      { return isEndOfLine;  }
+	inline bool           IsPoweredAfter(void)                      { return poweredAfter; }
+	inline bool           IsFormatted   (void)                      { return isFormatted;  }
+	inline bool           IsUART        (void)                      { return isUART;       }
 
-	inline int            getWhich      (void) { return which;        }
-	inline LadderDiagram *getDiagram    (void) { return Diagram;      }
+	inline int            getWhich      (void)                      { return which;        }
+	inline LadderDiagram *getDiagram    (void)                      { return Diagram;      }
+	inline void           setDiagram    (LadderDiagram *newDiagram) {Diagram = newDiagram; }
 
 	virtual bool CanInsert(LadderContext context) = 0;
 
@@ -326,7 +350,7 @@ public:
 
 	// Funcoes relacionadas com I/O
 	virtual bool acceptIO        (unsigned long id, eType type) = 0;
-	virtual void updateIO        (bool isDiscard) = 0;
+	virtual void updateIO        (LadderDiagram *owner, bool isDiscard) = 0;
 	virtual int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) = 0;
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
@@ -375,7 +399,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	void updateIO(LadderDiagram *owner, bool isDiscard) { }
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -423,7 +447,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	void updateIO(LadderDiagram *owner, bool isDiscard) { }
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -473,7 +497,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
@@ -525,7 +549,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -577,7 +601,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -628,7 +652,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	void updateIO(LadderDiagram *owner, bool isDiscard) { }
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -678,7 +702,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -727,7 +751,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -769,7 +793,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	void updateIO(LadderDiagram *owner, bool isDiscard) { }
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -820,7 +844,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -873,7 +897,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -924,7 +948,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -977,7 +1001,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1028,7 +1052,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1079,7 +1103,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1121,7 +1145,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	void updateIO(LadderDiagram *owner, bool isDiscard) { }
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1172,7 +1196,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1223,7 +1247,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1275,7 +1299,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1327,7 +1351,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1343,6 +1367,13 @@ class LadderElemReadEnc : public LadderElem {
 private:
 	LadderElemReadEncProp prop;
 	tRequestIO            infoIO_Name;
+
+	// Estruturas de request das variaveis internas
+	tRequestIO             infoIO_IncPerimRoda;
+	tRequestIO             infoIO_IncPulsosVolta;
+	tRequestIO             infoIO_IncFatorCorr;
+	tRequestIO             infoIO_AbsPerimRoda;
+	tRequestIO             infoIO_AbsFatorCorr;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
@@ -1376,7 +1407,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1392,6 +1423,13 @@ class LadderElemResetEnc : public LadderElem {
 private:
 	LadderElemResetEncProp prop;
 	tRequestIO             infoIO_Name;
+
+	// Estruturas de request das variaveis internas
+	tRequestIO             infoIO_IncPerimRoda;
+	tRequestIO             infoIO_IncPulsosVolta;
+	tRequestIO             infoIO_IncFatorCorr;
+	tRequestIO             infoIO_AbsPerimRoda;
+	tRequestIO             infoIO_AbsFatorCorr;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
 
@@ -1425,7 +1463,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1485,7 +1523,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1538,7 +1576,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1591,7 +1629,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1641,7 +1679,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1690,7 +1728,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1732,7 +1770,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	void updateIO(LadderDiagram *owner, bool isDiscard) { }
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1785,7 +1823,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1839,7 +1877,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1892,7 +1930,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1942,7 +1980,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -1993,7 +2031,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -2042,7 +2080,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -2091,7 +2129,7 @@ public:
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(bool isDiscard) { }
+	void updateIO(LadderDiagram *owner, bool isDiscard) { }
 	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
@@ -2167,6 +2205,8 @@ public:
 	int            getWidthTXT (int ColsAvailable);
 	int            getHeightTXT(void);
 
+	void           setDiagram  (LadderDiagram *newDiagram);
+
 	void AddPlaceHolderIfNoEOL(LadderContext context);
 	bool AddElement(LadderElem *elem, LadderContext &context);
 	bool InsertParallel(LadderElem *elem, unsigned int start, unsigned int end, LadderContext &context);
@@ -2188,7 +2228,7 @@ public:
 
 	// Funcoes relacionadas com I/O
 	bool acceptIO(unsigned long id, eType type);
-	void updateIO(bool isDiscard);
+	void updateIO(LadderDiagram *owner, bool isDiscard);
 
 	int SearchAndReplace(LadderElem **refElem, unsigned long idSearch, string sNewText, eSearchAndReplaceMode mode);
 
@@ -2209,11 +2249,6 @@ private:
 	bool isCheckpointEmpty;
 
 	// list of rungs
-	struct LadderRung {
-		LadderCircuit *rung;
-		bool           hasBreakpoint;
-		bool           isPowered;
-	};
 	vector<LadderRung *> rungs;
 
 	// Undo / Redo Action Lists
@@ -2302,9 +2337,6 @@ private:
 
 	string currentFilename;
 
-	LadderElem *copiedElement;
-	LadderRung *copiedRung;
-
 	void Init(void);
 
 	LadderCircuit *getSubcktForElement(LadderElem *elem);
@@ -2331,13 +2363,14 @@ public:
 	void FreeDiagram (void);
 	void ClearDiagram(void);
 	void NewDiagram  (void);
+	void Activate    (bool isActive);
 
 	void SelectElement(LadderElem *elem, int state);
 
 	bool AddElement         (LadderElem *elem);
 	bool DelElement         (LadderElem *elem = nullptr);
-	bool CopyElement        (LadderElem *elem = nullptr);
-	bool PasteElement       (void);
+	bool CopyElement        (LadderClipboard *clipboard, LadderElem *elem = nullptr);
+	bool PasteElement       (LadderClipboard  clipboard);
 	bool EditSelectedElement(void);
 
 	int  RungContainingElement (LadderElem *elem);
@@ -2347,8 +2380,8 @@ public:
 	bool PushRung   (int rung, bool up);
 	bool DeleteRung (int rung);
 	bool IsRungEmpty(unsigned int n);
-	bool CopyRung   (LadderElem *elem = nullptr);
-	bool PasteRung  (bool isAfter);
+	bool CopyRung   (LadderClipboard *clipboard, LadderElem *elem = nullptr);
+	bool PasteRung  (LadderClipboard  clipboard, bool isAfter);
 
 	void DrawTXT(int OffsetX);
 	void DrawGUI(void);
@@ -2415,7 +2448,7 @@ public:
 
 	// Funcoes relacionadas com I/O
 	bool            acceptIO                (unsigned long  id, eType type);
-	void            updateIO                (tRequestIO &infoIO, bool isDiscard);
+	void            updateIO                (LadderDiagram *owner, tRequestIO &infoIO, bool isDiscard);
 	bool            getIO                   (tRequestIO &infoIO);
 	bool            getIO                   (pair<unsigned long, int> &pin, string name, eType type, tRequestIO infoIO);
 	bool            getIO                   (vector<tRequestIO> &vectorGetIO);
@@ -2429,9 +2462,11 @@ public:
 	char           *getStringTypeIO         (unsigned int   index);
 	unsigned int    getCountIO              (void);
 	void            selectIO                (unsigned int index);
+	bool            IsInternalVarIO         (string name);
 	bool            IsGenericTypeIO         (eType type);
 	string          getPortNameIO           (int index);
 	string          getPinNameIO            (int index);
+	string          getInternalVarNameIO    (string name);
 	void            ShowIoMapDialog         (int item);
 	vector<string>  getVectorInternalFlagsIO(void);
 	vector<eType>   getGeneralTypes         (void);

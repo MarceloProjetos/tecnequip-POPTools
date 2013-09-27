@@ -566,7 +566,11 @@ void ToggleSimulationMode(void)
 
 	SetApplicationMode();
 
-	ShowTabCtrl(ladder->getContext().inSimulationMode ? false : true);
+	if(ladder->getContext().inSimulationMode) {
+		ShowTabCtrl(false);
+	} else if(ladderList.size() > 1) {
+		ShowTabCtrl(true);
+	}
 
 	if(ladder->getContext().inSimulationMode) {
 		RibbonSetCmdState(cmdFileSave             , FALSE);

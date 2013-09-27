@@ -1277,7 +1277,7 @@ static void MakeControls(void)
         620, 28, 140, 321, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(TimeTextbox);
 
-	LoadIOListToComboBox(TimeTextbox, vectorTypesVar);
+	LoadIOListToComboBox(TimeTextbox, ladder->getGeneralTypes());
 	SendMessage(TimeTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     HWND ResolTypeLabel = CreateWindowEx(0, WC_STATIC, _("Valor:"),
@@ -1295,10 +1295,7 @@ static void MakeControls(void)
         620, 61, 100, 321, MultisetDADialog, NULL, Instance, NULL);
     FixedFont(InitValTextbox);
 
-	vector<eType> types;
-	types.push_back(eType_General);
-
-	LoadIOListToComboBox(InitValTextbox, types);
+	LoadIOListToComboBox(InitValTextbox, ladder->getGeneralTypes());
 	SendMessage(InitValTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     HWND grouper5 = CreateWindowEx(0, WC_BUTTON, _("Tamanho da Rampa"),

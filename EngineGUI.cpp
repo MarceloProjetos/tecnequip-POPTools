@@ -101,8 +101,7 @@ HRESULT EngineGUI::StartDraw(void)
 	if(pRender != NULL && Target != NULL) {
 		RECT r;
 		GetClientRect(Target, &r);
-		if(TargetInvalid || r.right != LastTargetRect.right || r.bottom != LastTargetRect.bottom) {
-			LastTargetRect = r;
+		if(TargetInvalid) {
 			TargetInvalid  = false;
 
 			pRender->CreateRenderTarget(Target);
@@ -113,6 +112,9 @@ HRESULT EngineGUI::StartDraw(void)
 					BrushOffset = index;
 				}
 			}
+		} else if(r.right != LastTargetRect.right || r.bottom != LastTargetRect.bottom) {
+			LastTargetRect = r;
+			pRender->ResizeRenderTarget(Target);
 		}
 
 		pRender->StartDraw();

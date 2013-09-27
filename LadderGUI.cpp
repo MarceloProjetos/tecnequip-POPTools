@@ -1,5 +1,9 @@
 #include "poptools.h"
 
+// A linha a seguir, quando habilitada, ativa codigo que exibe diversas informacoes de depuracao
+// na tela como posicao do mouse. coordenada do ultimo clique / duplo-clique, ultimo erro do D2D, etc.
+//#define SHOW_DEBUG_INFO
+
 #include "EngineGUI.h"
 #include "EngineRenderD2D.h"
 
@@ -180,6 +184,12 @@ private:
 	array<tLadderColors, 2>       LadderColors;
 	map<int, tLadderColorGroup> LadderColorGroups;
 	vector<tLadderColorGroup>   LadderColorSimulation;
+
+#ifdef SHOW_DEBUG_INFO
+	POINT   mouse_last_click;
+	POINT   mouse_last_doubleclick;
+	HRESULT d2d_last_error;
+#endif
 
 public:
 	LadderGUI(void);
@@ -368,6 +378,15 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	colors.Blue             = RGB(  0,   0, 255);
 
 	setLadderColors(colors, true);
+
+#ifdef SHOW_DEBUG_INFO
+	mouse_last_click      .x = 0;
+	mouse_last_click      .y = 0;
+	mouse_last_doubleclick.x = 0;
+	mouse_last_doubleclick.y = 0;
+
+	d2d_last_error = S_OK;
+#endif
 }
 
 // Metodos privados
@@ -641,7 +660,29 @@ void LadderGUI::DrawEnd(void)
 
 	PaintScrollAndSplitter();
 
+#ifdef SHOW_DEBUG_INFO
+	char buf[1024];
+	sprintf(buf, "*** Mouse ***\nAgora: %4d, %4d\nUltimo Clique: %4d, %4d\nUltimo Duplo-Clique: %4d, %4d\n\n*** D2D ***\nUltimo Erro: 0x%x",
+		MousePosition.x, MousePosition.y,
+		mouse_last_click.x, mouse_last_click.y,
+		mouse_last_doubleclick.x, mouse_last_doubleclick.y,
+		d2d_last_error
+		);
+
+	RECT r;
+	GetClientRect(DrawWindow, &r);
+
+	r.top    += MousePosition.y + 10 + ScrollYOffset*Grid1x1.y;
+	r.bottom += MousePosition.y + 10 + ScrollYOffset*Grid1x1.y;
+	r.left   += MousePosition.x + 10 + ScrollXOffset;
+	r.right  += MousePosition.x + 10 + ScrollXOffset;
+
+	DrawText(buf, r, 0, LadderColors[0].White, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+	d2d_last_error = EndDraw();
+#else
 	EndDraw();
+#endif
 }
 
 void LadderGUI::registerElementArea(LadderElem *elem, POINT start, POINT size)
@@ -667,7 +708,7 @@ RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGri
 	r.right += Grid1x1.x/2;
 
 	// Desenha os cursores
-	if(SelectedState != SELECTED_NONE && isCursorVisible) {
+	if(SelectedState != SELECTED_NONE && isCursorVisible && !ladder->getContext().inSimulationMode) {
 		rCursor.left   = r.left + (r.right - r.left)/2 - 7;
 		rCursor.right  = r.left + (r.right - r.left)/2 + 7;
 
@@ -1103,6 +1144,16 @@ void LadderGUI::MouseClick(int x, int y, bool isDown, bool isDouble)
 		tCommandsList *Commands;
 		Commands = isDouble ? &CommandsDoubleClick : &CommandsSingleClick;
 
+#ifdef SHOW_DEBUG_INFO
+		if(isDouble) {
+			mouse_last_doubleclick.x = x;
+			mouse_last_doubleclick.y = y;
+		} else {
+			mouse_last_click.x = x;
+			mouse_last_click.y = y;
+		}
+#endif
+
 		if(Commands->size() <= 0) return; // Lista de comandos vazia! retorna...
 
 		it = Commands->end();
@@ -1224,6 +1275,12 @@ void LadderGUI::AddCommand(tCommandSource source, RECT region, void (*fnc)(tComm
 	item.second.isSimMode = isSimulationMode;
 
 	Commands->push_back(item);
+
+#ifdef SHOW_DEBUG_INFO
+	if(isDoubleClick) {
+		DrawRectangle(region, LadderColors[0].Breakpoint, false);
+	}
+#endif
 }
 
 // Funcoes para configurar as cores do diagrama ladder
@@ -1429,7 +1486,7 @@ bool LadderElemPlaceHolder::DrawGUI(bool poweredBefore, void *data)
 	if(SelectedState == SELECTED_NONE) {
 		tCommandSource source = { nullptr, nullptr, this };
 		gui.AddCommand(source, rCursor, CmdSelectRight, nullptr, false, false);
-	} else if(isCursorVisible) {
+	} else if(isCursorVisible && !ladder->getContext().inSimulationMode) {
 		gui.DrawEllipse(rCursor, gui.getLadderColors().Selection);
 	}
 
@@ -4095,6 +4152,69 @@ void ReadEncCmdChangeName(tCommandSource source, void *data)
 	delete prop;
 }
 
+void ReadEncCmdChangeSettings(tCommandSource source, void *data)
+{
+	LadderElemReadEnc *enc = dynamic_cast<LadderElemReadEnc *>(source.elem);
+	LadderElemReadEncProp *prop = (LadderElemReadEncProp *)enc->getProperties();
+
+	// Pino == 1 : Encoder incremental. Pino == 2 : Encoder SSI (Absoluto)
+	if(ladder->getDetailsIO(prop->idName.first).pin == 1) {
+		ShowConfDialog(eConfSection_EncInc);
+	} else {
+		ShowConfDialog(eConfSection_EncSSI);
+	}
+
+	delete prop;
+}
+
+bool ReadEncCmdExpandedChangeMode(LadderElem *elem, unsigned int mode)
+{
+	LadderElemReadEnc *enc = dynamic_cast<LadderElemReadEnc *>(elem);
+	LadderElemReadEncProp *prop = (LadderElemReadEncProp *)enc->getProperties();
+
+	// Pino == 1 : Encoder incremental. Pino == 2 : Encoder SSI (Absoluto)
+	if(ladder->getDetailsIO(prop->idName.first).pin == 1) {
+		LadderSettingsEncoderIncremental EncInc = ladder->getSettingsEncoderIncremental();
+		EncInc.conv_mode = mode;
+		ladder->setSettingsEncoderIncremental(EncInc);
+	} else {
+		LadderSettingsEncoderSSI EncSSI = ladder->getSettingsEncoderSSI();
+		EncSSI.conv_mode = mode;
+		ladder->setSettingsEncoderSSI(EncSSI);
+	}
+
+	ladder->updateContext();
+	UpdateMainWindowTitleBar();
+
+	delete prop;
+
+	return true;
+}
+
+bool ReadEncCmdExpandedChangeX4(LadderElem *elem, unsigned int x4)
+{
+	LadderSettingsEncoderIncremental EncInc = ladder->getSettingsEncoderIncremental();
+	EncInc.x4 = (x4 > 0) ? true : false;
+	ladder->setSettingsEncoderIncremental(EncInc);
+
+	ladder->updateContext();
+	UpdateMainWindowTitleBar();
+
+	return true;
+}
+
+bool ReadEncCmdExpandedChangeReadMode(LadderElem *elem, unsigned int mode)
+{
+	LadderSettingsEncoderSSI EncSSI = ladder->getSettingsEncoderSSI();
+	EncSSI.mode = mode;
+	ladder->setSettingsEncoderSSI(EncSSI);
+
+	ladder->updateContext();
+	UpdateMainWindowTitleBar();
+
+	return true;
+}
+
 bool LadderElemReadEnc::ShowDialog(LadderContext context)
 {
 	return false;
@@ -4102,13 +4222,30 @@ bool LadderElemReadEnc::ShowDialog(LadderContext context)
 
 bool LadderElemReadEnc::DrawGUI(bool poweredBefore, void *data)
 {
+	eAlignMode alignY;
+	bool hasExpanded = false;
+	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
+	bool isEncInc = (detailsIO.pin == 1) ? true : false;
 	POINT start, size, GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
 	size = ddg->size;
 
-	ddg->size.x = 2;
-	ddg->size.y = 2;
+	if(detailsIO.pin > 0) {
+		hasExpanded = true;
+	}
+
+	if(ddg->expanded && hasExpanded) {
+		ddg->size.x = 5;
+		ddg->size.y = isEncInc ? 9 : 11;
+
+		alignY = eAlignMode_TopLeft;
+	} else {
+		ddg->size.x = 2;
+		ddg->size.y = 2;
+
+		alignY = eAlignMode_Center;
+	}
 
 	if(ddg->DontDraw) return poweredAfter;
 
@@ -4119,24 +4256,118 @@ bool LadderElemReadEnc::DrawGUI(bool poweredBefore, void *data)
 
 	string sname = Diagram->getNameIO(prop.idName);
 	const char *name = sname.c_str();
-	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
 
 	DoEOL(ddg->start, size, ddg->size, poweredBefore);
 	start = ddg->start;
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("LER ENCODER"), false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("LER ENCODER"), hasExpanded, poweredBefore);
 	ddg->region = r;
 
 	// Escreve o nome do I/O
 	RECT rText = r;
 	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
-	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
+
+	if(alignY == eAlignMode_TopLeft) {
+		rText.top += 5;
+		rText.bottom = rText.top + FONT_HEIGHT;
+	}
+
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, alignY);
 	gui.AddCommand(source, rText, ReadEncCmdChangeName, nullptr, true, false);
 
 	unsigned long *pULong = new unsigned long;
 	*pULong = prop.idName.first;
 	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
+
+	// Se expandido, desenha os itens do modo expandido
+	if(ddg->expanded && hasExpanded) {
+		LadderSettingsEncoderIncremental EncInc = Diagram->getSettingsEncoderIncremental();
+		LadderSettingsEncoderSSI         EncSSI = Diagram->getSettingsEncoderSSI();
+
+		char buf[1024];
+		int count = 0;
+		vector<string> FieldList;
+
+		// Cria a lista com os campos
+
+		sprintf(buf, "%s %.03f", _("Fator Correção:"), isEncInc ? EncInc.factor : EncSSI.factor);
+		FieldList.push_back(string(buf));
+
+		sprintf(buf, "%s %d", _("Perímetro Roda:"), isEncInc ? EncInc.perimeter : EncSSI.perimeter);
+		FieldList.push_back(string(buf));
+
+		if(isEncInc) {
+			sprintf(buf, "%s %d", _("Número Pulsos:"), EncInc.pulses);
+			FieldList.push_back(string(buf));
+		} else {
+			sprintf(buf, "%s %d", _("Resolução total em bits:"), EncSSI.size);
+			FieldList.push_back(string(buf));
+
+			sprintf(buf, "%s %d", _("Sendo bits por volta:"), EncSSI.size_bpr);
+			FieldList.push_back(string(buf));
+		}
+
+		// Agora desenha os campos na tela
+
+		rText.left += 10;
+		rText.top  += 10 + FONT_HEIGHT;
+		RECT rCmd = rText;
+
+		vector<string>::iterator it;
+		for(it = FieldList.begin(); it != FieldList.end(); it++) {
+			rText.bottom  = rText.top + FONT_HEIGHT;
+			gui.DrawText(it->c_str(), rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+			rText.top = rText.bottom + 5;
+		}
+
+		// Atualiza a coordenada inferior para a atual. Dessa forma rCmd representa a area total dos parametros
+		rCmd.bottom = rText.bottom;
+		gui.AddCommand(source, rCmd, ReadEncCmdChangeSettings, nullptr, true, false);
+
+		vector<tExpandedItem> items;
+		items.push_back(tExpandedItem(_("Modo" ), 4));
+		if(isEncInc) {
+			items.push_back(tExpandedItem(_("Mult."), 1));
+		} else {
+			items.push_back(tExpandedItem(_("Type"), 2));
+		}
+
+		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, isEncInc ? 3 : 4, items);
+
+		// Caixas desenhadas. Agora criamos o conteudo
+		tControlList list;
+
+		list.items.push_back(EncoderConvModes[0]);
+		list.items.push_back(EncoderConvModes[1]);
+		list.items.push_back(EncoderConvModes[2]);
+		list.items.push_back(EncoderConvModes[3]);
+
+		list.selected = isEncInc ? EncInc.conv_mode : EncSSI.conv_mode;
+		list.fnc      = ReadEncCmdExpandedChangeMode;
+
+		gui.addControlList(this, rExp[0], list);
+
+		list.items.clear();
+
+		if(isEncInc) {
+			list.items.push_back(_("x2"));
+			list.items.push_back(_("x4"));
+
+			list.selected = EncInc.x4 ? 1 : 0;
+			list.fnc      = ReadEncCmdExpandedChangeX4;
+
+			gui.addControlList(this, rExp[1], list);
+		} else {
+			list.items.push_back(EncAbsConfig[0]);
+			list.items.push_back(EncAbsConfig[1]);
+
+			list.selected = EncSSI.mode;
+			list.fnc      = ReadEncCmdExpandedChangeReadMode;
+
+			gui.addControlList(this, rExp[1], list);
+		}
+	}
 
 	return poweredAfter;
 }
@@ -4935,7 +5166,7 @@ bool LadderElemUART::DrawGUI(bool poweredBefore, void *data)
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (getWhich() == ELEM_UART_RECV) ? _("LER SERIAL") : _("ESCR. SERIAL"), false, poweredBefore);
 	ddg->region = r;
-
+/*
 	// Desenha a seta indicando o sentido (Enviar / Receber)
 	RECT rArrow    = r;
 	rArrow.top    += 5;
@@ -4943,7 +5174,7 @@ bool LadderElemUART::DrawGUI(bool poweredBefore, void *data)
 	rArrow.left    = rArrow.left + (rArrow.right - rArrow.left)/2 - 10;
 	rArrow.right   = rArrow.left + 20;
 	gui.DrawRectangle(rArrow, colors.Black, true, 0, 0, 45);
-
+*/
 	// Escreve o nome do I/O
 	RECT rText   = r;
 	rText.top    = rText.top + GridSize.y;

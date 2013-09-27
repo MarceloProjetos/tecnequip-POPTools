@@ -14,6 +14,7 @@ public:
 	virtual ~EngineRender(void) { };
 
 	virtual HRESULT CreateRenderTarget(HWND hwnd)=0;
+	virtual HRESULT ResizeRenderTarget(HWND hwnd)=0;
 	virtual HRESULT CreateBrush(unsigned int rgb, unsigned int &index)=0;
 
 	virtual void    StartDraw(void)=0;

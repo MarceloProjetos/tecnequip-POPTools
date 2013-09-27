@@ -2,17 +2,12 @@
 #include "mcutable.h"
 #include "LadderObjects.h"
 
-// Vetor com os tipos considerados como variaveis de uso geral, podendo ser utilizadas em elementos como move, etc.
-vector<eType> vectorTypesVar;
-
-//extern void Draw_Init(void);
-//extern void Draw_Start(void);
-//extern void PaintScrollAndSplitter(void);
-//extern void Draw_End(void);
-
 HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
+
+// Estrutura que armazena ambos elemento e linha copiados: Area de Transferencia
+LadderClipboard clipboard;
 
 CComModule _Module;
 
@@ -37,10 +32,6 @@ char CurrentCompileFile[MAX_PATH];
 
 // Internal flags available to the users.
 char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "RampActive", "TcpReady", "TcpTimeout", "" };
-
-// Internal variables available to the users.
-char *InternalVars[][MAX_NAME_LEN] = { { "IncPerimRoda" , "IncPulsosVolta", "IncFatorCorr" , "AbsPerimRoda" , "AbsFatorCorr" , "" },
-									   { "INC_Perimeter", "INC_PPR"       , "INC_Factor10k", "ABS_Perimeter", "ABS_Factor10k", "" } };
 
 // Settings structure
 Settings POPSettings;
@@ -1272,30 +1263,30 @@ cmp:
             break;
 
         case MNU_COPY_ELEMENT: {
-			ladder->CopyElement();
+			ladder->CopyElement(&clipboard);
             break;
 		}
 
         case MNU_PASTE_ELEMENT:
-			ladder->PasteElement();
+			ladder->PasteElement(clipboard);
             break;
 
         case MNU_COPY_RUNG: {
-			ladder->CopyRung();
+			ladder->CopyRung(&clipboard);
             break;
 		}
 
         case MNU_PASTE_RUNG_BEFORE:
-            ladder->PasteRung(false);
+            ladder->PasteRung(clipboard, false);
             break;
 
         case MNU_PASTE_RUNG_AFTER:
-            ladder->PasteRung(true);
+            ladder->PasteRung(clipboard, true);
             break;
 
         case MNU_CUT_ELEMENT:
-			ladder->CopyElement();
-            DeleteSelectedFromProgram();
+			ProcessMenu(MNU_COPY_ELEMENT  );
+			ProcessMenu(MNU_DELETE_ELEMENT);
             break;
 
         case MNU_DELETE_ELEMENT:
@@ -1312,7 +1303,7 @@ cmp:
             break;
 
         case MNU_MCU_SETTINGS:
-            ShowConfDialog(false);
+            ShowConfDialog(eConfSection_Default);
 	        RefreshControlsToSettings();
             break;
 
@@ -1543,7 +1534,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case WM_LBUTTONUP: {
             int x = LOWORD(lParam);
-            int y = HIWORD(lParam) - RibbonHeight;
+            int y = HIWORD(lParam) - RibbonHeight - TabHeight;
 
 			ladder->MouseClick(x, y, false, false);
 
@@ -1552,7 +1543,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case WM_LBUTTONDBLCLK: {
             int x = LOWORD(lParam);
-            int y = HIWORD(lParam) - RibbonHeight;
+            int y = HIWORD(lParam) - RibbonHeight - TabHeight;
 
 			ladder->MouseClick(x, y, false, true);
 
@@ -1949,20 +1940,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	KeyboardHandlers_Init();
 
-	NewProgram();
+	// Inicializa a Area de Transferencia
+	clipboard.elemCopy  = nullptr;
+	clipboard.elemOwner = nullptr;
+	clipboard.rungCopy  = nullptr;
+	clipboard.rungOwner = nullptr;
 
-	// Preenche o vetor com tipos de uso geral
-	vectorTypesVar.push_back(eType_General);
-	vectorTypesVar.push_back(eType_ReadADC);
-	vectorTypesVar.push_back(eType_Counter);
-	vectorTypesVar.push_back(eType_ReadEnc);
-	vectorTypesVar.push_back(eType_ReadUSS);
-	vectorTypesVar.push_back(eType_WriteUSS);
-	vectorTypesVar.push_back(eType_SetDAC);
-	vectorTypesVar.push_back(eType_ReadModbus);
-	vectorTypesVar.push_back(eType_WriteModbus);
-	vectorTypesVar.push_back(eType_ReadYaskawa);
-	vectorTypesVar.push_back(eType_WriteYaskawa);
+	NewProgram();
 
     ShowWindow(MainWindow, SW_SHOW);
     SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
@@ -2015,6 +1999,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ShowWindow(MainWindow, SW_HIDE);
 
 	CloseAllPrograms(true);
+
+	// Descarrega a Area de Transferencia
+	if(clipboard.elemCopy != nullptr) {
+		UnallocElem(clipboard.elemCopy);
+	}
+	if(clipboard.rungCopy != nullptr) {
+		delete clipboard.rungCopy->rung;
+		delete clipboard.rungCopy;
+	}
 
 	FreezeWindowPos(MainWindow);
     FreezeDWORD(IoListHeight);

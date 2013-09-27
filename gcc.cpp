@@ -91,12 +91,12 @@ static char *MapSym(char *str)
 
     char *ret = AllRets[RetCnt];
     
-	int i;
-    for(i = 0; InternalVars[0][i][0]; i++) {
-		if(!strcmp(str, InternalVars[0][i])) {
-			strcpy(ret, InternalVars[1][i]);
-			return ret;
-		}
+	// Tenta receber o nome da variavel interna. Se retornar string vazia, indica
+	// que nao eh uma variavel interna. Caso contrario, usa o nome e retorna.
+	string name = ladder->getInternalVarNameIO(str);
+	if(name.size() > 0) {
+		strcpy(ret, name.c_str());
+		return ret;
 	}
 
 	mapDetails detailsIO = ladder->getDetailsIO(str);
@@ -147,7 +147,7 @@ static void DeclareInt(FILE *f, char *rawstr)
 		return;
 	}
 
-	intvar = IsInternalVar(rawstr);
+	intvar = ladder->IsInternalVarIO(rawstr);
 	mode = ((!strncmp(str, "U_", 2) || !strncmp(str, "I_", 2)) && !intvar) ? SEENVAR_MODE_USERINT : SEENVAR_MODE_OTHERS;
 	if(!SeenVariable(str, mode) && mode == SEENVAR_MODE_OTHERS && strncmp(str, "M", 1)) {
 #ifdef INT_UNSIGNED

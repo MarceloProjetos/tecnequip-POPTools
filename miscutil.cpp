@@ -417,19 +417,6 @@ int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto)
   return !ComboBox ? nPort : TRUE;
 }
 
-bool IsInternalVar(char *name)
-{
-	unsigned int i;
-
-	for(i=0; *InternalVars[0][i]; i++) {
-		if(!_stricmp(name, InternalVars[0][i])) {
-			return true;
-		}
-	}
-
-	return false;	
-}
-
 #define KEY_CONTROL_A  1
 #define KEY_CONTROL_C  3
 #define KEY_CONTROL_V 22

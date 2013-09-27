@@ -87,6 +87,19 @@ HRESULT EngineRenderD2D::CreateRenderTarget(HWND hwnd)
 	return hr;
 }
 
+HRESULT EngineRenderD2D::ResizeRenderTarget(HWND hwnd)
+{
+	if(pRT == NULL) {
+		return CreateRenderTarget(hwnd);
+	} else {
+		// Obtain the size of the drawing area.
+		RECT rc;
+		GetClientRect(hwnd, &rc);
+
+		return pRT->Resize(D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top));
+	}
+}
+
 HRESULT EngineRenderD2D::CreateBrush(unsigned int rgb, unsigned int &index)
 {
 	ID2D1SolidColorBrush *pBrush = NULL;
@@ -158,15 +171,6 @@ inline float DegreeToRadian(float angle)
 {
     return 3.14159f * angle / 180.0f;
 }
-
-void EngineRenderD2D::Teste(void)
-{/*
-	RECT r = { 300, 300, 350, 400 };
-	DrawRectangle3D(r, 30, 21, 23, true, 10, 10, 0);
-
-	RECT r2 = { 200, 200, 250, 250 };
-	DrawRectangle3D(r2, 30, 21, 23, false, 20, 20, 45);
-*/}
 
 HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
 	bool filled, float radiusX, float radiusY, float angle)
@@ -583,8 +587,6 @@ HRESULT EngineRenderD2D::EndDraw(void)
 {
 	static bool locked = false;
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
-
-	Teste();
 
 	if(pRT != NULL) {
 		hr = pRT->EndDraw();

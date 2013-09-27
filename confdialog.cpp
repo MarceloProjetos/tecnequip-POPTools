@@ -954,7 +954,7 @@ static void MakeControls(void)
     NiceFont(CancelButton);
 }
 
-bool ShowConfDialog(bool NetworkSection)
+bool ShowConfDialog(eConfSection confSection)
 {
 	bool changed = false;
 	unsigned int i;
@@ -967,9 +967,21 @@ bool ShowConfDialog(bool NetworkSection)
         (LONG_PTR)ConfDialogProc);
 
     MakeControls();
-	if(NetworkSection) {
+	switch(confSection) {
+	case eConfSection_Network:
 		OnSelChanged(CONFTVI_ID_COMM);
-	} else {
+		break;
+
+	case eConfSection_EncInc:
+		OnSelChanged(CONFTVI_ID_INTERFACE_ENCINC);
+		break;
+
+	case eConfSection_EncSSI:
+		OnSelChanged(CONFTVI_ID_INTERFACE_ENCABS);
+		break;
+
+	default:
+	case eConfSection_Default:
 		OnSelChanged(0); // Initial Group
 	}
 
