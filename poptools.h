@@ -552,6 +552,7 @@ extern HINSTANCE Instance;
 extern HWND MainWindow;
 extern HDC Hdc;
 extern LadderDiagram *ladder;
+extern LadderClipboard clipboard;
 extern vector<LadderDiagram *> ladderList;
 extern Settings POPSettings;
 extern XMLWrapper XmlSettings;

@@ -263,10 +263,10 @@ bool LadderElemPlaceHolder::CanInsert(LadderContext context)
 		(context.SelectedElem == nullptr || context.SelectedElem->getWhich() != ELEM_PLACEHOLDER);
 }
 
-LadderElem *LadderElemPlaceHolder::Clone(void)
+LadderElem *LadderElemPlaceHolder::Clone(LadderDiagram *diagram)
 {
-	LadderElemPlaceHolder *clone = new LadderElemPlaceHolder(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemPlaceHolder *clone = new LadderElemPlaceHolder(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -365,10 +365,10 @@ inline int LadderElemComment::getWidthTXT(void)
 	return  (len + 7 + (POS_WIDTH-1)) / POS_WIDTH;
 }
 
-LadderElem *LadderElemComment::Clone(void)
+LadderElem *LadderElemComment::Clone(LadderDiagram *diagram)
 {
-	LadderElemComment *clone = new LadderElemComment(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemComment *clone = new LadderElemComment(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -502,10 +502,10 @@ bool LadderElemContact::internalLoad(FILE *f, unsigned int version)
 		fread_bool (f, &prop.negated);
 }
 
-LadderElem *LadderElemContact::Clone(void)
+LadderElem *LadderElemContact::Clone(LadderDiagram *diagram)
 {
-	LadderElemContact *clone = new LadderElemContact(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemContact *clone = new LadderElemContact(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -716,10 +716,10 @@ bool LadderElemCoil::internalLoad(FILE *f, unsigned int version)
 		fread_bool (f, &prop.setOnly);
 }
 
-LadderElem *LadderElemCoil::Clone(void)
+LadderElem *LadderElemCoil::Clone(LadderDiagram *diagram)
 {
-	LadderElemCoil *clone = new LadderElemCoil(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemCoil *clone = new LadderElemCoil(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -996,10 +996,10 @@ bool LadderElemTimer::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.delay);
 }
 
-LadderElem *LadderElemTimer::Clone(void)
+LadderElem *LadderElemTimer::Clone(LadderDiagram *diagram)
 {
-	LadderElemTimer *clone = new LadderElemTimer(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemTimer *clone = new LadderElemTimer(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -1213,10 +1213,10 @@ bool LadderElemRTC::internalLoad(FILE *f, unsigned int version)
 		fread_uchar  (f, &prop.wday);
 }
 
-LadderElem *LadderElemRTC::Clone(void)
+LadderElem *LadderElemRTC::Clone(LadderDiagram *diagram)
 {
-	LadderElemRTC *clone = new LadderElemRTC(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemRTC *clone = new LadderElemRTC(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -1372,10 +1372,10 @@ bool LadderElemCounter::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.max);
 }
 
-LadderElem *LadderElemCounter::Clone(void)
+LadderElem *LadderElemCounter::Clone(LadderDiagram *diagram)
 {
-	LadderElemCounter *clone = new LadderElemCounter(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemCounter *clone = new LadderElemCounter(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -1526,10 +1526,10 @@ bool LadderElemReset::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idName.second);
 }
 
-LadderElem *LadderElemReset::Clone(void)
+LadderElem *LadderElemReset::Clone(LadderDiagram *diagram)
 {
-	LadderElemReset *clone = new LadderElemReset(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemReset *clone = new LadderElemReset(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -1669,10 +1669,10 @@ bool LadderElemOneShot::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-LadderElem *LadderElemOneShot::Clone(void)
+LadderElem *LadderElemOneShot::Clone(LadderDiagram *diagram)
 {
-	LadderElemOneShot *clone = new LadderElemOneShot(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemOneShot *clone = new LadderElemOneShot(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -1834,10 +1834,10 @@ bool LadderElemCmp::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idOp2.second);
 }
 
-LadderElem *LadderElemCmp::Clone(void)
+LadderElem *LadderElemCmp::Clone(LadderDiagram *diagram)
 {
-	LadderElemCmp *clone = new LadderElemCmp(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemCmp *clone = new LadderElemCmp(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -2132,10 +2132,10 @@ bool LadderElemMath::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idOp2.second);
 }
 
-LadderElem *LadderElemMath::Clone(void)
+LadderElem *LadderElemMath::Clone(LadderDiagram *diagram)
 {
-	LadderElemMath *clone = new LadderElemMath(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemMath *clone = new LadderElemMath(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -2431,10 +2431,10 @@ bool LadderElemSqrt::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idSrc.second);
 }
 
-LadderElem *LadderElemSqrt::Clone(void)
+LadderElem *LadderElemSqrt::Clone(LadderDiagram *diagram)
 {
-	LadderElemSqrt *clone = new LadderElemSqrt(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemSqrt *clone = new LadderElemSqrt(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -2690,10 +2690,10 @@ bool LadderElemRand::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idMax.second);
 }
 
-LadderElem *LadderElemRand::Clone(void)
+LadderElem *LadderElemRand::Clone(LadderDiagram *diagram)
 {
-	LadderElemRand *clone = new LadderElemRand(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemRand *clone = new LadderElemRand(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -2980,10 +2980,10 @@ bool LadderElemAbs::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idSrc.second);
 }
 
-LadderElem *LadderElemAbs::Clone(void)
+LadderElem *LadderElemAbs::Clone(LadderDiagram *diagram)
 {
-	LadderElemAbs *clone = new LadderElemAbs(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemAbs *clone = new LadderElemAbs(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -3226,10 +3226,10 @@ bool LadderElemMove::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idSrc.second);
 }
 
-LadderElem *LadderElemMove::Clone(void)
+LadderElem *LadderElemMove::Clone(LadderDiagram *diagram)
 {
-	LadderElemMove *clone = new LadderElemMove(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemMove *clone = new LadderElemMove(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -3389,10 +3389,10 @@ bool LadderElemOpenShort::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-LadderElem *LadderElemOpenShort::Clone(void)
+LadderElem *LadderElemOpenShort::Clone(LadderDiagram *diagram)
 {
-	LadderElemOpenShort *clone = new LadderElemOpenShort(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemOpenShort *clone = new LadderElemOpenShort(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -3493,10 +3493,10 @@ bool LadderElemSetBit::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.bit);
 }
 
-LadderElem *LadderElemSetBit::Clone(void)
+LadderElem *LadderElemSetBit::Clone(LadderDiagram *diagram)
 {
-	LadderElemSetBit *clone = new LadderElemSetBit(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemSetBit *clone = new LadderElemSetBit(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -3649,10 +3649,10 @@ bool LadderElemCheckBit::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.bit);
 }
 
-LadderElem *LadderElemCheckBit::Clone(void)
+LadderElem *LadderElemCheckBit::Clone(LadderDiagram *diagram)
 {
-	LadderElemCheckBit *clone = new LadderElemCheckBit(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemCheckBit *clone = new LadderElemCheckBit(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -3817,10 +3817,10 @@ bool LadderElemReadAdc::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idName.second);
 }
 
-LadderElem *LadderElemReadAdc::Clone(void)
+LadderElem *LadderElemReadAdc::Clone(LadderDiagram *diagram)
 {
-	LadderElemReadAdc *clone = new LadderElemReadAdc(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemReadAdc *clone = new LadderElemReadAdc(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -3991,10 +3991,10 @@ bool LadderElemSetDa::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.mode);
 }
 
-LadderElem *LadderElemSetDa::Clone(void)
+LadderElem *LadderElemSetDa::Clone(LadderDiagram *diagram)
 {
-	LadderElemSetDa *clone = new LadderElemSetDa(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemSetDa *clone = new LadderElemSetDa(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -4221,10 +4221,10 @@ bool LadderElemReadEnc::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idName.second);
 }
 
-LadderElem *LadderElemReadEnc::Clone(void)
+LadderElem *LadderElemReadEnc::Clone(LadderDiagram *diagram)
 {
-	LadderElemReadEnc *clone = new LadderElemReadEnc(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemReadEnc *clone = new LadderElemReadEnc(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -4455,10 +4455,10 @@ bool LadderElemResetEnc::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idName.second);
 }
 
-LadderElem *LadderElemResetEnc::Clone(void)
+LadderElem *LadderElemResetEnc::Clone(LadderDiagram *diagram)
 {
-	LadderElemResetEnc *clone = new LadderElemResetEnc(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemResetEnc *clone = new LadderElemResetEnc(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -4712,10 +4712,10 @@ bool LadderElemMultisetDA::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idTime.second);
 }
 
-LadderElem *LadderElemMultisetDA::Clone(void)
+LadderElem *LadderElemMultisetDA::Clone(LadderDiagram *diagram)
 {
-	LadderElemMultisetDA *clone = new LadderElemMultisetDA(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemMultisetDA *clone = new LadderElemMultisetDA(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -4914,10 +4914,10 @@ bool LadderElemUSS::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idName.second);
 }
 
-LadderElem *LadderElemUSS::Clone(void)
+LadderElem *LadderElemUSS::Clone(LadderDiagram *diagram)
 {
-	LadderElemUSS *clone = new LadderElemUSS(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemUSS *clone = new LadderElemUSS(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -5152,10 +5152,10 @@ bool LadderElemModBUS::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idName.second);
 }
 
-LadderElem *LadderElemModBUS::Clone(void)
+LadderElem *LadderElemModBUS::Clone(LadderDiagram *diagram)
 {
-	LadderElemModBUS *clone = new LadderElemModBUS(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemModBUS *clone = new LadderElemModBUS(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -5329,10 +5329,10 @@ bool LadderElemSetPWM::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idName.second);
 }
 
-LadderElem *LadderElemSetPWM::Clone(void)
+LadderElem *LadderElemSetPWM::Clone(LadderDiagram *diagram)
 {
-	LadderElemSetPWM *clone = new LadderElemSetPWM(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemSetPWM *clone = new LadderElemSetPWM(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -5488,10 +5488,10 @@ bool LadderElemUART::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idName.second);
 }
 
-LadderElem *LadderElemUART::Clone(void)
+LadderElem *LadderElemUART::Clone(LadderDiagram *diagram)
 {
-	LadderElemUART *clone = new LadderElemUART(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemUART *clone = new LadderElemUART(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -5599,10 +5599,10 @@ bool LadderElemMasterRelay::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-LadderElem *LadderElemMasterRelay::Clone(void)
+LadderElem *LadderElemMasterRelay::Clone(LadderDiagram *diagram)
 {
-	LadderElemMasterRelay *clone = new LadderElemMasterRelay(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemMasterRelay *clone = new LadderElemMasterRelay(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 
 	return clone;
 }
@@ -5772,10 +5772,10 @@ bool LadderElemShiftRegister::internalLoad(FILE *f, unsigned int version)
 	return ret;
 }
 
-LadderElem *LadderElemShiftRegister::Clone(void)
+LadderElem *LadderElemShiftRegister::Clone(LadderDiagram *diagram)
 {
-	LadderElemShiftRegister *clone = new LadderElemShiftRegister(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemShiftRegister *clone = new LadderElemShiftRegister(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -5991,10 +5991,10 @@ bool LadderElemLUT::internalLoad(FILE *f, unsigned int version)
 	return ret;
 }
 
-LadderElem *LadderElemLUT::Clone(void)
+LadderElem *LadderElemLUT::Clone(LadderDiagram *diagram)
 {
-	LadderElemLUT *clone = new LadderElemLUT(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemLUT *clone = new LadderElemLUT(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -6333,10 +6333,10 @@ bool LadderElemPiecewise::internalLoad(FILE *f, unsigned int version)
 	return ret;
 }
 
-LadderElem *LadderElemPiecewise::Clone(void)
+LadderElem *LadderElemPiecewise::Clone(LadderDiagram *diagram)
 {
-	LadderElemPiecewise *clone = new LadderElemPiecewise(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemPiecewise *clone = new LadderElemPiecewise(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -6575,10 +6575,10 @@ bool LadderElemFmtString::internalLoad(FILE *f, unsigned int version)
 		fread_int   (f, &prop.idVar.second);
 }
 
-LadderElem *LadderElemFmtString::Clone(void)
+LadderElem *LadderElemFmtString::Clone(LadderDiagram *diagram)
 {
-	LadderElemFmtString *clone = new LadderElemFmtString(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemFmtString *clone = new LadderElemFmtString(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -6772,10 +6772,10 @@ bool LadderElemYaskawa::internalLoad(FILE *f, unsigned int version)
 		fread_int   (f, &prop.idVar.second);
 }
 
-LadderElem *LadderElemYaskawa::Clone(void)
+LadderElem *LadderElemYaskawa::Clone(LadderDiagram *diagram)
 {
-	LadderElemYaskawa *clone = new LadderElemYaskawa(Diagram, getWhich());
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemYaskawa *clone = new LadderElemYaskawa(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -6955,10 +6955,10 @@ bool LadderElemPersist::internalLoad(FILE *f, unsigned int version)
 		fread_int   (f, &prop.idVar.second);
 }
 
-LadderElem *LadderElemPersist::Clone(void)
+LadderElem *LadderElemPersist::Clone(LadderDiagram *diagram)
 {
-	LadderElemPersist *clone = new LadderElemPersist(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemPersist *clone = new LadderElemPersist(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -7060,10 +7060,10 @@ bool LadderElemX::CanInsert(LadderContext context)
 	return context.canInsertOther;
 }
 
-LadderElem *LadderElemX::Clone(void)
+LadderElem *LadderElemX::Clone(LadderDiagram *diagram)
 {
-	LadderElemX *clone = new LadderElemX(Diagram);
-	clone->updateIO(Diagram, true); // Descarta os I/Os registrados
+	LadderElemX *clone = new LadderElemX(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
 	clone->internalSetProperties(getProperties());
 
 	return clone;
@@ -7909,7 +7909,7 @@ void LadderCircuit::RemoveUnnecessarySubckts(LadderContext context)
 	}
 }
 
-LadderCircuit *LadderCircuit::Clone(void)
+LadderCircuit *LadderCircuit::Clone(LadderDiagram *diagram)
 {
 	vector<Subckt>::size_type i;
 	LadderCircuit *clone = new LadderCircuit(isSeries);
@@ -7917,11 +7917,11 @@ LadderCircuit *LadderCircuit::Clone(void)
 	for(i = 0; i < vectorSubckt.size(); i++) {
 		Subckt s;
 		if(vectorSubckt[i].elem != nullptr) {
-			s.elem   = vectorSubckt[i].elem->Clone();
+			s.elem   = vectorSubckt[i].elem->Clone(diagram);
 			s.subckt = this;
 		} else {
 			s.elem = nullptr;
-			s.subckt = vectorSubckt[i].subckt->Clone();
+			s.subckt = vectorSubckt[i].subckt->Clone(diagram);
 		}
 
 		// Simula ser Move para que nao registre a acao
@@ -8956,7 +8956,7 @@ bool LadderDiagram::CopyRung(LadderClipboard *clipboard, LadderElem *elem)
 
 	clipboard->rungCopy->hasBreakpoint = false;
 	clipboard->rungCopy->isPowered     = false;
-	clipboard->rungCopy->rung          = rungs[pos]->rung->Clone();
+	clipboard->rungCopy->rung          = rungs[pos]->rung->Clone(this);
 
 	// Retorna com sucesso!
 	return true;
@@ -8987,8 +8987,7 @@ bool LadderDiagram::PasteRung(LadderClipboard clipboard, bool isAfter)
 
 		copiedRung->hasBreakpoint = false;
 		copiedRung->isPowered     = false;
-		copiedRung->rung          = clipboard.rungCopy->rung->Clone();
-		copiedRung->rung->setDiagram(this);
+		copiedRung->rung          = clipboard.rungCopy->rung->Clone(this);
 
 		rungs.insert(rungs.begin() + pos, copiedRung);
 		copiedRung->rung->doPostInsert();
@@ -9165,7 +9164,7 @@ bool LadderDiagram::CopyElement(LadderClipboard *clipboard, LadderElem *elem)
 	}
 
 	// Copia o elemento
-	clipboard->elemCopy  = elem->Clone();
+	clipboard->elemCopy  = elem->Clone(this);
 	clipboard->elemOwner = this;
 
 	// Copia finalizada. Executa o rollback e fecha o checkpoint e assim todas as acoes registradas
@@ -9188,7 +9187,7 @@ bool LadderDiagram::PasteElement(LadderClipboard clipboard)
 
 	CheckpointBegin(_("Colar Elemento"));
 
-	LadderElem *newCopiedElement = clipboard.elemCopy->Clone();
+	LadderElem *newCopiedElement = clipboard.elemCopy->Clone(this);
 	newCopiedElement->setDiagram(this);
 
 	if(AddElement(newCopiedElement)) {
@@ -10269,23 +10268,28 @@ void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDi
 
 		// Etapa 1
 		if(owner != this) { // I/O veio de outro diagrama!!!
-			string name          = owner->getNameIO   (infoIO.pin);
-			mapDetails detailsIO = owner->getDetailsIO(infoIO.pin.first);
+			if(owner != nullptr) {
+				string name          = owner->getNameIO   (infoIO.pin);
+				mapDetails detailsIO = owner->getDetailsIO(infoIO.pin.first);
+				infoIO.pin.first = 0;
 
-			pair <unsigned long, int> pin = pair<unsigned long, int>(0, 0);
-			pin.first = getIdIO(name);
+				pair <unsigned long, int> pin = pair<unsigned long, int>(0, 0);
+				pin.first = getIdIO(name);
 
-			if(pin.first == 0) {
-				// Se pin.first for 0, significa que nao existe um I/O no diagrama atual um
-				// I/O com o mesmo nome que no diagrama de onde foi copiado este elemento.
-				// Assim, para tentar manter a logica o mais proxima da original possivel,
-				// vamos atualizar a estrutura que solicita o I/O para usar o nome e tipo
-				// do I/O original. Como o I/O ja existe no diagrama original, podemos
-				// considerar que o I/O tem nome e tipo validos.
-				infoIO.name = name;
-				infoIO.type = detailsIO.type;
-			} else if(getDetailsIO(pin.first).type == detailsIO.type) { // Compativel!
-				infoIO.pin = pin;
+				if(name.size() > 0) {
+					if(pin.first == 0) {
+						// Se pin.first for 0, significa que nao existe no diagrama atual um
+						// I/O com o mesmo nome que no diagrama de onde foi copiado este elemento.
+						// Assim, para tentar manter a logica o mais proxima da original possivel,
+						// vamos atualizar a estrutura que solicita o I/O para usar o nome e tipo
+						// do I/O original. Como o I/O ja existe no diagrama original, podemos
+						// considerar que o I/O tem nome e tipo validos.
+						infoIO.name = name;
+						infoIO.type = detailsIO.type;
+					} else if(getDetailsIO(pin.first).type == detailsIO.type) { // Compativel!
+						infoIO.pin = pin;
+					}
+				}
 			} else {
 				infoIO.pin.first = 0;
 			}

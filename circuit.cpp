@@ -615,6 +615,16 @@ bool CloseProgram(LadderDiagram *diagram, bool isPOPToolsExiting)
 		switchTo = ladderList[i];
 	}
 
+	// Se codigo na Area de Transferencia pertencer ao diagrama sendo excluido,
+	// remove a referencia a ele. Nao precisa remover o codigo da area de transferencia
+	// pois a estrutura em si pode ser copiada, serao perdidas as referencias aos I/Os.
+	if(clipboard.elemOwner == diagram) {
+		clipboard.elemOwner = nullptr;
+	}
+	if(clipboard.rungOwner == diagram) {
+		clipboard.rungOwner = nullptr;
+	}
+
 	delete diagram;
 
 	if(!isPOPToolsExiting) {

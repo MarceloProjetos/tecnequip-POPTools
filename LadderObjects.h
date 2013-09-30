@@ -346,7 +346,7 @@ public:
 	void          setProperties(LadderContext context, void *propData);
 	virtual void *getProperties(void) = 0;
 
-	virtual LadderElem *Clone(void) = 0;
+	virtual LadderElem *Clone(LadderDiagram *diagram) = 0;
 
 	// Funcoes relacionadas com I/O
 	virtual bool acceptIO        (unsigned long id, eType type) = 0;
@@ -395,7 +395,7 @@ public:
 
 	void *getProperties(void) { return nullptr; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
@@ -443,7 +443,7 @@ public:
 
 	inline int getWidthTXT(void);
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
@@ -493,7 +493,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -545,7 +545,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -597,7 +597,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -648,7 +648,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
@@ -698,7 +698,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -747,7 +747,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -789,7 +789,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
@@ -840,7 +840,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -893,7 +893,7 @@ public:
 
 	inline int getWidthTXT(void) { return 2; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -944,7 +944,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -997,7 +997,7 @@ public:
 
 	inline int getWidthTXT(void) { return 2; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1048,7 +1048,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1099,7 +1099,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1141,7 +1141,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
@@ -1192,7 +1192,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1243,7 +1243,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1295,7 +1295,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1347,7 +1347,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1403,7 +1403,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1459,7 +1459,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1519,7 +1519,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1572,7 +1572,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1625,7 +1625,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1675,7 +1675,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1724,7 +1724,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1766,7 +1766,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
@@ -1819,7 +1819,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1873,7 +1873,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1926,7 +1926,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -1976,7 +1976,7 @@ public:
 
 	inline int getWidthTXT(void) { return 2; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -2027,7 +2027,7 @@ public:
 
 	inline int getWidthTXT(void) { return 2; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -2076,7 +2076,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type);
@@ -2125,7 +2125,7 @@ public:
 
 	inline int getWidthTXT(void) { return 1; }
 
-	LadderElem *Clone(void);
+	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
 	bool acceptIO(unsigned long id, eType type) { return true; }
@@ -2217,7 +2217,7 @@ public:
 	int SearchMatch(LadderCircuit *series, int direction);
 	int ElemInSubcktSeries(LadderContext &context, InsertionPoint *point);
 
-	LadderCircuit *Clone(void);
+	LadderCircuit *Clone(LadderDiagram *diagram);
 
 	void doPostInsert(void);
 	void doPostRemove(void);
