@@ -2065,7 +2065,7 @@ bool LadderElemMath::internalGenerateIntCode(IntCode &ic)
 	}
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 
-	const char *cop1 = ic.VarFromExpr(op1, "$scratch");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+	const char *cop1 = ic.VarFromExpr(op1, "$scratch");
 	const char *cop2 = ic.VarFromExpr(op2, "$scratch2");
 
 	int intOp;

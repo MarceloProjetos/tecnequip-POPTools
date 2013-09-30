@@ -1,10 +1,12 @@
 #ifndef ENGINEGUI_H
 #define ENGINEGUI_H
 
+#include <vector>
+
+using namespace std;
+
 #include <Windows.h>
 #include "EngineRender.h"
-
-#include <vector>
 
 class EngineGUI
 {
@@ -53,6 +55,7 @@ public:
 	HRESULT SetDrawOffset(POINT Offset);
 	HRESULT EndDraw(void);
 
+	HRESULT DrawPolygon  (vector<POINT> points, unsigned int brush, bool filled = true, unsigned int angle = 0);
 	HRESULT DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned radiusY = 0, unsigned int angle = 0);
 	HRESULT DrawEllipse  (RECT r, unsigned int brush, bool filled = true);
 	HRESULT DrawEllipse  (POINT center, float rx, float ry, unsigned int brush, bool filled = true);

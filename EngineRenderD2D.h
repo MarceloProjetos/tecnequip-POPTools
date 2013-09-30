@@ -3,6 +3,8 @@
 
 #include <vector>
 
+using namespace std;
+
 #include <string.h>
 
 #include <d2d1.h>
@@ -13,8 +15,6 @@
 #pragma comment (lib, "dwrite.lib")
 
 #include "EngineRender.h"
-
-using namespace std;
 
 // Estrutura que contem informacoes de um formato de texto
 typedef struct {
@@ -55,6 +55,7 @@ public:
 	void    Clear(unsigned int brush);
 	HRESULT EndDraw(void);
 
+	HRESULT DrawPolygon  (vector<POINT> points, unsigned int brush, bool filled = true, unsigned int angle = 0, float brushWidth = 2.0f);
 	void    DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned int radiusY = 0, unsigned int angle = 0, float brushWidth = 2.0f);
 	HRESULT DrawEllipse  (POINT center, float rx, float ry, unsigned int brush, bool filled = true, float brushWidth = 2.0f);
 	HRESULT DrawArc      (POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush, float brushWidth = 2.0f);

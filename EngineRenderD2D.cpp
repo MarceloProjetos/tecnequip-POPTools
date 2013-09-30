@@ -145,6 +145,28 @@ HRESULT EngineRenderD2D::CreateTextFormat(unsigned int rgb, unsigned int &index)
 			index = TextFormats.size();
 			TextFormats.push_back(txt);
 		}
+
+		txt.format = NULL;
+		txt.height = 26;
+		txt.width  = 16;
+
+		// Create a DirectWrite text format object.
+		hr = pWriteFactory->CreateTextFormat(
+			L"Lucida Console",
+//			L"POPTOOLS",
+			NULL,
+			DWRITE_FONT_WEIGHT_BOLD,
+			DWRITE_FONT_STYLE_NORMAL,
+			DWRITE_FONT_STRETCH_NORMAL,
+			(float)txt.height,
+			L"", //locale
+			&txt.format
+			);
+
+		if(SUCCEEDED(hr)) {
+			index = TextFormats.size();
+			TextFormats.push_back(txt);
+		}
 	}
 
 	return hr;
@@ -595,6 +617,79 @@ HRESULT EngineRenderD2D::EndDraw(void)
 //			char buf[1024];
 //			sprintf(buf, "erro em EndDraw: %ld", hr);
 //			MessageBox(NULL, buf, "ERRO D2D", MB_OK);
+		}
+	}
+
+	return hr;
+}
+
+HRESULT EngineRenderD2D::DrawPolygon(vector<POINT> points, unsigned int brush, bool filled, unsigned int angle, float brushWidth)
+{
+	ID2D1PathGeometry *pGeometry;
+	HRESULT hr = pD2DFactory->CreatePathGeometry(&pGeometry);
+
+	if(SUCCEEDED(hr)) {
+		ID2D1GeometrySink *pSink = NULL;
+
+		hr = pGeometry->Open(&pSink);
+		if (SUCCEEDED(hr)) {
+			pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
+
+			RECT r;
+			vector<POINT>::iterator it = points.begin();
+
+			D2D1_POINT_2F point = D2D1::Point2F(float(it->x), float(it->y));
+			pSink->BeginFigure(point, D2D1_FIGURE_BEGIN_FILLED);
+
+			r.top    = it->y;
+			r.bottom = it->y;
+			r.left   = it->x;
+			r.right  = it->x;
+
+			while(++it != points.end()) {
+				// Adiciona os pontos ao poligono
+				point = D2D1::Point2F(float(it->x), float(it->y));
+				pSink->AddLine(point);
+
+				if(r.top > it->y) {
+					r.top    = it->y;
+				} else if(r.bottom < it->y) {
+					r.bottom = it->y;
+				}
+
+				if(r.left > it->x) {
+					r.left   = it->x;
+				} else if(r.right < it->x) {
+					r.right  = it->x;
+				}
+			}
+
+			// Figura finalizada. Fecha em modo OPEN pois nao sabemos se este poligono
+			// representa apenas uma sequencia de linhas, como em um grafico.
+			pSink->EndFigure(D2D1_FIGURE_END_OPEN);
+			hr = pSink->Close();
+			SafeRelease(&pSink);
+
+			// Calcula o ponto de rotacao (Se usado)
+			D2D1_POINT_2F xy;
+			if(angle) {
+				xy.x = (float)(r.left + (r.right  - r.left)/2);
+				xy.y = (float)(r.top  + (r.bottom - r.top )/2);
+				pRT->SetTransform(D2D1::Matrix3x2F::Rotation((float)angle, xy));
+			}
+
+			// Desenha o poligono
+			if(filled) {
+				pRT->FillGeometry(pGeometry, Brushes[brush]);
+			} else {
+				pRT->DrawGeometry(pGeometry, Brushes[brush], brushWidth);
+			}
+
+			// Se usando rotacao, volta ao normal
+			if(angle) pRT->SetTransform(D2D1::Matrix3x2F::Rotation(0.0f, xy));
+
+			// Descarta a geometria criada
+			SafeRelease(&pGeometry);
 		}
 	}
 

@@ -1393,6 +1393,49 @@ static void DrawGenericGUI(LadderElem *elem, void *data, bool poweredBefore, str
 		eAlignMode_Center, eAlignMode_TopLeft);
 }
 
+// Funcao que desenha uma seta e um texto com fonte grande em seguida.
+// Usada para os elementos de comunicacao serial
+void DrawArrowAndText(RECT r, string txt, COLORREF color, bool isRead)
+{
+	// Desenha a seta indicando o sentido (Enviar / Receber)
+	POINT         point, start;
+	vector<POINT> points;
+
+	point.x = r.left + 10;
+	point.y = r.top + 10;
+	start   = point;
+	points.push_back(point);
+
+	point.x += 15;
+	points.push_back(point);
+
+	point.y -= 5;
+	points.push_back(point);
+
+	point.x += 10;
+	point.y += 10;
+	points.push_back(point);
+
+	point.x -= 10;
+	point.y += 10;
+	points.push_back(point);
+
+	point.y -= 5;
+	points.push_back(point);
+
+	point.x -= 15;
+	points.push_back(point);
+
+	// Fecha o poligono
+	points.push_back(start);
+
+	gui.DrawPolygon(points, color, true, isRead ? 135 : 315);
+
+	r.top  +=  5;
+	r.left += 40;
+	gui.DrawText(txt.c_str(), r, 1, color, eAlignMode_TopLeft, eAlignMode_TopLeft);
+}
+
 // Funcao que atualiza o Nome/Tipo de um I/O
 bool cmdChangeName(LadderElem *elem, unsigned int index, pair<unsigned long, int> pin, eType type,
 	vector<eType> types, char *title, char *field)
@@ -4774,7 +4817,7 @@ bool LadderElemUSS::DrawGUI(bool poweredBefore, void *data)
 	size  = ddg->size;
 
 	ddg->size.x = 3;
-	ddg->size.y = 4;
+	ddg->size.y = 5;
 
 	if(ddg->DontDraw) return poweredAfter;
 
@@ -4789,6 +4832,12 @@ bool LadderElemUSS::DrawGUI(bool poweredBefore, void *data)
 	int *pInt, count = 0;
 	vector<string> FieldList;
 	tCommandSource source = { nullptr, nullptr, this };
+
+	// Desenha a seta indicando o sentido (Enviar / Receber)
+	DrawArrowAndText(r, "USS", colors.Black, (getWhich() == ELEM_READ_USS));
+
+	r.top    += GridSize.y;
+	r.bottom += GridSize.y;
 
 	// Cria a lista com os campos
 
@@ -5166,15 +5215,10 @@ bool LadderElemUART::DrawGUI(bool poweredBefore, void *data)
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (getWhich() == ELEM_UART_RECV) ? _("LER SERIAL") : _("ESCR. SERIAL"), false, poweredBefore);
 	ddg->region = r;
-/*
+
 	// Desenha a seta indicando o sentido (Enviar / Receber)
-	RECT rArrow    = r;
-	rArrow.top    += 5;
-	rArrow.bottom  = rArrow.top + 20;
-	rArrow.left    = rArrow.left + (rArrow.right - rArrow.left)/2 - 10;
-	rArrow.right   = rArrow.left + 20;
-	gui.DrawRectangle(rArrow, colors.Black, true, 0, 0, 45);
-*/
+	DrawArrowAndText(r, "A", colors.Black, (getWhich() == ELEM_UART_RECV));
+
 	// Escreve o nome do I/O
 	RECT rText   = r;
 	rText.top    = rText.top + GridSize.y;
@@ -5822,7 +5866,7 @@ bool LadderElemFmtString::DrawGUI(bool poweredBefore, void *data)
 	size  = ddg->size;
 
 	ddg->size.x = 2;
-	ddg->size.y = 2;
+	ddg->size.y = 3;
 
 	if(ddg->DontDraw) return poweredAfter;
 
@@ -5837,6 +5881,13 @@ bool LadderElemFmtString::DrawGUI(bool poweredBefore, void *data)
 
 	int *pInt;
 	tCommandSource source = { nullptr, nullptr, this };
+
+	// Desenha a seta indicando o sentido (Enviar / Receber)
+	DrawArrowAndText(r, "ABC", colors.Black, (getWhich() == ELEM_READ_FORMATTED_STRING));
+
+	// Soma a altura do grid pois os nomes iniciam abaixo do texto e seta
+	r.top    += GridSize.y;
+	r.bottom += GridSize.y;
 
 	// Desenha o nome da variavel
 	r.top  += 10;
@@ -5961,7 +6012,7 @@ bool LadderElemYaskawa::DrawGUI(bool poweredBefore, void *data)
 	size  = ddg->size;
 
 	ddg->size.x = 3;
-	ddg->size.y = 3;
+	ddg->size.y = 4;
 
 	if(ddg->DontDraw) return poweredAfter;
 
@@ -5976,6 +6027,12 @@ bool LadderElemYaskawa::DrawGUI(bool poweredBefore, void *data)
 	int *pInt, count = 0;
 	vector<string> FieldList;
 	tCommandSource source = { nullptr, nullptr, this };
+
+	// Desenha a seta indicando o sentido (Enviar / Receber)
+	DrawArrowAndText(r, "NS-600", colors.Black, (getWhich() == ELEM_READ_SERVO_YASKAWA));
+
+	r.top    += GridSize.y;
+	r.bottom += GridSize.y;
 
 	// Cria a lista com os campos
 

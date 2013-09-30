@@ -161,6 +161,23 @@ unsigned int EngineGUI::CreateBrush(COLORREF rgb)
 	return Brushes.size() - 1;
 }
 
+HRESULT EngineGUI::DrawPolygon(vector<POINT> points, unsigned int brush, bool filled, unsigned int angle)
+{
+	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
+
+	if(pRender != NULL && points.size() > 1) {
+		vector<POINT>::iterator it;
+		for(it = points.begin(); it != points.end(); it++) {
+			it->x += DrawOffset.x;
+			it->y += DrawOffset.y;
+		}
+
+		hr = pRender->DrawPolygon(points, brush + BrushOffset, filled, angle, brushWidth);
+	}
+
+	return hr;
+}
+
 HRESULT EngineGUI::DrawRectangle(RECT r, unsigned int brush, bool filled, unsigned int radiusX, unsigned int radiusY, unsigned int angle)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
