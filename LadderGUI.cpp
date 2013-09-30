@@ -4976,7 +4976,7 @@ bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 		ddg->size.x = 4;
 		ddg->size.y = 5;
 	} else {
-		ddg->size.x = 2;
+		ddg->size.x = 3;
 		ddg->size.y = 2;
 	}
 
@@ -4994,9 +4994,13 @@ bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (getWhich() == ELEM_READ_MODBUS) ? _("LER MB") : _("ESCREVER MB"), true, poweredBefore);
 	ddg->region = r;
 
+	// Desenha a seta indicando o sentido (Enviar / Receber)
+	DrawArrowAndText(r, "ModBUS", colors.Black, (getWhich() == ELEM_READ_MODBUS));
+
 	// Escreve o nome do I/O
-	RECT rText = r;
-	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
+	RECT rText   = r;
+	rText.top    = rText.top + GridSize.y;
+	rText.bottom = rText.top + FONT_HEIGHT;
 	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 
 	// Se expandido, desenha os itens do modo expandido
