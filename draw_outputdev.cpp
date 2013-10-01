@@ -65,6 +65,12 @@ void ExportDrawingAsText(char *file)
 	McuIoInfo *mcu = ladder->getMCU();
 	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
 
+	LadderSettingsInformation info = ladder->getSettingsInformation();
+	fprintf(f, _("Name........: %s\n"), info.Name.c_str());
+	fprintf(f, _("Description.: %s\n"), info.Description.c_str());
+	fprintf(f, _("Developer...: %s\n"), info.Developer.c_str());
+	fprintf(f, _("Build Number: %ld\n\n"), info.BuildNumber);
+
     fprintf(f, _("\nDiagrama Ladder:\n\n"));
 
     for(i = 0; i < totalHeight; i++) {
@@ -104,4 +110,6 @@ void ExportDrawingAsText(char *file)
 
     // we may have trashed the grid tables a bit; a repaint will fix that
     InvalidateRect(MainWindow, NULL, FALSE);
+
+	MessageBox(MainWindow, _("Arquivo gerado com sucesso!"), _("Sucesso"), MB_OK);
 }

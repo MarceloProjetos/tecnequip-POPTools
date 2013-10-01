@@ -1435,13 +1435,11 @@ bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *stime, string *sd
 		DispatchMessage(&msg);
     }
 
-    if(!DialogCancel &&
-		ladder->IsValidNameAndType(ladder->getIdIO(*stime), time_tmp   , eType_General, _("Tempo"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
-		ladder->IsValidNameAndType(ladder->getIdIO(*sdesl), initval_tmp, eType_General, _("Valor"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-			changed = true;
-			*l = current;
-			*stime = time_tmp;
-			*sdesl = initval_tmp;
+    if(!DialogCancel) {
+		changed = true;
+		*l = current;
+		*stime = time_tmp;
+		*sdesl = initval_tmp;
 	}
 
 	DiscardDeviceResources();

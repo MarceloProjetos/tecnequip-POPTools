@@ -35,7 +35,6 @@ char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "Ramp
 
 // Settings structure
 Settings POPSettings;
-XMLWrapper XmlSettings;
 
 // Functions to show Task Dialogs. Task Dialog is a replacement for MessageBox since Windows Vista
 int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
@@ -105,6 +104,17 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 	PCWSTR pszVerificationText, BOOL *pfVerificationFlagChecked)
 {
 	return ShowTaskDialog(pszMainInstruction, pszContent, pszMainIcon, dwCommonButtons, NULL, NULL, pszVerificationText, NULL, NULL, pfVerificationFlagChecked);
+}
+
+int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
+	PCWSTR pszVerificationText, bool *pfVerificationFlagChecked)
+{
+	BOOL flagBOOL = pfVerificationFlagChecked ? 1 : 0;
+	int ret = ShowTaskDialog(pszMainInstruction, pszContent, pszMainIcon, dwCommonButtons, NULL, NULL, pszVerificationText, NULL, NULL, &flagBOOL);
+
+	*pfVerificationFlagChecked = (flagBOOL == 0) ? false : true;
+
+	return ret;
 }
 
 int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR *pszButtons)
@@ -1686,171 +1696,155 @@ static BOOL MakeDebugWindowClass()
     return RegisterClassEx(&wc);
 }
 
-#define SETTINGS_FILE (L"POPTools\\settings.xml")
+#define SETTINGS_FILE            "POPTools\\settings.dat"
+#define LADDER_SETTINGS_MAGIC    0xbeef0f5a
+#define LADDER_SETTINGS_MAX_SIZE 20480 // 20 KB
 
 void LoadSettings(void)
 {
-	char *pStr;
+	unsigned long int magic;
+	bool failed = true; // Desmarca ao chegar no final da logica. Se nao chegou, ocorreu uma falha
+
 	PWSTR settings_path;
-	wchar_t *settings_file;
-	unsigned int i, totallen;
-	XMLWrapperElementList *pElementList, *pCurrentElementList;
+	SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &settings_path);
+
+	char *buf = ConvString_Convert(nullptr, settings_path);
+	string filename = buf;
+	delete buf;
+
+	filename += "\\";
+	filename += SETTINGS_FILE;
 
 	memset(&POPSettings, 0, sizeof(POPSettings));
 
-	SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &settings_path);
-	totallen = wcslen(settings_path) + wcslen(SETTINGS_FILE) + 1;
-	settings_file = new wchar_t[totallen+1];
-	swprintf(settings_file, totallen+1, L"%s\\%s", settings_path, SETTINGS_FILE);
+	FILE *f = fopen(filename.c_str(), "rb");
+    if(f) {
+		// Start with the magic number
+		fread(&magic, sizeof(magic), 1, f);
+		if(magic == LADDER_SETTINGS_MAGIC) {
+			long size;
+			unsigned char *buffer;
+			unsigned short int crc_calc, crc_read;
 
-	if(!XmlSettings.Open(settings_file)) {
+			fseek(f, 0, SEEK_END);
+			size   = ftell(f) - sizeof(LADDER_SETTINGS_MAGIC) - sizeof(crc_read);
+			if(size <= LADDER_SETTINGS_MAX_SIZE) {
+				buffer = new unsigned char[size];
+
+				fseek(f, sizeof(LADDER_SETTINGS_MAGIC), SEEK_SET);
+				fread(buffer, size, 1, f);
+
+				crc_calc = CRC16((unsigned char *)buffer, size);
+
+				fread(&crc_read, sizeof(crc_read), 1, f);
+				delete [] buffer;
+
+				if(crc_calc == crc_read) {
+					// volta para o comeco, depois do numero magico
+					fseek(f, sizeof(LADDER_SETTINGS_MAGIC), SEEK_SET);
+
+					if(fread_bool(f, &POPSettings.ShowSimulationWarnings) &&
+						fread_int(f, &POPSettings.AutoSaveInterval      ) &&
+						fread_int(f, &POPSettings.COMPortFlash          ) &&
+						fread_int(f, &POPSettings.COMPortDebug          )
+						) {
+							string name;
+							unsigned int i;
+
+							for(i = 0; i < MAX_RECENT_ITEMS; i++) {
+								// Interrompe a gravacao se ocorrer um erro
+								if(!fread_string(f, &name)) break;
+
+								strcpy(POPSettings.recent_list[i], name.c_str());
+							}
+
+							if(i == MAX_RECENT_ITEMS) {
+								failed = false;
+							}
+					}
+				}
+			}
+		}
+
+		fclose(f);
+	}
+
+	if(failed) {
 		// TODO: Internacionalizar
 		ShowTaskDialog(L"Erro ao carregar as preferências", L"Será utilizada a configuração padrão", TD_ERROR_ICON, TDCBF_OK_BUTTON);
 
 		POPSettings.AutoSaveInterval = 0;
 		POPSettings.ShowSimulationWarnings = TRUE;
 
-		delete [] settings_file;
-
 		return;
 	}
-
-	XmlSettings.SelectElements(L"SimulationSettings", 0);
-	pElementList = XmlSettings.GetElementList(-1);
-	if(pElementList != NULL) {
-		pCurrentElementList = pElementList->children;
-
-		while(pCurrentElementList != NULL) {
-			if(!wcscmp(pCurrentElementList->element.name, L"ShowWarnings")) {
-				pStr = _com_util::ConvertBSTRToString(pCurrentElementList->element.value);
-				POPSettings.ShowSimulationWarnings = atoi(pStr) ? TRUE : FALSE;
-				delete pStr;
-			}
-
-			pCurrentElementList = pCurrentElementList->next;
-		}
-
-		XmlSettings.FreeElementList(pElementList);
-	}
-
-	XmlSettings.ClearActiveSelection();
-	XmlSettings.SelectElements(L"ProgramSettings", 0);
-	pElementList = XmlSettings.GetElementList(-1);
-	if(pElementList != NULL) {
-		pCurrentElementList = pElementList->children;
-
-		while(pCurrentElementList != NULL) {
-			if(!wcscmp(pCurrentElementList->element.name, L"AutoSaveInterval")) {
-				pStr = _com_util::ConvertBSTRToString(pCurrentElementList->element.value);
-				POPSettings.AutoSaveInterval = atoi(pStr);
-				if(POPSettings.AutoSaveInterval < 0)
-					POPSettings.AutoSaveInterval = 0;
-				delete pStr;
-			}
-
-			pCurrentElementList = pCurrentElementList->next;
-		}
-
-		XmlSettings.FreeElementList(pElementList);
-	}
-
-	XmlSettings.ClearActiveSelection();
-	XmlSettings.SelectElements(L"RecentList", 0);
-	pElementList = XmlSettings.GetElementList(-1);
-
-	if(pElementList != NULL) {
-		char *szFile;
-
-		pCurrentElementList = pElementList->children;
-
-		for(i=0; pCurrentElementList != NULL && pCurrentElementList->element.value != NULL && i<MAX_RECENT_ITEMS; i++) {
-			szFile = _com_util::ConvertBSTRToString(pCurrentElementList->element.value);
-			strcpy(POPSettings.recent_list[i], szFile);
-			delete [] szFile;
-			pCurrentElementList = pCurrentElementList->next;
-		}
-
-		XmlSettings.FreeElementList(pElementList);
-	}
-
-	XmlSettings.ClearActiveSelection();
-	XmlSettings.SelectElements(L"PortSettings", 0);
-	pElementList = XmlSettings.GetElementList(-1);
-
-	if(pElementList != NULL) {
-		pCurrentElementList = pElementList->children;
-
-		while(pCurrentElementList != NULL) {
-			if(!wcscmp(pCurrentElementList->element.name, L"COMPortFlash")) {
-				pStr = _com_util::ConvertBSTRToString(pCurrentElementList->element.value);
-				POPSettings.COMPortFlash = atoi(pStr);
-				delete pStr;
-			} else if(!wcscmp(pCurrentElementList->element.name, L"COMPortDebug")) {
-				pStr = _com_util::ConvertBSTRToString(pCurrentElementList->element.value);
-				POPSettings.COMPortDebug = atoi(pStr);
-				delete pStr;
-			}
-
-			pCurrentElementList = pCurrentElementList->next;
-		}
-
-		XmlSettings.FreeElementList(pElementList);
-	}
-
-	delete [] settings_file;
 }
 
 void SaveSettings(void)
 {
-	unsigned int i;
-	wchar_t tmp[10];
-
-	XmlSettings.ClearActiveSelection();
-	XmlSettings.SelectElements(L"SimulationSettings", 0);
-	XmlSettings.SelectElements(L"ShowWarnings", 0);
-	XmlSettings.ChangeElement(0, POPSettings.ShowSimulationWarnings ? L"1" : L"0");
-
-	XmlSettings.ClearActiveSelection();
-	XmlSettings.SelectElements(L"ProgramSettings", 0);
-	XmlSettings.SelectElements(L"AutoSaveInterval", 0);
-	swprintf((wchar_t *)tmp, 10, L"%d", POPSettings.AutoSaveInterval);
-	XmlSettings.ChangeElement(0, tmp);
-
-	XmlSettings.ClearActiveSelection();
-	XmlSettings.SelectElements(L"RecentList", 0);
-	XmlSettings.DeleteChildren(0);
-
-	for(i=0; i<MAX_RECENT_ITEMS; i++) {
-		if(!strlen(POPSettings.recent_list[i])) // empty item, break
-			break;
-
-		XmlSettings.AddElement(0, -1, "RecentFile", POPSettings.recent_list[i]);
-	}
-
-	XmlSettings.ClearActiveSelection();
-	XmlSettings.SelectElements(L"PortSettings", 0);
-	XmlSettings.SelectElements(L"COMPortFlash", 0);
-	swprintf((wchar_t *)tmp, 10, L"%d", POPSettings.COMPortFlash);
-	XmlSettings.ChangeElement(0, tmp);
-
-	XmlSettings.ClearActiveSelection();
-	XmlSettings.SelectElements(L"PortSettings", 0);
-	XmlSettings.SelectElements(L"COMPortDebug", 0);
-	swprintf((wchar_t *)tmp, 10, L"%d", POPSettings.COMPortDebug);
-	XmlSettings.ChangeElement(0, tmp);
+	bool failed = true; // Desmarca ao chegar no final da logica. Se nao chegou, ocorreu uma falha
 
 	PWSTR settings_path;
-	wchar_t *settings_file;
-	unsigned int totallen;
-
 	SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &settings_path);
-	totallen = wcslen(settings_path) + wcslen(SETTINGS_FILE) + 1;
-	settings_file = new wchar_t[totallen+1];
-	swprintf(settings_file, totallen+1, L"%s\\%s", settings_path, SETTINGS_FILE);
 
-	XmlSettings.Save(settings_file);
+	char *buf = ConvString_Convert(nullptr, settings_path);
+	string filename = buf;
+	delete buf;
 
-	delete [] settings_file;
+	filename += "\\";
+	filename += SETTINGS_FILE;
+
+	FILE *f = fopen(filename.c_str(), "wb+");
+    if(!f) return;
+
+	// Start with the magic number
+	bool ret = fwrite_ulong (f, LADDER_SETTINGS_MAGIC);
+
+	/*** A seguir iniciamos o salvamento dos dados em si ***/
+
+	// Salvando as configuracoes
+	if(ret == true &&
+		fwrite_bool  (f, POPSettings.ShowSimulationWarnings) &&
+		fwrite_int   (f, POPSettings.AutoSaveInterval      ) &&
+		fwrite_int   (f, POPSettings.COMPortFlash          ) &&
+		fwrite_int   (f, POPSettings.COMPortDebug          )
+		) {
+			unsigned int i;
+
+			for(i = 0; i < MAX_RECENT_ITEMS; i++) {
+				// Interrompe a gravacao se ocorrer um erro
+				if(!fwrite_string(f, POPSettings.recent_list[i])) break;
+			}
+
+			if(i == MAX_RECENT_ITEMS) {
+				unsigned short int crc = 0;
+				long size;
+
+				fseek(f, 0, SEEK_END);
+				size = ftell(f) - sizeof(LADDER_SETTINGS_MAGIC);
+				if(size <= LADDER_SETTINGS_MAX_SIZE) {
+					unsigned char *buffer = new unsigned char[size];
+
+					fseek(f, sizeof(LADDER_SETTINGS_MAGIC), SEEK_SET);
+					fread(buffer, size, 1, f);
+
+					crc = CRC16((unsigned char *)buffer, size);
+
+					fseek(f, 0, SEEK_END);
+					fwrite(&crc, sizeof(crc), 1, f);
+
+					delete [] buffer;
+
+					failed = false;
+				}
+			}
+	}
+
+	fclose(f);
+
+	if(failed) {
+		_unlink(filename.c_str());
+	}
 }
 
 // Creates resources that are not bound to a particular device.
@@ -1923,7 +1917,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     IoListHeight = 100;
     ThawDWORD(IoListHeight);
 
-    InitCommonControls();
+	// Inicializa a interface COM
+	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+	InitCommonControls();
 	CreateDeviceIndependentResources();
 
     MakeMainWindowControls();

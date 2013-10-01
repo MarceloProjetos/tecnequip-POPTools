@@ -1679,6 +1679,7 @@ static LangTable LangPtTable[] = {
 	{ "Write Servo Yaskawa", "Escrever no Servo Yaskawa" },
 	{ "Read Servo Yaskawa", "Ler do Servo Yaskawa" },
 	{ "Progress", "Progresso" },
+	{ "Scheduler", "Agendador de Tarefas" },
 };
 static Lang LangPt = {
     LangPtTable, sizeof(LangPtTable)/sizeof(LangPtTable[0])

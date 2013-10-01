@@ -1,5 +1,10 @@
 #include "poptools.h"
 
+#import <msxml6.dll> raw_interfaces_only
+
+// Macro that releases a COM object if not NULL.
+#define SAFE_RELEASE(p)     do { if ((p)) { (p)->Release(); (p) = NULL; } } while(0)
+
 //PURPOSE: Implement the properties that describe a Recent Item to the Windows Ribbon
 class CRecentFileProperties
     : public IUISimplePropertySet
@@ -361,7 +366,7 @@ public:
 
 				pCommandExecutionProperties->GetValue(UI_PKEY_LabelDescription, &vFile);
 				for(i=0; i<MAX_RECENT_ITEMS; i++) {
-					szFile = _com_util::ConvertBSTRToString(vFile.bstrVal);
+					szFile = ConvString_Convert(nullptr, (wchar_t *)vFile.bstrVal);
 					if(!strcmp(szFile, POPSettings.recent_list[i])) {
 						delete [] szFile;
 						break;

@@ -601,7 +601,7 @@ void LadderGUI::DrawInit(void)
 
 	// Roxo: Comunicacao
 	group.Background = RGB(235, 150, 235);
-	group.Foreground = RGB(170,  85, 170);
+	group.Foreground = RGB(115,  70, 255);
 	group.Border     = RGB(170,  85, 170);
 	group.BorderText = RGB(255, 255, 255);
 
@@ -1564,17 +1564,32 @@ bool LadderElemComment::ShowDialog(LadderContext context)
 
 bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 {
-	pair<string, string> txt = DrawTXT();
-
-	txt.first  = txt.first .substr(txt.first .find_first_of(';') + 1);
-	txt.second = txt.second.substr(txt.second.find_first_of(';') + 1);
+	vector<string> lines;
 
 	POINT GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
-	int size = 1 + (max(txt.first.size(), txt.second.size()) * FONT_WIDTH) / GridSize.x;
 
-	ddg->size.x = max(size, ddg->size.x);
-	ddg->size.y = txt.second.size() ? 2 : 1;
+	// Nao altera o tamanho em X pois o comentario deve se ajustar ao tamanho da tela.
+	// Dessa forma devemos calcular as quebras do texto para que se ajuste na tela, resultando
+	// assim na altura do elemento.
+	string txt;
+	unsigned int posnl, pos = 0, nchars = ((ddg->size.x * GridSize.x) / FONT_WIDTH) - 2;
+
+	do {
+		txt   = prop.str.substr(pos, nchars);
+		posnl = txt.find_first_of("\n");
+		if(posnl != string::npos) {
+			txt = txt.substr(0, posnl);
+			pos++; // Incrementa pos para que sua posicao inicial no proximo loop seja apos \n
+		}
+
+		lines.push_back(txt);
+		pos += txt.size();
+	} while(pos < prop.str.size());
+
+	// Aqui calculamos a altura do elemento de acordo com o numero de linhas
+	unsigned int totalHeight = lines.size() * (FONT_HEIGHT + 5);
+	ddg->size.y = 1 + totalHeight / GridSize.y;
 
 	if(ddg->DontDraw) return poweredAfter;
 
@@ -1592,13 +1607,15 @@ bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 	rDialog.bottom -= 10;
 	gui.AddCommand(source, rDialog, CmdShowDialog, nullptr, true, false);
 
-	r.left += GridSize.x;
-	r.top  += (GridSize.y - FONT_HEIGHT)/2;
+	// Desenha os textos na tela
+	r.left += 10;
+	r.top  += (r.bottom - r.top - totalHeight + FONT_HEIGHT) / 2;
 
-	gui.DrawText(txt.first .c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
-
-	r.top  += GridSize.y;
-	gui.DrawText(txt.second.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+	vector<string>::iterator it;
+	for(it = lines.begin(); it != lines.end(); it++) {
+		gui.DrawText(it->c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+		r.top += FONT_HEIGHT + 5;
+	}
 
 	return poweredAfter;
 }
@@ -2398,7 +2415,15 @@ bool LadderElemRTC::ShowDialog(LadderContext context)
 	struct tm NewStart    = prop.start;
 	struct tm NewEnd      = prop.end;
 
-	bool changed = ShowRTCDialog(&NewMode, &NewWday, &NewStart, &NewEnd);
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(this);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
+
+	bool changed = ShowRTCDialog(&NewMode, &NewWday, &NewStart, &NewEnd, start, size, GridSize);
 
 	if(changed) {
 		LadderElemRTCProp *data = (LadderElemRTCProp *)getProperties();
@@ -3738,7 +3763,15 @@ bool LadderElemSetBit::ShowDialog(LadderContext context)
 	int  NewBit = prop.bit;
 	string NewName = Diagram->getNameIO(prop.idName);
 
-	bool changed = ShowVarBitDialog(_("Set Bit"), _("Name:"), &NewName, &NewBit, Diagram->getGeneralTypes());
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(this);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
+
+	bool changed = ShowVarBitDialog(_("Set Bit"), _("Name:"), &NewName, &NewBit, start, size, GridSize, Diagram->getGeneralTypes());
 
 	if(changed) {
 		if(Diagram->IsValidNameAndType(prop.idName.first, NewName, eType_General, _("Nome"), VALIDATE_IS_VAR, 0, 0)) {
@@ -3863,7 +3896,15 @@ bool LadderElemCheckBit::ShowDialog(LadderContext context)
 	string CurrName = Diagram->getNameIO(prop.idName);
 	string NewName  = CurrName;
 
-	bool changed = ShowVarBitDialog(_("Check Bit"), _("Name:"), &NewName, &NewBit, Diagram->getGeneralTypes());
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(this);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
+
+	bool changed = ShowVarBitDialog(_("Check Bit"), _("Name:"), &NewName, &NewBit, start, size, GridSize, Diagram->getGeneralTypes());
 
 	if(changed) {
 		// Se variavel sem tipo, usa tipo geral.
@@ -4036,17 +4077,19 @@ bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
 		size .x = size.y;
 		gui.DrawPictureFromResource(IDB_LADDER_AD, start, size);
 
+		char buf[100];
 		if(detailsIO.pin > 0) {
-			char buf[100];
 			sprintf(buf, "AD%d", detailsIO.pin);
-
-			RECT rText;
-			rText.left = start.x - 5;
-			rText.top  = start.y + size.y + 5;
-			rText.right = start.x + size.x + 10;
-			rText.bottom = rText.top + FONT_HEIGHT;
-			gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
+		} else {
+			strcpy (buf, "???");
 		}
+
+		RECT rText;
+		rText.left = start.x - 5;
+		rText.top  = start.y + size.y + 5;
+		rText.right = start.x + size.x + 10;
+		rText.bottom = rText.top + FONT_HEIGHT;
+		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 	}
 
 	// Desenha o nome do I/O
@@ -4494,27 +4537,43 @@ bool LadderElemMultisetDA::ShowDialog(LadderContext context)
 		tRequestIO pin;
 		vector<tRequestIO> pins;
 
-		pin       = infoIO_Time;
-		pin.pin   = prop.idTime;
-		pin.name  = NewTime;
-		pin.type  = eType_General;
-		pins.push_back(pin);
+		// Se variavel sem tipo, usa tipo geral.
+		eType typeTime = Diagram->getTypeIO(Diagram->getNameIO(prop.idTime), NewTime, eType_General, true);
+		if(typeTime == eType_Reserved) {
+			typeTime = eType_General;
+		}
 
-		pin       = infoIO_Desl;
-		pin.pin   = prop.idDesl;
-		pin.name  = NewDesl;
-		pin.type  = eType_General;
-		pins.push_back(pin);
+		eType typeDesl = Diagram->getTypeIO(Diagram->getNameIO(prop.idDesl), NewDesl, eType_General, true);
+		if(typeDesl == eType_Reserved) {
+			typeDesl = eType_General;
+		}
 
-		// Se variavel alterada e valida, atualiza o pino
-		if(ladder->getIO(pins)) {
-			LadderElemMultisetDAProp *data = (LadderElemMultisetDAProp *)getProperties();
+		if(Diagram->IsValidNameAndType(prop.idTime.first, NewTime, typeTime, _("Tempo"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0) &&
+			Diagram->IsValidNameAndType(prop.idDesl.first, NewDesl, typeDesl, _("Valor"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+				pin       = infoIO_Time;
+				pin.pin   = prop.idTime;
+				pin.name  = NewTime;
+				pin.type  = typeTime;
+				pins.push_back(pin);
 
-			*data = dialogData;
-			data->idTime = pins[0].pin;
-			data->idDesl = pins[1].pin;
+				pin       = infoIO_Desl;
+				pin.pin   = prop.idDesl;
+				pin.name  = NewDesl;
+				pin.type  = typeDesl;
+				pins.push_back(pin);
 
-			setProperties(context, data);
+				// Se variavel alterada e valida, atualiza o pino
+				if(ladder->getIO(pins)) {
+					LadderElemMultisetDAProp *data = (LadderElemMultisetDAProp *)getProperties();
+
+					*data = dialogData;
+					data->idTime = pins[0].pin;
+					data->idDesl = pins[1].pin;
+
+					setProperties(context, data);
+				} else {
+					changed = false;
+				}
 		} else {
 			changed = false;
 		}
@@ -4999,7 +5058,7 @@ bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 
 	// Escreve o nome do I/O
 	RECT rText   = r;
-	rText.top    = rText.top + GridSize.y;
+	rText.top    = rText.top + GridSize.y + (ddg->expanded ? 10 : 0);
 	rText.bottom = rText.top + FONT_HEIGHT;
 	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 
@@ -5096,7 +5155,29 @@ void SetPWMCmdChangeValue(tCommandSource source, void *data)
 
 bool LadderElemSetPWM::ShowDialog(LadderContext context)
 {
-	return false;
+	static LadderElemSetPWM *lastCmd = this;
+	static bool isCmdName = true;
+	tCommandSource source = { nullptr, nullptr, this };
+	tCmdChangeNameData dataChangeName;
+
+	dataChangeName.reply = false;
+
+	if(lastCmd != this) {
+		isCmdName = true;
+	}
+
+	if(isCmdName) {
+		dataChangeName.type  = eType_General;
+		SetPWMCmdChangeName (source, &dataChangeName);
+	} else {
+		dataChangeName.type  = eType_Pending;
+		SetPWMCmdChangeValue(source, &dataChangeName);
+	}
+
+	lastCmd   = this;
+	isCmdName = !isCmdName;
+
+	return dataChangeName.reply;
 }
 
 bool LadderElemSetPWM::DrawGUI(bool poweredBefore, void *data)
@@ -6381,7 +6462,12 @@ void LadderDiagram::DrawGUI(void)
 	vector<LadderCircuit>::size_type i;
 	tDataDrawGUI RungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, &context };
 
+	// Etapa 1: Calcula o tamanho do diagrama
 	for(i = 0; i < rungs.size(); i++) {
+		// Se a linha tiver comentario, nao executa. Os comentarios se ajustam na tela entao precisam
+		// da larugra do diagrama, que ainda nao eh conhecido.
+		// Apos este loop teremos um exclusivamente para os comentarios.
+		if(rungs[i]->rung->IsComment()) continue;
 		rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
 
 		RungDDG.start.y += RungDDG.size.y + 1;
@@ -6390,11 +6476,23 @@ void LadderDiagram::DrawGUI(void)
 		}
 	}
 
+	// Fim da Etapa 1. Agora calculamos a largura do diagrama
 	RECT rWindow;
 	GetClientRect(DrawWindow, &rWindow);
 
-	SizeMax.y = RungDDG.start.y;
 	SizeMax.x = max(SizeMax.x, (rWindow.right)/Grid1x1.x - 3);
+
+	// Etapa 2: Calcula a altura dos comentarios
+	RungDDG.size.x = SizeMax.x;
+	for(i = 0; i < rungs.size(); i++) {
+		if(rungs[i]->rung->IsComment()) {
+			rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
+			RungDDG.start.y += RungDDG.size.y + 1;
+		}
+	}
+
+	// Fim da Etapa 2. Agora calculamos a altura do diagrama
+	SizeMax.y = RungDDG.start.y;
 
 	gui.setDiagramSize(SizeMax);
 	RefreshScrollbars();
@@ -6427,6 +6525,7 @@ void LadderDiagram::DrawGUI(void)
 
 	gui.DrawStart(ScrollXOffset, ScrollYOffset*Grid1x1.y);
 
+	// Etapa 3: Desenha o diagrama na tela
 	RungDDG.DontDraw = false;
 	RungDDG.start.y = 0;
 	for(i = 0; i < rungs.size(); i++) {

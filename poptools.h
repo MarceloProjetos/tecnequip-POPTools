@@ -46,7 +46,6 @@
 
 #include "resource.h"
 #include "splash.h"
-#include "XMLWrapper.h"
 #include "modbus_master.h"
 #include "MainRibbon.h"
 #include <uiribbon.h>
@@ -456,7 +455,7 @@ typedef struct McuIoInfoTag McuIoInfo;
 // Settings structure
 typedef struct SettingsTag {
 	// Simulation settings
-	BOOL ShowSimulationWarnings;
+	bool ShowSimulationWarnings;
 	// Find And Replace settings
 	char last_search_text[MAX_NAME_LEN];
 	char last_new_text[MAX_NAME_LEN];
@@ -555,7 +554,6 @@ extern LadderDiagram *ladder;
 extern LadderClipboard clipboard;
 extern vector<LadderDiagram *> ladderList;
 extern Settings POPSettings;
-extern XMLWrapper XmlSettings;
 extern char CurrentCompileFile[MAX_PATH];
 extern McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS];
 
@@ -606,6 +604,8 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 // MessageBox replacement with CheckBox
 int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
 	PCWSTR pszVerificationText, BOOL *pfVerificationFlagChecked);
+int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
+	PCWSTR pszVerificationText, bool *pfVerificationFlagChecked);
 
 // With custom buttons
 int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR *pszButtons);
@@ -776,8 +776,8 @@ bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *time, string *des
 // simpledialog.cpp
 bool ShowVarDialog(char *title, char *varname, string *name, vector<eType> types = vector<eType>());
 bool ShowVarDialog(char *title, char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types = vector<eType>());
-bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end);
-bool ShowVarBitDialog(char *title, char *varname, string *name, int * bit, vector<eType> types);
+bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end, POINT ElemStart, POINT ElemSize, POINT GridSize);
+bool ShowVarBitDialog(char *title, char *varname, string *name, int * bit, POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types);
 bool ShowModbusDialog(int mode_write, string *name, int *id, int *address);
 void ShowSimulationVarSetDialog(const char *name, char *val);
 bool ShowLookUpTableDialog(LadderElemLUTProp *t);

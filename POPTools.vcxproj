@@ -345,7 +345,6 @@
     <ClCompile Include="simpledialog.cpp" />
     <ClCompile Include="simulate.cpp" />
     <ClCompile Include="splash.cpp" />
-    <ClCompile Include="XMLWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bin\src\poptools.h" />
@@ -361,8 +360,6 @@
     <ClInclude Include="LadderObjects.h" />
     <ClInclude Include="modbus_master.h" />
     <ClInclude Include="PropertySet.h" />
-    <ClInclude Include="XMLWrapper.h" />
-    <None Include="bin\settings.xml" />
     <ClInclude Include="flashmagicarmcortex.h" />
     <ClInclude Include="flashmagiccommon.h" />
     <ClInclude Include="freeze.h" />

@@ -141,7 +141,7 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
 	if(ElemSize.x > 0 && ElemSize.y > 0) {
 		int offset = 50; // espacamento entre a janela e a borda do elemento
 
-		// Primeiro corrige as coordenadas para representar um valorabsoluto com relacao
+		// Primeiro corrige as coordenadas para representar um valor absoluto com relacao
 		// ao canto superior esquerdo da tela ao inves do canto de DrawWindow
 		RECT rWindow;
 

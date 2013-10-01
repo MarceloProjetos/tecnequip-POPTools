@@ -138,9 +138,6 @@
     <ClCompile Include="miscutil.cpp">
       <Filter>Source Files\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="XMLWrapper.cpp">
-      <Filter>Source Files\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="Firmware\App\modbus_rtu.c">
       <Filter>Source Files\POP-7</Filter>
     </ClCompile>
@@ -192,9 +189,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="splash.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XMLWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VersionInfo.h">
@@ -255,9 +249,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\settings.xml">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="poptools.ico">
       <Filter>Resource Files\Imagens</Filter>
     </None>

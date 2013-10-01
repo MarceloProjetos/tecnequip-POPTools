@@ -68,15 +68,46 @@ static void MakeControls(char *varname, vector<eType> types)
         (LONG_PTR)MyNameProc);
 }
 
-bool ShowVarBitDialog(char *title, char *varname, string *name, int * bit, vector<eType> types)
+bool ShowVarBitDialog(char *title, char *varname, string *name, int * bit,
+	POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types)
 {
 	bool changed = false;
 
 	char name_tmp[MAX_NAME_LEN];
 
+	POINT start = { 100, 100 }, size = { 276, 75 };
+
+	// Se tamanho for definido, devemos posicionar a janela
+	if(ElemSize.x > 0 && ElemSize.y > 0) {
+		int offset = 50; // espacamento entre a janela e a borda do elemento
+
+		// Primeiro corrige as coordenadas para representar um valor absoluto com relacao
+		// ao canto superior esquerdo da tela ao inves do canto de DrawWindow
+		RECT rWindow;
+
+		GetWindowRect(DrawWindow, &rWindow);
+
+		ElemStart.x += rWindow.left - ScrollXOffset;
+		ElemStart.y += rWindow.top  - ScrollYOffset * GridSize.y;
+
+		// Primeiro tenta posicionar sobre o elemento
+		if(ElemStart.y > (size.y + offset)) {
+			start.y = ElemStart.y - (size.y + offset);
+		} else { // Senao posiciona abaixo
+			start.y = ElemStart.y + ElemSize.y + offset;
+		}
+
+		start.x = ElemStart.x + (ElemSize.x - size.x)/2;
+		if(start.x < 0) {
+			start.x = 0;
+		} else if(start.x + size.x > rWindow.right) {
+			start.x = rWindow.right - size.x;
+		}
+	}
+
     SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
         title, WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 276, 75, MainWindow, NULL, Instance, NULL);
+        start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL);
 
     MakeControls(varname, types);
    
