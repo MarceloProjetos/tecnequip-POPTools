@@ -141,8 +141,11 @@ static void DestroyLutControls(void)
 // and for table-type entry, on (b) the number of entries, and on (c)
 // whether we are editing a PWL table (list of points) or a straight LUT.
 //-----------------------------------------------------------------------------
-static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
+static void MakeLutControls(BOOL asString, int count, BOOL forPwl,
+	POINT ElemStart, POINT ElemSize, POINT GridSize)
 {
+	POINT start = { 100, 30 }, size = { 320, 0 };
+
     // Remember these, so that we know from where to cache stuff if we have
     // to destroy these textboxes and make something new later.
     WasAsString = asString;
@@ -184,7 +187,7 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
             10, 70, 294, 21, LutDialog, NULL, Instance, NULL);
         FixedFont(StringTextbox);
         SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)TRUE, 0);
-        MoveWindow(LutDialog, 100, 30, 320, 125, TRUE);
+		size.y = 125;
     } else {
         int i, breakpoint = (count+1)/2;
         int base = 80;
@@ -223,8 +226,38 @@ static void MakeLutControls(BOOL asString, int count, BOOL forPwl)
         }
         SendMessage(CountTextbox, EM_SETREADONLY, (WPARAM)FALSE, 0);
 
-        MoveWindow(LutDialog, 100, 30, 320, base + (count > 0 ? (breakpoint + 1)*30 : 20), TRUE);
+		size.y = base + (count > 0 ? (breakpoint + 1)*30 : 20);
     }
+
+	// Se tamanho for definido, devemos posicionar a janela
+	if(ElemSize.x > 0 && ElemSize.y > 0) {
+		int offset = 50; // espacamento entre a janela e a borda do elemento
+
+		// Primeiro corrige as coordenadas para representar um valor absoluto com relacao
+		// ao canto superior esquerdo da tela ao inves do canto de DrawWindow
+		RECT rWindow;
+
+		GetWindowRect(DrawWindow, &rWindow);
+
+		ElemStart.x += rWindow.left - ScrollXOffset;
+		ElemStart.y += rWindow.top  - ScrollYOffset * GridSize.y;
+
+		// Primeiro tenta posicionar sobre o elemento
+		if(ElemStart.y > (size.y + offset)) {
+			start.y = ElemStart.y - (size.y + offset);
+		} else { // Senao posiciona abaixo
+			start.y = ElemStart.y + ElemSize.y + offset;
+		}
+
+		start.x = ElemStart.x + (ElemSize.x - size.x)/2;
+		if(start.x < 0) {
+			start.x = 0;
+		} else if(start.x + size.x > rWindow.right) {
+			start.x = rWindow.right - size.x;
+		}
+	}
+
+	MoveWindow(LutDialog, start.x, start.y, size.x, size.y, TRUE);
 }
 
 //-----------------------------------------------------------------------------
@@ -270,7 +303,7 @@ BOOL StringToValuesCache(char *str, int *c)
 // I should convert between those two representations on the fly, as the user
 // edit things, so I do.
 //-----------------------------------------------------------------------------
-bool ShowLookUpTableDialog(LadderElemLUTProp *t)
+bool ShowLookUpTableDialog(LadderElemLUTProp *t, POINT ElemStart, POINT ElemSize, POINT GridSize)
 {
 	bool changed = false;
 
@@ -292,7 +325,7 @@ bool ShowLookUpTableDialog(LadderElemLUTProp *t)
         _("Look-Up Table"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 320, 375, MainWindow, NULL, Instance, NULL);
     MakeFixedControls(FALSE);
-    MakeLutControls(asString, count, FALSE);
+    MakeLutControls(asString, count, FALSE, ElemStart, ElemSize, GridSize);
   
     // Set up the controls to reflect the initial configuration.
     char buf[30];
@@ -342,7 +375,7 @@ bool ShowLookUpTableDialog(LadderElemLUTProp *t)
                 SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)"");
             }
             DestroyLutControls();
-            MakeLutControls(asString, count, FALSE);
+            MakeLutControls(asString, count, FALSE, ElemStart, ElemSize, GridSize);
         }
 
         // Are we in string mode? In that case watch the string textbox,
@@ -367,7 +400,7 @@ bool ShowLookUpTableDialog(LadderElemLUTProp *t)
         if((x && !asString) || (!x && asString)) {
             asString = x;
             DestroyLutControls();
-            MakeLutControls(asString, count, FALSE);
+            MakeLutControls(asString, count, FALSE, ElemStart, ElemSize, GridSize);
         }
 
     }
@@ -397,7 +430,7 @@ bool ShowLookUpTableDialog(LadderElemLUTProp *t)
 // Show the piecewise linear table dialog. This one can only be edited in
 // only a single format, which makes things easier than before.
 //-----------------------------------------------------------------------------
-bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t)
+bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, POINT ElemStart, POINT ElemSize, POINT GridSize)
 {
 	bool changed = false;
 
@@ -418,7 +451,7 @@ bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t)
         _("Piecewise Linear Table"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 320, 375, MainWindow, NULL, Instance, NULL);
     MakeFixedControls(TRUE);
-    MakeLutControls(FALSE, count*2, TRUE);
+    MakeLutControls(FALSE, count*2, TRUE, ElemStart, ElemSize, GridSize);
   
     // Set up the controls to reflect the initial configuration.
     char buf[30];
@@ -463,7 +496,7 @@ bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t)
                 SendMessage(CountTextbox, WM_SETTEXT, 0, (LPARAM)"");
             }
             DestroyLutControls();
-            MakeLutControls(FALSE, count*2, TRUE);
+            MakeLutControls(FALSE, count*2, TRUE, ElemStart, ElemSize, GridSize);
         }
     }
 

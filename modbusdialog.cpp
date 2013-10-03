@@ -141,14 +141,45 @@ static void MakeControls(void)
     //    (LONG_PTR)MyNameProc);
 }
 
-bool ShowModbusDialog(int mode_write, string *name, int *elem, int *address)
+bool ShowModbusDialog(int mode_write, string *name, int *elem, int *address,
+	POINT ElemStart, POINT ElemSize, POINT GridSize)
 {
 	bool changed = false;
+
+	POINT start = { 100, 100 }, size = { 296, 99 };
+
+	// Se tamanho for definido, devemos posicionar a janela
+	if(ElemSize.x > 0 && ElemSize.y > 0) {
+		int offset = 50; // espacamento entre a janela e a borda do elemento
+
+		// Primeiro corrige as coordenadas para representar um valor absoluto com relacao
+		// ao canto superior esquerdo da tela ao inves do canto de DrawWindow
+		RECT rWindow;
+
+		GetWindowRect(DrawWindow, &rWindow);
+
+		ElemStart.x += rWindow.left - ScrollXOffset;
+		ElemStart.y += rWindow.top  - ScrollYOffset * GridSize.y;
+
+		// Primeiro tenta posicionar sobre o elemento
+		if(ElemStart.y > (size.y + offset)) {
+			start.y = ElemStart.y - (size.y + offset);
+		} else { // Senao posiciona abaixo
+			start.y = ElemStart.y + ElemSize.y + offset;
+		}
+
+		start.x = ElemStart.x + (ElemSize.x - size.x)/2;
+		if(start.x < 0) {
+			start.x = 0;
+		} else if(start.x + size.x > rWindow.right) {
+			start.x = rWindow.right - size.x;
+		}
+	}
 
 	char name_temp[MAX_NAME_LEN];
     SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
         mode_write ? _("Write ModBUS") : _("Read ModBUS"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 296, 99, MainWindow, NULL, Instance, NULL);
+        start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
 

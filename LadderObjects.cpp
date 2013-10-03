@@ -5591,6 +5591,8 @@ bool LadderElemMasterRelay::internalGenerateIntCode(IntCode &ic)
 		ic.Op(INT_COPY_BIT_TO_BIT, "$mcr", ic.getStateInOut());
 	ic.Op(INT_END_IF);
 
+	ic.SimState(&isMasterRelayActive, "$mcr");
+
 	return true;
 }
 
@@ -9078,7 +9080,9 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 		// Especificamente para o caso do ModBUS, que precisa referenciar o node que ele usa.
 		elem->doPostInsert();
 
-		SelectElement(elem, elem->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT);
+		SelectElement(elem, elem->IsEOL() ?
+			(context.SelectedState == SELECTED_BELOW ? SELECTED_BELOW : SELECTED_LEFT) :
+			SELECTED_RIGHT);
 
 		updateContext();
 	} else {
@@ -10302,7 +10306,7 @@ void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDi
 				tRequestIO copyInfoIO = infoIO;
 				copyInfoIO.name = IO->getName(infoIO.pin.first);
 				copyInfoIO.type = DetailsIO.type;
-				IO->Request(copyInfoIO);
+				infoIO.pin.first = IO->Request(copyInfoIO);
 			} else {
 				infoIO.pin.first = 0;
 			}

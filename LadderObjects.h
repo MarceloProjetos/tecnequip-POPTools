@@ -1737,6 +1737,9 @@ public:
 
 // Classe do elemento Master Relay
 class LadderElemMasterRelay : public LadderElem {
+	// Flag que indica se a chave esta ligada ou nao
+	bool isMasterRelayActive;
+
 	// Sem propriedades privadas...
 	bool internalSetProperties(void *data, bool isUndoRedo = false) { return true; }
 

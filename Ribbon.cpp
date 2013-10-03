@@ -1,7 +1,5 @@
 #include "poptools.h"
 
-#import <msxml6.dll> raw_interfaces_only
-
 // Macro that releases a COM object if not NULL.
 #define SAFE_RELEASE(p)     do { if ((p)) { (p)->Release(); (p) = NULL; } } while(0)
 

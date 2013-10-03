@@ -69,6 +69,7 @@
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "WindowsCodecs.lib")
 #pragma comment(lib, "dwrite.lib")
+#pragma comment(lib, "comsuppw.lib")
 
 // Enable Visual Style
 #if defined _M_IX86
@@ -778,10 +779,10 @@ bool ShowVarDialog(char *title, char *varname, string *name, vector<eType> types
 bool ShowVarDialog(char *title, char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types = vector<eType>());
 bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end, POINT ElemStart, POINT ElemSize, POINT GridSize);
 bool ShowVarBitDialog(char *title, char *varname, string *name, int * bit, POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types);
-bool ShowModbusDialog(int mode_write, string *name, int *id, int *address);
+bool ShowModbusDialog(int mode_write, string *name, int *id, int *address, POINT ElemStart, POINT ElemSize, POINT GridSize);
 void ShowSimulationVarSetDialog(const char *name, char *val);
-bool ShowLookUpTableDialog(LadderElemLUTProp *t);
-bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t);
+bool ShowLookUpTableDialog(LadderElemLUTProp *t, POINT ElemStart, POINT ElemSize, POINT GridSize);
+bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, POINT ElemStart, POINT ElemSize, POINT GridSize);
 // confdialog.cpp
 extern struct strSerialConfig SerialConfig[];
 extern char *SerialParityString[];

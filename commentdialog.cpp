@@ -30,23 +30,16 @@ bool ShowCommentDialog(char *comment, POINT ElemStart, POINT ElemSize, POINT Gri
 
 	// Se tamanho for definido, devemos posicionar a janela
 	if(ElemSize.x > 0 && ElemSize.y > 0) {
-		int offset = 50; // espacamento entre a janela e a borda do elemento
-
 		// Primeiro corrige as coordenadas para representar um valorabsoluto com relacao
 		// ao canto superior esquerdo da tela ao inves do canto de DrawWindow
 		RECT rWindow;
 
 		GetWindowRect(DrawWindow, &rWindow);
 
-		ElemStart.x += rWindow.left - ScrollXOffset;
-		ElemStart.y += rWindow.top  - ScrollYOffset * GridSize.y;
+		ElemStart.y += rWindow.top - ScrollYOffset * GridSize.y;
 
-		// Primeiro tenta posicionar sobre o elemento
-		if(ElemStart.y > (size.y + offset)) {
-			start.y = ElemStart.y - (size.y + offset);
-		} else { // Senao posiciona abaixo
-			start.y = ElemStart.y + ElemSize.y + offset;
-		}
+		// A janela do comentario aparece centralizada verticalmente com o comentario
+		start.y = ElemStart.y + (ElemSize.y - size.y)/2;
 
 		// Sempre centraliza com a tela pois o comentario ocupa a tela inteira
 		start.x = rWindow.left + (rWindow.right - rWindow.left - size.x)/2;

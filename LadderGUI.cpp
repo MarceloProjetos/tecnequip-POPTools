@@ -163,10 +163,10 @@ private:
 	array<unsigned int, 3>    InterfaceColors;
 
 	typedef struct {
-		RECT r;
-		void(*fnc)(tCommandSource, void *);
-		void *data;
-		bool isSimMode;
+		RECT   r;
+		bool (*fnc)(tCommandSource, void *);
+		void  *data;
+		bool   isSimMode;
 	} tCommandItem;
 	typedef pair<tCommandSource, tCommandItem>  tCommandListItem;
 	typedef vector<tCommandListItem>            tCommandsList;
@@ -231,7 +231,7 @@ public:
 
 	RECT getElemArea(LadderElem *elem);
 
-	void AddCommand(tCommandSource source, RECT region, void (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick, bool isSimulationMode);
+	void AddCommand(tCommandSource source, RECT region, bool (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick, bool isSimulationMode);
 
 	void CmdExpand(LadderElem *elem);
 
@@ -248,13 +248,15 @@ public:
 static LadderGUI gui;
 
 // Funcoes usadas nos comandos genericos
-void CmdExpand(tCommandSource source, void *data)
+bool CmdExpand(tCommandSource source, void *data)
 {
 	gui.CmdExpand(source.elem);
+	return true;
 }
 
-void CmdShowDialog(tCommandSource source, void *data)
+bool CmdShowDialog(tCommandSource source, void *data)
 {
+	bool ret = false;
 	if(source.elem != nullptr && ladder->getContext().inSimulationMode == false) {
 		ladder->CheckpointBegin("Editar Elemento");
 		if(source.elem->ShowDialog(ladder->getContext()) == true) {
@@ -264,6 +266,8 @@ void CmdShowDialog(tCommandSource source, void *data)
 		ladder->CheckpointEnd();
 		ladder->updateContext();
 	}
+
+	return ret;
 }
 
 void CmdSelect(tCommandSource source, int SelectedState)
@@ -271,33 +275,39 @@ void CmdSelect(tCommandSource source, int SelectedState)
 	ladder->SelectElement(source.elem, SelectedState);
 }
 
-void CmdSelectLeft(tCommandSource source, void *data)
+bool CmdSelectLeft(tCommandSource source, void *data)
 {
 	CmdSelect(source, SELECTED_LEFT);
+	return true;
 }
 
-void CmdSelectRight(tCommandSource source, void *data)
+bool CmdSelectRight(tCommandSource source, void *data)
 {
 	CmdSelect(source, SELECTED_RIGHT);
+	return true;
 }
 
-void CmdSelectAbove(tCommandSource source, void *data)
+bool CmdSelectAbove(tCommandSource source, void *data)
 {
 	CmdSelect(source, SELECTED_ABOVE);
+	return true;
 }
 
-void CmdSelectBelow(tCommandSource source, void *data)
+bool CmdSelectBelow(tCommandSource source, void *data)
 {
 	CmdSelect(source, SELECTED_BELOW);
+	return true;
 }
 
-void cmdExpandedItem(tCommandSource source, void *data)
+bool cmdExpandedItem(tCommandSource source, void *data)
 {
 	tCmdExpandedItem *cmd = (tCmdExpandedItem *)data;
 
 	if(cmd->fnc != nullptr) {
 		(cmd->fnc)(source.elem, cmd->index);
 	}
+
+	return true;
 }
 
 // Construtores
@@ -1231,6 +1241,10 @@ LadderElem *LadderGUI::SearchElement(LadderElem *ref, eMoveCursor moveTo)
 						y += 5000;
 					}
 
+					if((moveTo == eMoveCursor_Up || moveTo == eMoveCursor_Down) && ref->IsComment()) {
+						y *= 10;
+					}
+
 					newxy = x + y;
 
 					if(!minxy || minxy > newxy) {
@@ -1262,7 +1276,7 @@ RECT LadderGUI::getElemArea(LadderElem *elem)
 	return r;
 }
 
-void LadderGUI::AddCommand(tCommandSource source, RECT region, void (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick, bool isSimulationMode)
+void LadderGUI::AddCommand(tCommandSource source, RECT region, bool (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick, bool isSimulationMode)
 {
 	tCommandsList *Commands;
 	Commands = isDoubleClick ? &CommandsDoubleClick : &CommandsSingleClick;
@@ -1462,7 +1476,7 @@ bool cmdChangeName(LadderElem *elem, unsigned int index, pair<unsigned long, int
 }
 
 // Funcao que exibe uma janela de dialogo e atualiza o valor de uma variavel de tipo Geral durante a simulacao
-void ElemSimCmdSetVariable(tCommandSource source, void *data)
+bool ElemSimCmdSetVariable(tCommandSource source, void *data)
 {
 	char val[1024];
 	unsigned long id = *(unsigned long *)data;
@@ -1492,6 +1506,8 @@ void ElemSimCmdSetVariable(tCommandSource source, void *data)
 			break;
 		}
 	}
+
+	return true;
 }
 
 // Classe LadderElemPlaceHolder
@@ -1528,6 +1544,10 @@ bool LadderElemPlaceHolder::DrawGUI(bool poweredBefore, void *data)
 
 	if(SelectedState == SELECTED_NONE) {
 		tCommandSource source = { nullptr, nullptr, this };
+		rCursor.top    -= 10;
+		rCursor.bottom += 10;
+		rCursor.left   -= 10;
+		rCursor.right  += 10;
 		gui.AddCommand(source, rCursor, CmdSelectRight, nullptr, false, false);
 	} else if(isCursorVisible && !ladder->getContext().inSimulationMode) {
 		gui.DrawEllipse(rCursor, gui.getLadderColors().Selection);
@@ -1621,7 +1641,7 @@ bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemContact
-void ContactCmdChangeName(tCommandSource source, void *data)
+bool ContactCmdChangeName(tCommandSource source, void *data)
 {
 	bool                ret;
 	eType               type;
@@ -1650,6 +1670,8 @@ void ContactCmdChangeName(tCommandSource source, void *data)
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool ContactCmdExpandedSource(LadderElem *elem, unsigned int selected)
@@ -1722,13 +1744,15 @@ bool ContactCmdExpandedNegated(LadderElem *elem, unsigned int negated)
 	return ret;
 }
 
-void ContactCmdToggleNegated(tCommandSource source, void *data)
+bool ContactCmdToggleNegated(tCommandSource source, void *data)
 {
 	LadderElemContactProp *prop = (LadderElemContactProp *)source.elem->getProperties();
 
 	ContactCmdExpandedNegated(source.elem, prop->negated ? 0 : 1); // Inverte o estado atual
 
 	delete prop;
+
+	return true;
 }
 
 bool LadderElemContact::ShowDialog(LadderContext context)
@@ -1787,7 +1811,7 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 	gui.AddCommand(source, rText, ContactCmdChangeName, nullptr, true, false);
 
 	// Desenha o contato
-	COLORREF colorWire = poweredAfter ? colors.Wire : colors.WireOff;
+	COLORREF colorWire = poweredBefore ? colors.Wire : colors.WireOff;
 
 	start.x = r.left;
 	start.y = r.top + GridSize.y;
@@ -1799,6 +1823,8 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 	start.y -= 10;
 	end.y   += 10;
 	gui.DrawLine(start, end, colorWire);
+
+	colorWire = poweredAfter ? colors.Wire : colors.WireOff;
 
 	start.x += 10;
 	end.x   += 10;
@@ -1896,7 +1922,7 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemCoil
-void CoilCmdChangeName(tCommandSource source, void *data)
+bool CoilCmdChangeName(tCommandSource source, void *data)
 {
 	bool                ret;
 	eType               type;
@@ -1925,6 +1951,8 @@ void CoilCmdChangeName(tCommandSource source, void *data)
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool CoilCmdExpandedSource(LadderElem *elem, unsigned int selected)
@@ -2161,7 +2189,7 @@ bool LadderElemCoil::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemTimer
-void TimerCmdChangeName(tCommandSource source, void *data)
+bool TimerCmdChangeName(tCommandSource source, void *data)
 {
 	int              which = source.elem->getWhich();
 	eType            type  = getTimerTypeIO(which);
@@ -2183,14 +2211,17 @@ void TimerCmdChangeName(tCommandSource source, void *data)
 	vector<eType> types;
 	types.push_back(type);
 
-	cmdChangeName(source.elem, 0, prop->idName, type, types, s, _("Name:"));
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, type, types, s, _("Name:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
-void TimerCmdChangeTime(tCommandSource source, void *data)
+bool TimerCmdChangeTime(tCommandSource source, void *data)
 {
+	bool                ret = false;
 	int                 which = source.elem->getWhich();
 	eType               type  = getTimerTypeIO(which);
 	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
@@ -2245,6 +2276,7 @@ void TimerCmdChangeTime(tCommandSource source, void *data)
 
 			source.elem->setProperties(ladder->getContext(), prop);
 
+			ret = true;
 			if(dataChangeName != nullptr) {
 				dataChangeName->reply = true;
 			}
@@ -2252,19 +2284,31 @@ void TimerCmdChangeTime(tCommandSource source, void *data)
 		// Se foi cancelada a alteracao, devemos desalocar as propriedades
 		delete prop;
 	}
+
+	return ret;
 }
 
 bool LadderElemTimer::ShowDialog(LadderContext context)
 {
+	bool ret;
+	static LadderElemTimer *lastCmd = this;
+	static bool isCmdName = true;
 	tCommandSource source = { nullptr, nullptr, this };
-	tCmdChangeNameData dataChangeName;
 
-	dataChangeName.reply = false;
-	dataChangeName.type  = Diagram->getDetailsIO(prop.idName.first).type;
+	if(lastCmd != this) {
+		isCmdName = true;
+	}
 
-	TimerCmdChangeTime(source, &dataChangeName);
+	if(isCmdName) {
+		ret = TimerCmdChangeTime (source, nullptr);
+	} else {
+		ret = TimerCmdChangeName(source, nullptr);
+	}
 
-	return dataChangeName.reply;
+	lastCmd   = this;
+	isCmdName = !isCmdName;
+
+	return ret;
 }
 
 bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
@@ -2527,9 +2571,10 @@ bool LadderElemRTC::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemCounter
-void CounterCmdChangeName(tCommandSource source, void *data)
+bool CounterCmdChangeName(tCommandSource source, void *data)
 {
 	int                which = source.elem->getWhich();
+	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
 	LadderElemCounter *counter = dynamic_cast<LadderElemCounter *>(source.elem);
 
 	char *title;
@@ -2548,15 +2593,22 @@ void CounterCmdChangeName(tCommandSource source, void *data)
 	vector<eType> types;
 	types.push_back(eType_Counter);
 
-	cmdChangeName(source.elem, 0, prop->idName, eType_Counter, types, title, _("Name:"));
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, eType_Counter, types, title, _("Name:"));
+	if(dataChangeName != nullptr) {
+		dataChangeName->reply = ret;
+	}
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
-void CounterCmdChangeValue(tCommandSource source, void *data)
+bool CounterCmdChangeValue(tCommandSource source, void *data)
 {
+	bool               ret = false;
 	int                which = source.elem->getWhich();
+	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
 	LadderElemCounter *counter = dynamic_cast<LadderElemCounter *>(source.elem);
 
 	char *title, *desc;
@@ -2596,15 +2648,40 @@ void CounterCmdChangeValue(tCommandSource source, void *data)
 			prop->max = atoi(name.c_str());
 
 			source.elem->setProperties(ladder->getContext(), prop);
+
+			if(dataChangeName != nullptr) {
+				dataChangeName->reply = true;
+			}
 	} else {
 		// Se foi cancelada a alteracao, devemos desalocar as propriedades
 		delete prop;
 	}
+
+	return ret;
 }
 
 bool LadderElemCounter::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+
+	static LadderElemCounter *lastCmd = this;
+	static bool isCmdName = true;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		isCmdName = true;
+	}
+
+	if(isCmdName) {
+		ret = CounterCmdChangeName (source, nullptr);
+	} else {
+		ret = CounterCmdChangeValue(source, nullptr);
+	}
+
+	lastCmd   = this;
+	isCmdName = !isCmdName;
+
+	return ret;
 }
 
 bool LadderElemCounter::DrawGUI(bool poweredBefore, void *data)
@@ -2755,7 +2832,7 @@ bool LadderElemCounter::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemReset
-void ResetCmdChangeName(tCommandSource source, void *data)
+bool ResetCmdChangeName(tCommandSource source, void *data)
 {
 	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
 	LadderElemReset *move = dynamic_cast<LadderElemReset *>(source.elem);
@@ -2784,18 +2861,14 @@ void ResetCmdChangeName(tCommandSource source, void *data)
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemReset::ShowDialog(LadderContext context)
 {
 	tCommandSource source = { nullptr, nullptr, this };
-	tCmdChangeNameData dataChangeName;
-
-	dataChangeName.reply = false;
-
-	ResetCmdChangeName(source, &dataChangeName);
-
-	return dataChangeName.reply;
+	return ResetCmdChangeName(source, nullptr);
 }
 
 bool LadderElemReset::DrawGUI(bool poweredBefore, void *data)
@@ -2932,7 +3005,7 @@ bool LadderElemOneShot::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemCmp
-void CmpCmdChangeOp(tCommandSource source, void *data)
+bool CmpCmdChangeOp(tCommandSource source, void *data)
 {
 	int            nOp   = *(int *)data;
 	int            which = source.elem->getWhich();
@@ -2955,16 +3028,35 @@ void CmpCmdChangeOp(tCommandSource source, void *data)
 		default: oops();
 	}
 
-	cmdChangeName(source.elem, nOp, nOp == 0 ? prop->idOp1 : prop->idOp2, detailsIO.type,
+	bool ret = cmdChangeName(source.elem, nOp, nOp == 0 ? prop->idOp1 : prop->idOp2, detailsIO.type,
 		ladder->getGeneralTypes(), s, _("Name:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemCmp::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+
+	static LadderElemCmp *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = CmpCmdChangeOp(source, &index);
+
+	lastCmd   = this;
+	if(++index > 1) {
+		index = 0;
+	}
+
+	return ret;
 }
 
 bool LadderElemCmp::DrawGUI(bool poweredBefore, void *data)
@@ -3036,7 +3128,7 @@ bool LadderElemCmp::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemMath
-void MathCmdChangeName(tCommandSource source, void *data)
+bool MathCmdChangeName(tCommandSource source, void *data)
 {
 	int             nVar  = *(int *)data;
 	int             which = source.elem->getWhich();
@@ -3065,16 +3157,35 @@ void MathCmdChangeName(tCommandSource source, void *data)
 		default: oops();
 	}
 
-	cmdChangeName(source.elem, nVar, pin, detailsIO.type, ladder->getGeneralTypes(),
+	bool ret = cmdChangeName(source.elem, nVar, pin, detailsIO.type, ladder->getGeneralTypes(),
 		title, nVar == 0 ? _("Operator 1") : (nVar == 1 ? _("Operator 2") : _("Destination:")));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemMath::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+
+	static LadderElemMath *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = MathCmdChangeName(source, &index);
+
+	lastCmd   = this;
+	if(++index > 2) {
+		index = 0;
+	}
+
+	return ret;
 }
 
 bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
@@ -3222,7 +3333,7 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemSqrt
-void SqrtCmdChangeName(tCommandSource source, void *data)
+bool SqrtCmdChangeName(tCommandSource source, void *data)
 {
 	int             nVar = *(int *)data;
 	LadderElemSqrt *sqrt = dynamic_cast<LadderElemSqrt *>(source.elem);
@@ -3233,16 +3344,35 @@ void SqrtCmdChangeName(tCommandSource source, void *data)
 
 	mapDetails detailsIO = ladder->getDetailsIO(nVar == 0 ? prop->idSrc.first : prop->idDest.first);
 
-	cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
-		ladder->getGeneralTypes(), _("Square Root"), nVar == 0 ? _("Destination:") : _("Source:"));
+	bool ret = cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
+		ladder->getGeneralTypes(), _("Square Root"), nVar == 0 ? _("Source:") : _("Destination:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemSqrt::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+
+	static LadderElemSqrt *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = SqrtCmdChangeName(source, &index);
+
+	lastCmd   = this;
+	if(++index > 1) {
+		index = 0;
+	}
+
+	return ret;
 }
 
 bool LadderElemSqrt::DrawGUI(bool poweredBefore, void *data)
@@ -3328,7 +3458,7 @@ bool LadderElemSqrt::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemRand
-void RandCmdChangeVar(tCommandSource source, void *data)
+bool RandCmdChangeVar(tCommandSource source, void *data)
 {
 	int             nVar = *(int *)data;
 	LadderElemRand *rand = dynamic_cast<LadderElemRand *>(source.elem);
@@ -3356,15 +3486,34 @@ void RandCmdChangeVar(tCommandSource source, void *data)
 
 	mapDetails detailsIO = ladder->getDetailsIO(pin.first);
 
-	cmdChangeName(source.elem, nVar, pin, detailsIO.type, ladder->getGeneralTypes(), _("Rand"), field);
+	bool ret = cmdChangeName(source.elem, nVar, pin, detailsIO.type, ladder->getGeneralTypes(), _("Rand"), field);
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemRand::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+
+	static LadderElemRand *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = RandCmdChangeVar(source, &index);
+
+	lastCmd   = this;
+	if(++index > 2) {
+		index = 0;
+	}
+
+	return ret;
 }
 
 bool LadderElemRand::DrawGUI(bool poweredBefore, void *data)
@@ -3493,7 +3642,7 @@ bool LadderElemRand::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemAbs
-void AbsCmdChangeName(tCommandSource source, void *data)
+bool AbsCmdChangeName(tCommandSource source, void *data)
 {
 	int             nVar = *(int *)data;
 	LadderElemAbs *abs = dynamic_cast<LadderElemAbs *>(source.elem);
@@ -3504,16 +3653,35 @@ void AbsCmdChangeName(tCommandSource source, void *data)
 
 	mapDetails detailsIO = ladder->getDetailsIO(nVar == 0 ? prop->idSrc.first : prop->idDest.first);
 
-	cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
-		ladder->getGeneralTypes(), _("Abs"), nVar == 0 ? _("Destination:") : _("Source:"));
+	bool ret = cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
+		ladder->getGeneralTypes(), _("Abs"), nVar == 0 ? _("Source:") : _("Destination:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemAbs::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+
+	static LadderElemAbs *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = AbsCmdChangeName(source, &index);
+
+	lastCmd   = this;
+	if(++index > 1) {
+		index = 0;
+	}
+
+	return ret;
 }
 
 bool LadderElemAbs::DrawGUI(bool poweredBefore, void *data)
@@ -3590,7 +3758,7 @@ bool LadderElemAbs::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemMove
-void MoveCmdChangeName(tCommandSource source, void *data)
+bool MoveCmdChangeName(tCommandSource source, void *data)
 {
 	int             nVar = *(int *)data;
 	LadderElemMove *move = dynamic_cast<LadderElemMove *>(source.elem);
@@ -3601,16 +3769,35 @@ void MoveCmdChangeName(tCommandSource source, void *data)
 
 	mapDetails detailsIO = ladder->getDetailsIO(nVar == 0 ? prop->idSrc.first : prop->idDest.first);
 
-	cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
-		ladder->getGeneralTypes(), _("Move"), nVar == 0 ? _("Destination:") : _("Source:"));
+	bool ret = cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
+		ladder->getGeneralTypes(), _("Move"), nVar == 0 ? _("Source:") : _("Destination:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemMove::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+
+	static LadderElemMove *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = MoveCmdChangeName(source, &index);
+
+	lastCmd   = this;
+	if(++index > 1) {
+		index = 0;
+	}
+
+	return ret;
 }
 
 bool LadderElemMove::DrawGUI(bool poweredBefore, void *data)
@@ -4000,7 +4187,7 @@ bool LadderElemCheckBit::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemReadAdc
-void ReadAdcCmdChangeName(tCommandSource source, void *data)
+bool ReadAdcCmdChangeName(tCommandSource source, void *data)
 {
 	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
 	int                which = source.elem->getWhich();
@@ -4024,19 +4211,14 @@ void ReadAdcCmdChangeName(tCommandSource source, void *data)
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemReadAdc::ShowDialog(LadderContext context)
 {
 	tCommandSource source = { nullptr, nullptr, this };
-	tCmdChangeNameData dataChangeName;
-
-	dataChangeName.reply = false;
-	dataChangeName.type  = eType_ReadADC;
-
-	ReadAdcCmdChangeName(source, &dataChangeName);
-
-	return dataChangeName.reply;
+	return ReadAdcCmdChangeName(source, nullptr);
 }
 
 bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
@@ -4107,7 +4289,7 @@ bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemSetDa
-void SetDaCmdChangeName(tCommandSource source, void *data)
+bool SetDaCmdChangeName(tCommandSource source, void *data)
 {
 	int                which = source.elem->getWhich();
 	LadderElemSetDa *setda = dynamic_cast<LadderElemSetDa *>(source.elem);
@@ -4119,10 +4301,12 @@ void SetDaCmdChangeName(tCommandSource source, void *data)
 	vector<eType> types;
 	types.push_back(eType_SetDAC);
 
-	cmdChangeName(source.elem, 0, prop->idName, eType_SetDAC, types, _("Set D/A"), _("Source:"));
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, eType_SetDAC, types, _("Set D/A"), _("Source:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool SetDaCmdExpandedChangeMode(LadderElem *elem, unsigned int mode)
@@ -4153,7 +4337,8 @@ bool SetDaCmdExpandedChangeMode(LadderElem *elem, unsigned int mode)
 
 bool LadderElemSetDa::ShowDialog(LadderContext context)
 {
-	return false;
+	tCommandSource source = { nullptr, nullptr, this };
+	return SetDaCmdChangeName(source, nullptr);
 }
 
 bool LadderElemSetDa::DrawGUI(bool poweredBefore, void *data)
@@ -4219,7 +4404,7 @@ bool LadderElemSetDa::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemReadEnc
-void ReadEncCmdChangeName(tCommandSource source, void *data)
+bool ReadEncCmdChangeName(tCommandSource source, void *data)
 {
 	int                which = source.elem->getWhich();
 	LadderElemReadEnc *elem = dynamic_cast<LadderElemReadEnc *>(source.elem);
@@ -4232,25 +4417,30 @@ void ReadEncCmdChangeName(tCommandSource source, void *data)
 	types.push_back(eType_ReadEnc);
 	types.push_back(eType_General);
 
-	cmdChangeName(source.elem, 0, prop->idName, eType_ReadEnc, types, _("Read Encoder"), _("Destination:"));
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, eType_ReadEnc, types, _("Read Encoder"), _("Destination:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
-void ReadEncCmdChangeSettings(tCommandSource source, void *data)
+bool ReadEncCmdChangeSettings(tCommandSource source, void *data)
 {
+	bool ret;
 	LadderElemReadEnc *enc = dynamic_cast<LadderElemReadEnc *>(source.elem);
 	LadderElemReadEncProp *prop = (LadderElemReadEncProp *)enc->getProperties();
 
 	// Pino == 1 : Encoder incremental. Pino == 2 : Encoder SSI (Absoluto)
 	if(ladder->getDetailsIO(prop->idName.first).pin == 1) {
-		ShowConfDialog(eConfSection_EncInc);
+		ret = ShowConfDialog(eConfSection_EncInc);
 	} else {
-		ShowConfDialog(eConfSection_EncSSI);
+		ret = ShowConfDialog(eConfSection_EncSSI);
 	}
 
 	delete prop;
+
+	return ret;
 }
 
 bool ReadEncCmdExpandedChangeMode(LadderElem *elem, unsigned int mode)
@@ -4303,7 +4493,8 @@ bool ReadEncCmdExpandedChangeReadMode(LadderElem *elem, unsigned int mode)
 
 bool LadderElemReadEnc::ShowDialog(LadderContext context)
 {
-	return false;
+	tCommandSource source = { nullptr, nullptr, this };
+	return ReadEncCmdChangeName(source, nullptr);
 }
 
 bool LadderElemReadEnc::DrawGUI(bool poweredBefore, void *data)
@@ -4459,7 +4650,7 @@ bool LadderElemReadEnc::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemResetEnc
-void ResetEncCmdChangeName(tCommandSource source, void *data)
+bool ResetEncCmdChangeName(tCommandSource source, void *data)
 {
 	int                which = source.elem->getWhich();
 	LadderElemResetEnc *elem = dynamic_cast<LadderElemResetEnc *>(source.elem);
@@ -4472,15 +4663,18 @@ void ResetEncCmdChangeName(tCommandSource source, void *data)
 	types.push_back(eType_ResetEnc);
 	types.push_back(eType_General);
 
-	cmdChangeName(source.elem, 0, prop->idName, eType_ResetEnc, types, _("Write Encoder"), _("Destination:"));
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, eType_ResetEnc, types, _("Write Encoder"), _("Source:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemResetEnc::ShowDialog(LadderContext context)
 {
-	return false;
+	tCommandSource source = { nullptr, nullptr, this };
+	return ResetEncCmdChangeName(source, nullptr);
 }
 
 bool LadderElemResetEnc::DrawGUI(bool poweredBefore, void *data)
@@ -4771,8 +4965,9 @@ bool LadderElemMultisetDA::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemUSS
-void USSCmdChangeValue(tCommandSource source, void *data)
+bool USSCmdChangeValue(tCommandSource source, void *data)
 {
+	bool           ret   = false;
 	int            which = source.elem->getWhich(), field = *(int *)data;
 	LadderElemUSS *elem  = dynamic_cast<LadderElemUSS *>(source.elem);
 
@@ -4834,7 +5029,7 @@ void USSCmdChangeValue(tCommandSource source, void *data)
 		types.push_back((which == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS);
 		types.push_back(eType_General);
 
-		cmdChangeName(source.elem, 0, prop->idName, eType_ResetEnc, types, title, desc);
+		ret = cmdChangeName(source.elem, 0, prop->idName, eType_ResetEnc, types, title, desc);
 
 		// Aqui desalocamos as propriedades
 		delete prop;
@@ -4855,16 +5050,37 @@ void USSCmdChangeValue(tCommandSource source, void *data)
 				}
 
 				source.elem->setProperties(ladder->getContext(), prop);
+
+				ret = true;
 		} else {
 			// Se foi cancelada a alteracao, devemos desalocar as propriedades
 			delete prop;
 		}
 	}
+
+	return ret;
 }
 
 bool LadderElemUSS::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+
+	static LadderElemUSS *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = USSCmdChangeValue(source, &index);
+
+	lastCmd   = this;
+	if(++index > 4) {
+		index = 0;
+	}
+
+	return ret;
 }
 
 bool LadderElemUSS::DrawGUI(bool poweredBefore, void *data)
@@ -4998,8 +5214,16 @@ bool LadderElemModBUS::ShowDialog(LadderContext context)
 	int  NewAddress      = prop.address;
 	string NewName       = Diagram->getNameIO(prop.idName);
 
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(this);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
+
 	bool changed = ShowModbusDialog(getWhich() == ELEM_WRITE_MODBUS ? 1 : 0,
-					&NewName, &NewElem, &NewAddress);
+					&NewName, &NewElem, &NewAddress, start, size, GridSize);
 
 	if(changed) {
 		eType type;
@@ -5095,10 +5319,11 @@ bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemSetPWM
-void SetPWMCmdChangeName(tCommandSource source, void *data)
+bool SetPWMCmdChangeName(tCommandSource source, void *data)
 {
-	int                which = source.elem->getWhich();
-	LadderElemSetPWM *elem = dynamic_cast<LadderElemSetPWM *>(source.elem);
+	int                 which          = source.elem->getWhich();
+	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
+	LadderElemSetPWM   *elem           = dynamic_cast<LadderElemSetPWM *>(source.elem);
 
 	// Le os dados do I/O para ter a referencia do I/O atual
 	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
@@ -5108,16 +5333,23 @@ void SetPWMCmdChangeName(tCommandSource source, void *data)
 	types.push_back(eType_PWM);
 	types.push_back(eType_General);
 
-	cmdChangeName(source.elem, 0, prop->idName, eType_PWM, types, _("Set PWM Duty Cycle"), _("Duty cycle var:"));
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, eType_PWM, types, _("Set PWM Duty Cycle"), _("Duty cycle var:"));
+	if(dataChangeName != nullptr) {
+		dataChangeName->reply = ret;
+	}
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
-void SetPWMCmdChangeValue(tCommandSource source, void *data)
+bool SetPWMCmdChangeValue(tCommandSource source, void *data)
 {
-	int                which = source.elem->getWhich();
-	LadderElemSetPWM *elem = dynamic_cast<LadderElemSetPWM *>(source.elem);
+	bool               ret             = false;
+	int                which           = source.elem->getWhich();
+	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
+	LadderElemSetPWM *elem             = dynamic_cast<LadderElemSetPWM *>(source.elem);
 
 	// Le os dados do I/O para ter a referencia do I/O atual
 	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
@@ -5147,37 +5379,40 @@ void SetPWMCmdChangeValue(tCommandSource source, void *data)
 			prop->targetFreq = atoi(name.c_str());
 
 			source.elem->setProperties(ladder->getContext(), prop);
+
+			ret = true;
+			if(dataChangeName != nullptr) {
+				dataChangeName->reply = true;
+			}
 	} else {
 		// Se foi cancelada a alteracao, devemos desalocar as propriedades
 		delete prop;
 	}
+
+	return ret;
 }
 
 bool LadderElemSetPWM::ShowDialog(LadderContext context)
 {
+	bool ret;
 	static LadderElemSetPWM *lastCmd = this;
 	static bool isCmdName = true;
 	tCommandSource source = { nullptr, nullptr, this };
-	tCmdChangeNameData dataChangeName;
-
-	dataChangeName.reply = false;
 
 	if(lastCmd != this) {
 		isCmdName = true;
 	}
 
 	if(isCmdName) {
-		dataChangeName.type  = eType_General;
-		SetPWMCmdChangeName (source, &dataChangeName);
+		ret = SetPWMCmdChangeName (source, nullptr);
 	} else {
-		dataChangeName.type  = eType_Pending;
-		SetPWMCmdChangeValue(source, &dataChangeName);
+		ret = SetPWMCmdChangeValue(source, nullptr);
 	}
 
 	lastCmd   = this;
 	isCmdName = !isCmdName;
 
-	return dataChangeName.reply;
+	return ret;
 }
 
 bool LadderElemSetPWM::DrawGUI(bool poweredBefore, void *data)
@@ -5253,7 +5488,7 @@ bool LadderElemSetPWM::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemUART
-void UARTCmdChangeName(tCommandSource source, void *data)
+bool UARTCmdChangeName(tCommandSource source, void *data)
 {
 	int             which = source.elem->getWhich();
 	LadderElemUART *elem  = dynamic_cast<LadderElemUART *>(source.elem);
@@ -5266,17 +5501,20 @@ void UARTCmdChangeName(tCommandSource source, void *data)
 	types.push_back((which == ELEM_UART_SEND) ? eType_TxUART : eType_RxUART);
 	types.push_back(eType_General);
 
-	cmdChangeName(source.elem, 0, prop->idName, (which == ELEM_UART_SEND) ? eType_TxUART : eType_RxUART, types,
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, (which == ELEM_UART_SEND) ? eType_TxUART : eType_RxUART, types,
 		(which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"),
 		(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemUART::ShowDialog(LadderContext context)
 {
-	return false;
+	tCommandSource source = { nullptr, nullptr, this };
+	return UARTCmdChangeName(source, nullptr);
 }
 
 bool LadderElemUART::DrawGUI(bool poweredBefore, void *data)
@@ -5319,7 +5557,7 @@ bool LadderElemMasterRelay::ShowDialog(LadderContext context) { return false; }
 
 bool LadderElemMasterRelay::DrawGUI(bool poweredBefore, void *data)
 {
-	static bool isTurnOFF = true;
+	bool isTurnOFF = Diagram->getContext().inSimulationMode ? !isMasterRelayActive : true;
 
 	POINT size, GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
@@ -5369,7 +5607,7 @@ bool LadderElemMasterRelay::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemShiftRegister
-void ShiftRegisterCmdChangeName(tCommandSource source, void *data)
+bool ShiftRegisterCmdChangeName(tCommandSource source, void *data)
 {
 	LadderElemShiftRegister *elem = dynamic_cast<LadderElemShiftRegister *>(source.elem);
 
@@ -5397,16 +5635,19 @@ void ShiftRegisterCmdChangeName(tCommandSource source, void *data)
 		if(CurrName != prop->nameReg) {
 			elem->setProperties(ladder->getContext(), prop);
 			UpdateMainWindowTitleBar();
-			return;
+			return true;
 		}
 	}
 
 	// Se foi cancelada a alteracao, devemos desalocar as propriedades
 	delete prop;
+
+	return false;
 }
 
-void ShiftRegisterCmdChangeStages(tCommandSource source, void *data)
+bool ShiftRegisterCmdChangeStages(tCommandSource source, void *data)
 {
+	bool ret = false;
 	LadderElemShiftRegister *elem = dynamic_cast<LadderElemShiftRegister *>(source.elem);
 
 	// Le os dados do I/O para ter a referencia do I/O atual
@@ -5437,15 +5678,36 @@ void ShiftRegisterCmdChangeStages(tCommandSource source, void *data)
 			prop->stages = atol(name.c_str());
 			source.elem->setProperties(ladder->getContext(), prop);
 			UpdateMainWindowTitleBar();
+			ret = true;
 	} else {
 		// Se foi cancelada a alteracao, devemos desalocar as propriedades
 		delete prop;
 	}
+
+	return ret;
 }
 
 bool LadderElemShiftRegister::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+	static LadderElemShiftRegister *lastCmd = this;
+	static bool isCmdName = true;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		isCmdName = true;
+	}
+
+	if(isCmdName) {
+		ret = ShiftRegisterCmdChangeName  (source, nullptr);
+	} else {
+		ret = ShiftRegisterCmdChangeStages(source, nullptr);
+	}
+
+	lastCmd   = this;
+	isCmdName = !isCmdName;
+
+	return ret;
 }
 
 bool LadderElemShiftRegister::DrawGUI(bool poweredBefore, void *data)
@@ -5565,7 +5827,7 @@ bool LadderElemShiftRegister::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemLUT
-void LUTCmdChangeName(tCommandSource source, void *data)
+bool LUTCmdChangeName(tCommandSource source, void *data)
 {
 	int             nVar = *(int *)data;
 	LadderElemLUT *lut = dynamic_cast<LadderElemLUT *>(source.elem);
@@ -5576,18 +5838,28 @@ void LUTCmdChangeName(tCommandSource source, void *data)
 
 	mapDetails detailsIO = ladder->getDetailsIO(nVar == 0 ? prop->idIndex.first : prop->idDest.first);
 
-	cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idIndex : prop->idDest, detailsIO.type,
+	bool ret = cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idIndex : prop->idDest, detailsIO.type,
 		ladder->getGeneralTypes(), _("Look-Up Table"), nVar == 0 ? _("Index:") : _("Dest:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemLUT::ShowDialog(LadderContext context)
 {
 	LadderElemLUTProp Dialogdata = prop;
 
-	bool changed = ShowLookUpTableDialog(&Dialogdata);
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(this);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
+
+	bool changed = ShowLookUpTableDialog(&Dialogdata, start, size, GridSize);
 
 	if(changed) {
 		LadderElemLUTProp *data = (LadderElemLUTProp *)getProperties();
@@ -5663,7 +5935,7 @@ bool LadderElemLUT::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemPiecewise
-void PiecewiseCmdChangeName(tCommandSource source, void *data)
+bool PiecewiseCmdChangeName(tCommandSource source, void *data)
 {
 	int             nVar = *(int *)data;
 	LadderElemPiecewise *piecewise = dynamic_cast<LadderElemPiecewise *>(source.elem);
@@ -5674,17 +5946,28 @@ void PiecewiseCmdChangeName(tCommandSource source, void *data)
 
 	mapDetails detailsIO = ladder->getDetailsIO(nVar == 0 ? prop->idIndex.first : prop->idDest.first);
 
-	cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idIndex : prop->idDest, detailsIO.type,
+	bool ret = cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idIndex : prop->idDest, detailsIO.type,
 		ladder->getGeneralTypes(), _("Piecewise Linear Table"), nVar == 0 ? _("Index:") : _("Destination:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemPiecewise::ShowDialog(LadderContext context)
 {
 	LadderElemPiecewiseProp Dialogdata = prop;
-	bool changed = ShowPiecewiseLinearDialog(&Dialogdata);
+
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(this);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
+
+	bool changed = ShowPiecewiseLinearDialog(&Dialogdata, start, size, GridSize);
 
 	if(changed) {
 		LadderElemPiecewiseProp *data = (LadderElemPiecewiseProp *)getProperties();
@@ -5890,9 +6173,10 @@ bool LadderElemPiecewise::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemFmtString
-void FmtStringCmdChangeValue(tCommandSource source, void *data)
+bool FmtStringCmdChangeValue(tCommandSource source, void *data)
 {
-	int            which = source.elem->getWhich(), field = *(int *)data;
+	bool                 ret   = false;
+	int                  which = source.elem->getWhich(), field = *(int *)data;
 	LadderElemFmtString *elem  = dynamic_cast<LadderElemFmtString *>(source.elem);
 
 	// Le os dados do I/O para ter a referencia do I/O atual
@@ -5919,7 +6203,7 @@ void FmtStringCmdChangeValue(tCommandSource source, void *data)
 		types.push_back(type);
 		types.push_back(eType_General);
 
-		cmdChangeName(source.elem, 0, prop->idVar, type, types, title, (which == ELEM_READ_FORMATTED_STRING) ? _("Destination:") : _("Source:"));
+		ret = cmdChangeName(source.elem, 0, prop->idVar, type, types, title, (which == ELEM_READ_FORMATTED_STRING) ? _("Destination:") : _("Source:"));
 
 		// Aqui desalocamos as propriedades
 		delete prop;
@@ -5931,16 +6215,36 @@ void FmtStringCmdChangeValue(tCommandSource source, void *data)
 		if(ShowVarDialog(title,  _("String:"), &name, start, size, GridSize, types)) {
 			prop->txt = name;
 			source.elem->setProperties(ladder->getContext(), prop);
+			ret = true;
 		} else {
 			// Se foi cancelada a alteracao, devemos desalocar as propriedades
 			delete prop;
 		}
 	}
+
+	return ret;
 }
 
 bool LadderElemFmtString::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+
+	static LadderElemFmtString *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = FmtStringCmdChangeValue(source, &index);
+
+	lastCmd   = this;
+	if(++index > 1) {
+		index = 0;
+	}
+
+	return ret;
 }
 
 bool LadderElemFmtString::DrawGUI(bool poweredBefore, void *data)
@@ -5995,9 +6299,10 @@ bool LadderElemFmtString::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemYaskawa
-void YaskawaCmdChangeValue(tCommandSource source, void *data)
+bool YaskawaCmdChangeValue(tCommandSource source, void *data)
 {
-	int            which = source.elem->getWhich(), field = *(int *)data;
+	bool               ret   = false;
+	int                which = source.elem->getWhich(), field = *(int *)data;
 	LadderElemYaskawa *elem  = dynamic_cast<LadderElemYaskawa *>(source.elem);
 
 	// Le os dados do I/O para ter a referencia do I/O atual
@@ -6049,7 +6354,7 @@ void YaskawaCmdChangeValue(tCommandSource source, void *data)
 		types.push_back(type);
 		types.push_back(eType_General);
 
-		cmdChangeName(source.elem, 0, prop->idVar, type, types, title, desc);
+		ret = cmdChangeName(source.elem, 0, prop->idVar, type, types, title, desc);
 
 		// Aqui desalocamos as propriedades
 		delete prop;
@@ -6072,6 +6377,8 @@ void YaskawaCmdChangeValue(tCommandSource source, void *data)
 				}
 
 				source.elem->setProperties(ladder->getContext(), prop);
+
+				ret = true;
 			} else {
 				// Se foi cancelada a alteracao, devemos desalocar as propriedades
 				delete prop;
@@ -6081,11 +6388,30 @@ void YaskawaCmdChangeValue(tCommandSource source, void *data)
 			delete prop;
 		}
 	}
+
+	return ret;
 }
 
 bool LadderElemYaskawa::ShowDialog(LadderContext context)
 {
-	return false;
+	bool ret;
+
+	static LadderElemYaskawa *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = YaskawaCmdChangeValue(source, &index);
+
+	lastCmd   = this;
+	if(++index > 2) {
+		index = 0;
+	}
+
+	return ret;
 }
 
 bool LadderElemYaskawa::DrawGUI(bool poweredBefore, void *data)
@@ -6151,7 +6477,7 @@ bool LadderElemYaskawa::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemPersist
-void PersistCmdChangeVar(tCommandSource source, void *data)
+bool PersistCmdChangeVar(tCommandSource source, void *data)
 {
 	int                which = source.elem->getWhich();
 	LadderElemPersist *elem = dynamic_cast<LadderElemPersist *>(source.elem);
@@ -6160,16 +6486,19 @@ void PersistCmdChangeVar(tCommandSource source, void *data)
 	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
 	LadderElemPersistProp *prop = (LadderElemPersistProp *)elem->getProperties();
 
-	cmdChangeName(source.elem, 0, prop->idVar, eType_General, ladder->getGeneralTypes(),
+	bool ret = cmdChangeName(source.elem, 0, prop->idVar, eType_General, ladder->getGeneralTypes(),
 		_("Make Persistent"), _("Variable:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
+
+	return ret;
 }
 
 bool LadderElemPersist::ShowDialog(LadderContext context)
 {
-	return false;
+	tCommandSource source = { nullptr, nullptr, this };
+	return PersistCmdChangeVar(source, nullptr);
 }
 
 bool LadderElemPersist::DrawGUI(bool poweredBefore, void *data)
@@ -6427,11 +6756,13 @@ bool LadderCircuit::DrawGUI(bool poweredBefore, void *data)
 	return poweredAfter;
 }
 
-void cmdToggleBreakpoint(tCommandSource source, void *data)
+bool cmdToggleBreakpoint(tCommandSource source, void *data)
 {
 	if(data != nullptr) {
 		ladder->ToggleBreakPoint(*(int *)data);
 	}
+
+	return true;
 }
 
 // Classe LadderDiagram
@@ -6459,39 +6790,45 @@ void LadderDiagram::DrawGUI(void)
 	char num[20];
 	POINT SizeMax = { 0, 0 };
 
+	bool isFirstStep = true, needAnotherStep = false;
 	vector<LadderCircuit>::size_type i;
-	tDataDrawGUI RungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, &context };
+	tDataDrawGUI RungDDG, zeroRungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, &context };
 
-	// Etapa 1: Calcula o tamanho do diagrama
-	for(i = 0; i < rungs.size(); i++) {
-		// Se a linha tiver comentario, nao executa. Os comentarios se ajustam na tela entao precisam
-		// da larugra do diagrama, que ainda nao eh conhecido.
-		// Apos este loop teremos um exclusivamente para os comentarios.
-		if(rungs[i]->rung->IsComment()) continue;
-		rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
-
-		RungDDG.start.y += RungDDG.size.y + 1;
-		if(SizeMax.x < RungDDG.size.x) {
-			SizeMax.x = RungDDG.size.x;
-		}
-	}
-
-	// Fim da Etapa 1. Agora calculamos a largura do diagrama
 	RECT rWindow;
 	GetClientRect(DrawWindow, &rWindow);
 
-	SizeMax.x = max(SizeMax.x, (rWindow.right)/Grid1x1.x - 3);
+	// Etapa 1: Calcula o tamanho do diagrama
+	while(isFirstStep || needAnotherStep) {
+		needAnotherStep = false;
+		RungDDG = zeroRungDDG;
+		RungDDG.size.x = SizeMax.x;
 
-	// Etapa 2: Calcula a altura dos comentarios
-	RungDDG.size.x = SizeMax.x;
-	for(i = 0; i < rungs.size(); i++) {
-		if(rungs[i]->rung->IsComment()) {
+		for(i = 0; i < rungs.size(); i++) {
+			// Se a linha tiver comentario, nao executa. Os comentarios se ajustam na tela entao precisam
+			// da largura do diagrama, que ainda nao eh conhecido.
+			// Apos este loop teremos um exclusivamente para os comentarios.
+			if(isFirstStep && rungs[i]->rung->IsComment()) {
+				needAnotherStep = true;
+				continue;
+			}
+
 			rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
+
 			RungDDG.start.y += RungDDG.size.y + 1;
+			if(SizeMax.x < RungDDG.size.x) {
+				SizeMax.x = RungDDG.size.x;
+			}
+		}
+
+		// Fim do primeiro passo da Etapa 1. Agora calculamos a largura do diagrama
+		if(isFirstStep) {
+			SizeMax.x = max(SizeMax.x, (rWindow.right)/Grid1x1.x - 3);
+
+			isFirstStep = false;
 		}
 	}
 
-	// Fim da Etapa 2. Agora calculamos a altura do diagrama
+	// Fim da Etapa 1. Agora calculamos a altura do diagrama
 	SizeMax.y = RungDDG.start.y;
 
 	gui.setDiagramSize(SizeMax);
@@ -6525,7 +6862,7 @@ void LadderDiagram::DrawGUI(void)
 
 	gui.DrawStart(ScrollXOffset, ScrollYOffset*Grid1x1.y);
 
-	// Etapa 3: Desenha o diagrama na tela
+	// Etapa 2: Desenha o diagrama na tela
 	RungDDG.DontDraw = false;
 	RungDDG.start.y = 0;
 	for(i = 0; i < rungs.size(); i++) {

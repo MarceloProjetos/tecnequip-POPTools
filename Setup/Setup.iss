@@ -49,8 +49,6 @@ Source: "..\Help\Ajuda.chm"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Setup\EULA_PTBR.TXT"; DestDir: "{app}"; DestName: "EULA.txt"; Languages: ptbr; Flags: ignoreversion
 Source: "..\Setup\EULA_EN.TXT"; DestDir: "{app}"; DestName: "EULA.txt"; Languages: en; Flags: ignoreversion
 Source: "..\Setup\EULA_ES.TXT"; DestDir: "{app}"; DestName: "EULA.txt"; Languages: es; Flags: ignoreversion
-Source: "..\bin\settings.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin\settings.xml"; DestDir: "{localappdata}\POPTools"; Flags: ignoreversion
 Source: "..\flashmagicarmcortex.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\src\*.h"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
 Source: "..\bin\src\*.a"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion

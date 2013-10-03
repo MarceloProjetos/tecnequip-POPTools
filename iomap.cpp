@@ -121,6 +121,8 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 	vectorReservedName.push_back(_("new" ));
 	vectorReservedName.push_back(_("var" ));
 	vectorReservedName.push_back(_("char"));
+	vectorReservedName.push_back(_("dest"));
+	vectorReservedName.push_back(_("src"));
 }
 
 void mapIO::Clear(void)
@@ -379,25 +381,22 @@ unsigned long mapIO::Request(tRequestIO infoIO)
 	bool isRequestRead  = (infoIO.access == eRequestAccessType_Read ) || (infoIO.access == eRequestAccessType_ReadWrite);
 	bool isRequestWrite = (infoIO.access == eRequestAccessType_Write) || (infoIO.access == eRequestAccessType_ReadWrite);
 
-	// Registro da acao para desfazer / refazer
-	diagram->CheckpointBegin(_("Solicitar I/O"));
-
 	// Se for variavel interna, o tipo obrigatoriamente deve ser Geral.
 	if(IsInternalVar(infoIO.name) && infoIO.type != eType_General) {
-		diagram->CheckpointRollback();
-		diagram->CheckpointEnd();
 		return 0;
 	}
 
-	if(IO.count(infoIO.name) > 0) {
-		// Verifica se podemos fazer o request conforme isUniqueRead e isUniqueWrite
-		if((isRequestRead && (infoIO.isUniqueRead || IO[infoIO.name].second.isUniqueRead) && IO[infoIO.name].second.countRequestRead > 0) ||
-			(isRequestWrite && (infoIO.isUniqueWrite || IO[infoIO.name].second.isUniqueWrite) && IO[infoIO.name].second.countRequestWrite > 0)) {
-				diagram->CheckpointRollback();
-				diagram->CheckpointEnd();
-				return 0;
-		}
+	// Verifica se podemos fazer o request conforme isUniqueRead e isUniqueWrite
+	if(IO.count(infoIO.name) > 0 &&
+		((isRequestRead  && (infoIO.isUniqueRead  || IO[infoIO.name].second.isUniqueRead ) && IO[infoIO.name].second.countRequestRead  > 0) ||
+		 (isRequestWrite && (infoIO.isUniqueWrite || IO[infoIO.name].second.isUniqueWrite) && IO[infoIO.name].second.countRequestWrite > 0))) {
+			return 0;
+	}
 
+	// Registro da acao para desfazer / refazer
+	diagram->CheckpointBegin(_("Solicitar I/O"));
+
+	if(IO.count(infoIO.name) > 0) {
 		result = Update(getID(infoIO.name), infoIO.name, infoIO.type);
 	} else {
 		result = Add(infoIO.name, infoIO.type);
