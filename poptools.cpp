@@ -1593,7 +1593,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SetCursor(LoadCursor(NULL, IDC_ARROW));
             }
             
-            InvalidateRect(MainWindow, NULL, FALSE);
+			ladder->MouseMove(x, y - RibbonHeight - TabHeight);
             break;
         }
         case WM_MOUSEWHEEL: {

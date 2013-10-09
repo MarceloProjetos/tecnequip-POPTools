@@ -39,3 +39,9 @@ IDB_LADDER_CYCLE		RCDATA					"imgs/guiContadorCircular.png"
 //
 IDB_WAVE_REC_OK          WAVE                    "Sounds/rec_ok.wav"
 IDB_WAVE_REC_ERRO        WAVE                    "Sounds/rec_erro.wav"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Font
+//
+IDB_FONT_POPTOOLS		FONT					"fonts/POPTools.ttf"

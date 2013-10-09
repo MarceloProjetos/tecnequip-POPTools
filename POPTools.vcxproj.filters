@@ -37,7 +37,10 @@
     <Filter Include="Resource Files\GCC">
       <UniqueIdentifier>{82afc936-8037-49e8-8eb2-27351d33f8c2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\EngineGUI">
+    <Filter Include="Header Files\GUI">
+      <UniqueIdentifier>{a7779fec-c80e-4e9d-bcc7-3c1e92e4c7dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI">
       <UniqueIdentifier>{f83a0bd3-d4fe-4cad-a0c8-ab85950e8886}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -154,16 +157,31 @@
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
     <ClCompile Include="EngineGUI.cpp">
-      <Filter>Source Files\EngineGUI</Filter>
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="EngineRenderD2D.cpp">
-      <Filter>Source Files\EngineGUI</Filter>
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="LadderObjects.cpp">
       <Filter>Source Files\Diagrama Ladder</Filter>
     </ClCompile>
     <ClCompile Include="LadderGUI.cpp">
-      <Filter>Source Files\EngineGUI</Filter>
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceFontCollectionLoader.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceFontContext.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceFontFileEnumerator.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceFontFileLoader.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceFontFileStream.cpp">
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -215,18 +233,6 @@
     <ClInclude Include="Firmware\App\intreg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EngineGUI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineRender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineRenderD2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LadderObjects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -235,6 +241,33 @@
     </ClInclude>
     <ClInclude Include="bin\src\poptools.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineGUI.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineRender.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineRenderD2D.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineUtils.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceFontCollectionLoader.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceFontContext.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceFontFileEnumerator.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceFontFileLoader.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceFontFileStream.h">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

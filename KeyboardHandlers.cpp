@@ -11,10 +11,27 @@ int KBH_Simulation_Toggle(void *user_data)
 	return 1;
 }
 
-// Default for Portuguese: TAB
+// Default for Portuguese: TAB (Inactive Handler)
 int KBH_SetFocus_IoList(void *user_data)
 {
 	SetFocus(IoList);
+
+	return 1;
+}
+
+// Default for Portuguese: TAB
+typedef struct {
+	LadderDiagram *diagram;
+	LadderCircuit *circuit;
+	LadderElem    *elem;
+} tCommandSource;
+
+bool CmdExpand(tCommandSource source, void *data);
+
+int KBH_ExpandElement(void *user_data)
+{
+	tCommandSource source = { nullptr, nullptr, ladder->getContext().SelectedElem };
+	CmdExpand(source, nullptr);
 
 	return 1;
 }
@@ -877,7 +894,7 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey(VK_F5        , KBM_KEYFLAG_NONE   , KBH_Compile                            , NULL);
 	ShortcutMaps.AddKey(VK_F6        , KBM_KEYFLAG_NONE   , KBH_Program                            , NULL);
 	ShortcutMaps.AddKey(VK_F7        , KBM_KEYFLAG_NONE   , KBH_Simulation_Toggle                  , NULL);
-	ShortcutMaps.AddKey(VK_TAB       , KBM_KEYFLAG_NONE   , KBH_SetFocus_IoList                    , NULL);
+	ShortcutMaps.AddKey(VK_TAB       , KBM_KEYFLAG_NONE   , KBH_ExpandElement                      , NULL);
 	ShortcutMaps.AddKey(VK_RETURN    , KBM_KEYFLAG_NONE   , KBH_Simulation_SingleCycle             , NULL);
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_SHIFT  , KBH_Rung_MoveUP                        , NULL);
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_ANY    , KBH_Cursor_MoveUp                      , NULL);
@@ -965,7 +982,7 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey(VK_F5        , KBM_KEYFLAG_NONE   , KBH_Compile                            , NULL);
 	ShortcutMaps.AddKey(VK_F6        , KBM_KEYFLAG_NONE   , KBH_Program                            , NULL);
 	ShortcutMaps.AddKey(VK_F7        , KBM_KEYFLAG_NONE   , KBH_Simulation_Toggle                  , NULL);
-	ShortcutMaps.AddKey(VK_TAB       , KBM_KEYFLAG_NONE   , KBH_SetFocus_IoList                    , NULL);
+	ShortcutMaps.AddKey(VK_TAB       , KBM_KEYFLAG_NONE   , KBH_ExpandElement                      , NULL);
 	ShortcutMaps.AddKey(VK_RETURN    , KBM_KEYFLAG_NONE   , KBH_Simulation_SingleCycle             , NULL);
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_NONE   , KBH_Simulation_Up                      , NULL);
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_SHIFT  , KBH_Rung_MoveUP                        , NULL);

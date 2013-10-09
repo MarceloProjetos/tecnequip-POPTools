@@ -14,7 +14,9 @@ using namespace std;
 #pragma comment (lib, "d2d1.lib")
 #pragma comment (lib, "dwrite.lib")
 
+#include "resource.h"
 #include "EngineRender.h"
+#include "ResourceFontContext.h"
 
 // Estrutura que contem informacoes de um formato de texto
 typedef struct {
@@ -34,6 +36,8 @@ private:
 	IWICImagingFactory    *pWICFactory;
 	IDWriteFactory        *pWriteFactory;
 	ID2D1HwndRenderTarget *pRT;
+	IDWriteFontCollection *pFontCollection;
+    ResourceFontContext   *pFontContext;
 
 	std::vector<ID2D1SolidColorBrush *> Brushes;
 	std::vector<tTextFormat           > TextFormats;

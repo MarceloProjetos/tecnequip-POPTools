@@ -335,6 +335,11 @@
     <ClCompile Include="miscutil.cpp" />
     <ClCompile Include="modbusdialog.cpp" />
     <ClCompile Include="PropertySet.cpp" />
+    <ClCompile Include="ResourceFontCollectionLoader.cpp" />
+    <ClCompile Include="ResourceFontContext.cpp" />
+    <ClCompile Include="ResourceFontFileEnumerator.cpp" />
+    <ClCompile Include="ResourceFontFileLoader.cpp" />
+    <ClCompile Include="ResourceFontFileStream.cpp" />
     <ClCompile Include="Ribbon.cpp" />
     <ClCompile Include="rtcdialog.cpp" />
     <ClCompile Include="schematic.cpp" />
@@ -368,6 +373,11 @@
     <ClInclude Include="poptools.h" />
     <ClInclude Include="mcutable.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ResourceFontCollectionLoader.h" />
+    <ClInclude Include="ResourceFontContext.h" />
+    <ClInclude Include="ResourceFontFileEnumerator.h" />
+    <ClInclude Include="ResourceFontFileLoader.h" />
+    <ClInclude Include="ResourceFontFileStream.h" />
     <ClInclude Include="splash.h" />
     <ClInclude Include="VersionInfo.h" />
   </ItemGroup>

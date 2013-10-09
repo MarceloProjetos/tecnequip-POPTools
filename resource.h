@@ -3,6 +3,8 @@
 #define IDB_SPLASH                      101
 #define IDI_ICON1                       102
 
+#define IDB_FONT_POPTOOLS               200
+
 #define IDB_CLOCK_EDIT                  201
 #define IDB_NETWORK_CONFIG              202
 #define IDB_RS485_CONFIG                203

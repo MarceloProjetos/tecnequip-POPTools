@@ -7389,6 +7389,75 @@ LadderCircuit *LadderCircuit::getSubcktForElement(LadderElem *elem)
 	return subckt;
 }
 
+Subckt LadderCircuit::getNext(Subckt next)
+{
+	Subckt ret = { nullptr, nullptr };
+	vector<Subckt>::size_type i;
+
+	if(next.subckt != nullptr) {
+		if(next.elem != nullptr && next.subckt != this) {
+			return next.subckt->getNext(next);
+		} else if(next.elem != nullptr || next.subckt != this) {
+			if(next.elem != nullptr) {
+				for(i = 0; i < vectorSubckt.size(); i++) {
+					if(vectorSubckt[i].elem == next.elem) {
+						break;
+					}
+				}
+			} else {
+				for(i = 0; i < vectorSubckt.size(); i++) {
+					if(vectorSubckt[i].elem == nullptr) {
+						if(vectorSubckt[i].subckt == next.subckt) {
+							break;
+						} else {
+							ret = vectorSubckt[i].subckt->getNext(next);
+							if(ret.subckt != nullptr) {
+								return ret;
+							}
+						}
+					}
+				}
+			}
+
+			// Avanca para o proximo item e verifica se nao alcancou o final do vetor
+			i++;
+			if(i < vectorSubckt.size()) {
+				ret.elem = vectorSubckt[i].elem;
+				if(ret.elem == nullptr) { // Elemento eh um subcircuito
+					ret.elem   = vectorSubckt[i].subckt->getFirstElement();
+					ret.subckt = vectorSubckt[i].subckt->getSubcktForElement(next.elem);
+				} else { // Elemento nao eh subcircuito, nos somos o subcircuito do elemento
+					ret.subckt = this;
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
+LadderCircuit *LadderCircuit::getParentSubckt(LadderCircuit *subckt)
+{
+	if(this == subckt) return nullptr;
+
+	LadderCircuit *parent = nullptr;
+	vector<Subckt>::size_type i;
+
+	if(subckt != nullptr) {
+		for(i = 0; i < vectorSubckt.size() && parent == nullptr; i++) {
+			if(vectorSubckt[i].elem == nullptr) {
+				if(vectorSubckt[i].subckt == subckt) {
+					parent = this;
+				} else {
+					parent = vectorSubckt[i].subckt->getParentSubckt(subckt);
+				}
+			}
+		}
+	}
+
+	return parent;
+}
+
 LadderElem *LadderCircuit::getFirstElement(void)
 {
 	if(vectorSubckt.size() > 0) {
@@ -8447,6 +8516,11 @@ void LadderDiagram::SelectElement(LadderElem *elem, int state)
 		state = SELECTED_BELOW;
 	}
 
+	// Objetos de fim de linha nunca devem ter sua selecao marcada no lado direito
+	if(elem->IsEOL() && state == SELECTED_RIGHT) {
+		state = SELECTED_BELOW;
+	}
+
 	if(elem != context.SelectedElem) {
 		context.SelectedElem    = elem;
 		context.SelectedCircuit = getSubcktForElement(elem);
@@ -8488,6 +8562,27 @@ LadderCircuit *LadderDiagram::getSubcktForElement(LadderElem *elem)
 	}
 
 	return subckt;
+}
+
+LadderCircuit *LadderDiagram::getParentSubckt(LadderCircuit *subckt)
+{
+	LadderCircuit *parent = nullptr;
+	vector<LadderCircuit>::size_type i;
+
+	if(subckt != nullptr) {
+		for(i = 0; i < rungs.size(); i++) {
+			if(rungs[i]->rung == subckt) {
+				break;
+			} else {
+				parent = rungs[i]->rung->getParentSubckt(subckt);
+				if(parent != nullptr) {
+					break;
+				}
+			}
+		}
+	}
+
+	return parent;
 }
 
 void LadderDiagram::MoveCursor(eMoveCursor moveTo)
@@ -9263,9 +9358,29 @@ bool LadderDiagram::AddParallelStart(void)
 	if(context.ParallelStart == nullptr) {
 		if(context.SelectedElem != nullptr) {
 			switch(context.SelectedState) {
+			case SELECTED_RIGHT: {
+				LadderElem    *elem   = context.SelectedElem;
+				LadderCircuit *subckt = context.SelectedCircuit;
+				LadderCircuit *rung   = rungs[RungContainingElement(elem)]->rung;
+				Subckt         next   = { elem, subckt };
+
+				do {
+					next = subckt->getNext(next);
+					if(next.elem == nullptr) {
+						next.elem   = nullptr;
+						next.subckt = subckt;
+						subckt      = rung->getParentSubckt(next.subckt);
+					} else {
+						elem = next.elem;
+						break;
+					}
+				} while(subckt != nullptr);
+
+				SelectElement(elem, SELECTED_BELOW);
+			}
+
 			case SELECTED_NONE:
 			case SELECTED_LEFT:
-			case SELECTED_RIGHT:
 				context.SelectedState = SELECTED_BELOW;
 			}
 		}
@@ -9866,6 +9981,7 @@ void LadderDiagram::ToggleBreakPoint(unsigned int rung)
 
 void LadderDiagram::ProgramChanged(void)
 {
+	NeedRedraw(true);
 	context.programChangedNotSaved = true;
 }
 

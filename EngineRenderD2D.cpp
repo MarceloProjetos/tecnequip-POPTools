@@ -24,7 +24,9 @@ void EngineRenderD2D::Init(void)
 
 	if (SUCCEEDED(hr)) {
 		// Nao pode inicializar ainda, chamamos CoInitialize no main e somos global
-		pWICFactory = NULL;
+		pWICFactory     = NULL;
+		pFontContext    = NULL;
+		pFontCollection = NULL;
 	}
 }
 
@@ -47,6 +49,13 @@ void EngineRenderD2D::FreeRenderTarget(void)
 void EngineRenderD2D::FreeAll(void)
 {
 	FreeRenderTarget();
+
+	if(pFontContext != nullptr) {
+		delete pFontContext;
+		pFontContext = nullptr;
+	}
+
+	SafeRelease(&pFontCollection);
 	SafeRelease(&pD2DFactory);
 	SafeRelease(&pWICFactory);
 	SafeRelease(&pWriteFactory);
@@ -122,6 +131,33 @@ HRESULT EngineRenderD2D::CreateTextFormat(unsigned int rgb, unsigned int &index)
 {
     HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
+	if(pFontContext == nullptr) {
+		// Inicializa ResourceFopntContext
+		pFontContext = new ResourceFontContext(pWriteFactory);
+
+		static UINT const fontResourceIDs[] = { IDB_FONT_POPTOOLS };
+
+		// Create a custom font collection comprising our font resources. We could have done this
+		// in the constructor rather than every time. However, if you set break points on the loader 
+		// callbacks you'll find they're only called the first time the font collection is created. 
+		// Thereafter the font collection data is cached so recreating it is quite fast.
+		hr = pFontContext->Initialize();
+		if (SUCCEEDED(hr)) {
+			pFontCollection = NULL;
+			hr = pFontContext->CreateFontCollection(
+					fontResourceIDs,
+					sizeof(fontResourceIDs),
+					&pFontCollection
+					);
+		}
+
+		if(FAILED(hr)) {
+			delete pFontContext;
+			pFontContext = nullptr;
+			return hr;
+		}
+	}
+
 	if(pRT != NULL) {
 		tTextFormat txt;
 		txt.format = NULL;
@@ -132,7 +168,7 @@ HRESULT EngineRenderD2D::CreateTextFormat(unsigned int rgb, unsigned int &index)
 		hr = pWriteFactory->CreateTextFormat(
 			L"Lucida Console",
 //			L"POPTOOLS",
-			NULL,
+			pFontCollection,
 			DWRITE_FONT_WEIGHT_NORMAL,
 			DWRITE_FONT_STYLE_NORMAL,
 			DWRITE_FONT_STRETCH_NORMAL,

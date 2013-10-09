@@ -2193,9 +2193,11 @@ public:
 
 	bool GenerateIntCode(IntCode &ic);
 
-	unsigned int   getSize(void) { return vectorSubckt.size(); }
-	LadderCircuit *getSubcktForElement(LadderElem *elem);
-	Subckt         getSubckt(unsigned int pos);
+	unsigned int   getSize            (void) { return vectorSubckt.size(); }
+	Subckt         getNext            (Subckt         next);
+	LadderCircuit *getSubcktForElement(LadderElem    *elem);
+	LadderCircuit *getParentSubckt    (LadderCircuit *subckt);
+	Subckt         getSubckt          (unsigned int   pos);
 
 	// Funcao que retorna o primeiro elemento (nao subcircuito) do circuito atual
 	// Se o primeiro elemento for um subcircuito, busca o primeiro elemento desde subcircuito
@@ -2342,11 +2344,10 @@ private:
 
 	void Init(void);
 
-	LadderCircuit *getSubcktForElement(LadderElem *elem);
+	LadderCircuit *getSubcktForElement(LadderElem    *elem);
+	LadderCircuit *getParentSubckt    (LadderCircuit *subckt);
 
 	void updateUndoContextAfter(bool forceNotNull = false);
-
-	bool IsSelectedVisible(void);
 
 	bool InsertParallel(LadderElem *elem);
 
@@ -2388,7 +2389,12 @@ public:
 
 	void DrawTXT(int OffsetX);
 	void DrawGUI(void);
+	void NeedRedraw(bool isFullRedraw);
 
+	bool IsElementVisible (LadderElem *elem, bool isFullyVisible = true);
+	bool IsSelectedVisible(bool isFullyVisible = true) { return IsElementVisible(context.SelectedElem, isFullyVisible); }
+
+	void        MouseMove    (int x, int y);
 	void        MouseClick   (int x, int y, bool isDown, bool isDouble);
 	void        MoveCursor   (eMoveCursor moveTo);
 	LadderElem *SearchElement(eMoveCursor moveTo);

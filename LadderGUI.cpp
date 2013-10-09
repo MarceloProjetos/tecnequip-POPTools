@@ -28,6 +28,7 @@ typedef struct {
 	RECT  regionSelected;
 	bool  expanded;
 	bool  DontDraw;
+	bool  isFullRedraw;
 	LadderContext *context;
 } tDataDrawGUI;
 
@@ -158,7 +159,8 @@ private:
 	vector<LadderElem *>               vectorExpandedElements;
 	vector< pair<LadderElem *, RECT> > vectorAreaElements;
 
-	int HeaderHeight;
+	int  HeaderHeight;
+	bool needFullRedraw;
 
 	array<unsigned int, 3>    InterfaceColors;
 
@@ -181,7 +183,7 @@ private:
 	void PaintScrollAndSplitter(void);
 
 	// Variaveis que armazenam as cores utilizadas no diagrama ladder
-	array<tLadderColors, 2>       LadderColors;
+	array<tLadderColors, 2>     LadderColors;
 	map<int, tLadderColorGroup> LadderColorGroups;
 	vector<tLadderColorGroup>   LadderColorSimulation;
 
@@ -206,9 +208,11 @@ public:
 	void  setDiagramSize(POINT size) { DiagramSize = size; }
 	POINT getDiagramSize(void)       { return DiagramSize; }
 
-	void DrawInit (void);
-	void DrawStart(int OffsetX, int OffsetY);
-	void DrawEnd  (void);
+	void DrawInit  (void);
+	void DrawStart (int OffsetX, int OffsetY);
+	void DrawEnd   (void);
+	void NeedRedraw(bool isRedrawNeeded);
+	bool getNeedFullRedraw(void) { return needFullRedraw; }
 
 	void registerElementArea(LadderElem *elem, POINT start, POINT size);
 
@@ -251,6 +255,8 @@ static LadderGUI gui;
 bool CmdExpand(tCommandSource source, void *data)
 {
 	gui.CmdExpand(source.elem);
+	gui.NeedRedraw(true);
+
 	return true;
 }
 
@@ -321,7 +327,8 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	Grid1x1.x = 60;
 	Grid1x1.y = 30;
 
-	HeaderHeight = FONT_HEIGHT + 5;
+	HeaderHeight   = FONT_HEIGHT + 5;
+	needFullRedraw = true;
 
 	// Cria o grupo de cores padrao
 	tLadderColorGroup group;
@@ -517,13 +524,22 @@ bool LadderGUI::IsExpanded(LadderElem *elem)
 
 void LadderGUI::setMousePosition(POINT xy)
 {
-	RECT r;
-	GetWindowRect(DrawWindow, &r);
-
-	xy.x -= r.left;
-	xy.y -= r.top;
+	LadderElem *newMouseOverElement = nullptr;
 
 	MousePosition = xy;
+
+	unsigned int i = 0;
+	for(i = 0; i < vectorAreaElements.size(); i++) {
+		if(MouseOver(vectorAreaElements[i].second)) {
+			newMouseOverElement = vectorAreaElements[i].first;
+			break;
+		}
+	}
+
+	if(MouseOverElement != newMouseOverElement) {
+		MouseOverElement = newMouseOverElement;
+		InvalidateRect(DrawWindow, NULL, FALSE);
+	}
 }
 
 void LadderGUI::DrawInit(void)
@@ -634,11 +650,11 @@ void LadderGUI::DrawStart(int OffsetX, int OffsetY)
 	SetDrawOffset(OffsetXY);
 	StartDraw();
 
-	MouseOverElement = nullptr;
-
 	ClearCommandLists();
 
-	vectorAreaElements.clear();
+	if(needFullRedraw) {
+		vectorAreaElements.clear();
+	}
 }
 
 void LadderGUI::DrawEnd(void)
@@ -693,6 +709,11 @@ void LadderGUI::DrawEnd(void)
 #else
 	EndDraw();
 #endif
+}
+
+void LadderGUI::NeedRedraw(bool isRedrawNeeded)
+{
+	needFullRedraw = isRedrawNeeded;
 }
 
 void LadderGUI::registerElementArea(LadderElem *elem, POINT start, POINT size)
@@ -774,7 +795,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	tLadderColors     colors     = getLadderColors();
 	tLadderColorGroup colorgroup = getLadderColorGroup(elem->getWhich(), elem->IsPoweredAfter());
 
-	isMouseOver = MouseOver(r);
+	isMouseOver = (MouseOverElement == elem);
 
 	// Desenha o indicador de selecao
 	RECT rSel, rCursor = { - 7, - 7, + 7, + 7 };
@@ -869,8 +890,6 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 
 	// Desenha a caixa em si. Se mouse estiver sobre o elemento, desenha com borda.
 	if(isMouseOver) {
-		MouseOverElement = elem;
-
 		RECT rHeader = r, rExpand = { 0, 0, 0, 0 };
 
 		rHeader.bottom = rHeader.top + HeaderHeight;
@@ -891,7 +910,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 			rExpand.bottom = r.top + HeaderHeight - 2;
 
 			// Desenha o icone de expandir / retrair
-			bool expanded = IsExpanded(MouseOverElement);
+			bool expanded = IsExpanded(elem);
 			StartPoint.x = r.right - 12;
 			StartPoint.y = r.top + (expanded ? 10 : 5);
 			EndPoint.x = StartPoint.x + 5;
@@ -6648,7 +6667,7 @@ bool LadderCircuit::DrawGUI(bool poweredBefore, void *data)
 			elemStart = ElemDDG.start;
 			poweredThis = it->elem->DrawGUI(isSeries ? poweredAfter : poweredBefore, &ElemDDG);
 
-			if(ElemDDG.DontDraw == false) {
+			if(ElemDDG.DontDraw == false && ddg->isFullRedraw) {
 				gui.registerElementArea(it->elem, ElemDDG.start, ElemDDG.size);
 			}
 
@@ -6778,61 +6797,69 @@ void LadderDiagram::DrawGUI(void)
 	}
 
 	RECT  r;
-	POINT xy, Grid1x1 = gui.getGridSize();
-
+	POINT Grid1x1 = gui.getGridSize();
 	tLadderColors colors = gui.getLadderColors();
-
-	GetCursorPos(&xy);
-	gui.setMousePosition(xy);
 
 	gui.SetBackgroundColor(colors.Background);
 
 	char num[20];
-	POINT SizeMax = { 0, 0 };
+	static POINT SizeMax   = { 0, 0 };
+	static vector<tDataDrawGUI> rungData;
 
-	bool isFirstStep = true, needAnotherStep = false;
 	vector<LadderCircuit>::size_type i;
-	tDataDrawGUI RungDDG, zeroRungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, &context };
+	tDataDrawGUI RungDDG, zeroRungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, true, &context };
 
 	RECT rWindow;
 	GetClientRect(DrawWindow, &rWindow);
 
-	// Etapa 1: Calcula o tamanho do diagrama
-	while(isFirstStep || needAnotherStep) {
-		needAnotherStep = false;
-		RungDDG = zeroRungDDG;
-		RungDDG.size.x = SizeMax.x;
+	bool isFullRedraw = gui.getNeedFullRedraw();
 
-		for(i = 0; i < rungs.size(); i++) {
-			// Se a linha tiver comentario, nao executa. Os comentarios se ajustam na tela entao precisam
-			// da largura do diagrama, que ainda nao eh conhecido.
-			// Apos este loop teremos um exclusivamente para os comentarios.
-			if(isFirstStep && rungs[i]->rung->IsComment()) {
-				needAnotherStep = true;
-				continue;
+	if(isFullRedraw) {
+		bool isFirstStep = true, needAnotherStep = false;
+
+		rungData.clear();
+		SizeMax.x = SizeMax.y = 0;
+
+		// Etapa 1: Calcula o tamanho do diagrama
+		while(isFirstStep || needAnotherStep) {
+			needAnotherStep = false;
+			RungDDG = zeroRungDDG;
+			RungDDG.size.x = SizeMax.x;
+
+			for(i = 0; i < rungs.size(); i++) {
+				// Se a linha tiver comentario, nao executa. Os comentarios se ajustam na tela entao precisam
+				// da largura do diagrama, que ainda nao eh conhecido.
+				// Apos este loop teremos um exclusivamente para os comentarios.
+				if(isFirstStep && rungs[i]->rung->IsComment()) {
+					needAnotherStep = true;
+					continue;
+				}
+
+				rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
+
+				RungDDG.start.y += RungDDG.size.y + 1;
+				if(SizeMax.x < RungDDG.size.x) {
+					SizeMax.x = RungDDG.size.x;
+				}
 			}
 
-			rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
+			// Fim do primeiro passo da Etapa 1. Agora calculamos a largura do diagrama
+			if(isFirstStep) {
+				SizeMax.x = max(SizeMax.x, (rWindow.right)/Grid1x1.x - 3);
 
-			RungDDG.start.y += RungDDG.size.y + 1;
-			if(SizeMax.x < RungDDG.size.x) {
-				SizeMax.x = RungDDG.size.x;
+				isFirstStep = false;
 			}
 		}
 
-		// Fim do primeiro passo da Etapa 1. Agora calculamos a largura do diagrama
-		if(isFirstStep) {
-			SizeMax.x = max(SizeMax.x, (rWindow.right)/Grid1x1.x - 3);
+		// Fim da Etapa 1. Agora calculamos a altura do diagrama
+		SizeMax.y = RungDDG.start.y;
 
-			isFirstStep = false;
-		}
+		gui.setDiagramSize(SizeMax);
+		RefreshScrollbars();
+	} else {
+		RungDDG                = zeroRungDDG;
+		RungDDG.regionSelected = gui.getElemArea(context.SelectedElem);
 	}
-
-	// Fim da Etapa 1. Agora calculamos a altura do diagrama
-	SizeMax.y = RungDDG.start.y;
-
-	gui.setDiagramSize(SizeMax);
-	RefreshScrollbars();
 
 	if(NeedScrollSelectedIntoView) {
 		RECT rSelected;
@@ -6860,14 +6887,33 @@ void LadderDiagram::DrawGUI(void)
 		RefreshScrollbars();
 	}
 
-	gui.DrawStart(ScrollXOffset, ScrollYOffset*Grid1x1.y);
+	RECT rDrawArea;
+	rDrawArea.left   = ScrollXOffset;
+	rDrawArea.top    = ScrollYOffset*Grid1x1.y;
+	rDrawArea.right  = rDrawArea.left + rWindow.right;
+	rDrawArea.bottom = rDrawArea.top  + rWindow.bottom;
+
+	gui.DrawStart(rDrawArea.left, rDrawArea.top);
 
 	// Etapa 2: Desenha o diagrama na tela
+	RungDDG.isFullRedraw = isFullRedraw;
 	RungDDG.DontDraw = false;
 	RungDDG.start.y = 0;
 	for(i = 0; i < rungs.size(); i++) {
-		RungDDG.size = SizeMax;
-		rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
+		if(isFullRedraw ||
+			(rungData[i].region.bottom >= rDrawArea.top && rungData[i].region.top <= rDrawArea.bottom)) {
+				RungDDG.size = SizeMax;
+				rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
+				if(isFullRedraw) {
+					RungDDG.region.left   = RungDDG.start.x * Grid1x1.x;
+					RungDDG.region.top    = RungDDG.start.y * Grid1x1.y;
+					RungDDG.region.right  = RungDDG.region.left + (RungDDG.size.x * Grid1x1.x);
+					RungDDG.region.bottom = RungDDG.region.top  + (RungDDG.size.y * Grid1x1.y);
+					rungData.push_back(RungDDG);
+				}
+		} else {
+			RungDDG = rungData[i];
+		}
 
 		RECT r = gui.getRECT(RungDDG.start, RungDDG.size);
 		r.right = r.left;
@@ -6911,14 +6957,31 @@ void LadderDiagram::DrawGUI(void)
 	rBus.right = r.right + 5;
 	gui.DrawRectangle(rBus, colors.BusOff);
 
+	rBus.left   = ScrollXOffset + 10;
+	rBus.top    = ScrollYOffset * Grid1x1.y;
+	rBus.right  = rBus.left + 200;
+	rBus.bottom = rBus.top + 50;
+
+	char buf[1024];
+	static unsigned long frame = 0, framefull = 0;
+	if(isFullRedraw) framefull++;
+	sprintf(buf, "Frames(Normal / Full): (%ld / %ld)\n", ++frame, framefull);
+	gui.DrawText(buf, rBus, 0, colors.Breakpoint, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
 	gui.DrawEnd();
+	gui.NeedRedraw(false);
 }
 
-bool LadderDiagram::IsSelectedVisible(void)
+void LadderDiagram::NeedRedraw(bool isFullRedraw)
 {
-	if(context.SelectedElem == nullptr) return false;
+	gui.NeedRedraw(true);
+}
 
-	RECT r = gui.getElemArea(context.SelectedElem);
+bool LadderDiagram::IsElementVisible(LadderElem *elem, bool isFullyVisible)
+{
+	if(elem == nullptr) return false;
+
+	RECT r = gui.getElemArea(elem);
 	if(!IsRegionZero(r)) { // Selecionado encontrado.
 		RECT rWindow = { 0, 0, 0, 0 };
 		GetClientRect(DrawWindow, &rWindow);
@@ -6933,10 +6996,20 @@ bool LadderDiagram::IsSelectedVisible(void)
 		POINT TopLeft = { r.left - ScrollXOffset, r.top - ScrollYOffset*Grid1x1.y };
 		POINT BottomRight = { r.right - ScrollXOffset, r.bottom - ScrollYOffset*Grid1x1.y };
 
-		return PointInsideRegion(TopLeft, rWindow) && PointInsideRegion(BottomRight, rWindow);
+		if(isFullyVisible) {
+			return PointInsideRegion(TopLeft, rWindow) && PointInsideRegion(BottomRight, rWindow);
+		} else {
+			return PointInsideRegion(TopLeft, rWindow) || PointInsideRegion(BottomRight, rWindow);
+		}
 	}
 
 	return false;
+}
+
+void LadderDiagram::MouseMove(int x, int y)
+{
+	POINT xy = { x, y };
+	gui.setMousePosition(xy);
 }
 
 void LadderDiagram::MouseClick(int x, int y, bool isDown, bool isDouble)
@@ -7017,7 +7090,9 @@ void PaintWindow(void)
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 {
 	isCursorVisible = !isCursorVisible;
-	InvalidateRect(DrawWindow, NULL, FALSE);
+	if(ladder->IsSelectedVisible(false)) {
+		InvalidateRect(DrawWindow, NULL, FALSE);
+	}
 }
 
 //-----------------------------------------------------------------------------
