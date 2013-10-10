@@ -351,6 +351,7 @@ public:
 	// Funcoes relacionadas com I/O
 	virtual bool acceptIO        (unsigned long id, eType type) = 0;
 	virtual void updateIO        (LadderDiagram *owner, bool isDiscard) = 0;
+//	virtual void getTypeIO       (LadderDiagram *owner, bool isDiscard) = 0;
 	virtual int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) = 0;
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
@@ -2213,6 +2214,7 @@ public:
 	void           setDiagram  (LadderDiagram *newDiagram);
 
 	void AddPlaceHolderIfNoEOL(LadderContext context);
+	void DeleteEndPlaceHolder (LadderContext context);
 	bool AddElement(LadderElem *elem, LadderContext &context);
 	bool InsertParallel(LadderElem *elem, unsigned int start, unsigned int end, LadderContext &context);
 	bool DelElement(LadderElem *elem, LadderContext &context);

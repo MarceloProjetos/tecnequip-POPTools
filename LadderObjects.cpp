@@ -6588,7 +6588,7 @@ LadderElem *LadderElemFmtString::Clone(LadderDiagram *diagram)
 
 bool LadderElemFmtString::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idVar.first && type != ((getWhich() == ELEM_READ_FORMATTED_STRING) ? eType_RxUART : eType_TxUART) && type != eType_Reserved) {
+	if(id == prop.idVar.first && !Diagram->IsGenericTypeIO(type)) {
 		return false;
 	}
 
@@ -6631,6 +6631,11 @@ bool LadderElemFmtString::internalUpdateNameTypeIO(unsigned int index, string na
 	pair<unsigned long, int> pin = prop.idVar;
 
 	type = mode_read ? eType_RxUART : eType_TxUART;
+	// Se variavel sem tipo, usa tipo geral.
+	eType NewType = Diagram->getTypeIO(Diagram->getNameIO(pin), name, type, true);
+	if(type != eType_Reserved) {
+		type = NewType;
+	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Variável"), mode_read ? VALIDATE_IS_VAR : VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
 		if(Diagram->getIO(pin, name, type, infoIO_Var)) {
@@ -7565,6 +7570,20 @@ void LadderCircuit::setDiagram(LadderDiagram *newDiagram)
 	}
 }
 
+void LadderCircuit::DeleteEndPlaceHolder(LadderContext context)
+{
+	vector<Subckt>::iterator it = vectorSubckt.begin() + vectorSubckt.size();
+
+	if(!vectorSubckt.empty()) {
+		if((it-1)->elem == nullptr) {
+			(it-1)->subckt->DeleteEndPlaceHolder(context);
+		} else if((it-1)->elem->getWhich() == ELEM_PLACEHOLDER && vectorSubckt.size() > 1 &&
+			(it-1)->elem != context.ParallelStart) {
+				DelElement((it-1)->elem, context);
+		}
+	}
+}
+
 void LadderCircuit::AddPlaceHolderIfNoEOL(LadderContext context)
 {
 	vector<Subckt>::iterator it;
@@ -7573,6 +7592,13 @@ void LadderCircuit::AddPlaceHolderIfNoEOL(LadderContext context)
 		if(!HasEOL()) {
 			it = vectorSubckt.begin() + vectorSubckt.size();
 			if(vectorSubckt.empty() || ((it-1)->elem == nullptr && !(it-1)->subckt->IsSeries())) {
+				// Ao adicionar um elemento de final de linha, existe a possibilidade de ja existir algum no
+				// circuito paralelo que era o ultimo elemento.
+				// Dessa forma devemos percorrer este circuito para remover um eventual PlaceHolder existente.
+				if(!vectorSubckt.empty()) {
+					(it-1)->subckt->DeleteEndPlaceHolder(context);
+				}
+
 				// Se o circuito estiver vazio ou se adicionamos um paralelo e for o ultimo elemento,
 				// devemos adicionar o elemento de final de linha (PlaceHolder)
 				Subckt s = { new LadderElemPlaceHolder(context.Diagram), this };
