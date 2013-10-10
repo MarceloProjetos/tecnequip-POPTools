@@ -45,3 +45,4 @@ IDB_WAVE_REC_ERRO        WAVE                    "Sounds/rec_erro.wav"
 // Font
 //
 IDB_FONT_POPTOOLS		FONT					"fonts/POPTools.ttf"
+IDB_FONT_LUCON			FONT					"fonts/lucon.ttf"

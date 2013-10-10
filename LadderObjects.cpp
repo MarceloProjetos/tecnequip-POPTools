@@ -7569,13 +7569,26 @@ void LadderCircuit::AddPlaceHolderIfNoEOL(LadderContext context)
 {
 	vector<Subckt>::iterator it;
 
-	if(!HasEOL()) {
-		it = vectorSubckt.begin() + vectorSubckt.size();
-		if(vectorSubckt.empty() || ((it-1)->elem == nullptr && !(it-1)->subckt->IsSeries())) {
-			// Se o circuito estiver vazio ou se adicionamos um paralelo e for o ultimo elemento,
-			// devemos adicionar o elemento de final de linha (PlaceHolder)
-			Subckt s = { new LadderElemPlaceHolder(context.Diagram), this };
-			InsertSubckt(context, getSize(), s);
+	if(IsSeries()) {
+		if(!HasEOL()) {
+			it = vectorSubckt.begin() + vectorSubckt.size();
+			if(vectorSubckt.empty() || ((it-1)->elem == nullptr && !(it-1)->subckt->IsSeries())) {
+				// Se o circuito estiver vazio ou se adicionamos um paralelo e for o ultimo elemento,
+				// devemos adicionar o elemento de final de linha (PlaceHolder)
+				Subckt s = { new LadderElemPlaceHolder(context.Diagram), this };
+				InsertSubckt(context, getSize(), s);
+			}
+		} else if(!vectorSubckt.empty()) {
+			it = (vectorSubckt.end() - 1);
+			if(it->elem == nullptr) {
+				it->subckt->AddPlaceHolderIfNoEOL(context);
+			}
+		}
+	} else {
+		for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
+			if(it->elem == nullptr) {
+				it->subckt->AddPlaceHolderIfNoEOL(context);
+			}
 		}
 	}
 }
@@ -8769,9 +8782,28 @@ void LadderDiagram::updateContext(void)
 				if(context.SelectedState == SELECTED_RIGHT || 
 					context.SelectedElem->getWhich() == ELEM_PLACEHOLDER) {
 						if(i >= 0) {
-							vector<LadderRung *>::iterator it = rungs.begin() + i;
-							context.canInsertEnd = (*it)->rung->IsLast(context.SelectedElem);
+//							vector<LadderRung *>::iterator it = rungs.begin() + i;
+//							context.canInsertEnd = (*it)->rung->IsLast(context.SelectedElem);
 							// context.canInsertEnd = context.SelectedCircuit->IsLast(context.SelectedElem);
+							bool canInsertEnd     = true;
+							LadderElem    *elem   = context.SelectedElem;
+							LadderCircuit *subckt = context.SelectedCircuit;
+							LadderCircuit *rung   = rungs[i]->rung;
+							Subckt         next   = { elem, subckt };
+
+							do {
+								next = subckt->getNext(next);
+								if(next.elem == nullptr || !subckt->IsSeries()) {
+									next.elem   = nullptr;
+									next.subckt = subckt;
+									subckt      = rung->getParentSubckt(next.subckt);
+								} else {
+									canInsertEnd = false;
+									break;
+								}
+							} while(subckt != nullptr);
+
+							context.canInsertEnd = canInsertEnd;
 						} else {
 							context.canInsertEnd = false;
 						}
@@ -8783,13 +8815,14 @@ void LadderDiagram::updateContext(void)
 				}
 			}
 
-			if(context.SelectedCircuit->IsEmpty() || context.SelectedElem->IsComment()) {
-				// a comment must be the only element in its rung, and it will fill
-				// the rung entirely
-				// Se o elemento selecionado for um comentario, permite a insercao tambem.
-				// Nesse caso, ao se inserir o novo comentario, uma nova linha sera adicio-
-				// nada abaixo da atual e o comentario sera adicionado na nova linha.
-				context.canInsertComment = true;
+			if(context.SelectedCircuit->IsEmpty() || context.SelectedElem->IsComment() ||
+				context.SelectedState == SELECTED_BELOW || context.SelectedState == SELECTED_ABOVE) {
+					// a comment must be the only element in its rung, and it will fill
+					// the rung entirely
+					// Se o elemento selecionado for um comentario, permite a insercao tambem.
+					// Nesse caso, ao se inserir o novo comentario, uma nova linha sera adicio-
+					// nada abaixo da atual e o comentario sera adicionado na nova linha.
+					context.canInsertComment = true;
 			}
 
 			if(context.SelectedElem->IsComment()) {
@@ -9144,9 +9177,9 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 
 	CheckpointBegin(_("Adicionar Elemento"));
 
-	// Se estiver adicionando um comentario e o objeto selecionado for um comentario,
+	// Se estiver adicionando um comentario e a linha nao estiver vazia,
 	// deve ser adicionada uma nova linha
-	if(context.SelectedElem->IsComment()) {
+	if(elem->IsComment() && !rungs[RungContainingSelected()]->rung->IsEmpty()) {
 		NewRung((context.SelectedState == SELECTED_ABOVE) ? false : true);
 	}
 
@@ -11212,6 +11245,10 @@ void LadderDiagram::UndoRedo(bool isUndo)
 		ignoreFirstCheckpoint = true;
 		List = &RedoList;
 	}
+
+	// Ao desfazer / refazer alguma acao, o diagrama sera alterado.
+	// Dessa forma devemos forcar redesenhar a tela por completo
+	NeedRedraw(true);
 
 	while(!List->empty()) { // Executa as acoes ate achar um checkpoint ou a lista estiver vazia
 		UndoRedoAction action = List->back();

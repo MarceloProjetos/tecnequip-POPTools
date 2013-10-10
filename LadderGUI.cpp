@@ -29,6 +29,10 @@ typedef struct {
 	bool  expanded;
 	bool  DontDraw;
 	bool  isFullRedraw;
+
+	bool  hasBreakpoint;
+	bool  isBreakpointActive;
+
 	LadderContext *context;
 } tDataDrawGUI;
 
@@ -6652,8 +6656,7 @@ bool LadderCircuit::DrawGUI(bool poweredBefore, void *data)
 
 	tDataDrawGUI ElemDDG, *ddg = (tDataDrawGUI*)data;
 
-	ElemDDG.start    = ddg->start;
-	ElemDDG.DontDraw = ddg->DontDraw;
+	ElemDDG = *ddg;
 
 	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
 		ElemDDG.size           = ddg->size;
@@ -6662,10 +6665,19 @@ bool LadderCircuit::DrawGUI(bool poweredBefore, void *data)
 		ElemDDG.regionSelected = RegionZero;
 
 		if(it->elem != nullptr) {
-			HasEOL |= it->elem->IsEOL();
+			bool isPowered = isSeries ? poweredAfter : poweredBefore;
+
+			// Se for elemento de linha, marca a flag e verifica se existe breakpoint
+			if(it->elem->IsEOL()) {
+				HasEOL = true;
+				if(isPowered && ddg->hasBreakpoint) {
+					ddg->isBreakpointActive = true;
+				}
+			}
+
 			ElemDDG.expanded = gui.IsExpanded(it->elem);
 			elemStart = ElemDDG.start;
-			poweredThis = it->elem->DrawGUI(isSeries ? poweredAfter : poweredBefore, &ElemDDG);
+			poweredThis = it->elem->DrawGUI(isPowered, &ElemDDG);
 
 			if(ElemDDG.DontDraw == false && ddg->isFullRedraw) {
 				gui.registerElementArea(it->elem, ElemDDG.start, ElemDDG.size);
@@ -6681,6 +6693,9 @@ bool LadderCircuit::DrawGUI(bool poweredBefore, void *data)
 			poweredThis = it->subckt->DrawGUI(isSeries ? poweredAfter : poweredBefore, &ElemDDG);
 			if(!IsRegionZero(ElemDDG.regionSelected)) {
 				ddg->regionSelected = ElemDDG.regionSelected;
+			}
+			if(ElemDDG.isBreakpointActive) {
+				ddg->isBreakpointActive = ElemDDG.isBreakpointActive;
 			}
 		}
 
@@ -6787,10 +6802,31 @@ bool cmdToggleBreakpoint(tCommandSource source, void *data)
 // Classe LadderDiagram
 void LadderDiagram::DrawGUI(void)
 {
-	static bool InitOK = false;
-
 	if(context.isLoadingFile) return; // Durante o carregamento de um arquivo nao devemos desenhar a tela...
 
+	// Estrutura e mapa utilizados para armazenar dados especificos e nao-volateis de diagramas
+	// Nao podemos usar as variaveis estaticas diretamente pois, como sao varios diagramas ladder,
+	// haveria conflito ao mudar de um diagrama para outro.
+	typedef struct {
+		POINT                SizeMax;
+		vector<tDataDrawGUI> rungData;
+		bool                 needSelectRung;
+	} tDiagramData;
+
+	static map<LadderDiagram *, tDiagramData> mapDiagramData;
+
+	// Aqui criamos um novo mapa (no caso de um novo diagrama)
+	if(mapDiagramData.count(this) == 0) {
+		tDiagramData data;
+		data.needSelectRung = true;
+		data.SizeMax.x = data.SizeMax.y = 0;
+		mapDiagramData[this] = data;
+	}
+
+	// Agora recuperamos o mapa para o diagrama atual
+	tDiagramData DiagramData = mapDiagramData[this];
+
+	static bool InitOK = false;
 	if(!InitOK) {
 		InitOK = true;
 		gui.DrawInit();
@@ -6803,11 +6839,10 @@ void LadderDiagram::DrawGUI(void)
 	gui.SetBackgroundColor(colors.Background);
 
 	char num[20];
-	static POINT SizeMax   = { 0, 0 };
-	static vector<tDataDrawGUI> rungData;
 
 	vector<LadderCircuit>::size_type i;
-	tDataDrawGUI RungDDG, zeroRungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, true, &context };
+	tDataDrawGUI RungDDG;
+	tDataDrawGUI zeroRungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, true, false, false, &context };
 
 	RECT rWindow;
 	GetClientRect(DrawWindow, &rWindow);
@@ -6817,14 +6852,14 @@ void LadderDiagram::DrawGUI(void)
 	if(isFullRedraw) {
 		bool isFirstStep = true, needAnotherStep = false;
 
-		rungData.clear();
-		SizeMax.x = SizeMax.y = 0;
+		DiagramData.rungData.clear();
+		DiagramData.SizeMax.x = DiagramData.SizeMax.y = 0;
 
 		// Etapa 1: Calcula o tamanho do diagrama
 		while(isFirstStep || needAnotherStep) {
 			needAnotherStep = false;
 			RungDDG = zeroRungDDG;
-			RungDDG.size.x = SizeMax.x;
+			RungDDG.size.x = DiagramData.SizeMax.x;
 
 			for(i = 0; i < rungs.size(); i++) {
 				// Se a linha tiver comentario, nao executa. Os comentarios se ajustam na tela entao precisam
@@ -6838,23 +6873,23 @@ void LadderDiagram::DrawGUI(void)
 				rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
 
 				RungDDG.start.y += RungDDG.size.y + 1;
-				if(SizeMax.x < RungDDG.size.x) {
-					SizeMax.x = RungDDG.size.x;
+				if(DiagramData.SizeMax.x < RungDDG.size.x) {
+					DiagramData.SizeMax.x = RungDDG.size.x;
 				}
 			}
 
 			// Fim do primeiro passo da Etapa 1. Agora calculamos a largura do diagrama
 			if(isFirstStep) {
-				SizeMax.x = max(SizeMax.x, (rWindow.right)/Grid1x1.x - 3);
+				DiagramData.SizeMax.x = max(DiagramData.SizeMax.x, (rWindow.right)/Grid1x1.x - 3);
 
 				isFirstStep = false;
 			}
 		}
 
 		// Fim da Etapa 1. Agora calculamos a altura do diagrama
-		SizeMax.y = RungDDG.start.y;
+		DiagramData.SizeMax.y = RungDDG.start.y;
 
-		gui.setDiagramSize(SizeMax);
+		gui.setDiagramSize(DiagramData.SizeMax);
 		RefreshScrollbars();
 	} else {
 		RungDDG                = zeroRungDDG;
@@ -6896,23 +6931,34 @@ void LadderDiagram::DrawGUI(void)
 	gui.DrawStart(rDrawArea.left, rDrawArea.top);
 
 	// Etapa 2: Desenha o diagrama na tela
+	unsigned int isBreakpointActiveAtRung = 0;
+
 	RungDDG.isFullRedraw = isFullRedraw;
 	RungDDG.DontDraw = false;
 	RungDDG.start.y = 0;
 	for(i = 0; i < rungs.size(); i++) {
-		if(isFullRedraw ||
-			(rungData[i].region.bottom >= rDrawArea.top && rungData[i].region.top <= rDrawArea.bottom)) {
-				RungDDG.size = SizeMax;
+		RungDDG.hasBreakpoint      = rungs[i]->hasBreakpoint;
+		RungDDG.isBreakpointActive = false;
+
+		if(isFullRedraw || (rungs[i]->hasBreakpoint && context.inSimulationMode) ||
+			(DiagramData.rungData[i].region.bottom >= rDrawArea.top && DiagramData.rungData[i].region.top <= rDrawArea.bottom)) {
+				RungDDG.size = DiagramData.SizeMax;
 				rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
 				if(isFullRedraw) {
 					RungDDG.region.left   = RungDDG.start.x * Grid1x1.x;
 					RungDDG.region.top    = RungDDG.start.y * Grid1x1.y;
 					RungDDG.region.right  = RungDDG.region.left + (RungDDG.size.x * Grid1x1.x);
 					RungDDG.region.bottom = RungDDG.region.top  + (RungDDG.size.y * Grid1x1.y);
-					rungData.push_back(RungDDG);
+					DiagramData.rungData.push_back(RungDDG);
 				}
 		} else {
-			RungDDG = rungData[i];
+			RungDDG = DiagramData.rungData[i];
+		}
+
+		// Linha desenhada. Agora verificamos se devemos interromper devido a um breakpoint.
+		if(context.inSimulationMode && RungDDG.isBreakpointActive) {
+			PauseSimulation();
+			isBreakpointActiveAtRung = i + 1;
 		}
 
 		RECT r = gui.getRECT(RungDDG.start, RungDDG.size);
@@ -6946,7 +6992,7 @@ void LadderDiagram::DrawGUI(void)
 	}
 
 	POINT start = { 0, 0 };
-	r = gui.getRECT(start, SizeMax);
+	r = gui.getRECT(start, DiagramData.SizeMax);
 	r.left  -= Grid1x1.x/2;
 	r.right += Grid1x1.x/2;
 
@@ -6957,19 +7003,22 @@ void LadderDiagram::DrawGUI(void)
 	rBus.right = r.right + 5;
 	gui.DrawRectangle(rBus, colors.BusOff);
 
-	rBus.left   = ScrollXOffset + 10;
-	rBus.top    = ScrollYOffset * Grid1x1.y;
-	rBus.right  = rBus.left + 200;
-	rBus.bottom = rBus.top + 50;
-
-	char buf[1024];
-	static unsigned long frame = 0, framefull = 0;
-	if(isFullRedraw) framefull++;
-	sprintf(buf, "Frames(Normal / Full): (%ld / %ld)\n", ++frame, framefull);
-	gui.DrawText(buf, rBus, 0, colors.Breakpoint, eAlignMode_TopLeft, eAlignMode_TopLeft);
-
 	gui.DrawEnd();
 	gui.NeedRedraw(false);
+
+	if(isBreakpointActiveAtRung > 0) {
+		if(DiagramData.needSelectRung) {
+			DiagramData.needSelectRung = false;
+			SelectElement(rungs[isBreakpointActiveAtRung - 1]->rung->getFirstElement(), SELECTED_RIGHT);
+			InvalidateRect(DrawWindow, NULL, FALSE);
+		}
+//		ShowDialog(true, false, _("Breakpoint"), _("Simulacao interrompida na linha %d"), isBreakpointActiveAtRung);
+	} else {
+		DiagramData.needSelectRung = true;
+	}
+
+	// Salva os dados atualizados no mapa
+	mapDiagramData[this] = DiagramData;
 }
 
 void LadderDiagram::NeedRedraw(bool isFullRedraw)

@@ -135,7 +135,7 @@ HRESULT EngineRenderD2D::CreateTextFormat(unsigned int rgb, unsigned int &index)
 		// Inicializa ResourceFopntContext
 		pFontContext = new ResourceFontContext(pWriteFactory);
 
-		static UINT const fontResourceIDs[] = { IDB_FONT_POPTOOLS };
+		static UINT const fontResourceIDs[] = { IDB_FONT_POPTOOLS, IDB_FONT_LUCON };
 
 		// Create a custom font collection comprising our font resources. We could have done this
 		// in the constructor rather than every time. However, if you set break points on the loader 

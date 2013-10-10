@@ -4,6 +4,7 @@
 #define IDI_ICON1                       102
 
 #define IDB_FONT_POPTOOLS               200
+#define IDB_FONT_LUCON                  206
 
 #define IDB_CLOCK_EDIT                  201
 #define IDB_NETWORK_CONFIG              202
