@@ -33,7 +33,12 @@ void EngineGUI::Init(void)
 	Target = NULL;
 
 	BrushOffset = 0;
-	Brushes.push_back(RGB(0, 0, 0));
+
+	tBrushData data;
+	data.type        = eBrushType_SolidColor;
+	data.solid.rgb   = RGB(0, 0, 0);
+	data.solid.alpha = 1.0f;
+	Brushes.push_back(data);
 
 	brushWidth = 2.0f;
 
@@ -107,7 +112,13 @@ HRESULT EngineGUI::StartDraw(void)
 			pRender->CreateRenderTarget(Target);
 
 			for(i=0; i < Brushes.size(); i++) {
-				pRender->CreateBrush(Brushes[i], index);
+				if(Brushes[i].type == eBrushType_SolidColor) {
+					pRender->CreateBrush(index, Brushes[i].solid.rgb, Brushes[i].solid.alpha);
+				} else {
+					pRender->CreateGradient(index, Brushes[i].linear.brushStart + BrushOffset,
+						Brushes[i].linear.brushEnd + BrushOffset, Brushes[i].linear.angle);
+				}
+
 				if(!i) {
 					BrushOffset = index;
 				}
@@ -144,17 +155,35 @@ HRESULT EngineGUI::EndDraw(void)
 
 HRESULT EngineGUI::SetBackgroundColor(COLORREF rgb)
 {
-	if(Brushes[0] != rgb) {
-		Brushes[0] = rgb;
+	if(Brushes[0].solid.rgb != rgb) {
+		Brushes[0].solid.rgb = rgb;
 		InvalidateTarget();
 	}
 
 	return S_OK;
 }
 
-unsigned int EngineGUI::CreateBrush(COLORREF rgb)
+unsigned int EngineGUI::CreateBrush(COLORREF rgb, float alpha)
 {
-	Brushes.push_back(rgb);
+	tBrushData data;
+	data.type        = eBrushType_SolidColor;
+	data.solid.rgb   = rgb;
+	data.solid.alpha = alpha;
+	Brushes.push_back(data);
+
+	InvalidateTarget();
+
+	return Brushes.size() - 1;
+}
+
+unsigned int EngineGUI::CreateGradient(unsigned int brushStart, unsigned int brushEnd, unsigned int angle)
+{
+	tBrushData data;
+	data.type        = eBrushType_GradientLinear;
+	data.linear.brushStart = brushStart;
+	data.linear.brushEnd   = brushEnd;
+	data.linear.angle      = angle;
+	Brushes.push_back(data);
 
 	InvalidateTarget();
 

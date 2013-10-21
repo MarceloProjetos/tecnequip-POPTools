@@ -12,7 +12,7 @@ LRESULT CALLBACK SplashWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	case WM_CREATE:
         hBitmap = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_SPLASH));
         if(hBitmap == NULL)
-            MessageBox(hwnd, _("Could not load splash image!"), _("Error"), MB_OK | MB_ICONEXCLAMATION);
+            Error(_("Could not load splash image!"));
 		break;
 	case WM_PAINT: {
 			BITMAP bm;

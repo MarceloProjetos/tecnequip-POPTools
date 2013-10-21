@@ -1,5 +1,6 @@
 #include "poptools.h"
 #include "KeyboardMap.h"
+#include "LadderGUI.h"
 
 // Keyboard Handlers
 
@@ -20,18 +21,16 @@ int KBH_SetFocus_IoList(void *user_data)
 }
 
 // Default for Portuguese: TAB
-typedef struct {
-	LadderDiagram *diagram;
-	LadderCircuit *circuit;
-	LadderElem    *elem;
-} tCommandSource;
-
 bool CmdExpand(tCommandSource source, void *data);
 
 int KBH_ExpandElement(void *user_data)
 {
-	tCommandSource source = { nullptr, nullptr, ladder->getContext().SelectedElem };
-	CmdExpand(source, nullptr);
+	if(gui.IsDialogActive()) {
+		gui.setDialogActiveButton(true);
+	} else {
+		tCommandSource source = { nullptr, nullptr, ladder->getContext().SelectedElem };
+		CmdExpand(source, nullptr);
+	}
 
 	return 1;
 }
@@ -57,7 +56,11 @@ int KBH_Simulation_SingleCycle(void *user_data)
 {
 	if(!ladder->getContext().inSimulationMode) return 0;
 
-	ProcessMenu(MNU_SINGLE_CYCLE);
+	if(gui.IsDialogActive()) {
+		gui.DialogConfirm();
+	} else {
+		ProcessMenu(MNU_SINGLE_CYCLE);
+	}
 
 	return 1;
 }
@@ -302,7 +305,11 @@ int KBH_Element_Edit(void *user_data)
 {
 	if(ladder->getContext().inSimulationMode) return 0;
 
-	ladder->EditSelectedElement();
+	if(gui.IsDialogActive()) {
+		gui.DialogConfirm();
+	} else {
+		ladder->EditSelectedElement();
+	}
 
 	return 1;
 }

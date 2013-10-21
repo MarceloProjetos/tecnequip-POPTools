@@ -98,65 +98,23 @@ static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned in
 
 static void SimulateIntCode(void);
 
-struct WatchPoint *listWP = NULL;
+map<string, int> Watchpoints;
 
 void AddWP(char *name, int val)
 {
-	struct WatchPoint *previous = NULL, *current = listWP, *newWP;
-
-	while(current != NULL) {
-		if(!_stricmp(name, current->name))
-			break;
-
-		previous = current;
-		current = current->next;
-	}
-
-	if(current != NULL) { // name already in the list, change it!
-		current->val = val;
-	} else {
-		newWP = (struct WatchPoint *)CheckMalloc(sizeof(struct WatchPoint));
-		newWP->name = name;
-		newWP->val = val;
-		if(previous != NULL) {
-			previous->next = newWP;
-		} else { // list empty!
-			listWP = newWP;
-		}
-	}
+	Watchpoints[name] = val;
 }
 
 void RemoveWP(char *name)
 {
-	struct WatchPoint *previous = NULL, *current = listWP;
-
-	while(current != NULL) {
-		if(!_stricmp(name, current->name)) {
-			if(previous != NULL) {
-				previous->next = current->next;
-			} else {
-				listWP = current->next;
-			}
-			CheckFree(current);
-			break;
-		}
-
-		previous = current;
-		current = current->next;
-	}
+	Watchpoints.erase(name);
 }
 
 int * GetValWP(const char *name, int *val)
 {
-	struct WatchPoint *current = listWP;
-
-	while(current != NULL && val != NULL) {
-		if(!_stricmp(name, current->name)) {
-			*val = current->val;
-			return val;
-		}
-
-		current = current->next;
+	if(val != NULL && Watchpoints.count(name) > 0) {
+		*val = Watchpoints[name];
+		return val;
 	}
 
 	return NULL;
@@ -164,9 +122,7 @@ int * GetValWP(const char *name, int *val)
 
 void ClearListWP(void)
 {
-	while(listWP != NULL) {
-		RemoveWP(listWP->name);
-	}
+	Watchpoints.clear();
 }
 
 void CheckWP(const char *name, int val)
@@ -176,15 +132,14 @@ void CheckWP(const char *name, int val)
 	bool NeedStop = false;
 
 	if(name == NULL) {
-		struct WatchPoint *current = listWP;
-		while(current != NULL) {
-			name = current->name;
+		map<string, int>::iterator it;
+		for(it = Watchpoints.begin(); it != Watchpoints.end(); it++) {
+			name = it->first.c_str();
 			val  = GetSimulationVariable(name);
 			if(GetValWP(name, &wpval) != NULL && wpval == val) {
 				NeedStop = true;
 				break;
 			}
-			current = current->next;
 		}
 	} else if(GetValWP(name, &wpval) != NULL && wpval == val) {
 		NeedStop = true;

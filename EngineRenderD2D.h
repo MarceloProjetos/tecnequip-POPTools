@@ -25,6 +25,20 @@ typedef struct {
 	IDWriteTextFormat *format;
 } tTextFormat;
 
+// Estrutura que contem informacoes de um pincel: pode ser solido, gradiente, etc...
+typedef struct {
+	eBrushType brushType;
+	struct {
+		ID2D1SolidColorBrush     *pBrush;
+	} solid;
+
+	struct {
+		unsigned int                 angle;
+		ID2D1LinearGradientBrush    *pBrush;
+		ID2D1GradientStopCollection *pGradientStops;
+	} linear;
+} tBrushDataD2D;
+
 class EngineRenderD2D : public EngineRender
 {
 private:
@@ -39,8 +53,8 @@ private:
 	IDWriteFontCollection *pFontCollection;
     ResourceFontContext   *pFontContext;
 
-	std::vector<ID2D1SolidColorBrush *> Brushes;
-	std::vector<tTextFormat           > TextFormats;
+	std::vector<tBrushDataD2D > Brushes;
+	std::vector<tTextFormat> TextFormats;
 
 	HRESULT DrawPicture(IWICBitmapDecoder *pDecoder, POINT start, POINT size);
 
@@ -52,8 +66,13 @@ public:
 
 	HRESULT CreateRenderTarget(HWND hwnd);
 	HRESULT ResizeRenderTarget(HWND hwnd);
-	HRESULT CreateBrush(unsigned int rgb, unsigned int &index);
+	HRESULT CreateBrush   (unsigned int &index, unsigned int rgb, float alpha = 1.0f);
+	HRESULT CreateGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle = 0);
 	HRESULT CreateTextFormat(unsigned int rgb, unsigned int &index);
+
+	ID2D1Brush               *getBrush              (unsigned int brush, D2D1_RECT_F rf);
+	ID2D1SolidColorBrush     *getSolidColorBrush    (unsigned int brush);
+	ID2D1LinearGradientBrush *getLinearGradientBrush(unsigned int brush, D2D1_RECT_F rf);
 
 	void    StartDraw(void);
 	void    Clear(unsigned int brush);

@@ -1,110 +1,13 @@
-#include "poptools.h"
-
-// A linha a seguir, quando habilitada, ativa codigo que exibe diversas informacoes de depuracao
-// na tela como posicao do mouse. coordenada do ultimo clique / duplo-clique, ultimo erro do D2D, etc.
-//#define SHOW_DEBUG_INFO
-
-#include "EngineGUI.h"
-#include "EngineRenderD2D.h"
+#include "LadderGUI.h"
 
 // Variavel que indica se o cursor deve ser exibido. Liga e Desliga a cada 800 ms, conforme timer.
 bool isCursorVisible = true;
 
-/*** Estruturas auxiliares ***/
+// Flag marcada pela logica que troca de abas para indicar que houve uma mudanca do diagrama ativo
+// Quando isso acontece devemos atualizar o ladder como barras de rolagem, dados do diagrama, etc.
+bool isDiagramChangedSinceLastDraw = true;
 
-// Estrutura que contem a origem do comando, permitindo que tanto um elemento, um circuito ou o
-// proprio diagrama possa cadastrar acoes
-typedef struct {
-	LadderDiagram *diagram;
-	LadderCircuit *circuit;
-	LadderElem    *elem;
-} tCommandSource;
-
-// Dados passados para as funcoes DrawGUI
-typedef struct {
-	POINT start;
-	POINT size;
-	RECT  region;
-	RECT  regionSelected;
-	bool  expanded;
-	bool  DontDraw;
-	bool  isFullRedraw;
-
-	bool  hasBreakpoint;
-	bool  isBreakpointActive;
-
-	LadderContext *context;
-} tDataDrawGUI;
-
-// Estruturas que armazenam as cores do diagrama ladder
-typedef struct {
-	COLORREF Background;
-	COLORREF Foreground;
-	COLORREF Bus;
-	COLORREF BusOff;
-	COLORREF Wire;
-	COLORREF WireOff;
-	COLORREF Selection;
-	COLORREF Breakpoint;
-	COLORREF ConnectionDot;
-	COLORREF ConnectionDotOff;
-
-	// Algumas cores padrao (branco, preto, etc...)
-	COLORREF White;
-	COLORREF Black;
-	COLORREF Red;
-	COLORREF Green;
-	COLORREF Blue;
-} tLadderColors;
-
-typedef struct {
-	COLORREF Background;
-	COLORREF Foreground;
-	COLORREF Border;
-	COLORREF BorderText;
-} tLadderColorGroup;
-
-// Estrutura que define um ponto de conexao entre linhas
-typedef struct {
-	POINT        dot; // Posicao do ponto
-	unsigned int count; // Numero de cruzamentos. Se apenas 1 significa apenas juncao de duas linhas
-	bool         isPowered; // Indica se o ponto esta em um linha energizada ou nao
-} tConnectionDot;
-
-// Estrutura que define uma linha do ladder
-typedef struct {
-	POINT start;     // Ponto inicial da linha
-	POINT end;       // Ponto ifnal da linha
-	bool  isPowered; // Indica se a linha esta energizada ou nao
-} tWire;
-
-// Definicao do ponteiro para os comandos dos itens expandidos
-typedef bool (*tFncExpandedItem)(LadderElem *, unsigned int) ;
-
-// Estruturas que definem os controles disponiveis para uso nos items expandidos
-typedef struct {
-	tFncExpandedItem fnc;
-	vector<string>   items;
-	int              selected;
-} tControlList;
-
-// Definicao que descreve um item expandido
-typedef pair < string, unsigned int > tExpandedItem;
-
-// Estrutura que armazena dados de comando em um controle de item expandido
-typedef struct {
-	tFncExpandedItem fnc;
-	unsigned int     index;
-} tCmdExpandedItem;
-
-// Estrutura passada para a funcao que altera o nome de um I/O, cadastrada como um comando
-// ao clicar no nome da variável em uma caixa de elemento
-typedef struct {
-	eType type;
-	bool  reply;
-} tCmdChangeNameData;
-
-/*** Fim das estruturas auxiliares ***/
+map<LadderDiagram *, tDiagramData> mapDiagramData;
 
 /*** Funcoes auxiliares ***/
 
@@ -143,123 +46,26 @@ inline bool IsRegionZero(RECT region)
 
 /*** Fim das funcoes auxiliares ***/
 
-/*** Definicao da classe LaderGUI ***/
-
-static const int INTERF_COLOR_3DLIGHT  = 0;
-static const int INTERF_COLOR_3DFACE   = 1;
-static const int INTERF_COLOR_3DSHADOW = 2;
-
-class LadderGUI : public EngineGUI
-{
-private:
-	POINT Grid1x1;
-	POINT MousePosition;
-	POINT DiagramSize;
-
-	LadderElem *MouseOverElement;
-
-	vector<tConnectionDot>             vectorConnectionDots;
-	vector<tWire>                      vectorWires;
-	vector<LadderElem *>               vectorExpandedElements;
-	vector< pair<LadderElem *, RECT> > vectorAreaElements;
-
-	int  HeaderHeight;
-	bool needFullRedraw;
-
-	array<unsigned int, 3>    InterfaceColors;
-
-	typedef struct {
-		RECT   r;
-		bool (*fnc)(tCommandSource, void *);
-		void  *data;
-		bool   isSimMode;
-	} tCommandItem;
-	typedef pair<tCommandSource, tCommandItem>  tCommandListItem;
-	typedef vector<tCommandListItem>            tCommandsList;
-
-	tCommandsList CommandsSingleClick;
-	tCommandsList CommandsDoubleClick;
-
-	void ClearCommandLists(void);
-
-	bool MouseOver (RECT region);
-
-	void PaintScrollAndSplitter(void);
-
-	// Variaveis que armazenam as cores utilizadas no diagrama ladder
-	array<tLadderColors, 2>     LadderColors;
-	map<int, tLadderColorGroup> LadderColorGroups;
-	vector<tLadderColorGroup>   LadderColorSimulation;
-
-#ifdef SHOW_DEBUG_INFO
-	POINT   mouse_last_click;
-	POINT   mouse_last_doubleclick;
-	HRESULT d2d_last_error;
-#endif
-
-public:
-	LadderGUI(void);
-	~LadderGUI(void) { ClearCommandLists(); }
-
-	inline RECT getRECT(POINT Start, POINT Size);
-	POINT       getGridSize(void) { return Grid1x1; }
-	POINT       getCenter(RECT r);
-
-	bool IsExpanded(LadderElem *elem);
-
-	void setMousePosition(POINT xy);
-
-	void  setDiagramSize(POINT size) { DiagramSize = size; }
-	POINT getDiagramSize(void)       { return DiagramSize; }
-
-	void DrawInit  (void);
-	void DrawStart (int OffsetX, int OffsetY);
-	void DrawEnd   (void);
-	void NeedRedraw(bool isRedrawNeeded);
-	bool getNeedFullRedraw(void) { return needFullRedraw; }
-
-	void registerElementArea(LadderElem *elem, POINT start, POINT size);
-
-	void DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, bool poweredBefore);
-	RECT DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, POINT GridSize, string ElemName, bool ShowExpand, bool poweredBefore);
-	void DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, pair<string, string> txt, bool poweredBefore);
-
-	RECT DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight);
-
-	vector<RECT> DrawExpandedItems(tLadderColorGroup cg, RECT r, POINT GridSize, unsigned int GridOffset, vector<tExpandedItem> items);
-
-	// Funcoes para adicionar controles aos itens expandidos
-	void addControlList(LadderElem *elem, RECT r, tControlList list);
-
-	tWire DrawWire(POINT StartPoint, POINT EndPoint, bool poweredBefore);
-	void  addConnectionDot(POINT p, bool isPowered, bool isForced);
-
-	void        MouseClick(int x, int y, bool isDown, bool isDouble);
-	LadderElem *SearchElement(LadderElem *ref, eMoveCursor moveTo);
-
-	RECT getElemArea(LadderElem *elem);
-
-	void AddCommand(tCommandSource source, RECT region, bool (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick, bool isSimulationMode);
-
-	void CmdExpand(LadderElem *elem);
-
-	// Funcoes para configurar as cores do diagrama ladder
-	void              setLadderColors(tLadderColors colors, bool isModeSimulation);
-	tLadderColors     getLadderColors(void);
-
-	void              setLadderColorGroup(int elem, tLadderColorGroup colors);
-	tLadderColorGroup getLadderColorGroup(int elem, bool isActive);
-	void              delLadderColorGroup(int elem);
-};
-
 // Criacao do objeto que desenha a interface
-static LadderGUI gui;
+LadderGUI gui;
 
 // Funcoes usadas nos comandos genericos
 bool CmdExpand(tCommandSource source, void *data)
 {
 	gui.CmdExpand(source.elem);
 	gui.NeedRedraw(true);
+
+	return true;
+}
+
+bool cmdDialogClicked(tCommandSource source, void *data)
+{
+	tDialogData DialogData = gui.getDialogData();
+
+	if(DialogData.reply != nullptr) {
+		eReply *reply = (eReply *)data;
+		*(DialogData.reply) = (reply != nullptr) ? *reply : eReply_Ok;
+	}
 
 	return true;
 }
@@ -326,6 +132,8 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	MousePosition.x = 0;
 	MousePosition.y = 0;
 
+	isDialogActive  = false;
+
 	MouseOverElement = nullptr;
 
 	Grid1x1.x = 60;
@@ -361,42 +169,76 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	// Carrega as cores padrao da interface - modo normal
 	tLadderColors colors;
 
-	colors.Background       = RGB(  0,   0,   0);
-	colors.Foreground       = RGB(255, 255, 255);
-	colors.Selection        = RGB(255,   0,   0);
-	colors.Bus              = RGB(255, 255, 255);
-	colors.BusOff           = RGB(255, 255, 255);
-	colors.ConnectionDot    = RGB(255,   0,   0);
-	colors.ConnectionDotOff = RGB(255,   0,   0);
-	colors.Wire             = RGB(255, 255, 255);
-	colors.WireOff          = RGB(255, 255, 255);
-	colors.Breakpoint       = RGB(255,   0,   0);
+	colors.Background            = RGB(  0,   0,   0);
+	colors.Foreground            = RGB(255, 255, 255);
+	colors.Selection             = RGB(255,   0,   0);
+	colors.Bus                   = RGB(255, 255, 255);
+	colors.BusOff                = RGB(255, 255, 255);
+	colors.ConnectionDot         = RGB(255,   0,   0);
+	colors.ConnectionDotOff      = RGB(255,   0,   0);
+	colors.Wire                  = RGB(255, 255, 255);
+	colors.WireOff               = RGB(255, 255, 255);
+	colors.Breakpoint            = RGB(255,   0,   0);
 
-	colors.White            = RGB(255, 255, 255);
-	colors.Black            = RGB(  0,   0,   0);
-	colors.Red              = RGB(255,   0,   0);
-	colors.Green            = RGB(  0, 255,   0);
-	colors.Blue             = RGB(  0,   0, 255);
+	colors.White                 = RGB(255, 255, 255);
+	colors.Black                 = RGB(  0,   0,   0);
+	colors.Red                   = RGB(255,   0,   0);
+	colors.Green                 = RGB(  0, 255,   0);
+	colors.Blue                  = RGB(  0,   0, 255);
+
+	colors.DialogBorder          = RGB(203, 207, 216);
+	colors.DialogBorderText      = RGB(  0,   0,   0);
+	colors.DialogBackground      = RGB(244, 245, 247);
+	colors.DialogBackgroundLight = RGB(230, 230, 230);
+	colors.DialogBackgroundDark  = RGB(220, 220, 220);
+	colors.DialogBackgroundText  = RGB(  0,   0,   0);
+	colors.DialogDefButtonUp     = RGB( 41, 150, 248);
+	colors.DialogDefButtonDown   = RGB( 20, 123, 227);
+	colors.DialogDefButtonBorder = RGB( 21,  87, 161);
+	colors.DialogDefButtonText   = RGB(255, 255, 255);
+	colors.DialogButtonUp        = RGB(239, 239, 239);
+	colors.DialogButtonDown      = RGB(220, 220, 220);
+	colors.DialogButtonBorder    = RGB(200, 200, 200);
+	colors.DialogButtonText      = RGB( 88, 112, 138);
+
+	colors.BlackHalfTransparency = RGB(  0,   0,   0);
 
 	setLadderColors(colors, false);
 
 	// Carrega as cores padrao da interface - modo de simulacao
-	colors.Background       = RGB(  0,   0,   0);
-	colors.Foreground       = RGB(255, 255, 255);
-	colors.Selection        = RGB(255,   0,   0);
-	colors.Bus              = RGB(255,   0,   0);
-	colors.BusOff           = RGB(  0,   0, 255);
-	colors.ConnectionDot    = RGB(255,   0,   0);
-	colors.ConnectionDotOff = RGB( 51, 181, 229);
-	colors.Wire             = RGB(255,   0,   0);
-	colors.WireOff          = RGB( 51, 181, 229);
-	colors.Breakpoint       = RGB(255,   0,   0);
+	colors.Background            = RGB(  0,   0,   0);
+	colors.Foreground            = RGB(255, 255, 255);
+	colors.Selection             = RGB(255,   0,   0);
+	colors.Bus                   = RGB(200,   0,   0);
+	colors.BusOff                = RGB(  0,   0, 255);
+	colors.ConnectionDot         = RGB(200,   0,   0);
+	colors.ConnectionDotOff      = RGB( 51, 181, 229);
+	colors.Wire                  = RGB(200,   0,   0);
+	colors.WireOff               = RGB( 51, 181, 229);
+	colors.Breakpoint            = RGB(255,   0,   0);
 
-	colors.White            = RGB(255, 255, 255);
-	colors.Black            = RGB(  0,   0,   0);
-	colors.Red              = RGB(255,   0,   0);
-	colors.Green            = RGB(  0, 255,   0);
-	colors.Blue             = RGB(  0,   0, 255);
+	colors.White                 = RGB(255, 255, 255);
+	colors.Black                 = RGB(  0,   0,   0);
+	colors.Red                   = RGB(255,   0,   0);
+	colors.Green                 = RGB(  0, 255,   0);
+	colors.Blue                  = RGB(  0,   0, 255);
+
+	colors.DialogBorder          = RGB(203, 207, 216);
+	colors.DialogBorderText      = RGB(255, 255, 255);
+	colors.DialogBackground      = RGB(244, 245, 247);
+	colors.DialogBackgroundLight = RGB(230, 230, 230);
+	colors.DialogBackgroundDark  = RGB(220, 220, 220);
+	colors.DialogBackgroundText  = RGB(  0,   0,   0);
+	colors.DialogDefButtonUp     = RGB( 41, 150, 248);
+	colors.DialogDefButtonDown   = RGB( 20, 123, 227);
+	colors.DialogDefButtonBorder = RGB( 21,  87, 161);
+	colors.DialogDefButtonText   = RGB(255, 255, 255);
+	colors.DialogButtonUp        = RGB(239, 239, 239);
+	colors.DialogButtonDown      = RGB(220, 220, 220);
+	colors.DialogButtonBorder    = RGB(200, 200, 200);
+	colors.DialogButtonText      = RGB( 88, 112, 138);
+
+	colors.BlackHalfTransparency = RGB(  0,   0,   0);
 
 	setLadderColors(colors, true);
 
@@ -528,6 +370,7 @@ bool LadderGUI::IsExpanded(LadderElem *elem)
 
 void LadderGUI::setMousePosition(POINT xy)
 {
+	bool NeedRedraw = false;
 	LadderElem *newMouseOverElement = nullptr;
 
 	MousePosition = xy;
@@ -541,7 +384,15 @@ void LadderGUI::setMousePosition(POINT xy)
 	}
 
 	if(MouseOverElement != newMouseOverElement) {
+		NeedRedraw = true;
 		MouseOverElement = newMouseOverElement;
+	}
+
+	if(isDialogActive) {
+		NeedRedraw = true;
+	}
+
+	if(NeedRedraw) {
 		InvalidateRect(DrawWindow, NULL, FALSE);
 	}
 }
@@ -690,6 +541,11 @@ void LadderGUI::DrawEnd(void)
 
 	PaintScrollAndSplitter();
 
+	// A seguir desenha a janela de dialogo, se ativa...
+	if(isDialogActive) {
+		DrawDialogBox();
+	}
+
 #ifdef SHOW_DEBUG_INFO
 	char buf[1024];
 	sprintf(buf, "*** Mouse ***\nAgora: %4d, %4d\nUltimo Clique: %4d, %4d\nUltimo Duplo-Clique: %4d, %4d\n\n*** D2D ***\nUltimo Erro: 0x%x",
@@ -764,7 +620,7 @@ RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGri
 	DrawRectangle(r, colorgroup.Background);
 
 	// Desenha as linhas de seleção superior / inferior
-	if(SelectedState != SELECTED_NONE) {
+	if(SelectedState != SELECTED_NONE && !ladder->getContext().inSimulationMode) {
 		POINT start = { r.left, r.top }, end = { r.right, r.top };
 		DrawLine(start, end, colors.Selection);
 
@@ -990,6 +846,216 @@ void LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	DrawText(txt.second.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 }
 
+void LadderGUI::DrawDialogBox(void)
+{
+	// Valores padrao de tamanho e espacamento de objetos na janela
+	const int       dialogRadius  =  5;
+	const int       buttonWidth   = 75;
+	const int       buttonHeight  = 25;
+	const int       buttonSpacing = 10;
+	const int       textHeight    = FONT_HEIGHT;
+	const int       textSpacing   =  5;
+	const int       titleHeight   = FONT_HEIGHT + 5;
+	const int       borderSize    =  5;
+	const int       textBorder    = 15;
+	const int       imageSize     = 48;
+	const int       imageBorder   = 10;
+
+	RECT            rWindow;
+	tCommandSource  source  = { nullptr, nullptr, nullptr };
+
+	tLadderColors colors = getLadderColors();
+
+	// Primeiro calculamos as coordenadas da janela visivel
+	GetClientRect(DrawWindow, &rWindow);
+	rWindow.left   += ScrollXOffset;
+	rWindow.right  += ScrollXOffset - ScrollWidth;
+	rWindow.top    += ScrollYOffset * Grid1x1.y;
+	rWindow.bottom += ScrollYOffset * Grid1x1.y - (NeedHoriz ? ScrollHeight : 0) - 2;
+
+	// A seguir desenhamos um retangulo negro com transparencia sobre a area do ladder.
+	// Isso causa o efeito de escurecer o fundo, dando enfase a janela que sera exibida sobre o diagrama.
+	DrawRectangle(rWindow, colors.BlackHalfTransparency);
+
+	// A partir desse ponto iniciamos o desenho da janela de dialogo. Primeiro devemos conhecer o tamanho
+	// dos textos e botoes para calcularmos o tamanho da janela.
+
+	// Desconta 10 em cada dimensao pois a janela nao pode ocupar toda a tela...
+	RECT rDialog    = rWindow;
+
+	// Criacao dos botoes existentes. Os botoes sao adicionados a um vetor pois antes que possam ser desenhados
+	// precisamos saber a largura que ocupam. Depois disso que a janela tera suas coordenadas calculadas para
+	// que fique centralizada na tela e entao os botoes poderao ser desenhados.
+	tButtonData button;
+	vectorButtonData.clear();
+
+	if(DialogData.hasCancel) {
+		button.buttonReply = eReply_Cancel;
+		button.buttonText  = _("Cancel");
+		vectorButtonData.push_back(button);
+	}
+
+	int resourceID;
+
+	if(DialogData.type == eDialogType_Question) {
+		button.buttonReply = eReply_No;
+		button.buttonText  = _("No");
+		vectorButtonData.push_back(button);
+
+		button.buttonReply = eReply_Yes;
+		button.buttonText  = _("Yes");
+		vectorButtonData.push_back(button);
+
+		resourceID = IDB_LADDER_DIALOG_QUESTION;
+	} else {
+		button.buttonReply = eReply_Ok;
+		button.buttonText  = _("Ok");
+		vectorButtonData.push_back(button);
+
+		resourceID = (DialogData.type == eDialogType_Message) ? IDB_LADDER_DIALOG_EXCLAMATION : IDB_LADDER_DIALOG_ERROR;
+	}
+
+	// Se for a primeira passagem, buttonActive sera negativo.
+	// Devemos carregar o indice do ultimo botao
+	if(buttonActive < 0) {
+		buttonActive = vectorButtonData.size() - 1;
+	}
+
+	// Calculamos a largura e altura necessarios para exibir os botoes e textos existentes.
+	// Nao precisamos nos preocupar com limites de altura e largura da janela pois, se a janela
+	// de dialogo ultrapassar a area da tela, cabera ao usuario redimensionar a janela do POPTools.
+
+	// Primeiro os botoes
+	LONG dialogWidth  = vectorButtonData.size() * (buttonWidth + buttonSpacing) + buttonSpacing;
+	LONG dialogHeight = buttonHeight + 2 * buttonSpacing;
+
+	// Agora os textos
+	string txt;
+	vector<string> vectorTextData;
+
+	if(titleHeight == 0) {
+		vectorTextData.push_back(DialogData.title);
+	}
+
+	unsigned int posnl, pos = 0;
+
+	// Aqui dividimos o texto em varias linhas, conforme as quebras de linha existentes
+	do {
+		txt   = DialogData.message.substr(pos);
+		posnl = txt.find_first_of("\n");
+		if(posnl != string::npos) {
+			txt = txt.substr(0, posnl);
+			pos++; // Incrementa pos para que sua posicao inicial no proximo loop seja apos "\n"
+		}
+
+		vectorTextData.push_back(txt);
+		pos += txt.size();
+	} while(pos < DialogData.message.size());
+
+	// A largura da janela deve ser o maior valor entre a largura dos textos, dos botoes e do titulo
+	int imageArea = imageSize + 2*imageBorder;
+	int textTotalHeight = max(imageArea, vectorTextData.size() * (textHeight + textSpacing) + 2 * textBorder);
+
+	dialogHeight += textTotalHeight;
+	dialogWidth   = max(dialogWidth, imageArea + (LONG)DialogData.title.size() * FONT_WIDTH);
+
+	unsigned int i;
+	for(i = 0; i < vectorTextData.size(); i++) {
+		dialogWidth = max(dialogWidth, imageArea + (2 + (LONG)vectorTextData[i].size()) * FONT_WIDTH);
+	}
+
+	rDialog.right  = rDialog.left + dialogWidth + 2 * borderSize;
+	rDialog.bottom = rDialog.top  + dialogHeight + titleHeight + 2 * borderSize;
+
+	// Agora precisamos centralizar a janela na tela
+	int offsetX = max(0, ((rWindow.right  - rWindow.left) - (rDialog.right  - rDialog.left))/2);
+	int offsetY = max(0, ((rWindow.bottom - rWindow.top ) - (rDialog.bottom - rDialog.top ))/2);
+
+	rDialog.left   += offsetX;
+	rDialog.right  += offsetX;
+	rDialog.top    += offsetY;
+	rDialog.bottom += offsetY;
+
+	// Todos os calculos finalizados. Agora desenhamos a janela
+	DrawRectangle(rDialog, colors.DialogBorder, true, dialogRadius);
+	RECT rTitle = rDialog;
+	rTitle.top    += borderSize;
+	rTitle.bottom  = rTitle.top + titleHeight;
+	DrawText(DialogData.title.c_str(), rTitle, 0, colors.DialogBorderText, eAlignMode_Center, eAlignMode_Center);
+
+	rDialog.left   += borderSize;
+	rDialog.right  -= borderSize;
+	rDialog.top    += borderSize + titleHeight;
+	rDialog.bottom -= borderSize;
+	DrawRectangle(rDialog, colors.DialogBackground, true, dialogRadius);
+
+	// A seguir desenhamos a imagem
+	POINT startPicture = { rDialog.left + imageBorder, rDialog.top + (textTotalHeight - imageSize)/2 };
+	POINT size  = { imageSize, imageSize };
+	DrawPictureFromResource(resourceID, startPicture, size);
+
+	// Agora desenhamos os textos
+	rDialog.top  += textBorder;
+	rDialog.left += imageArea;
+
+	for(i = 0; i < vectorTextData.size(); i++) {
+		rDialog.top += textSpacing;
+		DrawText(vectorTextData[i].c_str(), rDialog, 0, colors.DialogBackgroundText,
+			eAlignMode_Center, eAlignMode_TopLeft);
+		rDialog.top += FONT_HEIGHT;
+	}
+
+	rDialog.top   = rDialog.bottom - buttonHeight - 2 * buttonSpacing;
+	rDialog.left -= imageArea;
+
+	float bw = getBrushWidth();
+	setBrushWidth(1.0f);
+
+	POINT start = { rDialog.left + borderSize, rDialog.top }, end = { rDialog.right - borderSize, rDialog.top };
+	DrawLine(start, end, colors.DialogBackgroundLight);
+
+	start.y++;
+	end  .y++;
+	DrawLine(start, end, colors.DialogBackgroundDark);
+
+	start.y++;
+	end  .y++;
+	DrawLine(start, end, colors.White);
+
+	setBrushWidth(bw);
+
+	// Ultima etapa: desenhar os botoes na janela
+	rDialog.bottom -= buttonSpacing;
+	rDialog.top     = rDialog.bottom - buttonHeight;
+	rDialog.right  -= buttonSpacing;
+	for(i = 0; i < vectorButtonData.size(); i++) {
+		eReply *reply = new eReply;
+		*reply = vectorButtonData[i].buttonReply;
+
+		rDialog.left = rDialog.right - buttonWidth;
+
+		unsigned int colorOver, colorNormal, colorBorder, colorText;
+		if(i == buttonActive) {
+			colorOver   = gradDialogDefButtonOver;
+			colorNormal = gradDialogDefButtonNormal;
+			colorBorder = colors.DialogDefButtonBorder;
+			colorText   = colors.DialogDefButtonText;
+		} else {
+			colorOver   = gradDialogButtonOver;
+			colorNormal = gradDialogButtonNormal;
+			colorBorder = colors.DialogButtonBorder;
+			colorText   = colors.DialogButtonText;
+		}
+
+		DrawRectangle(rDialog, colorBorder, false, 3);
+		DrawRectangle(rDialog, MouseOver(rDialog) ? colorOver : colorNormal, true, 3);
+		DrawText(vectorButtonData[i].buttonText.c_str(), rDialog, 0, colorText, eAlignMode_Center, eAlignMode_Center);
+		AddCommand(source, rDialog, cmdDialogClicked, reply, false, ladder->getContext().inSimulationMode, true);
+
+		rDialog.right -= buttonWidth + buttonSpacing;
+	}
+}
+
 vector<RECT> LadderGUI::DrawExpandedItems(tLadderColorGroup cg, RECT r, POINT GridSize, unsigned int GridOffset, vector<tExpandedItem> items)
 {
 	RECT rText, rExp;
@@ -1100,6 +1166,68 @@ void LadderGUI::addControlList(LadderElem *elem, RECT r, tControlList list)
 	}
 }
 
+// Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
+eReply LadderGUI::ShowDialog(eDialogType type, bool hasCancel, char *title, char *message)
+{
+	eReply reply = eReply_Pending;
+
+	DialogData.type      = type;
+	DialogData.hasCancel = hasCancel;
+	DialogData.reply     = &reply;
+	DialogData.title     = _(title);
+	DialogData.message   = _(message);
+
+	buttonActive = -1;
+
+	isDialogActive = true;
+	while(DoEvents() && reply == eReply_Pending); // Aguarda resposta ao dialogo
+	isDialogActive = false;
+
+	return reply;
+}
+
+tDialogData LadderGUI::getDialogData(void)
+{
+	return DialogData;
+}
+
+bool LadderGUI::IsDialogActive(void)
+{
+	return isDialogActive;
+}
+
+void LadderGUI::setDialogActiveButton(bool isNext)
+{
+	if(isNext) {
+		buttonActive--;
+	} else {
+		buttonActive++;
+	}
+
+	if(buttonActive >= (int)vectorButtonData.size()) {
+		buttonActive = 0;
+	} else if(buttonActive < 0) {
+		buttonActive = vectorButtonData.size() - 1;
+	}
+
+	InvalidateRect(DrawWindow, NULL, FALSE);
+}
+
+void LadderGUI::DialogConfirm(void)
+{
+	if(DialogData.reply != nullptr) {
+		*DialogData.reply = vectorButtonData[buttonActive].buttonReply;
+	}
+}
+
+void LadderGUI::DialogCancel(void)
+{
+	if(DialogData.reply != nullptr) {
+		*DialogData.reply = DialogData.hasCancel ? eReply_Cancel :
+			(DialogData.type == eDialogType_Question ? eReply_No : eReply_Ok);
+	}
+}
+
 tWire LadderGUI::DrawWire(POINT StartPoint, POINT EndPoint, bool isPowered)
 {
 	POINT Size = { EndPoint.x - StartPoint.x, EndPoint.y - StartPoint.y };
@@ -1170,10 +1298,12 @@ void LadderGUI::addConnectionDot(POINT p, bool isPowered, bool isForced)
 
 void LadderGUI::MouseClick(int x, int y, bool isDown, bool isDouble)
 {
+	static bool isMouseDown = false;
+	static POINT pMouseDown = { 0, 0 };
 	POINT p = { x + ScrollXOffset, y + ScrollYOffset*Grid1x1.y };
 	tCommandsList::iterator it;
 
-	if(isDouble || isDown) {
+	if(isDouble || !isDown) {
 		tCommandsList *Commands;
 		Commands = isDouble ? &CommandsDoubleClick : &CommandsSingleClick;
 
@@ -1189,6 +1319,21 @@ void LadderGUI::MouseClick(int x, int y, bool isDown, bool isDouble)
 
 		if(Commands->size() <= 0) return; // Lista de comandos vazia! retorna...
 
+		// Checamos se o mouse se deslocou muito desde o click down
+		if(!isDouble && isMouseDown) {
+			RECT rMouseRegion;
+			rMouseRegion.left   = pMouseDown.x - 5;
+			rMouseRegion.right  = pMouseDown.x + 5;
+			rMouseRegion.top    = pMouseDown.y - 5;
+			rMouseRegion.bottom = pMouseDown.y + 5;
+
+			if(!PointInsideRegion(MousePosition, rMouseRegion)) {
+				return;
+			}
+		}
+
+		isMouseDown = false;
+
 		it = Commands->end();
 		do {
 			it--;
@@ -1198,6 +1343,9 @@ void LadderGUI::MouseClick(int x, int y, bool isDown, bool isDouble)
 					break;
 			}
 		} while(it != Commands->begin());
+	} else {
+		isMouseDown = true;
+		pMouseDown = MousePosition;
 	}
 }
 
@@ -1299,8 +1447,17 @@ RECT LadderGUI::getElemArea(LadderElem *elem)
 	return r;
 }
 
-void LadderGUI::AddCommand(tCommandSource source, RECT region, bool (*fnc)(tCommandSource, void *), void *data, bool isDoubleClick, bool isSimulationMode)
+void LadderGUI::AddCommand(tCommandSource source, RECT region, bool (*fnc)(tCommandSource, void *), void *data,
+	bool isDoubleClick, bool isSimulationMode, bool isDialogCommand)
 {
+	// Nao aceita comandos que nao pertencem a janela de dialogo se ela estiver sendo exibida
+	if(isDialogActive && !isDialogCommand) {
+		if(data != nullptr) {
+			delete data;
+		}
+		return;
+	}
+
 	tCommandsList *Commands;
 	Commands = isDoubleClick ? &CommandsDoubleClick : &CommandsSingleClick;
 
@@ -1324,21 +1481,46 @@ void LadderGUI::AddCommand(tCommandSource source, RECT region, bool (*fnc)(tComm
 void LadderGUI::setLadderColors(tLadderColors colors, bool isModeSimulation)
 {
 	unsigned int index = isModeSimulation ? 1 : 0;
-	LadderColors[index].Background       = CreateBrush(colors.Background      );
-	LadderColors[index].Foreground       = CreateBrush(colors.Foreground      );
-	LadderColors[index].Selection        = CreateBrush(colors.Selection       );
-	LadderColors[index].Bus              = CreateBrush(colors.Bus             );
-	LadderColors[index].BusOff           = CreateBrush(colors.BusOff          );
-	LadderColors[index].ConnectionDot    = CreateBrush(colors.ConnectionDot   );
-	LadderColors[index].ConnectionDotOff = CreateBrush(colors.ConnectionDotOff);
-	LadderColors[index].Wire             = CreateBrush(colors.Wire            );
-	LadderColors[index].WireOff          = CreateBrush(colors.WireOff         );
-	LadderColors[index].Breakpoint       = CreateBrush(colors.Breakpoint      );
-	LadderColors[index].White            = CreateBrush(colors.White           );
-	LadderColors[index].Black            = CreateBrush(colors.Black           );
-	LadderColors[index].Red              = CreateBrush(colors.Red             );
-	LadderColors[index].Green            = CreateBrush(colors.Green           );
-	LadderColors[index].Blue             = CreateBrush(colors.Blue            );
+	LadderColors[index].Background            = CreateBrush(colors.Background           );
+	LadderColors[index].Foreground            = CreateBrush(colors.Foreground           );
+	LadderColors[index].Selection             = CreateBrush(colors.Selection            );
+	LadderColors[index].Bus                   = CreateBrush(colors.Bus                  );
+	LadderColors[index].BusOff                = CreateBrush(colors.BusOff               );
+	LadderColors[index].ConnectionDot         = CreateBrush(colors.ConnectionDot        );
+	LadderColors[index].ConnectionDotOff      = CreateBrush(colors.ConnectionDotOff     );
+	LadderColors[index].Wire                  = CreateBrush(colors.Wire                 );
+	LadderColors[index].WireOff               = CreateBrush(colors.WireOff              );
+	LadderColors[index].Breakpoint            = CreateBrush(colors.Breakpoint           );
+	LadderColors[index].White                 = CreateBrush(colors.White                );
+	LadderColors[index].Black                 = CreateBrush(colors.Black                );
+	LadderColors[index].Red                   = CreateBrush(colors.Red                  );
+	LadderColors[index].Green                 = CreateBrush(colors.Green                );
+	LadderColors[index].Blue                  = CreateBrush(colors.Blue                 );
+	LadderColors[index].DialogBorder          = CreateBrush(colors.DialogBorder         );
+	LadderColors[index].DialogBorderText      = CreateBrush(colors.DialogBorderText     );
+	LadderColors[index].DialogBackground      = CreateBrush(colors.DialogBackground     );
+	LadderColors[index].DialogBackgroundLight = CreateBrush(colors.DialogBackgroundLight);
+	LadderColors[index].DialogBackgroundDark  = CreateBrush(colors.DialogBackgroundDark );
+	LadderColors[index].DialogBackgroundText  = CreateBrush(colors.DialogBackgroundText );
+	LadderColors[index].DialogDefButtonUp     = CreateBrush(colors.DialogDefButtonUp    );
+	LadderColors[index].DialogDefButtonDown   = CreateBrush(colors.DialogDefButtonDown  );
+	LadderColors[index].DialogDefButtonBorder = CreateBrush(colors.DialogDefButtonBorder);
+	LadderColors[index].DialogDefButtonText   = CreateBrush(colors.DialogDefButtonText  );
+	LadderColors[index].DialogButtonUp        = CreateBrush(colors.DialogButtonUp       );
+	LadderColors[index].DialogButtonDown      = CreateBrush(colors.DialogButtonDown     );
+	LadderColors[index].DialogButtonBorder    = CreateBrush(colors.DialogButtonBorder   );
+	LadderColors[index].DialogButtonText      = CreateBrush(colors.DialogButtonText     );
+	LadderColors[index].BlackHalfTransparency = CreateBrush(colors.BlackHalfTransparency, 0.5f);
+
+	/*** Gradientes ***/
+	if(!isModeSimulation) {
+		// Gradientes utilizados na caixa de dialogo
+		// Utilizamos as cores do modo normal
+		gradDialogDefButtonNormal = CreateGradient(LadderColors[index].DialogDefButtonUp  , LadderColors[index].DialogDefButtonDown);
+		gradDialogDefButtonOver   = CreateGradient(LadderColors[index].DialogDefButtonDown, LadderColors[index].DialogDefButtonUp  );
+		gradDialogButtonNormal    = CreateGradient(LadderColors[index].DialogButtonUp     , LadderColors[index].DialogButtonDown   );
+		gradDialogButtonOver      = CreateGradient(LadderColors[index].DialogButtonDown   , LadderColors[index].DialogButtonUp     );
+	}
 }
 
 tLadderColors LadderGUI::getLadderColors(void)
@@ -2378,21 +2560,45 @@ bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
 	rClock.right = rClock.left + (rClock.bottom - rClock.top);
 
 	// Desenha o a linha inicial do timer
-	COLORREF colorWire = poweredAfter ? colors.Wire : colors.WireOff;
+	COLORREF colorWire = poweredBefore ? colors.Wire : colors.WireOff;
 
 	start.x = r.left;
 	start.y = r.top + (doHighStart ? 10 : GridSize.y);
-	end.x   = rClock.right + 10;
+	end.x   = rClock.left;
 	end.y   = start.y;
 	gui.DrawLine(start, end, colorWire);
 
-	if(which != ELEM_RTO) {
-		// Agora desenha o circulo do relogio
-		gui.DrawEllipse(rClock, colorgroup.Background);
-		gui.DrawEllipse(rClock, colorgroup.Foreground, false);
+	// Desenha o a linha inicial do timer
+	colorWire = poweredAfter ? colors.Wire : colors.WireOff;
 
+	start.x = rClock.right;
+	end.x   = rClock.right + 10;
+	gui.DrawLine(start, end, colorWire);
+
+	if(which != ELEM_RTO) {
 		if(ladder->getContext().inSimulationMode) {
+			// Primeiro limpa o circulo do relogio com a cor de simulacao Ligado
+			gui.DrawEllipse(rClock, colors.Wire);
+
+			// Desenha um retangulo com a cor do fundo sobre o circulo, proporcionalmente ao
+			// valor atual do timer. Assim cria-se o efeito de preenchimento do circulo de
+			// forma a indicar quanto falta para alcancar o valor do timer.
+			RECT rBackground = rClock;
+			int period = TimerPeriod();
+			int curval = GetSimulationVariable(Diagram->getNameIO(prop.idName).c_str());
+			unsigned int offset = ((rBackground.right - rBackground.left) * (doHighStart ? period - curval : curval)) / period;
+
+			if(doHighStart) {
+				rBackground.right -= offset;
+			} else {
+				rBackground.left  += offset;
+			}
+
+			gui.DrawRectangle(rBackground, colorgroup.Background);
 		} else {
+			// Primeiro limpa o circulo do relogio
+			gui.DrawEllipse(rClock, colorgroup.Background);
+
 			// Em seguida, desenha os ponteiros
 			POINT start, end;
 			start.x = rClock.left + (rClock.right - rClock.left)/2;
@@ -2408,6 +2614,9 @@ bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
 
 			gui.DrawLine(start, end, colorgroup.Foreground);
 		}
+
+		// Agora desenha o circulo do relogio
+		gui.DrawEllipse(rClock, colorgroup.Foreground, false);
 	} else {
 		POINT start, size = { 20, 20 };
 
@@ -2511,7 +2720,7 @@ bool LadderElemRTC::DrawGUI(bool poweredBefore, void *data)
 	POINT GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
-	ddg->size.x = 3;
+	ddg->size.x = (prop.wday & (1 << 7)) ? 3 : 4;
 	ddg->size.y = 2;
 
 	if(ddg->DontDraw) return poweredAfter;
@@ -2520,7 +2729,7 @@ bool LadderElemRTC::DrawGUI(bool poweredBefore, void *data)
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("RTC"), false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("Scheduler"), false, poweredBefore);
 	ddg->region = r;
 
 	POINT start, size = { 42, 42 };
@@ -6804,22 +7013,12 @@ void LadderDiagram::DrawGUI(void)
 {
 	if(context.isLoadingFile) return; // Durante o carregamento de um arquivo nao devemos desenhar a tela...
 
-	// Estrutura e mapa utilizados para armazenar dados especificos e nao-volateis de diagramas
-	// Nao podemos usar as variaveis estaticas diretamente pois, como sao varios diagramas ladder,
-	// haveria conflito ao mudar de um diagrama para outro.
-	typedef struct {
-		POINT                SizeMax;
-		vector<tDataDrawGUI> rungData;
-		bool                 needSelectRung;
-	} tDiagramData;
-
-	static map<LadderDiagram *, tDiagramData> mapDiagramData;
-
 	// Aqui criamos um novo mapa (no caso de um novo diagrama)
 	if(mapDiagramData.count(this) == 0) {
 		tDiagramData data;
 		data.needSelectRung = true;
-		data.SizeMax.x = data.SizeMax.y = 0;
+		data.SizeMax     .x = data.SizeMax     .y = 0;
+		data.ScrollOffset.x = data.ScrollOffset.y = 0;
 		mapDiagramData[this] = data;
 	}
 
@@ -6888,12 +7087,19 @@ void LadderDiagram::DrawGUI(void)
 
 		// Fim da Etapa 1. Agora calculamos a altura do diagrama
 		DiagramData.SizeMax.y = RungDDG.start.y;
-
-		gui.setDiagramSize(DiagramData.SizeMax);
-		RefreshScrollbars();
 	} else {
 		RungDDG                = zeroRungDDG;
 		RungDDG.regionSelected = gui.getElemArea(context.SelectedElem);
+	}
+
+	if(isFullRedraw || isDiagramChangedSinceLastDraw) {
+		isDiagramChangedSinceLastDraw = false;
+
+		gui.setDiagramSize(DiagramData.SizeMax);
+
+		ScrollXOffset = DiagramData.ScrollOffset.x;
+		ScrollYOffset = DiagramData.ScrollOffset.y;
+		RefreshScrollbars();
 	}
 
 	if(NeedScrollSelectedIntoView) {
@@ -7018,6 +7224,8 @@ void LadderDiagram::DrawGUI(void)
 	}
 
 	// Salva os dados atualizados no mapa
+	DiagramData.ScrollOffset.x = ScrollXOffset;
+	DiagramData.ScrollOffset.y = ScrollYOffset;
 	mapDiagramData[this] = DiagramData;
 }
 
@@ -7078,29 +7286,20 @@ void LadderDiagram::ShowIoMapDialog(int item)
 }
 
 // Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
-eReply LadderDiagram::ShowDialog(bool isMessage, bool hasCancel, char *title, char *message, ...)
+eReply LadderDiagram::ShowDialog(eDialogType type, bool hasCancel, char *title, char *message, ...)
 {
-	UINT msgType;
-	eReply reply = eReply_Yes;
-	message = _(message);
-
 	va_list f;
 	va_start(f, message);
 
-	if(isMessage) {
-		msgType = MB_ICONEXCLAMATION | (hasCancel ? MB_OKCANCEL : MB_OK);
-	} else {
-		msgType = MB_ICONQUESTION    | (hasCancel ? MB_YESNOCANCEL : MB_YESNO);
-	}
-
 	char buf[1024];
+g
+
+	message = _(message);
 	vsprintf(buf, message, f);
-	switch(MessageBox(MainWindow, buf, _(title), msgType)) {
-		case IDYES: reply = eReply_Yes   ; break;
-		case IDNO : reply = eReply_No    ; break;
-		case IDOK : reply = eReply_Ok    ; break;
-		default   : reply = eReply_Cancel; break;
-	}
+
+	SetLock(true);
+	eReply reply = gui.ShowDialog(type, hasCancel, title, buf);
+	SetLock(false);
 
 	return reply;
 }

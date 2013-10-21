@@ -111,5 +111,5 @@ void ExportDrawingAsText(char *file)
     // we may have trashed the grid tables a bit; a repaint will fix that
     InvalidateRect(MainWindow, NULL, FALSE);
 
-	MessageBox(MainWindow, _("Arquivo gerado com sucesso!"), _("Sucesso"), MB_OK);
+	ladder->ShowDialog(eDialogType_Message, false, _("Sucesso"), _("Arquivo gerado com sucesso!"));
 }

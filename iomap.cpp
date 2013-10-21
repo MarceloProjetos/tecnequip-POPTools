@@ -1285,11 +1285,11 @@ void mapIO::ShowIoMapDialog(int item)
 	mapDetails detailsIO = getDetails(id);
 
 	if(mcu == nullptr) {
-        MessageBox(MainWindow,
+		ladder->ShowDialog(eDialogType_Error, false, _("I/O Pin Assignment"),
             _("No microcontroller has been selected. You must select a "
             "microcontroller before you can assign I/O pins.\r\n\r\n"
             "Select a microcontroller under the Settings menu and try "
-            "again."), _("I/O Pin Assignment"), MB_OK | MB_ICONWARNING);
+            "again."));
         return;
     }
 

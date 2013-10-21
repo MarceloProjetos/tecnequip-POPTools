@@ -269,6 +269,9 @@
     <ClInclude Include="ResourceFontFileStream.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="LadderGUI.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc">

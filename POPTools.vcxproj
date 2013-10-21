@@ -362,6 +362,7 @@
     <ClInclude Include="iomap.h" />
     <ClInclude Include="KeyboardHandlers.h" />
     <ClInclude Include="KeyboardMap.h" />
+    <ClInclude Include="LadderGUI.h" />
     <ClInclude Include="LadderObjects.h" />
     <ClInclude Include="modbus_master.h" />
     <ClInclude Include="PropertySet.h" />

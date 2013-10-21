@@ -552,9 +552,11 @@ void SwitchProgram(LadderDiagram *newladder)
 	// Se houver apenas 1 aba, oculta o TabCtrl
 	ShowTabCtrl(ladderList.size() < 2 ? false : true);
 
+	isDiagramChangedSinceLastDraw = true;
     InvalidateRect(MainWindow, NULL, FALSE);
 
 	RefreshControlsToSettings();
+	UpdateMainWindowTitleBar ();
 
 	ladder->Activate(true);
 	LadderContext context = ladder->getContext();

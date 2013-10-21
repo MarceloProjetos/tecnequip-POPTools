@@ -1,6 +1,7 @@
 #include "poptools.h"
 #include "mcutable.h"
 #include "LadderObjects.h"
+#include "LadderGUI.h"
 
 HINSTANCE   Instance;
 HWND        MainWindow;
@@ -355,7 +356,7 @@ static void SaveAsAnsiC(void)
 		return;
 
     if(GenerateIntermediateCode() && GenerateCFile(exportFile))
-		MessageBox(MainWindow, _("Arquivo gerado com sucesso!"), _("Sucesso"), MB_OK);
+		ladder->ShowDialog(eDialogType_Message, false, _("Sucesso"), _("Arquivo gerado com sucesso!"));
 }
 
 //-----------------------------------------------------------------------------
@@ -805,21 +806,20 @@ bool CheckSaveUserCancels(void)
         return false;
     }
 
-    int r = MessageBox(MainWindow, 
+	eReply r = ladder->ShowDialog(eDialogType_Question, true, "POPTools",
         _("The program has changed since it was last saved.\r\n\r\n"
-        "Do you want to save the changes?"), "POPTools",
-        MB_YESNOCANCEL | MB_ICONWARNING);
+        "Do you want to save the changes?"));
     switch(r) {
-        case IDYES:
+		case eReply_Yes:
             if(SaveProgram())
                 return false;
             else
                 return true;
 
-        case IDNO:
+        case eReply_No:
             return false;
 
-        case IDCANCEL:
+        case eReply_Cancel:
             return true;
 
         default:
@@ -866,19 +866,18 @@ static void OpenDialog(char *filename)
 			// inves de abrir uma nova aba. Se houverem modificacoes, perguntar se devemos
 			// abrir uma nova copia.
 			if(ladderList[i]->getContext().programChangedNotSaved) {
-				int r = MessageBox(MainWindow, 
+				eReply r = ladder->ShowDialog(eDialogType_Question, true, "POPTools",
 					_("Este diagrama já está aberto e possui modificações\r\n\r\n"
-					"Você deseja abrir uma nova cópia?"), "POPTools",
-					MB_YESNOCANCEL | MB_ICONWARNING);
+					"Você deseja abrir uma nova cópia?"));
 				switch(r) {
-					case IDYES:
+					case eReply_Yes:
 						openNewCopy = true; // Abre nova copia
 						break;
 
-					case IDNO:
+					case eReply_No:
 						break; // Nao faz nada. Realiza acao padrao: seleciona aba
 
-					case IDCANCEL:
+					case eReply_Cancel:
 						// Operacao cancelada! Exclui o novo programa, se criado...
 						if(newProgramCreated) {
 							CloseProgram(ladder);
@@ -907,6 +906,9 @@ static void OpenDialog(char *filename)
 
     if(!LoadProjectFromFile(tempSaveFile)) {
         Error(_("Couldn't open '%s'."), tempSaveFile);
+		if(newProgramCreated) {
+			CloseProgram(ladder);
+		}
     } else {
 		UpdateRecentList(tempSaveFile);
 	}
@@ -955,6 +957,8 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
 void ProcessMenu(int code)
 {
 	unsigned int recent_index;
+
+	if(ladder->IsLocked() && code != MNU_EXIT) return; // Se o diagrama estiver bloqueado, retorna
 
     switch(code) {
         case MNU_NEW:
@@ -1015,7 +1019,9 @@ void ProcessMenu(int code)
             break;
 
         case MNU_EXIT:
-			if(ladder->getContext().inSimulationMode) {
+			if(gui.IsDialogActive()) {
+				gui.DialogCancel();
+			} else if(ladder->getContext().inSimulationMode) {
 				ToggleSimulationMode();
 			} else {
 				if(CloseAllPrograms() == false) break;
@@ -1886,6 +1892,43 @@ static void DiscardDeviceIndependentResources()
 	SafeRelease(&pD2DFactory);
 }
 
+// Funcao que checa por eventos do windows
+bool DoEvents(void)
+{
+	MSG msg;
+	static bool isRunning = true;
+    DWORD ret;
+
+	if(isRunning) {
+		ret = GetMessage(&msg, NULL, 0, 0);
+		if(ret) {
+			if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
+				if(msg.wParam == VK_TAB) {
+					SetFocus(MainWindow);
+					return isRunning;
+				}
+			}
+
+			if(msg.message == WM_KEYDOWN && msg.wParam != VK_UP &&
+				msg.wParam != VK_DOWN && msg.wParam != VK_RETURN && msg.wParam
+				!= VK_SHIFT)
+			{
+				if(msg.hwnd == IoList) {
+					msg.hwnd = MainWindow;
+					SetFocus(MainWindow);
+				}
+			}
+
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		} else {
+			isRunning = false;
+		}
+	}
+
+	return isRunning;
+}
+
 //-----------------------------------------------------------------------------
 // Entry point into the program.
 //-----------------------------------------------------------------------------
@@ -1971,27 +2014,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	Init_MBDev();
 	Init_MBDev_Slave();
 
-	MSG msg;
-    DWORD ret;
-    while(ret = GetMessage(&msg, NULL, 0, 0)) {
-        if(msg.hwnd == IoList && msg.message == WM_KEYDOWN) {
-            if(msg.wParam == VK_TAB) {
-                SetFocus(MainWindow);
-                continue;
-            }
-        }
-        if(msg.message == WM_KEYDOWN && msg.wParam != VK_UP &&
-            msg.wParam != VK_DOWN && msg.wParam != VK_RETURN && msg.wParam
-            != VK_SHIFT)
-        {
-            if(msg.hwnd == IoList) {
-                msg.hwnd = MainWindow;
-                SetFocus(MainWindow);
-            }
-        }
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
+	// Loop de mensagens
+	while(DoEvents());
 
 	ShowWindow(MainWindow, SW_HIDE);
 

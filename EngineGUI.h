@@ -23,7 +23,20 @@ private:
 
 	EngineRender *pRender;
 
-	std::vector<COLORREF> Brushes;
+	typedef struct {
+		eBrushType type;
+		struct {
+			COLORREF rgb;
+			float    alpha;
+		} solid;
+		struct {
+			unsigned int brushStart;
+			unsigned int brushEnd;
+			unsigned int angle;
+		} linear;
+	} tBrushData;
+
+	std::vector<tBrushData> Brushes;
 	unsigned int BrushOffset;
 
 	POINT DrawOffset;
@@ -46,7 +59,8 @@ public:
 	HRESULT GetRender(EngineRender **ppRender);
 
 	HRESULT SetBackgroundColor(COLORREF rgb);
-	unsigned int CreateBrush(COLORREF rgb);
+	unsigned int CreateBrush(COLORREF rgb, float alpha = 1.0f);
+	unsigned int CreateGradient(unsigned int brushStart, unsigned int brushEnd, unsigned int angle = 0);
 
 	float getBrushWidth(void)        { return brushWidth; }
 	void  setBrushWidth(float width) { brushWidth = width; }

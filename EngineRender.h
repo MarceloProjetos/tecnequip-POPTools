@@ -4,6 +4,9 @@
 // Enumeracao com os tipos de alinhamento suportados
 enum eAlignMode { eAlignMode_TopLeft = 0, eAlignMode_Center, eAlignMode_BottomRight };
 
+// Enumeracao com os tipos de pincel disponiveis.
+enum eBrushType { eBrushType_SolidColor, eBrushType_GradientLinear };
+
 class EngineRender
 {
 private:
@@ -15,7 +18,8 @@ public:
 
 	virtual HRESULT CreateRenderTarget(HWND hwnd)=0;
 	virtual HRESULT ResizeRenderTarget(HWND hwnd)=0;
-	virtual HRESULT CreateBrush(unsigned int rgb, unsigned int &index)=0;
+	virtual HRESULT CreateBrush   (unsigned int &index, unsigned int rgb, float alpha = 1.0f)=0;
+	virtual HRESULT CreateGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle = 0)=0;
 
 	virtual void    StartDraw(void)=0;
 	virtual void    Clear(unsigned int brush)=0;

@@ -39,7 +39,11 @@ void EngineRenderD2D::FreeRenderTarget(void)
 	TextFormats.clear();
 
 	for(i=0; i<Brushes.size(); i++) {
-		SafeRelease(&Brushes[i]);
+		if(Brushes[i].brushType == eBrushType_SolidColor) {
+			SafeRelease(&Brushes[i].solid.pBrush);
+		} else {
+			SafeRelease(&Brushes[i].linear.pBrush);
+		}
 	}
 	Brushes.clear();
 
@@ -73,7 +77,13 @@ HRESULT EngineRenderD2D::CreateRenderTarget(HWND hwnd)
 
 	// Create a Direct2D render target			
 	HRESULT hr = pD2DFactory->CreateHwndRenderTarget(
-		D2D1::RenderTargetProperties(),
+		D2D1::RenderTargetProperties(
+			D2D1_RENDER_TARGET_TYPE_DEFAULT,
+			D2D1::PixelFormat(
+				DXGI_FORMAT_UNKNOWN,
+				D2D1_ALPHA_MODE_PREMULTIPLIED
+			)
+		),
 		D2D1::HwndRenderTargetProperties(
 			hwnd,
 			D2D1::SizeU(
@@ -90,7 +100,7 @@ HRESULT EngineRenderD2D::CreateRenderTarget(HWND hwnd)
 
 	if (SUCCEEDED(hr)) {
 		unsigned int dummy;
-		CreateBrush(RGB(0,0,0), dummy);
+		CreateBrush(dummy, RGB(0,0,0));
 	}
 
 	return hr;
@@ -109,22 +119,150 @@ HRESULT EngineRenderD2D::ResizeRenderTarget(HWND hwnd)
 	}
 }
 
-HRESULT EngineRenderD2D::CreateBrush(unsigned int rgb, unsigned int &index)
+HRESULT EngineRenderD2D::CreateBrush(unsigned int &index, unsigned int rgb, float alpha)
 {
 	ID2D1SolidColorBrush *pBrush = NULL;
     HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
 	if(pRT != NULL) {
 		rgb = RGB((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, rgb & 0xff);
-		hr = pRT->CreateSolidColorBrush(D2D1::ColorF(rgb, 1.0), &pBrush);
+		hr = pRT->CreateSolidColorBrush(D2D1::ColorF(rgb, alpha), &pBrush);
 
 		if(SUCCEEDED(hr)) {
+			tBrushDataD2D data;
+
+			data.brushType    = eBrushType_SolidColor;
+			data.solid.pBrush = pBrush;
+
 			index = Brushes.size();
-			Brushes.push_back(pBrush);
+			Brushes.push_back(data);
 		}
 	}
 
 	return hr;
+}
+
+HRESULT EngineRenderD2D::CreateGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle)
+{
+    HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
+
+	ID2D1SolidColorBrush *pBrushStart = getSolidColorBrush(brushStart), *pBrushEnd = getSolidColorBrush(brushEnd);
+
+	if(pRT != NULL && pBrushStart != nullptr && pBrushEnd != nullptr) {
+		tBrushDataD2D data;
+		data.brushType             = eBrushType_GradientLinear;
+		data.linear.angle          = angle;
+		data.linear.pGradientStops = NULL;
+		data.linear.pBrush         = NULL;
+
+		D2D1_GRADIENT_STOP gradientStops[2];
+		gradientStops[0].color = pBrushStart->GetColor();
+		gradientStops[0].position = 0.0f;
+		gradientStops[1].color = pBrushEnd  ->GetColor();
+		gradientStops[1].position = 1.0f;
+
+		hr = pRT->CreateGradientStopCollection(
+			gradientStops,
+			2,
+			D2D1_GAMMA_2_2,
+			D2D1_EXTEND_MODE_CLAMP,
+			&data.linear.pGradientStops
+			);
+
+		if(SUCCEEDED(hr)) {
+			index = Brushes.size();
+			Brushes.push_back(data);
+		}
+	}
+
+	return hr;
+}
+
+ID2D1Brush *EngineRenderD2D::getBrush(unsigned int brush, D2D1_RECT_F rf)
+{
+	if(Brushes[brush].brushType == eBrushType_SolidColor) {
+		return getSolidColorBrush(brush);
+	} else {
+		return getLinearGradientBrush(brush, rf);
+	}
+}
+
+ID2D1SolidColorBrush *EngineRenderD2D::getSolidColorBrush(unsigned int brush)
+{
+	if(brush < Brushes.size() && Brushes[brush].brushType == eBrushType_SolidColor) {
+		return Brushes[brush].solid.pBrush;
+	}
+
+	return nullptr;
+}
+
+ID2D1LinearGradientBrush *EngineRenderD2D::getLinearGradientBrush(unsigned int brush, D2D1_RECT_F rf)
+{
+	if(brush < Brushes.size() && Brushes[brush].brushType == eBrushType_GradientLinear) {
+		SafeRelease(&Brushes[brush].linear.pBrush);
+
+		// Parametros
+		bool needSwap = false;
+		unsigned int angle = Brushes[brush].linear.angle;
+		float factorX, factorY;
+
+		// Primeiro corrigimos angulos superiores a uma volta
+		angle %= 360;
+
+		// Se ultrapassou 180 graus, consideramos um angulo ate 180 graus e inverte os pontos de inicio / fim.
+		if(angle >= 180) {
+			needSwap = true;
+			angle -= 180;
+		}
+
+		// Calculo do eixo Y
+		factorY = ((float)(angle) - 45.0f) / 90.0f;
+		if(factorY < 0.0f) {
+			factorY = 0.0f;
+		} else if(factorY > 1.0f) {
+			factorY = 1.0f;
+		}
+
+		// Calculo do eixo X
+		if(angle >= 135) {
+			angle = 45 - (angle - 135);
+		} else if( angle > 45) {
+			angle = 45;
+		}
+
+		factorX = 0.5f + ((float)(angle) / 45.0f) / 2;
+
+		// Calculo dos deslocamentos
+		D2D1_POINT_2F start, end;
+
+		float offsetX = (rf.right  - rf.left) * factorX;
+		float offsetY = (rf.bottom - rf.top ) * factorY;
+
+		start.x = rf.left   + offsetX;
+		start.y = rf.top    + offsetY;
+		end  .x = rf.right  - offsetX;
+		end  .y = rf.bottom - offsetY;
+
+		if(needSwap) {
+			D2D1_POINT_2F tmp;
+
+			tmp   = start;
+			start = end;
+			end   = tmp;
+		}
+
+		HRESULT hr = pRT->CreateLinearGradientBrush(
+			D2D1::LinearGradientBrushProperties(start, end),
+			Brushes[brush].linear.pGradientStops,
+			&Brushes[brush].linear.pBrush
+		);
+
+		if(SUCCEEDED(hr)) {
+			return Brushes[brush].linear.pBrush;
+		}
+	}
+
+	return nullptr;
 }
 
 HRESULT EngineRenderD2D::CreateTextFormat(unsigned int rgb, unsigned int &index)
@@ -219,7 +357,7 @@ void EngineRenderD2D::StartDraw(void)
 void EngineRenderD2D::Clear(unsigned int brush)
 {
 	if(pRT != NULL && brush < Brushes.size()) {
-		pRT->Clear(Brushes[brush]->GetColor());
+		pRT->Clear(getSolidColorBrush(brush)->GetColor());
 	}
 }
 
@@ -400,12 +538,13 @@ HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ, unsigned int brush
 
 			// Desenha o fundo
 			if(filled) {
-				pRT->FillGeometry(pGeometry, Brushes[brushBG]);
+				pRT->FillGeometry(pGeometry, getBrush(brushBG, rectRoundedRect));
 			}
 
 			if(brushBG != brushIntBorder) {
+				ID2D1Brush *pBrush = getBrush(brushIntBorder, rectRoundedRect);
 				// Desenha a borda interna
-				pRT->DrawRoundedRectangle(D2D1::RoundedRect(rectRoundedRect, radiusX, radiusY), Brushes[brushIntBorder], 4);
+				pRT->DrawRoundedRectangle(D2D1::RoundedRect(rectRoundedRect, radiusX, radiusY), pBrush, 4);
 
 				// Faltam os pontos iniciais das linhas. Calculamos atraves de rectRoundedRect
 				pointLines[0].x = rectRoundedRect.right - radiusX; // Ponto inicial da primeira linha
@@ -414,12 +553,12 @@ HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ, unsigned int brush
 				pointLines[2].y = rectRoundedRect.top + radiusY; // Ponto inicial da segunda linha
 
 				// Desenha as duas linhas superiores
-				pRT->DrawLine(pointLines[0], pointLines[1], Brushes[brushIntBorder], 4);
-				pRT->DrawLine(pointLines[2], pointLines[3], Brushes[brushIntBorder], 4);
+				pRT->DrawLine(pointLines[0], pointLines[1], pBrush, 4);
+				pRT->DrawLine(pointLines[2], pointLines[3], pBrush, 4);
 			}
 
 			// Desenha a borda externa
-			pRT->DrawGeometry(pGeometry, Brushes[brushExtBorder], 4);
+			pRT->DrawGeometry(pGeometry, getBrush(brushExtBorder, rectRoundedRect), 4);
 
 			// Se usando rotacao, volta ao normal
 			if(angle) pRT->SetTransform(D2D1::Matrix3x2F::Rotation(0.0f, xy));
@@ -715,10 +854,11 @@ HRESULT EngineRenderD2D::DrawPolygon(vector<POINT> points, unsigned int brush, b
 			}
 
 			// Desenha o poligono
+			D2D1_RECT_F rf = D2D1::RectF((float)r.left, (float)r.top, (float)r.right, (float)r.bottom);
 			if(filled) {
-				pRT->FillGeometry(pGeometry, Brushes[brush]);
+				pRT->FillGeometry(pGeometry, getBrush(brush, rf));
 			} else {
-				pRT->DrawGeometry(pGeometry, Brushes[brush], brushWidth);
+				pRT->DrawGeometry(pGeometry, getBrush(brush, rf), brushWidth);
 			}
 
 			// Se usando rotacao, volta ao normal
@@ -750,9 +890,9 @@ void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled, uns
 		}
 
 		if(filled) {
-			rf.radiusX == 0.0 ? pRT->FillRectangle(rf.rect, Brushes[brush]            ) : pRT->FillRoundedRectangle(rf, Brushes[brush]            );
+			rf.radiusX == 0.0 ? pRT->FillRectangle(rf.rect, getBrush(brush, rf.rect)            ) : pRT->FillRoundedRectangle(rf, getBrush(brush, rf.rect)            );
 		} else {
-			rf.radiusX == 0.0 ? pRT->DrawRectangle(rf.rect, Brushes[brush], brushWidth) : pRT->DrawRoundedRectangle(rf, Brushes[brush], brushWidth);
+			rf.radiusX == 0.0 ? pRT->DrawRectangle(rf.rect, getBrush(brush, rf.rect), brushWidth) : pRT->DrawRoundedRectangle(rf, getBrush(brush, rf.rect), brushWidth);
 		}
 
 		if(angle) pRT->SetTransform(D2D1::Matrix3x2F::Rotation(0.0f, xy));
@@ -773,7 +913,7 @@ void EngineRenderD2D::DrawText(const char *txt, RECT r, unsigned int format, uns
 			}
 
 			if(alignX == eAlignMode_Center) {
-				r.left += (r.right - r.left - len)/2;
+				r.left += (r.right - r.left - len + 4)/2;
 			} else if(alignX == eAlignMode_BottomRight) {
 				r.left  =  r.right - len;
 			}
@@ -794,7 +934,7 @@ void EngineRenderD2D::DrawText(const char *txt, RECT r, unsigned int format, uns
 		strncpy(ctxt, txt, nchars);
 		ctxt[nchars] = 0;
 		swprintf(wtxt, size, L"%S", ctxt);
-		pRT->DrawText(wtxt, static_cast<UINT>(wcslen(wtxt)), TextFormats[format].format, &rf, Brushes[brush]);
+		pRT->DrawText(wtxt, static_cast<UINT>(wcslen(wtxt)), TextFormats[format].format, &rf, getBrush(brush, rf));
 
 		delete [] wtxt;
 		delete [] ctxt;
@@ -804,10 +944,12 @@ void EngineRenderD2D::DrawText(const char *txt, RECT r, unsigned int format, uns
 HRESULT EngineRenderD2D::DrawLine(POINT start, POINT end, unsigned int brush, float brushWidth)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
+	ID2D1Brush *pBrush = getSolidColorBrush(brush);
 
-	if(pRT != NULL && brush < Brushes.size()) {
-		pRT->DrawLine(D2D1::Point2F((float)start.x, (float)start.y),
-					  D2D1::Point2F((float)  end.x, (float)  end.y), Brushes[brush], brushWidth);
+	if(pRT != NULL && pBrush != nullptr) {
+		float offset = ((int)(brushWidth + 0.5f)%2) ? -0.5f : 0.0f;
+		pRT->DrawLine(D2D1::Point2F((float)start.x + offset, (float)start.y + offset),
+					  D2D1::Point2F((float)  end.x + offset, (float)  end.y + offset), pBrush, brushWidth);
 		hr = S_OK;
 	}
 
@@ -824,10 +966,11 @@ HRESULT EngineRenderD2D::DrawEllipse(POINT center, float rx, float ry, unsigned 
 	ellipse.radiusY = ry;
 
 	if(pRT != NULL && brush < Brushes.size()) {
+		D2D1_RECT_F rf = D2D1::RectF(ellipse.point.x - rx, ellipse.point.y - ry, ellipse.point.x + rx, ellipse.point.y + ry);
 		if(filled) {
-			pRT->FillEllipse(&ellipse, Brushes[brush]);
+			pRT->FillEllipse(&ellipse, getBrush(brush, rf));
 		} else {
-			pRT->DrawEllipse(&ellipse, Brushes[brush], brushWidth);
+			pRT->DrawEllipse(&ellipse, getBrush(brush, rf), brushWidth);
 		}
 
 		hr = S_OK;
@@ -839,45 +982,50 @@ HRESULT EngineRenderD2D::DrawEllipse(POINT center, float rx, float ry, unsigned 
 HRESULT EngineRenderD2D::DrawArc(POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush, float brushWidth)
 {
 	ID2D1PathGeometry *pGeometry;
-	HRESULT hr = pD2DFactory->CreatePathGeometry(&pGeometry);
+	ID2D1Brush        *pBrush = getSolidColorBrush(brush);
+	HRESULT            hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
-	if(SUCCEEDED(hr)) {
-		ID2D1GeometrySink *pSink = NULL;
+	if(pBrush != nullptr) {
+		hr = pD2DFactory->CreatePathGeometry(&pGeometry);
 
-		hr = pGeometry->Open(&pSink);
-		if (SUCCEEDED(hr)) {
-			pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
+		if(SUCCEEDED(hr)) {
+			ID2D1GeometrySink *pSink = NULL;
 
-			// Iniciando o desenho da figura. Devido a forma que eu criei o teste, o desenho se inicia pelo canto
-			// inferior direito do retangulo e segue em sentido anti-horario.
-			// Agora que ja foi feito assim, nao sera mudado!
+			hr = pGeometry->Open(&pSink);
+			if (SUCCEEDED(hr)) {
+				pSink->SetFillMode(D2D1_FILL_MODE_WINDING);
 
-			D2D1_POINT_2F point = D2D1::Point2F(float(start.x), float(start.y));
-			pSink->BeginFigure(point, D2D1_FIGURE_BEGIN_FILLED);
+				// Iniciando o desenho da figura. Devido a forma que eu criei o teste, o desenho se inicia pelo canto
+				// inferior direito do retangulo e segue em sentido anti-horario.
+				// Agora que ja foi feito assim, nao sera mudado!
 
-			// Arco para o ponto final, usando os dados fornecidos
-			point = D2D1::Point2F(float(end.x), float(end.y));
-			pSink->AddArc(
-				D2D1::ArcSegment(
-					point,
-					D2D1::SizeF(rx, ry),
-					0.0f,
-					isClockWise ? D2D1_SWEEP_DIRECTION_CLOCKWISE : D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
-					D2D1_ARC_SIZE_SMALL
-				)
-			);
+				D2D1_POINT_2F point = D2D1::Point2F(float(start.x), float(start.y));
+				pSink->BeginFigure(point, D2D1_FIGURE_BEGIN_FILLED);
 
-			// Finaliza o arco em modo OPEN para que nao seja adicionada uma linha entre suas extremidades
-			pSink->EndFigure(D2D1_FIGURE_END_OPEN);
+				// Arco para o ponto final, usando os dados fornecidos
+				point = D2D1::Point2F(float(end.x), float(end.y));
+				pSink->AddArc(
+					D2D1::ArcSegment(
+						point,
+						D2D1::SizeF(rx, ry),
+						0.0f,
+						isClockWise ? D2D1_SWEEP_DIRECTION_CLOCKWISE : D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
+						D2D1_ARC_SIZE_SMALL
+					)
+				);
 
-			hr = pSink->Close();
+				// Finaliza o arco em modo OPEN para que nao seja adicionada uma linha entre suas extremidades
+				pSink->EndFigure(D2D1_FIGURE_END_OPEN);
 
-			SafeRelease(&pSink);
+				hr = pSink->Close();
 
-			// Agora desenha o arco
-			pRT->DrawGeometry(pGeometry, Brushes[brush], brushWidth);
+				SafeRelease(&pSink);
 
-			SafeRelease(&pGeometry);
+				// Agora desenha o arco
+				pRT->DrawGeometry(pGeometry, pBrush, brushWidth);
+
+				SafeRelease(&pGeometry);
+			}
 		}
 	}
 

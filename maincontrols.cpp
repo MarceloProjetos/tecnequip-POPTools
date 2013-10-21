@@ -15,24 +15,9 @@ static LONG_PTR     PrevDrawWindowProc;
 // status bar at the bottom of the screen, to display settings
 static HWND         StatusBar;
 
-// have to get back to the menus to gray/ungray, check/uncheck things
-static HMENU        FileMenu;
-static HMENU        RecentMenu;
-static HMENU        EditMenu;
-static HMENU        InstructionMenu;
-static HMENU		ConditionalMenu;
-static HMENU		MathematicMenu;
-static HMENU		ComunicationMenu;
-static HMENU		MotorControlMenu;
-static HMENU        ProcessorMenu;
-static HMENU        SimulateMenu;
-static HMENU        TopMenu;
-
 // listview used to maintain the list of I/O pins with symbolic names, plus
 // the internal relay too
 HWND                IoList;
-static int          IoListSelectionPoint;
-static BOOL         IoListOutOfSync;
 int                 IoListHeight;
 int                 IoListTop;
 
@@ -519,6 +504,8 @@ void MainWindowResized(void)
 
 	if(!main.bottom && !main.top) // Window height = 0, window minimized. Does nothing!
 		return;
+
+	ladder->NeedRedraw(true);
 
     MoveWindow(StatusBar, 0, main.bottom - statusHeight, main.right,
         statusHeight, TRUE);

@@ -141,7 +141,7 @@ LadderElem::LadderElem(bool EOL, bool Comment, bool Formatted, bool UART, int el
 
 void LadderElem::setProperties(LadderContext context, void *propData)
 {
-	if(context.inSimulationMode) return; // Nao permite alterar se estiver em simulacao
+	if(Diagram->IsLocked()) return; // Nao permite alterar se estiver em simulacao
 
 	// Registro da acao para desfazer / refazer
 	UndoRedoAction action;
@@ -528,6 +528,15 @@ void LadderElemContact::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+eType LadderElemContact::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return Diagram->getDetailsIO(prop.idName.first).type;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemContact::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	if(prop.idName.first == idSearch) {
@@ -739,6 +748,15 @@ void LadderElemCoil::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+eType LadderElemCoil::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return Diagram->getDetailsIO(prop.idName.first).type;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemCoil::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -1019,6 +1037,15 @@ void LadderElemTimer::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+eType LadderElemTimer::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return getTimerTypeIO(getWhich());
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemTimer::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -1397,6 +1424,15 @@ void LadderElemCounter::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+eType LadderElemCounter::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return eType_Counter;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemCounter::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	if(prop.idName.first == idSearch) {
@@ -1552,6 +1588,15 @@ void LadderElemReset::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+eType LadderElemReset::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return Diagram->getDetailsIO(prop.idName.first).type;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemReset::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	if(prop.idName.first == idSearch) {
@@ -1584,7 +1629,7 @@ bool LadderElemReset::internalUpdateNameTypeIO(unsigned int index, string name, 
 	type = Diagram->getDetailsIO(name).type;
 
 	if(!acceptIO(prop.idName.first, type)) {
-		Diagram->ShowDialog(true, false, _("Contador/Temporizador inválido"), _("Selecione um contador/temporizador válido!"));
+		Diagram->ShowDialog(eDialogType_Message, false, _("Contador/Temporizador inválido"), _("Selecione um contador/temporizador válido!"));
 	} else if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0)) {
 		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
 			LadderElemResetProp *data = (LadderElemResetProp *)getProperties();
@@ -1865,6 +1910,15 @@ void LadderElemCmp::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Op2.pin = prop.idOp2;
 	Diagram->updateIO(owner, infoIO_Op2, isDiscard);
 	prop.idOp2 = infoIO_Op2.pin;
+}
+
+eType LadderElemCmp::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idOp1.first == id || prop.idOp2.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemCmp::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -2173,6 +2227,15 @@ void LadderElemMath::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idOp2 = infoIO_Op2.pin;
 }
 
+eType LadderElemMath::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idDest.first == id || prop.idOp1.first == id || prop.idOp2.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemMath::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	unsigned int n = 0;
@@ -2464,6 +2527,15 @@ void LadderElemSqrt::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idSrc = infoIO_Src.pin;
 }
 
+eType LadderElemSqrt::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idDest.first == id || prop.idSrc.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemSqrt::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	unsigned int n = 0;
@@ -2729,6 +2801,15 @@ void LadderElemRand::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Max.pin = prop.idMax;
 	Diagram->updateIO(owner, infoIO_Max, isDiscard);
 	prop.idMax = infoIO_Max.pin;
+}
+
+eType LadderElemRand::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idVar.first == id || prop.idMax.first == id || prop.idMin.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemRand::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -3013,6 +3094,15 @@ void LadderElemAbs::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idSrc = infoIO_Src.pin;
 }
 
+eType LadderElemAbs::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idDest.first == id || prop.idSrc.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemAbs::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	unsigned int n = 0;
@@ -3257,6 +3347,15 @@ void LadderElemMove::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Src.pin = prop.idSrc;
 	Diagram->updateIO(owner, infoIO_Src, isDiscard);
 	prop.idSrc = infoIO_Src.pin;
+}
+
+eType LadderElemMove::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idDest.first == id || prop.idSrc.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemMove::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -3518,6 +3617,15 @@ void LadderElemSetBit::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+eType LadderElemSetBit::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemSetBit::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	if(prop.idName.first == idSearch) {
@@ -3672,6 +3780,15 @@ void LadderElemCheckBit::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+eType LadderElemCheckBit::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemCheckBit::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -3840,6 +3957,15 @@ void LadderElemReadAdc::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+eType LadderElemReadAdc::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return eType_ReadADC;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemReadAdc::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -4014,6 +4140,15 @@ void LadderElemSetDa::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+eType LadderElemSetDa::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return eType_SetDAC;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemSetDa::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -4273,6 +4408,21 @@ void LadderElemReadEnc::updateIO(LadderDiagram *owner, bool isDiscard)
 	Diagram->updateIO(owner, infoIO_AbsFatorCorr  , isDiscard);
 }
 
+eType LadderElemReadEnc::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return eType_ReadEnc;
+	} else if(infoIO_IncPerimRoda.pin.first == id ||
+		infoIO_IncPulsosVolta.pin.first == id ||
+		infoIO_IncFatorCorr  .pin.first == id ||
+		infoIO_AbsPerimRoda  .pin.first == id ||
+		infoIO_AbsFatorCorr  .pin.first == id) {
+			return eType_General;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemReadEnc::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	if(prop.idName.first == idSearch) {
@@ -4505,6 +4655,21 @@ void LadderElemResetEnc::updateIO(LadderDiagram *owner, bool isDiscard)
 	Diagram->updateIO(owner, infoIO_IncFatorCorr  , isDiscard);
 	Diagram->updateIO(owner, infoIO_AbsPerimRoda  , isDiscard);
 	Diagram->updateIO(owner, infoIO_AbsFatorCorr  , isDiscard);
+}
+
+eType LadderElemResetEnc::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return eType_ResetEnc;
+	} else if(infoIO_IncPerimRoda.pin.first == id ||
+		infoIO_IncPulsosVolta.pin.first == id ||
+		infoIO_IncFatorCorr  .pin.first == id ||
+		infoIO_AbsPerimRoda  .pin.first == id ||
+		infoIO_AbsFatorCorr  .pin.first == id) {
+			return eType_General;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemResetEnc::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -4745,6 +4910,15 @@ void LadderElemMultisetDA::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idDesl = infoIO_Desl.pin;
 }
 
+eType LadderElemMultisetDA::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idDesl.first == id || prop.idTime.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemMultisetDA::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	unsigned int n = 0;
@@ -4937,6 +5111,15 @@ void LadderElemUSS::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+eType LadderElemUSS::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return (getWhich() == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemUSS::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -5177,6 +5360,15 @@ void LadderElemModBUS::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+eType LadderElemModBUS::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return (getWhich() == ELEM_READ_MODBUS) ? eType_ReadModbus : eType_WriteModbus;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemModBUS::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	if(prop.idName.first == idSearch) {
@@ -5354,6 +5546,15 @@ void LadderElemSetPWM::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idName = infoIO_Name.pin;
 }
 
+eType LadderElemSetPWM::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return eType_PWM;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemSetPWM::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	if(prop.idName.first == idSearch) {
@@ -5511,6 +5712,15 @@ void LadderElemUART::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(owner, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+}
+
+eType LadderElemUART::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return (getWhich() == ELEM_UART_RECV) ? eType_RxUART : eType_TxUART;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemUART::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -5814,6 +6024,19 @@ void LadderElemShiftRegister::updateIO(LadderDiagram *owner, bool isDiscard)
 	InfoIO_Regs.name = previous_name;
 }
 
+eType LadderElemShiftRegister::getAllowedTypeIO(unsigned long id)
+{
+	vector< pair<unsigned long, int> >::iterator it;
+
+	for(it = prop.vectorIdRegs.begin(); it != prop.vectorIdRegs.end(); it++) {
+		if(id == it->first) {
+			return eType_General;
+		}
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemShiftRegister::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	if(!isReplace) {
@@ -6024,6 +6247,15 @@ void LadderElemLUT::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Index.pin = prop.idIndex;
 	Diagram->updateIO(owner, infoIO_Index, isDiscard);
 	prop.idIndex = infoIO_Index.pin;
+}
+
+eType LadderElemLUT::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idDest.first == id || prop.idIndex.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemLUT::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -6368,6 +6600,15 @@ void LadderElemPiecewise::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idIndex = infoIO_Index.pin;
 }
 
+eType LadderElemPiecewise::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idDest.first == id || prop.idIndex.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemPiecewise::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	unsigned int n = 0;
@@ -6602,6 +6843,15 @@ void LadderElemFmtString::updateIO(LadderDiagram *owner, bool isDiscard)
 	prop.idVar = infoIO_Var.pin;
 }
 
+eType LadderElemFmtString::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idVar.first == id) {
+		return (getWhich() == ELEM_READ_FORMATTED_STRING) ? eType_RxUART : eType_TxUART;
+	}
+
+	return eType_Pending;
+}
+
 int LadderElemFmtString::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
 	if(prop.idVar.first == idSearch) {
@@ -6633,7 +6883,7 @@ bool LadderElemFmtString::internalUpdateNameTypeIO(unsigned int index, string na
 	type = mode_read ? eType_RxUART : eType_TxUART;
 	// Se variavel sem tipo, usa tipo geral.
 	eType NewType = Diagram->getTypeIO(Diagram->getNameIO(pin), name, type, true);
-	if(type != eType_Reserved) {
+	if(NewType != eType_Reserved && NewType != eType_General) {
 		type = NewType;
 	}
 
@@ -6802,6 +7052,15 @@ void LadderElemYaskawa::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Var.pin = prop.idVar;
 	Diagram->updateIO(owner, infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
+}
+
+eType LadderElemYaskawa::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idVar.first == id) {
+		return (getWhich() == ELEM_READ_SERVO_YASKAWA) ? eType_ReadYaskawa : eType_WriteYaskawa;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemYaskawa::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -6985,6 +7244,15 @@ void LadderElemPersist::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Var.pin = prop.idVar;
 	Diagram->updateIO(owner, infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
+}
+
+eType LadderElemPersist::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idVar.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
 }
 
 int LadderElemPersist::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
@@ -8232,6 +8500,22 @@ void LadderCircuit::updateIO(LadderDiagram *owner, bool isDiscard)
 	}
 }
 
+void LadderCircuit::getAllowedTypes(unsigned long id, vector<eType> *types)
+{
+	vector<Subckt>::size_type it;
+
+	for(it = 0; it < vectorSubckt.size(); it++) {
+		if(vectorSubckt[it].elem != nullptr) {
+			eType type = vectorSubckt[it].elem  ->getAllowedTypeIO(id);
+			if((find(types->begin(), types->end(), type) == types->end()) && type != eType_Pending) {
+				types->push_back(type);
+			}
+		} else {
+			vectorSubckt[it].subckt->getAllowedTypes (id, types);
+		}
+	}
+}
+
 int LadderCircuit::SearchAndReplace(LadderElem **refElem, unsigned long idSearch, string sNewText, eSearchAndReplaceMode mode)
 {
 	int matches = 0;
@@ -8365,6 +8649,8 @@ bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 // Classe LadderDiagram
 void LadderDiagram::Init(void)
 {
+	isLocked                       = false;
+
 	context.Diagram                = this;
 	context.ParallelStart          = nullptr;
 	context.SelectedElem           = nullptr;
@@ -8578,7 +8864,7 @@ bool LadderDiagram::EditSelectedElement(void)
 {
 	bool ret = false;
 
-	if(context.SelectedElem != nullptr) {
+	if(context.SelectedElem != nullptr && !IsLocked()) {
 		CheckpointBegin("Editar Elemento");
 		ret = context.SelectedElem->ShowDialog(context);
 		if(ret) {
@@ -8737,7 +9023,7 @@ void LadderDiagram::updateUndoContextAfter(bool forceNotNull)
 
 void LadderDiagram::updateContext(void)
 {
-	if(context.inSimulationMode) {
+	if(IsLocked()) {
 		context.canNegate        = false;
 		context.canNormal        = false;
 		context.canSetOnly       = false;
@@ -8851,11 +9137,11 @@ void LadderDiagram::updateContext(void)
 					context.canInsertComment = true;
 			}
 
+			// Se o elemento atualmente selecionado for um comentario, permite adicionar qualquer objeto pois
+			// nesse caso adicionaremos uma linha automaticamente.
 			if(context.SelectedElem->IsComment()) {
-				// if there's a comment there already then don't let anything else
-				// into the rung
-				context.canInsertEnd   = false;
-				context.canInsertOther = false;
+				context.canInsertEnd   = true;
+				context.canInsertOther = true;
 			}
 		}
 	}
@@ -8863,6 +9149,12 @@ void LadderDiagram::updateContext(void)
 	SetMenusEnabled(&context);
 
 	updateUndoContextAfter();
+}
+
+void LadderDiagram::SetLock(bool state)
+{
+	isLocked = state;
+	updateContext();
 }
 
 int LadderDiagram::getWidthTXT(void)
@@ -8918,8 +9210,8 @@ bool LadderDiagram::IsRungEmpty(unsigned int n)
 
 void LadderDiagram::NewRung(bool isAfter)
 {
-	// Se em simulacao, retorna
-	if(context.inSimulationMode) return;
+	// Se diagrama bloqueado, retorna
+	if(IsLocked()) return;
 
 	vector<LadderRung *>::iterator it;
 	int position = RungContainingSelected();
@@ -8973,8 +9265,8 @@ bool LadderDiagram::PushRung(int rung, bool up)
 {
 	int QtdRungs = rungs.size();
 
-	// Se em simulacao, retorna
-	if(context.inSimulationMode) return false;
+	// Se diagrama bloqueado, retorna
+	if(IsLocked()) return false;
 
 	if(rung < 0) {
 		rung = RungContainingSelected();
@@ -9034,8 +9326,8 @@ bool LadderDiagram::PushRung(int rung, bool up)
 
 bool LadderDiagram::DeleteRung(int rung)
 {
-	// Se em simulacao, retorna
-	if(context.inSimulationMode) return false;
+	// Se diagrama bloqueado, retorna
+	if(IsLocked()) return false;
 
 	if(rung < 0) {
 		rung = RungContainingSelected();
@@ -9123,8 +9415,8 @@ bool LadderDiagram::PasteRung(LadderClipboard clipboard, bool isAfter)
 	int pos;
 	bool ret = false;
 
-	// Se em simulacao, retorna
-	if(context.inSimulationMode) return false;
+	// Se diagrama bloqueado, retorna
+	if(IsLocked()) return false;
 
 	// Nao existe linha copiada ou nao existe ponto de insercao definido
 	if(clipboard.rungCopy == nullptr || context.SelectedElem == nullptr) return false;
@@ -9183,8 +9475,8 @@ bool LadderDiagram::PasteRung(LadderClipboard clipboard, bool isAfter)
 
 bool LadderDiagram::AddElement(LadderElem *elem)
 {
-	// Se em simulacao, retorna
-	if(context.inSimulationMode) return false;
+	// Se diagrama bloqueado, retorna
+	if(IsLocked()) return false;
 
 	// Se elemento a ser adicionado for nulo, retorna
 	if(elem == nullptr) return false;
@@ -9205,8 +9497,9 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 
 	// Se estiver adicionando um comentario e a linha nao estiver vazia,
 	// deve ser adicionada uma nova linha
-	if(elem->IsComment() && !rungs[RungContainingSelected()]->rung->IsEmpty()) {
-		NewRung((context.SelectedState == SELECTED_ABOVE) ? false : true);
+	if((elem->IsComment() && !rungs[RungContainingSelected()]->rung->IsEmpty()) ||
+		context.SelectedElem->IsComment()){
+			NewRung((context.SelectedState == SELECTED_ABOVE) ? false : true);
 	}
 
 	bool ret = elem->CanInsert(context);
@@ -9256,8 +9549,8 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 
 bool LadderDiagram::DelElement(LadderElem *elem)
 {
-	// Se em simulacao, retorna
-	if(context.inSimulationMode) return false;
+	// Se diagrama bloqueado, retorna
+	if(IsLocked()) return false;
 
 	if(elem == nullptr) {
 		if(context.SelectedElem == nullptr) return false; // Sem elemento para remover
@@ -9338,8 +9631,8 @@ bool LadderDiagram::PasteElement(LadderClipboard clipboard)
 {
 	bool ret = false;
 
-	// Se em simulacao, retorna
-	if(context.inSimulationMode) return false;
+	// Se diagrama bloqueado, retorna
+	if(IsLocked()) return false;
 
 	if(clipboard.elemCopy == nullptr) return false; // Nao existe elemento copiado
 
@@ -9411,8 +9704,8 @@ bool LadderDiagram::AddParallelStart(void)
 {
 	bool ret = false;
 
-	// Se em simulacao, retorna
-	if(context.inSimulationMode) return false;
+	// Se diagrama bloqueado, retorna
+	if(IsLocked()) return false;
 
 	if(context.ParallelStart == nullptr) {
 		if(context.SelectedElem != nullptr) {
@@ -9828,7 +10121,7 @@ bool LadderDiagram::Load(string filename)
 	bool failed = true; // Desmarca ao chegar no final da logica. Se nao chegou, ocorreu uma falha
 
 	FILE *f = fopen(filename.c_str(), "rb");
-    if(!f) return failed;
+    if(!f) return !failed;
 
 	// Start with the magic number
 	fread(&magic, sizeof(magic), 1, f);
@@ -10133,6 +10426,7 @@ void LadderDiagram::setSettingsInformation(LadderSettingsInformation setInfo)
 // Funcao para configurar o modo de simulacao
 void LadderDiagram::setSimulationState(bool state)
 {
+	SetLock(state); // Em simulacao, o diagrama deve ser travado para impedir alteracoes
 	context.inSimulationMode = state;
 	updateContext();
 }
@@ -10436,7 +10730,62 @@ void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDi
 	if(infoIO.pin.first == 0) return; // id nao esta em uso, indica que eh um numero e nao um I/O
 
 	if(isDiscard) {
+		string name;
+		bool useGeneralType = false;
+		unsigned long id = infoIO.pin.first;
+
 		IO->Discard(infoIO);
+		name = getNameIO(id);
+		if(name.size() > 0 && !IO->IsReserved(name)) {
+			// I/O ainda existente e nao eh reservado!! Devemos atualizar o tipo.
+			vector<eType> allowedTypes;
+			vector<LadderCircuit>::size_type i;
+
+			// Inicialmente montamos a lista com os tipos permitidos para o I/O
+			for(i = 0; i < rungs.size(); i++) {
+				rungs[i]->rung->getAllowedTypes(id, &allowedTypes);
+			}
+
+			// Depois verificamos se entre eles existe o tipo atual.
+			// Se existir, nao faz nada pois significa que podemos continuar com ele
+			// Se nao existir, vamos passando a lista 1 a 1 ate encontrarmos um tipo
+			// aceito por todos os elementos.
+			// O tipo Geral deve ser a ultima opcao. Devemos dar preferencia a tipos
+			// especificos.
+			if(find(allowedTypes.begin(), allowedTypes.end(), getDetailsIO(id).type) == allowedTypes.end()) {
+				vector<eType>::iterator it;
+				// Nao existe mais o tipo atual. Devemos buscar 1 a 1 ate chegar no tipo aceito por todos
+				for(it = allowedTypes.begin(); it != allowedTypes.end(); it++) {
+					for(i = 0; i < rungs.size(); i++) {
+						if(!rungs[i]->rung->acceptIO(id, *it)) {
+							break;
+						}
+					}
+
+					// Se foi ate o final, significa que foi aceito por todos. atualiza o tipo!
+					if(i == rungs.size()) {
+						if(*it == eType_General) {
+							// Se for tipo Geral, apenas indicamos que ele pode ser usado.
+							// Fazemos isso pois devemos dar preferencia por tipos especificos.
+							// Assim, caso nao for encontrado outro tipo aceito, usaremos o
+							// tipo Geral.
+							useGeneralType = true;
+						} else {
+							useGeneralType = false;
+							IO->Update(id, getNameIO(id), *it);
+							break;
+						}
+					}
+				}
+
+				// Se devemos usar o tipo geral significa que ele eh aceito mas nao foi utilizado
+				// pois a logica estava procurando por outro tipo compativel. Se chegamos aqui com
+				// a flag useGeneralType marcada significa que nenhum outro tipo aceito foi encontrado.
+				if(useGeneralType) {
+					IO->Update(id, getNameIO(id), eType_General);
+				}
+			}
+		}
 	} else {
 		// Se nao for descarte, indica que devemos atualizar o I/O conforme os passos abaixo:
 		// 1) Se o I/O tem como origem outro diagrama ladder, verificar se existe um compativel
@@ -10525,7 +10874,7 @@ bool LadderDiagram::getIO(tRequestIO &infoIO)
 			// os elementos
 			if((detailsIO.countRequestBit + detailsIO.countRequestInt) > 1) {
 				// Precisamos saber do usuario se devemos atualizar o IO ou se vamos criar uma nova variavel
-				if(ShowDialog(false, false, "Nome Alterado", "Nome '%s' utilizado também em outros elementos.\n"
+				if(ShowDialog(eDialogType_Question, false, "Nome Alterado", "Nome '%s' utilizado também em outros elementos.\n"
 					"Alterar o nome em todos os elementos que o utilizam?", IO->getName(newpin.first).c_str()) == eReply_No) {
 						newpin.first = 0;
 				}
@@ -10535,7 +10884,7 @@ bool LadderDiagram::getIO(tRequestIO &infoIO)
 		// Verifica se o tipo do I/O eh aceito pelos outros elementos que ja o utilizam
 		if(newpin.first && !acceptIO(newpin.first, infoIO.type)) {
 			// Alguem compartilhando desta variavel nao aceita a alteracao de tipo. Cancela a alteracao!
-			ShowDialog(true, false, "Tipo Inválido", "Conflito entre tipos para '%s' ! Operação não permitida.", IO->getName(newpin.first).c_str());
+			ShowDialog(eDialogType_Message, false, "Tipo Inválido", "Conflito entre tipos para '%s' ! Operação não permitida.", IO->getName(newpin.first).c_str());
 			return false; // retorna pino invalido
 		}
 
@@ -10864,7 +11213,7 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 
 	// Para variaveis internas, o tipo deve ser obrigatoriamente Geral.
 	if(name_is_internal_var && type != eType_General) {
-		ShowDialog(true, false, _("Tipo Inválido"), _("Conflito entre tipos! Operação não permitida."));
+		ShowDialog(eDialogType_Message, false, _("Tipo Inválido"), _("Conflito entre tipos! Operação não permitida."));
 	}
 
 	unsigned long newid = IO->getID(name);
@@ -10883,25 +11232,25 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 
 	// Check for Internal Flags and Reserved Names restrictions
 	if((type != eType_InternalFlag && name_is_internal_flag) || name_is_reserved) {
-		ShowDialog(true, false, "Nome Inválido", "Nome '%s' reservado para uso interno, favor escolher outro nome.", name.c_str());
+		ShowDialog(eDialogType_Message, false, "Nome Inválido", "Nome '%s' reservado para uso interno, favor escolher outro nome.", name.c_str());
 		return false;
 	} else  if(type == eType_InternalFlag && !name_is_internal_flag) {
-		ShowDialog(true, false, "Nome Inválido", "Para o tipo 'Flag Interna' é obrigatório selecionar um item da lista.");
+		ShowDialog(eDialogType_Message, false, "Nome Inválido", "Para o tipo 'Flag Interna' é obrigatório selecionar um item da lista.");
 		return false;
 	}
 
 	// Check for Variable and Number restrictions
 	if(!name_is_number && !IsValidVarName(name)) {
-		ShowDialog(true, false, "Nome Inválido", "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não iniciar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", FieldName ? FieldName : "Nome", name.c_str());
+		ShowDialog(eDialogType_Message, false, "Nome Inválido", "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não iniciar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", FieldName ? FieldName : "Nome", name.c_str());
 		return false;
 	} else if((Rules & VALIDATE_IS_VAR) && name_is_number) {
-		ShowDialog(true, false, "Nome Inválido", "'%s' não pode ser número!", FieldName ? FieldName : name.c_str());
+		ShowDialog(eDialogType_Message, false, "Nome Inválido", "'%s' não pode ser número!", FieldName ? FieldName : name.c_str());
 		return false;
 	} else if((Rules & VALIDATE_IS_NUMBER) && !name_is_number) {
-		ShowDialog(true, false, "Número Inválido", "'%s' deve ser número!", FieldName ? FieldName : name.c_str());
+		ShowDialog(eDialogType_Message, false, "Número Inválido", "'%s' deve ser número!", FieldName ? FieldName : name.c_str());
 		return false;
 	} else if(name_is_number && !IsValidNumber(name)) {
-		ShowDialog(true, false, "Número Inválido", "Número '%s' inválido!", name.c_str());
+		ShowDialog(eDialogType_Message, false, "Número Inválido", "Número '%s' inválido!", name.c_str());
 		return false;
 	}
 
@@ -10909,7 +11258,7 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 	if((MinVal || MaxVal) && (Rules & (VALIDATE_IS_NUMBER | VALIDATE_IS_VAR_OR_NUMBER)) && name_is_number) {
 		val = atoi(name.c_str());
 		if(val < MinVal || val > MaxVal) {
-			ShowDialog(true, false, "Número Inválido", "'%s' fora dos limites! Deve estar entre %d e %d.", FieldName ? FieldName : name.c_str(), MinVal, MaxVal);
+			ShowDialog(eDialogType_Message, false, "Número Inválido", "'%s' fora dos limites! Deve estar entre %d e %d.", FieldName ? FieldName : name.c_str(), MinVal, MaxVal);
 			return false;
 		}
 	}
@@ -10918,14 +11267,14 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 	if(!name_is_number) {
 		// If types must match and types are different or cannot accept io_pending type, generates an error
 		if((Rules & VALIDATE_TYPES_MUST_MATCH) && current_type != type && !((current_type == eType_Pending || type == eType_Pending) && (Rules & VALIDATE_ACCEPT_IO_PENDING))) {
-			ShowDialog(true, false, "Tipo Inválido", "Conflito entre tipos! Operação não permitida.");
+			ShowDialog(eDialogType_Message, false, "Tipo Inválido", "Conflito entre tipos! Operação não permitida.");
 		} else if(type == eType_DigInput || type == eType_DigOutput || type == eType_InternalRelay) {
 			if(type == current_type) { // no type change, ok!
 				ret = true;
 			} else if(current_type == eType_Pending) { // Inexistent name, ok!
 				ret = true;
 			} else if(type == eType_DigInput && (current_type == eType_DigOutput || current_type == eType_InternalRelay) && !acceptIO(newid, type)) {
-				*reply = ShowDialog(true, true, "Saída em uso", "Não é possível alterar para Entrada.\r\nSerá utilizado o tipo atual.");
+				*reply = ShowDialog(eDialogType_Message, true, "Saída em uso", "Não é possível alterar para Entrada.\r\nSerá utilizado o tipo atual.");
 				if(*reply != eReply_Cancel) {
 					ret = true;
 				}
@@ -10934,36 +11283,36 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 			// name changed, check for type changes
 			} else if(type == eType_InternalRelay && current_type == eType_DigOutput) { // changing existent output to internal relay, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					ShowDialog(true, false, "Tipo inválido", "Conflito de tipos: Rele Interno <-> Saída");
+					ShowDialog(eDialogType_Message, false, "Tipo inválido", "Conflito de tipos: Rele Interno <-> Saída");
 				} else {
-					*reply = ShowDialog(false, true, "Confirmar alteração de Saída para Rele Interno", "Já existe uma Saída com este nome. Alterar para Rele Interno?");
+					*reply = ShowDialog(eDialogType_Question, true, "Confirmar alteração de Saída para Rele Interno", "Já existe uma Saída com este nome. Alterar para Rele Interno?");
 					if(*reply != eReply_Cancel) {
 						ret = true;
 					}
 				}
 			} else if(type == eType_DigOutput && current_type == eType_InternalRelay) { // changing existent output to internal relay, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					ShowDialog(true, false, "Tipo inválido", "Conflito de tipos: Rele Interno <-> Saída");
+					ShowDialog(eDialogType_Message, false, "Tipo inválido", "Conflito de tipos: Rele Interno <-> Saída");
 				} else {
-					*reply = ShowDialog(false, true, "Confirmar alteração de Rele Interno para Saída", "Já existe um Rele Interno com este nome. Alterar para Saída?");
+					*reply = ShowDialog(eDialogType_Question, true, "Confirmar alteração de Rele Interno para Saída", "Já existe um Rele Interno com este nome. Alterar para Saída?");
 					if(*reply != eReply_Cancel) {
 						ret = true;
 					}
 				}
 			} else if(type == eType_DigOutput && current_type == eType_DigInput) { // changing existent input to output, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					ShowDialog(true, false, "Tipo inválido", "Conflito de tipos: Entrada <-> Saída");
+					ShowDialog(eDialogType_Message, false, "Tipo inválido", "Conflito de tipos: Entrada <-> Saída");
 				} else {
-					*reply = ShowDialog(false, true, "Confirmar alteração de Entrada para Saída", "Já existe uma Entrada com este nome. Alterar para Saída?");
+					*reply = ShowDialog(eDialogType_Question, true, "Confirmar alteração de Entrada para Saída", "Já existe uma Entrada com este nome. Alterar para Saída?");
 					if(*reply != eReply_Cancel) {
 						ret = true;
 					}
 				}
 			} else if(type == eType_InternalRelay && current_type == eType_DigInput) { // changing existent input to internal relay, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					ShowDialog(true, false, "Tipo inválido", "Conflito de tipos: Rele Interno <-> Entrada");
+					ShowDialog(eDialogType_Message, false, "Tipo inválido", "Conflito de tipos: Rele Interno <-> Entrada");
 				} else {
-					*reply = ShowDialog(false, true, "Confirmar alteração de Entrada para Relé Interno", "Já existe uma Entrada com este nome. Alterar para Relé Interno?");
+					*reply = ShowDialog(eDialogType_Question, true, "Confirmar alteração de Entrada para Relé Interno", "Já existe uma Entrada com este nome. Alterar para Relé Interno?");
 					if(*reply != eReply_Cancel) {
 						ret = true;
 					}
@@ -10975,7 +11324,7 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 			if(type == eType_Counter || type == eType_TOF || type == eType_TON) {
 				ret = true;
 			} else {
-				ShowDialog(true, false, "Nome inválido", "'Nome' deve ser um contador ou timer!");
+				ShowDialog(eDialogType_Message, false, "Nome inválido", "'Nome' deve ser um contador ou timer!");
 			}
 		} else {
 			ret = true;
@@ -11026,14 +11375,14 @@ eValidateResult LadderDiagram::Validate(void)
 			}
 
 			if(msg_error[0]) {
-				ShowDialog(true, false, _("Erro ao validar diagrama!"), _(msg_error));
+				ShowDialog(eDialogType_Message, false, _("Erro ao validar diagrama!"), _(msg_error));
 				ret = eValidateResult_Error;
 				break;
 			}
 
 			if(msg_warning[0]) {
 				eReply reply;
-				ShowDialog(true, true, _("Atenção"), _(msg_warning), &reply);
+				ShowDialog(eDialogType_Message, true, _("Atenção"), _(msg_warning), &reply);
 				if(reply == eReply_Cancel) { // Se usuario escolheu cancelar, interrompe validacao e retorna erro
 					ret = eValidateResult_Error;
 					break;

@@ -23,6 +23,9 @@
 #define IDB_LADDER_TERMOMETHER         6004
 #define IDB_LADDER_AD                  6005
 #define IDB_LADDER_CYCLE               6006
+#define IDB_LADDER_DIALOG_ERROR        6007
+#define IDB_LADDER_DIALOG_QUESTION     6008
+#define IDB_LADDER_DIALOG_EXCLAMATION  6009
 
 // Next default values for new objects
 // 

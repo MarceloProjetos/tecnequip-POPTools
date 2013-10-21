@@ -37,7 +37,7 @@ void Error(char *title, char *str, va_list f)
     vsprintf(buf, str, f);
 
 	HWND h = GetForegroundWindow();
-    MessageBox(h, buf, title, MB_OK | MB_ICONERROR);
+	ladder->ShowDialog(eDialogType_Error, false, title, buf);
 }
 
 void Error(char *str, ...)

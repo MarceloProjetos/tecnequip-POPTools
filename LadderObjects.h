@@ -80,8 +80,6 @@ typedef struct {
 } LadderSettingsInformation;
 
 // Estruturas auxiliares relacionadas com o I/O
-enum eReply { eReply_No = 0, eReply_Yes, eReply_Ok, eReply_Cancel, eReply_Ask };
-
 enum eType  {
 	eType_Pending = 0,
 	eType_Reserved,
@@ -156,6 +154,12 @@ enum eMoveCursor  {
 	eMoveCursor_Left,
 	eMoveCursor_Right,
 };
+
+// Enumeracao que define o retorno das caixas de dialogo
+enum eReply { eReply_Pending = 0, eReply_No, eReply_Yes, eReply_Ok, eReply_Cancel, eReply_Ask };
+
+// Enumeracao com os tipos de caixa de dialogo existentes
+enum eDialogType { eDialogType_Message = 0, eDialogType_Error, eDialogType_Question };
 
 // Estrutura auxiliar que representa um subcircuito
 typedef struct {
@@ -349,10 +353,10 @@ public:
 	virtual LadderElem *Clone(LadderDiagram *diagram) = 0;
 
 	// Funcoes relacionadas com I/O
-	virtual bool acceptIO        (unsigned long id, eType type) = 0;
-	virtual void updateIO        (LadderDiagram *owner, bool isDiscard) = 0;
-//	virtual void getTypeIO       (LadderDiagram *owner, bool isDiscard) = 0;
-	virtual int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) = 0;
+	virtual bool  acceptIO        (unsigned long id, eType type) = 0;
+	virtual void  updateIO        (LadderDiagram *owner, bool isDiscard) = 0;
+	virtual eType getAllowedTypeIO(unsigned long id) = 0;
+	virtual int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) = 0;
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
 	bool updateNameTypeIO(unsigned int index, string name, eType type);
@@ -399,9 +403,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(LadderDiagram *owner, bool isDiscard) { }
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	bool  acceptIO        (unsigned long id, eType type) { return true; }
+	void  updateIO        (LadderDiagram *owner, bool isDiscard) { }
+	eType getAllowedTypeIO(unsigned long id) { return eType_Pending; }
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -447,9 +452,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(LadderDiagram *owner, bool isDiscard) { }
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	bool  acceptIO        (unsigned long id, eType type) { return true; }
+	void  updateIO        (LadderDiagram *owner, bool isDiscard) { }
+	eType getAllowedTypeIO(unsigned long id) { return eType_Pending; }
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -497,9 +503,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -549,9 +556,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -601,9 +609,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -652,9 +661,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(LadderDiagram *owner, bool isDiscard) { }
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	bool  acceptIO        (unsigned long id, eType type) { return true; }
+	void  updateIO        (LadderDiagram *owner, bool isDiscard) { }
+	eType getAllowedTypeIO(unsigned long id) { return eType_Pending; }
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -702,9 +712,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -751,9 +762,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -793,9 +805,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(LadderDiagram *owner, bool isDiscard) { }
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	bool  acceptIO        (unsigned long id, eType type) { return true; }
+	void  updateIO        (LadderDiagram *owner, bool isDiscard) { }
+	eType getAllowedTypeIO(unsigned long id) { return eType_Pending; }
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -844,9 +857,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -897,9 +911,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -948,9 +963,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1001,9 +1017,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1052,9 +1069,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1103,9 +1121,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1145,9 +1164,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(LadderDiagram *owner, bool isDiscard) { }
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	bool  acceptIO        (unsigned long id, eType type) { return true; }
+	void  updateIO        (LadderDiagram *owner, bool isDiscard) { }
+	eType getAllowedTypeIO(unsigned long id) { return eType_Pending; }
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1196,9 +1216,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1247,9 +1268,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1299,9 +1321,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1351,9 +1374,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1407,9 +1431,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1463,9 +1488,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1523,9 +1549,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1576,9 +1603,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1629,9 +1657,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1679,9 +1708,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1728,9 +1758,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1773,9 +1804,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(LadderDiagram *owner, bool isDiscard) { }
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	bool  acceptIO        (unsigned long id, eType type) { return true; }
+	void  updateIO        (LadderDiagram *owner, bool isDiscard) { }
+	eType getAllowedTypeIO(unsigned long id) { return eType_Pending; }
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1826,9 +1858,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1880,9 +1913,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1933,9 +1967,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -1983,9 +2018,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -2034,9 +2070,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -2083,9 +2120,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -2132,9 +2170,10 @@ public:
 	LadderElem *Clone(LadderDiagram *diagram);
 
 	// Funcao que indica se pode alterar o I/O para o tipo especificado
-	bool acceptIO(unsigned long id, eType type) { return true; }
-	void updateIO(LadderDiagram *owner, bool isDiscard) { }
-	int  SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
+	bool  acceptIO        (unsigned long id, eType type) { return true; }
+	void  updateIO        (LadderDiagram *owner, bool isDiscard) { }
+	eType getAllowedTypeIO(unsigned long id) { return eType_Pending; }
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) { return 0; }
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
@@ -2234,8 +2273,9 @@ public:
 	bool Load(LadderDiagram *diagram, FILE *f, unsigned int version);
 
 	// Funcoes relacionadas com I/O
-	bool acceptIO(unsigned long id, eType type);
-	void updateIO(LadderDiagram *owner, bool isDiscard);
+	bool acceptIO       (unsigned long id, eType type);
+	void updateIO       (LadderDiagram *owner, bool isDiscard);
+	void getAllowedTypes(unsigned long id, vector<eType> *types);
 
 	int SearchAndReplace(LadderElem **refElem, unsigned long idSearch, string sNewText, eSearchAndReplaceMode mode);
 
@@ -2330,6 +2370,7 @@ private:
 
 	// Context properties
 	LadderContext context;
+	bool          isLocked;
 
 	// Objeto que contem todos os I/Os
 	mapIO *IO;
@@ -2363,8 +2404,10 @@ public:
 	int getWidthTXT (void);
 	int getHeightTXT(void);
 
-	void updateContext(void);
-	LadderContext getContext(void) { return context; }
+	void          updateContext(void);
+	LadderContext getContext   (void) { return context; }
+	void SetLock               (bool state);
+	bool IsLocked              (void) { return isLocked; }
 
 	void FreeDiagram (void);
 	void ClearDiagram(void);
@@ -2511,7 +2554,7 @@ public:
 	eValidateResult Validate(void);
 
 	// Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
-	eReply ShowDialog(bool isMessage, bool hasCancel, char *title, char *message, ...);
+	eReply ShowDialog(eDialogType type, bool hasCancel, char *title, char *message, ...);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);

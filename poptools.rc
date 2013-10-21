@@ -18,20 +18,23 @@
 //
 // Bitmap
 //
-IDB_SPLASH              BITMAP                  "splash.bmp"
-IDB_CLOCK_EDIT          BITMAP                  "imgs/clock_edit.bmp"
-IDB_NETWORK_CONFIG      BITMAP                  "imgs/network_config.bmp"
-IDB_RS485_CONFIG        BITMAP                  "imgs/RS485_config.bmp"
-IDB_TIME_CONFIG         BITMAP                  "imgs/time_config.bmp"
-IDB_ARROW_LEFT          BITMAP                  "imgs/ArrowLeft.bmp"
+IDB_SPLASH						BITMAP                  "splash.bmp"
+IDB_CLOCK_EDIT					BITMAP                  "imgs/clock_edit.bmp"
+IDB_NETWORK_CONFIG				BITMAP                  "imgs/network_config.bmp"
+IDB_RS485_CONFIG				BITMAP                  "imgs/RS485_config.bmp"
+IDB_TIME_CONFIG					BITMAP                  "imgs/time_config.bmp"
+IDB_ARROW_LEFT					BITMAP                  "imgs/ArrowLeft.bmp"
 
-IDB_LADDER_RTC			RCDATA					"imgs/Calendario.bmp"
-IDB_LADDER_HOURGLASS	RCDATA					"imgs/guiAmpulheta.png"
-IDB_LADDER_CLOCK		RCDATA					"imgs/guiInstrReset.bmp"
-IDB_LADDER_COUNTER		RCDATA					"imgs/InstrCounterResetHS.bmp"
-IDB_LADDER_TERMOMETHER	RCDATA					"imgs/guiTermometro.png"
-IDB_LADDER_AD			RCDATA					"imgs/guiAD.png"
-IDB_LADDER_CYCLE		RCDATA					"imgs/guiContadorCircular.png"
+IDB_LADDER_RTC					RCDATA					"imgs/Calendario.bmp"
+IDB_LADDER_HOURGLASS			RCDATA					"imgs/guiAmpulheta.png"
+IDB_LADDER_CLOCK				RCDATA					"imgs/guiInstrReset.bmp"
+IDB_LADDER_COUNTER				RCDATA					"imgs/InstrCounterResetHS.bmp"
+IDB_LADDER_TERMOMETHER			RCDATA					"imgs/guiTermometro.png"
+IDB_LADDER_AD					RCDATA					"imgs/guiAD.png"
+IDB_LADDER_CYCLE				RCDATA					"imgs/guiContadorCircular.png"
+IDB_LADDER_DIALOG_ERROR			RCDATA					"imgs/DialogError.png"
+IDB_LADDER_DIALOG_QUESTION		RCDATA					"imgs/DialogQuestion.png"
+IDB_LADDER_DIALOG_EXCLAMATION	RCDATA					"imgs/DialogExclamation.png"
 
 /////////////////////////////////////////////////////////////////////////////
 //

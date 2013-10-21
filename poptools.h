@@ -581,6 +581,7 @@ enum eConfSection {
 // Function prototypes
 
 // poptools.cpp
+bool DoEvents(void);
 void ProcessMenu(int code);
 void SetMenusEnabled(LadderContext *context);
 void RefreshScrollbars(void);
@@ -808,6 +809,9 @@ void IoMapListProc(NMHDR *h);
 void ShowAnalogSliderPopup (const char *name);
 void ShowEncoderSliderPopup(const char *name);
 
+// LadderGUI.cpp
+extern bool isDiagramChangedSinceLastDraw;
+
 // commentdialog.cpp
 bool ShowCommentDialog(char *comment, POINT ElemStart, POINT ElemSize, POINT GridSize);
 // multisetdadialog.cpp
@@ -929,14 +933,6 @@ void ShowUartSimulationWindow(void);
 #define MAX_SCROLLBACK 16384
 
 // WatchPoint declarations
-struct WatchPoint {
-	char              *name;
-	int                val;
-	struct WatchPoint *next;
-};
-
-extern struct WatchPoint *listWP;
-
 void  AddWP      (char *name, int val);
 void  RemoveWP   (char *name);
 int  *GetValWP   (const char *name, int *val);
