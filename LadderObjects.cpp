@@ -834,7 +834,7 @@ LadderElemTimer::LadderElemTimer(LadderDiagram *diagram, int which) : LadderElem
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = ""; // nome vazio, recebera uma variavel com sequencia numerica
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = getTimerTypeIO(getWhich());
 	infoIO_Name.access        = which == ELEM_RTO ? eRequestAccessType_Read : eRequestAccessType_ReadWrite;
@@ -3845,7 +3845,8 @@ LadderElemReadAdc::LadderElemReadAdc(LadderDiagram *diagram) : LadderElem(true, 
 
 	Diagram->getIO(infoIO_Name);
 
-	prop.idName = infoIO_Name.pin;
+	prop.useFahrenheit = false;
+	prop.idName        = infoIO_Name.pin;
 }
 
 string LadderElemReadAdc::GetNameADC(void)
@@ -3890,6 +3891,16 @@ bool LadderElemReadAdc::internalGenerateIntCode(IntCode &ic)
 
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 		ic.Op(INT_READ_ADC, name);
+		if(prop.useFahrenheit) {
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 9);
+			ic.Op(INT_SET_VARIABLE_MULTIPLY, name, name, "$scratch", 0, 0);
+
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 5);
+			ic.Op(INT_SET_VARIABLE_DIVIDE, name, name, "$scratch", 0, 0);
+
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 32);
+			ic.Op(INT_SET_VARIABLE_ADD, name, name, "$scratch", 0, 0);
+		}
 	ic.Op(INT_END_IF);
 
 	return true;
@@ -3923,6 +3934,7 @@ void *LadderElemReadAdc::getProperties(void)
 bool LadderElemReadAdc::internalSave(FILE *f)
 {
 	return
+		fwrite_bool (f, prop.useFahrenheit) &&
 		fwrite_ulong(f, prop.idName.first) &&
 		fwrite_int  (f, prop.idName.second);
 }
@@ -3930,6 +3942,7 @@ bool LadderElemReadAdc::internalSave(FILE *f)
 bool LadderElemReadAdc::internalLoad(FILE *f, unsigned int version)
 {
 	return
+		fread_bool (f, &prop.useFahrenheit) &&
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second);
 }
@@ -10856,6 +10869,13 @@ bool LadderDiagram::getIO(tRequestIO &infoIO)
 	// 2 - Converter para valor numerico quando for o caso
 	// 3 - Carregar os valores no par de retorno conforme o tipo (variavel / numerico)
 	// 4 - Atualizar o IO se houve alteracao de tipo
+
+	// Se nome estiver vazio, buscamos um nome que nao esteja em uso.
+	if(infoIO.name.size() == 0) {
+		do {
+			infoIO.name = IO->getNextVar();
+		} while(getIdIO(infoIO.name) != 0);
+	}
 
 	// O valor solicitado eh um numero, carrega no par de retorno.
 	if(IsNumber(infoIO.name.c_str())) {

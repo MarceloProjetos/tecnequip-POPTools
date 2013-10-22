@@ -304,7 +304,7 @@ HRESULT EngineRenderD2D::CreateTextFormat(unsigned int rgb, unsigned int &index)
 
 		// Create a DirectWrite text format object.
 		hr = pWriteFactory->CreateTextFormat(
-			L"Lucida Console",
+			L"Segoe UI",
 //			L"POPTOOLS",
 			pFontCollection,
 			DWRITE_FONT_WEIGHT_NORMAL,
@@ -344,6 +344,47 @@ HRESULT EngineRenderD2D::CreateTextFormat(unsigned int rgb, unsigned int &index)
 	}
 
 	return hr;
+}
+
+POINT EngineRenderD2D::getTextSize(const char *txt, POINT maxSize, unsigned int format)
+{
+	POINT textSize = { 0, 0 };
+
+	if(pRT != NULL && format < TextFormats.size()) {
+		int size = strlen(txt) * 2 + 1;
+		WCHAR *wtxt = new WCHAR[size];
+
+		swprintf(wtxt, size, L"%S", txt);
+
+        // Create the text layout object.
+		DWRITE_TEXT_METRICS metrics;
+        IDWriteTextLayout* textLayout = NULL;
+        HRESULT hr = S_OK;
+
+		hr = pWriteFactory->CreateTextLayout(
+            wtxt,
+            static_cast<UINT>(wcslen(wtxt)),
+			TextFormats[format].format,
+			(float)maxSize.x,
+			(float)maxSize.y,
+            &textLayout
+            );
+
+		if (SUCCEEDED(hr)) {
+			hr = textLayout->GetMetrics(&metrics);
+		}
+
+		if (SUCCEEDED(hr)) {
+			textSize.x = (int)(metrics.width  + 0.5f);
+			textSize.y = (int)(metrics.height + 0.5f);
+		}
+
+		SafeRelease(&textLayout);
+
+		delete [] wtxt;
+	}
+
+	return textSize;
 }
 
 void EngineRenderD2D::StartDraw(void)
@@ -899,45 +940,83 @@ void EngineRenderD2D::DrawRectangle(RECT r, unsigned int brush, bool filled, uns
 	}
 }
 
-void EngineRenderD2D::DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY)
+void EngineRenderD2D::DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY, bool acceptMultiLine = false)
 {
 	if(pRT != NULL && brush < Brushes.size() && format < TextFormats.size()) {
-		unsigned int nchars = strlen(txt);
-		unsigned int maxlen = r.right - r.left, len = nchars * TextFormats[format].width;
-
-		// Calcula alinhamento horizontal
-		if(alignX != eAlignMode_TopLeft) {
-			if(len > maxlen) {
-				nchars = maxlen / TextFormats[format].width;
-				len    = maxlen;
-			}
-
-			if(alignX == eAlignMode_Center) {
-				r.left += (r.right - r.left - len + 4)/2;
-			} else if(alignX == eAlignMode_BottomRight) {
-				r.left  =  r.right - len;
-			}
-		}
-
-		// Calcula alinhamento vertical
-		if(alignY == eAlignMode_Center) {
-			r.top += (r.bottom - r.top - TextFormats[format].height)/2;
-		} else if(alignY == eAlignMode_BottomRight) {
-			r.top  =  r.bottom - TextFormats[format].height;
-		}
+		unsigned int maxlen = r.right - r.left;
 
 		int size = strlen(txt) * 2 + 1;
-		WCHAR *wtxt = new WCHAR[size];
-		char  *ctxt = new char[nchars + 1];
+		WCHAR *wtxt = new WCHAR[size + 3]; // soma 3 para caber os ... ao encolher o texto
 		D2D1_RECT_F rf = D2D1::RectF((float)r.left, (float)r.top, (float)r.right, (float)r.bottom);
 
-		strncpy(ctxt, txt, nchars);
-		ctxt[nchars] = 0;
-		swprintf(wtxt, size, L"%S", ctxt);
-		pRT->DrawText(wtxt, static_cast<UINT>(wcslen(wtxt)), TextFormats[format].format, &rf, getBrush(brush, rf));
+		swprintf(wtxt, size, L"%S", txt);
+
+        // Create the text layout object.
+		DWRITE_TEXT_METRICS metrics;
+        IDWriteTextLayout* textLayout = NULL;
+        HRESULT hr = S_OK;
+
+		bool isFirst = true;
+		do {
+	        SafeRelease(&textLayout);
+			hr = pWriteFactory->CreateTextLayout(
+                wtxt,
+                static_cast<UINT>(wcslen(wtxt)),
+				TextFormats[format].format,
+				rf.right  - rf.left,
+				rf.bottom - rf.top ,
+                &textLayout
+                );
+
+			if (SUCCEEDED(hr)) {
+				hr = textLayout->GetMetrics(&metrics);
+				if(acceptMultiLine) break; // Se aceita multiplas linhas, pode sair do loop.
+			}
+
+			if (SUCCEEDED(hr)) {
+				if(metrics.lineCount > 1) {
+					size_t len = wcslen(wtxt);
+					if(len > 0) {
+						wtxt[len - 1] = 0;
+						if(isFirst) {
+							isFirst = false;
+							wcscat(wtxt, L"...");
+						} else if(len > 3) {
+							wtxt[len - 4] = '.';
+						}
+					} else {
+						break; // texto vazio!!!
+					}
+				}
+			}
+		} while(SUCCEEDED(hr) && metrics.lineCount > 1);
+
+		if (SUCCEEDED(hr)) {
+			// Calcula alinhamento horizontal
+			if(alignX != eAlignMode_TopLeft) {
+				if(alignX == eAlignMode_Center) {
+					rf.left += (rf.right - rf.left - metrics.width)/2;
+				} else if(alignX == eAlignMode_BottomRight) {
+					rf.left  = rf.right - metrics.width;
+				}
+			}
+
+			// Calcula alinhamento vertical
+			if(alignY == eAlignMode_Center) {
+				rf.top += (rf.bottom - rf.top - metrics.height)/2;
+			} else if(alignY == eAlignMode_BottomRight) {
+				rf.top  =  rf.bottom - metrics.height;
+			}
+
+            pRT->DrawTextLayout(
+				D2D1::Point2F(rf.left, rf.top),
+                textLayout,
+                getBrush(brush, rf)
+                );
+        }
+        SafeRelease(&textLayout);
 
 		delete [] wtxt;
-		delete [] ctxt;
 	}
 }
 

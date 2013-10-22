@@ -1279,6 +1279,7 @@ public:
 
 // Classe do elemento Read A/D
 struct LadderElemReadAdcProp {
+	bool                     useFahrenheit;
 	pair<unsigned long, int> idName;
 };
 

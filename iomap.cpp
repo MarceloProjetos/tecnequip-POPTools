@@ -91,6 +91,7 @@ char *AllocCharFromString(string s)
 
 mapIO::mapIO(LadderDiagram *pDiagram)
 {
+	seqNo      = 0;
 	countIO    = 0;
 	selectedIO = 0;
 
@@ -122,7 +123,7 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 	vectorReservedName.push_back(_("var" ));
 	vectorReservedName.push_back(_("char"));
 	vectorReservedName.push_back(_("dest"));
-	vectorReservedName.push_back(_("src"));
+	vectorReservedName.push_back(_("src" ));
 }
 
 void mapIO::Clear(void)
@@ -642,6 +643,14 @@ unsigned int mapIO::getCount(void)
 void mapIO::Select(unsigned int index)
 {
 	selectedIO = getID(index, true);
+}
+
+string mapIO::getNextVar(string prefix)
+{
+	char buf[1024];
+	sprintf(buf, "%s%d", prefix.c_str(), seqNo++);
+
+	return string(buf);
 }
 
 bool mapIO::Assign(unsigned long id, unsigned int pin, unsigned int bit, bool isUndoRedo)

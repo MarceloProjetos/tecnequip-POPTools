@@ -62,6 +62,8 @@ public:
 	unsigned int CreateBrush(COLORREF rgb, float alpha = 1.0f);
 	unsigned int CreateGradient(unsigned int brushStart, unsigned int brushEnd, unsigned int angle = 0);
 
+	POINT getTextSize(const char *txt, POINT maxSize, unsigned int format);
+
 	float getBrushWidth(void)        { return brushWidth; }
 	void  setBrushWidth(float width) { brushWidth = width; }
 
@@ -74,7 +76,7 @@ public:
 	HRESULT DrawEllipse  (RECT r, unsigned int brush, bool filled = true);
 	HRESULT DrawEllipse  (POINT center, float rx, float ry, unsigned int brush, bool filled = true);
 	HRESULT DrawArc      (POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush);
-	HRESULT DrawText     (const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY);
+	HRESULT DrawText     (const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY, bool acceptMultiLine = false);
 	HRESULT DrawLine     (POINT start, POINT end, unsigned int brush);
 
 	HRESULT DrawPictureFromFile    (char *filename, POINT start, POINT size);

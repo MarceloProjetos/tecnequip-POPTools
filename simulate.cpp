@@ -1238,7 +1238,7 @@ void DescribeForIoList(int val, eType type, char *out)
 			LadderSettingsGeneral settings = ladder->getSettingsGeneral();
             double dtms = val * (settings.cycleTime / 1000.0);
             if(dtms < 1000) {
-                sprintf(out, "%.2f ms", dtms);
+                sprintf(out, "%.1f ms", dtms);
             } else {
                 sprintf(out, "%.3f s", dtms / 1000);
             }

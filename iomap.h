@@ -9,6 +9,7 @@ class mapIO {
 private:
 	LadderDiagram *diagram;
 
+	unsigned int  seqNo;
 	unsigned long countIO;
 	unsigned long selectedIO;
 
@@ -80,6 +81,9 @@ public:
 	char          *getTypeString     (eType type);
 	unsigned int   getCount          (void);
 	void           Select            (unsigned int index);
+
+	// Funcao que retorna string para a proxima variavel da sequencia
+	string         getNextVar        (string prefix = "seq");
 
 	unsigned long Request(tRequestIO infoIO);
 	void          Discard(tRequestIO infoIO);

@@ -54,6 +54,7 @@ bool CmdExpand(tCommandSource source, void *data)
 {
 	gui.CmdExpand(source.elem);
 	gui.NeedRedraw(true);
+	InvalidateRect(DrawWindow, NULL, FALSE);
 
 	return true;
 }
@@ -89,6 +90,7 @@ bool CmdShowDialog(tCommandSource source, void *data)
 void CmdSelect(tCommandSource source, int SelectedState)
 {
 	ladder->SelectElement(source.elem, SelectedState);
+	InvalidateRect(DrawWindow, NULL, FALSE);
 }
 
 bool CmdSelectLeft(tCommandSource source, void *data)
@@ -796,7 +798,8 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 		// Desenha o texto do nome do controle
 		RECT rText = r;
 		rText.right -= rExpand.right - rExpand.left;
-		DrawText(ElemName.c_str(), rText, 0, colorgroup.BorderText, eAlignMode_Center, eAlignMode_TopLeft);
+		rText.bottom = rText.top + HeaderHeight;
+		DrawText(ElemName.c_str(), rText, 0, colorgroup.BorderText, eAlignMode_Center, eAlignMode_Center);
 
 		r.top = rHeader.bottom;
 	} else {
@@ -954,14 +957,16 @@ void LadderGUI::DrawDialogBox(void)
 
 	// A largura da janela deve ser o maior valor entre a largura dos textos, dos botoes e do titulo
 	int imageArea = imageSize + 2*imageBorder;
-	int textTotalHeight = max(imageArea, vectorTextData.size() * (textHeight + textSpacing) + 2 * textBorder);
+	int textTotalHeight = max(imageArea, (int)(vectorTextData.size()) * (textHeight + textSpacing) + 2 * textBorder);
+
+	POINT maxTextSize = { rWindow.right - rWindow.left, rWindow.bottom - rWindow.top };
 
 	dialogHeight += textTotalHeight;
-	dialogWidth   = max(dialogWidth, imageArea + (LONG)DialogData.title.size() * FONT_WIDTH);
+	dialogWidth   = max(dialogWidth, imageArea + getTextSize(DialogData.title.c_str(), maxTextSize, 0).x + 10);
 
 	unsigned int i;
 	for(i = 0; i < vectorTextData.size(); i++) {
-		dialogWidth = max(dialogWidth, imageArea + (2 + (LONG)vectorTextData[i].size()) * FONT_WIDTH);
+		dialogWidth = max(dialogWidth, imageArea + getTextSize(vectorTextData[i].c_str(), maxTextSize, 0).x + 10);
 	}
 
 	rDialog.right  = rDialog.left + dialogWidth + 2 * borderSize;
@@ -1001,7 +1006,7 @@ void LadderGUI::DrawDialogBox(void)
 	for(i = 0; i < vectorTextData.size(); i++) {
 		rDialog.top += textSpacing;
 		DrawText(vectorTextData[i].c_str(), rDialog, 0, colors.DialogBackgroundText,
-			eAlignMode_Center, eAlignMode_TopLeft);
+			eAlignMode_Center, eAlignMode_TopLeft, true);
 		rDialog.top += FONT_HEIGHT;
 	}
 
@@ -1097,14 +1102,16 @@ void LadderGUI::addControlList(LadderElem *elem, RECT r, tControlList list)
 
 	// Esta funcao adiciona um controle no modo de lista. Ele tenta identificar o numero de colunas utilizaveis
 	// conforme a largura do retangulo e o tamanho dos textos
-	unsigned int i, maxlen = 0;
+	POINT textSize, maxTextSize = { r.right - r.left, r.bottom - r.top };
+	unsigned int i;
+	int maxlen = 0;
 	for(i = 0; i < list.items.size(); i++) {
-		if(list.items[i].size() > maxlen) {
-			maxlen = list.items[i].size();
+		textSize = getTextSize(list.items[i].c_str(), maxTextSize, 0);
+		if(textSize.x > maxlen) {
+			maxlen = textSize.x;
 		}
 	}
 
-	maxlen *= FONT_WIDTH; // Multiplica os caracteres pela largura de cadaum deles
 	maxlen += offsetText + 2*itemBorder; // Cada elemento tambem deve considerar as bordas e o deslocamento do texto
 
 	if(maxlen == 0) return; // Maior texto tem tamanho zero ??? Ou lista vazia ou items com strings vazias...
@@ -1789,7 +1796,7 @@ bool LadderElemComment::ShowDialog(LadderContext context)
 
 bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 {
-	vector<string> lines;
+	vector< pair<string, unsigned int> > lines;
 
 	POINT GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
@@ -1798,22 +1805,26 @@ bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 	// Dessa forma devemos calcular as quebras do texto para que se ajuste na tela, resultando
 	// assim na altura do elemento.
 	string txt;
-	unsigned int posnl, pos = 0, nchars = ((ddg->size.x * GridSize.x) / FONT_WIDTH) - 2;
+	unsigned int posnl, pos = 0;
+	unsigned int totalHeight = 5;
+	POINT textSize, maxTextSize = { ddg->size.x * GridSize.x - 10, 1000 };
 
 	do {
-		txt   = prop.str.substr(pos, nchars);
+		txt   = prop.str.substr(pos);
 		posnl = txt.find_first_of("\n");
 		if(posnl != string::npos) {
-			txt = txt.substr(0, posnl);
-			pos++; // Incrementa pos para que sua posicao inicial no proximo loop seja apos \n
+			txt = txt.substr(0, posnl-1);
+			pos += 2; // Incrementa pos para que sua posicao inicial no proximo loop seja apos \n\r
 		}
 
-		lines.push_back(txt);
+		// Aqui calculamos a altura do texto atual
+		textSize = gui.getTextSize(txt.c_str(), maxTextSize, 0);
+		totalHeight += textSize.y + 5;
+
+		lines.push_back(pair<string, unsigned int>(txt, textSize.y));
 		pos += txt.size();
 	} while(pos < prop.str.size());
 
-	// Aqui calculamos a altura do elemento de acordo com o numero de linhas
-	unsigned int totalHeight = lines.size() * (FONT_HEIGHT + 5);
 	ddg->size.y = 1 + totalHeight / GridSize.y;
 
 	if(ddg->DontDraw) return poweredAfter;
@@ -1833,13 +1844,13 @@ bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 	gui.AddCommand(source, rDialog, CmdShowDialog, nullptr, true, false);
 
 	// Desenha os textos na tela
-	r.left += 10;
-	r.top  += (r.bottom - r.top - totalHeight + FONT_HEIGHT) / 2;
+	r.left += 5;
+	r.top  += (r.bottom - r.top - totalHeight) / 2;
 
-	vector<string>::iterator it;
-	for(it = lines.begin(); it != lines.end(); it++) {
-		gui.DrawText(it->c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
-		r.top += FONT_HEIGHT + 5;
+	unsigned int i;
+	for(i = 0; i < lines.size(); i++) {
+		gui.DrawText(lines[i].first.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft, true);
+		r.top += lines[i].second + 5;
 	}
 
 	return poweredAfter;
@@ -2012,7 +2023,7 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 	rText.left += 5;
 	rText.top  += 5;
 	rText.bottom = rText.top + FONT_HEIGHT;
-	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, ContactCmdChangeName, nullptr, true, false);
 
 	// Desenha o contato
@@ -2284,7 +2295,7 @@ bool LadderElemCoil::DrawGUI(bool poweredBefore, void *data)
 	rText.left   += 5;
 	rText.top    += 5;
 	rText.bottom  = rText.top + FONT_HEIGHT;
-	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, CoilCmdChangeName, nullptr, true, false);
 
 	// Desenha a bobina
@@ -2575,7 +2586,7 @@ bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
 	end.x   = rClock.right + 10;
 	gui.DrawLine(start, end, colorWire);
 
-	if(which != ELEM_RTO) {
+	if(which != ELEM_RTO || ladder->getContext().inSimulationMode) {
 		if(ladder->getContext().inSimulationMode) {
 			// Primeiro limpa o circulo do relogio com a cor de simulacao Ligado
 			gui.DrawEllipse(rClock, colors.Wire);
@@ -2618,11 +2629,18 @@ bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
 		// Agora desenha o circulo do relogio
 		gui.DrawEllipse(rClock, colorgroup.Foreground, false);
 	} else {
-		POINT start, size = { 20, 20 };
+		POINT startRTO, endRTO, size = { 20, 20 };
 
-		start.x = r.left + 3;
-		start.y = r.top + 5;
-		gui.DrawPictureFromResource(IDB_LADDER_HOURGLASS, start, size);
+		startRTO.x = r.left + 3;
+		startRTO.y = r.top + 5;
+		gui.DrawPictureFromResource(IDB_LADDER_HOURGLASS, startRTO, size);
+
+		startRTO.x = rClock.left;
+		endRTO  .x = rClock.right;
+		startRTO.y = end.y;
+		endRTO  .y = end.y;
+
+		gui.DrawLine(startRTO, endRTO, colors.Wire);
 	}
 
 	// Desenha a linha vertical
@@ -3841,7 +3859,7 @@ bool LadderElemRand::DrawGUI(bool poweredBefore, void *data)
 	rText.top    += 5;
 	rText.bottom  = rText.top + FONT_HEIGHT;
 	gui.DrawText(Diagram->getNameIO(prop.idMin).c_str(), rText, 0, colorgroup.Foreground,
-		eAlignMode_Center, eAlignMode_TopLeft);
+		eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, RandCmdChangeVar, pInt1, true, false);
 
 	pULong = new unsigned long;
@@ -3852,7 +3870,7 @@ bool LadderElemRand::DrawGUI(bool poweredBefore, void *data)
 	rText.top    = rText.bottom + 3;
 	rText.bottom = rText.top + FONT_HEIGHT;
 	gui.DrawText(Diagram->getNameIO(prop.idVar).c_str(), rText, 0, colorgroup.Foreground,
-		eAlignMode_Center, eAlignMode_TopLeft);
+		eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, RandCmdChangeVar, pInt2, true, false);
 
 	pULong = new unsigned long;
@@ -3863,7 +3881,7 @@ bool LadderElemRand::DrawGUI(bool poweredBefore, void *data)
 	rText.top    = rText.bottom + 3;
 	rText.bottom = rText.top + FONT_HEIGHT;
 	gui.DrawText(Diagram->getNameIO(prop.idMax).c_str(), rText, 0, colorgroup.Foreground,
-		eAlignMode_Center, eAlignMode_TopLeft);
+		eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, RandCmdChangeVar, pInt3, true, false);
 
 	pULong = new unsigned long;
@@ -4356,7 +4374,7 @@ bool LadderElemCheckBit::DrawGUI(bool poweredBefore, void *data)
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
 	if(ddg->expanded) {
-		ddg->size.x = 5;
+		ddg->size.x = 4;
 		ddg->size.y = 4;
 	} else {
 		ddg->size.x = 3;
@@ -4419,6 +4437,33 @@ bool LadderElemCheckBit::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemReadAdc
+bool ReadAdcCmdExpandedScale(LadderElem *elem, unsigned int mode)
+{
+	bool ret = false;
+	bool new_mode = mode ? true : false;
+	LadderElemReadAdc *readadc = dynamic_cast<LadderElemReadAdc *>(elem);
+	LadderElemReadAdcProp *prop = (LadderElemReadAdcProp *)readadc->getProperties();
+
+	if(prop->useFahrenheit != new_mode) {
+		ladder->CheckpointBegin("Alterar Escala do A/D");
+
+		prop->useFahrenheit = new_mode;
+
+		readadc->setProperties(ladder->getContext(), prop);
+
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
+	}
+
+	return ret;
+}
+
 bool ReadAdcCmdChangeName(tCommandSource source, void *data)
 {
 	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
@@ -4455,13 +4500,22 @@ bool LadderElemReadAdc::ShowDialog(LadderContext context)
 
 bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
 {
+	const int channelTemp = 6; // canal do A/D que recebe o sensor de temperatura
 	POINT start, size, GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
 	size = ddg->size;
 
-	ddg->size.x = 3;
-	ddg->size.y = 2;
+	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
+	bool hasExpanded     = (detailsIO.pin == channelTemp);
+
+	if(hasExpanded && ddg->expanded) {
+		ddg->size.x = 5;
+		ddg->size.y = 4;
+	} else {
+		ddg->size.x = 3;
+		ddg->size.y = 2;
+	}
 
 	if(ddg->DontDraw) return poweredAfter;
 
@@ -4471,23 +4525,22 @@ bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("LER A/D"), false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("LER A/D"), hasExpanded, poweredBefore);
 	ddg->region = r;
 
 	tCommandSource source = { nullptr, nullptr, this };
-	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
 
-	if(detailsIO.pin == 6) { // 6: canal do A/D que recebe o sensor de temperatura
+	if(detailsIO.pin == channelTemp) {
 		start.x = r.left + 3;
 		start.y = r.top + 5;
-		size .y = r.bottom - r.top - 8;
+		size .y = (3 * GridSize.y)/2 - 5;
 		size .x = size.y;
 
 		gui.DrawPictureFromResource(IDB_LADDER_TERMOMETHER, start, size);
 	} else {
 		start.x = r.left + 3;
 		start.y = r.top + 5;
-		size .y = r.bottom - r.top - 8 - FONT_HEIGHT - 5; // FONT_HEIGHT - 5: espaco para o texto com o nome do A/D
+		size .y = (3 * GridSize.y)/2 - 5 - FONT_HEIGHT - 5; // FONT_HEIGHT - 5: espaco para o texto com o nome do A/D
 		size .x = size.y;
 		gui.DrawPictureFromResource(IDB_LADDER_AD, start, size);
 
@@ -4507,15 +4560,36 @@ bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
 	}
 
 	// Desenha o nome do I/O
-	r.left  += size.x + 5;
-	r.right -= 5;
-	gui.DrawText(Diagram->getNameIO(prop.idName).c_str(), r, 0, colorgroup.Foreground,
+	RECT rText = r;
+	rText.left  += size.x + 5;
+	rText.right -= 5;
+	rText.bottom = rText.top + (3 * GridSize.y)/2 - 5;
+	gui.DrawText(Diagram->getNameIO(prop.idName).c_str(), rText, 0, colorgroup.Foreground,
 		eAlignMode_Center, eAlignMode_Center);
-	gui.AddCommand(source, r, ReadAdcCmdChangeName, nullptr, true, false);
+	gui.AddCommand(source, rText, ReadAdcCmdChangeName, nullptr, true, false);
 
 	unsigned long *pULong = new unsigned long;
 	*pULong = prop.idName.first;
-	gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
+	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
+
+	// Se expandido, desenha os itens do modo expandido
+	if(hasExpanded && ddg->expanded) {
+		vector<tExpandedItem> items;
+		items.push_back(tExpandedItem(_("Escala"), 1));
+		
+		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 2, items);
+
+		// Caixas desenhadas. Agora criamos o conteudo
+		tControlList list;
+
+		list.items.push_back("Celsius");
+		list.items.push_back("Fahrenheit");
+
+		list.fnc      = ReadAdcCmdExpandedScale;
+		list.selected = prop.useFahrenheit ? 1 : 0;
+
+		gui.addControlList(this, rExp[0], list);
+	}
 
 	return poweredAfter;
 }
@@ -7292,7 +7366,6 @@ eReply LadderDiagram::ShowDialog(eDialogType type, bool hasCancel, char *title, 
 	va_start(f, message);
 
 	char buf[1024];
-g
 
 	message = _(message);
 	vsprintf(buf, message, f);

@@ -958,7 +958,8 @@ void ProcessMenu(int code)
 {
 	unsigned int recent_index;
 
-	if(ladder->IsLocked() && code != MNU_EXIT) return; // Se o diagrama estiver bloqueado, retorna
+	// Se o diagrama estiver bloqueado e nao estiver em simulacao, retorna
+	if((ladder->IsLocked() && !ladder->getContext().inSimulationMode) && code != MNU_EXIT) return;
 
     switch(code) {
         case MNU_NEW:
@@ -1366,12 +1367,10 @@ cmp:
 
         case MNU_MANUAL:
 			OpenCHM();
-//            ShowHelpDialog(FALSE);
             break;
 
         case MNU_KEYBOARD_MANUAL:
 			OpenCHM(6);
-//            ShowHelpDialog(FALSE);
             break;
 
 		case MNU_EXAMPLE_COMMENT:

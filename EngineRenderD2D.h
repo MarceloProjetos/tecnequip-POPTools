@@ -66,9 +66,11 @@ public:
 
 	HRESULT CreateRenderTarget(HWND hwnd);
 	HRESULT ResizeRenderTarget(HWND hwnd);
-	HRESULT CreateBrush   (unsigned int &index, unsigned int rgb, float alpha = 1.0f);
-	HRESULT CreateGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle = 0);
+	HRESULT CreateBrush     (unsigned int &index, unsigned int rgb, float alpha = 1.0f);
+	HRESULT CreateGradient  (unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle = 0);
 	HRESULT CreateTextFormat(unsigned int rgb, unsigned int &index);
+
+	POINT   getTextSize     (const char *txt, POINT maxSize, unsigned int format);
 
 	ID2D1Brush               *getBrush              (unsigned int brush, D2D1_RECT_F rf);
 	ID2D1SolidColorBrush     *getSolidColorBrush    (unsigned int brush);
@@ -82,7 +84,7 @@ public:
 	void    DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned int radiusY = 0, unsigned int angle = 0, float brushWidth = 2.0f);
 	HRESULT DrawEllipse  (POINT center, float rx, float ry, unsigned int brush, bool filled = true, float brushWidth = 2.0f);
 	HRESULT DrawArc      (POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush, float brushWidth = 2.0f);
-	void    DrawText     (const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY);
+	void    DrawText     (const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY, bool acceptMultiLine);
 	HRESULT DrawLine     (POINT start, POINT end, unsigned int brush, float brushWidth = 2.0f);
 
 	HRESULT DrawPictureFromFile    (char *filename, POINT start, POINT size);
@@ -90,8 +92,6 @@ public:
 
 	HRESULT DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
 		bool filled, float radiusX, float radiusY, float angle);
-
-	void Teste(void);
 };
 
 #endif

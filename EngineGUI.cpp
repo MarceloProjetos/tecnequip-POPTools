@@ -223,7 +223,7 @@ HRESULT EngineGUI::DrawRectangle(RECT r, unsigned int brush, bool filled, unsign
 	return hr;
 }
 
-HRESULT EngineGUI::DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY)
+HRESULT EngineGUI::DrawText(const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY, bool acceptMultiLine)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
@@ -232,11 +232,22 @@ HRESULT EngineGUI::DrawText(const char *txt, RECT r, unsigned int format, unsign
 		r.right  += DrawOffset.x;
 		r.top    += DrawOffset.y;
 		r.bottom += DrawOffset.y;
-		pRender->DrawText(txt, r, format, brush + BrushOffset, alignX, alignY);
+		pRender->DrawText(txt, r, format, brush + BrushOffset, alignX, alignY, acceptMultiLine);
 		hr = S_OK;
 	}
 
 	return hr;
+}
+
+POINT EngineGUI::getTextSize(const char *txt, POINT maxSize, unsigned int format)
+{
+	POINT size = { 0, 0 };
+
+	if(pRender != NULL) {
+		size = pRender->getTextSize(txt, maxSize, format);
+	}
+
+	return size;
 }
 
 HRESULT EngineGUI::DrawLine(POINT start, POINT end, unsigned int brush)
