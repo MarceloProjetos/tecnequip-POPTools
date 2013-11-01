@@ -399,6 +399,7 @@ void HideProgressWindow(void)
 	    DestroyWindow(hProgressWindow);
 		hProgressWindow = NULL;
 	    EnableWindow(MainWindow, TRUE);
+		SetFocus(MainWindow);
 	}
 }
 
@@ -1146,6 +1147,10 @@ void ProcessMenu(int code)
             AddMultisetDA();
             break;
 
+		case MNU_INSERT_PID:
+			AddPID();
+            break;
+
         case MNU_READ_FMTD_STR:
             AddReadFormatString();
             break;
@@ -1349,6 +1354,17 @@ cmp:
         case MNU_SINGLE_CYCLE:
 			RibbonSetCmdState(cmdSimulationStop, TRUE);
             SimulateOneCycle(TRUE);
+            break;
+
+        case MNU_START_LOG_SIMULATION:
+            LogSimulation(true);
+            break;
+
+        case MNU_STOP_LOG_SIMULATION:
+			if(RealTimeSimulationRunning) {
+				PauseSimulation();
+			}
+            LogSimulation(false);
             break;
 
         case MNU_COMPILE:
@@ -1701,7 +1717,7 @@ static BOOL MakeDebugWindowClass()
     return RegisterClassEx(&wc);
 }
 
-#define SETTINGS_FILE            "POPTools\\settings.dat"
+#define SETTINGS_FILE            "settings.dat"
 #define LADDER_SETTINGS_MAGIC    0xbeef0f5a
 #define LADDER_SETTINGS_MAX_SIZE 20480 // 20 KB
 
@@ -1717,13 +1733,21 @@ void LoadSettings(void)
 	string filename = buf;
 	delete buf;
 
-	filename += "\\";
+	filename += "\\POPTools\\";
 	filename += SETTINGS_FILE;
 
 	memset(&POPSettings, 0, sizeof(POPSettings));
 
 	FILE *f = fopen(filename.c_str(), "rb");
-    if(f) {
+	if(!f) {
+		filename = getAppDirectory();
+		filename += "\\";
+		filename += SETTINGS_FILE;
+
+		f = fopen(filename.c_str(), "rb");
+	}
+
+	if(f) {
 		// Start with the magic number
 		fread(&magic, sizeof(magic), 1, f);
 		if(magic == LADDER_SETTINGS_MAGIC) {
@@ -1748,10 +1772,11 @@ void LoadSettings(void)
 					// volta para o comeco, depois do numero magico
 					fseek(f, sizeof(LADDER_SETTINGS_MAGIC), SEEK_SET);
 
-					if(fread_bool(f, &POPSettings.ShowSimulationWarnings) &&
-						fread_int(f, &POPSettings.AutoSaveInterval      ) &&
-						fread_int(f, &POPSettings.COMPortFlash          ) &&
-						fread_int(f, &POPSettings.COMPortDebug          )
+					if(fread_int(f, &POPSettings.idLanguage              ) &&
+						fread_bool(f, &POPSettings.ShowSimulationWarnings) &&
+						fread_int(f, &POPSettings.AutoSaveInterval       ) &&
+						fread_int(f, &POPSettings.COMPortFlash           ) &&
+						fread_int(f, &POPSettings.COMPortDebug           )
 						) {
 							string name;
 							unsigned int i;
@@ -1778,6 +1803,7 @@ void LoadSettings(void)
 		// TODO: Internacionalizar
 		ShowTaskDialog(L"Erro ao carregar as preferências", L"Será utilizada a configuração padrão", TD_ERROR_ICON, TDCBF_OK_BUTTON);
 
+		POPSettings.idLanguage = 0;
 		POPSettings.AutoSaveInterval = 0;
 		POPSettings.ShowSimulationWarnings = TRUE;
 
@@ -1796,7 +1822,7 @@ void SaveSettings(void)
 	string filename = buf;
 	delete buf;
 
-	filename += "\\";
+	filename += "\\POPTools\\";
 	filename += SETTINGS_FILE;
 
 	FILE *f = fopen(filename.c_str(), "wb+");
@@ -1809,6 +1835,7 @@ void SaveSettings(void)
 
 	// Salvando as configuracoes
 	if(ret == true &&
+		fwrite_int   (f, POPSettings.idLanguage            ) &&
 		fwrite_bool  (f, POPSettings.ShowSimulationWarnings) &&
 		fwrite_int   (f, POPSettings.AutoSaveInterval      ) &&
 		fwrite_int   (f, POPSettings.COMPortFlash          ) &&
@@ -1944,6 +1971,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     MainHeap = HeapCreate(0, 1024*64, 0);
 
 	LoadSettings();
+	setLanguage(POPSettings.idLanguage);
 
     MakeWindowClass();
 	MakeDebugWindowClass();

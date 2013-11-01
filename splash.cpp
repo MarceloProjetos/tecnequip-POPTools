@@ -77,7 +77,7 @@ void SPLASH::Show()
     RegisterClass(&wc);
 
 	hSplashWnd=CreateWindowEx(WS_EX_CLIENTEDGE,c_szSplashClass,_("Sobre..."),
-		WS_POPUPWINDOW|WS_EX_TOPMOST|WS_EX_TOOLWINDOW | WS_DLGFRAME| SS_BITMAP,440,300,550,450,hParentWindow,NULL,GetModuleHandle(NULL),NULL);
+		WS_POPUPWINDOW|WS_EX_TOPMOST|WS_EX_TOOLWINDOW | WS_DLGFRAME| SS_BITMAP,100,100,800,450,hParentWindow,NULL,GetModuleHandle(NULL),NULL);
 
 	HBITMAP hBitmap;
 	hBitmap = LoadBitmap(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SPLASH));

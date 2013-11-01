@@ -49,26 +49,6 @@ void Error(char *str, ...)
 }
 
 //-----------------------------------------------------------------------------
-// A standard format for showing a message that indicates that a compile
-// was successful.
-//-----------------------------------------------------------------------------
-void CompileSuccessfulMessage(char *str)
-{
-    MessageBox(MainWindow, str, _("Compile"),
-        MB_OK | MB_ICONINFORMATION);
-}
-
-//-----------------------------------------------------------------------------
-// A standard format for showing a message that indicates that a compile
-// was successful.
-//-----------------------------------------------------------------------------
-void ProgramSuccessfulMessage(char *str)
-{
-    MessageBox(MainWindow, str, _("Compile Successful"),
-        MB_OK | MB_ICONINFORMATION);
-}
-
-//-----------------------------------------------------------------------------
 // Check the consistency of the heap on which all the PLC program stuff is
 // stored.
 //-----------------------------------------------------------------------------
@@ -227,7 +207,7 @@ void MakeDialogBoxClass(void)
 //-----------------------------------------------------------------------------
 bool IsNumber(const char *str)
 {
-    if(*str == '-' || isdigit(*str)) {
+    if(*str == '-' || isdigit((unsigned char)(*str))) {
         return TRUE;
     } else if(*str == '\'') {
         // special case--literal single character
@@ -261,6 +241,19 @@ void LoadIOListToComboBox(HWND ComboBox, vector<eType> allowedTypes)
 			}
 		}
     }
+}
+
+string getAppDirectory(void)
+{
+	char szAppPath[MAX_PATH]      = "";
+	char szAppDirectory[MAX_PATH] = "";
+
+	::GetModuleFileName(0, szAppPath, sizeof(szAppPath) - 1);
+
+	// Extract directory
+	strncpy(szAppDirectory, szAppPath, strrchr(szAppPath, '\\') - szAppPath);
+
+	return string(szAppDirectory);
 }
 
 #include <setupapi.h>

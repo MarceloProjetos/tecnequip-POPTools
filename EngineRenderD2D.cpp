@@ -304,8 +304,8 @@ HRESULT EngineRenderD2D::CreateTextFormat(unsigned int rgb, unsigned int &index)
 
 		// Create a DirectWrite text format object.
 		hr = pWriteFactory->CreateTextFormat(
-			L"Segoe UI",
-//			L"POPTOOLS",
+//			L"Segoe UI",
+			L"POPTOOLS",
 			pFontCollection,
 			DWRITE_FONT_WEIGHT_NORMAL,
 			DWRITE_FONT_STYLE_NORMAL,
@@ -1020,16 +1020,25 @@ void EngineRenderD2D::DrawText(const char *txt, RECT r, unsigned int format, uns
 	}
 }
 
-HRESULT EngineRenderD2D::DrawLine(POINT start, POINT end, unsigned int brush, float brushWidth)
+HRESULT EngineRenderD2D::DrawLine(POINT start, POINT end, unsigned int brush, unsigned int angle, float brushWidth)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 	ID2D1Brush *pBrush = getSolidColorBrush(brush);
 
 	if(pRT != NULL && pBrush != nullptr) {
+		D2D1_POINT_2F center;
+		if(angle) {
+			center.x = start.x + (end.x - start.x)/2;
+			center.y = start.y + (end.y - start.y)/2;
+			pRT->SetTransform(D2D1::Matrix3x2F::Rotation((float)angle, center));
+		}
+
 		float offset = ((int)(brushWidth + 0.5f)%2) ? -0.5f : 0.0f;
 		pRT->DrawLine(D2D1::Point2F((float)start.x + offset, (float)start.y + offset),
 					  D2D1::Point2F((float)  end.x + offset, (float)  end.y + offset), pBrush, brushWidth);
 		hr = S_OK;
+
+		if(angle) pRT->SetTransform(D2D1::Matrix3x2F::Rotation(0.0f, center));
 	}
 
 	return hr;

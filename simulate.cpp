@@ -6,20 +6,37 @@
 static vector<IntOp>::size_type IntCodeLen;
 static vector<IntOp> vectorIntCode;
 
-map<string, bool> SingleBitItems;
-map<string, int > Variables;
-map<string, int > AdcShadows;
+typedef struct {
+	vector<IntOp>::size_type IntPc;
+	int                      val;
+} tStaticItemData;
 
-SWORD DAShadow;
+typedef multimap<string, tStaticItemData> tStaticItemsMap;
 
-map<string, int > EncShadows;
-map<string, int > ResetEncShadows;
-map<string, int > readUSSShadows;
-map<string, int > writeUSSShadows;
-map<string, int > readModbusShadows;
-map<string, int > writeModbusShadows;
-map<string, int > readModbusEthShadows;
-map<string, int > writeModbusEthShadows;
+typedef struct {
+	tStaticItemsMap                               StaticItems;
+	map      <string, tStaticItemsMap::iterator > StaticItemsIterator;
+	map      <string, bool                      > SingleBitItems;
+	map      <string, int                       > Variables;
+	map      <string, int                       > AdcShadows;
+	map      <   int, int                       > EncShadows;
+	SWORD                                         DAShadow;
+} tSimulationState;
+
+tSimulationState currentSimState;
+
+typedef struct {
+	bool                        isBit;
+	bool                        isPending;          
+	string                      name;
+	eType                       type;
+	map<string, bool>::iterator itBit;
+	map<string, int >::iterator itVar;
+} tLogRefIO;
+
+bool                  isLogActive = false;
+vector<tLogRefIO>     logRefIO;
+vector< vector<int> > logDataIO;
 
 // Don't want to redraw the screen unless necessary; track whether a coil
 // changed state or a timer output switched to see if anything could have
@@ -443,6 +460,137 @@ int RTC_OutputState(struct tm start, struct tm end, struct tm now, int mode, int
 
 /*** End of functions related to RTC Simulation ***/
 
+void csvSaveField(FILE *f, string name)
+{
+	fwrite(name.c_str(), name.size(), 1, f);
+	fwrite(";", 1, 1, f);
+}
+
+void csvSaveIO(FILE *f, vector<tLogRefIO>::iterator io, int val)
+{
+	char buf[1024] = "?";
+
+	if(!io->isPending) {
+		if(io->isBit) {
+			strcpy(buf, val ? "1" : "0");
+		} else {
+			switch(io->type) {
+				case eType_TOF:
+				case eType_TON:
+				case eType_RTO:
+					val *= 10;
+			}
+		}
+
+		sprintf(buf, "%d", val);
+	}
+
+	csvSaveField(f, buf);
+}
+
+static void ExportLogAsCSV(void)
+{
+    char exportFile[MAX_PATH];
+
+	string currentFilename = ladder->getCurrentFilename();
+	if(currentFilename.size() > 0) {
+		strcpy(exportFile, currentFilename.c_str());
+		ChangeFileExtension(exportFile, "csv");
+	} else {
+	    exportFile[0] = '\0';
+	}
+
+	FileDialogShow(SaveCSV, "csv", exportFile);
+	if(!strlen(exportFile))
+		return;
+
+    FILE *f = fopen(exportFile, "w");
+    if(!f) {
+        Error(_("Couldn't open '%s'\n"), f);
+        return;
+    }
+
+	vector< vector<int> >::iterator itData;
+	vector< int         >::iterator itVal;
+	vector<tLogRefIO    >::iterator itIO;
+
+	// Primeiro salva o cabecalho do arquivo
+	for(itIO = logRefIO.begin(); itIO != logRefIO.end(); itIO++) {
+		csvSaveField(f, itIO->name);
+	}
+
+	// Agora salva o conteudo
+	for(itData = logDataIO.begin(); itData != logDataIO.end(); itData++) {
+		// Insere quebra de linha
+		fwrite("\n", 1, 1, f);
+
+		// Loop entre todos os IOs
+		itVal = itData->begin();
+		for(itIO = logRefIO.begin(); itIO != logRefIO.end(); itIO++, itVal++) {
+			csvSaveIO(f, itIO, *itVal);
+		}
+	}
+
+	fclose(f);
+
+	ladder->ShowDialog(eDialogType_Message, false, "Sucesso", "Arquivo exportado com sucesso!!!");
+}
+
+//-----------------------------------------------------------------------------
+// Funcao que ativa / desativa a captura dos dados da simulacao.
+//-----------------------------------------------------------------------------
+void logSearchPendingIO(vector<tLogRefIO>::iterator io)
+{
+	if(!io->isPending) return;
+
+	io->itBit = currentSimState.SingleBitItems.find(io->name);
+	if(io->itBit != currentSimState.SingleBitItems.end()) {
+		io->isBit     = true;
+		io->isPending = false;
+	} else {
+		io->itVar = currentSimState.Variables.find(io->name);
+		if(io->itVar != currentSimState.Variables.end()) {
+			io->isBit     = false;
+			io->isPending = false;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Funcao que ativa / desativa a captura dos dados da simulacao.
+//-----------------------------------------------------------------------------
+void LogSimulation(bool isStart)
+{
+	if(isStart) {
+		logRefIO .clear();
+		logDataIO.clear();
+
+		tLogRefIO refIO;
+		vector<string>::iterator it;
+		vector<string> listIO = ladder->getListIO();
+
+		for(it = listIO.begin(); it != listIO.end(); it++) {
+			refIO.isPending = true;
+			refIO.name      = *it;
+			refIO.type      = ladder->getDetailsIO(*it).type;
+
+			logRefIO.push_back(refIO);
+		}
+
+		isLogActive = true;
+	} else if(isLogActive) {
+		isLogActive = false;
+		if(logDataIO.size() > 0) {
+			ExportLogAsCSV();
+			logRefIO .clear();
+			logDataIO.clear();
+		}
+	}
+
+	RibbonSetCmdState(cmdSimulationLogStart, !isStart);
+	RibbonSetCmdState(cmdSimulationLogStop ,  isStart);
+}
+
 //-----------------------------------------------------------------------------
 // Query the state of a single-bit element (relay, digital in, digital out).
 // Looks in the SingleBitItems list; if an item is not present then it is
@@ -450,8 +598,8 @@ int RTC_OutputState(struct tm start, struct tm end, struct tm now, int mode, int
 //-----------------------------------------------------------------------------
 static bool SingleBitOn(const char *name)
 {
-	if(SingleBitItems.count(name) > 0) {
-		return SingleBitItems[name];
+	if(currentSimState.SingleBitItems.count(name) > 0) {
+		return currentSimState.SingleBitItems[name];
 	}
 
 	return false;
@@ -463,7 +611,7 @@ static bool SingleBitOn(const char *name)
 //-----------------------------------------------------------------------------
 static void SetSingleBit(const char *name, bool state)
 {
-	SingleBitItems[name] = state;
+	currentSimState.SingleBitItems[name] = state;
 	UpdateSimulation(name, state);
 }
 
@@ -473,40 +621,40 @@ static void SetSingleBit(const char *name, bool state)
 //-----------------------------------------------------------------------------
 static void IncrementVariable(char *name)
 {
-	if(Variables.count(name) == 0) {
-		Variables[name] = 0;
+	if(currentSimState.Variables.count(name) == 0) {
+		currentSimState.Variables[name] = 0;
 	}
 
-	Variables[name]++;
-	UpdateSimulation(name, Variables[name]);
+	currentSimState.Variables[name]++;
+	UpdateSimulation(name, currentSimState.Variables[name]);
 }
 
 static void SetSimulationBit(char *name, int bit)
 {
-	if(Variables.count(name) == 0) {
-		Variables[name] = 0;
+	if(currentSimState.Variables.count(name) == 0) {
+		currentSimState.Variables[name] = 0;
 	}
 
-	Variables[name] |= 1 << bit;
-	UpdateSimulation(name, Variables[name]);
+	currentSimState.Variables[name] |= 1 << bit;
+	UpdateSimulation(name, currentSimState.Variables[name]);
 	NeedRedraw = TRUE;
 }
 
 static void ClearSimulationBit(char *name, int bit)
 {
-	if(Variables.count(name) == 0) {
-		Variables[name] = 0;
+	if(currentSimState.Variables.count(name) == 0) {
+		currentSimState.Variables[name] = 0;
 	}
 
-	Variables[name] &= ~(1 << bit);
-	UpdateSimulation(name, Variables[name]);
+	currentSimState.Variables[name] &= ~(1 << bit);
+	UpdateSimulation(name, currentSimState.Variables[name]);
 	NeedRedraw = TRUE;
 }
 
 static bool CheckSimulationBit(char *name, int bit)
 {
-	if(Variables.count(name) > 0) {
-		return ((Variables[name] & (1 << bit)) > 0);
+	if(currentSimState.Variables.count(name) > 0) {
+		return ((currentSimState.Variables[name] & (1 << bit)) > 0);
 	}
 
 	return false;
@@ -529,12 +677,51 @@ void setIntInMap(map <string, int> *m, const char *name, int val)
 	NeedRedraw = TRUE;
 }
 
+tStaticItemsMap::iterator getStaticItemsIterator(string name)
+{
+	tStaticItemsMap::iterator it;
+	pair <tStaticItemsMap::iterator, tStaticItemsMap::iterator> StaticItemsRange;
+
+	StaticItemsRange = currentSimState.StaticItems.equal_range(name);
+	for(it = StaticItemsRange.first; it != StaticItemsRange.second; it++) {
+		if(it->second.IntPc == IntPc) { // Encontrada!
+			return it;
+		}
+	}
+
+	return currentSimState.StaticItems.end();
+}
+
+//-----------------------------------------------------------------------------
+// Create a static variable.
+//-----------------------------------------------------------------------------
+void CreateStaticVariable(string name)
+{
+	tStaticItemsMap::iterator it = getStaticItemsIterator(name);
+
+	if(it != currentSimState.StaticItems.end()) {
+		currentSimState.StaticItemsIterator[name] = it;
+	} else {
+		tStaticItemData data;
+		data.IntPc = IntPc;
+		data.val   = 0;
+
+		currentSimState.StaticItems.insert(pair<string, tStaticItemData>(name, data));
+
+		currentSimState.StaticItemsIterator[name] = getStaticItemsIterator(name);
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Set a variable to a value.
 //-----------------------------------------------------------------------------
 void SetSimulationVariable(const char *name, SWORD val)
 {
-	setIntInMap(&Variables, name, val);
+	if(currentSimState.StaticItemsIterator.count(name) > 0) {
+		currentSimState.StaticItemsIterator[name]->second.val = val;
+	}
+
+	setIntInMap(&currentSimState.Variables, name, val);
 }
 
 //-----------------------------------------------------------------------------
@@ -542,7 +729,11 @@ void SetSimulationVariable(const char *name, SWORD val)
 //-----------------------------------------------------------------------------
 SWORD GetSimulationVariable(const char *name)
 {
-	return getIntFromMap(&Variables, name);
+	if(currentSimState.StaticItemsIterator.count(name) > 0) {
+		return currentSimState.StaticItemsIterator[name]->second.val;
+	}
+
+	return getIntFromMap(&currentSimState.Variables, name);
 }
 
 //-----------------------------------------------------------------------------
@@ -552,7 +743,7 @@ SWORD GetSimulationVariable(const char *name)
 //-----------------------------------------------------------------------------
 void SetAdcShadow(const char *name, SWORD val)
 {
-	setIntInMap(&AdcShadows, name, val);
+	setIntInMap(&currentSimState.AdcShadows, name, val);
 }
 
 //-----------------------------------------------------------------------------
@@ -561,7 +752,7 @@ void SetAdcShadow(const char *name, SWORD val)
 //-----------------------------------------------------------------------------
 SWORD GetAdcShadow(const char *name)
 {
-	return getIntFromMap(&AdcShadows, name);
+	return getIntFromMap(&currentSimState.AdcShadows, name);
 }
 
 //-----------------------------------------------------------------------------
@@ -571,7 +762,7 @@ SWORD GetAdcShadow(const char *name)
 //-----------------------------------------------------------------------------
 void SetDAShadow(SWORD val)
 {
-    DAShadow = val;
+    currentSimState.DAShadow = val;
 	UpdateSimulation("$DA", val);
 }
 
@@ -581,7 +772,7 @@ void SetDAShadow(SWORD val)
 //-----------------------------------------------------------------------------
 SWORD GetDAShadow(void)
 {
-    return DAShadow;
+    return currentSimState.DAShadow;
 }
 
 //-----------------------------------------------------------------------------
@@ -591,7 +782,11 @@ SWORD GetDAShadow(void)
 //-----------------------------------------------------------------------------
 void SetEncShadow(const char *name, SWORD val)
 {
-	setIntInMap(&EncShadows, name, val);
+	int channel = ladder->getDetailsIO(name).pin;
+
+	currentSimState.EncShadows[channel] = val;
+	UpdateSimulation(name, val);
+	NeedRedraw = TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -600,26 +795,13 @@ void SetEncShadow(const char *name, SWORD val)
 //-----------------------------------------------------------------------------
 SWORD GetEncShadow(const char *name)
 {
-	return getIntFromMap(&EncShadows, name);
-}
+	int channel = ladder->getDetailsIO(name).pin;
 
-//-----------------------------------------------------------------------------
-// Set the shadow copy of a variable associated with a READ ADC operation. This
-// will get committed to the real copy when the rung-in condition to the
-// READ ADC is true.
-//-----------------------------------------------------------------------------
-void SetResetEncShadow(char *name, SWORD val)
-{
-	setIntInMap(&ResetEncShadows, name, val);
-}
+	if(currentSimState.EncShadows.count(channel) > 0) {
+		return currentSimState.EncShadows[channel];
+	}
 
-//-----------------------------------------------------------------------------
-// Return the shadow value of a variable associated with a READ ADC. This is
-// what gets copied into the real variable when an ADC read is simulated.
-//-----------------------------------------------------------------------------
-SWORD GetResetEncShadow(char *name)
-{
-	return getIntFromMap(&ResetEncShadows, name);
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -796,6 +978,10 @@ math:
                     break;
             }
 
+            case INT_CREATE_STATIC_VARIABLE:
+                CreateStaticVariable(a->name1);
+                break;
+
 #define IF_BODY \
     { \
         IfConditionTrue(); \
@@ -874,7 +1060,7 @@ math:
                 break;
 
             case INT_RESET_ENC:
-                SetSimulationVariable(a->name1, GetResetEncShadow(a->name1));
+                SetEncShadow(a->name1, GetSimulationVariable(a->name1));
                 break;
 
             case INT_SQRT:
@@ -1141,6 +1327,26 @@ void SimulateOneCycle(BOOL forceRefresh)
 	}
 
     Simulating = FALSE;
+
+	if(isLogActive) {
+		vector<int> ioData;
+		vector<tLogRefIO>::iterator it;
+		for(it = logRefIO.begin(); it != logRefIO.end(); it++) {
+			if(it->isPending) {
+				logSearchPendingIO(it);
+			}
+
+			if(it->isPending) { // checa novamente pois pode ter sido encontrado
+				ioData.push_back(0);
+			} else if(it->isBit) {
+				ioData.push_back(it->itBit->second ? 1 : 0);
+			} else {
+				ioData.push_back(it->itVar->second);
+			}
+		}
+
+		logDataIO.push_back(ioData);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1167,11 +1373,13 @@ void StartSimulationTimer(void)
 //-----------------------------------------------------------------------------
 void ClearSimulationData(void)
 {
-	Variables      .clear();
-	AdcShadows     .clear();
-	EncShadows     .clear();
-	SingleBitItems .clear();
-	ResetEncShadows.clear();
+	logRefIO .clear();
+	logDataIO.clear();
+
+	currentSimState.Variables      .clear();
+	currentSimState.AdcShadows     .clear();
+	currentSimState.EncShadows     .clear();
+	currentSimState.SingleBitItems .clear();
 
 	QueuedUartCharacter = -1;
     QueuedUSSCharacter = -1;

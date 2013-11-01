@@ -5,6 +5,7 @@ static HWND PrefDialog;
 static HWND ShowWarningsYes;
 static HWND ShowWarningsNo;
 static HWND ClearRecentList;
+static HWND LanguageCombobox;
 static HWND ComPortFlashCombobox;
 static HWND ComPortDebugCombobox;
 static HWND AutoSaveIntervalCombobox;
@@ -36,79 +37,99 @@ static LRESULT CALLBACK PrefDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 
 static void MakeControls(void)
 {
-    HWND textlabel = CreateWindowEx(0, WC_STATIC, _("Ao cancelar:"),
+    HWND textlabel = CreateWindowEx(0, WC_STATIC, _("Idioma atual:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         10, 25, 110, 20, PrefDialog, NULL, Instance, NULL);
     NiceFont(textlabel);
 
-    ShowWarningsYes = CreateWindowEx(0, WC_BUTTON, _("Sim"),
-        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        145, 25, 40, 20, PrefDialog, NULL, Instance, NULL);
-    NiceFont(ShowWarningsYes);
+	LanguageCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        135, 23, 135, 100, PrefDialog, NULL, Instance, NULL);
+    NiceFont(LanguageCombobox);
 
-    ShowWarningsNo = CreateWindowEx(0, WC_BUTTON, _("Não"),
-        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
-        210, 25, 40, 20, PrefDialog, NULL, Instance, NULL);
-    NiceFont(ShowWarningsNo);
-
-    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Avisos durante a simulação"),
+    HWND grouper = CreateWindowEx(0, WC_BUTTON, _("Idioma da Interface"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
         10, 5, 270, 50, PrefDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
-    HWND textlabel4 = CreateWindowEx(0, WC_STATIC, _("Intervalo"),
+    textlabel = CreateWindowEx(0, WC_STATIC, _("Ao cancelar:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         10, 75, 110, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(textlabel);
+
+    ShowWarningsYes = CreateWindowEx(0, WC_BUTTON, _("Sim"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        145, 75, 40, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(ShowWarningsYes);
+
+    ShowWarningsNo = CreateWindowEx(0, WC_BUTTON, _("Não"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        210, 75, 40, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(ShowWarningsNo);
+
+    grouper = CreateWindowEx(0, WC_BUTTON, _("Avisos durante a simulação"),
+        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
+        10, 55, 270, 50, PrefDialog, NULL, Instance, NULL);
+    NiceFont(grouper);
+
+    HWND textlabel4 = CreateWindowEx(0, WC_STATIC, _("Intervalo:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 125, 110, 20, PrefDialog, NULL, Instance, NULL);
     NiceFont(textlabel4);
 
 	AutoSaveIntervalCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        135, 73, 135, 100, PrefDialog, NULL, Instance, NULL);
+        135, 123, 135, 100, PrefDialog, NULL, Instance, NULL);
     NiceFont(AutoSaveIntervalCombobox);
 
     HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Cópia de Segurança"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        10, 55, 270, 50, PrefDialog, NULL, Instance, NULL);
+        10, 105, 270, 50, PrefDialog, NULL, Instance, NULL);
     NiceFont(grouper2);
 
     HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("Porta de Gravação:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 110, 120, 21, PrefDialog, NULL, Instance, NULL);
+        10, 175, 120, 21, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel1);
 
 	ComPortFlashCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        135, 110, 145, 100, PrefDialog, NULL, Instance, NULL);
+        135, 173, 135, 100, PrefDialog, NULL, Instance, NULL);
     NiceFont(ComPortFlashCombobox);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Porta de Depuração:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 140, 120, 21, PrefDialog, NULL, Instance, NULL);
+        10, 205, 120, 21, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
 	ComPortDebugCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        135, 140, 145, 100, PrefDialog, NULL, Instance, NULL);
+        135, 203, 135, 100, PrefDialog, NULL, Instance, NULL);
     NiceFont(ComPortDebugCombobox);
+
+    grouper = CreateWindowEx(0, WC_BUTTON, _("Portas Seriais"),
+        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
+        10, 155, 270, 80, PrefDialog, NULL, Instance, NULL);
+    NiceFont(grouper);
 
     HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Projetos Recentes:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 175, 120, 20, PrefDialog, NULL, Instance, NULL);
+        10, 245, 120, 20, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel3);
 
 	ClearRecentList = CreateWindowEx(0, WC_BUTTON, _("Limpar!"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_PUSHBUTTON,
-        135, 170, 145, 30, PrefDialog, NULL, Instance, NULL); 
+        135, 240, 145, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(ClearRecentList);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        135, 210, 70, 30, PrefDialog, NULL, Instance, NULL); 
+        135, 280, 70, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        210, 210, 70, 30, PrefDialog, NULL, Instance, NULL); 
+        210, 280, 70, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 }
 
@@ -129,9 +150,18 @@ void ShowPrefDialog(void)
 		{  0, NULL         }
 	};
 
+	RECT rDrawWindow;
+	GetWindowRect(DrawWindow, &rDrawWindow);
+
+	POINT size = { 290, 320 };
+	POINT start = {
+		rDrawWindow.left + (rDrawWindow.right  - rDrawWindow.left - size.x)/2,
+		rDrawWindow.top  + (rDrawWindow.bottom - rDrawWindow.top  - size.y)/2,
+	};
+
 	PrefDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Preferências"), WS_OVERLAPPED | WS_SYSMENU,
-        150, 160, 290, 250, MainWindow, NULL, Instance, NULL);
+		start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL);
 
 	PrevPrefDialogProc = SetWindowLongPtr(PrefDialog, GWLP_WNDPROC, (LONG_PTR)PrefDialogProc);
 
@@ -142,6 +172,12 @@ void ShowPrefDialog(void)
 
 	LoadCOMPorts(ComPortDebugCombobox, POPSettings.COMPortDebug, false);
 	SendMessage (ComPortDebugCombobox, CB_SETDROPPEDWIDTH, 300, 0);
+
+	// Carrega as strings de idiomas suportados
+	SendMessage(LanguageCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)"Português"));
+	SendMessage(LanguageCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)"English"));
+	SendMessage(LanguageCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)"Español"));
+	SendMessage(LanguageCombobox, CB_SETCURSEL, POPSettings.idLanguage, 0);
 
 	// Load Combobox items
 	for (i = 0; AutoSaveItems[i].text; i++)
@@ -195,7 +231,7 @@ void ShowPrefDialog(void)
 		POPSettings.AutoSaveInterval = AutoSaveItems[index > 0 ? index : 0].interval;
 		SetAutoSaveInterval(POPSettings.AutoSaveInterval);
 
-        SendMessage(ComPortFlashCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		SendMessage(ComPortFlashCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
 		POPSettings.COMPortFlash = atoi(&buf[3]);
 
         SendMessage(ComPortDebugCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
@@ -206,7 +242,15 @@ void ShowPrefDialog(void)
 		} else {
 			POPSettings.ShowSimulationWarnings = FALSE;
 	    }
-    }
+
+		// Configura o idioma e avisa para reiniciar o programa
+		index = SendMessage(LanguageCombobox, CB_GETCURSEL, 0, 0);
+		if(index != POPSettings.idLanguage) {
+			POPSettings.idLanguage = index;
+			MessageBox(PrefDialog, _("O idioma da interface foi alterado.\nFavor reiniciar o programa para que as mudanças tenham efeito"),
+				_("Idioma alterado"), MB_OK | MB_ICONEXCLAMATION);
+		}
+	}
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(PrefDialog);

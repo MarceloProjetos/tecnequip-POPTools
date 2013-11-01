@@ -640,6 +640,18 @@ unsigned int mapIO::getCount(void)
 	return IO.size();
 }
 
+vector<string> mapIO::getList(void)
+{
+	vector<string> listIO;
+
+	tMapIO::iterator it;
+	for(it = IO.begin(); it != IO.end(); it++) {
+		listIO.push_back(it->first);
+	}
+
+	return listIO;
+}
+
 void mapIO::Select(unsigned int index)
 {
 	selectedIO = getID(index, true);

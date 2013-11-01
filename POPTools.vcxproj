@@ -395,52 +395,14 @@
     <None Include="bin\src\memory.ld" />
     <None Include="bin\src\startup_LPC17xx.o" />
     <None Include="bin\src\syscalls.o" />
-    <CustomBuild Include="MainRibbonEN.xml">
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug - ES|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe MainRibbonEN.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">uicc.exe MainRibbonEN.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug - ES|Win32'">uicc.exe MainRibbonEN.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uicc.exe MainRibbonEN.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'">uicc.exe MainRibbonEN.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release - ES|Win32'">uicc.exe MainRibbonEN.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release - ES|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug - ES|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - ES|Win32'">true</ExcludedFromBuild>
-      <SubType>Designer</SubType>
-    </CustomBuild>
-    <CustomBuild Include="MainRibbonES.xml">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe MainRibbonES.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">uicc.exe MainRibbonES.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug - ES|Win32'">uicc.exe MainRibbonES.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uicc.exe MainRibbonES.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'">uicc.exe MainRibbonES.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release - ES|Win32'">uicc.exe MainRibbonES.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug - ES|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release - ES|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'">true</ExcludedFromBuild>
-      <SubType>Designer</SubType>
-    </CustomBuild>
-    <CustomBuild Include="MainRibbonPTBR.xml">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe MainRibbonPTBR.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
+    <CustomBuild Include="MainRibbon.xml">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe MainRibbon.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">uicc.exe MainRibbonPTBR.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug - ES|Win32'">uicc.exe MainRibbonPTBR.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug - EN|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug - ES|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uicc.exe MainRibbonPTBR.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uicc.exe MainRibbon.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release - EN|Win32'">uicc.exe MainRibbonPTBR.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release - ES|Win32'">uicc.exe MainRibbonPTBR.xml MainRibbon.bml /header:MainRibbon.h /res:MainRibbon.rc</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MainRibbon.bml;MainRibbon.h;MainRibbon.rc</Outputs>

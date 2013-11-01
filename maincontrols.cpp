@@ -258,7 +258,7 @@ void SetMenusEnabled(LadderContext *context)
 	EnableInterfaceItem(MNU_INSERT_SET_DA, t);
 	EnableInterfaceItem(MNU_INSERT_READ_ENC, t);
 	EnableInterfaceItem(MNU_INSERT_RESET_ENC, t);
-	EnableInterfaceItem(MNU_INSERT_POS, t);
+	EnableInterfaceItem(MNU_INSERT_PID, t);
 	EnableInterfaceItem(MNU_INSERT_SQRT, t);
 	EnableInterfaceItem(MNU_INSERT_ABS, t);
 	EnableInterfaceItem(MNU_INSERT_RAND, t);
@@ -568,6 +568,8 @@ void ToggleSimulationMode(void)
 		RibbonSetCmdState(cmdSimulationStart      , TRUE );
 		RibbonSetCmdState(cmdSimulationSingleCycle, TRUE );
 
+		LogSimulation(false);
+
         // Recheck InSimulationMode, because there could have been a compile
         // error, which would have kicked us out of simulation mode.
         if(ladder->UartFunctionUsed() && ladder->getContext().inSimulationMode) {
@@ -583,6 +585,8 @@ void ToggleSimulationMode(void)
 	} else {
         RealTimeSimulationRunning = FALSE;
         KillTimer(MainWindow, TIMER_SIMULATE);
+
+		LogSimulation(false);
 
 		RibbonSetCmdState(cmdFileSave, TRUE);
 		RibbonSetCmdState(cmdUndo    , TRUE);
@@ -629,7 +633,10 @@ void StartSimulation(void)
 //-----------------------------------------------------------------------------
 void StopSimulation(void)
 {
-    RealTimeSimulationRunning = FALSE;
+	RealTimeSimulationRunning = FALSE;
+	KillTimer(MainWindow, TIMER_SIMULATE);
+
+	LogSimulation(false);
 
 	ClearSimulationData();
 
@@ -637,8 +644,6 @@ void StopSimulation(void)
 	RibbonSetCmdState(cmdSimulationStop       , FALSE);
 	RibbonSetCmdState(cmdSimulationStart      , TRUE );
 	RibbonSetCmdState(cmdSimulationSingleCycle, TRUE );
-
-	KillTimer(MainWindow, TIMER_SIMULATE);
 
     UpdateMainWindowTitleBar();
 }

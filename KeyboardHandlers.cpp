@@ -116,10 +116,14 @@ int KBH_Simulation_Left(void *user_data)
 {
 	if(!ladder->getContext().inSimulationMode) return 0;
 
-	ScrollXOffset -= FONT_WIDTH;
-	if(ScrollXOffset < 0) ScrollXOffset = 0;
-	RefreshScrollbars();
-	InvalidateRect(MainWindow, NULL, FALSE);
+	if(gui.IsDialogActive()) {
+		gui.setDialogActiveButton(false);
+	} else {
+		ScrollXOffset -= FONT_WIDTH;
+		if(ScrollXOffset < 0) ScrollXOffset = 0;
+		RefreshScrollbars();
+		InvalidateRect(MainWindow, NULL, FALSE);
+	}
 
 	return 1;
 }
@@ -129,11 +133,15 @@ int KBH_Simulation_Right(void *user_data)
 {
 	if(!ladder->getContext().inSimulationMode) return 0;
 
-	ScrollXOffset += FONT_WIDTH;
-	if(ScrollXOffset >= ScrollXOffsetMax)
-		ScrollXOffset = ScrollXOffsetMax;
-	RefreshScrollbars();
-	InvalidateRect(MainWindow, NULL, FALSE);
+	if(gui.IsDialogActive()) {
+		gui.setDialogActiveButton(true);
+	} else {
+		ScrollXOffset += FONT_WIDTH;
+		if(ScrollXOffset >= ScrollXOffsetMax)
+			ScrollXOffset = ScrollXOffsetMax;
+		RefreshScrollbars();
+		InvalidateRect(MainWindow, NULL, FALSE);
+	}
 
 	return 1;
 }
@@ -285,7 +293,11 @@ int KBH_Cursor_Left(void *user_data)
 {
 	if(ladder->getContext().inSimulationMode) return 0;
 
-	MoveCursorKeyboard(VK_LEFT, FALSE);
+	if(gui.IsDialogActive()) {
+		gui.setDialogActiveButton(false);
+	} else {
+		MoveCursorKeyboard(VK_LEFT, FALSE);
+	}
 
 	return 1;
 }
@@ -295,7 +307,11 @@ int KBH_Cursor_Right(void *user_data)
 {
 	if(ladder->getContext().inSimulationMode) return 0;
 
-	MoveCursorKeyboard(VK_RIGHT, FALSE);
+	if(gui.IsDialogActive()) {
+		gui.setDialogActiveButton(true);
+	} else {
+		MoveCursorKeyboard(VK_RIGHT, FALSE);
+	}
 
 	return 1;
 }
@@ -972,10 +988,10 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey(VK_INSERT    , KBM_KEYFLAG_NONE   , KBH_Rung_Insert_After                  , NULL);
 	ShortcutMaps.AddKey(VK_INSERT    , KBM_KEYFLAG_SHIFT  , KBH_Rung_Insert_Before                 , NULL);
 	ShortcutMaps.AddKey(VK_OEM_2     , KBM_KEYFLAG_NONE   , KBH_Element_Add_Comment                , NULL);
-	ShortcutMaps.AddKey(VK_OEM_PERIOD, KBM_KEYFLAG_NONE   , KBH_Element_Add_Comparison_Greater     , NULL);
-	ShortcutMaps.AddKey(VK_OEM_PERIOD, KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Comparison_GreaterEqual, NULL);
-	ShortcutMaps.AddKey(VK_OEM_COMMA , KBM_KEYFLAG_NONE   , KBH_Element_Add_Comparison_Less        , NULL);
-	ShortcutMaps.AddKey(VK_OEM_COMMA , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Comparison_LessEqual   , NULL);
+	ShortcutMaps.AddKey(VK_OEM_PERIOD, KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Comparison_Greater     , NULL);
+	ShortcutMaps.AddKey(VK_OEM_PERIOD, KBM_KEYFLAG_NONE   , KBH_Element_Add_Comparison_GreaterEqual, NULL);
+	ShortcutMaps.AddKey(VK_OEM_COMMA , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Comparison_Less        , NULL);
+	ShortcutMaps.AddKey(VK_OEM_COMMA , KBM_KEYFLAG_NONE   , KBH_Element_Add_Comparison_LessEqual   , NULL);
 	ShortcutMaps.AddKey(' '          , KBM_KEYFLAG_NONE   , KBH_Element_Make_Normal                , NULL);
 
 	ShortcutMaps.CreateMap(LANG_ENGLISH);
@@ -1060,10 +1076,10 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey(VK_INSERT    , KBM_KEYFLAG_NONE   , KBH_Rung_Insert_After                  , NULL);
 	ShortcutMaps.AddKey(VK_INSERT    , KBM_KEYFLAG_SHIFT  , KBH_Rung_Insert_Before                 , NULL);
 	ShortcutMaps.AddKey(VK_OEM_1     , KBM_KEYFLAG_NONE   , KBH_Element_Add_Comment                , NULL);
-	ShortcutMaps.AddKey(VK_OEM_PERIOD, KBM_KEYFLAG_NONE   , KBH_Element_Add_Comparison_Greater     , NULL);
-	ShortcutMaps.AddKey(VK_OEM_PERIOD, KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Comparison_GreaterEqual, NULL);
-	ShortcutMaps.AddKey(VK_OEM_COMMA , KBM_KEYFLAG_NONE   , KBH_Element_Add_Comparison_Less        , NULL);
-	ShortcutMaps.AddKey(VK_OEM_COMMA , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Comparison_LessEqual   , NULL);
+	ShortcutMaps.AddKey(VK_OEM_PERIOD, KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Comparison_Greater     , NULL);
+	ShortcutMaps.AddKey(VK_OEM_PERIOD, KBM_KEYFLAG_NONE   , KBH_Element_Add_Comparison_GreaterEqual, NULL);
+	ShortcutMaps.AddKey(VK_OEM_COMMA , KBM_KEYFLAG_SHIFT  , KBH_Element_Add_Comparison_Less        , NULL);
+	ShortcutMaps.AddKey(VK_OEM_COMMA , KBM_KEYFLAG_NONE   , KBH_Element_Add_Comparison_LessEqual   , NULL);
 	ShortcutMaps.AddKey(' '          , KBM_KEYFLAG_NONE   , KBH_Element_Make_Normal                , NULL);
 
 	KeyboardHandlers_LangChanged();

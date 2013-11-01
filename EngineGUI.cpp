@@ -250,7 +250,7 @@ POINT EngineGUI::getTextSize(const char *txt, POINT maxSize, unsigned int format
 	return size;
 }
 
-HRESULT EngineGUI::DrawLine(POINT start, POINT end, unsigned int brush)
+HRESULT EngineGUI::DrawLine(POINT start, POINT end, unsigned int brush, unsigned int angle)
 {
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
@@ -259,7 +259,7 @@ HRESULT EngineGUI::DrawLine(POINT start, POINT end, unsigned int brush)
 		end.x   += DrawOffset.x;
 		start.y += DrawOffset.y;
 		end.y   += DrawOffset.y;
-		hr = pRender->DrawLine(start, end, brush + BrushOffset, brushWidth);
+		hr = pRender->DrawLine(start, end, brush + BrushOffset, angle, brushWidth);
 	}
 
 	return hr;

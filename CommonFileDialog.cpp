@@ -25,6 +25,9 @@ const COMDLG_FILTERSPEC c_rgSaveTypes[][2] =
 
 		{ { L"Arquivos de Linguagem C (*.c)", L"*.c" },
 		  { L"Todos os Arquivos (*.*)", L"*.*"  } },
+
+		{ { L"Arquivos CSV (*.csv)", L"*.csv" },
+		  { L"Todos os Arquivos (*.*)", L"*.*"  } },
 #else
 		{ { L"POPTools Projects (*.ld)", L"*.ld" },
 		  { L"All Files (*.*)", L"*.*"  } },
@@ -36,6 +39,9 @@ const COMDLG_FILTERSPEC c_rgSaveTypes[][2] =
 		  { L"All Files (*.*)", L"*.*"  } },
 
 		{ { L"C Language Files (*.c)", L"*.c" },
+		  { L"All Files (*.*)", L"*.*"  } },
+
+		{ { L"CSV Files (*.csv)", L"*.csv" },
 		  { L"All Files (*.*)", L"*.*"  } },
 #endif
 };

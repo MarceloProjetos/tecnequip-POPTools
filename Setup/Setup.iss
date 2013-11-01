@@ -42,13 +42,14 @@ Name: "installusbdriver"; Description: "Instalar Driver USB"; GroupDescription: 
 ; Name: "restart"; Description: "Reiniciar o computador. A reinicialização do computador é necessária para o correto funcionamento do compilador que acompanha o programa POP7Tools. (mais informações em http://www.yagarto.de)"; Flags: restart
 
 [Files]
-Source: "..\bin\POPTools.exe"; DestDir: "{app}"; Languages: ptbr; Flags: ignoreversion
-Source: "..\bin\POPTools_en.exe"; DestDir: "{app}"; DestName: "POPTools.exe"; Languages: en; Flags: ignoreversion
-Source: "..\bin\POPTools_es.exe"; DestDir: "{app}"; DestName: "POPTools.exe"; Languages: es; Flags: ignoreversion
+Source: "..\bin\POPTools.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "settings_ptbr.dat"; DestDir: "{app}"; Languages: ptbr; Flags: ignoreversion
+Source: "settings_en.dat"; DestDir: "{app}"; DestName: "settings.dat"; Languages: en; Flags: ignoreversion
+Source: "settings_es.dat"; DestDir: "{app}"; DestName: "settings.dat"; Languages: es; Flags: ignoreversion
 Source: "..\Help\Ajuda.chm"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\Setup\EULA_PTBR.TXT"; DestDir: "{app}"; DestName: "EULA.txt"; Languages: ptbr; Flags: ignoreversion
-Source: "..\Setup\EULA_EN.TXT"; DestDir: "{app}"; DestName: "EULA.txt"; Languages: en; Flags: ignoreversion
-Source: "..\Setup\EULA_ES.TXT"; DestDir: "{app}"; DestName: "EULA.txt"; Languages: es; Flags: ignoreversion
+Source: "..\Setup\EULA_PTBR.TXT"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Setup\EULA_EN.TXT"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Setup\EULA_ES.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\flashmagicarmcortex.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\src\*.h"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
 Source: "..\bin\src\*.a"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
@@ -60,25 +61,19 @@ Source: "..\bin\gcc\*.a"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags
 Source: "..\bin\gcc\*.o"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\bin\gcc\*.dll"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\bin\gcc\*.exe"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-;Source: "..\bin\src\lwip-1.4.0\*.h"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-;Source: "..\bin\src\lwip-1.4.0\*.a"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-;Source: "..\bin\src\lwip-1.4.0\*.o"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-;Source: "..\bin\src\lwip-1.4.0\*.dll"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-;Source: "..\bin\src\lwip-1.4.0\*.exe"; DestDir: "{app}\src\lwip-1.4.0"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\examples\*"; DestDir: "{app}\examples"; Permissions: users-readexec; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Setup\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "C:\Users\Tecnequip\Documents\Visual Studio 2010\Projects\POPTools\Setup\yagarto-tools-20100703-setup.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{group}\POPTools"; Filename: "{app}\POPTools.exe"
 Name: "{group}\Manual do Usuario"; Filename: "{app}\Ajuda.chm"
-Name: "{group}\Licença de Uso"; Filename: "{app}\EULA.TXT"
+Name: "{group}\Licença de Uso"; Filename: "{app}\EULA_PTBR.TXT"; Languages: ptbr
+Name: "{group}\End User License Agreement"; Filename: "{app}\EULA_EN.TXT"; Languages: en
+Name: "{group}\Licença de Uso"; Filename: "{app}\EULA_ES.TXT"; Languages: es
 Name: "{commondesktop}\POPTools"; Filename: "{app}\POPTools.exe"; Tasks: desktopicon
 
 [Registry]
-; Root: HKLM; Subkey: "System\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "Path"; ValueData: "{reg:HKLM\System\CurrentControlSet\Control\Session Manager\Environment,Path};c:\yagarto;c:\yagarto_tools";
 Root: HKCR; Subkey: ".ld"; ValueType: string; ValueName: ""; ValueData: "POPToolsFiles"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".bld"; ValueType: string; ValueName: ""; ValueData: "POPToolsFiles"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "POPToolsFiles"; ValueType: string; ValueName: ""; ValueData: "POPTools Files"; Flags: uninsdeletekey
@@ -86,9 +81,5 @@ Root: HKCR; Subkey: "POPToolsFiles\DefaultIcon"; ValueType: string; ValueName: "
 Root: HKCR; Subkey: "POPToolsFiles\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\POPTools.exe"" ""%1"""
 
 [Run]
-; Filename: "{app}\yagarto-tools-20100703-setup.exe"; Parameters: "/S /D={pf}\yagarto"; Description: "Ferramentas de Compilação"; Flags: runascurrentuser
-; Filename: "{app}\yagarto-bu-2.20.1_gcc-4.5.0-c-c++_nl-1.18.0_gdb-7.1_eabi_20100501.exe"; Parameters: "/S /D={pf}\yagarto"; Description: "Compilador e Linker"; Flags: runascurrentuser
 Filename: "{app}\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; StatusMsg: "Aguardando finalizar instalação do Driver USB"; Tasks: installusbdriver
 Filename: "{app}\POPTools.exe"; Description: "{cm:LaunchProgram,POPTools}"; Flags: nowait postinstall skipifsilent
-
-

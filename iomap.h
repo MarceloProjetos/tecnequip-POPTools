@@ -72,15 +72,16 @@ public:
 
 	void Clear(void); // Descarrega a lista de I/Os
 
-	unsigned long  getIndex          (unsigned long id, bool isTotal = true);
-	string         getName           (unsigned long id);
-	string         getInternalVarName(string name);
-	mapDetails     getDetails        (unsigned long id);
-	unsigned long  getID             (string name);
-	unsigned long  getID             (unsigned int  index, bool fromVectorIO = false);
-	char          *getTypeString     (eType type);
-	unsigned int   getCount          (void);
-	void           Select            (unsigned int index);
+	unsigned long   getIndex          (unsigned long id, bool isTotal = true);
+	string          getName           (unsigned long id);
+	string          getInternalVarName(string name);
+	mapDetails      getDetails        (unsigned long id);
+	unsigned long   getID             (string name);
+	unsigned long   getID             (unsigned int  index, bool fromVectorIO = false);
+	char           *getTypeString     (eType type);
+	unsigned int    getCount          (void);
+	vector<string>  getList           (void);
+	void            Select            (unsigned int index);
 
 	// Funcao que retorna string para a proxima variavel da sequencia
 	string         getNextVar        (string prefix = "seq");

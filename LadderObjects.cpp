@@ -109,6 +109,7 @@ void UnallocElem(LadderElem *elem)
 		case ELEM_READ_SERVO_YASKAWA    :
 		case ELEM_WRITE_SERVO_YASKAWA   : delete dynamic_cast<LadderElemYaskawa       *>(elem); break;
 		case ELEM_PERSIST               : delete dynamic_cast<LadderElemPersist       *>(elem); break;
+		case ELEM_PID                   : delete dynamic_cast<LadderElemPID           *>(elem); break;
 		default                         : delete elem;
 	}
 }
@@ -2339,7 +2340,6 @@ bool LadderElemMath::internalUpdateNameTypeIO(unsigned int index, string name, e
 			type = eType_General;
 		}
 
-		type    = eType_General;
 		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
 	} else {
 		request = infoIO_Dest;
@@ -3416,16 +3416,15 @@ bool LadderElemMove::internalUpdateNameTypeIO(unsigned int index, string name, e
 	bool isValid;
 	pair<unsigned long, int> pin = (index == 0) ? prop.idSrc : prop.idDest;
 
-	if(index == 0) {
-		// Se variavel sem tipo, usa tipo geral.
-		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
-		if(type == eType_Reserved) {
-			type = eType_General;
-		}
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
 
+	if(index == 0) {
 		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Origem"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
 	} else {
-		type    = eType_General;
 		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
 	}
 
@@ -3845,7 +3844,6 @@ LadderElemReadAdc::LadderElemReadAdc(LadderDiagram *diagram) : LadderElem(true, 
 
 	Diagram->getIO(infoIO_Name);
 
-	prop.useFahrenheit = false;
 	prop.idName        = infoIO_Name.pin;
 }
 
@@ -3886,12 +3884,13 @@ pair<string, string> LadderElemReadAdc::DrawTXT(void)
 
 bool LadderElemReadAdc::internalGenerateIntCode(IntCode &ic)
 {
+	LadderSettingsADC settings = Diagram->getSettingsADC();
 	string sname = Diagram->getNameIO(prop.idName);
 	const char *name = sname.c_str();
 
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 		ic.Op(INT_READ_ADC, name);
-		if(prop.useFahrenheit) {
+		if(!settings.isCelsius) {
 			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 9);
 			ic.Op(INT_SET_VARIABLE_MULTIPLY, name, name, "$scratch", 0, 0);
 
@@ -3934,7 +3933,6 @@ void *LadderElemReadAdc::getProperties(void)
 bool LadderElemReadAdc::internalSave(FILE *f)
 {
 	return
-		fwrite_bool (f, prop.useFahrenheit) &&
 		fwrite_ulong(f, prop.idName.first) &&
 		fwrite_int  (f, prop.idName.second);
 }
@@ -3942,7 +3940,6 @@ bool LadderElemReadAdc::internalSave(FILE *f)
 bool LadderElemReadAdc::internalLoad(FILE *f, unsigned int version)
 {
 	return
-		fread_bool (f, &prop.useFahrenheit) &&
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second);
 }
@@ -5932,14 +5929,14 @@ bool LadderElemShiftRegister::CanInsert(LadderContext context)
 	return context.canInsertEnd;
 }
 
-bool LadderElemShiftRegister::internalSetProperties(void *data, bool isUndoRedo)
+bool LadderElemShiftRegister::internalSetProperties(void *data, bool isUndoRedo, bool isCloning)
 {
 	LadderElemShiftRegisterProp *newProp = (LadderElemShiftRegisterProp *)data;
 
 	prop = *newProp;
 	delete newProp;
 
-	if(isUndoRedo == false) {
+	if(isUndoRedo == false && !isCloning) {
 		createRegs();
 	}
 
@@ -6001,7 +5998,7 @@ LadderElem *LadderElemShiftRegister::Clone(LadderDiagram *diagram)
 {
 	LadderElemShiftRegister *clone = new LadderElemShiftRegister(diagram);
 	clone->updateIO(diagram, true); // Descarta os I/Os registrados
-	clone->internalSetProperties(getProperties());
+	clone->internalSetProperties(getProperties(), false, true);
 
 	return clone;
 }
@@ -7327,6 +7324,514 @@ bool LadderElemPersist::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedo
 	return true; // Sempre retorna sucesso...
 }
 
+// Classe LadderElemPID
+LadderElemPID::LadderElemPID(LadderDiagram *diagram) : LadderElem(true, false, false, false, ELEM_PID)
+{
+	Diagram = diagram;
+
+	// Caracteristicas do I/O Setpoint
+	infoIO_Setpoint.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Setpoint.name          = _("new");
+	infoIO_Setpoint.isBit         = false;
+	infoIO_Setpoint.type          = eType_General;
+	infoIO_Setpoint.access        = eRequestAccessType_Read;
+	infoIO_Setpoint.isUniqueRead  = false;
+	infoIO_Setpoint.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Setpoint);
+	prop.idSetpoint = infoIO_Setpoint.pin;
+
+	// Caracteristicas do I/O ProcessValue
+	infoIO_ProcessValue.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_ProcessValue.name          = _("new");
+	infoIO_ProcessValue.isBit         = false;
+	infoIO_ProcessValue.type          = eType_General;
+	infoIO_ProcessValue.access        = eRequestAccessType_Read;
+	infoIO_ProcessValue.isUniqueRead  = false;
+	infoIO_ProcessValue.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_ProcessValue);
+	prop.idProcessValue = infoIO_ProcessValue.pin;
+
+	// Caracteristicas do I/O GainP
+	infoIO_GainP.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_GainP.name          = _("new");
+	infoIO_GainP.isBit         = false;
+	infoIO_GainP.type          = eType_General;
+	infoIO_GainP.access        = eRequestAccessType_Read;
+	infoIO_GainP.isUniqueRead  = false;
+	infoIO_GainP.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_GainP);
+	prop.idGainP = infoIO_GainP.pin;
+
+	// Caracteristicas do I/O GainI
+	infoIO_GainI.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_GainI.name          = _("new");
+	infoIO_GainI.isBit         = false;
+	infoIO_GainI.type          = eType_General;
+	infoIO_GainI.access        = eRequestAccessType_Read;
+	infoIO_GainI.isUniqueRead  = false;
+	infoIO_GainI.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_GainI);
+	prop.idGainI = infoIO_GainI.pin;
+
+	// Caracteristicas do I/O GainD
+	infoIO_GainD.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_GainD.name          = _("new");
+	infoIO_GainD.isBit         = false;
+	infoIO_GainD.type          = eType_General;
+	infoIO_GainD.access        = eRequestAccessType_Read;
+	infoIO_GainD.isUniqueRead  = false;
+	infoIO_GainD.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_GainD);
+	prop.idGainD = infoIO_GainD.pin;
+
+	// Caracteristicas do I/O Output
+	infoIO_Output.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Output.name          = _("new");
+	infoIO_Output.isBit         = false;
+	infoIO_Output.type          = eType_General;
+	infoIO_Output.access        = eRequestAccessType_Write;
+	infoIO_Output.isUniqueRead  = false;
+	infoIO_Output.isUniqueWrite = false;
+
+	Diagram->getIO(infoIO_Output);
+	prop.idOutput = infoIO_Output.pin;
+}
+
+pair<string, string> LadderElemPID::DrawTXT(void)
+{
+	return pair<string, string>(Diagram->getNameIO(prop.idOutput), "{ PID }");
+}
+
+bool LadderElemPID::internalGenerateIntCode(IntCode &ic)
+{
+	string sSetpoint     = Diagram->getNameIO(prop.idSetpoint    );
+	string sProcessValue = Diagram->getNameIO(prop.idProcessValue);
+	string sGainP        = Diagram->getNameIO(prop.idGainP       );
+	string sGainI        = Diagram->getNameIO(prop.idGainI       );
+	string sGainD        = Diagram->getNameIO(prop.idGainD       );
+	string sOutput       = Diagram->getNameIO(prop.idOutput      );
+
+	const char *Setpoint     = ic.VarFromExpr(sSetpoint    .c_str(), "$scratch_sp");
+	const char *ProcessValue = ic.VarFromExpr(sProcessValue.c_str(), "$scratch_pv");
+	const char *GainP        = ic.VarFromExpr(sGainP       .c_str(), "$scratch_p");
+	const char *GainI        = ic.VarFromExpr(sGainI       .c_str(), "$scratch_i");
+	const char *GainD        = ic.VarFromExpr(sGainD       .c_str(), "$scratch_d");
+	const char *Output       = ic.VarFromExpr(sOutput      .c_str(), "$scratch_op");
+
+	const char *error        = "$scratch_error";
+	const char *errorI       = "$scratch_errorI";
+	const char *parcelGainP  = "$scratch_gainp";
+	const char *parcelGainI  = ic.VarFromExpr("0", "$scratch_gaini");
+	const char *parcelGainD  = "$scratch_gaind";
+	const char *valZero      = ic.VarFromExpr(    "0", "$scratch_zero" );
+	const char *val10K       = ic.VarFromExpr("10000", "$scratch_10k"  );
+	const char *val100       = ic.VarFromExpr(  "100", "$scratch_100"  );
+	const char *lastI        = "$S_LastI";
+	const char *lastError    = "$S_LastErr";
+
+	const char *stateInOut   = ic.getStateInOut();
+
+	ic.Op(INT_IF_BIT_SET, stateInOut);
+		// Criacao de variaveis estaticas
+		ic.Op(INT_CREATE_STATIC_VARIABLE, lastError);
+		ic.Op(INT_CREATE_STATIC_VARIABLE, lastI    );
+
+		// Calculo da parcela P
+		ic.Op(INT_SET_VARIABLE_SUBTRACT, error      , Setpoint, ProcessValue, 0, 0);
+		ic.Op(INT_SET_VARIABLE_MULTIPLY, parcelGainP, GainP   , error       , 0, 0);
+
+		// Calculo da parcela I
+		ic.Op(INT_IF_VARIABLE_EQUALS_VARIABLE, GainI, valZero);
+		ic.Op(INT_ELSE);
+			ic.Op(INT_SET_VARIABLE_MULTIPLY, errorI     , error      , val10K, 0, 0);
+			ic.Op(INT_SET_VARIABLE_DIVIDE  , parcelGainI, errorI     , GainI , 0, 0);
+			ic.Op(INT_SET_VARIABLE_ADD     , parcelGainI, parcelGainI, lastI , 0, 0);
+		ic.Op(INT_END_IF);
+
+		// Calculo da parcela D
+		ic.Op(INT_SET_VARIABLE_SUBTRACT, parcelGainD, error      , lastError  , 0, 0);
+		ic.Op(INT_SET_VARIABLE_MULTIPLY, parcelGainD, parcelGainD, GainD      , 0, 0);
+
+		// Soma as parcelas, gerando Output
+		ic.Op(INT_SET_VARIABLE_ADD     , Output     , parcelGainP, parcelGainD, 0, 0);
+		ic.Op(INT_SET_VARIABLE_ADD     , Output     , Output     , parcelGainI, 0, 0);
+		ic.Op(INT_SET_VARIABLE_DIVIDE  , Output     , Output     , val100     , 0, 0);
+
+		// Salva os valores calculados para uso no calculo seguinte
+		ic.Op(INT_SET_VARIABLE_TO_VARIABLE, lastError, error      , 0);
+		ic.Op(INT_SET_VARIABLE_TO_VARIABLE, lastI    , parcelGainI, 0);
+	ic.Op(INT_END_IF);
+
+	return true;
+}
+
+bool LadderElemPID::CanInsert(LadderContext context)
+{
+	return context.canInsertEnd;
+}
+
+bool LadderElemPID::internalSetProperties(void *data, bool isUndoRedo)
+{
+	LadderElemPIDProp *newProp = (LadderElemPIDProp *)data;
+
+	prop = *newProp;
+	delete newProp;
+
+	return true;
+}
+
+void *LadderElemPID::getProperties(void)
+{
+	LadderElemPIDProp *curProp = new LadderElemPIDProp;
+
+	*curProp = prop;
+
+	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemPID::internalSave(FILE *f)
+{
+	return
+		fwrite_ulong(f, prop.idSetpoint.first) &&
+		fwrite_int  (f, prop.idSetpoint.second) &&
+		fwrite_ulong(f, prop.idProcessValue.first) &&
+		fwrite_int  (f, prop.idProcessValue.second) &&
+		fwrite_ulong(f, prop.idGainP.first) &&
+		fwrite_int  (f, prop.idGainP.second) &&
+		fwrite_ulong(f, prop.idGainI.first) &&
+		fwrite_int  (f, prop.idGainI.second) &&
+		fwrite_ulong(f, prop.idGainD.first) &&
+		fwrite_int  (f, prop.idGainD.second) &&
+		fwrite_ulong(f, prop.idOutput.first) &&
+		fwrite_int  (f, prop.idOutput.second);
+}
+
+bool LadderElemPID::internalLoad(FILE *f, unsigned int version)
+{
+	return
+		fread_ulong(f, &prop.idSetpoint.first) &&
+		fread_int  (f, &prop.idSetpoint.second) &&
+		fread_ulong(f, &prop.idProcessValue.first) &&
+		fread_int  (f, &prop.idProcessValue.second) &&
+		fread_ulong(f, &prop.idGainP.first) &&
+		fread_int  (f, &prop.idGainP.second) &&
+		fread_ulong(f, &prop.idGainI.first) &&
+		fread_int  (f, &prop.idGainI.second) &&
+		fread_ulong(f, &prop.idGainD.first) &&
+		fread_int  (f, &prop.idGainD.second) &&
+		fread_ulong(f, &prop.idOutput.first) &&
+		fread_int  (f, &prop.idOutput.second);
+}
+
+LadderElem *LadderElemPID::Clone(LadderDiagram *diagram)
+{
+	LadderElemPID *clone = new LadderElemPID(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
+	clone->internalSetProperties(getProperties());
+
+	return clone;
+}
+
+bool LadderElemPID::acceptIO(unsigned long id, eType type)
+{
+	if(id == prop.idSetpoint.first ||
+		id == prop.idProcessValue.first ||
+		id == prop.idGainP.first ||
+		id == prop.idGainI.first ||
+		id == prop.idGainD.first ||
+		id == prop.idOutput.first) {
+			return Diagram->IsGenericTypeIO(type);
+	}
+
+	return true;
+}
+
+void LadderElemPID::updateIO(LadderDiagram *owner, bool isDiscard)
+{
+	infoIO_Setpoint.pin = prop.idSetpoint;
+	Diagram->updateIO(owner, infoIO_Setpoint, isDiscard);
+	prop.idSetpoint = infoIO_Setpoint.pin;
+
+	infoIO_ProcessValue.pin = prop.idProcessValue;
+	Diagram->updateIO(owner, infoIO_ProcessValue, isDiscard);
+	prop.idProcessValue = infoIO_ProcessValue.pin;
+
+	infoIO_GainP.pin = prop.idGainP;
+	Diagram->updateIO(owner, infoIO_GainP, isDiscard);
+	prop.idGainP = infoIO_GainP.pin;
+
+	infoIO_GainI.pin = prop.idGainI;
+	Diagram->updateIO(owner, infoIO_GainI, isDiscard);
+	prop.idGainI = infoIO_GainI.pin;
+
+	infoIO_GainD.pin = prop.idGainD;
+	Diagram->updateIO(owner, infoIO_GainD, isDiscard);
+	prop.idGainD = infoIO_GainD.pin;
+
+	infoIO_Output.pin = prop.idOutput;
+	Diagram->updateIO(owner, infoIO_Output, isDiscard);
+	prop.idOutput = infoIO_Output.pin;
+}
+
+eType LadderElemPID::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idSetpoint.first == id ||
+		prop.idProcessValue.first == id ||
+		prop.idGainP.first == id ||
+		prop.idGainI.first == id ||
+		prop.idGainD.first == id ||
+		prop.idOutput.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
+}
+
+int LadderElemPID::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idSetpoint.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idSetpoint;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Setpoint)) {
+					LadderElemPIDProp *data = (LadderElemPIDProp *)getProperties();
+
+					data->idSetpoint  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idProcessValue.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idProcessValue;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_ProcessValue)) {
+					LadderElemPIDProp *data = (LadderElemPIDProp *)getProperties();
+
+					data->idProcessValue  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idGainP.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idGainP;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_GainP)) {
+					LadderElemPIDProp *data = (LadderElemPIDProp *)getProperties();
+
+					data->idGainP  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idGainI.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idGainI;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_GainI)) {
+					LadderElemPIDProp *data = (LadderElemPIDProp *)getProperties();
+
+					data->idGainI  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idGainD.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idGainD;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_GainD)) {
+					LadderElemPIDProp *data = (LadderElemPIDProp *)getProperties();
+
+					data->idGainD  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idOutput.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idOutput;
+				if(Diagram->getIO(pin, sNewText, type, infoIO_Output)) {
+					LadderElemPIDProp *data = (LadderElemPIDProp *)getProperties();
+
+					data->idOutput  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
+}
+
+bool LadderElemPID::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	char *field = NULL;
+	tRequestIO request;
+	pair<unsigned long, int> pin;
+	unsigned int rules = VALIDATE_IS_VAR_OR_NUMBER;
+
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	switch(index) {
+	case 0:
+		request = infoIO_Setpoint;
+		pin     = prop.idSetpoint;
+		break;
+
+	case 1:
+		request = infoIO_GainP;
+		pin     = prop.idGainP;
+		break;
+
+	case 2:
+		request = infoIO_GainI;
+		pin     = prop.idGainI;
+		break;
+
+	case 3:
+		request = infoIO_GainD;
+		pin     = prop.idGainD;
+		break;
+
+	case 4:
+		rules   = VALIDATE_IS_VAR;
+		request = infoIO_Output;
+		pin     = prop.idOutput;
+		break;
+
+	case 5:
+		request = infoIO_ProcessValue;
+		pin     = prop.idProcessValue;
+		break;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, rules, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, request)) {
+			LadderElemPIDProp *data = (LadderElemPIDProp *)getProperties();
+
+			switch(index) {
+			case 0:
+				data->idSetpoint  = pin;
+				break;
+
+			case 1:
+				data->idGainP  = pin;
+				break;
+
+			case 2:
+				data->idGainI  = pin;
+				break;
+
+			case 3:
+				data->idGainD  = pin;
+				break;
+
+			case 4:
+				data->idOutput  = pin;
+				break;
+
+			case 5:
+				data->idProcessValue  = pin;
+				break;
+			}
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool LadderElemPID::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
+{
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemPIDProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
+}
+
 // Classe LadderElemX
 LadderElemX::LadderElemX(LadderDiagram *diagram) : LadderElem(false, false, false, false, ELEM_PADDING)
 {
@@ -8447,6 +8952,7 @@ bool LadderCircuit::Load(LadderDiagram *diagram, FILE *f, unsigned int version)
 						case ELEM_READ_SERVO_YASKAWA    :
 						case ELEM_WRITE_SERVO_YASKAWA   : s.elem = new LadderElemYaskawa      (diagram, which); break;
 						case ELEM_PERSIST               : s.elem = new LadderElemPersist      (diagram);        break;
+						case ELEM_PID                   : s.elem = new LadderElemPID          (diagram);        break;
 						// Elemento nao suportado. Novo elemento nao cadastrado aqui???
 						default                         : s.elem = nullptr; break;
 						}
@@ -8716,6 +9222,8 @@ void LadderDiagram::Init(void)
 	LadderSettings.EncSSI.mode         = 0; // Modo 0 = Leitura em Gray
 	LadderSettings.EncSSI.size         = 24; // Numero de bits de resolucao do encoder
 	LadderSettings.EncSSI.size_bpr     = 12; // Numero de bits que representam voltas
+
+	LadderSettings.Adc.isCelsius       = true; // Modo padrao de leitura do A/D de temperatura: escala Celsius
 
 	LadderSettings.Dac.ramp_abort_mode = RAMP_ABORT_LEAVE; // Modo padrao de abandono: mantem o valor atual
 
@@ -9985,6 +10493,8 @@ bool LadderDiagram::Save(string filename, bool dontSaveFilename)
 
 		fwrite_int   (f, LadderSettings.Dac.ramp_abort_mode) &&
 
+		fwrite_bool  (f, LadderSettings.Adc.isCelsius      ) &&
+
 		fwrite_int   (f, LadderSettings.MbSlave.ModBUSID   ) &&
 
 		fwrite_string(f, LadderSettings.Info.Name          ) &&
@@ -10158,6 +10668,7 @@ bool LadderDiagram::Load(string filename)
 			delete [] buffer;
 
 			if(crc_calc == crc_read) {
+				int fileVersion = LADDER_BINFMT_GET_VERSION(magic);
 				// volta para o comeco, depois do numero magico
 				fseek(f, sizeof(LADDER_BINFMT_MAGIC), SEEK_SET);
 
@@ -10201,6 +10712,8 @@ bool LadderDiagram::Load(string filename)
 					fread_int   (f, &LadderSettings.EncSSI.size        ) &&
 					fread_int   (f, &LadderSettings.EncSSI.size_bpr    ) &&
 
+					fread_bool  (f, &LadderSettings.Adc.isCelsius      ) &&
+
 					fread_int   (f, &LadderSettings.Dac.ramp_abort_mode) &&
 
 					fread_int   (f, &LadderSettings.MbSlave.ModBUSID   ) &&
@@ -10214,7 +10727,7 @@ bool LadderDiagram::Load(string filename)
 					fread_time_t(f, &LadderSettings.Info.ProgramDate   )
 					) {
 						// Configuracoes OK, agora devemos ler o mapa de I/O
-						bool ret = IO->Load(f, LADDER_BINFMT_GET_VERSION(magic));
+						bool ret = IO->Load(f, fileVersion);
 
 						// Se OK, agora carregamos a lista de nodes do ModBUS.
 						if(ret == true) {
@@ -10266,7 +10779,7 @@ bool LadderDiagram::Load(string filename)
 									rung->isPowered = false;
 									if(fread_bool(f, &rung->hasBreakpoint)) {
 										rung->rung = new LadderCircuit;
-										if(!rung->rung->Load(this, f, LADDER_BINFMT_GET_VERSION(magic))) {
+										if(!rung->rung->Load(this, f, fileVersion)) {
 											// Erro ao carregar o circuito. Desaloca memoria e cancela carregamento
 											delete rung->rung;
 											delete rung;
@@ -10416,6 +10929,12 @@ void LadderDiagram::setSettingsEncoderSSI(LadderSettingsEncoderSSI setEncSSI)
 {
 	RegisterSettingsChanged();
 	LadderSettings.EncSSI = setEncSSI;
+}
+
+void LadderDiagram::setSettingsADC(LadderSettingsADC setAdc)
+{
+	RegisterSettingsChanged();
+	LadderSettings.Adc = setAdc;
 }
 
 void LadderDiagram::setSettingsDAC(LadderSettingsDAC setDac)
@@ -11478,6 +11997,11 @@ vector<eType> LadderDiagram::getGeneralTypes(void)
 	types.push_back(eType_WriteYaskawa);
 
 	return types;
+}
+
+vector<string> LadderDiagram::getListIO(void)
+{
+	return IO->getList();
 }
 
 // Funcoes relacionadas aos comandos de Desfazer / Refazer

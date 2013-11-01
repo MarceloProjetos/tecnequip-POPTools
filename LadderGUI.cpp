@@ -443,7 +443,7 @@ void LadderGUI::DrawInit(void)
 
 	// Laranja: Variaveis / Condicionais / Matematicos
 	group.Background = RGB(255, 200, 132);
-	group.Foreground = RGB(  0,   0, 255);
+	group.Foreground = RGB(205,  90,   0);
 	group.Border     = RGB(255, 140,   0);
 	group.BorderText = RGB(255, 255, 255);
 
@@ -469,10 +469,10 @@ void LadderGUI::DrawInit(void)
 	setLadderColorGroup(ELEM_PIECEWISE_LINEAR, group);
 	setLadderColorGroup(ELEM_SHIFT_REGISTER  , group);
 
-	// Amarelo: Analogicos / Motores / Encoders
-	group.Background = RGB(235, 235, 150);
-	group.Foreground = RGB(150, 150,  65);
-	group.Border     = RGB(180, 180,   0);
+	// Marrom: Analogicos / Motores / Encoders
+	group.Background = RGB(247, 246, 198);
+	group.Foreground = RGB(128,  64,   0);
+	group.Border     = RGB(128,  64,   0);
 	group.BorderText = RGB(255, 255, 255);
 
 	setLadderColorGroup(ELEM_SET_DA     , group);
@@ -480,6 +480,7 @@ void LadderGUI::DrawInit(void)
 	setLadderColorGroup(ELEM_READ_ENC   , group);
 	setLadderColorGroup(ELEM_RESET_ENC  , group);
 	setLadderColorGroup(ELEM_MULTISET_DA, group);
+	setLadderColorGroup(ELEM_PID        , group);
 	setLadderColorGroup(ELEM_SET_PWM    , group);
 
 	// Roxo: Comunicacao
@@ -4437,33 +4438,6 @@ bool LadderElemCheckBit::DrawGUI(bool poweredBefore, void *data)
 }
 
 // Classe LadderElemReadAdc
-bool ReadAdcCmdExpandedScale(LadderElem *elem, unsigned int mode)
-{
-	bool ret = false;
-	bool new_mode = mode ? true : false;
-	LadderElemReadAdc *readadc = dynamic_cast<LadderElemReadAdc *>(elem);
-	LadderElemReadAdcProp *prop = (LadderElemReadAdcProp *)readadc->getProperties();
-
-	if(prop->useFahrenheit != new_mode) {
-		ladder->CheckpointBegin("Alterar Escala do A/D");
-
-		prop->useFahrenheit = new_mode;
-
-		readadc->setProperties(ladder->getContext(), prop);
-
-		ladder->CheckpointEnd();
-		ladder->updateContext();
-		ladder->ProgramChanged();
-		UpdateMainWindowTitleBar();
-
-		ret = true;
-	} else {
-		delete prop;
-	}
-
-	return ret;
-}
-
 bool ReadAdcCmdChangeName(tCommandSource source, void *data)
 {
 	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
@@ -4507,15 +4481,9 @@ bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
 	size = ddg->size;
 
 	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
-	bool hasExpanded     = (detailsIO.pin == channelTemp);
 
-	if(hasExpanded && ddg->expanded) {
-		ddg->size.x = 5;
-		ddg->size.y = 4;
-	} else {
-		ddg->size.x = 3;
-		ddg->size.y = 2;
-	}
+	ddg->size.x = 3;
+	ddg->size.y = 2;
 
 	if(ddg->DontDraw) return poweredAfter;
 
@@ -4525,7 +4493,7 @@ bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("LER A/D"), hasExpanded, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("LER A/D"), false, poweredBefore);
 	ddg->region = r;
 
 	tCommandSource source = { nullptr, nullptr, this };
@@ -4571,25 +4539,6 @@ bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
 	unsigned long *pULong = new unsigned long;
 	*pULong = prop.idName.first;
 	gui.AddCommand(source, rText, ElemSimCmdSetVariable, pULong, true, true);
-
-	// Se expandido, desenha os itens do modo expandido
-	if(hasExpanded && ddg->expanded) {
-		vector<tExpandedItem> items;
-		items.push_back(tExpandedItem(_("Escala"), 1));
-		
-		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 2, items);
-
-		// Caixas desenhadas. Agora criamos o conteudo
-		tControlList list;
-
-		list.items.push_back("Celsius");
-		list.items.push_back("Fahrenheit");
-
-		list.fnc      = ReadAdcCmdExpandedScale;
-		list.selected = prop.useFahrenheit ? 1 : 0;
-
-		gui.addControlList(this, rExp[0], list);
-	}
 
 	return poweredAfter;
 }
@@ -5221,12 +5170,12 @@ bool LadderElemMultisetDA::DrawGUI(bool poweredBefore, void *data)
 			}
 
 			// Desenha as linhas que representam o amortecimento
-			gui.DrawLine(start  , startGain, colorgroup.Border);
-			gui.DrawLine(endGain, end      , colorgroup.Border);
+			gui.DrawLine(start  , startGain, colorgroup.Foreground);
+			gui.DrawLine(endGain, end      , colorgroup.Foreground);
 		}
 
 		// Desenha a linha que representa a rampa entre as linhas que representam o amortecimento
-		gui.DrawLine(startGain, endGain, colorgroup.Border);
+		gui.DrawLine(startGain, endGain, colorgroup.Foreground);
 	} else {
 		// Calcula o ponto central
 		POINT midGraph = { rGraph.left + (rGraph.right - rGraph.left)/2,
@@ -5238,8 +5187,8 @@ bool LadderElemMultisetDA::DrawGUI(bool poweredBefore, void *data)
 		float radiusY = float(midGraph.y - rGraph.top )*1.5f;
 
 		// Desenha as linhas
-		gui.DrawArc(start   , midGraph, radiusX, radiusY, 90, isUpDown , colorgroup.Border);
-		gui.DrawArc(midGraph, end     , radiusX, radiusY, 90, !isUpDown, colorgroup.Border);
+		gui.DrawArc(start   , midGraph, radiusX, radiusY, 90, isUpDown , colorgroup.Foreground);
+		gui.DrawArc(midGraph, end     , radiusX, radiusY, 90, !isUpDown, colorgroup.Foreground);
 	}
 
 	// Se em modo expandido, exibe informacoes adicionais como variaveis, numero de passos, etc.
@@ -5758,11 +5707,11 @@ bool LadderElemSetPWM::DrawGUI(bool poweredBefore, void *data)
 	for(i = 0; i < 4; i++) {
 		start  = end;
 		end.y += (!(i%2) ? -offsetY : +offsetY);
-		gui.DrawLine(start, end, colorgroup.Border);
+		gui.DrawLine(start, end, colorgroup.Foreground);
 
 		start  = end;
 		end.x += offsetX;
-		gui.DrawLine(start, end, colorgroup.Border);
+		gui.DrawLine(start, end, colorgroup.Foreground);
 	}
 
 	// Desenha o texto sobre a forma do pulso
@@ -5803,11 +5752,7 @@ bool UARTCmdChangeName(tCommandSource source, void *data)
 	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
 	LadderElemUARTProp *prop = (LadderElemUARTProp *)elem->getProperties();
 
-	vector<eType> types;
-	types.push_back((which == ELEM_UART_SEND) ? eType_TxUART : eType_RxUART);
-	types.push_back(eType_General);
-
-	bool ret = cmdChangeName(source.elem, 0, prop->idName, (which == ELEM_UART_SEND) ? eType_TxUART : eType_RxUART, types,
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, (which == ELEM_UART_SEND) ? eType_TxUART : eType_RxUART, ladder->getGeneralTypes(),
 		(which == ELEM_UART_RECV) ? _("Receive from UART") : _("Send to UART"),
 		(which == ELEM_UART_RECV) ? _("Destination:") : _("Source:"));
 
@@ -6505,11 +6450,9 @@ bool FmtStringCmdChangeValue(tCommandSource source, void *data)
 
 	if(field == 0) { // idVar, Variavel
 		eType type = (which == ELEM_READ_FORMATTED_STRING) ? eType_RxUART : eType_TxUART;
-		vector<eType> types;
-		types.push_back(type);
-		types.push_back(eType_General);
 
-		ret = cmdChangeName(source.elem, 0, prop->idVar, type, types, title, (which == ELEM_READ_FORMATTED_STRING) ? _("Destination:") : _("Source:"));
+		ret = cmdChangeName(source.elem, 0, prop->idVar, type, ladder->getGeneralTypes(), title,
+			(which == ELEM_READ_FORMATTED_STRING) ? _("Destination:") : _("Source:"));
 
 		// Aqui desalocamos as propriedades
 		delete prop;
@@ -6909,6 +6852,431 @@ bool LadderElemPersist::DrawGUI(bool poweredBefore, void *data)
 	return poweredAfter;
 }
 
+// Classe LadderElemPID
+bool PIDCmdChangeValue(tCommandSource source, void *data)
+{
+	bool           ret   = false;
+	int            field = *(int *)data;
+	LadderElemPID *elem  = dynamic_cast<LadderElemPID *>(source.elem);
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemPIDProp *prop = (LadderElemPIDProp *)elem->getProperties();
+
+	int max = 0;
+	char *desc, *FieldName;
+	pair<unsigned long, int> pin;
+
+	switch(field) 
+	{
+        case 0:
+			pin = prop->idSetpoint;
+			desc = _("Setpoint (SP):");
+			FieldName = _("SP");
+			break;
+        case 1:
+			pin = prop->idGainP;
+			desc      = _("Gain P:");
+			FieldName = _("P" );
+			break;
+        case 2:
+			pin = prop->idGainI;
+			desc      = _("Gain I:");
+			FieldName = _("I" );
+			break;
+        case 3:
+			pin = prop->idGainD;
+			desc      = _("Gain D:");
+			FieldName = _("D" );
+			break;
+        case 4:
+			pin = prop->idOutput;
+			desc      = _("Output (OP):");
+			FieldName = _("OP" );
+			break;
+        case 5:
+			pin = prop->idProcessValue;
+			desc      = _("Process Value(PV):");
+			FieldName = _("PV" );
+			break;
+        default:
+			oops();
+			break;
+    }
+
+	ret = cmdChangeName(source.elem, field, pin, eType_ResetEnc,
+		ladder->getGeneralTypes(), _("PID"), desc);
+
+	// Aqui desalocamos as propriedades
+	delete prop;
+
+	return ret;
+}
+
+bool LadderElemPID::ShowDialog(LadderContext context)
+{
+	bool ret;
+
+	static LadderElemPID *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = PIDCmdChangeValue(source, &index);
+
+	lastCmd   = this;
+	if(++index > 5) {
+		index = 0;
+	}
+
+	return ret;
+}
+
+void DrawVarBoxPID(RECT r, string name, string title, unsigned int colorFG, unsigned int colorBG)
+{
+	POINT maxSize = { r.right - r.left, r.bottom - r.top };
+	POINT titleSize = gui.getTextSize(title.c_str(), maxSize, 0);
+
+	// Desenha o retangulo total
+	gui.DrawRectangle(r, colorBG, true );
+	gui.DrawRectangle(r, colorFG, false);
+
+	// Desenha o titulo
+	RECT rTitle = r;
+	rTitle.right = rTitle.left + titleSize.x + 5;
+	gui.DrawRectangle(rTitle, colorFG, true);
+
+	// Desenha o texto do titulo
+	gui.DrawText(title.c_str(), rTitle, 0, colorBG, eAlignMode_Center, eAlignMode_Center);
+
+	// Desenha o nome da variavel
+	r.left = rTitle.right + 5;
+	gui.DrawText(name.c_str(), r, 0, colorFG, eAlignMode_TopLeft, eAlignMode_Center);
+}
+
+bool LadderElemPID::DrawGUI(bool poweredBefore, void *data)
+{
+	POINT start, end, size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size = ddg->size;
+
+	if(ddg->expanded) {
+		ddg->size.x = 7;
+		ddg->size.y = 6;
+	} else {
+		ddg->size.x = 2;
+		ddg->size.y = 2;
+	}
+
+	if(ddg->DontDraw) return poweredAfter;
+
+	int *pInt;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
+
+	DoEOL(ddg->start, size, ddg->size, poweredBefore);
+	start = ddg->start;
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("PID"), true, poweredBefore);
+	ddg->region = r;
+
+	// Se expandido, desenha os itens do modo expandido
+	if(ddg->expanded) {
+		unsigned int sizeJunctionCircle = 30;
+		RECT rCircle, rObject = r;
+		/*** Desenho do SetPoint ***/
+
+		// Desenho do nome do I/O
+		rObject.left   += 10;
+		rObject.top    += 10;
+		rObject.right   = rObject.left + GridSize.x * 2;
+		rObject.bottom  = rObject.top  + 20;
+		DrawVarBoxPID(rObject, Diagram->getNameIO(prop.idSetpoint).c_str(), "SP", colorgroup.Foreground, colorgroup.Background);
+
+		pInt  = new int;
+		*pInt = 0;
+		gui.AddCommand(source, rObject, PIDCmdChangeValue, pInt, true, false);
+
+		// Desenho das linhas (inferior ao texto, ligacao vertical, ligacao horizontal e seta)
+		start.x = rObject.left + GridSize.x/2 - 5;
+		start.y = rObject.bottom;
+		end  .x = start.x;
+		end  .y = rObject.bottom + 2 * GridSize.y - sizeJunctionCircle/2 - 5;
+		gui.DrawLine(start, end, colors.Black);
+
+		start.x = end.x +  5;
+		start.y = end.y - 10;
+		gui.DrawLine(start, end, colors.Black);
+
+		start.x -= 10;
+		gui.DrawLine(start, end, colors.Black);
+
+		// Desenho do circulo de juncao (Setpoint e Process Value)
+		rCircle.left   = end.x - sizeJunctionCircle/2;
+		rCircle.top    = end.y;
+		rCircle.right  = end.x + sizeJunctionCircle/2;
+		rCircle.bottom = end.y + sizeJunctionCircle;
+		gui.DrawEllipse(rCircle, colorgroup.Foreground, false);
+
+		end.y = rCircle.top + (rCircle.bottom - rCircle.top)/2;
+		POINT startLine = { rCircle.left, end.y }, endLine = { rCircle.right, end.y };
+		gui.DrawLine(startLine, endLine, colorgroup.Foreground,  45);
+		gui.DrawLine(startLine, endLine, colorgroup.Foreground, 315);
+
+		// Desenha os textos da juncao (+ e -)
+		RECT rText = rCircle;
+		gui.DrawText("-", rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_BottomRight);
+
+		rText.top -= 4;
+		gui.DrawText("+", rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+		// Aqui calculamos a posicao em que terminara a linha de Process Value, que sera desenhada no final
+		POINT endPV = { rCircle.left + (rCircle.right - rCircle.left) / 2, rCircle.bottom };
+
+		/*** Desenho das linhas e variaveis de P, I e D ***/
+
+		// Primeiro a linha central
+		start.x = rCircle.right;
+		start.y = end.y;
+		end  .x = start.x + 3 * GridSize.x + 15;
+		gui.DrawLine(start, end, colors.Black);
+
+		POINT centerVert = start; // ponto central da linha vertical
+
+		// Seta no final da linha central
+		POINT startArrow = end, endArrow = end;
+		endArrow  .x -= (rCircle.right - rCircle.left)/2;
+		startArrow.x = endArrow.x - 10;
+		startArrow.y -= 5;
+		gui.DrawLine(startArrow, endArrow, colors.Black);
+
+		startArrow.y += 10;
+		gui.DrawLine(startArrow, endArrow, colors.Black);
+
+		// Agora o circulo onde as linhas se separam
+		start.x += 15;
+		gui.DrawEllipse(start, 5.0f, 5.0f, colors.Black);
+
+		rText.left   = start.x + 10;
+		rText.top    = start.y - 10;
+		rText.right  = startArrow.x - 10;
+		rText.bottom = start.y + 10;
+		DrawVarBoxPID(rText, Diagram->getNameIO(prop.idGainI).c_str(), "I", colorgroup.Foreground, colorgroup.Background);
+
+		pInt  = new int;
+		*pInt = 2;
+		gui.AddCommand(source, rText, PIDCmdChangeValue, pInt, true, false);
+
+		// Linha superior
+		start.y -= GridSize.y;
+		end  .y -= GridSize.y;
+		gui.DrawLine(start, end, colors.Black);
+
+		rText.left   = start.x + 10;
+		rText.top    = start.y - 10;
+		rText.right  = end  .x - 10;
+		rText.bottom = start.y + 10;
+		DrawVarBoxPID(rText, Diagram->getNameIO(prop.idGainP).c_str(), "P", colorgroup.Foreground, colorgroup.Background);
+
+		pInt  = new int;
+		*pInt = 1;
+		gui.AddCommand(source, rText, PIDCmdChangeValue, pInt, true, false);
+
+		POINT startVert = start; // ponto onde vai iniciar a linha vertical
+
+		// Linha inferior
+		start.y += 2 * GridSize.y;
+		end  .y += 2 * GridSize.y;
+		gui.DrawLine(start, end, colors.Black);
+
+		rText.left   = start.x + 10;
+		rText.top    = start.y - 10;
+		rText.right  = end  .x - 10;
+		rText.bottom = start.y + 10;
+		DrawVarBoxPID(rText, Diagram->getNameIO(prop.idGainD).c_str(), "D", colorgroup.Foreground, colorgroup.Background);
+
+		pInt  = new int;
+		*pInt = 3;
+		gui.AddCommand(source, rText, PIDCmdChangeValue, pInt, true, false);
+
+		POINT endVert = start; // ponto onde vai terminar a linha vertical
+
+		// Desenho do circulo de juncao (P, I e D)
+		// Avanca o circulo de juncao
+		rCircle.left  += endArrow.x - centerVert.x + sizeJunctionCircle;
+		rCircle.right  = rCircle.left + sizeJunctionCircle;
+		gui.DrawEllipse(rCircle, colorgroup.Background, true );
+		gui.DrawEllipse(rCircle, colorgroup.Foreground, false);
+
+		startLine.x = rCircle.left;
+		startLine.y = centerVert.y;
+		endLine  .x = rCircle.right;
+		endLine  .y = centerVert.y;
+
+		gui.DrawLine(startLine, endLine, colorgroup.Foreground,  45);
+		gui.DrawLine(startLine, endLine, colorgroup.Foreground, 315);
+
+		// Desenha os textos da juncao (todos +)
+		rText = rCircle;
+		gui.DrawText("+", rText, 0, colorgroup.Foreground, eAlignMode_Center , eAlignMode_BottomRight);
+
+		rText.top -= 4;
+		gui.DrawText("+", rText, 0, colorgroup.Foreground, eAlignMode_Center , eAlignMode_TopLeft);
+
+		rText.left += 2;
+		rText.top  += 2;
+		gui.DrawText("+", rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_Center);
+
+		// Linhas verticais (esquerda e direita, respectivamente)
+		gui.DrawLine(startVert, endVert, colors.Black);
+
+		startVert .x = end.x;
+		endVert   .x = end.x;
+		centerVert.x = end.x;
+		centerVert.y = rCircle.top;
+
+		gui.DrawLine(startVert, centerVert, colors.Black);
+
+		startArrow    = centerVert;
+		endArrow      = centerVert;
+		startArrow.x -= 5;
+		startArrow.y -= 10;
+		gui.DrawLine(startArrow, endArrow, colors.Black);
+
+		startArrow.x += 10;
+		gui.DrawLine(startArrow, endArrow, colors.Black);
+
+		centerVert.y = rCircle.bottom;
+		gui.DrawLine(endVert  , centerVert, colors.Black);
+
+		startArrow    = centerVert;
+		endArrow      = centerVert;
+		startArrow.x -= 5;
+		startArrow.y += 10;
+		gui.DrawLine(startArrow, endArrow, colors.Black);
+
+		startArrow.x += 10;
+		gui.DrawLine(startArrow, endArrow, colors.Black);
+
+		/*** Desenho de Output e Process Value ***/
+
+		// Primeiro desenhamos as linhas de Output e de ligacao para a caixa de processo (Caixa de engrenagem)
+		start.x = rCircle.right;
+		start.y = rCircle.top + (rCircle.bottom - rCircle.top) / 2;
+		end  .x = r.right - 5;
+		end  .y = start.y;
+		gui.DrawLine(start, end, colors.Black);
+
+		rText.left   = start.x + 10;
+		rText.top    = start.y - 10;
+		rText.right  = end  .x - 10;
+		rText.bottom = start.y + 10;
+		DrawVarBoxPID(rText, Diagram->getNameIO(prop.idOutput).c_str(), "OP", colorgroup.Foreground, colorgroup.Background);
+
+		pInt  = new int;
+		*pInt = 4;
+		gui.AddCommand(source, rText, PIDCmdChangeValue, pInt, true, false);
+
+		start  = end;
+		end.y += 2 * GridSize.y;
+		gui.DrawLine(start, end, colors.Black);
+
+		start  = end;
+		end.x -= GridSize.x;
+		gui.DrawLine(start, end, colors.Black);
+
+		startArrow    = end;
+		endArrow      = end;
+		startArrow.x += 10;
+		startArrow.y -=  5;
+		gui.DrawLine(startArrow, endArrow, colors.Black);
+
+		startArrow.y += 10;
+		gui.DrawLine(startArrow, endArrow, colors.Black);
+
+		// Desenho da caixa onde sera desenhada a engrenagem
+		rObject.bottom = r.bottom - 10;
+		rObject.top    = rObject.bottom - 50;
+		rObject.right  = end.x;
+		rObject.left   = rObject.right - 50;
+		gui.DrawRectangle(rObject, colorgroup.Foreground, false);
+
+		// Agora desenhamos as linhas de Process Value, conforme valor salvo no inicio da logica
+
+		start.x = rObject.left;
+		end  .x = endPV.x;
+		gui.DrawLine(start, end, colors.Black);
+
+		rText.left   = end  .x + 10;
+		rText.top    = start.y - 10;
+		rText.right  = start.x - 10;
+		rText.bottom = start.y + 10;
+		DrawVarBoxPID(rText, Diagram->getNameIO(prop.idProcessValue).c_str(), "PV", colorgroup.Foreground, colorgroup.Background);
+
+		pInt  = new int;
+		*pInt = 5;
+		gui.AddCommand(source, rText, PIDCmdChangeValue, pInt, true, false);
+
+		start = end;
+		end.y = endPV.y;
+		gui.DrawLine(start, end, colors.Black);
+
+		start    = end;
+		start.x -= 5;
+		start.y += 10;
+		gui.DrawLine(start, end, colors.Black);
+
+		start.x += 10;
+		gui.DrawLine(start, end, colors.Black);
+
+		/*** Desenho da Caixa com Engrenagem ***/
+
+		// Reduz o tamanho total da engrenagem para caber na caixa desenhada
+		rObject.top    += 5;
+		rObject.left   += 5;
+		rObject.bottom -= 5;
+		rObject.right  -= 5;
+
+		// Desenha o circulo que representa a engrenagem (diametro interno)
+		rCircle = rObject;
+		rCircle.left   += 5;
+		rCircle.top    += 5;
+		rCircle.right  -= 5;
+		rCircle.bottom -= 5;
+		gui.DrawEllipse(rCircle, colorgroup.Foreground, false);
+
+		rObject.top    = rObject.top + (rObject.bottom - rObject.top)/2 - 3;
+		rObject.bottom = rObject.top + 6;
+
+		// Nesse loop desenhamos os dentes. Sao desenhados como retangulos que atravessam a engrenagem
+		unsigned int i, max = 5;
+		for(i = 0; i < max; i++) {
+			gui.DrawRectangle(rObject, colorgroup.Foreground, false, 1, 1, i*(360/5));
+			gui.DrawRectangle(rObject, colorgroup.Background, true , 1, 1, i*(360/5));
+		}
+
+		// Limpamos o fundo da engrenagem, removendo os tracos dos retangulos. Dessa forma sobram os dentes
+		gui.DrawEllipse(rCircle, colorgroup.Background, true);
+
+		// Desenha um circulo preenchido no centro da engrenagem, simbolizando o seu eixo.
+		rCircle.left   = rCircle.left + (rCircle.right - rCircle.left)/2 - 5;
+		rCircle.right  = rCircle.left + 10;
+		rCircle.top    = rCircle.top   + (rCircle.bottom - rCircle.top)/2 - 5;
+		rCircle.bottom = rCircle.top + 10;
+		gui.DrawEllipse(rCircle, colorgroup.Foreground, true);
+	} else {
+	}
+
+	return poweredAfter;
+}
+
 // Classe LadderElemX
 bool LadderElemX::ShowDialog(LadderContext context) { return false; }
 
@@ -7132,12 +7500,14 @@ void LadderDiagram::DrawGUI(void)
 		while(isFirstStep || needAnotherStep) {
 			needAnotherStep = false;
 			RungDDG = zeroRungDDG;
-			RungDDG.size.x = DiagramData.SizeMax.x;
 
 			for(i = 0; i < rungs.size(); i++) {
-				// Se a linha tiver comentario, nao executa. Os comentarios se ajustam na tela entao precisam
-				// da largura do diagrama, que ainda nao eh conhecido.
-				// Apos este loop teremos um exclusivamente para os comentarios.
+				RungDDG.size.x = DiagramData.SizeMax.x;
+
+				// Se a linha tiver comentario e for a primeira passagem, nao executa.
+				// Os comentarios se ajustam na tela entao precisam da largura do diagrama,
+				// que ainda nao eh conhecido.
+				// Assim marcamos a flag indicando que precisa ser executado um loop adicional.
 				if(isFirstStep && rungs[i]->rung->IsComment()) {
 					needAnotherStep = true;
 					continue;

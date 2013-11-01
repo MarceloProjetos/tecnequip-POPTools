@@ -81,11 +81,12 @@
         <Image Source="imgs/DropDownMathHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    <Command Name="GroupSimulation" Symbol="cmdGroupSimulation" Id="30023" LabelTitle="Simulação"       />
-    <Command Name="GroupSimulExit"  Symbol="cmdGroupSimulExit"  Id="30025"                              />
-    <Command Name="GroupActions"    Symbol="cmdGroupActions"    Id="30026" LabelTitle="Ações"           />
-    <Command Name="GroupComment"    Symbol="cmdGroupComment"    Id="30027" LabelTitle="Documentação"    />
-    <Command Name="GroupNavigate"   Symbol="cmdGroupNavigate"   Id="30029" LabelTitle="Navegação"       />
+    <Command Name="GroupSimulation" Symbol="cmdGroupSimulation" Id="30023" LabelTitle="Simulação"         />
+    <Command Name="GroupSimulLog"   Symbol="cmdGroupSimulLog"   Id="30030" LabelTitle="Registro de Dados" />
+    <Command Name="GroupSimulExit"  Symbol="cmdGroupSimulExit"  Id="30025"                                />
+    <Command Name="GroupActions"    Symbol="cmdGroupActions"    Id="30026" LabelTitle="Ações"             />
+    <Command Name="GroupComment"    Symbol="cmdGroupComment"    Id="30027" LabelTitle="Documentação"      />
+    <Command Name="GroupNavigate"   Symbol="cmdGroupNavigate"   Id="30029" LabelTitle="Navegação"         />
 
     <!-- Comandos relacionados ao menu da aplicação -->
     <Command Name       = "FileNew"
@@ -132,7 +133,7 @@
              Id         = "30103"
              LabelTitle = "Exportar...">
       <Command.TooltipTitle      >Exportar...</Command.TooltipTitle>
-      <Command.TooltipDescription>Exportar Diagrama Ladder atual como um novo arquivo.</Command.TooltipDescription>
+      <Command.TooltipDescription>Exportar Diagrama Ladder atual como um novo arquivo de texto.</Command.TooltipDescription>
     </Command>
 
     <Command Name             = "FileSaveAsLadder"
@@ -360,7 +361,7 @@
              Id         = "30211"
              LabelTitle = "Início">
       <Command.TooltipTitle      >Início (Shift+Home)</Command.TooltipTitle>
-      <Command.TooltipDescription>Recua o cursor para o início do diagrama.</Command.TooltipDescription>
+      <Command.TooltipDescription>Move o cursor para o início do diagrama.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/GoHomeHH.bmp"/>
       </Command.LargeImages>
@@ -374,7 +375,7 @@
              Id         = "30212"
              LabelTitle = "Final">
       <Command.TooltipTitle      >Final (Shift+END)</Command.TooltipTitle>
-      <Command.TooltipDescription>Avança o cursor para o final do diagrama.</Command.TooltipDescription>
+      <Command.TooltipDescription>Move o cursor para o final do diagrama.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/GoEndHH.bmp"/>
       </Command.LargeImages>
@@ -617,8 +618,8 @@
                Symbol     = "cmdKeyboardManual"
                Id         = "30412"
                LabelTitle = "Teclado">
-      <Command.TooltipTitle      >Manual do Usuário</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir o Manual do Usuário, contendo a ajuda para todo o programa.</Command.TooltipDescription>
+      <Command.TooltipTitle      >Manual do Teclado</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir o Manual do Teclado, contendo todos os atalhos para os comandos da interface.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/KeyboardManualHH.bmp"/>
       </Command.LargeImages>
@@ -680,7 +681,7 @@
                Id         = "30500"
                LabelTitle = "Comentário">
       <Command.TooltipTitle      >Comentário (;)</Command.TooltipTitle>
-      <Command.TooltipDescription>Inserir comentário na linha atual. A linha deve estar vazia.</Command.TooltipDescription>
+      <Command.TooltipDescription>Inserir comentário na linha atual. Se a linha não estiver vazia, uma nova será criada.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/InstrCommentHH.bmp"/>
       </Command.LargeImages>
@@ -1789,30 +1790,30 @@
       </Command.SmallImages>
     </Command>
 
-    <Command Name       = "InstrPos"
-             Symbol     = "cmdInstrPos"
+    <Command Name       = "InstrPID"
+             Symbol     = "cmdInstrPID"
              Id         = "30556"
-             LabelTitle = "Posicionamento D/A e ENC">
-      <Command.TooltipTitle>Posicionamento D/A e ENC (Ctrl+D)</Command.TooltipTitle>
-      <Command.TooltipDescription>Objeto de posicionamento atraves do D/A e ENCODER.</Command.TooltipDescription>
+             LabelTitle = "PID">
+      <Command.TooltipTitle>PID (Ctrl+D)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir Controle PID na posição do cursor.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrPosHH.bmp"/>
+        <Image Source="imgs/InstrPIDHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrPosHS.bmp"/>
+        <Image Source="imgs/InstrPIDHS.bmp"/>
       </Command.SmallImages>
     </Command>
-    <Command Name       = "ExamplePos"
-             Symbol     = "cmdExamplePos"
+    <Command Name       = "ExamplePID"
+             Symbol     = "cmdExamplePID"
              Id         = "31556"
-             LabelTitle = "Posicionamento">
-      <Command.TooltipTitle      >Posicionamento (Ctrl+D)</Command.TooltipTitle>
-      <Command.TooltipDescription>Abrir exemplo de instrução de posicionamento.</Command.TooltipDescription>
+             LabelTitle = "PID">
+      <Command.TooltipTitle      >PID (Ctrl+D)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução Controle de PID.</Command.TooltipDescription>
       <Command.LargeImages>
-        <Image Source="imgs/InstrPosHH.bmp"/>
+        <Image Source="imgs/InstrPIDHH.bmp"/>
       </Command.LargeImages>
       <Command.SmallImages>
-        <Image Source="imgs/InstrPosHS.bmp"/>
+        <Image Source="imgs/InstrPIDHS.bmp"/>
       </Command.SmallImages>
     </Command>
 
@@ -2263,6 +2264,28 @@
       </Command.LargeImages>
     </Command>
 
+    <Command Name         = "SimulationLogStart"
+               Symbol     = "cmdSimulationLogStart"
+               Id         = "30606"
+               LabelTitle = "Iniciar">
+      <Command.TooltipTitle      >Iniciar</Command.TooltipTitle>
+      <Command.TooltipDescription>Iniciar o registro de dados da Simulação.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/SimulationLogStartHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
+
+    <Command Name         = "SimulationLogStop"
+               Symbol     = "cmdSimulationLogStop"
+               Id         = "30607"
+               LabelTitle = "Parar">
+      <Command.TooltipTitle      >Parar</Command.TooltipTitle>
+      <Command.TooltipDescription>Parar o registro de dados da Simulação.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/SimulationLogStopHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
+
     <!-- Definição de comandos relacionados à compilação / gravação -->
     <Command Name         = "Compile"
                Symbol     = "cmdCompile"
@@ -2532,7 +2555,7 @@
           <Group CommandName="GroupMotors" SizeDefinition="ThreeButtons">
             <Button CommandName="InstrRampDA"/>
             <Button CommandName="InstrPWM"/>
-            <Button CommandName="InstrPos"/>
+            <Button CommandName="InstrPID"/>
           </Group>
           <Group CommandName="GroupEnc" SizeDefinition="TwoButtons">
             <Button CommandName="InstrReadEnc"/>
@@ -2561,6 +2584,10 @@
             <Button CommandName="SimulationPause"/>
             <Button CommandName="SimulationStop"/>
             <Button CommandName="SimulationSingleCycle"/>
+          </Group>
+          <Group CommandName="GroupSimulLog" SizeDefinition="TwoButtons" ApplicationModes="1" >
+            <Button CommandName="SimulationLogStart"/>
+            <Button CommandName="SimulationLogStop"/>
           </Group>
           <Group CommandName="GroupSimulExit" SizeDefinition="OneButton" ApplicationModes="1" >
             <Button CommandName="SimulationExit"/>

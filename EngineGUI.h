@@ -77,7 +77,7 @@ public:
 	HRESULT DrawEllipse  (POINT center, float rx, float ry, unsigned int brush, bool filled = true);
 	HRESULT DrawArc      (POINT start, POINT end, float rx, float ry, float angle, bool isClockWise, unsigned int brush);
 	HRESULT DrawText     (const char *txt, RECT r, unsigned int format, unsigned int brush, eAlignMode alignX, eAlignMode alignY, bool acceptMultiLine = false);
-	HRESULT DrawLine     (POINT start, POINT end, unsigned int brush);
+	HRESULT DrawLine     (POINT start, POINT end, unsigned int brush, unsigned int angle = 0);
 
 	HRESULT DrawPictureFromFile    (char *filename, POINT start, POINT size);
 	HRESULT DrawPictureFromResource(int   id      , POINT start, POINT size);

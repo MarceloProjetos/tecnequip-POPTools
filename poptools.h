@@ -295,18 +295,20 @@ struct strSerialConfig {
 #define MNU_WRITE_SERVO_YASKAWA	0x56
 #define MNU_INSERT_RTC			0x57
 #define MNU_INSERT_MULTISET_DA  0x58
-#define MNU_INSERT_POS          0x5f
+#define MNU_INSERT_PID          0x5f
 #define MNU_INSERT_PARALLEL     0x5b
 
 #define MNU_MCU_SETTINGS        0x59
 #define MNU_MCU_PREFERENCES     0x5a
 #define MNU_PROCESSOR_0         0xa0
 
-#define MNU_SIMULATION_MODE     0x60
-#define MNU_START_SIMULATION    0x61
-#define MNU_PAUSE_SIMULATION    0x63
-#define MNU_STOP_SIMULATION     0x64
-#define MNU_SINGLE_CYCLE        0x65
+#define MNU_SIMULATION_MODE      0x60
+#define MNU_START_SIMULATION     0x61
+#define MNU_PAUSE_SIMULATION     0x63
+#define MNU_STOP_SIMULATION      0x64
+#define MNU_SINGLE_CYCLE         0x65
+#define MNU_START_LOG_SIMULATION 0x66
+#define MNU_STOP_LOG_SIMULATION  0x67
 
 #define MNU_COMPILE             0x70
 #define MNU_PROGRAM				0x72
@@ -370,6 +372,7 @@ struct strSerialConfig {
 #define MNU_EXAMPLE_WRITE_SERVO_YASK	0x156
 #define MNU_EXAMPLE_RTC			0x157
 #define MNU_EXAMPLE_MULTISET_DA  0x158
+#define MNU_EXAMPLE_PID          0x15f
 
 #define MNU_EXAMPLE_ADC_LED    0x200
 #define MNU_EXAMPLE_SEMAPHORE  0x201
@@ -451,6 +454,7 @@ struct strSerialConfig {
 #define ELEM_WRITE_SERVO_YASKAWA 0x40
 #define ELEM_RTC				0x41
 #define ELEM_MULTISET_DA		0x42
+#define ELEM_PID                0x46
 
 #define MAX_NAME_LEN                128
 #define MAX_COMMENT_LEN             384
@@ -493,6 +497,8 @@ typedef struct McuIoInfoTag McuIoInfo;
 
 // Settings structure
 typedef struct SettingsTag {
+	// Idioma da interface
+	int idLanguage;
 	// Simulation settings
 	bool ShowSimulationWarnings;
 	// Find And Replace settings
@@ -755,6 +761,7 @@ bool AddWriteModbusEth(void);
 bool AddSetPwm(void);
 bool AddUart(int which);
 bool AddPersist(void);
+bool AddPID(void);
 bool AddComment(char *text);
 bool AddSetBit(void);
 bool AddCheckBit(void);
@@ -864,8 +871,7 @@ HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
 void MakeDialogBoxClass(void);
 void NiceFont(HWND h);
 void FixedFont(HWND h);
-void CompileSuccessfulMessage(char *str);
-void ProgramSuccessfulMessage(char *str);
+string getAppDirectory(void);
 bool IsNumber(const char *str);
 void LoadIOListToComboBox(HWND ComboBox, vector<eType> allowedTypes);
 int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto);
@@ -903,7 +909,28 @@ void PopulateAbortModeCombobox(HWND AbortModeCombobox, bool IncludeDefault);
 int iscontrol(WPARAM wParam);
 
 // lang.cpp
+enum eExampleGalleryHeader {
+	eExampleGalleryHeader_IO = 0,
+	eExampleGalleryHeader_Timers,
+	eExampleGalleryHeader_Counters,
+	eExampleGalleryHeader_Variables,
+	eExampleGalleryHeader_Conditionals,
+	eExampleGalleryHeader_Mathematics,
+	eExampleGalleryHeader_Analogs,
+	eExampleGalleryHeader_Motors,
+	eExampleGalleryHeader_ModBUS,
+	eExampleGalleryHeader_RS485_Text,
+	eExampleGalleryHeader_RS485_Others,
+	eExampleGalleryHeader_Applications,
+};
+
 char *_(char *in);
+void setLanguage(unsigned int id);
+PCWSTR getRibbonLocalizedLabel(UINT nCmdID);
+PCWSTR getRibbonLocalizedTooltipTitle(UINT nCmdID);
+PCWSTR getRibbonLocalizedLabelDescription(UINT nCmdID);
+PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID);
+PCWSTR getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader header);
 
 // Ribbon.cpp
 extern unsigned int RibbonHeight;
@@ -915,6 +942,7 @@ extern void    SetApplicationMode(void);
 extern void    EnableInterfaceItem(int item, BOOL enabled);
 
 // simulate.cpp
+void LogSimulation(bool isStart);
 void SimulateOneCycle(BOOL forceRefresh);
 void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void StartSimulationTimer(void);
@@ -995,7 +1023,7 @@ unsigned long USB_GetInput   (void);
 unsigned int  USB_GetOutput  (void);
 
 // CommonFileDialog.cpp
-enum FDS_Mode { LoadLadder = 0, SaveLadder, SaveText, SaveC };
+enum FDS_Mode { LoadLadder = 0, SaveLadder, SaveText, SaveC, SaveCSV };
 HRESULT FileDialogShow(enum FDS_Mode mode, char *DefExt, char *FileName);
 
 #endif

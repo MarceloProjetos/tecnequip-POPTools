@@ -12,6 +12,7 @@
 #define INT_SET_VARIABLE_MULTIPLY                9
 #define INT_SET_VARIABLE_DIVIDE                 10
 #define INT_SET_VARIABLE_MODULO                 39
+#define INT_CREATE_STATIC_VARIABLE              40
 
 #define INT_READ_ADC                            11
 #define INT_SET_PWM                             12
@@ -100,7 +101,6 @@ public:
 
 	void Clear(void);
 	void ClearParallelCount(void);
-	void DumpListing(string outFile);
 
 	vector<IntOp> getVectorIntCode(void);
 

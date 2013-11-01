@@ -328,6 +328,10 @@ public:
 
     STDMETHOD(OnCreateUICommand)(UINT32 nCmdID, __in UI_COMMANDTYPE typeID, __deref_out IUICommandHandler** ppCommandHandler) 
     { 
+		g_pFramework->InvalidateUICommand(nCmdID, UI_INVALIDATIONS_PROPERTY, &UI_PKEY_Label);
+		g_pFramework->InvalidateUICommand(nCmdID, UI_INVALIDATIONS_PROPERTY, &UI_PKEY_LabelDescription);
+		g_pFramework->InvalidateUICommand(nCmdID, UI_INVALIDATIONS_PROPERTY, &UI_PKEY_TooltipTitle);
+		g_pFramework->InvalidateUICommand(nCmdID, UI_INVALIDATIONS_PROPERTY, &UI_PKEY_TooltipDescription);
 		return QueryInterface(IID_PPV_ARGS(ppCommandHandler));
     }
 
@@ -465,7 +469,7 @@ public:
 			EXEC_OPCODE(cmdInstrRampDA            , MNU_INSERT_MULTISET_DA     );
 			EXEC_OPCODE(cmdInstrReadEnc           , MNU_INSERT_READ_ENC        );
 			EXEC_OPCODE(cmdInstrResetEnc          , MNU_INSERT_RESET_ENC       );
-			EXEC_OPCODE(cmdInstrPos               , MNU_INSERT_POS             );
+			EXEC_OPCODE(cmdInstrPID               , MNU_INSERT_PID             );
 
 			EXEC_OPCODE(cmdInstrWriteChar         , MNU_INSERT_UART_SEND       );
 			EXEC_OPCODE(cmdInstrReadChar          , MNU_INSERT_UART_RECV       );
@@ -489,6 +493,8 @@ public:
 			EXEC_OPCODE(cmdSimulationPause        , MNU_PAUSE_SIMULATION       );
 			EXEC_OPCODE(cmdSimulationStop         , MNU_STOP_SIMULATION        );
 			EXEC_OPCODE(cmdSimulationSingleCycle  , MNU_SINGLE_CYCLE           );
+			EXEC_OPCODE(cmdSimulationLogStart     , MNU_START_LOG_SIMULATION   );
+			EXEC_OPCODE(cmdSimulationLogStop      , MNU_STOP_LOG_SIMULATION    );
 
 			EXEC_OPCODE(cmdCompile                , MNU_COMPILE                );
 			EXEC_OPCODE(cmdCompileAndProgram      , MNU_PROGRAM                );
@@ -611,8 +617,10 @@ public:
 
         HRESULT hr = E_FAIL;
 
-        if (key == UI_PKEY_Label)
-        {
+        if (key == UI_PKEY_Label) {
+			// Atualiza o label do comando
+			hr = UIInitPropertyFromString(UI_PKEY_Label,
+				getRibbonLocalizedLabel(nCmdID), ppropvarNewValue);
 /*            // Update the Label of ToggleButton control
             if (nCmdID == cmdMyChoice)
             {
@@ -627,6 +635,18 @@ public:
                         L"Enable Button", ppropvarNewValue);
                 }
             }*/
+		} else if (key == UI_PKEY_LabelDescription) {
+			// Atualiza a descricao do comando
+			hr = UIInitPropertyFromString(UI_PKEY_Label,
+				getRibbonLocalizedLabelDescription(nCmdID), ppropvarNewValue);
+		} else if (key == UI_PKEY_TooltipTitle) {
+			// Atualiza o Tool Tip do comando
+			hr = UIInitPropertyFromString(UI_PKEY_Label,
+				getRibbonLocalizedTooltipTitle(nCmdID), ppropvarNewValue);
+		} else if (key == UI_PKEY_TooltipDescription) {
+			// Atualiza a descricao do Tool Tip do comando
+			hr = UIInitPropertyFromString(UI_PKEY_Label,
+				getRibbonLocalizedTooltipDescription(nCmdID), ppropvarNewValue);
 		} else if (key == UI_PKEY_RecentItems) {
 			if (!ppropvarNewValue)
 				return E_INVALIDARG;
@@ -636,19 +656,30 @@ public:
 			hr = UIInitPropertyFromBoolean(UI_PKEY_Enabled, RibbonGetCmdState(nCmdID), ppropvarNewValue);
 		} else if (nCmdID == cmdExamples && (key == UI_PKEY_Categories || key == UI_PKEY_ItemsSource)) {
 			GalleryItems gi[] = {
-				// TODO: Internacionalizar
-				{ L"I/O"            , { cmdExampleContact, cmdExampleCoil, cmdExampleOneShotRising, cmdExampleOneShotFalling, cmdExampleMasterRelayControl, cmdExampleCircuitOpen, cmdExampleCircuitClosed, 0 } },
-				{ L"Temporizadores" , { cmdExampleTimerON, cmdExampleTimerOFF, cmdExampleTimerONRet, cmdExampleSchedule, cmdExampleTimerReset, 0 } },
-				{ L"Contadores"     , { cmdExampleCounterInc, cmdExampleCounterDec, cmdExampleCounterCirc, cmdExampleCounterReset, 0 } },
-				{ L"Variáveis"      , { cmdExampleMov, cmdExampleSetBit, cmdExampleCheckBit, cmdExamplePersist, 0 } },
-				{ L"Condicionais"   , { cmdExampleCondEqual, cmdExampleCondGreater, cmdExampleCondLesser, cmdExampleCondNotEqual, cmdExampleCondGreaterEqual, cmdExampleCondLesserEqual, 0 } },
-				{ L"Matemática"     , { cmdExampleMathAdd, cmdExampleMathSub, cmdExampleMathMult, cmdExampleMathDivide, cmdExampleMathModulo, cmdExampleAbs, cmdExampleMathSqrt, cmdExampleShiftRegister, cmdExampleLookUpTable, cmdExamplePieceWiseLinear, cmdExampleRand, 0 } },
-				{ L"Analógicos"     , { cmdExampleReadAD, cmdExampleWriteDA, 0 } },
-				{ L"Motores"        , { cmdExamplePWM, cmdExampleRampDA, cmdExampleReadEnc, cmdExampleResetEnc, 0 } },
-				{ L"ModBUS"         , { cmdExampleReadModBUS, cmdExampleWriteModBUS, 0 } },
-				{ L"RS-485 - Texto" , { cmdExampleReadFormatString, cmdExampleWriteFormatString, cmdExampleReadChar, cmdExampleWriteChar, 0 } },
-				{ L"RS-485 - Outros", { cmdExampleReadNS600, cmdExampleWriteNS600, cmdExampleReadUSS, cmdExampleWriteUSS, 0 } },
-				{ L"Aplicações"     , { cmdExampleAdcLed, cmdExampleSemaphore, cmdExampleTester, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_IO),
+					{ cmdExampleContact, cmdExampleCoil, cmdExampleOneShotRising, cmdExampleOneShotFalling, cmdExampleMasterRelayControl, cmdExampleCircuitOpen, cmdExampleCircuitClosed, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_Timers),
+					{ cmdExampleTimerON, cmdExampleTimerOFF, cmdExampleTimerONRet, cmdExampleSchedule, cmdExampleTimerReset, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_Counters),
+					{ cmdExampleCounterInc, cmdExampleCounterDec, cmdExampleCounterCirc, cmdExampleCounterReset, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_Variables),
+					{ cmdExampleMov, cmdExampleSetBit, cmdExampleCheckBit, cmdExamplePersist, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_Conditionals),
+					{ cmdExampleCondEqual, cmdExampleCondGreater, cmdExampleCondLesser, cmdExampleCondNotEqual, cmdExampleCondGreaterEqual, cmdExampleCondLesserEqual, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_Mathematics),
+					{ cmdExampleMathAdd, cmdExampleMathSub, cmdExampleMathMult, cmdExampleMathDivide, cmdExampleMathModulo, cmdExampleAbs, cmdExampleMathSqrt, cmdExampleShiftRegister, cmdExampleLookUpTable, cmdExamplePieceWiseLinear, cmdExampleRand, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_Analogs),
+					{ cmdExampleReadAD, cmdExampleWriteDA, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_Motors),
+					{ cmdExamplePWM, cmdExampleRampDA, cmdExamplePID, cmdExampleReadEnc, cmdExampleResetEnc, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_ModBUS),
+					{ cmdExampleReadModBUS, cmdExampleWriteModBUS, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_RS485_Text),
+					{ cmdExampleReadFormatString, cmdExampleWriteFormatString, cmdExampleReadChar, cmdExampleWriteChar, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_RS485_Others),
+					{ cmdExampleReadNS600, cmdExampleWriteNS600, cmdExampleReadUSS, cmdExampleWriteUSS, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_Applications),
+					{ cmdExampleAdcLed, cmdExampleSemaphore, cmdExampleTester, 0 } },
 				{ NULL, NULL }
 			};
 			hr = PopulateGallery(ppropvarCurrentValue, key, gi);
@@ -900,7 +931,7 @@ void EnableInterfaceItem(int item, BOOL enabled)
 			RIBBON_UPDATE_CMD_STATE(cmdInstrRampDA            , MNU_INSERT_MULTISET_DA     );
 			RIBBON_UPDATE_CMD_STATE(cmdInstrReadEnc           , MNU_INSERT_READ_ENC        );
 			RIBBON_UPDATE_CMD_STATE(cmdInstrResetEnc          , MNU_INSERT_RESET_ENC       );
-			RIBBON_UPDATE_CMD_STATE(cmdInstrPos               , MNU_INSERT_POS             );
+			RIBBON_UPDATE_CMD_STATE(cmdInstrPID               , MNU_INSERT_PID             );
 
 			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteChar         , MNU_INSERT_UART_SEND       );
 			RIBBON_UPDATE_CMD_STATE(cmdInstrReadChar          , MNU_INSERT_UART_RECV       );

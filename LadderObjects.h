@@ -61,6 +61,10 @@ typedef struct {
 } LadderSettingsEncoderSSI;
 
 typedef struct {
+	bool isCelsius;
+} LadderSettingsADC;
+
+typedef struct {
 	int ramp_abort_mode;
 } LadderSettingsDAC;
 
@@ -1279,7 +1283,6 @@ public:
 
 // Classe do elemento Read A/D
 struct LadderElemReadAdcProp {
-	bool                     useFahrenheit;
 	pair<unsigned long, int> idName;
 };
 
@@ -1826,7 +1829,8 @@ private:
 	LadderElemShiftRegisterProp prop;
 	tRequestIO                  InfoIO_Regs;
 
-	bool internalSetProperties(void *data, bool isUndoRedo = false);
+	bool internalSetProperties(void *data, bool isUndoRedo, bool isCloning);
+	bool internalSetProperties(void *data, bool isUndoRedo = false) { return internalSetProperties(data, isUndoRedo, false); }
 
 	// Funcoes para ler / gravar dados especificos do elemento no disco
 	bool internalSave(FILE *f);
@@ -2130,6 +2134,66 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
+// Classe do elemento PID
+struct LadderElemPIDProp {
+	pair<unsigned long, int> idSetpoint;
+	pair<unsigned long, int> idProcessValue;
+	pair<unsigned long, int> idOutput;
+	pair<unsigned long, int> idGainP;
+	pair<unsigned long, int> idGainI;
+	pair<unsigned long, int> idGainD;
+};
+
+class LadderElemPID : public LadderElem {
+private:
+	LadderElemPIDProp prop;
+	tRequestIO        infoIO_Setpoint;
+	tRequestIO        infoIO_ProcessValue;
+	tRequestIO        infoIO_Output;
+	tRequestIO        infoIO_GainP;
+	tRequestIO        infoIO_GainI;
+	tRequestIO        infoIO_GainD;
+
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
+
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
+
+public:
+	LadderElemPID(LadderDiagram *diagram);
+
+	pair<string, string> DrawTXT(void);
+	bool DrawGUI(bool poweredBefore, void *data);
+
+	bool ShowDialog(LadderContext context);
+
+	bool internalGenerateIntCode(IntCode &ic);
+
+	void *getProperties(void);
+
+	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
+	inline int getWidthTXT(void) { return 1; }
+
+	LadderElem *Clone(LadderDiagram *diagram);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
+};
+
 // Classe do elemento X
 struct LadderElemXProp {
 };
@@ -2314,6 +2378,7 @@ private:
 		LadderSettingsSNTP               Sntp;
 		LadderSettingsEncoderIncremental EncInc;
 		LadderSettingsEncoderSSI         EncSSI;
+		LadderSettingsADC                Adc;
 		LadderSettingsDAC                Dac;
 		LadderSettingsModbusSlave        MbSlave;
 		LadderSettingsInformation        Info;
@@ -2469,6 +2534,7 @@ public:
 	LadderSettingsSNTP               getSettingsSNTP              (void) { return LadderSettings.Sntp   ; }
 	LadderSettingsEncoderIncremental getSettingsEncoderIncremental(void) { return LadderSettings.EncInc ; }
 	LadderSettingsEncoderSSI         getSettingsEncoderSSI        (void) { return LadderSettings.EncSSI ; }
+	LadderSettingsADC                getSettingsADC               (void) { return LadderSettings.Adc    ; }
 	LadderSettingsDAC                getSettingsDAC               (void) { return LadderSettings.Dac    ; }
 	LadderSettingsModbusSlave        getSettingsModbusSlave       (void) { return LadderSettings.MbSlave; }
 	LadderSettingsInformation        getSettingsInformation       (void) { return LadderSettings.Info   ; }
@@ -2479,6 +2545,7 @@ public:
 	void                             setSettingsSNTP              (LadderSettingsSNTP               setSntp   );
 	void                             setSettingsEncoderIncremental(LadderSettingsEncoderIncremental setEncInc );
 	void                             setSettingsEncoderSSI        (LadderSettingsEncoderSSI         setEncSSI );
+	void                             setSettingsADC               (LadderSettingsADC                setAdc    );
 	void                             setSettingsDAC               (LadderSettingsDAC                setDac    );
 	void                             setSettingsModbusSlave       (LadderSettingsModbusSlave        setMbSlave);
 	void                             setSettingsInformation       (LadderSettingsInformation        setInfo   );
@@ -2525,6 +2592,7 @@ public:
 	void            ShowIoMapDialog         (int item);
 	vector<string>  getVectorInternalFlagsIO(void);
 	vector<eType>   getGeneralTypes         (void);
+	vector<string>  getListIO               (void);
 
 	// Funcao para ordenar a lista de I/O conforme o campo especificado
 	void            sortIO                  (eSortBy sortby);

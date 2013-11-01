@@ -108,9 +108,6 @@ static char *MapSym(char *str)
 			sprintf(ret, "GPIO_OUTPUT_PORT%d", detailsIO.pin);
 			return ret;
 		}
-	} else if(detailsIO.type == eType_ReadADC) {
-		sprintf(ret, "A%d", detailsIO.pin);
-		return ret;
 	} else if(detailsIO.type == eType_General && detailsIO.pin) {
 		sprintf(ret, "MODBUS_REGISTER[%d]", IoMap_GetIndex(detailsIO));
 		return ret;
@@ -124,9 +121,11 @@ static char *MapSym(char *str)
 		}
 	}
 
-	if (strlen(str) == 0)
+	if (strlen(str) == 0) {
 		sprintf(ret, "VAR_NULL");
-    else if(*str == '$') {
+	} else if(!strncmp(str, "$S_", 3)) {
+		strcpy(ret, str+3);
+	} else if(*str == '$') {
         sprintf(ret, "I_%s", str+1);
     } else {
         sprintf(ret, "U_%s", str);
@@ -306,6 +305,7 @@ static void GenerateDeclarations(FILE *f)
             case INT_EEPROM_BUSY_CHECK:
 			case INT_SET_RTC:
 			case INT_CHECK_RTC:
+            case INT_CREATE_STATIC_VARIABLE: // Variavel estatica sera local, nao deve ser declarada globalmente
                 break;
 
             default:
@@ -481,6 +481,10 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
                         vectorIntCode[i].name3);
                     break;
             }
+
+            case INT_CREATE_STATIC_VARIABLE:
+                fprintf(f, "static int %s = 0;\n", MapSym(vectorIntCode[i].name1));
+                break;
 
             case INT_INCREMENT_VARIABLE:
                 fprintf(f, "%s++;\n", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));

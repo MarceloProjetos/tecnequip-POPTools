@@ -7,6 +7,7 @@ static HWND GroupInfoDetails;
 static HWND GroupCommNetwork;
 static HWND GroupCommTimeZone;
 static HWND GroupCommSerial;
+static HWND GroupInterfaceAD;
 static HWND GroupInterfaceDA;
 static HWND GroupInterfaceEncInc;
 static HWND GroupInterfaceEncAbs;
@@ -27,6 +28,8 @@ static HWND SNTPEnableCheckbox;
 static HWND SNTPCombobox;
 static HWND GMTCombobox;
 static HWND DailySaveCheckbox;
+static HWND AdScaleCelsius;
+static HWND AdScaleFahrenheit;
 static HWND AbortModeCombobox;
 static HWND MBelem;
 static HWND MBok;
@@ -108,17 +111,18 @@ char *EncoderConvModes[] = { _("Sem conversão"), _("Metros"), _("Milímetros"), _
 #define CONFTVI_ID_COMM_FUSE         5
 #define CONFTVI_ID_COMM_SERIAL       6
 #define CONFTVI_ID_INTERFACE         7
-#define CONFTVI_ID_INTERFACE_DA      8
-#define CONFTVI_ID_INTERFACE_ENCINC  9
-#define CONFTVI_ID_INTERFACE_ENCABS 10
-#define CONFTVI_ID_MODBUS           11
-#define CONFTVI_ID_MODBUS_MASTER    12
-#define CONFTVI_ID_MODBUS_SLAVE     13
+#define CONFTVI_ID_INTERFACE_AD      8
+#define CONFTVI_ID_INTERFACE_DA      9
+#define CONFTVI_ID_INTERFACE_ENCINC 10
+#define CONFTVI_ID_INTERFACE_ENCABS 11
+#define CONFTVI_ID_MODBUS           12
+#define CONFTVI_ID_MODBUS_MASTER    13
+#define CONFTVI_ID_MODBUS_SLAVE     14
 
 void OnSelChanged(int ID)
 {
 	int i;
-	HWND group, groups[] = { GroupInfoProject, GroupInfoDetails, GroupCommNetwork, GroupCommTimeZone, GroupCommSerial,
+	HWND group, groups[] = { GroupInfoProject, GroupInfoDetails, GroupCommNetwork, GroupCommTimeZone, GroupCommSerial, GroupInterfaceAD,
 							GroupInterfaceDA, GroupInterfaceEncInc, GroupInterfaceEncAbs, GroupModBUSMaster, GroupModBUSSlave };
 
 	switch(ID) {
@@ -145,6 +149,10 @@ void OnSelChanged(int ID)
 			break;
 
 		case CONFTVI_ID_INTERFACE:
+		case CONFTVI_ID_INTERFACE_AD:
+			group = GroupInterfaceAD;
+			break;
+
 		case CONFTVI_ID_INTERFACE_DA:
 			group = GroupInterfaceDA;
 			break;
@@ -423,6 +431,7 @@ struct {
 		{ "Fuso Horário"       , 2, CONFTVI_ID_COMM_FUSE        },
 		{ "Serial"             , 2, CONFTVI_ID_COMM_SERIAL      },
 	{ "Interfaces"             , 1, CONFTVI_ID_INTERFACE        },
+		{ "Entrada Analógica"  , 2, CONFTVI_ID_INTERFACE_AD     },
 		{ "Saída Analógica"    , 2, CONFTVI_ID_INTERFACE_DA     },
 		{ "Encoder Incremental", 2, CONFTVI_ID_INTERFACE_ENCINC },
 		{ "Encoder Absoluto"   , 2, CONFTVI_ID_INTERFACE_ENCABS },
@@ -702,6 +711,32 @@ static void MakeControls(void)
         155, 97, 140, 100, GroupCommSerial, NULL, Instance, NULL);
     NiceFont(ParityCombobox);
 
+	// Group - Analog Input
+    GroupInterfaceAD = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupInterfaceAD);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Aqui indicamos o tipo de escala utilizada ao ler o canal de A/D do sensor de temperatura."),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        5, 5, 285, 74, GroupInterfaceAD, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    HWND Label = CreateWindowEx(0, WC_STATIC, _("Escala:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 84, 140, 21, GroupInterfaceAD, NULL, Instance, NULL);
+    NiceFont(Label);
+
+	AdScaleCelsius = CreateWindowEx(0, WC_BUTTON, _("Celsius"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        155, 84, 130, 20, GroupInterfaceAD, NULL, Instance, NULL);
+    NiceFont(AdScaleCelsius);
+
+	AdScaleFahrenheit = CreateWindowEx(0, WC_BUTTON, _("Fahrenheit"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        155, 114, 130, 20, GroupInterfaceAD, NULL, Instance, NULL);
+    NiceFont(AdScaleFahrenheit);
+
 	// Group - Analog Output
     GroupInterfaceDA = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
@@ -713,7 +748,7 @@ static void MakeControls(void)
         5, 5, 285, 74, GroupInterfaceDA, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    HWND Label = CreateWindowEx(0, WC_STATIC, _("Modo de Abandono:"),
+    Label = CreateWindowEx(0, WC_STATIC, _("Modo de Abandono:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 84, 140, 21, GroupInterfaceDA, NULL, Instance, NULL);
     NiceFont(Label);
@@ -995,6 +1030,7 @@ bool ShowConfDialog(eConfSection confSection)
 	LadderSettingsSNTP               settingsSntp    = ladder->getSettingsSNTP              ();
 	LadderSettingsEncoderIncremental settingsEncInc  = ladder->getSettingsEncoderIncremental();
 	LadderSettingsEncoderSSI         settingsEncSSI  = ladder->getSettingsEncoderSSI        ();
+	LadderSettingsADC                settingsAdc     = ladder->getSettingsADC               ();
 	LadderSettingsDAC                settingsDac     = ladder->getSettingsDAC               ();
 	LadderSettingsModbusSlave        settingsMbSlave = ladder->getSettingsModbusSlave       ();
 	LadderSettingsInformation        settingsInfo    = ladder->getSettingsInformation       ();
@@ -1029,6 +1065,11 @@ bool ShowConfDialog(eConfSection confSection)
 	SendMessage(mask, IPM_SETADDRESS, 0, settingsNetwork.mask);
 	SendMessage(gw  , IPM_SETADDRESS, 0, settingsNetwork.gw  );
 	SendMessage(dns , IPM_SETADDRESS, 0, settingsNetwork.dns );
+
+	if (settingsAdc.isCelsius)
+		SendMessage(AdScaleCelsius, BM_SETCHECK, BST_CHECKED, 0);
+	else
+		SendMessage(AdScaleFahrenheit, BM_SETCHECK, BST_CHECKED, 0);
 
 	PopulateAbortModeCombobox(AbortModeCombobox, false);
 	SendMessage(AbortModeCombobox, CB_SETCURSEL, settingsDac.ramp_abort_mode-1, 0);
@@ -1217,6 +1258,10 @@ bool ShowConfDialog(eConfSection confSection)
 		settingsEncSSI.conv_mode = SendMessage(SSIConvModeCombobox, CB_GETCURSEL, 0, 0);
 
 		ladder->setSettingsEncoderSSI(settingsEncSSI);
+
+		settingsAdc.isCelsius = (SendMessage(AdScaleCelsius, BM_GETCHECK, 0, 0) & BST_CHECKED) ? true : false;
+
+		ladder->setSettingsADC(settingsAdc);
 
 		settingsDac.ramp_abort_mode = SendMessage(AbortModeCombobox, CB_GETCURSEL, 0, 0) + 1;
 

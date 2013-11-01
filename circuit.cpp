@@ -480,6 +480,15 @@ bool AddPersist(void)
 	return ret;
 }
 
+bool AddPID(void)
+{
+	ladder->CheckpointBegin(_("Adicionar PID"));
+	bool ret = ladder->AddElement(new LadderElemPID(ladder));
+	ladder->CheckpointEnd();
+
+	return ret;
+}
+
 //-----------------------------------------------------------------------------
 // Delete the selected item from the program. Just call
 // DeleteSelectedFromSubckt on every rung till we find it.
