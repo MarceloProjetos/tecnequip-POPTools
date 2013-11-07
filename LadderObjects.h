@@ -16,360 +16,575 @@ class LadderElem;
 class LadderCircuit;
 class LadderDiagram;
 
-// Estruturas para gravar / ler as configuracoes do ladder
+/*** Estruturas para gravar / ler as configuracoes do ladder ***/
+
+/// Configuracoes gerais do diagrama
 typedef struct {
-	bool			canSave;
-	int				cycleTime;
-	int				mcuClock;
+	bool			canSave;   ///< Flag que indica se o diagrama atual pode ser salvo
+	int				cycleTime; ///< Tempo de ciclo do CLP em milissegundos
+	int				mcuClock;  ///< Frequencia do processador do CLP
 } LadderSettingsGeneral;
 
+/// Configuracoes da Interface Serial do CLP
 typedef struct {
-	int				baudRate;	// RS485 baudrate
-	int				UART;
+	int				baudRate; ///< Velocidade em bps da interface RS-485
+	int				UART;     ///< Variável contendo configuracao da RS-485: paridade, stop bits, etc.
 } LadderSettingsUART;
 
+/// Configuracoes de rede do CLP
 typedef struct {
-	unsigned long	ip;
-	unsigned long	mask;
-	unsigned long	gw;
-	unsigned long	dns;
+	unsigned long	ip;   ///< IP do CLP
+	unsigned long	mask; ///< Mascara de rede
+	unsigned long	gw;   ///< Gateway padrao
+	unsigned long	dns;  ///< Servidor DNS
 } LadderSettingsNetwork;
 
+/// Configuracoes de Data/Hora do CLP
 typedef struct {
-	bool			sntp_enable;
-	string			sntp_server;
-	int				gmt;
-	bool			dailysave;
+	bool			sntp_enable; ///< Flag que indica se o sincronismo por SNTP esta ativado
+	string			sntp_server; ///< Indica o servidor SNTP de onde devemos receber Data/Hora
+	int				gmt;         ///< Fuso horario em que o CLP esta trabalhando
+	bool			dailysave;   ///< Indica se o horari ode verao esta ativado
 } LadderSettingsSNTP;
 
+/// Configuracoes de Encoder Incremental
 typedef struct {
-	int				perimeter;
-	int				pulses;
-	float			factor;
-	int				conv_mode;
-	bool			x4;
+	int				perimeter; ///< Perimetro da roda on o encoder esta fixado
+	int				pulses;    ///< Numero de pulsos por volta do encoder (PPR)
+	float			factor;    ///< Fator de correcao do encoder
+	int				conv_mode; ///< Modo de conversao: leitura direta, mm, decimos de mm, etc.
+	bool			x4;        ///< Flag indicando se o encoder dexe usar multiplicador 4 ou 2
 } LadderSettingsEncoderIncremental;
 
+/// Configuracoes de Encoder Absoluto (SSI)
 typedef struct {
-	int		size;
-	int		mode;
+	int		size;      ///< Numero de bits total de resolucao do encoder
+	int		mode;      ///< Modo de leitura: Gray ou Binario
 
-	int		conv_mode;
-	int		perimeter;
-	float	factor;
-	int		size_bpr;
+	int		conv_mode; ///< Modo de conversao: leitura direta, mm, decimos de mm, etc.
+	int		perimeter; ///< Perimetro da roda on o encoder esta fixado
+	float	factor;    ///< Fator de correcao do encoder
+	int		size_bpr;  ///< Numero de bits que representa uma volta do encoder
 } LadderSettingsEncoderSSI;
 
+/// Configuracoes da interface Analogica para Digital (A/D)
 typedef struct {
-	bool isCelsius;
+	bool isCelsius; ///< Flag indicando que a leitura do canal de temperatura retorna Celsius ou Fahrenheit
 } LadderSettingsADC;
 
+/// Configuracoes da interface Digital para Analogica (D/A)
 typedef struct {
-	int ramp_abort_mode;
+	int ramp_abort_mode; ///< Modo de abandono da rampa: Manter o valor atual, retornar a zero, etc.
 } LadderSettingsDAC;
 
+/// Configuracoes do protocolo ModBUS
 typedef struct {
-	int			ModBUSID;
+	int			ModBUSID; ///< ID que o CLP ira responder quando atuando em modo Escravo
 } LadderSettingsModbusSlave;
 
+/// Informacoes gerais do diagrama
 typedef struct {
 	// Project Information
-	string Name       ;
-	string Developer  ;
-	string Description;
-	string FWVersion  ;
-	long   BuildNumber;
-	time_t CompileDate;
-	time_t ProgramDate;
+	string Name       ; ///< Nome do projeto
+	string Developer  ; ///< Nome do desenvolvedor
+	string Description; ///< Descricao do projeto
+	string FWVersion  ; ///< Versao atual do firmware no POPTools
+	long   BuildNumber; ///< Numero da compilacao do projeto
+	time_t CompileDate; ///< Data/Hora da ultima compilacao
+	time_t ProgramDate; ///< Dat/Hora da ultima gravacao do diagrama em um CLP
 } LadderSettingsInformation;
 
-// Estruturas auxiliares relacionadas com o I/O
+/*** Estruturas auxiliares relacionadas com o I/O ***/
+
+/// Tipo do I/O
 enum eType  {
-	eType_Pending = 0,
-	eType_Reserved,
-	eType_General,
-	eType_DigInput,
-	eType_InternalRelay,
-	eType_DigOutput,
-	eType_InternalFlag,
-	eType_Counter,
-	eType_TOF,
-	eType_TON,
-	eType_RTO,
-	eType_ReadADC,
-	eType_SetDAC,
-	eType_ReadEnc,
-	eType_ResetEnc,
-	eType_ReadUSS,
-	eType_WriteUSS,
-	eType_ReadModbus,
-	eType_WriteModbus,
-	eType_PWM,
-	eType_RxUART,
-	eType_TxUART,
-	eType_ReadYaskawa,
-	eType_WriteYaskawa,
-	eType_Last
+	eType_Pending = 0,   ///< Pendente. Indica que nao tem tipo ou o I/O eh um numero, nao variavel.
+	eType_Reserved,      ///< Reservado. Indica que o nome atual eh reservado para uso do sistema e deve ser substituido
+	eType_General,       ///< Geral. Tipo generico, utilizado por I/Os nao associados a nenhuma logica especifica
+	eType_DigInput,      ///< Entrada. Tipo de I/Os que sao associados a uma entrada digital do CLP
+	eType_InternalRelay, ///< Rele interno. Utilizado para logicas internas de contatos e bobinas
+	eType_DigOutput,     ///< Saida. Tipo de I/Os que sao associados a uma saida digital do CLP
+	eType_InternalFlag,  ///< Flag interna. Sao I/Os associados a flags internas do firmware do CLP
+	eType_Counter,       ///< Contador. Sao I/Os utilizados em contadores (Incrementais, Decrementais, Retentivos)
+	eType_TOF,           ///< Atraso para Desligar. I/O utilizado em atraso para desligar, nao pode ser reutilizado
+	eType_TON,           ///< Atraso para Ligar. I/O utilizado em atraso para ligar, nao pode ser reutilizado
+	eType_RTO,           ///< Atraso para Ligar com memoria. I/O utilizado em atraso para ligar com memoria, nao pode ser reutilizado
+	eType_ReadADC,       ///< Leitura de A/D. Tipo de I/Os que sao associados a um canal A/D do CLP
+	eType_SetDAC,        ///< Escrita no D/A. Tipo de I/Os que sao associados ao canal D/A do CLP
+	eType_ReadEnc,       ///< Leitura de Encoder. I/O associado a um canal de encoder do CLP, utilizado em operacoes de leitura
+	eType_ResetEnc,      ///< Escrita no Encoder. I/O associado a um canal de encoder do CLP, utilizado em operacoes de escrita
+	eType_ReadUSS,       ///< Leitura USS. I/O associado a um elemento de leitura atraves de protocolo USS (Siemens)
+	eType_WriteUSS,      ///< Escrita USS. I/O associado a um elemento de escrita atraves de protocolo USS (Siemens)
+	eType_ReadModbus,    ///< Leitura ModBUS. I/O associado a um elemento de leitura atraves de protocolo ModBUS
+	eType_WriteModbus,   ///< Escrita ModBUS. I/O associado a um elemento de escrita atraves de protocolo ModBUS
+	eType_PWM,           ///< PWM. Tipo de I/Os que sao associados a uma saida digital do CLP e cuja saida opera como PWM
+	eType_RxUART,        ///< Leitura UART. I/O associado a um elemento de leitura de string da interface serial (RS-485)
+	eType_TxUART,        ///< Escrita UART. I/O associado a um elemento de escrita de string da interface serial (RS-485)
+	eType_ReadYaskawa,   ///< Leitura NS-600. I/O associado a um elemento de leitura de equipamento NS-600 (Yaskawa)
+	eType_WriteYaskawa,  ///< Escrita NS-600. I/O associado a um elemento de escrita de equipamento NS-600 (Yaskawa)
+	eType_Last           ///< Ultimo elemento. Utilizado como um marcador para elementos que definem novos I/Os, nunca associado a um I/O
 };
 
+/// Estrutura que define as caracteristias e dados de um I/O
 typedef struct {
 	// Numero de solicitacoes de I/O para cada tipo de dado
-	unsigned int countRequestBit;
-	unsigned int countRequestInt;
+	unsigned int countRequestBit; ///< Numero de elementos que requisitaram acesso de tipo bit a este I/O
+	unsigned int countRequestInt; ///< Numero de elementos que requisitaram acesso de tipo int a este I/O
 
 	// Numero de solicitacoes de I/O para cada tipo de acesso
-	unsigned int countRequestRead;
-	unsigned int countRequestWrite;
+	unsigned int countRequestRead;  ///< Numero de elementos que requisitaram acesso de tipo leitura a este I/O
+	unsigned int countRequestWrite; ///< Numero de elementos que requisitaram acesso de tipo escrita a este I/O
 
 	// Flags indicando restricao de uso do I/O
-	bool         isUniqueRead;  // Somente permite o uso para leitura por 1 I/O
-	bool         isUniqueWrite; // Somente permite o uso para escrita por 1 I/O
+	bool         isUniqueRead;  ///< Flag indicando que somente permite o uso para leitura por 1 I/O
+	bool         isUniqueWrite; ///< Flag indicando que somente permite o uso para escrita por 1 I/O
 
-	eType        type;
-	unsigned int pin;
-	unsigned int bit;
+	eType        type; ///< Tipo do I/O
+	unsigned int pin;  ///< Pino do CLP ao qual este I/O esta associado
+	unsigned int bit;  ///< Bit do CLP ao qual este I/O esta associado, como o bit do registrador ModBUS
 } mapDetails;
 
-// Enumeracao com o tipo de solicitacao do I/O: Leitura, Escrita ou Ambos
-enum eRequestAccessType { eRequestAccessType_Read = 0, eRequestAccessType_Write, eRequestAccessType_ReadWrite };
-
-// Enumeracao para informar o tipo de ordenacao que deve ser realizada na lista de I/O
-enum eSortBy { eSortBy_Nothing = 0, eSortBy_Name, eSortBy_Type, eSortBy_Pin, eSortBy_Port };
-
-// Enumeracao que indica o resultado da validacao do diagrama
-enum eValidateResult { eValidateResult_OK = 0, eValidateResult_Warning, eValidateResult_Error };
-
-// Enumeracao que indica o modo de validacao do I/O.
-// Exemplo: Para a simulacao, nao precisa checar por associacoes
-enum eValidateIO { eValidateIO_OnlyNames, eValidateIO_Full };
-
-// Enumeracao com os modos de Search & Replace
-enum eSearchAndReplaceMode { eSearchAndReplaceMode_FindFirst, eSearchAndReplaceMode_FindNext,
-	eSearchAndReplaceMode_ReplaceFirst, eSearchAndReplaceMode_ReplaceNext, eSearchAndReplaceMode_ReplaceAll };
-
-// Enumeracao que define os modos de movimentacao do cursor
-enum eMoveCursor  {
-	eMoveCursor_DiagramHome = 0,
-	eMoveCursor_RungHome,
-	eMoveCursor_DiagramEnd,
-	eMoveCursor_RungEnd,
-	eMoveCursor_Up,
-	eMoveCursor_Down,
-	eMoveCursor_Left,
-	eMoveCursor_Right,
+/// Enumeracao com o tipo de solicitacao do I/O: Leitura, Escrita ou Ambos
+enum eRequestAccessType {
+	eRequestAccessType_Read = 0, ///< Acesso somente leitura
+	eRequestAccessType_Write,    ///< Acesso somente escrita
+	eRequestAccessType_ReadWrite ///< Acesso leitura e escrita
 };
 
-// Enumeracao que define o retorno das caixas de dialogo
-enum eReply { eReply_Pending = 0, eReply_No, eReply_Yes, eReply_Ok, eReply_Cancel, eReply_Ask };
+/// Enumeracao para informar o tipo de ordenacao que deve ser realizada na lista de I/O
+enum eSortBy {
+	eSortBy_Nothing = 0, ///< Nenhum. Sem uma ordenacao especifica
+	eSortBy_Name,        ///< Nome. Ordena a lista de I/Os por nome do I/O
+	eSortBy_Type,        ///< Tipo. Ordena a lista de I/Os pelo tipo do I/O, em ordem alfabetica conforme a descricao do tipo
+	eSortBy_Pin,         ///< Pino. Ordena a lista de I/Os pelo numero do pino do I/O
+	eSortBy_Port         ///< Nome. Ordena a lista de I/Os pela porta associada ao I/O, que seria a descricao do pino do I/O
+};
 
-// Enumeracao com os tipos de caixa de dialogo existentes
-enum eDialogType { eDialogType_Message = 0, eDialogType_Error, eDialogType_Question };
+/// Enumeracao que indica o resultado da validacao do diagrama
+enum eValidateResult {
+	eValidateResult_OK = 0,  ///< OK. Indica que nao ocorreram erros durante a validacao do diagrama
+	eValidateResult_Warning, ///< Aviso. Indica que ocorreram apenas avisos (variavel nao utilizada, por exemplo)
+	eValidateResult_Error    ///< Erro. Indica que houve erro durante a validacao. Ou seja: o diagrama nao pode ser compilado ou simulado
+};
 
-// Estrutura auxiliar que representa um subcircuito
+/// Enumeracao que indica o modo de validacao do I/O.
+/// Exemplo: Para a simulacao, nao precisa checar por associacoes
+enum eValidateIO {
+	eValidateIO_OnlyNames, ///< Somente valida os nomes dos I/Os, nao sua associacao
+	eValidateIO_Full       ///< Validacao completa, checando inclusive se um I/O nao foi associado a um pino do CLP
+};
+
+/// Enumeracao com os modos de Search & Replace
+enum eSearchAndReplaceMode {
+	eSearchAndReplaceMode_FindFirst,    ///< Inicia a busca do inicio do diagrama
+	eSearchAndReplaceMode_FindNext,     ///< Inicia a busca a partir do objeto atualmente selecionado
+	eSearchAndReplaceMode_ReplaceFirst, ///< Inicia a substituicao do inicio do diagrama
+	eSearchAndReplaceMode_ReplaceNext,  ///< Inicia a substituicao a partir do objeto atualmente selecionado
+	eSearchAndReplaceMode_ReplaceAll    ///< substitui de uma so vez todos os elementos encontrados ao inves de apenas o primeiro
+};
+
+/// Enumeracao que define os modos de movimentacao do cursor
+enum eMoveCursor  {
+	eMoveCursor_DiagramHome = 0, ///< Movimenta o cursor para o inicio do diagrama, ou seja, o primeiro elemento da primeira linha
+	eMoveCursor_RungHome,        ///< Movimenta o cursor para o inicio da linha atual
+	eMoveCursor_DiagramEnd,      ///< Movimenta o cursor para o final do diagrama, ou seja, o ultimo elemento da ultima linha
+	eMoveCursor_RungEnd,         ///< Movimenta o cursor para o final da linha atual
+	eMoveCursor_Up,              ///< Movimenta o cursor para cima. Altera a selecao do objeto atual para a parte superior e, caso ja selecionado, busca o objeto mais proximo.
+	eMoveCursor_Down,            ///< Movimenta o cursor para baixo. Altera a selecao do objeto atual para a parte inferior e, caso ja selecionado, busca o objeto mais proximo.
+	eMoveCursor_Left,            ///< Movimenta o cursor para a esquerda. Altera a selecao do objeto atual para a lateral esquerda e, caso ja selecionado, busca o objeto mais proximo.
+	eMoveCursor_Right,           ///< Movimenta o cursor para a direita. Altera a selecao do objeto atual para a lateral direita e, caso ja selecionado, busca o objeto mais proximo.
+};
+
+/// Enumeracao que define o retorno das caixas de dialogo
+enum eReply {
+	eReply_Pending = 0, ///< Este estado indica que a caixa de dialogo ainda esta aguardando uma resposta do usuario
+	eReply_No,          ///< O usuario respondeu Nao
+	eReply_Yes,         ///< O usuario respondeu Sim
+	eReply_Ok,          ///< O usuario respondeu Ok
+	eReply_Cancel,      ///< O usuario respondeu Cancelar
+};
+
+/// Enumeracao com os tipos de caixa de dialogo existentes
+enum eDialogType {
+	eDialogType_Message = 0, ///< Caixa de mensagem. Exibe o botao Ok e a imagem de informacao
+	eDialogType_Error,       ///< Caixa de Erro. Exibe o botao Ok e a imagem de erro
+	eDialogType_Question     ///< Caixa de Pergunta. Existe os botoes Sim e Nao, alem da imagem de interrogacao
+};
+
+/// Estrutura auxiliar que representa um subcircuito, ou seja, um elemento do circuito atual
 typedef struct {
-	LadderElem    *elem;
-	LadderCircuit *subckt;
+	LadderElem    *elem;   ///< Ponteiro para o elemento. Se nulo, indica que aqui temos um subcircuito (Serie ou Paralelo)
+	LadderCircuit *subckt; ///< Ponteiro para o subcircuito (Serie ou Paralelo) ou, se elemento for valido, o circuito atual
 } Subckt;
 
+/// Definicao indicando que o elemento procurado ainda nao foi encontrado
 #define SUBCKT_STATUS_NOTFOUND 0
+/// Definicao indicando que o elemento procurado esta no primeiro elemento do circuito atual
 #define SUBCKT_STATUS_FIRST    1
+/// Definicao indicando que o elemento procurado esta dentro do circuito atual, nao em suas extremidades
 #define SUBCKT_STATUS_INSIDE   2
+/// Definicao indicando que o elemento procurado esta no ultimo elemento do circuito atual
 #define SUBCKT_STATUS_LAST     3
 
+/// Estrutura que representa um ponto de insercao para o paralelo.
 typedef struct {
-	unsigned int   point;
-	Subckt         subckt;
-	LadderCircuit *series;
-	LadderCircuit *parallel;
+	unsigned int   point;    ///< Indice para o ponto de insercao dentro do circuito atual
+	Subckt         subckt;   ///< Subcircuito que representa o elemento de referencia
+	LadderCircuit *series;   ///< O circuito serie a que pertence o elemento de referencia
+	LadderCircuit *parallel; ///< O circuito paralelo a que pertence o elemento de referencia
 } InsertionPoint;
 
+/// Estrutura que representa o contexto do diagrama, ou seja, seu estado atual
 typedef struct {
-	LadderElem    *SelectedElem;
-	LadderElem    *ParallelStart;
-	LadderCircuit *SelectedCircuit;
-	LadderDiagram *Diagram;
+	LadderElem    *SelectedElem;    ///< Ponteiro para o elemento atualmente selecionado
+	LadderElem    *ParallelStart;   ///< Ponteiro que, se nao nulo, indica o ponto inicial ao adicionar um elemento em paralelo com o circuito atual
+	LadderCircuit *SelectedCircuit; ///< Indica o circuito atualmente selecionado. Representa o circuito a que pertence o elemento selecionado
+	LadderDiagram *Diagram;         ///< Ponteiro para o diagrama a que pertence o contexto
 
-	int SelectedState;
+	int SelectedState;              ///< Variavel que armazena o estado de selecao atual: cima, baixo, esquerda, direita...
 
-	bool inSimulationMode;
-	bool isLoadingFile;
+	bool inSimulationMode;          ///< Flag que indica se estamos no modo de simulacao
+	bool isLoadingFile;             ///< Flag que indica se um arquivo esta sendo carregado
 
-	bool   programChangedNotSaved;
+	bool   programChangedNotSaved;  ///< Flag que indica se houve alteracao no diagrama desde o ultimo salvamento
 
-	bool canNegate;
-	bool canNormal;
-	bool canSetOnly;
-	bool canResetOnly;
-	bool canPushUp;
-	bool canPushDown;
-	bool canDelete;
-	bool canDeleteRung;
-	bool canInsertEnd;
-	bool canInsertOther;
-	bool canInsertComment;
+	bool canNegate;                 ///< Indica se o elemento atual pode ser alterado para o modo negado
+	bool canNormal;                 ///< Indica se o elemento atual pode ser alterado para o modo normal
+	bool canSetOnly;                ///< Indica se o elemento atual pode ser alterado para o modo "Apenas Ligar"
+	bool canResetOnly;              ///< Indica se o elemento atual pode ser alterado para o modo "Apenas Desligar"
+	bool canPushUp;                 ///< Indica se a linha atual pode ser movida para cima
+	bool canPushDown;               ///< Indica se a linha atual pode ser movida para baixo
+	bool canDelete;                 ///< Indica se o elemento atual pode ser excluido
+	bool canDeleteRung;             ///< Indica se a linha atual pode ser excluida
+	bool canInsertEnd;              ///< Indica se pode ser adicionado um elemento de final de linha
+	bool canInsertOther;            ///< Indica se pode ser adicionado um elemento de meio de linha
+	bool canInsertComment;          ///< Indica se um comentario pode ser adicionado
 } LadderContext;
 
-// Estrutura auxiliar para solicitar um I/O.
+/// Estrutura auxiliar para solicitar um I/O.
 typedef struct {
-	pair<unsigned long, int> pin;
-	string                   name;
-	bool                     isBit;
-	eType                    type;
-	eRequestAccessType       access;
-	bool                     isUniqueRead;
-	bool                     isUniqueWrite;
+	pair<unsigned long, int> pin;           ///< Par que representa um pino: ID ou, se ID for zero, seu valor numerico
+	string                   name;          ///< Nome do I/O
+	bool                     isBit;         ///< Flag indicando se o modo de acesso ao I/O sera por bit ou int
+	eType                    type;          ///< Tipo do I/O
+	eRequestAccessType       access;        ///< Tipo de acesso como leitura, escrita, etc.
+	bool                     isUniqueRead;  ///< Indica se deve existir apenas 1 acesso para leitura deste I/O
+	bool                     isUniqueWrite; ///< Indica se deve existir apenas 1 acesso para escrita deste I/O
 } tRequestIO;
 
-// Estrutura auxiliar que representa uma acao de desfazer / refazer
+/// Estrutura auxiliar que representa uma acao de desfazer / refazer
 typedef struct {
-	// Texto que descreve a acao de forma amigavel para o usuario
+	/// Texto que descreve a acao de forma amigavel para o usuario
 	string         Description;
 
-	// Objeto responsavel por executar a acao
-	mapIO         *io;
-	LadderElem    *elem;
-	LadderCircuit *subckt;
+	// Objeto responsavel por executar a acao. Se todos os ponteiros forem nulos, indica acao de desfazer do diagrama
+	mapIO         *io;     ///< Quando nao nulo, indica acao de desfazer do mapa de I/O
+	LadderElem    *elem;   ///< Quando nao nulo, indica acao de desfazer do elemento
+	LadderCircuit *subckt; ///< Quando nao nulo, indica acao de desfazer do circuito
 
 	// Contexto Antes e Depois de executar a acao
-	LadderContext  contextAfter;
-	LadderContext  contextBefore;
+	LadderContext  contextAfter;  ///< Contexto do diagrama depois de executar esta acao
+	LadderContext  contextBefore; ///< Contexto do diagrama antes de executar esta acao
 
 	// Codigo da acao e ponteiro para dados especificos da acao
-	unsigned int   action;
-	void          *data;
+	unsigned int   action; ///< Valor que representa o tipo de acao cadastrada
+	void          *data;   ///< Ponteiro para o dado especifico da acao, conforme fornecido por quem a registrou
 } UndoRedoAction;
 
-// Funcao auxiliar que retorna o tipo de I/O do timer conforme o seu tipo
+/** Funcao auxiliar que retorna o tipo de I/O conforme o tipo do timer indicado
+ *  @param[in] which Codigo que indica o tipo de elemento (TON, OFF, RTO)
+ *  @return    Tipo de I/O para o timer indicado
+ */
 eType getTimerTypeIO(int which);
 
-// Funcao auxiliar que entrega um contexto "vazio"
+/** Funcao auxiliar que entrega um contexto "vazio"
+	@return Contexto inicializado
+*/
 LadderContext getEmptyContext(void);
 
-// Estruturas auxiliares relacionada a lista de nos do ModBUS
-enum eMbTypeNode { eMbTypeNode_RS485 = 0, eMbTypeNode_Ethernet };
+/*** Estruturas auxiliares relacionada a lista de nos do ModBUS ***/
 
-typedef struct {
-	string        name;
-	int           id;
-	unsigned long ip;
-	eMbTypeNode   iface;
-} LadderMbNode;
-
-// Estrutura que define uma linha do ladder.
-// Basicamente um LadderCircuit com algumas informacoes adicionais
-struct LadderRung {
-	LadderCircuit *rung;
-	bool           hasBreakpoint;
-	bool           isPowered;
+/// Enumeracao que indica o tipo de no do ModBUS
+enum eMbTypeNode {
+	eMbTypeNode_RS485 = 0, ///< Este no comunica utilizando a interface RS-485
+	eMbTypeNode_Ethernet   ///< Este no comunica utilizando a interface Ethernet
 };
 
-// Estrutura que armazena informacoes sobre objetos copiados (Linhas / Elementos)
+/// Estrutura que representa um no do ModBUS
+typedef struct {
+	string        name;  ///< Nome do no do ModBUS
+	int           id;    ///< ID do no, utilizado quando comunicando por RS-485
+	unsigned long ip;    ///< IP do no, utilizado quando comunicando por Ethernet
+	eMbTypeNode   iface; ///< Interface utilizada pelo no
+} LadderMbNode;
+
+/// Estrutura que define uma linha do ladder.
+/// Basicamente um LadderCircuit com algumas informacoes adicionais
+struct LadderRung {
+	LadderCircuit *rung;          ///< Ponteiro para o circuito que representa a linha
+	bool           hasBreakpoint; ///< Flag que indica se existe um breakpoint para esta linha
+	bool           isPowered;     ///< Flag que indica se a linha esta energizada
+};
+
+/// Estrutura que armazena informacoes sobre objetos copiados (Linhas / Elementos)
 typedef struct {
 	// Informacoes de elemento copiado
-	LadderElem    *elemCopy;
-	LadderDiagram *elemOwner;
+	LadderElem    *elemCopy;  ///< Ponteiro para o elemento copiado
+	LadderDiagram *elemOwner; ///< Ponteiro para o diagrama de origem do elemento copiado
 
 	// Informacoes de linha copiada
-	LadderRung    *rungCopy;
-	LadderDiagram *rungOwner;
+	LadderRung    *rungCopy;  ///< Ponteiro para a linha copiada
+	LadderDiagram *rungOwner; ///< Ponteiro para o diagrama de origem da linha copiada
 } LadderClipboard;
 
-// Funcao auxiliar que converte um ponteiro da classe base (LadderElem) para uma classe
-// derivada (LadderElemCoil, LadderElemContact, etc) e entao o desaloca da memoria
+/** @brief Funcao que desaloca um elemento da memoria
+ *
+ * Esta funcao auxiliar converte um ponteiro da classe base (LadderElem) para uma classe
+ *  derivada (LadderElemCoil, LadderElemContact, etc) e entao o desaloca da memoria
+ *  @param[in] elem Ponteiro para o elemento que deve ser desalocado
+ */
 void UnallocElem(LadderElem *elem);
 
 /*** Classes representando os elementos do Ladder ***/
 
-// Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base
+/// Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base
 class LadderElem {
 private:
-	bool isEndOfLine;
-	bool isComment;
-	bool isFormatted;
-	bool isUART;
-	int  which;
+	bool isEndOfLine; ///< Indica se este eh um elemento de final de linha
+	bool isComment;   ///< Indica se este elemento eh do tipo comentario
+	bool isFormatted; ///< Indica se a saida da funcao DrawTXT deste elemento eh um texto formatado
+	bool isUART;      ///< Indica que este elemento usa a UART, devendo ser exibido o console serial na simulacao
+	int  which;       ///< Codigo que identifica o tipo de elemento atual
 
+	/** Funcao puramente virtual executada ao atualizar as propriedades de um elemento
+	 *  @param[in] data       Ponteiro para as propriedades, conforme o tipo do elemento
+	 *  @param[in] isUndoRedo Flag que indica se esta funcao foi chamada durante uma operacao de desfazer/refazer
+	 *  @return               Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	virtual bool internalSetProperties(void *data, bool isUndoRedo) = 0;
 
+	/** Funcao puramente virtual que gera o codigo intermediario, implementada pelo elemento para gerar seu codigo especifico
+	 *  @param[in,out] ic Referencia ao vetor contendo o codigo intermediario, onde as novas instrucoes serao agregadas
+	 *  @return           Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	virtual bool internalGenerateIntCode(IntCode &ic) = 0;
 
+	/** Funcao puramente virtual que salva os dados do elemento em disco
+	 *  @param[in] f Ponteiro para o handler do arquivo sendo salvo
+	 *  @return      Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	virtual bool internalSave(FILE *f) = 0;
+	/** Funcao puramente virtual que carrega os dados do elemento do disco
+	 *  @param[in] f       Ponteiro para o handler do arquivo sendo carregado
+	 *  @param[in] version Variavel indicando a versao do arquivo sendo carregado, possibilitando conversoes de formato
+	 *  @return            Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	virtual bool internalLoad(FILE *f, unsigned int version) = 0;
 
+	/** Funcao que inicializa as variaveis privadas
+	 */
 	void Init(void);
 
-	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	/** Funcao puramente virtual que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	 *  @param[in] index Indice para indicar qual o I/O que deve ser atualizado
+	 *  @param[in] name  Nome para o qual o I/O deve ser atualizado
+	 *  @param[in] type  Tipo para o qual o I/O deve ser atualizado
+	 *  @return          Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	virtual bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) = 0;
 
-	// Funcao que executa uma acao de desfazer / refazer nas classes derivadas
+	/** Funcao puramente virtual que executa uma acao de desfazer / refazer nas classes derivadas
+	 *  @param[in]     IsUndo    Indice se a acao se refere a operacao de Desfazer (true) ou Refazer (false)
+	 *  @param[in]     isDiscard Indica se devemos descartar a acao (true) ou executa-la (false)
+	 *  @param[in,out] action    Variavel contendo os dados para Desfazer/Refazer a operacao
+	 *  @return                  Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	virtual bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action) = 0;
 
 protected:
+	/// Flag que indica se a saida do elemento esta energizada na simulacao
 	bool poweredAfter;
 
+	/// Ponteiro para o diagrama ao qual este elemento esta associado
 	LadderDiagram *Diagram;
 
-	// Estrutura de dados para acoes de Desfazer / Refazer
+	/// Estrutura de dados para acoes de Desfazer / Refazer
 	union UndoRedoData {
+		/// Estrutura com dados para registro de acao desfazer/refazer para alteracao de propriedades do elemento
 		struct {
-			void *data;
+			void *data; ///< Ponteiro para as propriedades originais
 		} SetProp;
 	};
 
-	// Enumeracao com os tipos de eventos de Undo/Redo suportados pela classe base (LadderElem)
-	enum UndoRedoActionsEnum { eCheckpoint = 0, eSetProp, eActionsEnd };
+	/// Enumeracao com os tipos de eventos de Undo/Redo suportados pela classe base (LadderElem)
+	enum UndoRedoActionsEnum {
+		eCheckpoint = 0, ///< Marcador de Checkpoint
+		eSetProp,        ///< Acao de alteracao de propriedades do elemento
+		eActionsEnd      ///< Marcador de fim das acoes da classe base, permitindo que suas derivadas criem suas proprias acoes
+	};
 
 public:
-	// Construtores
+	/*** Construtores ***/
+
+	/** Construtor geral, apenas inicializa com valores padrao
+	 */
 	LadderElem(void);
+	/** Construtor que recebe parametros para inicializacao das variaveis conforme o elemento sendo criado
+	 *  @param[in] EOL       Utilizado para inicializar a flag que indica que este elemento eh de final de linha
+	 *  @param[in] Comment   Utilizado para inicializar a flag que indica que este elemento eh um comentario
+	 *  @param[in] Formatted Utilizado para inicializar a flag que indica que este elemento gera texto formatado
+	 *  @param[in] UART      Utilizado para inicializar a flag que indica que este elemento eh usa a interface serial
+	 *  @param[in] elemWhich Utilizado para inicializar a variavel com o tipo do elemento. Nao pode ser alterado posteriormente
+	 */
 	LadderElem(bool EOL, bool Comment, bool Formatted, bool UART, int elemWhich);
 
-	// Destrutor
+	/// Destrutor padrao, nada a fazer...
 	~LadderElem(void) { }
 
+	/** Funcao puramente virtual que gera o texto utilizado para impressao e exportacao em modo texto
+	 *  @return Par de strings (Linha superior e linha inferior) que representam o elemento em modo texto
+	 */
 	virtual pair<string, string> DrawTXT(void) = 0;
+	/** Funcao puramente virtual que desenha o elemento na tela
+	 *  @param[in] poweredBefore Indica se a entrada do elemento esta energizada em uma simulacao
+	 *  @param[in] data          Variavel que contem informacoes para desenhar o objeto na tela, especifica da interface
+	 *  @return                  Estado da saida do elemento na simulacao: energizada (true) ou nao (false)
+	 */
 	virtual bool DrawGUI(bool poweredBefore, void *data) = 0;
 
+	/** Funcao puramente virtual que exibe a janela de dialogo para configuracao do elemento
+	 *  @param[in] context Contexto do Diagrama com informacoes sobre o que pode ser feito, objeto selecionado, etc.
+	 *  @return            Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	virtual bool ShowDialog(LadderContext context) = 0;
 
+	/** Funcao que gera o codigo intermediario do elemento, realizando as acoes gerais para todos os elementos
+	 *  @param[in,out] ic Referencia ao vetor contendo o codigo intermediario, onde as novas instrucoes serao agregadas
+	 *  @return           Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	bool GenerateIntCode(IntCode &ic);
 
+	/** Funcao que informa se este elemento eh um comentario
+	 *  @return Booleano indicando se este elemento eh um comentario (true) ou nao (false)
+	 */
 	inline bool           IsComment     (void)                      { return isComment;    }
+	/** Funcao que informa se este elemento eh do tipo final de linha
+	 *  @return Booleano indicando se este elemento eh do tipo final de linha (true) ou nao (false)
+	 */
 	inline bool           IsEOL         (void)                      { return isEndOfLine;  }
+	/** Funcao que informa o estado da saida deste elemento
+	 *  @return Booleano indicando se a saida deste elemento esta energizada (true) ou nao (false)
+	 */
 	inline bool           IsPoweredAfter(void)                      { return poweredAfter; }
+	/** Funcao que informa se este elemento gera texto formatado
+	 *  @return Booleano indicando se este elemento gera texto formatado (true) ou nao (false)
+	 */
 	inline bool           IsFormatted   (void)                      { return isFormatted;  }
+	/** Funcao que informa se este elemento utiliza a interface serial
+	 *  @return Booleano indicando se este elemento utiliza a interface serial (true) ou nao (false)
+	 */
 	inline bool           IsUART        (void)                      { return isUART;       }
 
+	/** Funcao que retorna o ID do elemento
+	 *  @return Codigo que indica o tipo do elemento (LadderElemContact, LadderElemCoil, etc)
+	 */
 	inline int            getWhich      (void)                      { return which;        }
+	/** Funcao que retorna um ponteiro para o diagrama
+	 *  @return Ponteiro para o diagrama ao qual este elemento pertence
+	 */
 	inline LadderDiagram *getDiagram    (void)                      { return Diagram;      }
-	inline void           setDiagram    (LadderDiagram *newDiagram) {Diagram = newDiagram; }
+	/** Funcao que associa um elemento a um diagrama
+	 *  @param[in] newDiagram Ponteiro para o diagrama para o qual este elemento deve ser associado
+	 */
+	inline void           setDiagram    (LadderDiagram *newDiagram) { Diagram = newDiagram; }
 
+	/** Funcao que gera o codigo intermediario do elemento, realizando as acoes gerais para todos os elementos
+	 *  @param[in] context Contexto com informacoes do estado atual do diagrama
+	 *  @return            Indica se a insercao deste elemento pode ser realizada para este contexto (true) ou nao (false)
+	 */
 	virtual bool CanInsert(LadderContext context) = 0;
 
+	/** Funcao executada apos o elemento ser inserido no diagrama
+	 */
 	virtual void doPostInsert(void) = 0;
+	/** Funcao executada apos o elemento ser removido do diagrama
+	 */
 	virtual void doPostRemove(void) = 0;
 
+	/** Funcao que indica o espaco em texto ocupado pelo elemento
+	 *  @return Espaco ocupado por este elemento na saida em modo texto
+	 */
 	virtual inline int getWidthTXT(void) = 0;
 
+	/** Funcao executada ao atualizar as propriedades de um elemento, executando as acoes gerais de todos os elementos
+	 *  @param[in] context  Contexto com informacoes do estado atual do diagrama
+	 *  @param[in] propData Ponteiro para as propriedades, conforme o tipo do elemento
+	 */
 	void          setProperties(LadderContext context, void *propData);
+	/** Funcao puramente virtual que retorna as propriedades do elemento
+	 *  @return          Ponteiro para as propriedades especificas deste elemento
+	 */
 	virtual void *getProperties(void) = 0;
 
+	/** Funcao puramente virtual que cria uma copia do elemento
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @return            Ponteiro para o elemento criado
+	 */
 	virtual LadderElem *Clone(LadderDiagram *diagram) = 0;
 
-	// Funcoes relacionadas com I/O
+	/*** Funcoes relacionadas com I/O ***/
+
+	/** Funcao puramente virtual que indica se o I/O pode ser alterado para o tipo solicitado
+	 *  @param[in] id   ID do I/O sendo alterado
+	 *  @param[in] type Tipo para o qual o I/O sera alterado
+	 *  @return         Indica se a mudanca de tipo do I/O eh permitida (true) ou nao (false)
+	 */
 	virtual bool  acceptIO        (unsigned long id, eType type) = 0;
+	/** Funcao puramente virtual que informa o elemento que ele deve atualizar seus I/Os
+	 *  @param[in] owner Ponteiro para o diagrama ao qual o I/O pertencia originalmente
+	 *  @param[in] isDiscard Informa se nesta operacao os I/Os devem ser descartados (true) ou atualizados (false)
+	 */
 	virtual void  updateIO        (LadderDiagram *owner, bool isDiscard) = 0;
+	/** Funcao puramente virtual que retorna o tipo permitido para este I/O pelo elemento atual
+	 *  @param[in] id ID do I/O sendo solicitado
+	 *  @return       Tipo de I/O permitido pelo elemento atual
+	 */
 	virtual eType getAllowedTypeIO(unsigned long id) = 0;
+	/** Funcao puramente virtual que realiza uma busca / substituicao de nome de I/O entre os seus I/Os
+	 *  @param[in] idSearch  ID do I/O sendo buscado / substituido
+	 *  @param[in] sNewText  string contendo o novo nome para o I/O
+	 *  @param[in] isReplace Flag que indica se esta operacao eh de substituicao (true) ou busca (false)
+	 *  @return              Numero de correspondencias encontradas no elemento atual
+	 */
 	virtual int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) = 0;
 
-	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	/** Funcao puramente virtual que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	 *  @param[in] index Indice para indicar qual o I/O que deve ser atualizado
+	 *  @param[in] name  Nome para o qual o I/O deve ser atualizado
+	 *  @param[in] type  Tipo para o qual o I/O deve ser atualizado
+	 *  @return          Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	bool updateNameTypeIO(unsigned int index, string name, eType type);
 
-	// Funcoes para ler / gravar elementos para o disco
+	/*** Funcoes para ler / gravar elementos para o disco ***/
+	/** Funcao que salva os dados do elemento em disco, executando as acoes gerais de todos os elementos
+	 *  @param[in] f Ponteiro para o handler do arquivo sendo salvo
+	 *  @return      Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	bool Save(FILE *f);
+	/** Funcao que carrega os dados do elemento do disco, executando as acoes gerais de todos os elementos
+	 *  @param[in] f       Ponteiro para o handler do arquivo sendo carregado
+	 *  @param[in] version Variavel indicando a versao do arquivo sendo carregado, possibilitando conversoes de formato
+	 *  @return            Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	bool Load(FILE *f, unsigned int version);
 
-	// Funcao que executa uma acao de desfazer / refazer
+	/** Funcao que executa uma acao de desfazer / refazer, executando as acoes gerais de todos os elementos
+	 *  @param[in]     IsUndo    Indice se a acao se refere a operacao de Desfazer (true) ou Refazer (false)
+	 *  @param[in]     isDiscard Indica se devemos descartar a acao (true) ou executa-la (false)
+	 *  @param[in,out] action    Variavel contendo os dados para Desfazer/Refazer a operacao
+	 *  @return                  Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
 	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
@@ -2593,6 +2808,7 @@ public:
 	vector<string>  getVectorInternalFlagsIO(void);
 	vector<eType>   getGeneralTypes         (void);
 	vector<string>  getListIO               (void);
+	string          getReservedNameIO       (eType type);
 
 	// Funcao para ordenar a lista de I/O conforme o campo especificado
 	void            sortIO                  (eSortBy sortby);
@@ -2617,8 +2833,8 @@ public:
 
 	bool IsValidNumber     (string varnumber);
 	bool IsValidVarName    (string varname);
-	bool IsValidNameAndType(unsigned long id, string name, eType type, const char *FieldName, unsigned int Rules, int MinVal, int MaxVal, eReply canUpdate = eReply_Ask, eReply *reply = nullptr);
-	bool IsValidNameAndType(unsigned long id, string name, eType type, eReply canUpdate = eReply_Ask, eReply *reply = nullptr);
+	bool IsValidNameAndType(unsigned long id, string name, eType type, const char *FieldName, unsigned int Rules, int MinVal, int MaxVal, eReply *reply = nullptr);
+	bool IsValidNameAndType(unsigned long id, string name, eType type, eReply *reply = nullptr);
 
 	eValidateResult Validate(void);
 

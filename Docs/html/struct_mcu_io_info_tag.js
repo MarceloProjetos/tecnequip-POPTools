@@ -1,0 +1,27 @@
+var struct_mcu_io_info_tag =
+[
+    [ "adcCount", "struct_mcu_io_info_tag.html#a316b2cdab4019d3500aebd7c636d9818", null ],
+    [ "adcInfo", "struct_mcu_io_info_tag.html#a7c1f5447ae34f227f492bd0f40a86748", null ],
+    [ "adcMax", "struct_mcu_io_info_tag.html#ae4c236d65efe32cd7be4e031d5329d99", null ],
+    [ "avrUseIjmp", "struct_mcu_io_info_tag.html#a4f7e17a8461981d68327600f7ea148b1", null ],
+    [ "configurationWord", "struct_mcu_io_info_tag.html#ae40a541aafa0c3a8c6ff5aa536405b76", null ],
+    [ "dirRegs", "struct_mcu_io_info_tag.html#a6196782bf6fed1c03508c8efa7418ab8", null ],
+    [ "encCount", "struct_mcu_io_info_tag.html#a7fb0b71a8a1eeca807057d1b584ee056", null ],
+    [ "encInfo", "struct_mcu_io_info_tag.html#a3b032f793546aa1b138330df524fea94", null ],
+    [ "encMax", "struct_mcu_io_info_tag.html#ae1bf826cfd32023caa9d04dcd1479ec4", null ],
+    [ "flashWords", "struct_mcu_io_info_tag.html#acdcd1b3d11267c0925866cee34689f0a", null ],
+    [ "inputRegs", "struct_mcu_io_info_tag.html#a15dd445be03f3891fb00dab9bdd81e70", null ],
+    [ "len", "struct_mcu_io_info_tag.html#a806a6c3ab3413348e1bc76a8596376ea", null ],
+    [ "mcuName", "struct_mcu_io_info_tag.html#a48178c1e4ca464fe8699e9327b9c9625", null ],
+    [ "outputRegs", "struct_mcu_io_info_tag.html#a4ee8c8d72d09758c4b34e9b949282e0d", null ],
+    [ "pinCount", "struct_mcu_io_info_tag.html#a4485fcd21cffe8ec6f4bdee11a6d6672", null ],
+    [ "pinInfo", "struct_mcu_io_info_tag.html#ac029a53033ecca9a409c0ce5e65eaa54", null ],
+    [ "portPrefix", "struct_mcu_io_info_tag.html#a3cd6181a8d342976f2ad8bb75f3d50ab", null ],
+    [ "pwmNeedsPin", "struct_mcu_io_info_tag.html#a14506f7c8d39b01aabd15dc8cda2165e", null ],
+    [ "ram", "struct_mcu_io_info_tag.html#a06ccc8e483c72d22bde9c8eb64474821", null ],
+    [ "rxPin", "struct_mcu_io_info_tag.html#a17374a7235c99ccf028f0b4dec66840c", null ],
+    [ "start", "struct_mcu_io_info_tag.html#a1c9db501bea18488ebe21f0faa5fb0d0", null ],
+    [ "txPin", "struct_mcu_io_info_tag.html#a1f4cf28e3295b95d94e497f601baaa49", null ],
+    [ "uartNeeds", "struct_mcu_io_info_tag.html#a4e60203b862715fb32bd72496603c7d3", null ],
+    [ "whichIsa", "struct_mcu_io_info_tag.html#aa1945aeb9ed7f66727f9a0470f90a4d7", null ]
+];

@@ -1,0 +1,788 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>POPTools: Referência do Arquivo F:/SVN/POPTools/loadsave.cpp</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() { searchBox.OnSelectItem(0); });
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="poptools.png"/></td>
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">POPTools
+   &#160;<span id="projectnumber">2.0</span>
+   </div>
+   <div id="projectbrief">Ferramenta para programaçao de CLPs POP-7</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Gerado por Doxygen 1.8.5 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Busca');
+</script>
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>Página&#160;Principal</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="files.html"><span>Arquivos</span></a></li>
+      <li>
+        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <img id="MSearchSelect" src="search/mag_sel.png"
+               onmouseover="return searchBox.OnSearchSelectShow()"
+               onmouseout="return searchBox.OnSearchSelectHide()"
+               alt=""/>
+          <input type="text" id="MSearchField" value="Busca" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
+          </span>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>Lista&#160;de&#160;Arquivos</span></a></li>
+      <li><a href="globals.html"><span>Arquivos&#160;Membros</span></a></li>
+    </ul>
+  </div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>Todos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Arquivos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Funções</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variáveis</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Definições de Tipos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerações</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Valores enumerados</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Definições e Macros</a></div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Funções</a>  </div>
+  <div class="headertitle">
+<div class="title">Referência do Arquivo F:/SVN/POPTools/loadsave.cpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &quot;<a class="el" href="poptools_8h_source.html">poptools.h</a>&quot;</code><br/>
+</div><div class="textblock"><div class="dynheader">
+Gráfico de dependência de inclusões para loadsave.cpp:</div>
+<div class="dyncontent">
+<div class="center"><img src="loadsave_8cpp__incl.png" border="0" usemap="#_f_1_2_s_v_n_2_p_o_p_tools_2loadsave_8cpp" alt=""/></div>
+<map name="_f_1_2_s_v_n_2_p_o_p_tools_2loadsave_8cpp" id="_f_1_2_s_v_n_2_p_o_p_tools_2loadsave_8cpp">
+<area shape="rect" id="node2" href="poptools_8h.html" title="poptools.h" alt="" coords="2207,80,2289,107"/><area shape="rect" id="node34" href="resource_8h.html" title="resource.h" alt="" coords="3249,155,3332,181"/><area shape="rect" id="node35" href="splash_8h.html" title="splash.h" alt="" coords="3357,155,3427,181"/><area shape="rect" id="node36" href="modbus__master_8h.html" title="modbus_master.h" alt="" coords="3451,155,3577,181"/><area shape="rect" id="node38" href="_main_ribbon_8h.html" title="MainRibbon.h" alt="" coords="3603,155,3704,181"/><area shape="rect" id="node41" href="_property_set_8h.html" title="PropertySet.h" alt="" coords="3729,155,3831,181"/><area shape="rect" id="node42" href="_keyboard_handlers_8h.html" title="KeyboardHandlers.h" alt="" coords="4109,155,4248,181"/><area shape="rect" id="node45" href="freeze_8h.html" title="freeze.h" alt="" coords="4478,155,4545,181"/><area shape="rect" id="node46" href="intcode_8h.html" title="intcode.h" alt="" coords="1048,229,1123,256"/><area shape="rect" id="node47" href="_ladder_objects_8h.html" title="LadderObjects.h" alt="" coords="1101,155,1219,181"/><area shape="rect" id="node50" href="iomap_8h.html" title="iomap.h" alt="" coords="4570,155,4637,181"/></map>
+</div>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Funções</h2></td></tr>
+<tr class="memitem:a84159332f07eab12ca957c1220879eea"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a84159332f07eab12ca957c1220879eea">fwrite_uint</a> (FILE *f, unsigned int var)</td></tr>
+<tr class="separator:a84159332f07eab12ca957c1220879eea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a955ad49a328fe759572b199156ccd54b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a955ad49a328fe759572b199156ccd54b">fwrite_int</a> (FILE *f, int var)</td></tr>
+<tr class="separator:a955ad49a328fe759572b199156ccd54b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1481355e32b4d73e85ba2f8f2b178a36"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a1481355e32b4d73e85ba2f8f2b178a36">fwrite_ulong</a> (FILE *f, unsigned long var)</td></tr>
+<tr class="separator:a1481355e32b4d73e85ba2f8f2b178a36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c41bbb649954f5ea3bdde984f6e6bde"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a4c41bbb649954f5ea3bdde984f6e6bde">fwrite_long</a> (FILE *f, long var)</td></tr>
+<tr class="separator:a4c41bbb649954f5ea3bdde984f6e6bde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa66bbaa214258860c76c5ab53f0ff164"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#aa66bbaa214258860c76c5ab53f0ff164">fwrite_float</a> (FILE *f, float var)</td></tr>
+<tr class="separator:aa66bbaa214258860c76c5ab53f0ff164"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a050d1ec0bb09df2ed0c6c46fc059cf23"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a050d1ec0bb09df2ed0c6c46fc059cf23">fwrite_uchar</a> (FILE *f, unsigned char var)</td></tr>
+<tr class="separator:a050d1ec0bb09df2ed0c6c46fc059cf23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc66794e00c09325e3f74fc61eae327a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#acc66794e00c09325e3f74fc61eae327a">fwrite_bool</a> (FILE *f, bool var)</td></tr>
+<tr class="separator:acc66794e00c09325e3f74fc61eae327a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac34efde89b1438ad7b436040b20bd27f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#ac34efde89b1438ad7b436040b20bd27f">fwrite_string</a> (FILE *f, string var)</td></tr>
+<tr class="separator:ac34efde89b1438ad7b436040b20bd27f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37a14d9860c6c1b8f5f4207f057d02cb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a37a14d9860c6c1b8f5f4207f057d02cb">fwrite_time_t</a> (FILE *f, time_t var)</td></tr>
+<tr class="separator:a37a14d9860c6c1b8f5f4207f057d02cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2531c01863bf488bc4ebd3882c0ac3d0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a2531c01863bf488bc4ebd3882c0ac3d0">fwrite_pointer</a> (FILE *f, void *var, unsigned int size)</td></tr>
+<tr class="separator:a2531c01863bf488bc4ebd3882c0ac3d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9f05d619cd650e87f55b67a36f140f8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#ab9f05d619cd650e87f55b67a36f140f8">fread_uint</a> (FILE *f, unsigned int *var)</td></tr>
+<tr class="separator:ab9f05d619cd650e87f55b67a36f140f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af93583c5ff2df6cf424e33a5365c2aed"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#af93583c5ff2df6cf424e33a5365c2aed">fread_int</a> (FILE *f, int *var)</td></tr>
+<tr class="separator:af93583c5ff2df6cf424e33a5365c2aed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafd110bf959caccad7c3cf802fae15b0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#aafd110bf959caccad7c3cf802fae15b0">fread_ulong</a> (FILE *f, unsigned long *var)</td></tr>
+<tr class="separator:aafd110bf959caccad7c3cf802fae15b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa80bd0e48e14d3b94e311269634a3d66"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#aa80bd0e48e14d3b94e311269634a3d66">fread_long</a> (FILE *f, long *var)</td></tr>
+<tr class="separator:aa80bd0e48e14d3b94e311269634a3d66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e6121be182aa9d16aa3d1e416771438"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a9e6121be182aa9d16aa3d1e416771438">fread_float</a> (FILE *f, float *var)</td></tr>
+<tr class="separator:a9e6121be182aa9d16aa3d1e416771438"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8954f9c197e521e038cd6c88caf27b70"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a8954f9c197e521e038cd6c88caf27b70">fread_uchar</a> (FILE *f, unsigned char *var)</td></tr>
+<tr class="separator:a8954f9c197e521e038cd6c88caf27b70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdf7b26b2f29ea3015a980d176dca584"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#afdf7b26b2f29ea3015a980d176dca584">fread_bool</a> (FILE *f, bool *var)</td></tr>
+<tr class="separator:afdf7b26b2f29ea3015a980d176dca584"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d3d80a9112b1ee4bbba9e55d5d405f7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a7d3d80a9112b1ee4bbba9e55d5d405f7">fread_string</a> (FILE *f, string *var)</td></tr>
+<tr class="separator:a7d3d80a9112b1ee4bbba9e55d5d405f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b38755866cf6403795a44dd8d3dbdc4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a1b38755866cf6403795a44dd8d3dbdc4">fread_time_t</a> (FILE *f, time_t *var)</td></tr>
+<tr class="separator:a1b38755866cf6403795a44dd8d3dbdc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80d45020efb9b19631bd9e6adb9edc24"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a80d45020efb9b19631bd9e6adb9edc24">fread_pointer</a> (FILE *f, void *var, unsigned int size)</td></tr>
+<tr class="separator:a80d45020efb9b19631bd9e6adb9edc24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad67234e51ac3d4b87234cdff255402bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="miscutil_8cpp.html#a447de1bbb8c1963bffd7214f3f87a7d8">BOOL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#ad67234e51ac3d4b87234cdff255402bf">LoadProjectFromFile</a> (char *filename)</td></tr>
+<tr class="separator:ad67234e51ac3d4b87234cdff255402bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6dbf5599f34519358f750881dd911845"><td class="memItemLeft" align="right" valign="top"><a class="el" href="miscutil_8cpp.html#a447de1bbb8c1963bffd7214f3f87a7d8">BOOL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a6dbf5599f34519358f750881dd911845">SaveProjectToFile</a> (const char *filename, bool isBackup)</td></tr>
+<tr class="separator:a6dbf5599f34519358f750881dd911845"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ec255ace2619502df7b05b0ceba09f6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a5ec255ace2619502df7b05b0ceba09f6">SetAutoSaveInterval</a> (int interval)</td></tr>
+<tr class="separator:a5ec255ace2619502df7b05b0ceba09f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a025bde1db45764b7614a603dfef21717"><td class="memItemLeft" align="right" valign="top">void CALLBACK&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loadsave_8cpp.html#a025bde1db45764b7614a603dfef21717">AutoSaveNow</a> (<a class="el" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a> hwnd, UINT msg, UINT_PTR id, <a class="el" href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a> time)</td></tr>
+<tr class="separator:a025bde1db45764b7614a603dfef21717"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Funções</h2>
+<a class="anchor" id="a025bde1db45764b7614a603dfef21717"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CALLBACK AutoSaveNow </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a>&#160;</td>
+          <td class="paramname"><em>hwnd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>msg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT_PTR&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a>&#160;</td>
+          <td class="paramname"><em>time</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afdf7b26b2f29ea3015a980d176dca584"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fread_bool </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool *&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9e6121be182aa9d16aa3d1e416771438"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fread_float </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af93583c5ff2df6cf424e33a5365c2aed"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fread_int </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa80bd0e48e14d3b94e311269634a3d66"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fread_long </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">long *&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a80d45020efb9b19631bd9e6adb9edc24"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fread_pointer </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>var</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7d3d80a9112b1ee4bbba9e55d5d405f7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fread_string </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string *&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1b38755866cf6403795a44dd8d3dbdc4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fread_time_t </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">time_t *&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8954f9c197e521e038cd6c88caf27b70"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fread_uchar </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab9f05d619cd650e87f55b67a36f140f8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fread_uint </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int *&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aafd110bf959caccad7c3cf802fae15b0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fread_ulong </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned long *&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="acc66794e00c09325e3f74fc61eae327a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fwrite_bool </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa66bbaa214258860c76c5ab53f0ff164"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fwrite_float </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a955ad49a328fe759572b199156ccd54b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fwrite_int </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4c41bbb649954f5ea3bdde984f6e6bde"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fwrite_long </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">long&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2531c01863bf488bc4ebd3882c0ac3d0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fwrite_pointer </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>var</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac34efde89b1438ad7b436040b20bd27f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fwrite_string </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a37a14d9860c6c1b8f5f4207f057d02cb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fwrite_time_t </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">time_t&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a050d1ec0bb09df2ed0c6c46fc059cf23"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fwrite_uchar </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a84159332f07eab12ca957c1220879eea"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fwrite_uint </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1481355e32b4d73e85ba2f8f2b178a36"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fwrite_ulong </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned long&#160;</td>
+          <td class="paramname"><em>var</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad67234e51ac3d4b87234cdff255402bf"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="miscutil_8cpp.html#a447de1bbb8c1963bffd7214f3f87a7d8">BOOL</a> LoadProjectFromFile </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>filename</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6dbf5599f34519358f750881dd911845"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="miscutil_8cpp.html#a447de1bbb8c1963bffd7214f3f87a7d8">BOOL</a> SaveProjectToFile </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>isBackup</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a5ec255ace2619502df7b05b0ceba09f6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SetAutoSaveInterval </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>interval</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Gerado em Quinta, 7 de Novembro de 2013 07:47:52 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.5
+</small></address>
+</body>
+</html>

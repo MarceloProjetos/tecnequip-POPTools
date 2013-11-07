@@ -591,6 +591,16 @@ string mapIO::getInternalVarName(string name)
 	return "";
 }
 
+string mapIO::getReservedName(eType type)
+{
+	switch(type) {
+		case eType_DigInput:			return _("in");
+		case eType_InternalRelay:
+        case eType_DigOutput:			return _("out");
+        default:                        return _("new");
+	}
+}
+
 mapDetails mapIO::getDetails(unsigned long id)
 {
 	string name = getName(id);
@@ -1111,22 +1121,8 @@ static HWND BitCombobox;
 static HWND textLabelName;
 
 // stuff for the popup that lets you set the simulated value of an analog in
-static HWND AnalogSliderMain;
-static HWND AnalogSliderTrackbar;
-static BOOL AnalogSliderDone;
-static BOOL AnalogSliderCancel;
-
-// stuff for the popup that lets you set the simulated value of an analog in
-static HWND EncoderSliderMain;
-static HWND EncoderSliderTrackbar;
-static BOOL EncoderSliderDone;
-static BOOL EncoderSliderCancel;
-
-// stuff for the popup that lets you set the simulated value of an encode in
-/*static HWND EncoderSliderMain;
-static HWND EncoderSliderTrackbar;
-static BOOL EncoderSliderDone;
-static BOOL EncoderSliderCancel;*/
+static BOOL SliderDone;
+static BOOL SliderCancel;
 
 const LPCTSTR ComboboxBitItens[] = { "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9", "10",
 									"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", 
@@ -1787,8 +1783,9 @@ void IoMapListProc(NMHDR *h)
 				mapDetails detailsIO = ladder->getDetailsIO(name);
 
 				if(i->iSubItem != LV_IO_PIN) {
-					if(detailsIO.type == eType_DigInput) {
-						SimulationToggleContact(name);
+					if(detailsIO.type == eType_DigInput || (detailsIO.type == eType_Reserved &&
+						!strcmp(name, ladder->getReservedNameIO(eType_DigInput).c_str()))) {
+							SimulationToggleContact(name);
 					} else if(detailsIO.type == eType_ReadADC) {
 						ShowAnalogSliderPopup(name);
 					} else if(detailsIO.type == eType_ReadEnc) {
@@ -1824,19 +1821,152 @@ void IoMapListProc(NMHDR *h)
 // Dialog proc for the popup that lets you set the value of an analog input for
 // simulation.
 //-----------------------------------------------------------------------------
-static LRESULT CALLBACK AnalogSliderDialogProc(HWND hwnd, UINT msg,
+static LRESULT CALLBACK SliderDialogProc(HWND hwnd, UINT msg,
     WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
+		case WM_COMMAND: {
+            HWND h = (HWND)lParam;
+			if(wParam == BN_CLICKED) {
+				if(h == OkButton) {
+					SliderDone = TRUE;
+					return 0;
+				} else if(h == CancelButton) {
+					SliderDone = TRUE;
+					SliderCancel = TRUE;
+					return 0;
+				}
+			}
+
+			break;
+		 }
+
         case WM_CLOSE:
         case WM_DESTROY:
-            AnalogSliderDone = TRUE;
-            AnalogSliderCancel = TRUE;
+            SliderDone = TRUE;
+            SliderCancel = TRUE;
             return 1;
-
-        default:
-            return DefWindowProc(hwnd, msg, wParam, lParam);
     }
+
+	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+//-----------------------------------------------------------------------------
+// A little toolbar-style window that pops up to allow the user to set the
+// simulated value of an ADC pin.
+//-----------------------------------------------------------------------------
+SWORD ShowSliderPopup(const char *name, SWORD currentVal, SWORD minVal, SWORD maxVal)
+{
+	bool isFirst = true;
+
+	WNDCLASSEX wc;
+    memset(&wc, 0, sizeof(wc));
+    wc.cbSize = sizeof(wc);
+
+    wc.style            = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC |
+                            CS_DBLCLKS;
+    wc.lpfnWndProc      = (WNDPROC)SliderDialogProc;
+    wc.hInstance        = Instance;
+    wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
+    wc.lpszClassName    = "POPToolsSlider";
+    wc.lpszMenuName     = NULL;
+    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+
+    RegisterClassEx(&wc);
+
+    POINT pt;
+    GetCursorPos(&pt);
+
+    int left = pt.x - 10;
+    // try to put the slider directly under the cursor (though later we might
+    // realize that that would put the popup off the screen)
+    int top = pt.y - 55;
+
+    RECT r;
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
+
+    if(top + 110 >= r.bottom) {
+        top = r.bottom - 110;
+    }
+    if(top < 0) top = 0;
+
+    HWND SliderMain = CreateWindowClient(0, "POPToolsSlider", _("I/O Pin"),
+        WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
+        left, top, 195, 100, MainWindow, NULL, Instance, NULL);
+	HWND SliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
+        TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE, 
+        0, 0, 30, 100, SliderMain, NULL, Instance, NULL);
+
+	char buf[1024];
+	sprintf(buf, "Valor de %s:", name);
+    HWND textLabel = CreateWindowEx(0, WC_STATIC, buf,
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        40, 5, 150, 21, SliderMain, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    HWND ValTextbox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | CBS_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        40, 30, 150, 21, SliderMain, NULL, Instance, NULL);
+    FixedFont(ValTextbox);
+
+    OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
+        40, 65, 70, 23, SliderMain, NULL, Instance, NULL); 
+    NiceFont(OkButton);
+
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        120, 65, 70, 23, SliderMain, NULL, Instance, NULL); 
+    NiceFont(CancelButton);
+
+    SendMessage(SliderTrackbar, TBM_SETRANGEMIN, FALSE, minVal);
+    SendMessage(SliderTrackbar, TBM_SETRANGEMAX, FALSE, maxVal);
+    SendMessage(SliderTrackbar, TBM_SETTICFREQ, (maxVal - minVal)/8, 0);
+    SendMessage(SliderTrackbar, TBM_SETPOS, TRUE, currentVal);
+
+    EnableWindow(MainWindow, FALSE);
+    ShowWindow(SliderMain, TRUE);
+    SetFocus(SliderTrackbar);
+
+    DWORD ret;
+    MSG msg;
+    SliderDone = FALSE;
+    SliderCancel = FALSE;
+
+	SWORD newVal, previousVal = currentVal;
+    while(!SliderDone && (ret = GetMessage(&msg, NULL, 0, 0))) {
+		newVal = (SWORD)SendMessage(SliderTrackbar, TBM_GETPOS, 0, 0);
+		if(newVal != previousVal || isFirst) {
+			isFirst = false;
+			sprintf(buf, "%d", newVal);
+			SendMessage(ValTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+			previousVal = newVal;
+		}
+
+        if(msg.message == WM_KEYDOWN) {
+            if(msg.wParam == VK_RETURN) {
+                SliderDone = TRUE;
+                break;
+            } else if(msg.wParam == VK_ESCAPE) {
+                SliderDone = TRUE;
+                SliderCancel = TRUE;
+                break;
+            }
+		}
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    if(!SliderCancel) {
+		SendMessage(ValTextbox, WM_GETTEXT, sizeof(buf), (LPARAM)buf);
+        currentVal = (SWORD)atoi(buf);
+	}
+
+    EnableWindow(MainWindow, TRUE);
+    DestroyWindow(SliderMain);
+
+	// A logica a seguir garante que retornamos um valor dentro do range permitido
+	return min(maxVal, max(currentVal, minVal));
 }
 
 //-----------------------------------------------------------------------------
@@ -1845,125 +1975,36 @@ static LRESULT CALLBACK AnalogSliderDialogProc(HWND hwnd, UINT msg,
 //-----------------------------------------------------------------------------
 void ShowAnalogSliderPopup(const char *name)
 {
-    WNDCLASSEX wc;
-    memset(&wc, 0, sizeof(wc));
-    wc.cbSize = sizeof(wc);
+	SWORD minVal = 0, maxVal;
 
-    wc.style            = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC |
-                            CS_DBLCLKS;
-    wc.lpfnWndProc      = (WNDPROC)AnalogSliderDialogProc;
-    wc.hInstance        = Instance;
-    wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "POPToolsAnalogSlider";
-    wc.lpszMenuName     = NULL;
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+	if(ladder->getDetailsIO(name).pin == 6) {
+		LadderSettingsADC settings = ladder->getSettingsADC();
 
-    RegisterClassEx(&wc);
+		minVal = -20;
+		maxVal = 100;
 
-    POINT pt;
-    GetCursorPos(&pt);
+		if(!settings.isCelsius) {
+			minVal = (minVal * 9)/5 + 32;
+			maxVal = (maxVal * 9)/5 + 32;
+		}
+	} else {
+		McuIoInfo *mcu = ladder->getMCU();
 
-    SWORD currentVal = GetAdcShadow(name);
+		if(mcu != nullptr) {
+			maxVal = mcu->adcMax;
+		} else {
+			maxVal = 1023;
+		}
+	}
 
-	McuIoInfo *mcu = ladder->getMCU();
-
-    SWORD maxVal;
-    if(mcu != nullptr) {
-        maxVal = mcu->adcMax;
-    } else {
-        maxVal = 1023;
-    }
-    if(maxVal == 0) {
+	if(maxVal == 0) {
         Error(_("No ADC or ADC not supported for selected micro."));
         return;
     }
 
-    int left = pt.x - 10;
-    // try to put the slider directly under the cursor (though later we might
-    // realize that that would put the popup off the screen)
-    int top = pt.y - (15 + (73*currentVal)/maxVal);
+	SetAdcShadow(name, ShowSliderPopup(name, GetAdcShadow(name), minVal, maxVal));
 
-    RECT r;
-    SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
-
-    if(top + 110 >= r.bottom) {
-        top = r.bottom - 110;
-    }
-    if(top < 0) top = 0;
-    
-    AnalogSliderMain = CreateWindowClient(0, "POPToolsAnalogSlider", _("I/O Pin"),
-        WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
-        left, top, 30, 100, MainWindow, NULL, Instance, NULL);
-
-    AnalogSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
-        TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE, 
-        0, 0, 30, 100, AnalogSliderMain, NULL, Instance, NULL);
-    SendMessage(AnalogSliderTrackbar, TBM_SETRANGE, FALSE,
-        MAKELONG(0, maxVal));
-    SendMessage(AnalogSliderTrackbar, TBM_SETTICFREQ, (maxVal + 1)/8, 0);
-    SendMessage(AnalogSliderTrackbar, TBM_SETPOS, TRUE, currentVal);
-
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(AnalogSliderMain, TRUE);
-    SetFocus(AnalogSliderTrackbar);
-
-    DWORD ret;
-    MSG msg;
-    AnalogSliderDone = FALSE;
-    AnalogSliderCancel = FALSE;
-
-    SWORD orig = GetAdcShadow(name);
-
-    while(!AnalogSliderDone && (ret = GetMessage(&msg, NULL, 0, 0))) {
-        SWORD v = (SWORD)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
-
-        if(msg.message == WM_KEYDOWN) {
-            if(msg.wParam == VK_RETURN) {
-                AnalogSliderDone = TRUE;
-                break;
-            } else if(msg.wParam == VK_ESCAPE) {
-                AnalogSliderDone = TRUE;
-                AnalogSliderCancel = TRUE;
-                break;
-            }
-        } else if(msg.message == WM_LBUTTONUP) {
-            if(v != orig) {
-                AnalogSliderDone = TRUE;
-            }
-        }
-        SetAdcShadow(name, v);
-
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-
-    if(!AnalogSliderCancel) {
-        SWORD v = (SWORD)SendMessage(AnalogSliderTrackbar, TBM_GETPOS, 0, 0);
-        SetAdcShadow(name, v);
-    }
-
-    EnableWindow(MainWindow, TRUE);
-    DestroyWindow(AnalogSliderMain);
-    ListView_RedrawItems(IoList, 0, ladder->getCountIO() - 1);
-}
-
-//-----------------------------------------------------------------------------
-// Dialog proc for the popup that lets you set the value of an analog input for
-// simulation.
-//-----------------------------------------------------------------------------
-static LRESULT CALLBACK EncoderSliderDialogProc(HWND hwnd, UINT msg,
-    WPARAM wParam, LPARAM lParam)
-{
-    switch (msg) {
-        case WM_CLOSE:
-        case WM_DESTROY:
-            EncoderSliderDone = TRUE;
-            EncoderSliderCancel = TRUE;
-            return 1;
-
-        default:
-            return DefWindowProc(hwnd, msg, wParam, lParam);
-    }
+	ListView_RedrawItems(IoList, 0, ladder->getCountIO() - 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -1972,108 +2013,67 @@ static LRESULT CALLBACK EncoderSliderDialogProc(HWND hwnd, UINT msg,
 //-----------------------------------------------------------------------------
 void ShowEncoderSliderPopup(const char *name)
 {
-    WNDCLASSEX wc;
-    memset(&wc, 0, sizeof(wc));
-    wc.cbSize = sizeof(wc);
-
-    wc.style            = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW | CS_OWNDC |
-                            CS_DBLCLKS;
-    wc.lpfnWndProc      = (WNDPROC)EncoderSliderDialogProc;
-    wc.hInstance        = Instance;
-    wc.hbrBackground    = (HBRUSH)COLOR_BTNSHADOW;
-    wc.lpszClassName    = "POPToolsEncoderSlider";
-    wc.lpszMenuName     = NULL;
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
-
-    RegisterClassEx(&wc);
-
-    POINT pt;
-    GetCursorPos(&pt);
-
-    SWORD currentVal = GetEncShadow(name);
+	SWORD minVal = 0, maxVal;
 
 	McuIoInfo *mcu = ladder->getMCU();
 
-	SWORD maxVal;
-    if(mcu != nullptr) {
-        maxVal = mcu->encMax;
-    } else {
-        maxVal = 0x7FFFFFFF;
-    }
-    if(maxVal == 0) {
+	if(mcu != nullptr) {
+		maxVal = mcu->encMax;
+	} else {
+		maxVal = 0x7FFFFFFF;
+	}
+
+	mapDetails DetailsIO = ladder->getDetailsIO(name);
+	if(DetailsIO.pin == 1) { // Encoder Incremental
+		LadderSettingsEncoderIncremental settings = ladder->getSettingsEncoderIncremental();
+
+		if(settings.conv_mode) {
+			float fator = (float)(settings.perimeter * 10)/settings.pulses;
+			switch(settings.conv_mode) {
+			case 1: // Metros
+				fator /= 1000;
+				break;
+			case 2: // Milimetros
+				fator /= 10;
+				break;
+			case 3: // Decimos de milimetro
+				// Nao precisa fazer nada pois o fator ja foi calculado para essa situacao
+				break;
+			}
+
+			maxVal = (SWORD)((float)(maxVal) * fator)/2;
+			minVal = -maxVal;
+		}
+	} else if(DetailsIO.pin == 2) { // Encoder Absoluto
+		LadderSettingsEncoderSSI settings = ladder->getSettingsEncoderSSI();
+
+		maxVal = (1UL << settings.size) - 1;
+		if(settings.conv_mode) {
+			float fator = (float)(settings.perimeter * 10)/(1UL << settings.size_bpr);
+			switch(settings.conv_mode) {
+			case 1: // Metros
+				fator /= 1000;
+				break;
+			case 2: // Milimetros
+				fator /= 10;
+				break;
+			case 3: // Decimos de milimetro
+				// Nao precisa fazer nada pois o fator ja foi calculado para essa situacao
+				break;
+			}
+
+			maxVal = (SWORD)((float)(maxVal) * fator)/2;
+			minVal = -maxVal;
+		}
+	}
+
+	if(maxVal == 0) {
         Error(_("No Encoder or Encoder not supported for selected micro."));
         return;
     }
 
-    int left = pt.x - 10;
-    // try to put the slider directly under the cursor (though later we might
-    // realize that that would put the popup off the screen)
-    int top = pt.y - 55; //- (15 + (73*currentVal)/0x7fff);
+	SetEncShadow(name, ShowSliderPopup(name, GetEncShadow(name), minVal, maxVal));
 
-    RECT r;
-    SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
-
-    if(top + 110 >= r.bottom) {
-        top = r.bottom - 110;
-    }
-    if(top < 0) top = 0;
-
-    EncoderSliderMain = CreateWindowClient(0, "POPToolsEncoderSlider", _("I/O Pin"),
-        WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
-        left, top, 30, 100, MainWindow, NULL, Instance, NULL);
-
-    EncoderSliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
-        TBS_AUTOTICKS | TBS_VERT | TBS_TOOLTIPS | WS_CLIPSIBLINGS | WS_VISIBLE, 
-        0, 0, 30, 100, EncoderSliderMain, NULL, Instance, NULL);
-
-    SendMessage(EncoderSliderTrackbar, TBM_SETRANGEMIN, FALSE,
-        /*(maxVal + 1) * -1*/ 0);  // bug com valor negativo
-    SendMessage(EncoderSliderTrackbar, TBM_SETRANGEMAX, FALSE,
-        maxVal - 1);
-    SendMessage(EncoderSliderTrackbar, TBM_SETTICFREQ, (maxVal)/8, 0);
-    SendMessage(EncoderSliderTrackbar, TBM_SETPOS, TRUE, currentVal);
-
-    EnableWindow(MainWindow, FALSE);
-    ShowWindow(EncoderSliderMain, TRUE);
-    SetFocus(EncoderSliderTrackbar);
-
-    DWORD ret;
-    MSG msg;
-    EncoderSliderDone = FALSE;
-    EncoderSliderCancel = FALSE;
-
-    SWORD orig = GetEncShadow(name);
-
-    while(!EncoderSliderDone && (ret = GetMessage(&msg, NULL, 0, 0))) {
-        SWORD v = (SWORD)SendMessage(EncoderSliderTrackbar, TBM_GETPOS, 0, 0);
-
-        if(msg.message == WM_KEYDOWN) {
-            if(msg.wParam == VK_RETURN) {
-                EncoderSliderDone = TRUE;
-                break;
-            } else if(msg.wParam == VK_ESCAPE) {
-                EncoderSliderDone = TRUE;
-                EncoderSliderCancel = TRUE;
-                break;
-            }
-        } else if(msg.message == WM_LBUTTONUP) {
-            if(v != orig) {
-                EncoderSliderDone = TRUE;
-            }
-        }
-        SetEncShadow(name, v);
-
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-
-    if(!EncoderSliderCancel) {
-        SWORD v = (SWORD)SendMessage(EncoderSliderTrackbar, TBM_GETPOS, 0, 0);
-        SetEncShadow(name, v);
-    }
-
-    EnableWindow(MainWindow, TRUE);
-    DestroyWindow(EncoderSliderMain);
 	ListView_RedrawItems(IoList, 0, ladder->getCountIO() - 1);
 }
 

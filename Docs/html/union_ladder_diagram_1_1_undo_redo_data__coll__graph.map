@@ -1,0 +1,17 @@
+<map id="LadderDiagram::UndoRedoData" name="LadderDiagram::UndoRedoData">
+<area shape="rect" id="node2" href="$struct_ladder_mb_node.html" title="Estrutura que representa um no do ModBUS. " alt="" coords="5,101,115,222"/>
+<area shape="rect" id="node3" href="$struct_ladder_diagram_1_1_ladder_mb_node_list.html" title="{LadderDiagram::LadderMbNodeList\n|+ NodeID\l+ NodeCount\l|}" alt="" coords="357,382,581,474"/>
+<area shape="rect" id="node4" href="$struct_ladder_diagram_1_1t_ladder_settings.html" title="{LadderDiagram::tLadderSettings\n||}" alt="" coords="829,389,1037,467"/>
+<area shape="rect" id="node5" href="$struct_ladder_settings_u_a_r_t.html" title="Configuracoes da Interface Serial do CLP. " alt="" coords="139,115,281,207"/>
+<area shape="rect" id="node6" href="$struct_ladder_settings_s_n_t_p.html" title="Configuracoes de Data/Hora do CLP. " alt="" coords="306,101,448,222"/>
+<area shape="rect" id="node7" href="$struct_ladder_settings_general.html" title="Configuracoes gerais do diagrama. " alt="" coords="473,108,628,215"/>
+<area shape="rect" id="node8" href="$struct_ladder_settings_encoder_s_s_i.html" title="Configuracoes de Encoder Absoluto (SSI) " alt="" coords="652,86,831,237"/>
+<area shape="rect" id="node9" href="$struct_ladder_settings_network.html" title="Configuracoes de rede do CLP. " alt="" coords="855,101,1011,222"/>
+<area shape="rect" id="node10" href="$struct_ladder_settings_encoder_incremental.html" title="Configuracoes de Encoder Incremental. " alt="" coords="1036,93,1260,229"/>
+<area shape="rect" id="node11" href="$struct_ladder_settings_a_d_c.html" title="Configuracoes da interface Analogica para Digital (A/D) " alt="" coords="1284,123,1420,200"/>
+<area shape="rect" id="node12" href="$struct_ladder_settings_information.html" title="Informacoes gerais do diagrama. " alt="" coords="1445,79,1616,244"/>
+<area shape="rect" id="node13" href="$struct_ladder_settings_d_a_c.html" title="Configuracoes da interface Digital para Analogica (D/A) " alt="" coords="1641,123,1780,200"/>
+<area shape="rect" id="node14" href="$struct_ladder_settings_modbus_slave.html" title="Configuracoes do protocolo ModBUS. " alt="" coords="1804,123,1991,200"/>
+<area shape="rect" id="node15" href="$struct_ladder_rung.html" title="{LadderRung\n|+ hasBreakpoint\l+ isPowered\l|}" alt="" coords="1543,382,1660,474"/>
+<area shape="rect" id="node16" href="$class_ladder_circuit.html" title="{LadderCircuit\n|&#45; isSeries\l&#45; vectorSubckt\l|+ LadderCircuit()\l+ LadderCircuit()\l+ ~LadderCircuit()\l+ DrawTXT()\l+ DrawGUI()\l+ IsComment()\l+ IsEmpty()\l+ IsLast()\l+ IsSeries()\l+ HasEOL()\land 30 more...\l# InsertSubckt()\l# DeleteSubckt()\l# MoveSubckt()\l&#45; DrawElementTXT()\l&#45; VerticalWireTXT()\l}" alt="" coords="2015,5,2151,317"/>
+</map>

@@ -1,0 +1,943 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>POPTools: Referência do Arquivo F:/SVN/POPTools/LadderObjects.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() { searchBox.OnSelectItem(0); });
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="poptools.png"/></td>
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">POPTools
+   &#160;<span id="projectnumber">2.0</span>
+   </div>
+   <div id="projectbrief">Ferramenta para programaçao de CLPs POP-7</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Gerado por Doxygen 1.8.5 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Busca');
+</script>
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>Página&#160;Principal</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="files.html"><span>Arquivos</span></a></li>
+      <li>
+        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <img id="MSearchSelect" src="search/mag_sel.png"
+               onmouseover="return searchBox.OnSearchSelectShow()"
+               onmouseout="return searchBox.OnSearchSelectHide()"
+               alt=""/>
+          <input type="text" id="MSearchField" value="Busca" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
+          </span>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>Lista&#160;de&#160;Arquivos</span></a></li>
+      <li><a href="globals.html"><span>Arquivos&#160;Membros</span></a></li>
+    </ul>
+  </div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>Todos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Arquivos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Funções</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variáveis</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Definições de Tipos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerações</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Valores enumerados</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Definições e Macros</a></div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Componentes</a> &#124;
+<a href="#define-members">Definições e Macros</a> &#124;
+<a href="#enum-members">Enumerações</a> &#124;
+<a href="#func-members">Funções</a>  </div>
+  <div class="headertitle">
+<div class="title">Referência do Arquivo F:/SVN/POPTools/LadderObjects.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;deque&gt;</code><br/>
+<code>#include &lt;array&gt;</code><br/>
+<code>#include &lt;vector&gt;</code><br/>
+<code>#include &lt;string&gt;</code><br/>
+<code>#include &quot;<a class="el" href="intcode_8h_source.html">intcode.h</a>&quot;</code><br/>
+</div><div class="textblock"><div class="dynheader">
+Gráfico de dependência de inclusões para LadderObjects.h:</div>
+<div class="dyncontent">
+<div class="center"><img src="_ladder_objects_8h__incl.png" border="0" usemap="#_f_1_2_s_v_n_2_p_o_p_tools_2_ladder_objects_8h" alt=""/></div>
+<map name="_f_1_2_s_v_n_2_p_o_p_tools_2_ladder_objects_8h" id="_f_1_2_s_v_n_2_p_o_p_tools_2_ladder_objects_8h">
+<area shape="rect" id="node6" href="intcode_8h.html" title="intcode.h" alt="" coords="321,80,396,107"/></map>
+</div>
+</div><div class="textblock"><div class="dynheader">
+Este grafo mostra quais arquivos estão direta ou indiretamente relacionados com este arquivo:</div>
+<div class="dyncontent">
+<div class="center"><img src="_ladder_objects_8h__dep__incl.png" border="0" usemap="#_f_1_2_s_v_n_2_p_o_p_tools_2_ladder_objects_8hdep" alt=""/></div>
+<map name="_f_1_2_s_v_n_2_p_o_p_tools_2_ladder_objects_8hdep" id="_f_1_2_s_v_n_2_p_o_p_tools_2_ladder_objects_8hdep">
+<area shape="rect" id="node2" href="poptools_8h.html" title="F:/SVN/POPTools/poptools.h" alt="" coords="4523,80,4715,107"/><area shape="rect" id="node21" href="poptools_8cpp.html" title="F:/SVN/POPTools/poptools.cpp" alt="" coords="3717,253,3923,280"/><area shape="rect" id="node3" href="circuit_8cpp.html" title="F:/SVN/POPTools/circuit.cpp" alt="" coords="5,163,197,189"/><area shape="rect" id="node4" href="iomap_8h.html" title="F:/SVN/POPTools/iomap.h" alt="" coords="221,163,400,189"/><area shape="rect" id="node5" href="commentdialog_8cpp.html" title="F:/SVN/POPTools/commentdialog.cpp" alt="" coords="424,163,669,189"/><area shape="rect" id="node6" href="_common_file_dialog_8cpp.html" title="F:/SVN/POPTools/CommonFile\lDialog.cpp" alt="" coords="693,155,899,197"/><area shape="rect" id="node7" href="confdialog_8cpp.html" title="F:/SVN/POPTools/confdialog.cpp" alt="" coords="923,163,1137,189"/><area shape="rect" id="node8" href="debugdialog_8cpp.html" title="F:/SVN/POPTools/debugdialog.cpp" alt="" coords="1163,163,1389,189"/><area shape="rect" id="node9" href="draw_8cpp.html" title="F:/SVN/POPTools/draw.cpp" alt="" coords="1413,163,1597,189"/><area shape="rect" id="node10" href="draw__outputdev_8cpp.html" title="F:/SVN/POPTools/draw\l_outputdev.cpp" alt="" coords="1622,155,1780,197"/><area shape="rect" id="node11" href="_f_a_rdialog_8cpp.html" title="F:/SVN/POPTools/FARdialog.cpp" alt="" coords="1805,163,2021,189"/><area shape="rect" id="node12" href="flashmagic_8cpp.html" title="F:/SVN/POPTools/flashmagic.cpp" alt="" coords="2047,163,2265,189"/><area shape="rect" id="node13" href="freeze_8cpp.html" title="F:/SVN/POPTools/freeze.cpp" alt="" coords="2289,163,2481,189"/><area shape="rect" id="node14" href="gcc_8cpp.html" title="F:/SVN/POPTools/gcc.cpp" alt="" coords="2505,163,2684,189"/><area shape="rect" id="node15" href="helpdialog_8cpp.html" title="F:/SVN/POPTools/helpdialog.cpp" alt="" coords="2709,163,2923,189"/><area shape="rect" id="node16" href="intcode_8cpp.html" title="F:/SVN/POPTools/intcode.cpp" alt="" coords="2947,163,3145,189"/><area shape="rect" id="node17" href="iomap_8cpp.html" title="F:/SVN/POPTools/iomap.cpp" alt="" coords="3171,163,3363,189"/><area shape="rect" id="node18" href="_keyboard_handlers_8cpp.html" title="F:/SVN/POPTools/Keyboard\lHandlers.cpp" alt="" coords="3263,246,3449,287"/><area shape="rect" id="node19" href="_ladder_g_u_i_8h.html" title="F:/SVN/POPTools/LadderGUI.h" alt="" coords="3438,163,3641,189"/><area shape="rect" id="node22" href="_keyboard_map_8cpp.html" title="F:/SVN/POPTools/Keyboard\lMap.cpp" alt="" coords="3717,155,3904,197"/><area shape="rect" id="node23" href="_ladder_objects_8cpp.html" title="F:/SVN/POPTools/LadderObjects.cpp" alt="" coords="3929,163,4169,189"/><area shape="rect" id="node24" href="lang_8cpp.html" title="F:/SVN/POPTools/lang.cpp" alt="" coords="4195,163,4376,189"/><area shape="rect" id="node25" href="loadsave_8cpp.html" title="F:/SVN/POPTools/loadsave.cpp" alt="" coords="4401,163,4607,189"/><area shape="rect" id="node26" href="lutdialog_8cpp.html" title="F:/SVN/POPTools/lutdialog.cpp" alt="" coords="4632,163,4837,189"/><area shape="rect" id="node27" href="maincontrols_8cpp.html" title="F:/SVN/POPTools/maincontrols.cpp" alt="" coords="4862,163,5092,189"/><area shape="rect" id="node28" href="miscutil_8cpp.html" title="F:/SVN/POPTools/miscutil.cpp" alt="" coords="5117,163,5320,189"/><area shape="rect" id="node29" href="modbus__master_8cpp.html" title="F:/SVN/POPTools/modbus\l_master.cpp" alt="" coords="5344,155,5523,197"/><area shape="rect" id="node30" href="modbus__slave_8cpp.html" title="F:/SVN/POPTools/modbus\l_slave.cpp" alt="" coords="5547,155,5725,197"/><area shape="rect" id="node31" href="modbus__usb_8cpp.html" title="F:/SVN/POPTools/modbus\l_usb.cpp" alt="" coords="5749,155,5928,197"/><area shape="rect" id="node32" href="modbusdialog_8cpp.html" title="F:/SVN/POPTools/modbusdialog.cpp" alt="" coords="5952,163,6189,189"/><area shape="rect" id="node33" href="multisetdadialog_8cpp.html" title="F:/SVN/POPTools/multisetdadialog.cpp" alt="" coords="6213,163,6464,189"/><area shape="rect" id="node34" href="prefdialog_8cpp.html" title="F:/SVN/POPTools/prefdialog.cpp" alt="" coords="6489,163,6700,189"/><area shape="rect" id="node35" href="_resource_font_collection_loader_8cpp.html" title="F:/SVN/POPTools/Resource\lFontCollectionLoader.cpp" alt="" coords="6725,155,6912,197"/><area shape="rect" id="node36" href="_resource_font_context_8cpp.html" title="F:/SVN/POPTools/Resource\lFontContext.cpp" alt="" coords="6936,155,7123,197"/><area shape="rect" id="node37" href="_resource_font_file_enumerator_8cpp.html" title="F:/SVN/POPTools/Resource\lFontFileEnumerator.cpp" alt="" coords="7147,155,7333,197"/><area shape="rect" id="node38" href="_resource_font_file_loader_8cpp.html" title="F:/SVN/POPTools/Resource\lFontFileLoader.cpp" alt="" coords="7357,155,7544,197"/><area shape="rect" id="node39" href="_resource_font_file_stream_8cpp.html" title="F:/SVN/POPTools/Resource\lFontFileStream.cpp" alt="" coords="7568,155,7755,197"/><area shape="rect" id="node40" href="_ribbon_8cpp.html" title="F:/SVN/POPTools/Ribbon.cpp" alt="" coords="7779,163,7976,189"/><area shape="rect" id="node41" href="rtcdialog_8cpp.html" title="F:/SVN/POPTools/rtcdialog.cpp" alt="" coords="8001,163,8207,189"/><area shape="rect" id="node42" href="schematic_8cpp.html" title="F:/SVN/POPTools/schematic.cpp" alt="" coords="8231,163,8448,189"/><area shape="rect" id="node43" href="setbitdialog_8cpp.html" title="F:/SVN/POPTools/setbitdialog.cpp" alt="" coords="8473,163,8695,189"/><area shape="rect" id="node44" href="setdadialog_8cpp.html" title="F:/SVN/POPTools/setdadialog.cpp" alt="" coords="8719,163,8941,189"/><area shape="rect" id="node45" href="simpledialog_8cpp.html" title="F:/SVN/POPTools/simpledialog.cpp" alt="" coords="8967,163,9196,189"/><area shape="rect" id="node46" href="simulate_8cpp.html" title="F:/SVN/POPTools/simulate.cpp" alt="" coords="9221,163,9427,189"/><area shape="rect" id="node47" href="splash_8cpp.html" title="F:/SVN/POPTools/splash.cpp" alt="" coords="9452,163,9647,189"/><area shape="rect" id="node20" href="_ladder_g_u_i_8cpp.html" title="F:/SVN/POPTools/LadderGUI.cpp" alt="" coords="3473,253,3692,280"/></map>
+</div>
+</div>
+<p><a href="_ladder_objects_8h_source.html">Vá para o código-fonte deste arquivo.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Componentes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_settings_general.html">LadderSettingsGeneral</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuracoes gerais do diagrama.  <a href="struct_ladder_settings_general.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_settings_u_a_r_t.html">LadderSettingsUART</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuracoes da Interface Serial do CLP.  <a href="struct_ladder_settings_u_a_r_t.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_settings_network.html">LadderSettingsNetwork</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuracoes de rede do CLP.  <a href="struct_ladder_settings_network.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_settings_s_n_t_p.html">LadderSettingsSNTP</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuracoes de Data/Hora do CLP.  <a href="struct_ladder_settings_s_n_t_p.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_settings_encoder_incremental.html">LadderSettingsEncoderIncremental</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuracoes de Encoder Incremental.  <a href="struct_ladder_settings_encoder_incremental.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_settings_encoder_s_s_i.html">LadderSettingsEncoderSSI</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuracoes de Encoder Absoluto (SSI)  <a href="struct_ladder_settings_encoder_s_s_i.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_settings_a_d_c.html">LadderSettingsADC</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuracoes da interface Analogica para Digital (A/D)  <a href="struct_ladder_settings_a_d_c.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_settings_d_a_c.html">LadderSettingsDAC</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuracoes da interface Digital para Analogica (D/A)  <a href="struct_ladder_settings_d_a_c.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_settings_modbus_slave.html">LadderSettingsModbusSlave</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuracoes do protocolo ModBUS.  <a href="struct_ladder_settings_modbus_slave.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_settings_information.html">LadderSettingsInformation</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Informacoes gerais do diagrama.  <a href="struct_ladder_settings_information.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmap_details.html">mapDetails</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estrutura que define as caracteristias e dados de um I/O.  <a href="structmap_details.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_subckt.html">Subckt</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estrutura auxiliar que representa um subcircuito, ou seja, um elemento do circuito atual.  <a href="struct_subckt.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_insertion_point.html">InsertionPoint</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estrutura que representa um ponto de insercao para o paralelo.  <a href="struct_insertion_point.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_context.html">LadderContext</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estrutura que representa o contexto do diagrama, ou seja, seu estado atual.  <a href="struct_ladder_context.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structt_request_i_o.html">tRequestIO</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estrutura auxiliar para solicitar um I/O.  <a href="structt_request_i_o.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_undo_redo_action.html">UndoRedoAction</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estrutura auxiliar que representa uma acao de desfazer / refazer.  <a href="struct_undo_redo_action.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_mb_node.html">LadderMbNode</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estrutura que representa um no do ModBUS.  <a href="struct_ladder_mb_node.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_rung.html">LadderRung</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_clipboard.html">LadderClipboard</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estrutura que armazena informacoes sobre objetos copiados (Linhas / Elementos)  <a href="struct_ladder_clipboard.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem.html">LadderElem</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base.  <a href="class_ladder_elem.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">union &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="union_ladder_elem_1_1_undo_redo_data.html">LadderElem::UndoRedoData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estrutura de dados para acoes de Desfazer / Refazer.  <a href="union_ladder_elem_1_1_undo_redo_data.html#details">Mais...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_place_holder.html">LadderElemPlaceHolder</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_comment_prop.html">LadderElemCommentProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_comment.html">LadderElemComment</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_contact_prop.html">LadderElemContactProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_contact.html">LadderElemContact</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_coil_prop.html">LadderElemCoilProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_coil.html">LadderElemCoil</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_timer_prop.html">LadderElemTimerProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_timer.html">LadderElemTimer</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_r_t_c_prop.html">LadderElemRTCProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_r_t_c.html">LadderElemRTC</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_counter_prop.html">LadderElemCounterProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_counter.html">LadderElemCounter</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_reset_prop.html">LadderElemResetProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_reset.html">LadderElemReset</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_one_shot.html">LadderElemOneShot</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_cmp_prop.html">LadderElemCmpProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_cmp.html">LadderElemCmp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_math_prop.html">LadderElemMathProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_math.html">LadderElemMath</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_sqrt_prop.html">LadderElemSqrtProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_sqrt.html">LadderElemSqrt</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_rand_prop.html">LadderElemRandProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_rand.html">LadderElemRand</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_abs_prop.html">LadderElemAbsProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_abs.html">LadderElemAbs</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_move_prop.html">LadderElemMoveProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_move.html">LadderElemMove</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_open_short.html">LadderElemOpenShort</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_set_bit_prop.html">LadderElemSetBitProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_set_bit.html">LadderElemSetBit</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_check_bit_prop.html">LadderElemCheckBitProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_check_bit.html">LadderElemCheckBit</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_read_adc_prop.html">LadderElemReadAdcProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_read_adc.html">LadderElemReadAdc</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_set_da_prop.html">LadderElemSetDaProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_set_da.html">LadderElemSetDa</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_read_enc_prop.html">LadderElemReadEncProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_read_enc.html">LadderElemReadEnc</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_reset_enc_prop.html">LadderElemResetEncProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_reset_enc.html">LadderElemResetEnc</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_multiset_d_a_prop.html">LadderElemMultisetDAProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_multiset_d_a.html">LadderElemMultisetDA</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_u_s_s_prop.html">LadderElemUSSProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_u_s_s.html">LadderElemUSS</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_mod_b_u_s_prop.html">LadderElemModBUSProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_mod_b_u_s.html">LadderElemModBUS</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_set_p_w_m_prop.html">LadderElemSetPWMProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_set_p_w_m.html">LadderElemSetPWM</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_u_a_r_t_prop.html">LadderElemUARTProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_u_a_r_t.html">LadderElemUART</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_master_relay.html">LadderElemMasterRelay</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_shift_register_prop.html">LadderElemShiftRegisterProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_shift_register.html">LadderElemShiftRegister</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_l_u_t_prop.html">LadderElemLUTProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_l_u_t.html">LadderElemLUT</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_piecewise_prop.html">LadderElemPiecewiseProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_piecewise.html">LadderElemPiecewise</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_fmt_string_prop.html">LadderElemFmtStringProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_fmt_string.html">LadderElemFmtString</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_yaskawa_prop.html">LadderElemYaskawaProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_yaskawa.html">LadderElemYaskawa</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_persist_prop.html">LadderElemPersistProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_persist.html">LadderElemPersist</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_p_i_d_prop.html">LadderElemPIDProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_p_i_d.html">LadderElemPID</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_x_prop.html">LadderElemXProp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_x.html">LadderElemX</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html">LadderCircuit</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">union &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="union_ladder_circuit_1_1_undo_redo_data.html">LadderCircuit::UndoRedoData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_diagram.html">LadderDiagram</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_diagram_1_1t_ladder_settings.html">LadderDiagram::tLadderSettings</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_diagram_1_1_ladder_mb_node_list.html">LadderDiagram::LadderMbNodeList</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">union &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="union_ladder_diagram_1_1_undo_redo_data.html">LadderDiagram::UndoRedoData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Definições e Macros</h2></td></tr>
+<tr class="memitem:a2fa1bb5f3cdd87f33ee3cbd355e9d2ad"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a2fa1bb5f3cdd87f33ee3cbd355e9d2ad">SUBCKT_STATUS_NOTFOUND</a>&#160;&#160;&#160;0</td></tr>
+<tr class="memdesc:a2fa1bb5f3cdd87f33ee3cbd355e9d2ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Definicao indicando que o elemento procurado ainda nao foi encontrado.  <a href="#a2fa1bb5f3cdd87f33ee3cbd355e9d2ad">Mais...</a><br/></td></tr>
+<tr class="separator:a2fa1bb5f3cdd87f33ee3cbd355e9d2ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae30350ef5bc9b00f2d02f0b3e28454f1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#ae30350ef5bc9b00f2d02f0b3e28454f1">SUBCKT_STATUS_FIRST</a>&#160;&#160;&#160;1</td></tr>
+<tr class="memdesc:ae30350ef5bc9b00f2d02f0b3e28454f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Definicao indicando que o elemento procurado esta no primeiro elemento do circuito atual.  <a href="#ae30350ef5bc9b00f2d02f0b3e28454f1">Mais...</a><br/></td></tr>
+<tr class="separator:ae30350ef5bc9b00f2d02f0b3e28454f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed320f816eea7406a338317844674568"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#aed320f816eea7406a338317844674568">SUBCKT_STATUS_INSIDE</a>&#160;&#160;&#160;2</td></tr>
+<tr class="memdesc:aed320f816eea7406a338317844674568"><td class="mdescLeft">&#160;</td><td class="mdescRight">Definicao indicando que o elemento procurado esta dentro do circuito atual, nao em suas extremidades.  <a href="#aed320f816eea7406a338317844674568">Mais...</a><br/></td></tr>
+<tr class="separator:aed320f816eea7406a338317844674568"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a440697c3e4f386398d6e13e26445c415"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a440697c3e4f386398d6e13e26445c415">SUBCKT_STATUS_LAST</a>&#160;&#160;&#160;3</td></tr>
+<tr class="memdesc:a440697c3e4f386398d6e13e26445c415"><td class="mdescLeft">&#160;</td><td class="mdescRight">Definicao indicando que o elemento procurado esta no ultimo elemento do circuito atual.  <a href="#a440697c3e4f386398d6e13e26445c415">Mais...</a><br/></td></tr>
+<tr class="separator:a440697c3e4f386398d6e13e26445c415"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerações</h2></td></tr>
+<tr class="memitem:a12f8ec8f0e7a4584b9fe481bb53fa60e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60e">eType</a> { <br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea4efa3c1a5d5aca11a229e86cbf3d8377">eType_Pending</a> = 0, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea9530deaacee298e6ee6a07d37c4ba0f3">eType_Reserved</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60eac6961407d744dc4e356b72fdf9b271be">eType_General</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60eae1338b6cc13179e91abe6fda44a67a42">eType_DigInput</a>, 
+<br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea9baa84e9db789f0bd1358ec42773556c">eType_InternalRelay</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea7d660b80d28988f6aa4b197c201de207">eType_DigOutput</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60eaeb6011b0adff083c5e0c10d8a88d9578">eType_InternalFlag</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea6f85dad0e5dd092a9acb3b41de7408ef">eType_Counter</a>, 
+<br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ead8a282b4414ad0d24956a87691152b48">eType_TOF</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea5ebc491e3e2713bc1d598371ac6483a1">eType_TON</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea05850726a79634411ff81142f5073b46">eType_RTO</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea9b734adc4aa5064bb34c0a3a68b38fb4">eType_ReadADC</a>, 
+<br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea949cfa12ee3cd767d1762d0bcba11e77">eType_SetDAC</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea055cec15fc7c51f769c8782811334783">eType_ReadEnc</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea1304f208ef099121a81f8e2e94244066">eType_ResetEnc</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea77957e98321e305d314d60c439d886af">eType_ReadUSS</a>, 
+<br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea72686c34e0b7f4f1c1059ff8117b9f4b">eType_WriteUSS</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea470333790028e85b95436574aed5bafe">eType_ReadModbus</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea245dde1f1b14a6283122c93ed11551ab">eType_WriteModbus</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea8c9388d4f97317440c128494b477aab4">eType_PWM</a>, 
+<br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea682653ee560561750cee257f30a349a2">eType_RxUART</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea59557bb44455af494a6bceb641deaf60">eType_TxUART</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ead10b4f54cb7e43b3d569b19da8d9de61">eType_ReadYaskawa</a>, 
+<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60eaaa57d76c07c94cd35005041c20f596cc">eType_WriteYaskawa</a>, 
+<br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60eaa90efd36faa0997c5abb1a7e0973495d">eType_Last</a>
+<br/>
+ }</td></tr>
+<tr class="memdesc:a12f8ec8f0e7a4584b9fe481bb53fa60e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tipo do I/O.  <a href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60e">Mais...</a><br/></td></tr>
+<tr class="separator:a12f8ec8f0e7a4584b9fe481bb53fa60e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ed6ee963a49389c2fdd436035f6ce4f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a9ed6ee963a49389c2fdd436035f6ce4f">eRequestAccessType</a> { <a class="el" href="_ladder_objects_8h.html#a9ed6ee963a49389c2fdd436035f6ce4fa833234c7a841c283f0456f463b200766">eRequestAccessType_Read</a> = 0, 
+<a class="el" href="_ladder_objects_8h.html#a9ed6ee963a49389c2fdd436035f6ce4fa7cdad9fd24f96f4da2613ec597f1680e">eRequestAccessType_Write</a>, 
+<a class="el" href="_ladder_objects_8h.html#a9ed6ee963a49389c2fdd436035f6ce4fa3035b27809a946c1714cfea605f16a14">eRequestAccessType_ReadWrite</a>
+ }</td></tr>
+<tr class="memdesc:a9ed6ee963a49389c2fdd436035f6ce4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeracao com o tipo de solicitacao do I/O: Leitura, Escrita ou Ambos.  <a href="_ladder_objects_8h.html#a9ed6ee963a49389c2fdd436035f6ce4f">Mais...</a><br/></td></tr>
+<tr class="separator:a9ed6ee963a49389c2fdd436035f6ce4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bdf4cb9866dda788f7b21b7c8f37ee7"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7">eSortBy</a> { <br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7a6a10eda1d71d5c8f9400d32726b07098">eSortBy_Nothing</a> = 0, 
+<a class="el" href="_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7a19d93d447ba0c002f3ec6c2b0bd30b0b">eSortBy_Name</a>, 
+<a class="el" href="_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7a79dc98ce9968c641698ed3b646ad9dba">eSortBy_Type</a>, 
+<a class="el" href="_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7a5c73324909b73b69a8dc123383c428ef">eSortBy_Pin</a>, 
+<br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7a6f596d93a656c392dbc5a10f88a8f14c">eSortBy_Port</a>
+<br/>
+ }</td></tr>
+<tr class="memdesc:a6bdf4cb9866dda788f7b21b7c8f37ee7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeracao para informar o tipo de ordenacao que deve ser realizada na lista de I/O.  <a href="_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7">Mais...</a><br/></td></tr>
+<tr class="separator:a6bdf4cb9866dda788f7b21b7c8f37ee7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af78dc50a6db618ca245b379252f898b1"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#af78dc50a6db618ca245b379252f898b1">eValidateResult</a> { <a class="el" href="_ladder_objects_8h.html#af78dc50a6db618ca245b379252f898b1a0da767134f58e92c11b4cfe7501ba592">eValidateResult_OK</a> = 0, 
+<a class="el" href="_ladder_objects_8h.html#af78dc50a6db618ca245b379252f898b1a3fd446cacbe53d6535d27c0ef5c48fc3">eValidateResult_Warning</a>, 
+<a class="el" href="_ladder_objects_8h.html#af78dc50a6db618ca245b379252f898b1a12f10f4ade07fcefffbf73046b6e1bcc">eValidateResult_Error</a>
+ }</td></tr>
+<tr class="memdesc:af78dc50a6db618ca245b379252f898b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeracao que indica o resultado da validacao do diagrama.  <a href="_ladder_objects_8h.html#af78dc50a6db618ca245b379252f898b1">Mais...</a><br/></td></tr>
+<tr class="separator:af78dc50a6db618ca245b379252f898b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb5a24ccfc25ac299252b8361fcc419a"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#afb5a24ccfc25ac299252b8361fcc419a">eValidateIO</a> { <a class="el" href="_ladder_objects_8h.html#afb5a24ccfc25ac299252b8361fcc419aa1d56d9603f35371bbb9ad8202d728552">eValidateIO_OnlyNames</a>, 
+<a class="el" href="_ladder_objects_8h.html#afb5a24ccfc25ac299252b8361fcc419aa95a3c6cdbbb064c9ab0acd767bbb999f">eValidateIO_Full</a>
+ }</td></tr>
+<tr class="separator:afb5a24ccfc25ac299252b8361fcc419a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14e5d9bfa972d8f10669e8b4bbc8ab4f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a14e5d9bfa972d8f10669e8b4bbc8ab4f">eSearchAndReplaceMode</a> { <br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a14e5d9bfa972d8f10669e8b4bbc8ab4fad420dce7f8100ee16f9b2a9a0138cdf5">eSearchAndReplaceMode_FindFirst</a>, 
+<a class="el" href="_ladder_objects_8h.html#a14e5d9bfa972d8f10669e8b4bbc8ab4fa8b3d0ce87eed135e28140238cb79469b">eSearchAndReplaceMode_FindNext</a>, 
+<a class="el" href="_ladder_objects_8h.html#a14e5d9bfa972d8f10669e8b4bbc8ab4fa290b3710d33abdd96dfe5035f3f513f3">eSearchAndReplaceMode_ReplaceFirst</a>, 
+<a class="el" href="_ladder_objects_8h.html#a14e5d9bfa972d8f10669e8b4bbc8ab4fa304109463a9ff85a168faf6223275fbc">eSearchAndReplaceMode_ReplaceNext</a>, 
+<br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a14e5d9bfa972d8f10669e8b4bbc8ab4fad10df8be204ceea62b6ba5d11873a7e5">eSearchAndReplaceMode_ReplaceAll</a>
+<br/>
+ }</td></tr>
+<tr class="memdesc:a14e5d9bfa972d8f10669e8b4bbc8ab4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeracao com os modos de Search &amp; Replace.  <a href="_ladder_objects_8h.html#a14e5d9bfa972d8f10669e8b4bbc8ab4f">Mais...</a><br/></td></tr>
+<tr class="separator:a14e5d9bfa972d8f10669e8b4bbc8ab4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54ef5271c689a875be648b9cdf1bbf7d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7d">eMoveCursor</a> { <br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7daed57878b154851dd69f830e83ee3f4dd">eMoveCursor_DiagramHome</a> = 0, 
+<a class="el" href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7da5e1c4f5f0e98528511bec66a94a409a6">eMoveCursor_RungHome</a>, 
+<a class="el" href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7da2c6e5c475b72df1496d88cf2dfdab85b">eMoveCursor_DiagramEnd</a>, 
+<a class="el" href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7da5f0363a6aa5ccb8a3b91a164fde0965d">eMoveCursor_RungEnd</a>, 
+<br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7da22d22f11f9e46953a515c9f973e0c51e">eMoveCursor_Up</a>, 
+<a class="el" href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7daf951ec5e3ae59c1d1490bf6c84cd9056">eMoveCursor_Down</a>, 
+<a class="el" href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7dacfd223b1f99ec0352cc984a52597f644">eMoveCursor_Left</a>, 
+<a class="el" href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7daa70b289a367eae08d5c1e249a0213a2c">eMoveCursor_Right</a>
+<br/>
+ }</td></tr>
+<tr class="memdesc:a54ef5271c689a875be648b9cdf1bbf7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeracao que define os modos de movimentacao do cursor.  <a href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7d">Mais...</a><br/></td></tr>
+<tr class="separator:a54ef5271c689a875be648b9cdf1bbf7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a661b706d7e5f4b438e42f25985be24c4"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a661b706d7e5f4b438e42f25985be24c4">eReply</a> { <br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a661b706d7e5f4b438e42f25985be24c4a8526784ba279d45c6a77f6f55f1dcff2">eReply_Pending</a> = 0, 
+<a class="el" href="_ladder_objects_8h.html#a661b706d7e5f4b438e42f25985be24c4a0e0d880cabb287aa6100b85f206430a4">eReply_No</a>, 
+<a class="el" href="_ladder_objects_8h.html#a661b706d7e5f4b438e42f25985be24c4a0d87e232683f0fb82d61ce3a3d4f3717">eReply_Yes</a>, 
+<a class="el" href="_ladder_objects_8h.html#a661b706d7e5f4b438e42f25985be24c4ac6324687010af2582a3b2abaee63eff5">eReply_Ok</a>, 
+<br/>
+&#160;&#160;<a class="el" href="_ladder_objects_8h.html#a661b706d7e5f4b438e42f25985be24c4ad0a44a4ed42e34272f8570b4766eb2aa">eReply_Cancel</a>
+<br/>
+ }</td></tr>
+<tr class="memdesc:a661b706d7e5f4b438e42f25985be24c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeracao que define o retorno das caixas de dialogo.  <a href="_ladder_objects_8h.html#a661b706d7e5f4b438e42f25985be24c4">Mais...</a><br/></td></tr>
+<tr class="separator:a661b706d7e5f4b438e42f25985be24c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b8d8fe2c1323a0ee1dbd19713d21ed7"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a7b8d8fe2c1323a0ee1dbd19713d21ed7">eDialogType</a> { <a class="el" href="_ladder_objects_8h.html#a7b8d8fe2c1323a0ee1dbd19713d21ed7a7817e8454051633f0802d83572f223e7">eDialogType_Message</a> = 0, 
+<a class="el" href="_ladder_objects_8h.html#a7b8d8fe2c1323a0ee1dbd19713d21ed7a671708d919e941eea5219a996954a1a4">eDialogType_Error</a>, 
+<a class="el" href="_ladder_objects_8h.html#a7b8d8fe2c1323a0ee1dbd19713d21ed7a3d543a3dd2b88537463f989e79233492">eDialogType_Question</a>
+ }</td></tr>
+<tr class="memdesc:a7b8d8fe2c1323a0ee1dbd19713d21ed7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeracao com os tipos de caixa de dialogo existentes.  <a href="_ladder_objects_8h.html#a7b8d8fe2c1323a0ee1dbd19713d21ed7">Mais...</a><br/></td></tr>
+<tr class="separator:a7b8d8fe2c1323a0ee1dbd19713d21ed7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad35f297cc1005c94df38dc1cda96334d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#ad35f297cc1005c94df38dc1cda96334d">eMbTypeNode</a> { <a class="el" href="_ladder_objects_8h.html#ad35f297cc1005c94df38dc1cda96334dafc627eed917215fc86adb0384e9fbec9">eMbTypeNode_RS485</a> = 0, 
+<a class="el" href="_ladder_objects_8h.html#ad35f297cc1005c94df38dc1cda96334dae40ac7eb70fd4e8bc134a590923f2c7d">eMbTypeNode_Ethernet</a>
+ }</td></tr>
+<tr class="memdesc:ad35f297cc1005c94df38dc1cda96334d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeracao que indica o tipo de no do ModBUS.  <a href="_ladder_objects_8h.html#ad35f297cc1005c94df38dc1cda96334d">Mais...</a><br/></td></tr>
+<tr class="separator:ad35f297cc1005c94df38dc1cda96334d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Funções</h2></td></tr>
+<tr class="memitem:a3256c00bb61c6ddf14873b272a44363a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60e">eType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a3256c00bb61c6ddf14873b272a44363a">getTimerTypeIO</a> (int which)</td></tr>
+<tr class="separator:a3256c00bb61c6ddf14873b272a44363a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37042905759cffc2b55d9d3749a19b2d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_ladder_context.html">LadderContext</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a37042905759cffc2b55d9d3749a19b2d">getEmptyContext</a> (void)</td></tr>
+<tr class="separator:a37042905759cffc2b55d9d3749a19b2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79a7ed1e5ccc55a3d467bb5c0dbcf746"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_ladder_objects_8h.html#a79a7ed1e5ccc55a3d467bb5c0dbcf746">UnallocElem</a> (<a class="el" href="class_ladder_elem.html">LadderElem</a> *elem)</td></tr>
+<tr class="memdesc:a79a7ed1e5ccc55a3d467bb5c0dbcf746"><td class="mdescLeft">&#160;</td><td class="mdescRight">Funcao que desaloca um elemento da memoria.  <a href="#a79a7ed1e5ccc55a3d467bb5c0dbcf746">Mais...</a><br/></td></tr>
+<tr class="separator:a79a7ed1e5ccc55a3d467bb5c0dbcf746"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Definições e macros</h2>
+<a class="anchor" id="ae30350ef5bc9b00f2d02f0b3e28454f1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SUBCKT_STATUS_FIRST&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definicao indicando que o elemento procurado esta no primeiro elemento do circuito atual. </p>
+
+</div>
+</div>
+<a class="anchor" id="aed320f816eea7406a338317844674568"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SUBCKT_STATUS_INSIDE&#160;&#160;&#160;2</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definicao indicando que o elemento procurado esta dentro do circuito atual, nao em suas extremidades. </p>
+
+</div>
+</div>
+<a class="anchor" id="a440697c3e4f386398d6e13e26445c415"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SUBCKT_STATUS_LAST&#160;&#160;&#160;3</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definicao indicando que o elemento procurado esta no ultimo elemento do circuito atual. </p>
+
+</div>
+</div>
+<a class="anchor" id="a2fa1bb5f3cdd87f33ee3cbd355e9d2ad"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SUBCKT_STATUS_NOTFOUND&#160;&#160;&#160;0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definicao indicando que o elemento procurado ainda nao foi encontrado. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Enumerações</h2>
+<a class="anchor" id="a7b8d8fe2c1323a0ee1dbd19713d21ed7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_ladder_objects_8h.html#a7b8d8fe2c1323a0ee1dbd19713d21ed7">eDialogType</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeracao com os tipos de caixa de dialogo existentes. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a7b8d8fe2c1323a0ee1dbd19713d21ed7a7817e8454051633f0802d83572f223e7"></a>eDialogType_Message</em>&nbsp;</td><td class="fielddoc">
+<p>Caixa de mensagem. Exibe o botao Ok e a imagem de informacao. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a7b8d8fe2c1323a0ee1dbd19713d21ed7a671708d919e941eea5219a996954a1a4"></a>eDialogType_Error</em>&nbsp;</td><td class="fielddoc">
+<p>Caixa de Erro. Exibe o botao Ok e a imagem de erro. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a7b8d8fe2c1323a0ee1dbd19713d21ed7a3d543a3dd2b88537463f989e79233492"></a>eDialogType_Question</em>&nbsp;</td><td class="fielddoc">
+<p>Caixa de Pergunta. Existe os botoes Sim e Nao, alem da imagem de interrogacao. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="ad35f297cc1005c94df38dc1cda96334d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_ladder_objects_8h.html#ad35f297cc1005c94df38dc1cda96334d">eMbTypeNode</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeracao que indica o tipo de no do ModBUS. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="ad35f297cc1005c94df38dc1cda96334dafc627eed917215fc86adb0384e9fbec9"></a>eMbTypeNode_RS485</em>&nbsp;</td><td class="fielddoc">
+<p>Este no comunica utilizando a interface RS-485. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ad35f297cc1005c94df38dc1cda96334dae40ac7eb70fd4e8bc134a590923f2c7d"></a>eMbTypeNode_Ethernet</em>&nbsp;</td><td class="fielddoc">
+<p>Este no comunica utilizando a interface Ethernet. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="a54ef5271c689a875be648b9cdf1bbf7d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_ladder_objects_8h.html#a54ef5271c689a875be648b9cdf1bbf7d">eMoveCursor</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeracao que define os modos de movimentacao do cursor. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a54ef5271c689a875be648b9cdf1bbf7daed57878b154851dd69f830e83ee3f4dd"></a>eMoveCursor_DiagramHome</em>&nbsp;</td><td class="fielddoc">
+<p>Movimenta o cursor para o inicio do diagrama, ou seja, o primeiro elemento da primeira linha. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a54ef5271c689a875be648b9cdf1bbf7da5e1c4f5f0e98528511bec66a94a409a6"></a>eMoveCursor_RungHome</em>&nbsp;</td><td class="fielddoc">
+<p>Movimenta o cursor para o inicio da linha atual. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a54ef5271c689a875be648b9cdf1bbf7da2c6e5c475b72df1496d88cf2dfdab85b"></a>eMoveCursor_DiagramEnd</em>&nbsp;</td><td class="fielddoc">
+<p>Movimenta o cursor para o final do diagrama, ou seja, o ultimo elemento da ultima linha. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a54ef5271c689a875be648b9cdf1bbf7da5f0363a6aa5ccb8a3b91a164fde0965d"></a>eMoveCursor_RungEnd</em>&nbsp;</td><td class="fielddoc">
+<p>Movimenta o cursor para o final da linha atual. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a54ef5271c689a875be648b9cdf1bbf7da22d22f11f9e46953a515c9f973e0c51e"></a>eMoveCursor_Up</em>&nbsp;</td><td class="fielddoc">
+<p>Movimenta o cursor para cima. Altera a selecao do objeto atual para a parte superior e, caso ja selecionado, busca o objeto mais proximo. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a54ef5271c689a875be648b9cdf1bbf7daf951ec5e3ae59c1d1490bf6c84cd9056"></a>eMoveCursor_Down</em>&nbsp;</td><td class="fielddoc">
+<p>Movimenta o cursor para baixo. Altera a selecao do objeto atual para a parte inferior e, caso ja selecionado, busca o objeto mais proximo. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a54ef5271c689a875be648b9cdf1bbf7dacfd223b1f99ec0352cc984a52597f644"></a>eMoveCursor_Left</em>&nbsp;</td><td class="fielddoc">
+<p>Movimenta o cursor para a esquerda. Altera a selecao do objeto atual para a lateral esquerda e, caso ja selecionado, busca o objeto mais proximo. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a54ef5271c689a875be648b9cdf1bbf7daa70b289a367eae08d5c1e249a0213a2c"></a>eMoveCursor_Right</em>&nbsp;</td><td class="fielddoc">
+<p>Movimenta o cursor para a direita. Altera a selecao do objeto atual para a lateral direita e, caso ja selecionado, busca o objeto mais proximo. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="a661b706d7e5f4b438e42f25985be24c4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_ladder_objects_8h.html#a661b706d7e5f4b438e42f25985be24c4">eReply</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeracao que define o retorno das caixas de dialogo. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a661b706d7e5f4b438e42f25985be24c4a8526784ba279d45c6a77f6f55f1dcff2"></a>eReply_Pending</em>&nbsp;</td><td class="fielddoc">
+<p>Este estado indica que a caixa de dialogo ainda esta aguardando uma resposta do usuario. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a661b706d7e5f4b438e42f25985be24c4a0e0d880cabb287aa6100b85f206430a4"></a>eReply_No</em>&nbsp;</td><td class="fielddoc">
+<p>O usuario respondeu Nao. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a661b706d7e5f4b438e42f25985be24c4a0d87e232683f0fb82d61ce3a3d4f3717"></a>eReply_Yes</em>&nbsp;</td><td class="fielddoc">
+<p>O usuario respondeu Sim. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a661b706d7e5f4b438e42f25985be24c4ac6324687010af2582a3b2abaee63eff5"></a>eReply_Ok</em>&nbsp;</td><td class="fielddoc">
+<p>O usuario respondeu Ok. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a661b706d7e5f4b438e42f25985be24c4ad0a44a4ed42e34272f8570b4766eb2aa"></a>eReply_Cancel</em>&nbsp;</td><td class="fielddoc">
+<p>O usuario respondeu Cancelar. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="a9ed6ee963a49389c2fdd436035f6ce4f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_ladder_objects_8h.html#a9ed6ee963a49389c2fdd436035f6ce4f">eRequestAccessType</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeracao com o tipo de solicitacao do I/O: Leitura, Escrita ou Ambos. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a9ed6ee963a49389c2fdd436035f6ce4fa833234c7a841c283f0456f463b200766"></a>eRequestAccessType_Read</em>&nbsp;</td><td class="fielddoc">
+<p>Acesso somente leitura. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a9ed6ee963a49389c2fdd436035f6ce4fa7cdad9fd24f96f4da2613ec597f1680e"></a>eRequestAccessType_Write</em>&nbsp;</td><td class="fielddoc">
+<p>Acesso somente escrita. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a9ed6ee963a49389c2fdd436035f6ce4fa3035b27809a946c1714cfea605f16a14"></a>eRequestAccessType_ReadWrite</em>&nbsp;</td><td class="fielddoc">
+<p>Acesso leitura e escrita. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="a14e5d9bfa972d8f10669e8b4bbc8ab4f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_ladder_objects_8h.html#a14e5d9bfa972d8f10669e8b4bbc8ab4f">eSearchAndReplaceMode</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeracao com os modos de Search &amp; Replace. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a14e5d9bfa972d8f10669e8b4bbc8ab4fad420dce7f8100ee16f9b2a9a0138cdf5"></a>eSearchAndReplaceMode_FindFirst</em>&nbsp;</td><td class="fielddoc">
+<p>Inicia a busca do inicio do diagrama. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a14e5d9bfa972d8f10669e8b4bbc8ab4fa8b3d0ce87eed135e28140238cb79469b"></a>eSearchAndReplaceMode_FindNext</em>&nbsp;</td><td class="fielddoc">
+<p>Inicia a busca a partir do objeto atualmente selecionado. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a14e5d9bfa972d8f10669e8b4bbc8ab4fa290b3710d33abdd96dfe5035f3f513f3"></a>eSearchAndReplaceMode_ReplaceFirst</em>&nbsp;</td><td class="fielddoc">
+<p>Inicia a substituicao do inicio do diagrama. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a14e5d9bfa972d8f10669e8b4bbc8ab4fa304109463a9ff85a168faf6223275fbc"></a>eSearchAndReplaceMode_ReplaceNext</em>&nbsp;</td><td class="fielddoc">
+<p>Inicia a substituicao a partir do objeto atualmente selecionado. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a14e5d9bfa972d8f10669e8b4bbc8ab4fad10df8be204ceea62b6ba5d11873a7e5"></a>eSearchAndReplaceMode_ReplaceAll</em>&nbsp;</td><td class="fielddoc">
+<p>substitui de uma so vez todos os elementos encontrados ao inves de apenas o primeiro </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="a6bdf4cb9866dda788f7b21b7c8f37ee7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7">eSortBy</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeracao para informar o tipo de ordenacao que deve ser realizada na lista de I/O. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a6bdf4cb9866dda788f7b21b7c8f37ee7a6a10eda1d71d5c8f9400d32726b07098"></a>eSortBy_Nothing</em>&nbsp;</td><td class="fielddoc">
+<p>Nenhum. Sem uma ordenacao especifica. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a6bdf4cb9866dda788f7b21b7c8f37ee7a19d93d447ba0c002f3ec6c2b0bd30b0b"></a>eSortBy_Name</em>&nbsp;</td><td class="fielddoc">
+<p>Nome. Ordena a lista de I/Os por nome do I/O. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a6bdf4cb9866dda788f7b21b7c8f37ee7a79dc98ce9968c641698ed3b646ad9dba"></a>eSortBy_Type</em>&nbsp;</td><td class="fielddoc">
+<p>Tipo. Ordena a lista de I/Os pelo tipo do I/O, em ordem alfabetica conforme a descricao do tipo. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a6bdf4cb9866dda788f7b21b7c8f37ee7a5c73324909b73b69a8dc123383c428ef"></a>eSortBy_Pin</em>&nbsp;</td><td class="fielddoc">
+<p>Pino. Ordena a lista de I/Os pelo numero do pino do I/O. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a6bdf4cb9866dda788f7b21b7c8f37ee7a6f596d93a656c392dbc5a10f88a8f14c"></a>eSortBy_Port</em>&nbsp;</td><td class="fielddoc">
+<p>Nome. Ordena a lista de I/Os pela porta associada ao I/O, que seria a descricao do pino do I/O. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60e">eType</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tipo do I/O. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea4efa3c1a5d5aca11a229e86cbf3d8377"></a>eType_Pending</em>&nbsp;</td><td class="fielddoc">
+<p>Pendente. Indica que nao tem tipo ou o I/O eh um numero, nao variavel. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea9530deaacee298e6ee6a07d37c4ba0f3"></a>eType_Reserved</em>&nbsp;</td><td class="fielddoc">
+<p>Reservado. Indica que o nome atual eh reservado para uso do sistema e deve ser substituido. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60eac6961407d744dc4e356b72fdf9b271be"></a>eType_General</em>&nbsp;</td><td class="fielddoc">
+<p>Geral. Tipo generico, utilizado por I/Os nao associados a nenhuma logica especifica. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60eae1338b6cc13179e91abe6fda44a67a42"></a>eType_DigInput</em>&nbsp;</td><td class="fielddoc">
+<p>Entrada. Tipo de I/Os que sao associados a uma entrada digital do CLP. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea9baa84e9db789f0bd1358ec42773556c"></a>eType_InternalRelay</em>&nbsp;</td><td class="fielddoc">
+<p>Rele interno. Utilizado para logicas internas de contatos e bobinas. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea7d660b80d28988f6aa4b197c201de207"></a>eType_DigOutput</em>&nbsp;</td><td class="fielddoc">
+<p>Saida. Tipo de I/Os que sao associados a uma saida digital do CLP. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60eaeb6011b0adff083c5e0c10d8a88d9578"></a>eType_InternalFlag</em>&nbsp;</td><td class="fielddoc">
+<p>Flag interna. Sao I/Os associados a flags internas do firmware do CLP. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea6f85dad0e5dd092a9acb3b41de7408ef"></a>eType_Counter</em>&nbsp;</td><td class="fielddoc">
+<p>Contador. Sao I/Os utilizados em contadores (Incrementais, Decrementais, Retentivos) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ead8a282b4414ad0d24956a87691152b48"></a>eType_TOF</em>&nbsp;</td><td class="fielddoc">
+<p>Atraso para Desligar. I/O utilizado em atraso para desligar, nao pode ser reutilizado. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea5ebc491e3e2713bc1d598371ac6483a1"></a>eType_TON</em>&nbsp;</td><td class="fielddoc">
+<p>Atraso para Ligar. I/O utilizado em atraso para ligar, nao pode ser reutilizado. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea05850726a79634411ff81142f5073b46"></a>eType_RTO</em>&nbsp;</td><td class="fielddoc">
+<p>Atraso para Ligar com memoria. I/O utilizado em atraso para ligar com memoria, nao pode ser reutilizado. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea9b734adc4aa5064bb34c0a3a68b38fb4"></a>eType_ReadADC</em>&nbsp;</td><td class="fielddoc">
+<p>Leitura de A/D. Tipo de I/Os que sao associados a um canal A/D do CLP. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea949cfa12ee3cd767d1762d0bcba11e77"></a>eType_SetDAC</em>&nbsp;</td><td class="fielddoc">
+<p>Escrita no D/A. Tipo de I/Os que sao associados ao canal D/A do CLP. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea055cec15fc7c51f769c8782811334783"></a>eType_ReadEnc</em>&nbsp;</td><td class="fielddoc">
+<p>Leitura de Encoder. I/O associado a um canal de encoder do CLP, utilizado em operacoes de leitura. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea1304f208ef099121a81f8e2e94244066"></a>eType_ResetEnc</em>&nbsp;</td><td class="fielddoc">
+<p>Escrita no Encoder. I/O associado a um canal de encoder do CLP, utilizado em operacoes de escrita. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea77957e98321e305d314d60c439d886af"></a>eType_ReadUSS</em>&nbsp;</td><td class="fielddoc">
+<p>Leitura USS. I/O associado a um elemento de leitura atraves de protocolo USS (Siemens) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea72686c34e0b7f4f1c1059ff8117b9f4b"></a>eType_WriteUSS</em>&nbsp;</td><td class="fielddoc">
+<p>Escrita USS. I/O associado a um elemento de escrita atraves de protocolo USS (Siemens) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea470333790028e85b95436574aed5bafe"></a>eType_ReadModbus</em>&nbsp;</td><td class="fielddoc">
+<p>Leitura ModBUS. I/O associado a um elemento de leitura atraves de protocolo ModBUS. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea245dde1f1b14a6283122c93ed11551ab"></a>eType_WriteModbus</em>&nbsp;</td><td class="fielddoc">
+<p>Escrita ModBUS. I/O associado a um elemento de escrita atraves de protocolo ModBUS. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea8c9388d4f97317440c128494b477aab4"></a>eType_PWM</em>&nbsp;</td><td class="fielddoc">
+<p>PWM. Tipo de I/Os que sao associados a uma saida digital do CLP e cuja saida opera como PWM. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea682653ee560561750cee257f30a349a2"></a>eType_RxUART</em>&nbsp;</td><td class="fielddoc">
+<p>Leitura UART. I/O associado a um elemento de leitura de string da interface serial (RS-485) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ea59557bb44455af494a6bceb641deaf60"></a>eType_TxUART</em>&nbsp;</td><td class="fielddoc">
+<p>Escrita UART. I/O associado a um elemento de escrita de string da interface serial (RS-485) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60ead10b4f54cb7e43b3d569b19da8d9de61"></a>eType_ReadYaskawa</em>&nbsp;</td><td class="fielddoc">
+<p>Leitura NS-600. I/O associado a um elemento de leitura de equipamento NS-600 (Yaskawa) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60eaaa57d76c07c94cd35005041c20f596cc"></a>eType_WriteYaskawa</em>&nbsp;</td><td class="fielddoc">
+<p>Escrita NS-600. I/O associado a um elemento de escrita de equipamento NS-600 (Yaskawa) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a12f8ec8f0e7a4584b9fe481bb53fa60eaa90efd36faa0997c5abb1a7e0973495d"></a>eType_Last</em>&nbsp;</td><td class="fielddoc">
+<p>Ultimo elemento. Utilizado como um marcador para elementos que definem novos I/Os, nunca associado a um I/O. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="afb5a24ccfc25ac299252b8361fcc419a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_ladder_objects_8h.html#afb5a24ccfc25ac299252b8361fcc419a">eValidateIO</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enumeracao que indica o modo de validacao do I/O. Exemplo: Para a simulacao, nao precisa checar por associacoes </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="afb5a24ccfc25ac299252b8361fcc419aa1d56d9603f35371bbb9ad8202d728552"></a>eValidateIO_OnlyNames</em>&nbsp;</td><td class="fielddoc">
+<p>Somente valida os nomes dos I/Os, nao sua associacao. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="afb5a24ccfc25ac299252b8361fcc419aa95a3c6cdbbb064c9ab0acd767bbb999f"></a>eValidateIO_Full</em>&nbsp;</td><td class="fielddoc">
+<p>Validacao completa, checando inclusive se um I/O nao foi associado a um pino do CLP. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="af78dc50a6db618ca245b379252f898b1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_ladder_objects_8h.html#af78dc50a6db618ca245b379252f898b1">eValidateResult</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeracao que indica o resultado da validacao do diagrama. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="af78dc50a6db618ca245b379252f898b1a0da767134f58e92c11b4cfe7501ba592"></a>eValidateResult_OK</em>&nbsp;</td><td class="fielddoc">
+<p>OK. Indica que nao ocorreram erros durante a validacao do diagrama. </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="af78dc50a6db618ca245b379252f898b1a3fd446cacbe53d6535d27c0ef5c48fc3"></a>eValidateResult_Warning</em>&nbsp;</td><td class="fielddoc">
+<p>Aviso. Indica que ocorreram apenas avisos (variavel nao utilizada, por exemplo) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="af78dc50a6db618ca245b379252f898b1a12f10f4ade07fcefffbf73046b6e1bcc"></a>eValidateResult_Error</em>&nbsp;</td><td class="fielddoc">
+<p>Erro. Indica que houve erro durante a validacao. Ou seja: o diagrama nao pode ser compilado ou simulado. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">Funções</h2>
+<a class="anchor" id="a37042905759cffc2b55d9d3749a19b2d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="struct_ladder_context.html">LadderContext</a> getEmptyContext </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Funcao auxiliar que entrega um contexto "vazio" </p>
+<dl class="section return"><dt>Retorna</dt><dd>Contexto inicializado </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a3256c00bb61c6ddf14873b272a44363a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60e">eType</a> getTimerTypeIO </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>which</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Funcao auxiliar que retorna o tipo de I/O conforme o tipo do timer indicado </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">which</td><td>Codigo que indica o tipo de elemento (TON, OFF, RTO) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Tipo de I/O para o timer indicado </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a79a7ed1e5ccc55a3d467bb5c0dbcf746"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void UnallocElem </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_ladder_elem.html">LadderElem</a> *&#160;</td>
+          <td class="paramname"><em>elem</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Funcao que desaloca um elemento da memoria. </p>
+<p>Esta funcao auxiliar converte um ponteiro da classe base (<a class="el" href="class_ladder_elem.html" title="Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base. ">LadderElem</a>) para uma classe derivada (<a class="el" href="class_ladder_elem_coil.html">LadderElemCoil</a>, <a class="el" href="class_ladder_elem_contact.html">LadderElemContact</a>, etc) e entao o desaloca da memoria </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">elem</td><td>Ponteiro para o elemento que deve ser desalocado </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Gerado em Quinta, 7 de Novembro de 2013 07:47:52 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.5
+</small></address>
+</body>
+</html>

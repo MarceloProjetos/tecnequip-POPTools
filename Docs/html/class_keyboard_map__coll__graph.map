@@ -1,0 +1,4 @@
+<map id="KeyboardMap" name="KeyboardMap">
+<area shape="rect" id="node2" href="$struct_keyboard_map_1_1s_key_map.html" title="{KeyboardMap::sKeyMap\n|+ iMapID\l|}" alt="" coords="17,192,183,269"/>
+<area shape="rect" id="node3" href="$struct_keyboard_map_1_1s_key_bindings.html" title="{KeyboardMap::sKeyBindings\n|+ iKey\l+ iFlags\l+ pFnc\l+ pUserData\l|}" alt="" coords="5,6,195,127"/>
+</map>

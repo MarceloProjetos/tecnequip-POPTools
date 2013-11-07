@@ -1,0 +1,3 @@
+<map id="EngineGUI" name="EngineGUI">
+<area shape="rect" id="node2" href="$class_engine_render.html" title="{EngineRender\n||+ ~EngineRender()\l+ CreateRenderTarget()\l+ ResizeRenderTarget()\l+ CreateBrush()\l+ CreateGradient()\l+ getTextSize()\l+ StartDraw()\l+ Clear()\l+ EndDraw()\l+ DrawPolygon()\land 8 more...\l&#45; Init()\l&#45; FreeAll()\l}" alt="" coords="15,5,173,259"/>
+</map>

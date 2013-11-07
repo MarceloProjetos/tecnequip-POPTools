@@ -15,6 +15,7 @@ int ENC_Read(unsigned int device)
 	int val, offset;
 
 	switch(device) {
+		default:
 		case ENC_DEVICE_INC:
 			mode      = INC_Mode;
 			perimeter = INC_Perimeter;
@@ -59,6 +60,7 @@ void ENC_Reset(unsigned int device, int offset)
 	float factor;
 
 	switch(device) {
+		default:
 		case ENC_DEVICE_INC:
 			mode      = INC_Mode;
 			perimeter = INC_Perimeter;

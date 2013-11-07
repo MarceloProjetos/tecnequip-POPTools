@@ -717,6 +717,12 @@ void CreateStaticVariable(string name)
 //-----------------------------------------------------------------------------
 void SetSimulationVariable(const char *name, SWORD val)
 {
+	if(!strcmp(name, ladder->getReservedNameIO(eType_DigInput).c_str()) ||
+		!strcmp(name, ladder->getReservedNameIO(eType_DigOutput).c_str())) {
+			SetSingleBit(name, val ? true : false);
+			return;
+	}
+
 	if(currentSimState.StaticItemsIterator.count(name) > 0) {
 		currentSimState.StaticItemsIterator[name]->second.val = val;
 	}
@@ -729,6 +735,11 @@ void SetSimulationVariable(const char *name, SWORD val)
 //-----------------------------------------------------------------------------
 SWORD GetSimulationVariable(const char *name)
 {
+	if(!strcmp(name, ladder->getReservedNameIO(eType_DigInput).c_str()) ||
+		!strcmp(name, ladder->getReservedNameIO(eType_DigOutput).c_str())) {
+			return SingleBitOn(name) ? 1 : 0;
+	}
+
 	if(currentSimState.StaticItemsIterator.count(name) > 0) {
 		return currentSimState.StaticItemsIterator[name]->second.val;
 	}
@@ -1580,29 +1591,7 @@ void ShowUartSimulationWindow(void)
 
     DWORD TerminalX = 200, TerminalY = 200, TerminalW = 300, TerminalH = 150;
 
-    ThawDWORD(TerminalX);
-    ThawDWORD(TerminalY);
-    ThawDWORD(TerminalW);
-    ThawDWORD(TerminalH);
-
-    if(TerminalW > 800) TerminalW = 100;
-    if(TerminalH > 800) TerminalH = 100;
-
-    //RECT r;
-
-    //GetClientRect(GetDesktopWindow(), &r);
-    //if(TerminalX >= (DWORD)(r.right - 10)) TerminalX = 100;
-    //if(TerminalY >= (DWORD)(r.bottom - 10)) TerminalY = 100;
-
-    //UartSimulationWindow = CreateWindowClient(WS_EX_TOOLWINDOW |
-    //    WS_EX_APPWINDOW, "POPToolsUartSimulationWindow",
-    //    "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX,
-    //    TerminalX, TerminalY, TerminalW, TerminalH,
-    //    MainWindow, NULL, Instance, NULL);
-
-    UartSimulationWindow = CreateWindowClient(/*WS_EX_TOOLWINDOW |
-        WS_EX_APPWINDOW, "POPToolsUartSimulationWindow",
-        "UART Simulation (Terminal)", WS_VISIBLE | WS_SIZEBOX*/
+    UartSimulationWindow = CreateWindowClient(
 		WS_EX_CLIENTEDGE, WC_LISTVIEW, "", WS_CHILD |
         LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS | WS_TABSTOP |
         LVS_SINGLESEL | WS_CLIPSIBLINGS,
@@ -1644,23 +1633,7 @@ void DestroyUartSimulationWindow(void)
     // stored position.
     if(UartSimulationWindow == NULL) return;
 
-    DWORD TerminalX, TerminalY, TerminalW, TerminalH;
-    RECT r;
-
-    GetClientRect(UartSimulationWindow, &r);
-    TerminalW = r.right - r.left;
-    TerminalH = r.bottom - r.top;
-
-    GetWindowRect(UartSimulationWindow, &r);
-    TerminalX = r.left;
-    TerminalY = r.top;
-
-    FreezeDWORD(TerminalX);
-    FreezeDWORD(TerminalY);
-    FreezeDWORD(TerminalW);
-    FreezeDWORD(TerminalH);
-
-    DestroyWindow(UartSimulationWindow);
+	DestroyWindow(UartSimulationWindow);
     UartSimulationWindow = NULL;
 	MainWindowResized();
 }

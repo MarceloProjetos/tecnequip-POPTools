@@ -1,0 +1,12 @@
+<map id="LadderDiagram::tLadderSettings" name="LadderDiagram::tLadderSettings">
+<area shape="rect" id="node2" href="$struct_ladder_settings_u_a_r_t.html" title="Configuracoes da Interface Serial do CLP. " alt="" coords="5,42,147,134"/>
+<area shape="rect" id="node3" href="$struct_ladder_settings_s_n_t_p.html" title="Configuracoes de Data/Hora do CLP. " alt="" coords="171,27,313,149"/>
+<area shape="rect" id="node4" href="$struct_ladder_settings_general.html" title="Configuracoes gerais do diagrama. " alt="" coords="339,35,493,141"/>
+<area shape="rect" id="node5" href="$struct_ladder_settings_encoder_s_s_i.html" title="Configuracoes de Encoder Absoluto (SSI) " alt="" coords="517,13,696,163"/>
+<area shape="rect" id="node6" href="$struct_ladder_settings_network.html" title="Configuracoes de rede do CLP. " alt="" coords="721,27,876,149"/>
+<area shape="rect" id="node7" href="$struct_ladder_settings_encoder_incremental.html" title="Configuracoes de Encoder Incremental. " alt="" coords="901,20,1125,156"/>
+<area shape="rect" id="node8" href="$struct_ladder_settings_a_d_c.html" title="Configuracoes da interface Analogica para Digital (A/D) " alt="" coords="1149,49,1285,127"/>
+<area shape="rect" id="node9" href="$struct_ladder_settings_information.html" title="Informacoes gerais do diagrama. " alt="" coords="1310,5,1481,171"/>
+<area shape="rect" id="node10" href="$struct_ladder_settings_d_a_c.html" title="Configuracoes da interface Digital para Analogica (D/A) " alt="" coords="1507,49,1645,127"/>
+<area shape="rect" id="node11" href="$struct_ladder_settings_modbus_slave.html" title="Configuracoes do protocolo ModBUS. " alt="" coords="1669,49,1856,127"/>
+</map>

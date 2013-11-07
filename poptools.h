@@ -845,7 +845,10 @@ void ShowHelpDialog(BOOL about);
 void OpenCHM(void);
 void OpenCHM(unsigned int hID);
 // FARdialog.cpp
-bool ShowFARDialog();
+extern HWND FARWindow;
+extern const LONG FarWidth;
+bool ShowFARWindow(void);
+void MoveFARWindow(RECT r);
 // prefdialog.cpp
 void ShowPrefDialog(void);
 

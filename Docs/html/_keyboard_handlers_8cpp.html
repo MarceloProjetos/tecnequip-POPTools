@@ -1,0 +1,1727 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>POPTools: Referência do Arquivo F:/SVN/POPTools/KeyboardHandlers.cpp</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() { searchBox.OnSelectItem(0); });
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="poptools.png"/></td>
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">POPTools
+   &#160;<span id="projectnumber">2.0</span>
+   </div>
+   <div id="projectbrief">Ferramenta para programaçao de CLPs POP-7</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Gerado por Doxygen 1.8.5 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Busca');
+</script>
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>Página&#160;Principal</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="files.html"><span>Arquivos</span></a></li>
+      <li>
+        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <img id="MSearchSelect" src="search/mag_sel.png"
+               onmouseover="return searchBox.OnSearchSelectShow()"
+               onmouseout="return searchBox.OnSearchSelectHide()"
+               alt=""/>
+          <input type="text" id="MSearchField" value="Busca" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
+          </span>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>Lista&#160;de&#160;Arquivos</span></a></li>
+      <li><a href="globals.html"><span>Arquivos&#160;Membros</span></a></li>
+    </ul>
+  </div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>Todos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Arquivos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Funções</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variáveis</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Definições de Tipos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerações</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Valores enumerados</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Definições e Macros</a></div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Funções</a> &#124;
+<a href="#var-members">Variáveis</a>  </div>
+  <div class="headertitle">
+<div class="title">Referência do Arquivo F:/SVN/POPTools/KeyboardHandlers.cpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &quot;<a class="el" href="poptools_8h_source.html">poptools.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="_keyboard_map_8h_source.html">KeyboardMap.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="_ladder_g_u_i_8h_source.html">LadderGUI.h</a>&quot;</code><br/>
+</div><div class="textblock"><div class="dynheader">
+Gráfico de dependência de inclusões para KeyboardHandlers.cpp:</div>
+<div class="dyncontent">
+<div class="center"><img src="_keyboard_handlers_8cpp__incl.png" border="0" usemap="#_f_1_2_s_v_n_2_p_o_p_tools_2_keyboard_handlers_8cpp" alt=""/></div>
+<map name="_f_1_2_s_v_n_2_p_o_p_tools_2_keyboard_handlers_8cpp" id="_f_1_2_s_v_n_2_p_o_p_tools_2_keyboard_handlers_8cpp">
+<area shape="rect" id="node2" href="poptools_8h.html" title="poptools.h" alt="" coords="2178,171,2261,197"/><area shape="rect" id="node48" href="_keyboard_map_8h.html" title="KeyboardMap.h" alt="" coords="2257,96,2370,123"/><area shape="rect" id="node49" href="_ladder_g_u_i_8h.html" title="LadderGUI.h" alt="" coords="2087,96,2181,123"/><area shape="rect" id="node34" href="resource_8h.html" title="resource.h" alt="" coords="3267,245,3350,272"/><area shape="rect" id="node35" href="splash_8h.html" title="splash.h" alt="" coords="3375,245,3445,272"/><area shape="rect" id="node36" href="modbus__master_8h.html" title="modbus_master.h" alt="" coords="3469,245,3595,272"/><area shape="rect" id="node37" href="_main_ribbon_8h.html" title="MainRibbon.h" alt="" coords="3621,245,3722,272"/><area shape="rect" id="node40" href="_property_set_8h.html" title="PropertySet.h" alt="" coords="3797,245,3899,272"/><area shape="rect" id="node41" href="_keyboard_handlers_8h.html" title="KeyboardHandlers.h" alt="" coords="4127,245,4266,272"/><area shape="rect" id="node44" href="freeze_8h.html" title="freeze.h" alt="" coords="4496,245,4563,272"/><area shape="rect" id="node45" href="intcode_8h.html" title="intcode.h" alt="" coords="1138,320,1213,347"/><area shape="rect" id="node46" href="_ladder_objects_8h.html" title="LadderObjects.h" alt="" coords="1069,245,1186,272"/><area shape="rect" id="node47" href="iomap_8h.html" title="iomap.h" alt="" coords="4588,245,4655,272"/><area shape="rect" id="node50" href="_engine_g_u_i_8h.html" title="EngineGUI.h" alt="" coords="999,171,1093,197"/></map>
+</div>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Funções</h2></td></tr>
+<tr class="memitem:acf01934e9eacd246225598a86205b83c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#acf01934e9eacd246225598a86205b83c">KBH_Simulation_Toggle</a> (void *user_data)</td></tr>
+<tr class="separator:acf01934e9eacd246225598a86205b83c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fcbf3294daa5f1bd967dc8c7a821d00"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a3fcbf3294daa5f1bd967dc8c7a821d00">KBH_SetFocus_IoList</a> (void *user_data)</td></tr>
+<tr class="separator:a3fcbf3294daa5f1bd967dc8c7a821d00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b11b1831cce7a429fe16e2ac938821d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a4b11b1831cce7a429fe16e2ac938821d">CmdExpand</a> (<a class="el" href="structt_command_source.html">tCommandSource</a> source, void *data)</td></tr>
+<tr class="separator:a4b11b1831cce7a429fe16e2ac938821d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c5ec71003dbc21f927b104079cc6f06"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a7c5ec71003dbc21f927b104079cc6f06">KBH_ExpandElement</a> (void *user_data)</td></tr>
+<tr class="separator:a7c5ec71003dbc21f927b104079cc6f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6aef7e7180690fd603f3827e723f664f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a6aef7e7180690fd603f3827e723f664f">KBH_Manual_Open</a> (void *user_data)</td></tr>
+<tr class="separator:a6aef7e7180690fd603f3827e723f664f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae476a4bbf15893b235213aef111ea76a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ae476a4bbf15893b235213aef111ea76a">KBH_Config</a> (void *user_data)</td></tr>
+<tr class="separator:ae476a4bbf15893b235213aef111ea76a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a528fa153c7ed1467dc5d6309921dd47d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a528fa153c7ed1467dc5d6309921dd47d">KBH_Simulation_SingleCycle</a> (void *user_data)</td></tr>
+<tr class="separator:a528fa153c7ed1467dc5d6309921dd47d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17020b10e7e37035a3960d1bbda42792"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a17020b10e7e37035a3960d1bbda42792">KBH_Simulation_Start</a> (void *user_data)</td></tr>
+<tr class="separator:a17020b10e7e37035a3960d1bbda42792"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19133e5f5bd46fa800635d3f40eb84ea"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a19133e5f5bd46fa800635d3f40eb84ea">KBH_Simulation_Pause</a> (void *user_data)</td></tr>
+<tr class="separator:a19133e5f5bd46fa800635d3f40eb84ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeae3b8886a40f1471107aed6221b49cc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#aeae3b8886a40f1471107aed6221b49cc">KBH_Simulation_Down</a> (void *user_data)</td></tr>
+<tr class="separator:aeae3b8886a40f1471107aed6221b49cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2593c93a135d34cbecf97e8623e92431"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a2593c93a135d34cbecf97e8623e92431">KBH_Simulation_Up</a> (void *user_data)</td></tr>
+<tr class="separator:a2593c93a135d34cbecf97e8623e92431"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bf8aceb303c77c560d2a08b79bc418a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a6bf8aceb303c77c560d2a08b79bc418a">KBH_Simulation_Left</a> (void *user_data)</td></tr>
+<tr class="separator:a6bf8aceb303c77c560d2a08b79bc418a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac337b6d01a42fcac34fc60b45fa9ef35"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ac337b6d01a42fcac34fc60b45fa9ef35">KBH_Simulation_Right</a> (void *user_data)</td></tr>
+<tr class="separator:ac337b6d01a42fcac34fc60b45fa9ef35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9df34a2bad8f48861d9255fdd9d51849"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a9df34a2bad8f48861d9255fdd9d51849">KBH_Simulation_Exit</a> (void *user_data)</td></tr>
+<tr class="separator:a9df34a2bad8f48861d9255fdd9d51849"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cb483ecec0bf530fb032ba1f78604f5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a8cb483ecec0bf530fb032ba1f78604f5">KBH_FAR_Open</a> (void *user_data)</td></tr>
+<tr class="separator:a8cb483ecec0bf530fb032ba1f78604f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18d1119ffa1c56f39e09916e1c363a2c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a18d1119ffa1c56f39e09916e1c363a2c">KBH_FAR_Next</a> (void *user_data)</td></tr>
+<tr class="separator:a18d1119ffa1c56f39e09916e1c363a2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a885b6444cb6299e453bc08e890c07375"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a885b6444cb6299e453bc08e890c07375">KBH_Debug</a> (void *user_data)</td></tr>
+<tr class="separator:a885b6444cb6299e453bc08e890c07375"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87a3e2ecabb46491620e3ffc4c2afca5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a87a3e2ecabb46491620e3ffc4c2afca5">KBH_Compile</a> (void *user_data)</td></tr>
+<tr class="separator:a87a3e2ecabb46491620e3ffc4c2afca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6df6d4f7299e6826eeccbcb017db4931"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a6df6d4f7299e6826eeccbcb017db4931">KBH_Program</a> (void *user_data)</td></tr>
+<tr class="separator:a6df6d4f7299e6826eeccbcb017db4931"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b012ff82f14becbfefa921a97c605e7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a8b012ff82f14becbfefa921a97c605e7">KBH_Rung_MoveUP</a> (void *user_data)</td></tr>
+<tr class="separator:a8b012ff82f14becbfefa921a97c605e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a5ff878fbb2f73249c84ea9c9e7110d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a4a5ff878fbb2f73249c84ea9c9e7110d">KBH_Cursor_MoveUp</a> (void *user_data)</td></tr>
+<tr class="separator:a4a5ff878fbb2f73249c84ea9c9e7110d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03eea477672e1aded23d4fa0f174ac1d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a03eea477672e1aded23d4fa0f174ac1d">KBH_Rung_MoveDown</a> (void *user_data)</td></tr>
+<tr class="separator:a03eea477672e1aded23d4fa0f174ac1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4eeed4366a5633891e4fcacacc7f2b35"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a4eeed4366a5633891e4fcacacc7f2b35">KBH_Cursor_MoveDown</a> (void *user_data)</td></tr>
+<tr class="separator:a4eeed4366a5633891e4fcacacc7f2b35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa340b205bbdb29dc902606fd78a7bc83"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#aa340b205bbdb29dc902606fd78a7bc83">KBH_Cursor_Home</a> (void *user_data)</td></tr>
+<tr class="separator:aa340b205bbdb29dc902606fd78a7bc83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1f4c4cffd7188320246a648b622ed25"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ae1f4c4cffd7188320246a648b622ed25">KBH_Ladder_Home</a> (void *user_data)</td></tr>
+<tr class="separator:ae1f4c4cffd7188320246a648b622ed25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7b913d388abcdc5d538ade2fcbe8f5c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ac7b913d388abcdc5d538ade2fcbe8f5c">KBH_Cursor_End</a> (void *user_data)</td></tr>
+<tr class="separator:ac7b913d388abcdc5d538ade2fcbe8f5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3ac6c4d80ded9157c371c222e446fc0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#af3ac6c4d80ded9157c371c222e446fc0">KBH_Ladder_End</a> (void *user_data)</td></tr>
+<tr class="separator:af3ac6c4d80ded9157c371c222e446fc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a749edff8ec9fab8fdd80f3a8d2b1f43a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a749edff8ec9fab8fdd80f3a8d2b1f43a">KBH_Cursor_Left</a> (void *user_data)</td></tr>
+<tr class="separator:a749edff8ec9fab8fdd80f3a8d2b1f43a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9af09b85e95f27ed92b9aaf395c3125c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a9af09b85e95f27ed92b9aaf395c3125c">KBH_Cursor_Right</a> (void *user_data)</td></tr>
+<tr class="separator:a9af09b85e95f27ed92b9aaf395c3125c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0020e91dd2bd4c6b0ad362fd6af1f73"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ae0020e91dd2bd4c6b0ad362fd6af1f73">KBH_Element_Edit</a> (void *user_data)</td></tr>
+<tr class="separator:ae0020e91dd2bd4c6b0ad362fd6af1f73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fa4e413e0bf0f0a059aa563367cac0c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a9fa4e413e0bf0f0a059aa563367cac0c">KBH_Element_Delete</a> (void *user_data)</td></tr>
+<tr class="separator:a9fa4e413e0bf0f0a059aa563367cac0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a839571b15442744fa555372204db6fb2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a839571b15442744fa555372204db6fb2">KBH_Rung_Delete</a> (void *user_data)</td></tr>
+<tr class="separator:a839571b15442744fa555372204db6fb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae19eea8aa26d478e0b599c89182eb6da"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ae19eea8aa26d478e0b599c89182eb6da">KBH_Element_Add_Comment</a> (void *user_data)</td></tr>
+<tr class="separator:ae19eea8aa26d478e0b599c89182eb6da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc3459700695142a4a68028acc124edb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#acc3459700695142a4a68028acc124edb">KBH_Element_Add_Counter_Circular</a> (void *user_data)</td></tr>
+<tr class="separator:acc3459700695142a4a68028acc124edb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a014791d03d094da86c689fa6bb65b9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a3a014791d03d094da86c689fa6bb65b9">KBH_Element_Copy</a> (void *user_data)</td></tr>
+<tr class="separator:a3a014791d03d094da86c689fa6bb65b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1002863b9dade9b9b60c80db2dd7838d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a1002863b9dade9b9b60c80db2dd7838d">KBH_Element_Add_Contact</a> (void *user_data)</td></tr>
+<tr class="separator:a1002863b9dade9b9b60c80db2dd7838d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35085c4743d327744ab047e255b60fc1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a35085c4743d327744ab047e255b60fc1">KBH_Element_Add_Bit_Check</a> (void *user_data)</td></tr>
+<tr class="separator:a35085c4743d327744ab047e255b60fc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f2c73406ae130348aaf12cd7cd41cf0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a8f2c73406ae130348aaf12cd7cd41cf0">KBH_Element_Add_Bit_Set</a> (void *user_data)</td></tr>
+<tr class="separator:a8f2c73406ae130348aaf12cd7cd41cf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a257bc0650b1e6f3e1facee0a79e9e37d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a257bc0650b1e6f3e1facee0a79e9e37d">KBH_Element_Add_Yaskawa_Read</a> (void *user_data)</td></tr>
+<tr class="separator:a257bc0650b1e6f3e1facee0a79e9e37d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a8d1b8e2377a96f316a47ecbe5f4cb0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a0a8d1b8e2377a96f316a47ecbe5f4cb0">KBH_Element_Add_Yaskawa_Write</a> (void *user_data)</td></tr>
+<tr class="separator:a0a8d1b8e2377a96f316a47ecbe5f4cb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42bfa7e038db1c0d5209518632501c74"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a42bfa7e038db1c0d5209518632501c74">KBH_Element_Add_Coil</a> (void *user_data)</td></tr>
+<tr class="separator:a42bfa7e038db1c0d5209518632501c74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a452a5bff3891bd033658c4784bf7b6ac"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a452a5bff3891bd033658c4784bf7b6ac">KBH_Element_Add_DA_Ramp</a> (void *user_data)</td></tr>
+<tr class="separator:a452a5bff3891bd033658c4784bf7b6ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae42e12cc48c7998b40818ca426774a3d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ae42e12cc48c7998b40818ca426774a3d">KBH_Element_Make_Reset</a> (void *user_data)</td></tr>
+<tr class="separator:ae42e12cc48c7998b40818ca426774a3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a098ff82aaf6a1947117b82956b48f1cc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a098ff82aaf6a1947117b82956b48f1cc">KBH_Element_Make_Normal</a> (void *user_data)</td></tr>
+<tr class="separator:a098ff82aaf6a1947117b82956b48f1cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3e51b59c5d0fb84be64f2e0e3f40bd9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ae3e51b59c5d0fb84be64f2e0e3f40bd9">KBH_File_Export</a> (void *user_data)</td></tr>
+<tr class="separator:ae3e51b59c5d0fb84be64f2e0e3f40bd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e69c9e9c86a85eb2132d89a97579c4f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a3e69c9e9c86a85eb2132d89a97579c4f">KBH_Element_Add_Reset</a> (void *user_data)</td></tr>
+<tr class="separator:a3e69c9e9c86a85eb2132d89a97579c4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe1074f3374d60cc451605e82803d742"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#afe1074f3374d60cc451605e82803d742">KBH_File_Save</a> (void *user_data)</td></tr>
+<tr class="separator:afe1074f3374d60cc451605e82803d742"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a688e4b5975a5ecbfe151a711869646c4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a688e4b5975a5ecbfe151a711869646c4">KBH_Element_Make_Set</a> (void *user_data)</td></tr>
+<tr class="separator:a688e4b5975a5ecbfe151a711869646c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e6a041b4b4561426ee1779f891251dd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a8e6a041b4b4561426ee1779f891251dd">KBH_File_New</a> (void *user_data)</td></tr>
+<tr class="separator:a8e6a041b4b4561426ee1779f891251dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ff2460a1374cd1bd0279b3308b5c753"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a7ff2460a1374cd1bd0279b3308b5c753">KBH_Element_Make_Negate</a> (void *user_data)</td></tr>
+<tr class="separator:a7ff2460a1374cd1bd0279b3308b5c753"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36e487ff899a6cf2c45caff7fd9e118b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a36e487ff899a6cf2c45caff7fd9e118b">KBH_Element_Add_AD</a> (void *user_data)</td></tr>
+<tr class="separator:a36e487ff899a6cf2c45caff7fd9e118b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac05579b5b1606da407a51dcab533b565"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ac05579b5b1606da407a51dcab533b565">KBH_Element_Timer_Retentive</a> (void *user_data)</td></tr>
+<tr class="separator:ac05579b5b1606da407a51dcab533b565"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab90b7db983e15721059049025330a5d9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ab90b7db983e15721059049025330a5d9">KBH_File_Open</a> (void *user_data)</td></tr>
+<tr class="separator:ab90b7db983e15721059049025330a5d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad77624f68ba59d1c004083132b8a5710"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ad77624f68ba59d1c004083132b8a5710">KBH_Element_Add_Timer_On</a> (void *user_data)</td></tr>
+<tr class="separator:ad77624f68ba59d1c004083132b8a5710"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3580f9a005041242f385012309a7407"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ae3580f9a005041242f385012309a7407">KBH_Element_Add_Timer_Off</a> (void *user_data)</td></tr>
+<tr class="separator:ae3580f9a005041242f385012309a7407"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6312f70dc54b6e74ef2ec5c3e8ae8496"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a6312f70dc54b6e74ef2ec5c3e8ae8496">KBH_Element_Add_Counter_Incremental</a> (void *user_data)</td></tr>
+<tr class="separator:a6312f70dc54b6e74ef2ec5c3e8ae8496"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44187581ab7c9976dd9d3bd07cee6702"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a44187581ab7c9976dd9d3bd07cee6702">KBH_Element_Add_USS_Read</a> (void *user_data)</td></tr>
+<tr class="separator:a44187581ab7c9976dd9d3bd07cee6702"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac535e4ea935ab5fd67bd251395085bd5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ac535e4ea935ab5fd67bd251395085bd5">KBH_Element_Add_USS_Write</a> (void *user_data)</td></tr>
+<tr class="separator:ac535e4ea935ab5fd67bd251395085bd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bef894cb1d6897c60f4d5b0a39c72fc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a9bef894cb1d6897c60f4d5b0a39c72fc">KBH_Element_Add_ModBUS_Read</a> (void *user_data)</td></tr>
+<tr class="separator:a9bef894cb1d6897c60f4d5b0a39c72fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a962601d4089e8f76a78e1f6d5dfb4623"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a962601d4089e8f76a78e1f6d5dfb4623">KBH_Element_Add_ModBUS_Write</a> (void *user_data)</td></tr>
+<tr class="separator:a962601d4089e8f76a78e1f6d5dfb4623"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a201e57c75ae7d3dd005a21f5e1c5346a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a201e57c75ae7d3dd005a21f5e1c5346a">KBH_Element_Add_Move</a> (void *user_data)</td></tr>
+<tr class="separator:a201e57c75ae7d3dd005a21f5e1c5346a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad4319ad875e4e9e5df387060a5e9134"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#aad4319ad875e4e9e5df387060a5e9134">KBH_Element_Add_Parallel</a> (void *user_data)</td></tr>
+<tr class="separator:aad4319ad875e4e9e5df387060a5e9134"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa46eab34ab2f893f7a698b679dccd054"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#aa46eab34ab2f893f7a698b679dccd054">KBH_Element_Add_Encoder_Reset</a> (void *user_data)</td></tr>
+<tr class="separator:aa46eab34ab2f893f7a698b679dccd054"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa74fec4e584e271d656af4d66de19eec"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#aa74fec4e584e271d656af4d66de19eec">KBH_Element_Add_Encoder_Read</a> (void *user_data)</td></tr>
+<tr class="separator:aa74fec4e584e271d656af4d66de19eec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2285e324ce641e3802c82465aa8516d5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a2285e324ce641e3802c82465aa8516d5">KBH_Element_Add_PWM</a> (void *user_data)</td></tr>
+<tr class="separator:a2285e324ce641e3802c82465aa8516d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1941faf7822091c20b2e327f050f8d55"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a1941faf7822091c20b2e327f050f8d55">KBH_Element_Add_Math_Add</a> (void *user_data)</td></tr>
+<tr class="separator:a1941faf7822091c20b2e327f050f8d55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19055468dc19be70ebaf6c1491c66b8a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a19055468dc19be70ebaf6c1491c66b8a">KBH_Element_Add_Comparison_Equal</a> (void *user_data)</td></tr>
+<tr class="separator:a19055468dc19be70ebaf6c1491c66b8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afea14844b4e0f8eb7b504881e81dfc17"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#afea14844b4e0f8eb7b504881e81dfc17">KBH_Element_Add_Math_Subtract</a> (void *user_data)</td></tr>
+<tr class="separator:afea14844b4e0f8eb7b504881e81dfc17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e82a82d367a6bc3c82bd4919df16b5d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a2e82a82d367a6bc3c82bd4919df16b5d">KBH_Element_Add_Math_Divide</a> (void *user_data)</td></tr>
+<tr class="separator:a2e82a82d367a6bc3c82bd4919df16b5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58cf3de4f04bfd67b10912590a324564"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a58cf3de4f04bfd67b10912590a324564">KBH_Element_Add_OneShot_Rising</a> (void *user_data)</td></tr>
+<tr class="separator:a58cf3de4f04bfd67b10912590a324564"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a353045917cb2336e4f9d586c835e1abe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a353045917cb2336e4f9d586c835e1abe">KBH_Element_Add_OneShot_Falling</a> (void *user_data)</td></tr>
+<tr class="separator:a353045917cb2336e4f9d586c835e1abe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac81791dd667836da7f602e6c6069930a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ac81791dd667836da7f602e6c6069930a">KBH_Element_Add_Math_Multiply</a> (void *user_data)</td></tr>
+<tr class="separator:ac81791dd667836da7f602e6c6069930a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a095b79f057293ca18f17da54ce74f66c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a095b79f057293ca18f17da54ce74f66c">KBH_Element_Add_DA_Set</a> (void *user_data)</td></tr>
+<tr class="separator:a095b79f057293ca18f17da54ce74f66c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0984a4763244bf692bc43930c9b07168"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a0984a4763244bf692bc43930c9b07168">KBH_Element_Add_Counter_Decremental</a> (void *user_data)</td></tr>
+<tr class="separator:a0984a4763244bf692bc43930c9b07168"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aded425039087154f20e1aba125e6f3ef"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#aded425039087154f20e1aba125e6f3ef">KBH_Element_Add_Comparison_NotEqual</a> (void *user_data)</td></tr>
+<tr class="separator:aded425039087154f20e1aba125e6f3ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fc0d3ccecb9deeba5ad5d2de1c6e308"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a0fc0d3ccecb9deeba5ad5d2de1c6e308">KBH_Element_Add_Comparison_Greater</a> (void *user_data)</td></tr>
+<tr class="separator:a0fc0d3ccecb9deeba5ad5d2de1c6e308"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecf42f71f6592c5e0924c892b5523aab"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#aecf42f71f6592c5e0924c892b5523aab">KBH_Element_Add_Comparison_GreaterEqual</a> (void *user_data)</td></tr>
+<tr class="separator:aecf42f71f6592c5e0924c892b5523aab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66c67ed76e62d592c0bda6c226d1ff48"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a66c67ed76e62d592c0bda6c226d1ff48">KBH_Element_Add_Comparison_Less</a> (void *user_data)</td></tr>
+<tr class="separator:a66c67ed76e62d592c0bda6c226d1ff48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6517645a8f321580033139881f78ab5c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a6517645a8f321580033139881f78ab5c">KBH_Element_Add_Comparison_LessEqual</a> (void *user_data)</td></tr>
+<tr class="separator:a6517645a8f321580033139881f78ab5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60d1bd79f27af0efa99e0ca14b8e88d0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a60d1bd79f27af0efa99e0ca14b8e88d0">KBH_Element_Paste</a> (void *user_data)</td></tr>
+<tr class="separator:a60d1bd79f27af0efa99e0ca14b8e88d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa68258c2a39a341083f0c72d01683ad9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#aa68258c2a39a341083f0c72d01683ad9">KBH_Element_Cut</a> (void *user_data)</td></tr>
+<tr class="separator:aa68258c2a39a341083f0c72d01683ad9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7dc20484d52d7e2ca39a1cbe1641907"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#aa7dc20484d52d7e2ca39a1cbe1641907">KBH_Rung_Insert_Before</a> (void *user_data)</td></tr>
+<tr class="separator:aa7dc20484d52d7e2ca39a1cbe1641907"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb13a28224448db3417958f9cb515a69"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#afb13a28224448db3417958f9cb515a69">KBH_Rung_Insert_After</a> (void *user_data)</td></tr>
+<tr class="separator:afb13a28224448db3417958f9cb515a69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f2e5abb4d42f8ecba2c4b28057ae5fa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a5f2e5abb4d42f8ecba2c4b28057ae5fa">KBH_Undo</a> (void *user_data)</td></tr>
+<tr class="separator:a5f2e5abb4d42f8ecba2c4b28057ae5fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae553cf3caee0325a7af82c4a7e05a69e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ae553cf3caee0325a7af82c4a7e05a69e">KBH_Redo</a> (void *user_data)</td></tr>
+<tr class="separator:ae553cf3caee0325a7af82c4a7e05a69e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a437b7c9456575d3bdf7db02b2b82761f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a437b7c9456575d3bdf7db02b2b82761f">KeyboardHandlers_LangChanged</a> (void)</td></tr>
+<tr class="separator:a437b7c9456575d3bdf7db02b2b82761f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4a8854e41040dc199bb12865d1effcb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#ad4a8854e41040dc199bb12865d1effcb">KeyboardHandlers_Init</a> (void)</td></tr>
+<tr class="separator:ad4a8854e41040dc199bb12865d1effcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ad62542b9985948f1e41c1a2972d378"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#a6ad62542b9985948f1e41c1a2972d378">KeyboardHandlers_Execute</a> (WPARAM wParam)</td></tr>
+<tr class="separator:a6ad62542b9985948f1e41c1a2972d378"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variáveis</h2></td></tr>
+<tr class="memitem:afcf915e546fe84d2df1a0afbfc88d159"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_keyboard_map.html">KeyboardMap</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_keyboard_handlers_8cpp.html#afcf915e546fe84d2df1a0afbfc88d159">ShortcutMaps</a></td></tr>
+<tr class="separator:afcf915e546fe84d2df1a0afbfc88d159"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Funções</h2>
+<a class="anchor" id="a4b11b1831cce7a429fe16e2ac938821d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool CmdExpand </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structt_command_source.html">tCommandSource</a>&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a87a3e2ecabb46491620e3ffc4c2afca5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Compile </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae476a4bbf15893b235213aef111ea76a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Config </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac7b913d388abcdc5d538ade2fcbe8f5c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Cursor_End </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa340b205bbdb29dc902606fd78a7bc83"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Cursor_Home </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a749edff8ec9fab8fdd80f3a8d2b1f43a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Cursor_Left </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4eeed4366a5633891e4fcacacc7f2b35"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Cursor_MoveDown </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4a5ff878fbb2f73249c84ea9c9e7110d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Cursor_MoveUp </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9af09b85e95f27ed92b9aaf395c3125c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Cursor_Right </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a885b6444cb6299e453bc08e890c07375"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Debug </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a36e487ff899a6cf2c45caff7fd9e118b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_AD </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a35085c4743d327744ab047e255b60fc1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Bit_Check </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8f2c73406ae130348aaf12cd7cd41cf0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Bit_Set </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a42bfa7e038db1c0d5209518632501c74"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Coil </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae19eea8aa26d478e0b599c89182eb6da"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Comment </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a19055468dc19be70ebaf6c1491c66b8a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Comparison_Equal </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0fc0d3ccecb9deeba5ad5d2de1c6e308"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Comparison_Greater </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aecf42f71f6592c5e0924c892b5523aab"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Comparison_GreaterEqual </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a66c67ed76e62d592c0bda6c226d1ff48"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Comparison_Less </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6517645a8f321580033139881f78ab5c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Comparison_LessEqual </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aded425039087154f20e1aba125e6f3ef"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Comparison_NotEqual </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1002863b9dade9b9b60c80db2dd7838d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Contact </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="acc3459700695142a4a68028acc124edb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Counter_Circular </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0984a4763244bf692bc43930c9b07168"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Counter_Decremental </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6312f70dc54b6e74ef2ec5c3e8ae8496"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Counter_Incremental </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a452a5bff3891bd033658c4784bf7b6ac"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_DA_Ramp </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a095b79f057293ca18f17da54ce74f66c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_DA_Set </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa74fec4e584e271d656af4d66de19eec"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Encoder_Read </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa46eab34ab2f893f7a698b679dccd054"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Encoder_Reset </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1941faf7822091c20b2e327f050f8d55"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Math_Add </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2e82a82d367a6bc3c82bd4919df16b5d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Math_Divide </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac81791dd667836da7f602e6c6069930a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Math_Multiply </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afea14844b4e0f8eb7b504881e81dfc17"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Math_Subtract </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9bef894cb1d6897c60f4d5b0a39c72fc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_ModBUS_Read </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a962601d4089e8f76a78e1f6d5dfb4623"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_ModBUS_Write </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a201e57c75ae7d3dd005a21f5e1c5346a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Move </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a353045917cb2336e4f9d586c835e1abe"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_OneShot_Falling </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a58cf3de4f04bfd67b10912590a324564"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_OneShot_Rising </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aad4319ad875e4e9e5df387060a5e9134"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Parallel </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2285e324ce641e3802c82465aa8516d5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_PWM </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3e69c9e9c86a85eb2132d89a97579c4f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Reset </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae3580f9a005041242f385012309a7407"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Timer_Off </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad77624f68ba59d1c004083132b8a5710"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Timer_On </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a44187581ab7c9976dd9d3bd07cee6702"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_USS_Read </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac535e4ea935ab5fd67bd251395085bd5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_USS_Write </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a257bc0650b1e6f3e1facee0a79e9e37d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Yaskawa_Read </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0a8d1b8e2377a96f316a47ecbe5f4cb0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Add_Yaskawa_Write </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3a014791d03d094da86c689fa6bb65b9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Copy </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa68258c2a39a341083f0c72d01683ad9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Cut </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9fa4e413e0bf0f0a059aa563367cac0c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Delete </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae0020e91dd2bd4c6b0ad362fd6af1f73"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Edit </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7ff2460a1374cd1bd0279b3308b5c753"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Make_Negate </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a098ff82aaf6a1947117b82956b48f1cc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Make_Normal </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae42e12cc48c7998b40818ca426774a3d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Make_Reset </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a688e4b5975a5ecbfe151a711869646c4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Make_Set </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a60d1bd79f27af0efa99e0ca14b8e88d0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Paste </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac05579b5b1606da407a51dcab533b565"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Element_Timer_Retentive </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7c5ec71003dbc21f927b104079cc6f06"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_ExpandElement </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a18d1119ffa1c56f39e09916e1c363a2c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_FAR_Next </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8cb483ecec0bf530fb032ba1f78604f5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_FAR_Open </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae3e51b59c5d0fb84be64f2e0e3f40bd9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_File_Export </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8e6a041b4b4561426ee1779f891251dd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_File_New </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab90b7db983e15721059049025330a5d9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_File_Open </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afe1074f3374d60cc451605e82803d742"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_File_Save </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af3ac6c4d80ded9157c371c222e446fc0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Ladder_End </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae1f4c4cffd7188320246a648b622ed25"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Ladder_Home </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6aef7e7180690fd603f3827e723f664f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Manual_Open </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6df6d4f7299e6826eeccbcb017db4931"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Program </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae553cf3caee0325a7af82c4a7e05a69e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Redo </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a839571b15442744fa555372204db6fb2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Rung_Delete </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afb13a28224448db3417958f9cb515a69"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Rung_Insert_After </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa7dc20484d52d7e2ca39a1cbe1641907"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Rung_Insert_Before </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a03eea477672e1aded23d4fa0f174ac1d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Rung_MoveDown </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8b012ff82f14becbfefa921a97c605e7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Rung_MoveUP </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3fcbf3294daa5f1bd967dc8c7a821d00"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_SetFocus_IoList </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aeae3b8886a40f1471107aed6221b49cc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Simulation_Down </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9df34a2bad8f48861d9255fdd9d51849"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Simulation_Exit </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6bf8aceb303c77c560d2a08b79bc418a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Simulation_Left </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a19133e5f5bd46fa800635d3f40eb84ea"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Simulation_Pause </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac337b6d01a42fcac34fc60b45fa9ef35"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Simulation_Right </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a528fa153c7ed1467dc5d6309921dd47d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Simulation_SingleCycle </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a17020b10e7e37035a3960d1bbda42792"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Simulation_Start </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="acf01934e9eacd246225598a86205b83c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Simulation_Toggle </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2593c93a135d34cbecf97e8623e92431"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Simulation_Up </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a5f2e5abb4d42f8ecba2c4b28057ae5fa"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KBH_Undo </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6ad62542b9985948f1e41c1a2972d378"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int KeyboardHandlers_Execute </td>
+          <td>(</td>
+          <td class="paramtype">WPARAM&#160;</td>
+          <td class="paramname"><em>wParam</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad4a8854e41040dc199bb12865d1effcb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void KeyboardHandlers_Init </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a437b7c9456575d3bdf7db02b2b82761f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void KeyboardHandlers_LangChanged </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Variáveis</h2>
+<a class="anchor" id="afcf915e546fe84d2df1a0afbfc88d159"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_keyboard_map.html">KeyboardMap</a> ShortcutMaps</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Gerado em Quinta, 7 de Novembro de 2013 07:47:52 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.5
+</small></address>
+</body>
+</html>

@@ -264,7 +264,7 @@ void DAC_Cycle(void * pdata)
 	int start = 0, offset = 0;
 
 	DA_Set local;
-	local.ID = 0;
+	memset(&local, 0, sizeof(local));
 
 	while(1) {
 		if(GlobalDA.ID != local.ID) {

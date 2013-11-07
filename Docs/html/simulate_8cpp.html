@@ -1,0 +1,1431 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>POPTools: Referência do Arquivo F:/SVN/POPTools/simulate.cpp</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() { searchBox.OnSelectItem(0); });
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="poptools.png"/></td>
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">POPTools
+   &#160;<span id="projectnumber">2.0</span>
+   </div>
+   <div id="projectbrief">Ferramenta para programaçao de CLPs POP-7</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Gerado por Doxygen 1.8.5 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Busca');
+</script>
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>Página&#160;Principal</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="files.html"><span>Arquivos</span></a></li>
+      <li>
+        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <img id="MSearchSelect" src="search/mag_sel.png"
+               onmouseover="return searchBox.OnSearchSelectShow()"
+               onmouseout="return searchBox.OnSearchSelectHide()"
+               alt=""/>
+          <input type="text" id="MSearchField" value="Busca" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
+          </span>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>Lista&#160;de&#160;Arquivos</span></a></li>
+      <li><a href="globals.html"><span>Arquivos&#160;Membros</span></a></li>
+    </ul>
+  </div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>Todos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Arquivos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Funções</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variáveis</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Definições de Tipos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerações</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Valores enumerados</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Definições e Macros</a></div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Componentes</a> &#124;
+<a href="#define-members">Definições e Macros</a> &#124;
+<a href="#typedef-members">Definições de Tipos</a> &#124;
+<a href="#func-members">Funções</a> &#124;
+<a href="#var-members">Variáveis</a>  </div>
+  <div class="headertitle">
+<div class="title">Referência do Arquivo F:/SVN/POPTools/simulate.cpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &quot;<a class="el" href="poptools_8h_source.html">poptools.h</a>&quot;</code><br/>
+<code>#include &lt;vector&gt;</code><br/>
+<code>#include &lt;map&gt;</code><br/>
+</div><div class="textblock"><div class="dynheader">
+Gráfico de dependência de inclusões para simulate.cpp:</div>
+<div class="dyncontent">
+<div class="center"><img src="simulate_8cpp__incl.png" border="0" usemap="#_f_1_2_s_v_n_2_p_o_p_tools_2simulate_8cpp" alt=""/></div>
+<map name="_f_1_2_s_v_n_2_p_o_p_tools_2simulate_8cpp" id="_f_1_2_s_v_n_2_p_o_p_tools_2simulate_8cpp">
+<area shape="rect" id="node2" href="poptools_8h.html" title="poptools.h" alt="" coords="2225,80,2307,107"/><area shape="rect" id="node34" href="resource_8h.html" title="resource.h" alt="" coords="3267,155,3350,181"/><area shape="rect" id="node35" href="splash_8h.html" title="splash.h" alt="" coords="3375,155,3445,181"/><area shape="rect" id="node36" href="modbus__master_8h.html" title="modbus_master.h" alt="" coords="3469,155,3595,181"/><area shape="rect" id="node38" href="_main_ribbon_8h.html" title="MainRibbon.h" alt="" coords="3621,155,3722,181"/><area shape="rect" id="node41" href="_property_set_8h.html" title="PropertySet.h" alt="" coords="3797,155,3899,181"/><area shape="rect" id="node42" href="_keyboard_handlers_8h.html" title="KeyboardHandlers.h" alt="" coords="4127,155,4266,181"/><area shape="rect" id="node45" href="freeze_8h.html" title="freeze.h" alt="" coords="4496,155,4563,181"/><area shape="rect" id="node46" href="intcode_8h.html" title="intcode.h" alt="" coords="1183,229,1258,256"/><area shape="rect" id="node47" href="_ladder_objects_8h.html" title="LadderObjects.h" alt="" coords="1069,155,1186,181"/><area shape="rect" id="node49" href="iomap_8h.html" title="iomap.h" alt="" coords="4588,155,4655,181"/></map>
+</div>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Componentes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structt_static_item_data.html">tStaticItemData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structt_simulation_state.html">tSimulationState</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structt_log_ref_i_o.html">tLogRefIO</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Definições e Macros</h2></td></tr>
+<tr class="memitem:a3a309bd364cd1218a874033e52770039"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a3a309bd364cd1218a874033e52770039">RTC_MODE_DATE_CONTINUOUS</a>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:a3a309bd364cd1218a874033e52770039"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8e7382af93c94ccfba8dfe6ec572d7d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#ac8e7382af93c94ccfba8dfe6ec572d7d">RTC_MODE_DATE_INTERMITTENT</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:ac8e7382af93c94ccfba8dfe6ec572d7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7730e8f61a26ea4f24bb9d2f30d8a70c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a7730e8f61a26ea4f24bb9d2f30d8a70c">RTC_MODE_WEEKDAY_CONTINUOUS</a>&#160;&#160;&#160;2</td></tr>
+<tr class="separator:a7730e8f61a26ea4f24bb9d2f30d8a70c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0096efda9a01dc4202f8c2d016640d34"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a0096efda9a01dc4202f8c2d016640d34">RTC_MODE_WEEKDAY_INTERMITTENT</a>&#160;&#160;&#160;3</td></tr>
+<tr class="separator:a0096efda9a01dc4202f8c2d016640d34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86265889593464b43471134931651543"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a86265889593464b43471134931651543">RTC_GETDATE_MODE_START</a>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:a86265889593464b43471134931651543"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a587cf7e37ee2e79ffa48987b18fc4f0f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a587cf7e37ee2e79ffa48987b18fc4f0f">RTC_GETDATE_MODE_END</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:a587cf7e37ee2e79ffa48987b18fc4f0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a431ffe1a178944b5692c4cdd9567b8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a6a431ffe1a178944b5692c4cdd9567b8">IF_BODY</a></td></tr>
+<tr class="separator:a6a431ffe1a178944b5692c4cdd9567b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Definições de Tipos</h2></td></tr>
+<tr class="memitem:aecbc67e25347c05b46a6586a78edaf34"><td class="memItemLeft" align="right" valign="top">typedef multimap&lt; string, <br class="typebreak"/>
+<a class="el" href="structt_static_item_data.html">tStaticItemData</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#aecbc67e25347c05b46a6586a78edaf34">tStaticItemsMap</a></td></tr>
+<tr class="separator:aecbc67e25347c05b46a6586a78edaf34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Funções</h2></td></tr>
+<tr class="memitem:a80fbd2f7f253bb739316c2ca477bdfee"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a80fbd2f7f253bb739316c2ca477bdfee">Simulate_DaConv</a> (int val, unsigned int mode)</td></tr>
+<tr class="separator:a80fbd2f7f253bb739316c2ca477bdfee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1c2b7855498c00ae6210a7ac971fff3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#ad1c2b7855498c00ae6210a7ac971fff3">AddWP</a> (char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>, int val)</td></tr>
+<tr class="separator:ad1c2b7855498c00ae6210a7ac971fff3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a02ee7414294372e6ff46b5775cb43a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a3a02ee7414294372e6ff46b5775cb43a">RemoveWP</a> (char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>)</td></tr>
+<tr class="separator:a3a02ee7414294372e6ff46b5775cb43a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b0b854489f82fd8777f6492ac9a7162"><td class="memItemLeft" align="right" valign="top">int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a7b0b854489f82fd8777f6492ac9a7162">GetValWP</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>, int *val)</td></tr>
+<tr class="separator:a7b0b854489f82fd8777f6492ac9a7162"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f1452195c12baadf63772c860e7539a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a2f1452195c12baadf63772c860e7539a">ClearListWP</a> (void)</td></tr>
+<tr class="separator:a2f1452195c12baadf63772c860e7539a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a954f1d935d176747db8c7462aaa9633a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a954f1d935d176747db8c7462aaa9633a">CheckWP</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>, int val)</td></tr>
+<tr class="separator:a954f1d935d176747db8c7462aaa9633a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67dfcab5f8ea022cd25424382f7be073"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a67dfcab5f8ea022cd25424382f7be073">HardwareRegisters_Init</a> (<a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> *hwr)</td></tr>
+<tr class="separator:a67dfcab5f8ea022cd25424382f7be073"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af02a4f62f4f2f63477d42f834c5c747b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#af02a4f62f4f2f63477d42f834c5c747b">HardwareRegisters_SetBit</a> (<a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> *hwr, int reg, int index, int bit, int val)</td></tr>
+<tr class="separator:af02a4f62f4f2f63477d42f834c5c747b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa44a6c7c5d19b51cc3e4e8b7a615dfb8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#aa44a6c7c5d19b51cc3e4e8b7a615dfb8">HardwareRegisters_SetValue</a> (<a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> *hwr, int index, int val)</td></tr>
+<tr class="separator:aa44a6c7c5d19b51cc3e4e8b7a615dfb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4451e444db3804897f8903c550589367"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a4451e444db3804897f8903c550589367">HardwareRegisters_Update</a> (<a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> *hwr, const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>, int val)</td></tr>
+<tr class="separator:a4451e444db3804897f8903c550589367"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2797075c4b2072dbeadf9431e6725599"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a2797075c4b2072dbeadf9431e6725599">HardwareRegisters_Sync</a> (<a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> *hwr)</td></tr>
+<tr class="separator:a2797075c4b2072dbeadf9431e6725599"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03762b745e1199acbb5327cc37dfa916"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a03762b745e1199acbb5327cc37dfa916">UpdateSimulation</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>, int val)</td></tr>
+<tr class="separator:a03762b745e1199acbb5327cc37dfa916"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91032f7e543d79410e7722b53cd078a5"><td class="memItemLeft" align="right" valign="top">struct tm *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a91032f7e543d79410e7722b53cd078a5">AdjustDate</a> (struct tm timeinfo, int mode)</td></tr>
+<tr class="separator:a91032f7e543d79410e7722b53cd078a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a779f52c6609dfbe7a1aaa8b7623457df"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a779f52c6609dfbe7a1aaa8b7623457df">RTC_OutputState</a> (struct tm start, struct tm end, struct tm now, int mode, int mask_wday)</td></tr>
+<tr class="separator:a779f52c6609dfbe7a1aaa8b7623457df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6895803452e4f30eee798f5543bdd03d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a6895803452e4f30eee798f5543bdd03d">csvSaveField</a> (FILE *f, string <a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>)</td></tr>
+<tr class="separator:a6895803452e4f30eee798f5543bdd03d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8672311bfd7e6765e8a05bff2dc7afd7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a8672311bfd7e6765e8a05bff2dc7afd7">csvSaveIO</a> (FILE *f, vector&lt; <a class="el" href="structt_log_ref_i_o.html">tLogRefIO</a> &gt;::iterator io, int val)</td></tr>
+<tr class="separator:a8672311bfd7e6765e8a05bff2dc7afd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa53e5c76c712e80b28d81ea1fd4a1d17"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#aa53e5c76c712e80b28d81ea1fd4a1d17">logSearchPendingIO</a> (vector&lt; <a class="el" href="structt_log_ref_i_o.html">tLogRefIO</a> &gt;::iterator io)</td></tr>
+<tr class="separator:aa53e5c76c712e80b28d81ea1fd4a1d17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc17143909e562804a7bd71f359b6da9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#afc17143909e562804a7bd71f359b6da9">LogSimulation</a> (bool isStart)</td></tr>
+<tr class="separator:afc17143909e562804a7bd71f359b6da9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51d900f57fdfe89112b4c03a11059aa9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a51d900f57fdfe89112b4c03a11059aa9">getIntFromMap</a> (map&lt; string, int &gt; *m, const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>)</td></tr>
+<tr class="separator:a51d900f57fdfe89112b4c03a11059aa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4de5ada3490ff7a085df63082dafd5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#ad4de5ada3490ff7a085df63082dafd5a">setIntInMap</a> (map&lt; string, int &gt; *m, const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>, int val)</td></tr>
+<tr class="separator:ad4de5ada3490ff7a085df63082dafd5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a364f0f2462f1f215c823b1a13243c218"><td class="memItemLeft" align="right" valign="top">tStaticItemsMap::iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a364f0f2462f1f215c823b1a13243c218">getStaticItemsIterator</a> (string <a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>)</td></tr>
+<tr class="separator:a364f0f2462f1f215c823b1a13243c218"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ed8787bcd940f8d9b3f5b79161f78e2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a7ed8787bcd940f8d9b3f5b79161f78e2">CreateStaticVariable</a> (string <a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>)</td></tr>
+<tr class="separator:a7ed8787bcd940f8d9b3f5b79161f78e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a878bb3df134d428e55f23e189551d6a5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a878bb3df134d428e55f23e189551d6a5">SetSimulationVariable</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>, <a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a> val)</td></tr>
+<tr class="separator:a878bb3df134d428e55f23e189551d6a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a767eb5d878701c7a6a0bf2f099905e91"><td class="memItemLeft" align="right" valign="top"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a767eb5d878701c7a6a0bf2f099905e91">GetSimulationVariable</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>)</td></tr>
+<tr class="separator:a767eb5d878701c7a6a0bf2f099905e91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a728a18564ec2a3ec076a3709684e801a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a728a18564ec2a3ec076a3709684e801a">SetAdcShadow</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>, <a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a> val)</td></tr>
+<tr class="separator:a728a18564ec2a3ec076a3709684e801a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81c6f819a953f13b277bf65e33865aa9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a81c6f819a953f13b277bf65e33865aa9">GetAdcShadow</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>)</td></tr>
+<tr class="separator:a81c6f819a953f13b277bf65e33865aa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27337e1026bbec9fc8e50a94d9430132"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a27337e1026bbec9fc8e50a94d9430132">SetDAShadow</a> (<a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a> val)</td></tr>
+<tr class="separator:a27337e1026bbec9fc8e50a94d9430132"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8d9deef7600da4eb7dbb5fe643a705f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#aa8d9deef7600da4eb7dbb5fe643a705f">GetDAShadow</a> (void)</td></tr>
+<tr class="separator:aa8d9deef7600da4eb7dbb5fe643a705f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa49ff7ce8c9140fe92b937b25e1a5c1a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#aa49ff7ce8c9140fe92b937b25e1a5c1a">SetEncShadow</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>, <a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a> val)</td></tr>
+<tr class="separator:aa49ff7ce8c9140fe92b937b25e1a5c1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a527d699b6f2f5e541fa7f308b9bbbf17"><td class="memItemLeft" align="right" valign="top"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a527d699b6f2f5e541fa7f308b9bbbf17">GetEncShadow</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>)</td></tr>
+<tr class="separator:a527d699b6f2f5e541fa7f308b9bbbf17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac11f35dc8f2f6c75afdd23f13ede9ed0"><td class="memItemLeft" align="right" valign="top">void CALLBACK&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#ac11f35dc8f2f6c75afdd23f13ede9ed0">PlcCycleTimer</a> (<a class="el" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a> hwnd, UINT msg, UINT_PTR id, <a class="el" href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a> time)</td></tr>
+<tr class="separator:ac11f35dc8f2f6c75afdd23f13ede9ed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8e23e2e2c59d338496d270570ee9b67"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#ae8e23e2e2c59d338496d270570ee9b67">SimulateOneCycle</a> (<a class="el" href="miscutil_8cpp.html#a447de1bbb8c1963bffd7214f3f87a7d8">BOOL</a> forceRefresh)</td></tr>
+<tr class="separator:ae8e23e2e2c59d338496d270570ee9b67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9080148cb7fdfe186fc5a8c7a86e01c1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a9080148cb7fdfe186fc5a8c7a86e01c1">StartSimulationTimer</a> (void)</td></tr>
+<tr class="separator:a9080148cb7fdfe186fc5a8c7a86e01c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05e07d5a44e6300dc1c34c8d31500211"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a05e07d5a44e6300dc1c34c8d31500211">ClearSimulationData</a> (void)</td></tr>
+<tr class="separator:a05e07d5a44e6300dc1c34c8d31500211"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0d54a4a81e5cf5b49fa32058388ee3d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#ae0d54a4a81e5cf5b49fa32058388ee3d">DescribeForIoList</a> (int val, <a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60e">eType</a> <a class="el" href="inputlist_8cpp.html#ac765329451135abec74c45e1897abf26">type</a>, char *out)</td></tr>
+<tr class="separator:ae0d54a4a81e5cf5b49fa32058388ee3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6570f1cabf41d9d5eb1446ec75017d53"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a6570f1cabf41d9d5eb1446ec75017d53">DescribeForIoList</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>, <a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60e">eType</a> <a class="el" href="inputlist_8cpp.html#ac765329451135abec74c45e1897abf26">type</a>, char *out)</td></tr>
+<tr class="separator:a6570f1cabf41d9d5eb1446ec75017d53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaba4d60d5c19d3a52509f2b67c9e5131"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#aaba4d60d5c19d3a52509f2b67c9e5131">SimulationToggleContact</a> (const char *<a class="el" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>)</td></tr>
+<tr class="separator:aaba4d60d5c19d3a52509f2b67c9e5131"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c059e8670e2d7a436c673adef74f439"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a9c059e8670e2d7a436c673adef74f439">ShowUartSimulationWindow</a> (void)</td></tr>
+<tr class="separator:a9c059e8670e2d7a436c673adef74f439"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9aad0415ec255f676aa71e778a20056b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a9aad0415ec255f676aa71e778a20056b">DestroyUartSimulationWindow</a> (void)</td></tr>
+<tr class="separator:a9aad0415ec255f676aa71e778a20056b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variáveis</h2></td></tr>
+<tr class="memitem:af930a6ac2f168ff4308e2f38e5779f48"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structt_simulation_state.html">tSimulationState</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#af930a6ac2f168ff4308e2f38e5779f48">currentSimState</a></td></tr>
+<tr class="separator:af930a6ac2f168ff4308e2f38e5779f48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45c68cb609e028480a4f5ae18a310815"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a45c68cb609e028480a4f5ae18a310815">isLogActive</a> = false</td></tr>
+<tr class="separator:a45c68cb609e028480a4f5ae18a310815"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea03f244c7cad83c0762550deccc2996"><td class="memItemLeft" align="right" valign="top">vector&lt; <a class="el" href="structt_log_ref_i_o.html">tLogRefIO</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#aea03f244c7cad83c0762550deccc2996">logRefIO</a></td></tr>
+<tr class="separator:aea03f244c7cad83c0762550deccc2996"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75d35b31635bbbb54b8bfcb353f325f0"><td class="memItemLeft" align="right" valign="top">vector&lt; vector&lt; int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a75d35b31635bbbb54b8bfcb353f325f0">logDataIO</a></td></tr>
+<tr class="separator:a75d35b31635bbbb54b8bfcb353f325f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace5aca9e26e4e95c4227c7987f68f0f9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="miscutil_8cpp.html#a447de1bbb8c1963bffd7214f3f87a7d8">BOOL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#ace5aca9e26e4e95c4227c7987f68f0f9">SimulateRedrawAfterNextCycle</a></td></tr>
+<tr class="separator:ace5aca9e26e4e95c4227c7987f68f0f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a637320fadcba57209b3d09dadbc4c76b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a637320fadcba57209b3d09dadbc4c76b">UartSimulationWindow</a> = 0</td></tr>
+<tr class="separator:a637320fadcba57209b3d09dadbc4c76b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30504539b740e558061f6205472c5163"><td class="memItemLeft" align="right" valign="top"><a class="el" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a30504539b740e558061f6205472c5163">UartSimulationTextControl</a> = 0</td></tr>
+<tr class="separator:a30504539b740e558061f6205472c5163"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a932ed1e9b113bd754e1ac6d594516e21"><td class="memItemLeft" align="right" valign="top">map&lt; string, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a932ed1e9b113bd754e1ac6d594516e21">Watchpoints</a></td></tr>
+<tr class="separator:a932ed1e9b113bd754e1ac6d594516e21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fc81ed8b337025307397d35ee169750"><td class="memItemLeft" align="right" valign="top"><a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a0fc81ed8b337025307397d35ee169750">hwreg</a></td></tr>
+<tr class="separator:a0fc81ed8b337025307397d35ee169750"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61b1bfd35fef9fd2b2113310cf60b9e2"><td class="memItemLeft" align="right" valign="top">struct tm RTC_StartTM&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulate_8cpp.html#a61b1bfd35fef9fd2b2113310cf60b9e2">RTC_EndTM</a></td></tr>
+<tr class="separator:a61b1bfd35fef9fd2b2113310cf60b9e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Definições e macros</h2>
+<a class="anchor" id="a6a431ffe1a178944b5692c4cdd9567b8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IF_BODY</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Valor:</b><div class="fragment"><div class="line">{ \</div>
+<div class="line">        IfConditionTrue(); \</div>
+<div class="line">    } <span class="keywordflow">else</span> { \</div>
+<div class="line">        IfConditionFalse(); \</div>
+<div class="line">    }</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a587cf7e37ee2e79ffa48987b18fc4f0f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define RTC_GETDATE_MODE_END&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a86265889593464b43471134931651543"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define RTC_GETDATE_MODE_START&#160;&#160;&#160;0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3a309bd364cd1218a874033e52770039"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define RTC_MODE_DATE_CONTINUOUS&#160;&#160;&#160;0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac8e7382af93c94ccfba8dfe6ec572d7d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define RTC_MODE_DATE_INTERMITTENT&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7730e8f61a26ea4f24bb9d2f30d8a70c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define RTC_MODE_WEEKDAY_CONTINUOUS&#160;&#160;&#160;2</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0096efda9a01dc4202f8c2d016640d34"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define RTC_MODE_WEEKDAY_INTERMITTENT&#160;&#160;&#160;3</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Definições dos tipos</h2>
+<a class="anchor" id="aecbc67e25347c05b46a6586a78edaf34"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef multimap&lt;string, <a class="el" href="structt_static_item_data.html">tStaticItemData</a>&gt; <a class="el" href="simulate_8cpp.html#aecbc67e25347c05b46a6586a78edaf34">tStaticItemsMap</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Funções</h2>
+<a class="anchor" id="ad1c2b7855498c00ae6210a7ac971fff3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AddWP </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a91032f7e543d79410e7722b53cd078a5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct tm* AdjustDate </td>
+          <td>(</td>
+          <td class="paramtype">struct tm&#160;</td>
+          <td class="paramname"><em>timeinfo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>mode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a954f1d935d176747db8c7462aaa9633a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CheckWP </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2f1452195c12baadf63772c860e7539a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ClearListWP </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a05e07d5a44e6300dc1c34c8d31500211"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ClearSimulationData </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7ed8787bcd940f8d9b3f5b79161f78e2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CreateStaticVariable </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6895803452e4f30eee798f5543bdd03d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void csvSaveField </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8672311bfd7e6765e8a05bff2dc7afd7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void csvSaveIO </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">vector&lt; <a class="el" href="structt_log_ref_i_o.html">tLogRefIO</a> &gt;::iterator&#160;</td>
+          <td class="paramname"><em>io</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae0d54a4a81e5cf5b49fa32058388ee3d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void DescribeForIoList </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60e">eType</a>&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6570f1cabf41d9d5eb1446ec75017d53"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void DescribeForIoList </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60e">eType</a>&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9aad0415ec255f676aa71e778a20056b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void DestroyUartSimulationWindow </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a81c6f819a953f13b277bf65e33865aa9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a> GetAdcShadow </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa8d9deef7600da4eb7dbb5fe643a705f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a> GetDAShadow </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a527d699b6f2f5e541fa7f308b9bbbf17"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a> GetEncShadow </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a51d900f57fdfe89112b4c03a11059aa9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int getIntFromMap </td>
+          <td>(</td>
+          <td class="paramtype">map&lt; string, int &gt; *&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a767eb5d878701c7a6a0bf2f099905e91"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a> GetSimulationVariable </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a364f0f2462f1f215c823b1a13243c218"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">tStaticItemsMap::iterator getStaticItemsIterator </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7b0b854489f82fd8777f6492ac9a7162"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int* GetValWP </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a67dfcab5f8ea022cd25424382f7be073"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void HardwareRegisters_Init </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> *&#160;</td>
+          <td class="paramname"><em>hwr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af02a4f62f4f2f63477d42f834c5c747b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void HardwareRegisters_SetBit </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> *&#160;</td>
+          <td class="paramname"><em>hwr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>reg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>bit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa44a6c7c5d19b51cc3e4e8b7a615dfb8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void HardwareRegisters_SetValue </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> *&#160;</td>
+          <td class="paramname"><em>hwr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2797075c4b2072dbeadf9431e6725599"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void HardwareRegisters_Sync </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> *&#160;</td>
+          <td class="paramname"><em>hwr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4451e444db3804897f8903c550589367"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void HardwareRegisters_Update </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> *&#160;</td>
+          <td class="paramname"><em>hwr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa53e5c76c712e80b28d81ea1fd4a1d17"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void logSearchPendingIO </td>
+          <td>(</td>
+          <td class="paramtype">vector&lt; <a class="el" href="structt_log_ref_i_o.html">tLogRefIO</a> &gt;::iterator&#160;</td>
+          <td class="paramname"><em>io</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afc17143909e562804a7bd71f359b6da9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void LogSimulation </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>isStart</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac11f35dc8f2f6c75afdd23f13ede9ed0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CALLBACK PlcCycleTimer </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a>&#160;</td>
+          <td class="paramname"><em>hwnd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>msg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT_PTR&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a>&#160;</td>
+          <td class="paramname"><em>time</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3a02ee7414294372e6ff46b5775cb43a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void RemoveWP </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a779f52c6609dfbe7a1aaa8b7623457df"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int RTC_OutputState </td>
+          <td>(</td>
+          <td class="paramtype">struct tm&#160;</td>
+          <td class="paramname"><em>start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct tm&#160;</td>
+          <td class="paramname"><em>end</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct tm&#160;</td>
+          <td class="paramname"><em>now</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>mode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>mask_wday</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a728a18564ec2a3ec076a3709684e801a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SetAdcShadow </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a>&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a27337e1026bbec9fc8e50a94d9430132"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SetDAShadow </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a>&#160;</td>
+          <td class="paramname"><em>val</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa49ff7ce8c9140fe92b937b25e1a5c1a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SetEncShadow </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a>&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad4de5ada3490ff7a085df63082dafd5a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void setIntInMap </td>
+          <td>(</td>
+          <td class="paramtype">map&lt; string, int &gt; *&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a878bb3df134d428e55f23e189551d6a5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SetSimulationVariable </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="poptools_8h.html#a5834f881464187e3c7272d784fd24733">SWORD</a>&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9c059e8670e2d7a436c673adef74f439"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ShowUartSimulationWindow </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a80fbd2f7f253bb739316c2ca477bdfee"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int Simulate_DaConv </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>mode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae8e23e2e2c59d338496d270570ee9b67"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SimulateOneCycle </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="miscutil_8cpp.html#a447de1bbb8c1963bffd7214f3f87a7d8">BOOL</a>&#160;</td>
+          <td class="paramname"><em>forceRefresh</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aaba4d60d5c19d3a52509f2b67c9e5131"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SimulationToggleContact </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9080148cb7fdfe186fc5a8c7a86e01c1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void StartSimulationTimer </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a03762b745e1199acbb5327cc37dfa916"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void UpdateSimulation </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Variáveis</h2>
+<a class="anchor" id="aad462966ed963f892117056de1eba502"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Count</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af930a6ac2f168ff4308e2f38e5779f48"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structt_simulation_state.html">tSimulationState</a> currentSimState</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0b39907dad955023b8292725c1fc4b6d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int FinalValue</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0fc81ed8b337025307397d35ee169750"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="poptools_8h.html#a5bb5c3207dad61b4ad6209c79566a3a0">HardwareRegisters</a> hwreg</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a45c68cb609e028480a4f5ae18a310815"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool isLogActive = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a75d35b31635bbbb54b8bfcb353f325f0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">vector&lt; vector&lt;int&gt; &gt; logDataIO</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aea03f244c7cad83c0762550deccc2996"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">vector&lt;<a class="el" href="structt_log_ref_i_o.html">tLogRefIO</a>&gt; logRefIO</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a61b1bfd35fef9fd2b2113310cf60b9e2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct tm RTC_StartTM RTC_EndTM</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ace5aca9e26e4e95c4227c7987f68f0f9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="miscutil_8cpp.html#a447de1bbb8c1963bffd7214f3f87a7d8">BOOL</a> SimulateRedrawAfterNextCycle</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a51edce1a9be7bbee75015eb846d193d7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int StartCount</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a36c697d771ff36372d70dacddde18455"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int StartValue</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a30504539b740e558061f6205472c5163"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a> UartSimulationTextControl = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a637320fadcba57209b3d09dadbc4c76b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a> UartSimulationWindow = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a932ed1e9b113bd754e1ac6d594516e21"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">map&lt;string, int&gt; Watchpoints</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Gerado em Quinta, 7 de Novembro de 2013 07:47:52 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.5
+</small></address>
+</body>
+</html>

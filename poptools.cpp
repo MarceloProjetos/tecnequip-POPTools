@@ -1316,7 +1316,7 @@ cmp:
             break;
 
         case MNU_FIND_AND_REPLACE:
-			ShowFARDialog();
+			ShowFARWindow();
             break;
 
         case MNU_FIND_AND_REPLACE_NEXT:

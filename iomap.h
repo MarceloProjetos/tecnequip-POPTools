@@ -75,6 +75,7 @@ public:
 	unsigned long   getIndex          (unsigned long id, bool isTotal = true);
 	string          getName           (unsigned long id);
 	string          getInternalVarName(string name);
+	string          getReservedName   (eType type);
 	mapDetails      getDetails        (unsigned long id);
 	unsigned long   getID             (string name);
 	unsigned long   getID             (unsigned int  index, bool fromVectorIO = false);

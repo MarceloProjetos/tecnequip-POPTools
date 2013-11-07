@@ -57,7 +57,7 @@ void ADC_SetMask(unsigned int ad_mask)
 
 void ADC_Update(void)
 {
-  unsigned int i, a, val;
+  unsigned int i, a, val = 0;
 
   for(a=0; ADC_Mask>>a; a++) {
 	  if((ADC_Mask>>a) && 1) {

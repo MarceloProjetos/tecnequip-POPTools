@@ -391,7 +391,7 @@ LadderElemContact::LadderElemContact(LadderDiagram *diagram) : LadderElem(false,
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("in");
+	infoIO_Name.name          = Diagram->getReservedNameIO(eType_DigInput);
 	infoIO_Name.isBit         = true;
 	infoIO_Name.type          = eType_DigInput;
 	infoIO_Name.access        = eRequestAccessType_Read;
@@ -574,7 +574,7 @@ bool LadderElemContact::internalUpdateNameTypeIO(unsigned int index, string name
 	}
 
 	eReply reply;
-	bool ret = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, eReply_Ask, &reply);
+	bool ret = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, &reply);
 	if(ret) {
 		if(reply == eReply_No || reply == eReply_Ok) {
 			mapDetails detailsIO = Diagram->getDetailsIO(name);
@@ -613,7 +613,7 @@ LadderElemCoil::LadderElemCoil(LadderDiagram *diagram) : LadderElem(true, false,
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("out");
+	infoIO_Name.name          = Diagram->getReservedNameIO(eType_DigOutput);
 	infoIO_Name.isBit         = true;
 	infoIO_Name.type          = eType_DigOutput;
 	infoIO_Name.access        = eRequestAccessType_Write;
@@ -796,7 +796,7 @@ bool LadderElemCoil::internalUpdateNameTypeIO(unsigned int index, string name, e
 	}
 
 	eReply reply;
-	bool ret = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, eReply_Ask, &reply);
+	bool ret = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, &reply);
 	if(ret) {
 		if(reply == eReply_No) {
 			mapDetails detailsIO = Diagram->getDetailsIO(name);
@@ -10279,10 +10279,6 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 	InsertionPoint StartPoint = { 0, { context.ParallelStart, nullptr }, nullptr, nullptr};
 	InsertionPoint EndPoint   = { 0, { context.SelectedElem , nullptr }, nullptr, nullptr};
 
-	// First we should to remove last saved state because UndoRemember was called before to add this new elemment.
-	// We don't want user going back to this state (with parallel start)!
-	//UndoForget();
-
 	// Phase 1: check if context.ParallelStart and currently selected object are in the same subcircuit.
 	for(i=0; i < rungs.size(); i++) {
 		rungs[i]->rung->ElemInSubcktSeries(context, &StartPoint);
@@ -11722,7 +11718,7 @@ bool LadderDiagram::IsValidVarName(string varname)
 	return true;
 }
 
-bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type, const char *FieldName, unsigned int Rules, int MinVal, int MaxVal, eReply canUpdate, eReply *reply)
+bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type, const char *FieldName, unsigned int Rules, int MinVal, int MaxVal, eReply *reply)
 {
 	// Se reply nao tiver sido fornecido, usa variavel local apenas para nao ficar com ponteiro nulo.
 	eReply dummy;
@@ -11875,9 +11871,9 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 	return ret;
 }
 
-bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type, eReply canUpdate, eReply *reply)
+bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type, eReply *reply)
 {
-	return IsValidNameAndType(id, name, type, NULL, VALIDATE_IS_VAR, 0, 0, canUpdate, reply);
+	return IsValidNameAndType(id, name, type, NULL, VALIDATE_IS_VAR, 0, 0, reply);
 }
 
 eValidateResult LadderDiagram::Validate(void)
@@ -12002,6 +11998,11 @@ vector<eType> LadderDiagram::getGeneralTypes(void)
 vector<string> LadderDiagram::getListIO(void)
 {
 	return IO->getList();
+}
+
+string LadderDiagram::getReservedNameIO(eType type)
+{
+	return IO->getReservedName(type);
 }
 
 // Funcoes relacionadas aos comandos de Desfazer / Refazer

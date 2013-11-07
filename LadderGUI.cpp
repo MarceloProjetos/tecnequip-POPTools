@@ -1696,7 +1696,12 @@ bool ElemSimCmdSetVariable(tCommandSource source, void *data)
 	string name = ladder->getNameIO(id);
 
 	if(name.size() > 0) {
-		switch(ladder->getDetailsIO(name).type) {
+		eType type = ladder->getDetailsIO(name).type;
+		if(type == eType_Reserved && source.elem != nullptr && source.elem->getWhich() == ELEM_CONTACTS) {
+			type = eType_DigInput;
+		}
+
+		switch(type) {
 		case eType_DigInput:
 			SimulationToggleContact(name.c_str());
 			break;

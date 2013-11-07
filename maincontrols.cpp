@@ -521,17 +521,21 @@ void MainWindowResized(void)
         IoListHeight = main.bottom - statusHeight - 5;
         IoListTop = main.bottom - IoListHeight - statusHeight;
     }
-	if (UartSimulationWindow != NULL)
-	{
+
+	if (UartSimulationWindow != NULL) {
 		MoveWindow(IoList, 0, IoListTop, main.right / 2, IoListHeight, TRUE);
 		MoveWindow(UartSimulationWindow, main.right / 2, IoListTop, main.right / 2, IoListHeight, TRUE);
 
 		RECT text;
 		GetClientRect(UartSimulationWindow, &text);
-		SetWindowPos(UartSimulationTextControl, 0, text.left + 1, text.top, text.right - 2, text.bottom, NULL);
-	}
-	else
+		SetWindowPos(UartSimulationTextControl, 0, 1, 0, text.right - 2, text.bottom, NULL);
+	} else if (FARWindow != NULL) {
+		RECT r = { main.right - FarWidth, IoListTop, FarWidth, IoListHeight };
+		MoveWindow(IoList, 0, IoListTop, r.left, IoListHeight, TRUE);
+		MoveFARWindow(r);
+	} else {
 		MoveWindow(IoList, 0, IoListTop, main.right, IoListHeight, TRUE);
+	}
 
     RefreshScrollbars();
 	RefreshDrawWindow();
@@ -554,6 +558,9 @@ void ToggleSimulationMode(void)
 	SetApplicationMode();
 
 	if(ladder->getContext().inSimulationMode) {
+		if(FARWindow != NULL) {
+			DestroyWindow(FARWindow);
+		}
 		ShowTabCtrl(false);
 	} else if(ladderList.size() > 1) {
 		ShowTabCtrl(true);

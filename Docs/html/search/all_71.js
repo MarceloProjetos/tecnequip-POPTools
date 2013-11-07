@@ -1,0 +1,4 @@
+var searchData=
+[
+  ['queryinterface',['QueryInterface',['../class_c_dialog_event_handler.html#a83da55cdef6e1160d6c8a0d613ca3bb5',1,'CDialogEventHandler::QueryInterface()'],['../class_c_property_set.html#a4eec3cf79b6bfc761496bc162519770a',1,'CPropertySet::QueryInterface()'],['../class_resource_font_collection_loader.html#aeb076e9f9989e7bb75e711c321d73a68',1,'ResourceFontCollectionLoader::QueryInterface()'],['../class_resource_font_file_enumerator.html#a121e0188c536d7324cce24cf1afa0f82',1,'ResourceFontFileEnumerator::QueryInterface()'],['../class_resource_font_file_loader.html#ac63a6457122ddcca3692af48e2c0855a',1,'ResourceFontFileLoader::QueryInterface()'],['../class_resource_font_file_stream.html#aa05f74a3a642894808c75aaf6ed66af6',1,'ResourceFontFileStream::QueryInterface()'],['../class_c_recent_file_properties.html#ae09c6b29c74e88f7e47eae3d74ebb84e',1,'CRecentFileProperties::QueryInterface()']]]
+];
