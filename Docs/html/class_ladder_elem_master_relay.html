@@ -94,6 +94,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Busca');
 </div><!--header-->
 <div class="contents">
 
+<p>Classe derivada de <a class="el" href="class_ladder_elem.html" title="Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base. ">LadderElem</a> que representa o elemento Master Relay.  
+ <a href="class_ladder_elem_master_relay.html#details">Mais...</a></p>
+
 <p><code>#include &lt;<a class="el" href="_ladder_objects_8h_source.html">LadderObjects.h</a>&gt;</code></p>
 <div class="dynheader">
 Diagrama de Hierarquia para LadderElemMasterRelay:</div>
@@ -214,7 +217,9 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memdesc:a12087129f76e7020d1f85750766c9647 inherit pro_attribs_class_ladder_elem"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ponteiro para o diagrama ao qual este elemento esta associado.  <a href="#a12087129f76e7020d1f85750766c9647">Mais...</a><br/></td></tr>
 <tr class="separator:a12087129f76e7020d1f85750766c9647 inherit pro_attribs_class_ladder_elem"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Construtores &amp; Destrutores</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Descrição Detalhada</h2>
+<div class="textblock"><p>Classe derivada de <a class="el" href="class_ladder_elem.html" title="Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base. ">LadderElem</a> que representa o elemento Master Relay. </p>
+</div><h2 class="groupheader">Construtores &amp; Destrutores</h2>
 <a class="anchor" id="a450e0168c3118753cb814de8f9d7df97"></a>
 <div class="memitem">
 <div class="memproto">
@@ -228,6 +233,13 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Construtor </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">diagram</td><td>Ponteiro para o diagrama ao qual o novo elemento deve ser associado </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -263,7 +275,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que indica se o I/O pode ser alterado para o tipo solicitado </p>
+<p>Funcao que indica se o I/O pode ser alterado para o tipo solicitado </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID do I/O sendo alterado </td></tr>
@@ -332,7 +344,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que cria uma copia do elemento </p>
+<p>Funcao que cria uma copia do elemento </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">diagram</td><td>Ponteiro para o diagrama ao qual o novo elemento deve ser associado </td></tr>
@@ -430,7 +442,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que desenha o elemento na tela </p>
+<p>Funcao que desenha o elemento na tela </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">poweredBefore</td><td>Indica se a entrada do elemento esta energizada em uma simulacao </td></tr>
@@ -465,7 +477,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que gera o texto utilizado para impressao e exportacao em modo texto </p>
+<p>Funcao que gera o texto utilizado para impressao e exportacao em modo texto </p>
 <dl class="section return"><dt>Retorna</dt><dd>Par de strings (Linha superior e linha inferior) que representam o elemento em modo texto </dd></dl>
 
 <p>Implementa <a class="el" href="class_ladder_elem.html#a781692db86abe1d586e8837945b2ed38">LadderElem</a>.</p>
@@ -493,7 +505,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que retorna o tipo permitido para este I/O pelo elemento atual </p>
+<p>Funcao que retorna o tipo permitido para este I/O pelo elemento atual </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID do I/O sendo solicitado </td></tr>
@@ -527,7 +539,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que retorna as propriedades do elemento </p>
+<p>Funcao que retorna as propriedades do elemento </p>
 <dl class="section return"><dt>Retorna</dt><dd>Ponteiro para as propriedades especificas deste elemento </dd></dl>
 
 <p>Implementa <a class="el" href="class_ladder_elem.html#aa849dd21010eb6f6e46e18ef6560c556">LadderElem</a>.</p>
@@ -599,7 +611,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que executa uma acao de desfazer / refazer nas classes derivadas </p>
+<p>Funcao que executa uma acao de desfazer / refazer nas classes derivadas </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">IsUndo</td><td>Indice se a acao se refere a operacao de Desfazer (true) ou Refazer (false) </td></tr>
@@ -635,7 +647,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que gera o codigo intermediario, implementada pelo elemento para gerar seu codigo especifico </p>
+<p>Funcao que gera o codigo intermediario, implementada pelo elemento para gerar seu codigo especifico </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">ic</td><td>Referencia ao vetor contendo o codigo intermediario, onde as novas instrucoes serao agregadas </td></tr>
@@ -679,7 +691,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que carrega os dados do elemento do disco </p>
+<p>Funcao que carrega os dados do elemento do disco </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">f</td><td>Ponteiro para o handler do arquivo sendo carregado </td></tr>
@@ -714,7 +726,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que salva os dados do elemento em disco </p>
+<p>Funcao que salva os dados do elemento em disco </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">f</td><td>Ponteiro para o handler do arquivo sendo salvo </td></tr>
@@ -758,7 +770,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual executada ao atualizar as propriedades de um elemento </p>
+<p>Funcao executada ao atualizar as propriedades de um elemento </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Ponteiro para as propriedades, conforme o tipo do elemento </td></tr>
@@ -809,7 +821,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que atualiza o I/O indicado por index para o novo nome/tipo (se possivel) </p>
+<p>Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel) </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>Indice para indicar qual o I/O que deve ser atualizado </td></tr>
@@ -861,7 +873,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que realiza uma busca / substituicao de nome de I/O entre os seus I/Os </p>
+<p>Funcao que realiza uma busca / substituicao de nome de I/O entre os seus I/Os </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">idSearch</td><td>ID do I/O sendo buscado / substituido </td></tr>
@@ -897,7 +909,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que exibe a janela de dialogo para configuracao do elemento </p>
+<p>Funcao que exibe a janela de dialogo para configuracao do elemento </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Contexto do Diagrama com informacoes sobre o que pode ser feito, objeto selecionado, etc. </td></tr>
@@ -941,7 +953,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que informa o elemento que ele deve atualizar seus I/Os </p>
+<p>Funcao que informa o elemento que ele deve atualizar seus I/Os </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">owner</td><td>Ponteiro para o diagrama ao qual o I/O pertencia originalmente </td></tr>
@@ -983,7 +995,7 @@ Additional Inherited Members</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Quinta, 7 de Novembro de 2013 07:47:52 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Quinta, 7 de Novembro de 2013 16:07:53 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

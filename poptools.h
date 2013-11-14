@@ -824,8 +824,7 @@ bool ShowCommentDialog(char *comment, POINT ElemStart, POINT ElemSize, POINT Gri
 // multisetdadialog.cpp
 bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *time, string *desl);
 // simpledialog.cpp
-bool ShowVarDialog(char *title, char *varname, string *name, vector<eType> types = vector<eType>());
-bool ShowVarDialog(char *title, char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types = vector<eType>());
+bool ShowVarDialog(char *title, char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types, bool isTxt = false);
 bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end, POINT ElemStart, POINT ElemSize, POINT GridSize);
 bool ShowVarBitDialog(char *title, char *varname, string *name, int * bit, POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types);
 bool ShowModbusDialog(int mode_write, string *name, int *id, int *address, POINT ElemStart, POINT ElemSize, POINT GridSize);
@@ -865,6 +864,7 @@ bool         IoMap_IsModBUS(mapDetails detailsIO);
 void dbp(char *str, ...);
 void Error(char *str, ...);
 void Error(char *title, char *str, va_list f);
+void Warning(char *title, char *str, ...);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 extern HANDLE MainHeap;

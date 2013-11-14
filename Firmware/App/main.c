@@ -58,6 +58,8 @@ struct tm RTC_NowTM;
 extern struct MODBUS_Device modbus_tcp;
 extern volatile unsigned int I_TcpTimeout;
 
+extern volatile unsigned char WAITING_FOR_FMTSTR;
+
 /* Esta rotina deve ser chamada a cada ciclo para executar o diagrama ladder */
 void PLC_Cycle(void *pdata)
 {
@@ -72,6 +74,12 @@ void PLC_Cycle(void *pdata)
 		GPIO_Input();
 
 		// Etapa de Execucao
+
+		// Sempre limpamos a flag e, se houver alguma leitura de formatted string ativa,
+		// a flag sera ligada novamente. Assim garantimos que se nenhum objeto estiver
+		// aguardando por uma string a serial vai usar os outros protocolos
+		WAITING_FOR_FMTSTR = 0;
+
 		PLC_Run();
 
 		// Etapa de Atualizacao

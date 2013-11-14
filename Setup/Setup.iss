@@ -25,6 +25,11 @@ Name: "ptbr"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"; Licens
 Name: "en"; MessagesFile: "compiler:Default.isl"; LicenseFile: "..\Setup\EULA_PTBR.txt"
 Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"; LicenseFile: "..\Setup\EULA_ES.txt"
 
+[CustomMessages]
+en.InstallingLabel=Please wait...
+es.InstallingLabel=Favor aguardar...
+ptbr.InstallingLabel=Favor aguardar...
+
 ; [Types]
 ; Name: "full"; Description: "Instalação Completa"
 ; Name: "compact"; Description: "Instalação Compacta"
@@ -83,3 +88,18 @@ Root: HKCR; Subkey: "POPToolsFiles\shell\open\command"; ValueType: string; Value
 [Run]
 Filename: "{app}\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; StatusMsg: "Aguardando finalizar instalação do Driver USB"; Tasks: installusbdriver
 Filename: "{app}\POPTools.exe"; Description: "{cm:LaunchProgram,POPTools}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+procedure InitializeWizard;
+begin
+  with TNewStaticText.Create(WizardForm) do
+  begin
+    Parent := WizardForm.FilenameLabel.Parent;
+    Left := WizardForm.FilenameLabel.Left;
+    Top := WizardForm.FilenameLabel.Top;
+    Width := WizardForm.FilenameLabel.Width;
+    Height := WizardForm.FilenameLabel.Height;
+    Caption := ExpandConstant('{cm:InstallingLabel}');
+  end;
+  WizardForm.FilenameLabel.Visible := False;
+end;

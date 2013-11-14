@@ -92,6 +92,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Busca');
 </div><!--header-->
 <div class="contents">
 
+<p>Estrutura que define as propriedades de um elemento <a class="el" href="class_ladder_elem_r_t_c.html" title="Classe derivada de LadderElem que representa o elemento RTC. ">LadderElemRTC</a>.  
+ <a href="struct_ladder_elem_r_t_c_prop.html#details">Mais...</a></p>
+
 <p><code>#include &lt;<a class="el" href="_ladder_objects_8h_source.html">LadderObjects.h</a>&gt;</code></p>
 <div class="dynheader">
 Diagrama de colaboração para LadderElemRTCProp:</div>
@@ -102,15 +105,21 @@ Diagrama de colaboração para LadderElemRTCProp:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Atributos Públicos</h2></td></tr>
 <tr class="memitem:a971c22761bec231e9ddb4807a0b691be"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_r_t_c_prop.html#a971c22761bec231e9ddb4807a0b691be">mode</a></td></tr>
+<tr class="memdesc:a971c22761bec231e9ddb4807a0b691be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Modo do RTC. Continuo ou Intermitente (quando usando faixa de data/hora) ou data/hora fixa.  <a href="#a971c22761bec231e9ddb4807a0b691be">Mais...</a><br/></td></tr>
 <tr class="separator:a971c22761bec231e9ddb4807a0b691be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a332dfcdec68fee5d34a8970197f24fb4"><td class="memItemLeft" align="right" valign="top">unsigned char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_r_t_c_prop.html#a332dfcdec68fee5d34a8970197f24fb4">wday</a></td></tr>
+<tr class="memdesc:a332dfcdec68fee5d34a8970197f24fb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mascara com dias da semana. De bit 0 (Domingo) ate 6 (Sabado). Bit 7 indica se esta usando dias da semana (ligado) ou Data/Hora (desligado)  <a href="#a332dfcdec68fee5d34a8970197f24fb4">Mais...</a><br/></td></tr>
 <tr class="separator:a332dfcdec68fee5d34a8970197f24fb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3fe9a0751cdc950135e2f486c89f801e"><td class="memItemLeft" align="right" valign="top">struct tm&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_r_t_c_prop.html#a3fe9a0751cdc950135e2f486c89f801e">start</a></td></tr>
+<tr class="memdesc:a3fe9a0751cdc950135e2f486c89f801e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data/Hora inicial quando usando faixa ou Data/Hora Fixa.  <a href="#a3fe9a0751cdc950135e2f486c89f801e">Mais...</a><br/></td></tr>
 <tr class="separator:a3fe9a0751cdc950135e2f486c89f801e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e2d4d4218a517b6400ea2e38fe174e7"><td class="memItemLeft" align="right" valign="top">struct tm&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_r_t_c_prop.html#a4e2d4d4218a517b6400ea2e38fe174e7">end</a></td></tr>
+<tr class="memdesc:a4e2d4d4218a517b6400ea2e38fe174e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data/Hora final quando usando faixa de Data/Hora.  <a href="#a4e2d4d4218a517b6400ea2e38fe174e7">Mais...</a><br/></td></tr>
 <tr class="separator:a4e2d4d4218a517b6400ea2e38fe174e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Atributos</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Descrição Detalhada</h2>
+<div class="textblock"><p>Estrutura que define as propriedades de um elemento <a class="el" href="class_ladder_elem_r_t_c.html" title="Classe derivada de LadderElem que representa o elemento RTC. ">LadderElemRTC</a>. </p>
+</div><h2 class="groupheader">Atributos</h2>
 <a class="anchor" id="a4e2d4d4218a517b6400ea2e38fe174e7"></a>
 <div class="memitem">
 <div class="memproto">
@@ -120,6 +129,8 @@ Atributos Públicos</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Data/Hora final quando usando faixa de Data/Hora. </p>
 
 </div>
 </div>
@@ -133,6 +144,8 @@ Atributos Públicos</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Modo do RTC. Continuo ou Intermitente (quando usando faixa de data/hora) ou data/hora fixa. </p>
+
 </div>
 </div>
 <a class="anchor" id="a3fe9a0751cdc950135e2f486c89f801e"></a>
@@ -144,6 +157,8 @@ Atributos Públicos</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Data/Hora inicial quando usando faixa ou Data/Hora Fixa. </p>
 
 </div>
 </div>
@@ -157,6 +172,8 @@ Atributos Públicos</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Mascara com dias da semana. De bit 0 (Domingo) ate 6 (Sabado). Bit 7 indica se esta usando dias da semana (ligado) ou Data/Hora (desligado) </p>
+
 </div>
 </div>
 <hr/>A documentação para esta estrutura foi gerada a partir do seguinte arquivo:<ul>
@@ -165,7 +182,7 @@ Atributos Públicos</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Quinta, 7 de Novembro de 2013 07:47:53 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Quinta, 7 de Novembro de 2013 16:07:53 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

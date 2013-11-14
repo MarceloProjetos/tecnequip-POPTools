@@ -20,5 +20,5 @@
 <area shape="rect" id="node19" href="$struct_ladder_settings_d_a_c.html" title="Configuracoes da interface Digital para Analogica (D/A) " alt="" coords="2579,167,2717,244"/>
 <area shape="rect" id="node20" href="$struct_ladder_settings_modbus_slave.html" title="Configuracoes do protocolo ModBUS. " alt="" coords="2741,167,2928,244"/>
 <area shape="rect" id="node22" href="$class_ladder_circuit.html" title="{LadderCircuit\n|&#45; isSeries\l&#45; vectorSubckt\l|+ LadderCircuit()\l+ LadderCircuit()\l+ ~LadderCircuit()\l+ DrawTXT()\l+ DrawGUI()\l+ IsComment()\l+ IsEmpty()\l+ IsLast()\l+ IsSeries()\l+ HasEOL()\land 30 more...\l# InsertSubckt()\l# DeleteSubckt()\l# MoveSubckt()\l&#45; DrawElementTXT()\l&#45; VerticalWireTXT()\l}" alt="" coords="424,49,560,361"/>
-<area shape="rect" id="node23" href="$struct_ladder_elem_comment_prop.html" title="{LadderElemCommentProp\n|+ str\l|}" alt="" coords="5,167,179,244"/>
+<area shape="rect" id="node23" href="$struct_ladder_elem_comment_prop.html" title="Estrutura que define as propriedades de um elemento LadderElemComment. " alt="" coords="5,167,179,244"/>
 </map>

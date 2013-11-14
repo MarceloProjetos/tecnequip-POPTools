@@ -3,6 +3,8 @@
 #include <vector>
 #include <map>
 
+static unsigned int PlcCycleCounter;
+
 static vector<IntOp>::size_type IntCodeLen;
 static vector<IntOp> vectorIntCode;
 
@@ -34,9 +36,10 @@ typedef struct {
 	map<string, int >::iterator itVar;
 } tLogRefIO;
 
-bool                  isLogActive = false;
-vector<tLogRefIO>     logRefIO;
-vector< vector<int> > logDataIO;
+bool                           isLogActive = false;
+vector<tLogRefIO>              logRefIO;
+vector< vector<int> >          logDataIO;
+multimap<unsigned int, string> logBufferUART;
 
 // Don't want to redraw the screen unless necessary; track whether a coil
 // changed state or a timer output switched to see if anything could have
@@ -519,8 +522,13 @@ static void ExportLogAsCSV(void)
 		csvSaveField(f, itIO->name);
 	}
 
+	if(logBufferUART.size() > 0) {
+		csvSaveField(f, "UART");
+	}
+
 	// Agora salva o conteudo
-	for(itData = logDataIO.begin(); itData != logDataIO.end(); itData++) {
+	vector<IntOp>::size_type index;
+	for(index = 0, itData = logDataIO.begin(); itData != logDataIO.end(); itData++, index++) {
 		// Insere quebra de linha
 		fwrite("\n", 1, 1, f);
 
@@ -528,6 +536,16 @@ static void ExportLogAsCSV(void)
 		itVal = itData->begin();
 		for(itIO = logRefIO.begin(); itIO != logRefIO.end(); itIO++, itVal++) {
 			csvSaveIO(f, itIO, *itVal);
+		}
+
+		// Descarrega o buffer UART do ciclo atual
+		multimap<unsigned int, string>::iterator it;
+		pair<multimap<unsigned int, string>::iterator,
+			multimap<unsigned int, string>::iterator> range;
+
+		range = logBufferUART.equal_range(index);
+		for(it = range.first; it != range.second; it++) {
+			csvSaveField(f, it->second);
 		}
 	}
 
@@ -562,8 +580,9 @@ void logSearchPendingIO(vector<tLogRefIO>::iterator io)
 void LogSimulation(bool isStart)
 {
 	if(isStart) {
-		logRefIO .clear();
-		logDataIO.clear();
+		logRefIO     .clear();
+		logDataIO    .clear();
+		logBufferUART.clear();
 
 		tLogRefIO refIO;
 		vector<string>::iterator it;
@@ -582,8 +601,9 @@ void LogSimulation(bool isStart)
 		isLogActive = false;
 		if(logDataIO.size() > 0) {
 			ExportLogAsCSV();
-			logRefIO .clear();
-			logDataIO.clear();
+			logRefIO     .clear();
+			logDataIO    .clear();
+			logBufferUART.clear();
 		}
 	}
 
@@ -1122,11 +1142,13 @@ math:
 				SetSingleBit("$SerialReady", false);
 				SimulateUSSTxCountdown = 0;
 				AppendToFormattedStringSimulationTextControl("RS485 Read: %s\r\n", a->name2, GetSimulationVariable(a->name1));
+				SetSimulationVariable(a->name3, 1);
                 break;
 			case INT_WRITE_FORMATTED_STRING:
 				SetSingleBit("$SerialReady", false);
 				SimulateUSSTxCountdown = 0;
 				AppendToFormattedStringSimulationTextControl("RS485 Write: %s\r\n", a->name2, GetSimulationVariable(a->name1));
+				SetSimulationVariable(a->name3, 1);
                 break;
 			case INT_READ_SERVO_YASKAWA:
 				SetSingleBit("$SerialReady", false);
@@ -1358,6 +1380,8 @@ void SimulateOneCycle(BOOL forceRefresh)
 
 		logDataIO.push_back(ioData);
 	}
+
+	PlcCycleCounter++;
 }
 
 //-----------------------------------------------------------------------------
@@ -1384,8 +1408,11 @@ void StartSimulationTimer(void)
 //-----------------------------------------------------------------------------
 void ClearSimulationData(void)
 {
-	logRefIO .clear();
-	logDataIO.clear();
+	logRefIO     .clear();
+	logDataIO    .clear();
+	logBufferUART.clear();
+
+	PlcCycleCounter = 0;
 
 	currentSimState.Variables      .clear();
 	currentSimState.AdcShadows     .clear();
@@ -1641,6 +1668,26 @@ void DestroyUartSimulationWindow(void)
 //-----------------------------------------------------------------------------
 // Append a received character to the terminal buffer.
 //-----------------------------------------------------------------------------
+static void AppendToUartSimulationTextControl(const char *txt)
+{
+	if(isLogActive) {
+		logBufferUART.insert(pair<unsigned int, string>(PlcCycleCounter, string(txt)));
+	}
+
+    char buf[MAX_SCROLLBACK];
+
+    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)buf);
+
+    int overBy = (strlen(buf) + strlen(txt) + 1) - sizeof(buf);
+    if(overBy > 0) {
+        memmove(buf, buf + overBy, strlen(buf));
+    }
+    strcat(buf, txt);
+
+    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
+    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+}
+
 static void AppendToUartSimulationTextControl(BYTE b)
 {
     char append[5];
@@ -1654,19 +1701,7 @@ static void AppendToUartSimulationTextControl(BYTE b)
         sprintf(append, "\\x%02x", b);
     }
 
-    char buf[MAX_SCROLLBACK];
-
-    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
-        (LPARAM)buf);
-
-    int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
-    if(overBy > 0) {
-        memmove(buf, buf + overBy, strlen(buf));
-    }
-    strcat(buf, append);
-
-    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
-    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+	AppendToUartSimulationTextControl(append);
 }
 
 static void AppendToFormattedStringSimulationTextControl(char * text, char *string, SWORD val)
@@ -1677,20 +1712,7 @@ static void AppendToFormattedStringSimulationTextControl(char * text, char *stri
  	sprintf(formatstring, string, val);
     sprintf(append, text, formatstring);
 
-
-    char buf[MAX_SCROLLBACK];
-
-    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
-        (LPARAM)buf);
-
-    int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
-    if(overBy > 0) {
-        memmove(buf, buf + overBy, strlen(buf));
-    }
-    strcat(buf, append);
-
-    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
-    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+	AppendToUartSimulationTextControl(append);
 }
 
 static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int param, unsigned int index, char *name, unsigned int val)
@@ -1699,19 +1721,7 @@ static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int para
 
     sprintf(append, _("USS: id=%d, param=%d, index=%d, name=%s, value=%d\r\n"), id, param, index, name, val);
 
-    char buf[MAX_SCROLLBACK];
-
-    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
-        (LPARAM)buf);
-
-    int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
-    if(overBy > 0) {
-        memmove(buf, buf + overBy, strlen(buf));
-    }
-    strcat(buf, append);
-
-    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
-    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+	AppendToUartSimulationTextControl(append);
 }
 
 static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int address, char *name)
@@ -1720,19 +1730,7 @@ static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int a
 
     sprintf(append, _("MODBUS: id=%d, address=%d, name=%s\r\n"), id, address, name);
 
-    char buf[MAX_SCROLLBACK];
-
-    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
-        (LPARAM)buf);
-
-    int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
-    if(overBy > 0) {
-        memmove(buf, buf + overBy, strlen(buf));
-    }
-    strcat(buf, append);
-
-    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
-    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+	AppendToUartSimulationTextControl(append);
 }
 
 static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned int address, char *name)
@@ -1741,17 +1739,5 @@ static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned in
 
     sprintf(append, _("MODBUS_ETH: id=%d, address=%d, name=%s\r\n"), id, address, name);
 
-    char buf[MAX_SCROLLBACK];
-
-    SendMessage(UartSimulationTextControl, WM_GETTEXT, (WPARAM)sizeof(buf),
-        (LPARAM)buf);
-
-    int overBy = (strlen(buf) + strlen(append) + 1) - sizeof(buf);
-    if(overBy > 0) {
-        memmove(buf, buf + overBy, strlen(buf));
-    }
-    strcat(buf, append);
-
-    SendMessage(UartSimulationTextControl, WM_SETTEXT, 0, (LPARAM)buf);
-    SendMessage(UartSimulationTextControl, EM_LINESCROLL, 0, (LPARAM)INT_MAX);
+	AppendToUartSimulationTextControl(append);
 }

@@ -247,12 +247,13 @@ void ShowPrefDialog(void)
 		index = SendMessage(LanguageCombobox, CB_GETCURSEL, 0, 0);
 		if(index != POPSettings.idLanguage) {
 			POPSettings.idLanguage = index;
-			MessageBox(PrefDialog, _("O idioma da interface foi alterado.\nFavor reiniciar o programa para que as mudanças tenham efeito"),
-				_("Idioma alterado"), MB_OK | MB_ICONEXCLAMATION);
+			Warning(_("Idioma alterado"),
+				_("O idioma da interface foi alterado.\nFavor reiniciar o programa para que as mudanças tenham efeito"));
 		}
 	}
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(PrefDialog);
+	SetFocus(MainWindow);
     return;
 }

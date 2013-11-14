@@ -20,6 +20,6 @@
 <area shape="rect" id="node19" href="$struct_ladder_settings_d_a_c.html" title="Configuracoes da interface Digital para Analogica (D/A) " alt="" coords="2715,167,2853,244"/>
 <area shape="rect" id="node20" href="$struct_ladder_settings_modbus_slave.html" title="Configuracoes do protocolo ModBUS. " alt="" coords="2877,167,3064,244"/>
 <area shape="rect" id="node22" href="$class_ladder_circuit.html" title="{LadderCircuit\n|&#45; isSeries\l&#45; vectorSubckt\l|+ LadderCircuit()\l+ LadderCircuit()\l+ ~LadderCircuit()\l+ DrawTXT()\l+ DrawGUI()\l+ IsComment()\l+ IsEmpty()\l+ IsLast()\l+ IsSeries()\l+ HasEOL()\land 30 more...\l# InsertSubckt()\l# DeleteSubckt()\l# MoveSubckt()\l&#45; DrawElementTXT()\l&#45; VerticalWireTXT()\l}" alt="" coords="560,49,696,361"/>
-<area shape="rect" id="node23" href="$struct_ladder_elem_set_p_w_m_prop.html" title="{LadderElemSetPWMProp\n|+ idName\l+ targetFreq\l|}" alt="" coords="5,159,176,251"/>
+<area shape="rect" id="node23" href="$struct_ladder_elem_set_p_w_m_prop.html" title="Estrutura que define as propriedades de um elemento LadderElemSetPWM. " alt="" coords="5,159,176,251"/>
 <area shape="rect" id="node24" href="$structt_request_i_o.html" title="Estrutura auxiliar para solicitar um I/O. " alt="" coords="200,123,315,288"/>
 </map>

@@ -138,6 +138,10 @@ static char *MapSym(char *str)
 //-----------------------------------------------------------------------------
 static void DeclareInt(FILE *f, char *rawstr)
 {
+	if(rawstr == nullptr || strlen(rawstr) == 0) {
+		rawstr = "$dummyInt";
+	}
+
 	int mode;
 	bool intvar;
 	char *str = MapSym(rawstr);
@@ -168,13 +172,17 @@ static void DeclareInt(FILE *f, char *rawstr)
 //-----------------------------------------------------------------------------
 static void DeclareBit(FILE *f, char *rawStr)
 {
+	if(rawStr == nullptr || strlen(rawStr) == 0) {
+		rawStr = "$dummyChar";
+	}
+
 	int mode, intflag;
     char *str = MapSym(rawStr);
 	if (!strncmp(str, "M", 1)) {
 		return;
 	}
 
-	intflag = (!strncmp(str, "I_", 2) && ladder->getDetailsIO(str+2).type == eType_InternalFlag);
+	intflag = (!strncmp(str, "I_", 2) && ladder->IsInternalFlagIO(str+2));
 
 	mode = (*rawStr == '$'  && !intflag) ? SEENVAR_MODE_SYSTEM : (!strncmp(str, "U_", 2) ? SEENVAR_MODE_USERBIT : SEENVAR_MODE_OTHERS);
 	if(!SeenVariable(str, mode) && mode == SEENVAR_MODE_OTHERS && !intflag) {
@@ -232,13 +240,17 @@ static void GenerateDeclarations(FILE *f)
                 intVar3 = vectorIntCode[i].name3;
                 break;
 
+			case INT_READ_FORMATTED_STRING:
+			case INT_WRITE_FORMATTED_STRING:
+                intVar1 = vectorIntCode[i].name1;
+                intVar2 = vectorIntCode[i].name3;
+                break;
+
             case INT_INCREMENT_VARIABLE:
             case INT_READ_ADC:
             case INT_SET_DA:
             case INT_READ_ENC:
             case INT_RESET_ENC:
-			case INT_READ_FORMATTED_STRING:
-			case INT_WRITE_FORMATTED_STRING:
 			case INT_READ_SERVO_YASKAWA:
 			case INT_WRITE_SERVO_YASKAWA:
             case INT_READ_USS:
@@ -680,10 +692,12 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				break;
 				}
 			case INT_READ_FORMATTED_STRING:
-				fprintf(f, "Format_String_Read(\"%s\", &%s);\n", vectorIntCode[i].name2, GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				sprintf(buf2, "Format_String_Read(\"%s\", &%s)", vectorIntCode[i].name2, GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name3), buf2, GENVARCODE_MODE_WRITE));
 				break;
 			case INT_WRITE_FORMATTED_STRING:
-				fprintf(f, "Format_String_Write(\"%s\", &%s);\n", vectorIntCode[i].name2, GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				sprintf(buf2, "Format_String_Write(\"%s\", &%s)", vectorIntCode[i].name2, GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name3), buf2, GENVARCODE_MODE_WRITE));
 				break;
 			case INT_READ_SERVO_YASKAWA:
 				fprintf(f, "Yaskawa_Read(\"%s\", \"%s\", &%s);\n", vectorIntCode[i].name3, vectorIntCode[i].name2, GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
@@ -710,7 +724,7 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				HasPWM = 1;
 				break;
             case INT_UART_RECV:
-				sprintf(buf2, "RS485_Read((unsigned char *)&%s, 1)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				sprintf(buf2, "RS485_ReadChar((unsigned char *)&%s)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
 				break;
             case INT_UART_SEND:
@@ -1196,6 +1210,7 @@ DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 		LadderSettingsInformation settings = ladder->getSettingsInformation();
 		settings.BuildNumber++;
 		settings.CompileDate = time(NULL);
+		ladder->setSettingsInformation(settings);
 	}
 
 	return err;

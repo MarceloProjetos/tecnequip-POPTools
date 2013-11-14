@@ -808,10 +808,8 @@ void Render()
 	}
 }
 
-
 void UpdateWindow(void)
 {
-	char msg[512];
 	char num[20];
 
 	if(SendMessage(LinearRadio, BM_GETCHECK, 0, 0) & BST_CHECKED && !SendMessage(CurveRadio, BM_GETCHECK, 0, 0) & BST_CHECKED)
@@ -841,8 +839,8 @@ void UpdateWindow(void)
 	{
 		_itoa(MAX_GAIN_TIME_VAL, num, 10);
 		SendMessage(GainTimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		StringCchPrintf(msg, sizeof(msg), _("O valor máximo permitido para o campo Tempo (%%) da Curva de Ganho é %d."), MAX_GAIN_TIME_VAL);
-		MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Tempo (%) !"), MB_OK | MB_ICONEXCLAMATION);
+		Warning(_("Valor inválido no campo Tempo (%) !"),
+			_("O valor máximo permitido para o campo Tempo (%%) da Curva de Ganho é %d."), MAX_GAIN_TIME_VAL);
 	}
 
 	current.gaint = max(0, min(MAX_GAIN_TIME_VAL, abs(atoi(num))));
@@ -854,8 +852,8 @@ void UpdateWindow(void)
 	{
 		_itoa(min(current.gaint, MAX_GAIN_RESOLUTION_VAL), num, 10);
 		SendMessage(GainInitValTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-		StringCchPrintf(msg, sizeof(msg), _("O valor máximo permitido para o campo Resolução (%%) da Curva de Ganho é %s."), num);
-		MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Resolução (%) !"), MB_OK | MB_ICONEXCLAMATION);
+		Warning(_("Valor inválido no campo Resolução (%) !"),
+			_("O valor máximo permitido para o campo Resolução (%%) da Curva de Ganho é %s."), num);
 	}
 
 	current.gainr = max(0, min(MAX_GAIN_RESOLUTION_VAL, abs(atoi(num))));
@@ -869,8 +867,8 @@ void UpdateWindow(void)
 		{
 			_itoa(max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num)))), num, 10);
 			SendMessage(TimeTextbox, WM_SETTEXT, 0, (LPARAM)(num));
-			StringCchPrintf(msg, sizeof(msg), _("O valor permitido para o campo Tempo (ms) no Tamanho da Rampa esta entre %d e %d."), MIN_TIME_VAL, MAX_TIME_VAL);
-			MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Tempo (ms) !"), MB_OK | MB_ICONEXCLAMATION);
+			Warning(_("Valor inválido no campo Tempo (ms) !"),
+				_("O valor permitido para o campo Tempo (ms) no Tamanho da Rampa esta entre %d e %d."), MIN_TIME_VAL, MAX_TIME_VAL);
 		}
 
 		tempo = max(MIN_TIME_VAL, min(MAX_TIME_VAL, abs(atoi(num))));
@@ -911,8 +909,8 @@ void UpdateWindow(void)
 			(current.type == 1 && (atoi(num) > MAX_MILIVOLT_VAL)) || 
 			(current.type == 2 && (atoi(num) > 100)))
 		{
-			StringCchPrintf(msg, sizeof(msg), _("O valor máximo permitido para o campo Resolução DA no Tamanho da Rampa é %d."), current.type == 0 ? DA_RESOLUTION - 1 : (current.type == 1 ? MAX_MILIVOLT_VAL : 100));
-			MessageBox(MultisetDADialog, msg, _("Valor inválido no campo Resolução DA !"), MB_OK | MB_ICONEXCLAMATION);
+			Warning(_("Valor inválido no campo Resolução DA !"),
+				_("O valor máximo permitido para o campo Resolução DA no Tamanho da Rampa é %d."), current.type == 0 ? DA_RESOLUTION - 1 : (current.type == 1 ? MAX_MILIVOLT_VAL : 100));
 		}
 	} else {
 		switch(current.type) {
@@ -1445,6 +1443,7 @@ bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *stime, string *sd
 	DiscardDeviceResources();
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(MultisetDADialog);
+	SetFocus(MainWindow);
 
     return changed;
 }

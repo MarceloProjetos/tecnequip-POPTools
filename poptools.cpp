@@ -483,7 +483,7 @@ int UpdateProgressWindow(ProgressStatus *ps)
 						fseek(f, 0, SEEK_SET);
 
 						while(fgets(linebuf, sizeof(linebuf), f)) {
-							char *inbuf = strstr(linebuf, "ld.c");
+							char *inbuf = strstr(linebuf, "poptools.c");
 							if(inbuf != NULL) {
 								if(first) {
 									first = 0;
@@ -501,7 +501,7 @@ int UpdateProgressWindow(ProgressStatus *ps)
 						fclose(f);
 
 						Edit_SetText(LogTextBox, buf);
-	//					free(buf);
+						free(buf);
 					}
 
 					ShowWindow(LogTextBox, TRUE);

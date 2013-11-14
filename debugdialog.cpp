@@ -741,5 +741,7 @@ void ShowDebugDialog(void)
 
 	EnableWindow(MainWindow, TRUE);
     DestroyWindow(DebugDialog);
-    return;
+	SetFocus(MainWindow);
+
+	return;
 }

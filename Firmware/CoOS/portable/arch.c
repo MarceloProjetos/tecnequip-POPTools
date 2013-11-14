@@ -18,7 +18,7 @@
 
 U64     OSTickCnt = 0;                  /*!< Current system tick counter      */
 U64 	OSTimerCnt = 0;
-char 	OSTimerCPULed = 0;
+U32 	OSTimerCPULed = 0;
 U64		ErrorLedCount = 0;
 
 extern volatile unsigned int PLC_ERROR;
@@ -75,9 +75,9 @@ void SysTick_Handler(void)
 
     if (OSTimerCnt >= CFG_SYSTICK_FREQ)
     {
-    	OSTimerCPULed = ~(OSTimerCPULed);
+    	OSTimerCPULed = !OSTimerCPULed;
     	GPIO1->FIOPIN |= 0x1 << 22;
-    	GPIO1->FIOPIN &= ~(((OSTimerCPULed & 0x1) << 22));
+    	GPIO1->FIOPIN &= ~(OSTimerCPULed << 22);
     	OSTimerCnt = 0;
 
         // U17 - ERRO

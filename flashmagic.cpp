@@ -31,7 +31,7 @@ void ShowError(LPTSTR lpszFunction)
         LocalSize(lpDisplayBuf) / sizeof(TCHAR),
         TEXT("%s failed with error %d: %s"), 
         lpszFunction, dw, lpMsgBuf); 
-    MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK); 
+    Error((char *)lpDisplayBuf); 
 
     LocalFree(lpMsgBuf);
     LocalFree(lpDisplayBuf);
@@ -362,7 +362,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	} while(trycount < 10);
 
 	if (!rtcok)
-		MessageBox(NULL, _("A Data/Hora do relógio da POP não foi atualizada.\n\nNão foi possível verificar se a data/hora foi atualizada corretamente por que a leitura do RTC retornou 0 bytes !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."), _("Relógio da POP"), MB_OK | MB_ICONEXCLAMATION);
+		ladder->ShowDialog(eDialogType_Message, false, _("Relógio da POP"), _("A Data/Hora do relógio da POP não foi atualizada.\n\nNão foi possível verificar se a data/hora foi atualizada corretamente por que a leitura do RTC retornou 0 bytes !.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente."));
 
 	// tell user we are done
 	ps.iCurrentStage = PROGRESS_STAGE_FINISHED;

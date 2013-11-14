@@ -356,25 +356,25 @@ private:
 	bool isUART;      ///< Indica que este elemento usa a UART, devendo ser exibido o console serial na simulacao
 	int  which;       ///< Codigo que identifica o tipo de elemento atual
 
-	/** Funcao puramente virtual executada ao atualizar as propriedades de um elemento
+	/** Funcao executada ao atualizar as propriedades de um elemento
 	 *  @param[in] data       Ponteiro para as propriedades, conforme o tipo do elemento
 	 *  @param[in] isUndoRedo Flag que indica se esta funcao foi chamada durante uma operacao de desfazer/refazer
 	 *  @return               Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
 	virtual bool internalSetProperties(void *data, bool isUndoRedo) = 0;
 
-	/** Funcao puramente virtual que gera o codigo intermediario, implementada pelo elemento para gerar seu codigo especifico
+	/** Funcao que gera o codigo intermediario, implementada pelo elemento para gerar seu codigo especifico
 	 *  @param[in,out] ic Referencia ao vetor contendo o codigo intermediario, onde as novas instrucoes serao agregadas
 	 *  @return           Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
 	virtual bool internalGenerateIntCode(IntCode &ic) = 0;
 
-	/** Funcao puramente virtual que salva os dados do elemento em disco
+	/** Funcao que salva os dados do elemento em disco
 	 *  @param[in] f Ponteiro para o handler do arquivo sendo salvo
 	 *  @return      Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
 	virtual bool internalSave(FILE *f) = 0;
-	/** Funcao puramente virtual que carrega os dados do elemento do disco
+	/** Funcao que carrega os dados do elemento do disco
 	 *  @param[in] f       Ponteiro para o handler do arquivo sendo carregado
 	 *  @param[in] version Variavel indicando a versao do arquivo sendo carregado, possibilitando conversoes de formato
 	 *  @return            Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
@@ -385,7 +385,7 @@ private:
 	 */
 	void Init(void);
 
-	/** Funcao puramente virtual que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	/** Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
 	 *  @param[in] index Indice para indicar qual o I/O que deve ser atualizado
 	 *  @param[in] name  Nome para o qual o I/O deve ser atualizado
 	 *  @param[in] type  Tipo para o qual o I/O deve ser atualizado
@@ -393,7 +393,7 @@ private:
 	 */
 	virtual bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) = 0;
 
-	/** Funcao puramente virtual que executa uma acao de desfazer / refazer nas classes derivadas
+	/** Funcao que executa uma acao de desfazer / refazer nas classes derivadas
 	 *  @param[in]     IsUndo    Indice se a acao se refere a operacao de Desfazer (true) ou Refazer (false)
 	 *  @param[in]     isDiscard Indica se devemos descartar a acao (true) ou executa-la (false)
 	 *  @param[in,out] action    Variavel contendo os dados para Desfazer/Refazer a operacao
@@ -441,18 +441,18 @@ public:
 	/// Destrutor padrao, nada a fazer...
 	~LadderElem(void) { }
 
-	/** Funcao puramente virtual que gera o texto utilizado para impressao e exportacao em modo texto
+	/** Funcao que gera o texto utilizado para impressao e exportacao em modo texto
 	 *  @return Par de strings (Linha superior e linha inferior) que representam o elemento em modo texto
 	 */
 	virtual pair<string, string> DrawTXT(void) = 0;
-	/** Funcao puramente virtual que desenha o elemento na tela
+	/** Funcao que desenha o elemento na tela
 	 *  @param[in] poweredBefore Indica se a entrada do elemento esta energizada em uma simulacao
 	 *  @param[in] data          Variavel que contem informacoes para desenhar o objeto na tela, especifica da interface
 	 *  @return                  Estado da saida do elemento na simulacao: energizada (true) ou nao (false)
 	 */
 	virtual bool DrawGUI(bool poweredBefore, void *data) = 0;
 
-	/** Funcao puramente virtual que exibe a janela de dialogo para configuracao do elemento
+	/** Funcao que exibe a janela de dialogo para configuracao do elemento
 	 *  @param[in] context Contexto do Diagrama com informacoes sobre o que pode ser feito, objeto selecionado, etc.
 	 *  @return            Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
@@ -521,12 +521,12 @@ public:
 	 *  @param[in] propData Ponteiro para as propriedades, conforme o tipo do elemento
 	 */
 	void          setProperties(LadderContext context, void *propData);
-	/** Funcao puramente virtual que retorna as propriedades do elemento
+	/** Funcao que retorna as propriedades do elemento
 	 *  @return          Ponteiro para as propriedades especificas deste elemento
 	 */
 	virtual void *getProperties(void) = 0;
 
-	/** Funcao puramente virtual que cria uma copia do elemento
+	/** Funcao que cria uma copia do elemento
 	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
 	 *  @return            Ponteiro para o elemento criado
 	 */
@@ -534,23 +534,23 @@ public:
 
 	/*** Funcoes relacionadas com I/O ***/
 
-	/** Funcao puramente virtual que indica se o I/O pode ser alterado para o tipo solicitado
+	/** Funcao que indica se o I/O pode ser alterado para o tipo solicitado
 	 *  @param[in] id   ID do I/O sendo alterado
 	 *  @param[in] type Tipo para o qual o I/O sera alterado
 	 *  @return         Indica se a mudanca de tipo do I/O eh permitida (true) ou nao (false)
 	 */
 	virtual bool  acceptIO        (unsigned long id, eType type) = 0;
-	/** Funcao puramente virtual que informa o elemento que ele deve atualizar seus I/Os
+	/** Funcao que informa o elemento que ele deve atualizar seus I/Os
 	 *  @param[in] owner Ponteiro para o diagrama ao qual o I/O pertencia originalmente
 	 *  @param[in] isDiscard Informa se nesta operacao os I/Os devem ser descartados (true) ou atualizados (false)
 	 */
 	virtual void  updateIO        (LadderDiagram *owner, bool isDiscard) = 0;
-	/** Funcao puramente virtual que retorna o tipo permitido para este I/O pelo elemento atual
+	/** Funcao que retorna o tipo permitido para este I/O pelo elemento atual
 	 *  @param[in] id ID do I/O sendo solicitado
 	 *  @return       Tipo de I/O permitido pelo elemento atual
 	 */
 	virtual eType getAllowedTypeIO(unsigned long id) = 0;
-	/** Funcao puramente virtual que realiza uma busca / substituicao de nome de I/O entre os seus I/Os
+	/** Funcao que realiza uma busca / substituicao de nome de I/O entre os seus I/Os
 	 *  @param[in] idSearch  ID do I/O sendo buscado / substituido
 	 *  @param[in] sNewText  string contendo o novo nome para o I/O
 	 *  @param[in] isReplace Flag que indica se esta operacao eh de substituicao (true) ou busca (false)
@@ -558,7 +558,7 @@ public:
 	 */
 	virtual int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace) = 0;
 
-	/** Funcao puramente virtual que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	/** Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
 	 *  @param[in] index Indice para indicar qual o I/O que deve ser atualizado
 	 *  @param[in] name  Nome para o qual o I/O deve ser atualizado
 	 *  @param[in] type  Tipo para o qual o I/O deve ser atualizado
@@ -588,7 +588,7 @@ public:
 	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento PlaceHolder
+/// Classe derivada de LadderElem que representa o elemento PlaceHolder
 class LadderElemPlaceHolder : public LadderElem {
 	// Sem propriedades privadas...
 	bool internalSetProperties(void *data, bool isUndoRedo = false) { return true; }
@@ -601,6 +601,9 @@ class LadderElemPlaceHolder : public LadderElem {
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemPlaceHolder(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -631,13 +634,15 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Comment
+/// Estrutura que define as propriedades de um elemento LadderElemComment
 struct LadderElemCommentProp {
-	string str;
+	string str; ///< String que armazena o texto do comentario
 };
 
+/// Classe derivada de LadderElem que representa o elemento Comment
 class LadderElemComment : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemCommentProp prop;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -650,6 +655,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemComment(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -680,15 +688,18 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Contato
+/// Estrutura que define as propriedades de um elemento LadderElemContact
 struct LadderElemContactProp {
-    bool                     negated;
-	pair<unsigned long, int> idName;
+    bool                     negated; ///< Flag que indica que o contato esta negado, ou seja, NF
+	pair<unsigned long, int> idName;  ///< Referencia do I/O associado ao contato
 };
 
+/// Classe derivada de LadderElem que representa o elemento Contato
 class LadderElemContact : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemContactProp prop;
+	/// Variavel com os dados para fazer Request do I/O do contato
 	tRequestIO            infoIO_Name;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -701,6 +712,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemContact(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -731,17 +745,20 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Bobina
+/// Estrutura que define as propriedades de um elemento LadderElemCoil
 struct LadderElemCoilProp {
-    bool                     negated;
-    bool                     setOnly;
-    bool                     resetOnly;
-	pair<unsigned long, int> idName;
+    bool                     negated;   ///< Flag que indica se a bobina esta no modo negado (/)
+    bool                     setOnly;   ///< Flag que indica se a bobina esta no modo Somente Ligar (S)
+    bool                     resetOnly; ///< Flag que indica se a bobina esta no modo Somente Desligar (R)
+	pair<unsigned long, int> idName;    ///< Referencia do I/O associado a bobina
 };
 
+/// Classe derivada de LadderElem que representa o elemento Bobina
 class LadderElemCoil : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemCoilProp prop;
+	/// Variavel com os dados para fazer Request do I/O da bobina
 	tRequestIO         infoIO_Name;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -754,6 +771,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemCoil(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -784,15 +804,18 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Timer
+/// Estrutura que define as propriedades de um elemento LadderElemTimer
 struct LadderElemTimerProp {
-	pair<unsigned long, int> idName;
-    int                      delay;
+	pair<unsigned long, int> idName; ///< Referencia do I/O associado ao timer
+    int                      delay;  ///< Tempo de espera para ativacao do timer
 };
 
+/// Classe derivada de LadderElem que representa o elemento Timer
 class LadderElemTimer : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemTimerProp prop;
+	/// Variavel com os dados para fazer Request do I/O do Timer
 	tRequestIO          infoIO_Name;
 
 	int TimerPeriod(void);
@@ -807,6 +830,10 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: TON, TOF, RTO
+	 */
 	LadderElemTimer(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -837,16 +864,18 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento RTC
+/// Estrutura que define as propriedades de um elemento LadderElemRTC
 struct LadderElemRTCProp {
-	int           mode;  // Continuous or Intermittent (when using date/hour range) or only a fixed date/hour.
-    unsigned char wday;  // [0:0] Sum, [0:1] Mon, [0:2] Tue, [0:3] Wed, [0:4] Thu, [0:5] Fri, [0:6] Sat, [0:7] WDay 1=YES, 0=No
-	struct tm     start; // Start date/time of the range or the fixed one
-	struct tm     end;   // End date/time when using range.
+	int           mode;  ///< Modo do RTC. Continuo ou Intermitente (quando usando faixa de data/hora) ou data/hora fixa
+    unsigned char wday;  ///< Mascara com dias da semana. De bit 0 (Domingo) ate 6 (Sabado). Bit 7 indica se esta usando dias da semana (ligado) ou Data/Hora (desligado)
+	struct tm     start; ///< Data/Hora inicial quando usando faixa ou Data/Hora Fixa.
+	struct tm     end;   ///< Data/Hora final quando usando faixa de Data/Hora
 };
 
+/// Classe derivada de LadderElem que representa o elemento RTC
 class LadderElemRTC : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemRTCProp prop;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -859,6 +888,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemRTC(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -889,15 +921,18 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Counter
+/// Estrutura que define as propriedades de um elemento LadderElemCounter
 struct LadderElemCounterProp {
-	pair<unsigned long, int> idName;
-    int                      max;
+	pair<unsigned long, int> idName; ///< Referencia do I/O associado ao contador
+    int                      max;    ///< Limite do contador
 };
 
+/// Classe derivada de LadderElem que representa o elemento Counter
 class LadderElemCounter : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemCounterProp prop;
+	/// Variavel com os dados para fazer Request do I/O do Counter
 	tRequestIO            infoIO_Name;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -910,6 +945,10 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: CTC, CTD, CTU
+	 */
 	LadderElemCounter(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -940,14 +979,17 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Reset Timer / Counter
+/// Estrutura que define as propriedades de um elemento LadderElemReset
 struct LadderElemResetProp {
-	pair<unsigned long, int> idName;
+	pair<unsigned long, int> idName; ///< Referencia do I/O associado ao elemento
 };
 
+/// Classe derivada de LadderElem que representa o elemento Reset Timer / Counter
 class LadderElemReset : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemResetProp prop;
+	/// Variavel com os dados para fazer Request do I/O do Reset
 	tRequestIO          infoIO_Name;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -960,6 +1002,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemReset(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -990,7 +1035,7 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento One Shot
+/// Classe derivada de LadderElem que representa o elemento One Shot
 class LadderElemOneShot : public LadderElem {
 	// Sem propriedades privadas...
 	bool internalSetProperties(void *data, bool isUndoRedo = false) { return true; }
@@ -1003,6 +1048,10 @@ class LadderElemOneShot : public LadderElem {
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: OSR, OSF
+	 */
 	LadderElemOneShot(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -1033,16 +1082,20 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Cmp
+/// Estrutura que define as propriedades de um elemento LadderElemCmp
 struct LadderElemCmpProp {
-	pair<unsigned long, int> idOp1;
-	pair<unsigned long, int> idOp2;
+	pair<unsigned long, int> idOp1; ///< Referencia do I/O associado ao primeiro operador
+	pair<unsigned long, int> idOp2; ///< Referencia do I/O associado ao segundo operador
 };
 
+/// Classe derivada de LadderElem que representa o elemento Cmp
 class LadderElemCmp : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemCmpProp prop;
+	/// Variavel com os dados para fazer Request do I/O do Reset (primeiro operador)
 	tRequestIO        infoIO_Op1;
+	/// Variavel com os dados para fazer Request do I/O do Reset (segundo operador)
 	tRequestIO        infoIO_Op2;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -1055,6 +1108,10 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: EQU, GRT, GEQ, etc.
+	 */
 	LadderElemCmp(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -1085,18 +1142,23 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Math
+/// Estrutura que define as propriedades de um elemento LadderElemMath
 struct LadderElemMathProp {
-	pair<unsigned long, int> idOp1;
-	pair<unsigned long, int> idOp2;
-	pair<unsigned long, int> idDest;
+	pair<unsigned long, int> idOp1;  ///< Referencia do I/O associado ao primeiro operador
+	pair<unsigned long, int> idOp2;  ///< Referencia do I/O associado ao segundo operador
+	pair<unsigned long, int> idDest; ///< Referencia do I/O associado ao destino
 };
 
+/// Classe derivada de LadderElem que representa o elemento Math
 class LadderElemMath : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemMathProp prop;
+	/// Variavel com os dados para fazer Request do I/O do elemento (primeiro operador)
 	tRequestIO         infoIO_Op1;
+	/// Variavel com os dados para fazer Request do I/O do elemento (segundo operador)
 	tRequestIO         infoIO_Op2;
+	/// Variavel com os dados para fazer Request do I/O do elemento (destino)
 	tRequestIO         infoIO_Dest;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -1109,6 +1171,10 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: ADD, MUL, DIV, etc.
+	 */
 	LadderElemMath(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -1139,16 +1205,20 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Sqrt
+/// Estrutura que define as propriedades de um elemento LadderElemSqrt
 struct LadderElemSqrtProp {
-	pair<unsigned long, int> idDest;
-	pair<unsigned long, int> idSrc;
+	pair<unsigned long, int> idDest; ///< Referencia do I/O associado ao destino
+	pair<unsigned long, int> idSrc;  ///< Referencia do I/O associado a origem
 };
 
+/// Classe derivada de LadderElem que representa o elemento Sqrt
 class LadderElemSqrt : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemSqrtProp prop;
+	/// Variavel com os dados para fazer Request do I/O do elemento (destino)
 	tRequestIO         infoIO_Dest;
+	/// Variavel com os dados para fazer Request do I/O do elemento (origem)
 	tRequestIO         infoIO_Src;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -1161,6 +1231,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemSqrt(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1191,18 +1264,23 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Rand
+/// Estrutura que define as propriedades de um elemento LadderElemRand
 struct LadderElemRandProp {
-	pair<unsigned long, int> idVar;
-	pair<unsigned long, int> idMin;
-	pair<unsigned long, int> idMax;
+	pair<unsigned long, int> idVar; ///< Referencia do I/O associado ao destino
+	pair<unsigned long, int> idMin; ///< Referencia do I/O associado ao valor minimo
+	pair<unsigned long, int> idMax; ///< Referencia do I/O associado ao valor maximo
 };
 
+/// Classe derivada de LadderElem que representa o elemento Rand
 class LadderElemRand : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemRandProp prop;
+	/// Variavel com os dados para fazer Request do I/O do elemento (destino)
 	tRequestIO         infoIO_Var;
+	/// Variavel com os dados para fazer Request do I/O do elemento (valor minimo)
 	tRequestIO         infoIO_Min;
+	/// Variavel com os dados para fazer Request do I/O do elemento (valor maximo)
 	tRequestIO         infoIO_Max;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -1215,6 +1293,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemRand(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1245,16 +1326,20 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Abs
+/// Estrutura que define as propriedades de um elemento LadderElemAbs
 struct LadderElemAbsProp {
-	pair<unsigned long, int> idDest;
-	pair<unsigned long, int> idSrc;
+	pair<unsigned long, int> idDest; ///< Referencia do I/O associado ao destino
+	pair<unsigned long, int> idSrc;  ///< Referencia do I/O associado a origem
 };
 
+/// Classe derivada de LadderElem que representa o elemento Abs
 class LadderElemAbs : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemAbsProp prop;
+	/// Variavel com os dados para fazer Request do I/O do elemento (destino)
 	tRequestIO        infoIO_Dest;
+	/// Variavel com os dados para fazer Request do I/O do elemento (origem)
 	tRequestIO        infoIO_Src;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -1267,6 +1352,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemAbs(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1297,16 +1385,20 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Move
+/// Estrutura que define as propriedades de um elemento LadderElemMove
 struct LadderElemMoveProp {
-	pair<unsigned long, int> idDest;
-	pair<unsigned long, int> idSrc;
+	pair<unsigned long, int> idDest; ///< Referencia do I/O associado ao destino
+	pair<unsigned long, int> idSrc;  ///< Referencia do I/O associado a origem
 };
 
+/// Classe derivada de LadderElem que representa o elemento Move
 class LadderElemMove : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemMoveProp prop;
+	/// Variavel com os dados para fazer Request do I/O do elemento (destino)
 	tRequestIO         infoIO_Dest;
+	/// Variavel com os dados para fazer Request do I/O do elemento (origem)
 	tRequestIO         infoIO_Src;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -1319,6 +1411,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemMove(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1349,7 +1444,7 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Open & Short
+/// Classe derivada de LadderElem que representa o elemento Open & Short
 class LadderElemOpenShort : public LadderElem {
 	// Sem propriedades privadas...
 	bool internalSetProperties(void *data, bool isUndoRedo = false) { return true; }
@@ -1362,6 +1457,10 @@ class LadderElemOpenShort : public LadderElem {
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: OPEN, SHORT
+	 */
 	LadderElemOpenShort(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -1392,16 +1491,19 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Set Bit
+/// Estrutura que define as propriedades de um elemento LadderElemSetBit
 struct LadderElemSetBitProp {
-	pair<unsigned long, int> idName;
-	int    bit;
-	bool   set;
+	pair<unsigned long, int> idName; ///< Referencia do I/O associado ao elemento
+	int    bit;                      ///< Numero do bit a ser manipulado
+	bool   set;                      ///< Indica se o bit deve ser ligado (true) ou desligado (false)
 };
 
+/// Classe derivada de LadderElem que representa o elemento Set Bit
 class LadderElemSetBit : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemSetBitProp prop;
+	/// Variavel com os dados para fazer Request do I/O do elemento
 	tRequestIO           infoIO_Name;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -1414,6 +1516,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemSetBit(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1444,16 +1549,19 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Check Bit
+/// Estrutura que define as propriedades de um elemento LadderElemCheckBit
 struct LadderElemCheckBitProp {
-	pair<unsigned long, int> idName;
-	int    bit;
-	bool   set;
+	pair<unsigned long, int> idName; ///< Referencia do I/O associado ao elemento
+	int    bit;                      ///< Numero do bit a ser verificado
+	bool   set;                      ///< Indica se devemos verificar se o bit esta ligado (true) ou desligado (false)
 };
 
+/// Classe derivada de LadderElem que representa o elemento Check Bit
 class LadderElemCheckBit : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemCheckBitProp prop;
+	/// Variavel com os dados para fazer Request do I/O do elemento
 	tRequestIO             infoIO_Name;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -1466,6 +1574,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemCheckBit(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1496,14 +1607,17 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Read A/D
+/// Estrutura que define as propriedades de um elemento LadderElemReadAdc
 struct LadderElemReadAdcProp {
-	pair<unsigned long, int> idName;
+	pair<unsigned long, int> idName; ///< Referencia do I/O associado ao elemento
 };
 
+/// Classe derivada de LadderElem que representa o elemento Read A/D
 class LadderElemReadAdc : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemReadAdcProp prop;
+	/// Variavel com os dados para fazer Request do I/O do elemento
 	tRequestIO            infoIO_Name;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -1519,6 +1633,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemReadAdc(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1549,15 +1666,18 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Set D/A
+/// Estrutura que define as propriedades de um elemento LadderElemSetDa
 struct LadderElemSetDaProp {
-	pair<unsigned long, int> idName;
-	int    mode;
+	pair<unsigned long, int> idName; ///< Referencia do I/O associado ao elemento
+	int    mode;                     ///< Modo
 };
 
+/// Classe derivada de LadderElem que representa o elemento Set D/A
 class LadderElemSetDa : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemSetDaProp prop;
+	/// Variavel com os dados para fazer Request do I/O do elemento
 	tRequestIO          infoIO_Name;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
@@ -1570,6 +1690,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemSetDa(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1602,13 +1725,15 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Read Encoder
+/// Estrutura que define as propriedades de um elemento LadderElemReadEnc
 struct LadderElemReadEncProp {
 	pair<unsigned long, int> idName;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Read Encoder
 class LadderElemReadEnc : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemReadEncProp prop;
 	tRequestIO            infoIO_Name;
 
@@ -1629,6 +1754,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemReadEnc(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1659,13 +1787,15 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Reset Encoder
+/// Estrutura que define as propriedades de um elemento LadderElemResetEnc
 struct LadderElemResetEncProp {
 	pair<unsigned long, int> idName;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Reset Encoder
 class LadderElemResetEnc : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemResetEncProp prop;
 	tRequestIO             infoIO_Name;
 
@@ -1686,6 +1816,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemResetEnc(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1716,7 +1849,7 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Multiset D/A
+/// Estrutura que define as propriedades de um elemento LadderElemMultisetDA
 struct LadderElemMultisetDAProp {
 	pair<unsigned long, int>	idTime;					// Tempo
 	pair<unsigned long, int>	idDesl;					// Deslocamento
@@ -1731,8 +1864,10 @@ struct LadderElemMultisetDAProp {
 	int							ramp_abort_mode;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Multiset D/A
 class LadderElemMultisetDA : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemMultisetDAProp prop;
 	tRequestIO               infoIO_Time;
 	tRequestIO               infoIO_Desl;
@@ -1747,6 +1882,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemMultisetDA(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1777,7 +1915,7 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Read / Write USS
+/// Estrutura que define as propriedades de um elemento LadderElemUSS
 struct LadderElemUSSProp {
 	pair<unsigned long, int> idName;
 	int		id;
@@ -1786,8 +1924,10 @@ struct LadderElemUSSProp {
 	int		index;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Read / Write USS
 class LadderElemUSS : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemUSSProp prop;
 	tRequestIO        infoIO_Name;
 
@@ -1801,6 +1941,10 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: READ_USS, WRITE_USS
+	 */
 	LadderElemUSS(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -1831,7 +1975,7 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento ModBUS
+/// Estrutura que define as propriedades de um elemento LadderElemModBUS
 struct LadderElemModBUSProp {
 	pair<unsigned long, int> idName;
 	int		elem;
@@ -1840,8 +1984,10 @@ struct LadderElemModBUSProp {
 	bool	retransmitir;
 };
 
+/// Classe derivada de LadderElem que representa o elemento ModBUS
 class LadderElemModBUS : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemModBUSProp prop;
 	tRequestIO           infoIO_Name;
 
@@ -1855,6 +2001,10 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: READ_MODBUS, WRITE_MODBUS
+	 */
 	LadderElemModBUS(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -1885,14 +2035,16 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Set PWM
+/// Estrutura que define as propriedades de um elemento LadderElemSetPWM
 struct LadderElemSetPWMProp {
 	pair<unsigned long, int> idName;
     int     targetFreq;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Set PWM
 class LadderElemSetPWM : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemSetPWMProp prop;
 	tRequestIO           infoIO_Name;
 
@@ -1906,6 +2058,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemSetPWM(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -1936,13 +2091,15 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Send / Receive UART
+/// Estrutura que define as propriedades de um elemento LadderElemUART
 struct LadderElemUARTProp {
 	pair<unsigned long, int> idName;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Send / Receive UART
 class LadderElemUART : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemUARTProp prop;
 	tRequestIO         infoIO_Name;
 
@@ -1956,6 +2113,10 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: UART_RECV, UART_SEND
+	 */
 	LadderElemUART(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -1986,7 +2147,7 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Master Relay
+/// Classe derivada de LadderElem que representa o elemento Master Relay
 class LadderElemMasterRelay : public LadderElem {
 	// Flag que indica se a chave esta ligada ou nao
 	bool isMasterRelayActive;
@@ -2002,6 +2163,9 @@ class LadderElemMasterRelay : public LadderElem {
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemMasterRelay(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -2032,15 +2196,17 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Shift Register
+/// Estrutura que define as propriedades de um elemento LadderElemShiftRegister
 struct LadderElemShiftRegisterProp {
 	vector< pair<unsigned long, int> > vectorIdRegs;
 	string nameReg;
     int    stages;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Shift Register
 class LadderElemShiftRegister : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemShiftRegisterProp prop;
 	tRequestIO                  InfoIO_Regs;
 
@@ -2057,6 +2223,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemShiftRegister(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -2087,7 +2256,7 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Look Up Table
+/// Estrutura que define as propriedades de um elemento LadderElemLUT
 struct LadderElemLUTProp {
 	pair<unsigned long, int>           idDest;
 	pair<unsigned long, int>           idIndex;
@@ -2096,8 +2265,10 @@ struct LadderElemLUTProp {
     array<long, MAX_LOOK_UP_TABLE_LEN> vals;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Look Up Table
 class LadderElemLUT : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemLUTProp prop;
 	tRequestIO        infoIO_Dest;
 	tRequestIO        infoIO_Index;
@@ -2112,6 +2283,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemLUT(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -2142,7 +2316,7 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Piecewise Linear
+/// Estrutura que define as propriedades de um elemento LadderElemPiecewise
 struct LadderElemPiecewiseProp {
 	pair<unsigned long, int>           idDest;
 	pair<unsigned long, int>           idIndex;
@@ -2150,8 +2324,10 @@ struct LadderElemPiecewiseProp {
     array<long, MAX_LOOK_UP_TABLE_LEN> vals;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Piecewise Linear
 class LadderElemPiecewise : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemPiecewiseProp prop;
 	tRequestIO              infoIO_Dest;
 	tRequestIO              infoIO_Index;
@@ -2166,6 +2342,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemPiecewise(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -2196,14 +2375,16 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Formatted String
+/// Estrutura que define as propriedades de um elemento LadderElemFmtString
 struct LadderElemFmtStringProp {
 	pair<unsigned long, int> idVar;
     string txt;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Formatted String
 class LadderElemFmtString : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemFmtStringProp prop;
 	tRequestIO              infoIO_Var;
 
@@ -2217,6 +2398,10 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: READ_FORMATTED_STRING, WRITE_FORMATTED_STRING
+	 */
 	LadderElemFmtString(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -2247,15 +2432,17 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Read / Write Yaskawa
+/// Estrutura que define as propriedades de um elemento LadderElemYaskawa
 struct LadderElemYaskawaProp {
 	pair<unsigned long, int> idVar;
     int id;
     string txt;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Read / Write Yaskawa
 class LadderElemYaskawa : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemYaskawaProp prop;
 	tRequestIO            infoIO_Var;
 
@@ -2269,6 +2456,10 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: READ_SERVO_YASKAWA, WRITE_SERVO_YASKAWA
+	 */
 	LadderElemYaskawa(LadderDiagram *diagram, int which);
 
 	pair<string, string> DrawTXT(void);
@@ -2299,13 +2490,15 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento Persist
+/// Estrutura que define as propriedades de um elemento LadderElemPersist
 struct LadderElemPersistProp {
 	pair<unsigned long, int> idVar;
 };
 
+/// Classe derivada de LadderElem que representa o elemento Persist
 class LadderElemPersist : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemPersistProp prop;
 	tRequestIO            infoIO_Var;
 
@@ -2319,6 +2512,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemPersist(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -2349,7 +2545,7 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento PID
+/// Estrutura que define as propriedades de um elemento LadderElemPID
 struct LadderElemPIDProp {
 	pair<unsigned long, int> idSetpoint;
 	pair<unsigned long, int> idProcessValue;
@@ -2359,8 +2555,10 @@ struct LadderElemPIDProp {
 	pair<unsigned long, int> idGainD;
 };
 
+/// Classe derivada de LadderElem que representa o elemento PID
 class LadderElemPID : public LadderElem {
 private:
+	/// Propriedades do elemento
 	LadderElemPIDProp prop;
 	tRequestIO        infoIO_Setpoint;
 	tRequestIO        infoIO_ProcessValue;
@@ -2379,6 +2577,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemPID(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -2409,13 +2610,15 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
-// Classe do elemento X
+/// Estrutura que define as propriedades de um elemento LadderElemX
 struct LadderElemXProp {
 };
 
+/// Classe derivada de LadderElem que representa o elemento X
 class LadderElemX : public LadderElem {
 private:
 	// Sem propriedades privadas...
+	/// Propriedades do elemento
 	LadderElemXProp prop;
 	tRequestIO      infoIO_;
 
@@ -2429,6 +2632,9 @@ private:
 	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type) { return false; }
 
 public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
 	LadderElemX(LadderDiagram *diagram);
 
 	pair<string, string> DrawTXT(void);
@@ -2532,8 +2738,8 @@ public:
 
 	void           setDiagram  (LadderDiagram *newDiagram);
 
-	void AddPlaceHolderIfNoEOL(LadderContext context);
-	void DeleteEndPlaceHolder (LadderContext context);
+	void AddPlaceHolderIfNoEOL(LadderContext context, LadderElem *elem);
+	void DeleteEndPlaceHolder (LadderContext context, LadderElem *elem);
 	bool AddElement(LadderElem *elem, LadderContext &context);
 	bool InsertParallel(LadderElem *elem, unsigned int start, unsigned int end, LadderContext &context);
 	bool DelElement(LadderElem *elem, LadderContext &context);
@@ -2800,6 +3006,7 @@ public:
 	unsigned int    getCountIO              (void);
 	void            selectIO                (unsigned int index);
 	bool            IsInternalVarIO         (string name);
+	bool            IsInternalFlagIO        (string name);
 	bool            IsGenericTypeIO         (eType type);
 	string          getPortNameIO           (int index);
 	string          getPinNameIO            (int index);

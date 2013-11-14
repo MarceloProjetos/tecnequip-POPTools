@@ -94,6 +94,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Busca');
 </div><!--header-->
 <div class="contents">
 
+<p>Classe derivada de <a class="el" href="class_ladder_elem.html" title="Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base. ">LadderElem</a> que representa o elemento Read / Write Yaskawa.  
+ <a href="class_ladder_elem_yaskawa.html#details">Mais...</a></p>
+
 <p><code>#include &lt;<a class="el" href="_ladder_objects_8h_source.html">LadderObjects.h</a>&gt;</code></p>
 <div class="dynheader">
 Diagrama de Hierarquia para LadderElemYaskawa:</div>
@@ -107,7 +110,7 @@ Diagrama de colaboração para LadderElemYaskawa:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_ladder_elem_yaskawa__coll__graph.png" border="0" usemap="#_ladder_elem_yaskawa_coll__map" alt="Collaboration graph"/></div>
 <map name="_ladder_elem_yaskawa_coll__map" id="_ladder_elem_yaskawa_coll__map">
-<area shape="rect" id="node2" href="class_ladder_elem.html" title="Classe base de elementos &#45; Abstrata, todos os elementos derivam dessa classe base. " alt="" coords="339,5,535,405"/><area shape="rect" id="node21" href="struct_ladder_context.html" title="Estrutura que representa o contexto do diagrama, ou seja, seu estado atual. " alt="" coords="521,497,708,780"/><area shape="rect" id="node3" href="class_ladder_diagram.html" title="{LadderDiagram\n|&#45; CheckPointLevels\l&#45; CheckPointLevelsMax\l&#45; CheckpointBeginCount\l&#45; CheckpointDoRollback\l&#45; isCheckpointEmpty\l&#45; rungs\l&#45; UndoList\l&#45; RedoList\l&#45; vectorMbNodeList\l&#45; isLocked\l&#45; NeedScrollSelectedIntoView\l&#45; currentFilename\l|+ LadderDiagram()\l+ ~LadderDiagram()\l+ getVectorIntCode()\l+ GenerateIntCode()\l+ getWidthTXT()\l+ getHeightTXT()\l+ updateContext()\l+ getContext()\l+ SetLock()\l+ IsLocked()\land 112 more...\l&#45; DiscardCheckpoint()\l&#45; ExecuteAction()\l&#45; RegisterSettingsChanged()\l&#45; Init()\l&#45; getSubcktForElement()\l&#45; getParentSubckt()\l&#45; updateUndoContextAfter()\l&#45; InsertParallel()\l}" alt="" coords="682,859,875,1362"/><area shape="rect" id="node9" href="classmap_i_o.html" title="{mapIO\n|&#45; seqNo\l&#45; countIO\l&#45; selectedIO\l&#45; currentSortBy\l&#45; IO\l&#45; vectorIO\l&#45; maxNameSize\l&#45; vectorInternalFlag\l&#45; vectorReservedName\l&#45; vectorInternalVar\l|+ mapIO()\l+ Clear()\l+ getIndex()\l+ getName()\l+ getInternalVarName()\l+ getReservedName()\l+ getDetails()\l+ getID()\l+ getID()\l+ getTypeString()\land 24 more...\l&#45; Add()\l&#45; getValidName()\l&#45; SyncVectorIO()\l}" alt="" coords="701,1427,856,1827"/><area shape="rect" id="node4" href="class_int_code.html" title="{IntCode\n|&#45; GenSymCountParThis\l&#45; GenSymCountParOut\l&#45; GenSymCountOneShot\l&#45; GenSymCountFormattedString\l&#45; EepromAddrFree\l&#45; arrayIntCode\l&#45; StateInOut\l|+ IntCode()\l+ Clear()\l+ ClearParallelCount()\l+ getVectorIntCode()\l+ GenSymParThis()\l+ GenSymParOut()\l+ GenSymOneShot()\l+ GenSymFormattedString()\l+ getEepromAddr()\l+ getStateInOut()\land 14 more...\l}" alt="" coords="732,483,940,795"/><area shape="rect" id="node5" href="struct_mcu_io_info_tag.html" title="{McuIoInfoTag\n|+ mcuName\l+ portPrefix\l+ inputRegs\l+ outputRegs\l+ dirRegs\l+ flashWords\l+ start\l+ len\l+ ram\l+ pinCount\land 11 more...\l|}" alt="" coords="964,527,1071,751"/><area shape="rect" id="node6" href="struct_mcu_adc_pin_info_tag.html" title="{McuAdcPinInfoTag\n|+ pin\l+ muxRegValue\l|}" alt="" coords="761,159,892,251"/><area shape="rect" id="node7" href="struct_mcu_io_pin_info_tag.html" title="{McuIoPinInfoTag\n|+ port\l+ pin\l+ bit\l+ coil\l|}" alt="" coords="916,145,1033,266"/><area shape="rect" id="node8" href="struct_mcu_enc_pin_info_tag.html" title="{McuEncPinInfoTag\n|+ pin\l+ muxRegValue\l|}" alt="" coords="1057,159,1188,251"/><area shape="rect" id="node10" href="struct_ladder_diagram_1_1t_ladder_settings.html" title="{LadderDiagram::tLadderSettings\n||}" alt="" coords="1903,600,2111,677"/><area shape="rect" id="node11" href="struct_ladder_settings_u_a_r_t.html" title="Configuracoes da Interface Serial do CLP. " alt="" coords="1213,159,1355,251"/><area shape="rect" id="node12" href="struct_ladder_settings_s_n_t_p.html" title="Configuracoes de Data/Hora do CLP. " alt="" coords="1379,145,1521,266"/><area shape="rect" id="node13" href="struct_ladder_settings_general.html" title="Configuracoes gerais do diagrama. " alt="" coords="1547,152,1701,259"/><area shape="rect" id="node14" href="struct_ladder_settings_encoder_s_s_i.html" title="Configuracoes de Encoder Absoluto (SSI) " alt="" coords="1725,130,1904,281"/><area shape="rect" id="node15" href="struct_ladder_settings_network.html" title="Configuracoes de rede do CLP. " alt="" coords="1929,145,2084,266"/><area shape="rect" id="node16" href="struct_ladder_settings_encoder_incremental.html" title="Configuracoes de Encoder Incremental. " alt="" coords="2109,137,2333,273"/><area shape="rect" id="node17" href="struct_ladder_settings_a_d_c.html" title="Configuracoes da interface Analogica para Digital (A/D) " alt="" coords="2357,167,2493,244"/><area shape="rect" id="node18" href="struct_ladder_settings_information.html" title="Informacoes gerais do diagrama. " alt="" coords="2518,123,2689,288"/><area shape="rect" id="node19" href="struct_ladder_settings_d_a_c.html" title="Configuracoes da interface Digital para Analogica (D/A) " alt="" coords="2715,167,2853,244"/><area shape="rect" id="node20" href="struct_ladder_settings_modbus_slave.html" title="Configuracoes do protocolo ModBUS. " alt="" coords="2877,167,3064,244"/><area shape="rect" id="node22" href="class_ladder_circuit.html" title="{LadderCircuit\n|&#45; isSeries\l&#45; vectorSubckt\l|+ LadderCircuit()\l+ LadderCircuit()\l+ ~LadderCircuit()\l+ DrawTXT()\l+ DrawGUI()\l+ IsComment()\l+ IsEmpty()\l+ IsLast()\l+ IsSeries()\l+ HasEOL()\land 30 more...\l# InsertSubckt()\l# DeleteSubckt()\l# MoveSubckt()\l&#45; DrawElementTXT()\l&#45; VerticalWireTXT()\l}" alt="" coords="560,49,696,361"/><area shape="rect" id="node23" href="structt_request_i_o.html" title="Estrutura auxiliar para solicitar um I/O. " alt="" coords="5,123,120,288"/><area shape="rect" id="node24" href="struct_ladder_elem_yaskawa_prop.html" title="{LadderElemYaskawaProp\n|+ idVar\l+ id\l+ txt\l|}" alt="" coords="144,152,315,259"/></map>
+<area shape="rect" id="node2" href="class_ladder_elem.html" title="Classe base de elementos &#45; Abstrata, todos os elementos derivam dessa classe base. " alt="" coords="339,5,535,405"/><area shape="rect" id="node21" href="struct_ladder_context.html" title="Estrutura que representa o contexto do diagrama, ou seja, seu estado atual. " alt="" coords="521,497,708,780"/><area shape="rect" id="node3" href="class_ladder_diagram.html" title="{LadderDiagram\n|&#45; CheckPointLevels\l&#45; CheckPointLevelsMax\l&#45; CheckpointBeginCount\l&#45; CheckpointDoRollback\l&#45; isCheckpointEmpty\l&#45; rungs\l&#45; UndoList\l&#45; RedoList\l&#45; vectorMbNodeList\l&#45; isLocked\l&#45; NeedScrollSelectedIntoView\l&#45; currentFilename\l|+ LadderDiagram()\l+ ~LadderDiagram()\l+ getVectorIntCode()\l+ GenerateIntCode()\l+ getWidthTXT()\l+ getHeightTXT()\l+ updateContext()\l+ getContext()\l+ SetLock()\l+ IsLocked()\land 112 more...\l&#45; DiscardCheckpoint()\l&#45; ExecuteAction()\l&#45; RegisterSettingsChanged()\l&#45; Init()\l&#45; getSubcktForElement()\l&#45; getParentSubckt()\l&#45; updateUndoContextAfter()\l&#45; InsertParallel()\l}" alt="" coords="682,859,875,1362"/><area shape="rect" id="node9" href="classmap_i_o.html" title="{mapIO\n|&#45; seqNo\l&#45; countIO\l&#45; selectedIO\l&#45; currentSortBy\l&#45; IO\l&#45; vectorIO\l&#45; maxNameSize\l&#45; vectorInternalFlag\l&#45; vectorReservedName\l&#45; vectorInternalVar\l|+ mapIO()\l+ Clear()\l+ getIndex()\l+ getName()\l+ getInternalVarName()\l+ getReservedName()\l+ getDetails()\l+ getID()\l+ getID()\l+ getTypeString()\land 24 more...\l&#45; Add()\l&#45; getValidName()\l&#45; SyncVectorIO()\l}" alt="" coords="701,1427,856,1827"/><area shape="rect" id="node4" href="class_int_code.html" title="{IntCode\n|&#45; GenSymCountParThis\l&#45; GenSymCountParOut\l&#45; GenSymCountOneShot\l&#45; GenSymCountFormattedString\l&#45; EepromAddrFree\l&#45; arrayIntCode\l&#45; StateInOut\l|+ IntCode()\l+ Clear()\l+ ClearParallelCount()\l+ getVectorIntCode()\l+ GenSymParThis()\l+ GenSymParOut()\l+ GenSymOneShot()\l+ GenSymFormattedString()\l+ getEepromAddr()\l+ getStateInOut()\land 14 more...\l}" alt="" coords="732,483,940,795"/><area shape="rect" id="node5" href="struct_mcu_io_info_tag.html" title="{McuIoInfoTag\n|+ mcuName\l+ portPrefix\l+ inputRegs\l+ outputRegs\l+ dirRegs\l+ flashWords\l+ start\l+ len\l+ ram\l+ pinCount\land 11 more...\l|}" alt="" coords="964,527,1071,751"/><area shape="rect" id="node6" href="struct_mcu_adc_pin_info_tag.html" title="{McuAdcPinInfoTag\n|+ pin\l+ muxRegValue\l|}" alt="" coords="761,159,892,251"/><area shape="rect" id="node7" href="struct_mcu_io_pin_info_tag.html" title="{McuIoPinInfoTag\n|+ port\l+ pin\l+ bit\l+ coil\l|}" alt="" coords="916,145,1033,266"/><area shape="rect" id="node8" href="struct_mcu_enc_pin_info_tag.html" title="{McuEncPinInfoTag\n|+ pin\l+ muxRegValue\l|}" alt="" coords="1057,159,1188,251"/><area shape="rect" id="node10" href="struct_ladder_diagram_1_1t_ladder_settings.html" title="{LadderDiagram::tLadderSettings\n||}" alt="" coords="1903,600,2111,677"/><area shape="rect" id="node11" href="struct_ladder_settings_u_a_r_t.html" title="Configuracoes da Interface Serial do CLP. " alt="" coords="1213,159,1355,251"/><area shape="rect" id="node12" href="struct_ladder_settings_s_n_t_p.html" title="Configuracoes de Data/Hora do CLP. " alt="" coords="1379,145,1521,266"/><area shape="rect" id="node13" href="struct_ladder_settings_general.html" title="Configuracoes gerais do diagrama. " alt="" coords="1547,152,1701,259"/><area shape="rect" id="node14" href="struct_ladder_settings_encoder_s_s_i.html" title="Configuracoes de Encoder Absoluto (SSI) " alt="" coords="1725,130,1904,281"/><area shape="rect" id="node15" href="struct_ladder_settings_network.html" title="Configuracoes de rede do CLP. " alt="" coords="1929,145,2084,266"/><area shape="rect" id="node16" href="struct_ladder_settings_encoder_incremental.html" title="Configuracoes de Encoder Incremental. " alt="" coords="2109,137,2333,273"/><area shape="rect" id="node17" href="struct_ladder_settings_a_d_c.html" title="Configuracoes da interface Analogica para Digital (A/D) " alt="" coords="2357,167,2493,244"/><area shape="rect" id="node18" href="struct_ladder_settings_information.html" title="Informacoes gerais do diagrama. " alt="" coords="2518,123,2689,288"/><area shape="rect" id="node19" href="struct_ladder_settings_d_a_c.html" title="Configuracoes da interface Digital para Analogica (D/A) " alt="" coords="2715,167,2853,244"/><area shape="rect" id="node20" href="struct_ladder_settings_modbus_slave.html" title="Configuracoes do protocolo ModBUS. " alt="" coords="2877,167,3064,244"/><area shape="rect" id="node22" href="class_ladder_circuit.html" title="{LadderCircuit\n|&#45; isSeries\l&#45; vectorSubckt\l|+ LadderCircuit()\l+ LadderCircuit()\l+ ~LadderCircuit()\l+ DrawTXT()\l+ DrawGUI()\l+ IsComment()\l+ IsEmpty()\l+ IsLast()\l+ IsSeries()\l+ HasEOL()\land 30 more...\l# InsertSubckt()\l# DeleteSubckt()\l# MoveSubckt()\l&#45; DrawElementTXT()\l&#45; VerticalWireTXT()\l}" alt="" coords="560,49,696,361"/><area shape="rect" id="node23" href="structt_request_i_o.html" title="Estrutura auxiliar para solicitar um I/O. " alt="" coords="5,123,120,288"/><area shape="rect" id="node24" href="struct_ladder_elem_yaskawa_prop.html" title="Estrutura que define as propriedades de um elemento LadderElemYaskawa. " alt="" coords="144,152,315,259"/></map>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -195,6 +198,7 @@ Métodos Privados</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Atributos Privados</h2></td></tr>
 <tr class="memitem:aab7f0e64746356403a9a47c4f86f2336"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_ladder_elem_yaskawa_prop.html">LadderElemYaskawaProp</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_yaskawa.html#aab7f0e64746356403a9a47c4f86f2336">prop</a></td></tr>
+<tr class="memdesc:aab7f0e64746356403a9a47c4f86f2336"><td class="mdescLeft">&#160;</td><td class="mdescRight">Propriedades do elemento.  <a href="#aab7f0e64746356403a9a47c4f86f2336">Mais...</a><br/></td></tr>
 <tr class="separator:aab7f0e64746356403a9a47c4f86f2336"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88613cbf76f15a3f758167a7acc90357"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structt_request_i_o.html">tRequestIO</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_elem_yaskawa.html#a88613cbf76f15a3f758167a7acc90357">infoIO_Var</a></td></tr>
 <tr class="separator:a88613cbf76f15a3f758167a7acc90357"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -216,7 +220,9 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memdesc:a12087129f76e7020d1f85750766c9647 inherit pro_attribs_class_ladder_elem"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ponteiro para o diagrama ao qual este elemento esta associado.  <a href="#a12087129f76e7020d1f85750766c9647">Mais...</a><br/></td></tr>
 <tr class="separator:a12087129f76e7020d1f85750766c9647 inherit pro_attribs_class_ladder_elem"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Construtores &amp; Destrutores</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Descrição Detalhada</h2>
+<div class="textblock"><p>Classe derivada de <a class="el" href="class_ladder_elem.html" title="Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base. ">LadderElem</a> que representa o elemento Read / Write Yaskawa. </p>
+</div><h2 class="groupheader">Construtores &amp; Destrutores</h2>
 <a class="anchor" id="ad67d0055087d4bd8088acb214760fa6f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -240,6 +246,14 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Construtor </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">diagram</td><td>Ponteiro para o diagrama ao qual o novo elemento deve ser associado </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">which</td><td>Codigo do elemento sendo criado: READ_SERVO_YASKAWA, WRITE_SERVO_YASKAWA </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -275,7 +289,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que indica se o I/O pode ser alterado para o tipo solicitado </p>
+<p>Funcao que indica se o I/O pode ser alterado para o tipo solicitado </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID do I/O sendo alterado </td></tr>
@@ -344,7 +358,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que cria uma copia do elemento </p>
+<p>Funcao que cria uma copia do elemento </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">diagram</td><td>Ponteiro para o diagrama ao qual o novo elemento deve ser associado </td></tr>
@@ -442,7 +456,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que desenha o elemento na tela </p>
+<p>Funcao que desenha o elemento na tela </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">poweredBefore</td><td>Indica se a entrada do elemento esta energizada em uma simulacao </td></tr>
@@ -477,7 +491,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que gera o texto utilizado para impressao e exportacao em modo texto </p>
+<p>Funcao que gera o texto utilizado para impressao e exportacao em modo texto </p>
 <dl class="section return"><dt>Retorna</dt><dd>Par de strings (Linha superior e linha inferior) que representam o elemento em modo texto </dd></dl>
 
 <p>Implementa <a class="el" href="class_ladder_elem.html#a781692db86abe1d586e8837945b2ed38">LadderElem</a>.</p>
@@ -505,7 +519,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que retorna o tipo permitido para este I/O pelo elemento atual </p>
+<p>Funcao que retorna o tipo permitido para este I/O pelo elemento atual </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID do I/O sendo solicitado </td></tr>
@@ -539,7 +553,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que retorna as propriedades do elemento </p>
+<p>Funcao que retorna as propriedades do elemento </p>
 <dl class="section return"><dt>Retorna</dt><dd>Ponteiro para as propriedades especificas deste elemento </dd></dl>
 
 <p>Implementa <a class="el" href="class_ladder_elem.html#aa849dd21010eb6f6e46e18ef6560c556">LadderElem</a>.</p>
@@ -611,7 +625,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que executa uma acao de desfazer / refazer nas classes derivadas </p>
+<p>Funcao que executa uma acao de desfazer / refazer nas classes derivadas </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">IsUndo</td><td>Indice se a acao se refere a operacao de Desfazer (true) ou Refazer (false) </td></tr>
@@ -647,7 +661,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que gera o codigo intermediario, implementada pelo elemento para gerar seu codigo especifico </p>
+<p>Funcao que gera o codigo intermediario, implementada pelo elemento para gerar seu codigo especifico </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">ic</td><td>Referencia ao vetor contendo o codigo intermediario, onde as novas instrucoes serao agregadas </td></tr>
@@ -691,7 +705,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que carrega os dados do elemento do disco </p>
+<p>Funcao que carrega os dados do elemento do disco </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">f</td><td>Ponteiro para o handler do arquivo sendo carregado </td></tr>
@@ -726,7 +740,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que salva os dados do elemento em disco </p>
+<p>Funcao que salva os dados do elemento em disco </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">f</td><td>Ponteiro para o handler do arquivo sendo salvo </td></tr>
@@ -770,7 +784,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual executada ao atualizar as propriedades de um elemento </p>
+<p>Funcao executada ao atualizar as propriedades de um elemento </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Ponteiro para as propriedades, conforme o tipo do elemento </td></tr>
@@ -821,7 +835,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que atualiza o I/O indicado por index para o novo nome/tipo (se possivel) </p>
+<p>Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel) </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>Indice para indicar qual o I/O que deve ser atualizado </td></tr>
@@ -873,7 +887,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que realiza uma busca / substituicao de nome de I/O entre os seus I/Os </p>
+<p>Funcao que realiza uma busca / substituicao de nome de I/O entre os seus I/Os </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">idSearch</td><td>ID do I/O sendo buscado / substituido </td></tr>
@@ -909,7 +923,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que exibe a janela de dialogo para configuracao do elemento </p>
+<p>Funcao que exibe a janela de dialogo para configuracao do elemento </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Contexto do Diagrama com informacoes sobre o que pode ser feito, objeto selecionado, etc. </td></tr>
@@ -953,7 +967,7 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Funcao puramente virtual que informa o elemento que ele deve atualizar seus I/Os </p>
+<p>Funcao que informa o elemento que ele deve atualizar seus I/Os </p>
 <dl class="params"><dt>Parâmetros</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">owner</td><td>Ponteiro para o diagrama ao qual o I/O pertencia originalmente </td></tr>
@@ -1005,6 +1019,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Propriedades do elemento. </p>
+
 </div>
 </div>
 <hr/>A documentação para esta classe foi gerada a partir dos seguintes arquivos:<ul>
@@ -1015,7 +1031,7 @@ Additional Inherited Members</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Quinta, 7 de Novembro de 2013 07:47:53 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Quinta, 7 de Novembro de 2013 16:07:53 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

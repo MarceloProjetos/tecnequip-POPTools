@@ -20,6 +20,7 @@ volatile unsigned int I_ModbusReady;
 
 volatile unsigned char WAITING_FOR_USS = 0;	//
 volatile unsigned char WAITING_FOR_YASKAWA = 0;	//
+volatile unsigned char WAITING_FOR_FMTSTR = 0;	//
 
 volatile unsigned int rs485_timeout = 0;
 volatile unsigned int rs485_reset_timeout = 0;
@@ -117,6 +118,18 @@ unsigned int RS485_Read(unsigned char * buffer, unsigned int size)
   return i;
 }
 
+unsigned int RS485_ReadChar(unsigned char * buffer)
+{
+	if(rs485_rx_index > 0) {
+		rs485_rx_index--;
+		*buffer = rs485_rx_buffer[0];
+		memcpy(rs485_rx_buffer, rs485_rx_buffer + 1, rs485_rx_index);
+		return 1;
+	}
+
+	return 0;
+}
+
 void RS485_Config(int baudrate, int bits, int parity, int stopbit)
 {
 	UART3->FCR = 0x7; // FIFO TX/RX Enable/Reset
@@ -182,16 +195,18 @@ void RS485_Handler (unsigned int cycle)
 		if(sz) {
 			rs485_timeout  = cycle + 3;
 		} else if(cycle >= rs485_timeout) {
-			if (WAITING_FOR_USS == 1) // uss
-			{
-				USS_Ready(rs485_rx_buffer, rs485_rx_index);
-				rs485_rx_index = 0;
-				WAITING_FOR_USS = 0;
-			}
-			else if (WAITING_FOR_YASKAWA == 0) // modbus
-			{
-				Modbus_Request(&modbus_rs485, rs485_rx_buffer, rs485_rx_index);
-				rs485_rx_index = 0;
+			// Se aguardando por uma string formatada, nenhum protocolo deve interpretar strings
+			// pois podem ser recebidos comandos invalidos que gerem erros ou mesmo o buffer ser descartado
+			// antes de o objeto de string formatada conseguir interpretar os dados.
+			if (WAITING_FOR_FMTSTR == 0) { // formatted string
+				if (WAITING_FOR_USS == 1){ // uss
+					USS_Ready(rs485_rx_buffer, rs485_rx_index);
+					rs485_rx_index = 0;
+					WAITING_FOR_USS = 0;
+				} else if (WAITING_FOR_YASKAWA == 0) { // modbus
+					Modbus_Request(&modbus_rs485, rs485_rx_buffer, rs485_rx_index);
+					rs485_rx_index = 0;
+				}
 			}
 		}
 	}

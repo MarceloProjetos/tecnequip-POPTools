@@ -570,7 +570,14 @@ bool LadderElemContact::internalUpdateNameTypeIO(unsigned int index, string name
 	pair<unsigned long, int> pin = prop.idName;
 
 	if(type == eType_Reserved) {
-		type = eType_DigInput;
+		type = Diagram->getDetailsIO(name).type;
+	}
+
+	if(type != eType_DigInput &&
+		type != eType_DigOutput &&
+		type != eType_InternalRelay &&
+		type != eType_InternalFlag) {
+			type = eType_DigInput;
 	}
 
 	eReply reply;
@@ -3331,7 +3338,7 @@ bool LadderElemMove::acceptIO(unsigned long id, eType type)
 		return false;
 	}
 
-	if(id == prop.idDest.first && type != eType_General && type != eType_Reserved) {
+	if(id == prop.idDest.first && !Diagram->IsGenericTypeIO(type)) {
 		return false;
 	}
 
@@ -5650,8 +5657,8 @@ bool LadderElemUART::internalGenerateIntCode(IntCode &ic)
 
 	ic.Op(INT_IF_BIT_SET, stateInOut);
 		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
-			ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
 			ic.Op(getWhich() == ELEM_UART_SEND ? INT_UART_SEND : INT_UART_RECV, name, stateInOut);
+			ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
 		ic.Op(INT_END_IF);
 	ic.Op(INT_ELSE);
 		ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
@@ -6758,30 +6765,24 @@ bool LadderElemFmtString::internalGenerateIntCode(IntCode &ic)
 	const char *stateInOut = ic.getStateInOut();
 	// We want to respond to rising edges, so yes we need a one shot.
 	string oneShot = ic.GenSymOneShot();
-	string byPass  = ic.GenSymOneShot();
 
 	// OneShot 
 	ic.Op(INT_IF_BIT_SET, stateInOut);
 		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
 			ic.Op(INT_IF_BIT_SET, "$SerialReady");
 				if (getWhich() == ELEM_READ_FORMATTED_STRING)
-					ic.Op(INT_READ_FORMATTED_STRING, var, prop.txt.c_str());
+					ic.Op(INT_READ_FORMATTED_STRING , var, prop.txt.c_str(), "$scratchInt", 0, 0);
 				else
-					ic.Op(INT_WRITE_FORMATTED_STRING, var, prop.txt.c_str());
-				ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
-			ic.Op(INT_END_IF);
-			ic.Op(INT_CLEAR_BIT, stateInOut);
-			ic.Op(INT_COPY_BIT_TO_BIT, byPass.c_str(), stateInOut);
-		ic.Op(INT_END_IF);
-		ic.Op(INT_IF_BIT_CLEAR, byPass.c_str());
-			ic.Op(INT_IF_BIT_SET, "$SerialReady");
-				ic.Op(INT_SET_BIT, byPass.c_str());
-			ic.Op(INT_ELSE);
-				ic.Op(INT_CLEAR_BIT, stateInOut);
+					ic.Op(INT_WRITE_FORMATTED_STRING, var, prop.txt.c_str(), "$scratchInt", 0, 0);
+				ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratchZero", (SWORD)0);
+				ic.Op(INT_IF_VARIABLE_GRT_VARIABLE, "$scratchInt", "$scratchZero");
+					ic.Op(INT_SET_BIT, oneShot.c_str());
+				ic.Op(INT_END_IF);
 			ic.Op(INT_END_IF);
 		ic.Op(INT_END_IF);
+		ic.Op(INT_COPY_BIT_TO_BIT, stateInOut, oneShot.c_str());
 	ic.Op(INT_ELSE);
-		ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
+		ic.Op(INT_CLEAR_BIT, oneShot.c_str());
 	ic.Op(INT_END_IF);
 
 	return true;
@@ -6974,23 +6975,18 @@ bool LadderElemYaskawa::internalGenerateIntCode(IntCode &ic)
 		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
 			ic.Op(INT_IF_BIT_SET, "$SerialReady");
 				if (getWhich() == ELEM_READ_SERVO_YASKAWA)
-					ic.Op(INT_READ_SERVO_YASKAWA , var, prop.txt.c_str(), idtxt, 0, 0);
+					ic.Op(INT_READ_SERVO_YASKAWA , var, prop.txt.c_str(), idtxt, "$scratchInt", 0, 0);
 				else
-					ic.Op(INT_WRITE_SERVO_YASKAWA, var, prop.txt.c_str(), idtxt, 0, 0);
-				ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
-			ic.Op(INT_END_IF);
-			ic.Op(INT_CLEAR_BIT, stateInOut);
-			ic.Op(INT_COPY_BIT_TO_BIT, byPass.c_str(), stateInOut);
-		ic.Op(INT_END_IF);
-		ic.Op(INT_IF_BIT_CLEAR, byPass.c_str());
-			ic.Op(INT_IF_BIT_SET, "$SerialReady");
-				ic.Op(INT_SET_BIT, byPass.c_str());
-			ic.Op(INT_ELSE);
-				ic.Op(INT_CLEAR_BIT, stateInOut);
+					ic.Op(INT_WRITE_SERVO_YASKAWA, var, prop.txt.c_str(), idtxt, "$scratchInt", 0, 0);
+				ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratchZero", (SWORD)0);
+				ic.Op(INT_IF_VARIABLE_GRT_VARIABLE, "$scratchInt", "$scratchZero");
+					ic.Op(INT_SET_BIT, oneShot.c_str());
+				ic.Op(INT_END_IF);
 			ic.Op(INT_END_IF);
 		ic.Op(INT_END_IF);
+		ic.Op(INT_COPY_BIT_TO_BIT, stateInOut, oneShot.c_str());
 	ic.Op(INT_ELSE);
-		ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
+		ic.Op(INT_CLEAR_BIT, oneShot.c_str());
 	ic.Op(INT_END_IF);
 
 	return true;
@@ -8356,21 +8352,21 @@ void LadderCircuit::setDiagram(LadderDiagram *newDiagram)
 	}
 }
 
-void LadderCircuit::DeleteEndPlaceHolder(LadderContext context)
+void LadderCircuit::DeleteEndPlaceHolder(LadderContext context, LadderElem *elem)
 {
 	vector<Subckt>::iterator it = vectorSubckt.begin() + vectorSubckt.size();
 
 	if(!vectorSubckt.empty()) {
 		if((it-1)->elem == nullptr) {
-			(it-1)->subckt->DeleteEndPlaceHolder(context);
+			(it-1)->subckt->DeleteEndPlaceHolder(context, elem);
 		} else if((it-1)->elem->getWhich() == ELEM_PLACEHOLDER && vectorSubckt.size() > 1 &&
-			(it-1)->elem != context.ParallelStart) {
+			(it-1)->elem != context.ParallelStart && (it-1)->elem != elem) {
 				DelElement((it-1)->elem, context);
 		}
 	}
 }
 
-void LadderCircuit::AddPlaceHolderIfNoEOL(LadderContext context)
+void LadderCircuit::AddPlaceHolderIfNoEOL(LadderContext context, LadderElem *elem)
 {
 	vector<Subckt>::iterator it;
 
@@ -8382,7 +8378,7 @@ void LadderCircuit::AddPlaceHolderIfNoEOL(LadderContext context)
 				// circuito paralelo que era o ultimo elemento.
 				// Dessa forma devemos percorrer este circuito para remover um eventual PlaceHolder existente.
 				if(!vectorSubckt.empty()) {
-					(it-1)->subckt->DeleteEndPlaceHolder(context);
+					(it-1)->subckt->DeleteEndPlaceHolder(context, elem);
 				}
 
 				// Se o circuito estiver vazio ou se adicionamos um paralelo e for o ultimo elemento,
@@ -8393,13 +8389,13 @@ void LadderCircuit::AddPlaceHolderIfNoEOL(LadderContext context)
 		} else if(!vectorSubckt.empty()) {
 			it = (vectorSubckt.end() - 1);
 			if(it->elem == nullptr) {
-				it->subckt->AddPlaceHolderIfNoEOL(context);
+				it->subckt->AddPlaceHolderIfNoEOL(context, elem);
 			}
 		}
 	} else {
 		for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
 			if(it->elem == nullptr) {
-				it->subckt->AddPlaceHolderIfNoEOL(context);
+				it->subckt->AddPlaceHolderIfNoEOL(context, elem);
 			}
 		}
 	}
@@ -10040,7 +10036,7 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 		int position = RungContainingSelected();
 		if(position >= 0) { // Se posicao menor que zero, insere no final
 			vector<LadderRung *>::iterator it = rungs.begin() + position;
-			(*it)->rung->AddPlaceHolderIfNoEOL(context);
+			(*it)->rung->AddPlaceHolderIfNoEOL(context, elem);
 		}
 
 		// Elemento adicionado, chama a funcao para que o elemento realize qualquer etapa
@@ -10089,7 +10085,7 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 
 		elem->updateIO(this, true);
 		rungs[rung]->rung->RemoveUnnecessarySubckts(context);
-		rungs[rung]->rung->AddPlaceHolderIfNoEOL(context);
+		rungs[rung]->rung->AddPlaceHolderIfNoEOL(context, nullptr);
 
 		if(elem == context.ParallelStart) {
 			context.ParallelStart = nullptr;
@@ -10437,6 +10433,9 @@ bool LadderDiagram::Save(string filename, bool dontSaveFilename)
 
 	FILE *f = fopen(filename.c_str(), "wb+");
     if(!f) return failed;
+
+	// Desmarca a flag que indica que nao pode salvar pois esse novo arquivo podera ser salvo.
+	LadderSettings.General.canSave = true;
 
 	// Ao salvar, se houver o inicio de um paralelo, ele deve ser removido
 	// A acao de exclusao constara na lista de desfazer.
@@ -11557,6 +11556,11 @@ void LadderDiagram::selectIO(unsigned int index)
 bool LadderDiagram::IsInternalVarIO(string name)
 {
 	return IO->IsInternalVar(name);
+}
+
+bool LadderDiagram::IsInternalFlagIO(string name)
+{
+	return IO->IsInternalFlag(name);
 }
 
 string LadderDiagram::getInternalVarNameIO(string name)

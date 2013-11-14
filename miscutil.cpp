@@ -37,7 +37,11 @@ void Error(char *title, char *str, va_list f)
     vsprintf(buf, str, f);
 
 	HWND h = GetForegroundWindow();
-	ladder->ShowDialog(eDialogType_Error, false, title, buf);
+	if(h == MainWindow) {
+		ladder->ShowDialog(eDialogType_Error, false, title, buf);
+	} else {
+		MessageBox(h, buf, title, MB_OK | MB_ICONERROR);
+	}
 }
 
 void Error(char *str, ...)
@@ -46,6 +50,23 @@ void Error(char *str, ...)
     va_start(f, str);
 
 	Error(_("POPTools Error"), str, f);
+}
+
+void Warning(char *title, char *str, ...)
+{
+    char buf[1024];
+
+	va_list f;
+    va_start(f, str);
+
+    vsprintf(buf, str, f);
+
+	HWND h = GetForegroundWindow();
+	if(h == MainWindow) {
+		ladder->ShowDialog(eDialogType_Message, false, title, buf);
+	} else {
+		MessageBox(h, buf, title, MB_OK | MB_ICONEXCLAMATION);
+	}
 }
 
 //-----------------------------------------------------------------------------

@@ -9,7 +9,111 @@ bool isDiagramChangedSinceLastDraw = true;
 
 map<LadderDiagram *, tDiagramData> mapDiagramData;
 
+enum eLineBreakMode {
+	eLineBreakMode_None = 0,
+	eLineBreakMode_CR,
+	eLineBreakMode_LF,
+	eLineBreakMode_CRLF,
+};
+
+typedef struct {
+	bool           hasVariable;
+	eLineBreakMode mode;
+} tDataStringUART;
+
 /*** Funcoes auxiliares ***/
+
+tDataStringUART getDataStringUART(string txt)
+{
+	tDataStringUART data = { false, eLineBreakMode_None };
+
+	unsigned int len = txt.size();
+
+	string ch = txt.substr(txt.size() - 2);
+	if(len >= 2 && txt.substr(len - 2) == "\\n") {
+			txt = txt.substr(0, len - 2);
+			len -= 2;
+			data.mode = eLineBreakMode_LF;
+	}
+
+	if(len >= 2 && txt.substr(len - 2) == "\\r") {
+		txt = txt.substr(0, len - 2);
+		if(data.mode == eLineBreakMode_None) {
+			data.mode = eLineBreakMode_CR;
+		} else {
+			data.mode = eLineBreakMode_CRLF;
+		}
+	}
+
+	if(txt.find("%d") != string::npos) {
+		data.hasVariable = true;
+	}
+
+	return data;
+}
+
+string RemoveLineBreakIfNeeded(string txt, tDataStringUART data)
+{
+	unsigned int len = txt.size();
+
+	if((data.mode == eLineBreakMode_LF || data.mode == eLineBreakMode_CR) && len >= 2) {
+		return txt.substr(0, len - 2);
+	} else if(data.mode == eLineBreakMode_CRLF && len >= 4) {
+		return txt.substr(0, len - 4);
+	}
+
+	return txt;
+}
+
+string getStartStringUART(string txt, tDataStringUART data)
+{
+	if(data.hasVariable) {
+		return txt.substr(0, txt.find("%d"));
+	}
+
+	return RemoveLineBreakIfNeeded(txt, data);
+}
+
+string getEndStringUART(string txt, tDataStringUART data)
+{
+	if(data.hasVariable) {
+		return RemoveLineBreakIfNeeded(txt.substr(txt.find("%d") + 2), data);
+	}
+
+	return "";
+}
+
+string UpdateStringUART(string txt, tDataStringUART data)
+{
+	tDataStringUART currData = getDataStringUART(txt);
+	string ret = getStartStringUART(txt, currData), end = getEndStringUART(txt, currData);
+
+	if(data.hasVariable) {
+		ret += "%d";
+	}
+
+	ret += end;
+
+	switch(data.mode) {
+		default:
+		case eLineBreakMode_None:
+			break; // nada a fazer
+
+		case eLineBreakMode_CR:
+			ret += "\\r";
+			break; // apenas \r
+
+		case eLineBreakMode_LF:
+			ret += "\\n";
+			break; // apenas \n
+
+		case eLineBreakMode_CRLF:
+			ret += "\\r\\n";
+			break; // ambos \r e \n
+	}
+
+	return ret;
+}
 
 inline bool PointInsideRegion(POINT p, RECT region)
 {
@@ -1685,6 +1789,8 @@ bool cmdChangeName(LadderElem *elem, unsigned int index, pair<unsigned long, int
 		}
 	}
 
+	SetFocus(MainWindow);
+
 	return ret;
 }
 
@@ -1883,7 +1989,13 @@ bool ContactCmdChangeName(tCommandSource source, void *data)
 		type = dataChangeName->type;
 	}
 
-	types.push_back((type == eType_Reserved) ? eType_DigInput : type);
+	if(type == eType_Reserved) {
+		types.push_back(eType_DigInput);
+		types.push_back(eType_InternalRelay);
+		types.push_back(eType_DigOutput);
+	} else {
+		types.push_back(type);
+	}
 
 	ret = cmdChangeName(source.elem, 0, prop->idName, type, types, _("Contacts"), _("Name:"));
 	if(dataChangeName != nullptr) {
@@ -1917,13 +2029,13 @@ bool ContactCmdExpandedSource(LadderElem *elem, unsigned int selected)
 	string                 name      = ladder->getNameIO(prop->idName);
 
 	// Apenas atualiza o tipo do I/O diretamente se mais ninguem estiver utilizando
-	if(detailsIO.countRequestBit == 1) {
+	if(detailsIO.countRequestBit == 1 && detailsIO.type != eType_Reserved) {
 		ret = contact->updateNameTypeIO(0, name, type);
 	} else {
 		ret = false;
 	}
 
-	if(!ret || detailsIO.type == eType_Reserved) {
+	if(!ret) {
 		tCommandSource source = { nullptr, nullptr, elem };
 		dataChangeName.type   = type;
 
@@ -2131,8 +2243,8 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 		gui.addControlList(this, rExp[0], list);
 
 		list.items.clear();
-		list.items.push_back("Não");
-		list.items.push_back("Sim");
+		list.items.push_back("No");
+		list.items.push_back("Yes");
 
 		list.fnc      = ContactCmdExpandedNegated;
 		list.selected = prop.negated ? 1 : 0;
@@ -5550,7 +5662,7 @@ bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 	if(ddg->expanded) {
 		vector<tExpandedItem> items;
 		items.push_back(tExpandedItem(_("Modo" ), 1));
-		items.push_back(tExpandedItem(_("Retr.?"), 1));
+		items.push_back(tExpandedItem(_("Reenviar"), 1));
 
 		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 2, items);
 
@@ -5566,8 +5678,8 @@ bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 		gui.addControlList(this, rExp[0], list);
 
 		list.items.clear();
-		list.items.push_back("Não");
-		list.items.push_back("Sim");
+		list.items.push_back("No");
+		list.items.push_back("Yes");
 
 		list.fnc      = ModBUSCmdExpandedResend;
 		list.selected = prop.retransmitir ? 1 : 0;
@@ -6464,9 +6576,39 @@ bool FmtStringCmdChangeValue(tCommandSource source, void *data)
 	} else { // txt, Texto
 		vector<eType> types;
 		types.push_back(eType_Pending);
-		string name = prop->txt;
 
-		if(ShowVarDialog(title,  _("String:"), &name, start, size, GridSize, types)) {
+		tDataStringUART data = getDataStringUART(prop->txt);
+
+		string name, startName = getStartStringUART(prop->txt, data), endName = getEndStringUART(prop->txt, data);
+		switch(field) {
+			default:
+			case 1: name = prop->txt; break;
+			case 2: name = startName; break;
+			case 3: name = endName  ; break;
+		}
+
+		if(ShowVarDialog(title,  _("String:"), &name, start, size, GridSize, types, true)) {
+			switch(field) {
+				default:
+				case 1: break; // Texto completo, nada a fazer...
+				case 2: // Lida a porcao inicial, devemos montar o restante
+					if(data.hasVariable) {
+						name += "%d";
+						name += endName;
+					}
+					name = UpdateStringUART(name, data);
+					break;
+				case 3:
+					endName = name;
+					name = startName;
+					if(data.hasVariable) {
+						name += "%d";
+					}
+					name += endName;
+					name = UpdateStringUART(name, data);
+					break;
+			}
+
 			prop->txt = name;
 			source.elem->setProperties(ladder->getContext(), prop);
 			ret = true;
@@ -6474,6 +6616,74 @@ bool FmtStringCmdChangeValue(tCommandSource source, void *data)
 			// Se foi cancelada a alteracao, devemos desalocar as propriedades
 			delete prop;
 		}
+	}
+
+	return ret;
+}
+
+bool FmtStrCmdExpandedVariable(LadderElem *elem, unsigned int selected)
+{
+	bool ret = false;
+
+	LadderElemFmtString *fmt = dynamic_cast<LadderElemFmtString *>(elem);
+	LadderElemFmtStringProp *prop = (LadderElemFmtStringProp *)fmt->getProperties();
+
+	tDataStringUART data = getDataStringUART(prop->txt);
+	data.hasVariable = selected ? true : false;
+	string newtxt = UpdateStringUART(prop->txt, data);
+
+	if(prop->txt != newtxt) {
+		ladder->CheckpointBegin("Alterar ModBUS");
+
+		prop->txt = newtxt;
+
+		fmt->setProperties(ladder->getContext(), prop);
+
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
+	}
+
+	return ret;
+}
+
+bool FmtStrCmdExpandedLineBreak(LadderElem *elem, unsigned int selected)
+{
+	bool ret = false;
+
+	LadderElemFmtString *fmt = dynamic_cast<LadderElemFmtString *>(elem);
+	LadderElemFmtStringProp *prop = (LadderElemFmtStringProp *)fmt->getProperties();
+
+	tDataStringUART data = getDataStringUART(prop->txt);
+	switch(selected) {
+		default:
+		case 0: data.mode = eLineBreakMode_None; break;
+		case 1: data.mode = eLineBreakMode_CR  ; break;
+		case 2: data.mode = eLineBreakMode_LF  ; break;
+		case 3: data.mode = eLineBreakMode_CRLF; break;
+	}
+	string newtxt = UpdateStringUART(prop->txt, data);
+
+	if(prop->txt != newtxt) {
+		ladder->CheckpointBegin("Alterar ModBUS");
+
+		prop->txt = newtxt;
+
+		fmt->setProperties(ladder->getContext(), prop);
+
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
 	}
 
 	return ret;
@@ -6503,51 +6713,121 @@ bool LadderElemFmtString::ShowDialog(LadderContext context)
 
 bool LadderElemFmtString::DrawGUI(bool poweredBefore, void *data)
 {
+	bool isRead = (getWhich() == ELEM_READ_FORMATTED_STRING);
 	POINT size, GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
 	size  = ddg->size;
 
-	ddg->size.x = 2;
-	ddg->size.y = 3;
+	if(ddg->expanded) {
+		ddg->size.x = 3;
+		ddg->size.y = 8;
+	} else {
+		ddg->size.x = 2;
+		ddg->size.y = 3;
+	}
 
 	if(ddg->DontDraw) return poweredAfter;
 
 	tLadderColors     colors     = gui.getLadderColors    ();
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
-	int which = getWhich();
-
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (getWhich() == ELEM_READ_FORMATTED_STRING) ? _("LER STRING") : _("ESCR. STRING"), false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, isRead ? _("LER STRING") : _("ESCR. STRING"), true, poweredBefore);
 	ddg->region = r;
 
 	int *pInt;
 	tCommandSource source = { nullptr, nullptr, this };
 
 	// Desenha a seta indicando o sentido (Enviar / Receber)
-	DrawArrowAndText(r, "ABC", colors.Black, (getWhich() == ELEM_READ_FORMATTED_STRING));
+	DrawArrowAndText(r, "ABC", colors.Black, isRead);
 
 	// Soma a altura do grid pois os nomes iniciam abaixo do texto e seta
-	r.top    += GridSize.y;
-	r.bottom += GridSize.y;
+	RECT rText = r;
+	rText.top    += GridSize.y;
+	rText.bottom += GridSize.y;
 
 	// Desenha o nome da variavel
-	r.top  += 10;
-	r.left += 5;
-	gui.DrawText(Diagram->getNameIO(prop.idVar).c_str(), r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	rText.top  += 10;
+	rText.left += 5;
+	gui.DrawText(Diagram->getNameIO(prop.idVar).c_str(), rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 
 	pInt = new int;
 	*pInt = 0;
-	gui.AddCommand(source, r, FmtStringCmdChangeValue, pInt, true, false);
+	gui.AddCommand(source, rText, FmtStringCmdChangeValue, pInt, true, false);
 
-	// Desenha o limite do contador
-	r.top += FONT_HEIGHT + 5;
-	gui.DrawText(prop.txt.c_str(), r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	// Desenha o texto de formato da string de envio
+	char buf[1024];
+
+	if(ddg->expanded) {
+		sprintf(buf, _("Texto: %s"), prop.txt.c_str());
+	} else {
+		strcpy(buf, prop.txt.c_str());
+	}
+
+	rText.top += FONT_HEIGHT + 5;
+	gui.DrawText(buf, rText, 0, colorgroup.Foreground, ddg->expanded ? eAlignMode_TopLeft : eAlignMode_Center, eAlignMode_TopLeft);
 
 	pInt = new int;
 	*pInt = 1;
-	gui.AddCommand(source, r, FmtStringCmdChangeValue, pInt, true, false);
+	gui.AddCommand(source, rText, FmtStringCmdChangeValue, pInt, true, false);
+
+	// Se expandido, desenha os itens do modo expandido
+	if(ddg->expanded) {
+		tDataStringUART data = getDataStringUART(prop.txt); 
+
+		// Desenha o trecho inicial da string de envio (Antes da variavel)
+		rText.top += FONT_HEIGHT + 5;
+		sprintf(buf, _("Inicio: %s"), getStartStringUART(prop.txt, data).c_str());
+		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+		pInt = new int;
+		*pInt = 2;
+		gui.AddCommand(source, rText, FmtStringCmdChangeValue, pInt, true, false);
+
+		// Desenha o trecho final da string de envio (Depois da variavel)
+		rText.top += FONT_HEIGHT + 5;
+		sprintf(buf, _("Fim: %s"), getEndStringUART(prop.txt, data).c_str());
+		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+		pInt = new int;
+		*pInt = 3;
+		gui.AddCommand(source, rText, FmtStringCmdChangeValue, pInt, true, false);
+
+		vector<tExpandedItem> items;
+		items.push_back(tExpandedItem(_("Fim linha"), 2));
+		items.push_back(tExpandedItem(_("Variavel" ), 1));
+
+		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 4, items);
+
+		// Caixas desenhadas. Agora criamos o conteudo
+		tControlList list;
+
+		list.items.push_back(_("No"));
+		list.items.push_back(_("CR"));
+		list.items.push_back(_("LF"));
+		list.items.push_back(_("CR+LF"));
+		switch(data.mode) {
+			default:
+			case eLineBreakMode_None: list.selected = 0; break;
+			case eLineBreakMode_CR  : list.selected = 1; break;
+			case eLineBreakMode_LF  : list.selected = 2; break;
+			case eLineBreakMode_CRLF: list.selected = 3; break;
+		}
+
+		list.fnc      = FmtStrCmdExpandedLineBreak;
+		gui.addControlList(this, rExp[0], list);
+
+		list.items.clear();
+
+		list.items.push_back(_("No"));
+		list.items.push_back(_("Yes"));
+
+		list.selected = data.hasVariable ? 1 : 0;
+		list.fnc      = FmtStrCmdExpandedVariable;
+
+		gui.addControlList(this, rExp[1], list);
+	}
 
 	return poweredAfter;
 }
@@ -6616,7 +6896,7 @@ bool YaskawaCmdChangeValue(tCommandSource source, void *data)
 		vector<eType> types;
 		types.push_back(eType_Pending);
 
-		if(ShowVarDialog(title, desc, &name, start, size, GridSize, types)) {
+		if(ShowVarDialog(title, desc, &name, start, size, GridSize, types, true)) {
 			bool isValid = true;
 			if(field != 2) {
 				isValid = ladder->IsValidNameAndType(0, name.c_str(), eType_Pending, FieldName, VALIDATE_IS_NUMBER, 0, 0);
@@ -6641,6 +6921,37 @@ bool YaskawaCmdChangeValue(tCommandSource source, void *data)
 			// Se foi cancelada a alteracao, devemos desalocar as propriedades
 			delete prop;
 		}
+	}
+
+	return ret;
+}
+
+bool YaskawaCmdExpandedVariable(LadderElem *elem, unsigned int selected)
+{
+	bool ret = false;
+
+	LadderElemYaskawa *ns600 = dynamic_cast<LadderElemYaskawa *>(elem);
+	LadderElemYaskawaProp *prop = (LadderElemYaskawaProp *)ns600->getProperties();
+
+	tDataStringUART data = getDataStringUART(prop->txt);
+	data.hasVariable = selected ? true : false;
+	string newtxt = UpdateStringUART(prop->txt, data);
+
+	if(prop->txt != newtxt) {
+		ladder->CheckpointBegin("Alterar Yaskawa");
+
+		prop->txt = newtxt;
+
+		ns600->setProperties(ladder->getContext(), prop);
+
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
 	}
 
 	return ret;
@@ -6676,8 +6987,13 @@ bool LadderElemYaskawa::DrawGUI(bool poweredBefore, void *data)
 
 	size  = ddg->size;
 
-	ddg->size.x = 3;
-	ddg->size.y = 4;
+	if(ddg->expanded) {
+		ddg->size.x = 3;
+		ddg->size.y = 6;
+	} else {
+		ddg->size.x = 3;
+		ddg->size.y = 4;
+	}
 
 	if(ddg->DontDraw) return poweredAfter;
 
@@ -6685,7 +7001,7 @@ bool LadderElemYaskawa::DrawGUI(bool poweredBefore, void *data)
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(which, poweredAfter);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (which == ELEM_READ_SERVO_YASKAWA) ? _("LER NS-600") : _("ESCREVER NS-600"), false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (which == ELEM_READ_SERVO_YASKAWA) ? _("LER NS-600") : _("ESCREVER NS-600"), true, poweredBefore);
 	ddg->region = r;
 
 	char buf[1024];
@@ -6695,9 +7011,6 @@ bool LadderElemYaskawa::DrawGUI(bool poweredBefore, void *data)
 
 	// Desenha a seta indicando o sentido (Enviar / Receber)
 	DrawArrowAndText(r, "NS-600", colors.Black, (getWhich() == ELEM_READ_SERVO_YASKAWA));
-
-	r.top    += GridSize.y;
-	r.bottom += GridSize.y;
 
 	// Cria a lista com os campos
 
@@ -6711,20 +7024,43 @@ bool LadderElemYaskawa::DrawGUI(bool poweredBefore, void *data)
 	FieldList.push_back(string(buf));
 
 	// Agora desenha os campos na tela
+	RECT rText = r;
+	rText.top    += GridSize.y;
+	rText.bottom += GridSize.y;
 
-	r.left   +=  5;
-	r.top    += 10;
+	rText.left   +=  5;
+	rText.top    += 10;
 
 	vector<string>::iterator it;
 	for(it = FieldList.begin(); it != FieldList.end(); it++) {
-		r.bottom  = r.top + FONT_HEIGHT;
-		gui.DrawText(it->c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+		rText.bottom  = rText.top + FONT_HEIGHT;
+		gui.DrawText(it->c_str(), rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 
 		pInt  = new int;
 		*pInt = count++;
-		gui.AddCommand(source, r, YaskawaCmdChangeValue, pInt, true, false);
+		gui.AddCommand(source, rText, YaskawaCmdChangeValue, pInt, true, false);
 
-		r.top = r.bottom + 5;
+		rText.top = rText.bottom + 5;
+	}
+
+	// Se expandido, desenha os itens do modo expandido
+	if(ddg->expanded) {
+		tDataStringUART data = getDataStringUART(prop.txt); 
+		vector<tExpandedItem> items;
+		items.push_back(tExpandedItem(_("Variavel" ), 1));
+
+		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 4, items);
+
+		// Caixas desenhadas. Agora criamos o conteudo
+		tControlList list;
+
+		list.items.push_back(_("No"));
+		list.items.push_back(_("Yes"));
+
+		list.selected = data.hasVariable ? 1 : 0;
+		list.fnc      = YaskawaCmdExpandedVariable;
+
+		gui.addControlList(this, rExp[0], list);
 	}
 
 	return poweredAfter;
@@ -6973,8 +7309,8 @@ bool LadderElemPID::DrawGUI(bool poweredBefore, void *data)
 		ddg->size.x = 7;
 		ddg->size.y = 6;
 	} else {
-		ddg->size.x = 2;
-		ddg->size.y = 2;
+		ddg->size.x = 3;
+		ddg->size.y = 4;
 	}
 
 	if(ddg->DontDraw) return poweredAfter;
@@ -7277,6 +7613,46 @@ bool LadderElemPID::DrawGUI(bool poweredBefore, void *data)
 		rCircle.bottom = rCircle.top + 10;
 		gui.DrawEllipse(rCircle, colorgroup.Foreground, true);
 	} else {
+		char buf[1024];
+		int count = 0;
+		vector<string> FieldList;
+
+		// Cria a lista com os campos
+
+		sprintf(buf, "%s %s", _("Setpoint (SP):"    ), Diagram->getNameIO(prop.idSetpoint    ).c_str());
+		FieldList.push_back(string(buf));
+
+		sprintf(buf, "%s %s", _("Gain P:"           ), Diagram->getNameIO(prop.idGainP       ).c_str());
+		FieldList.push_back(string(buf));
+
+		sprintf(buf, "%s %s", _("Gain I:"           ), Diagram->getNameIO(prop.idGainI       ).c_str());
+		FieldList.push_back(string(buf));
+
+		sprintf(buf, "%s %s", _("Gain D:"           ), Diagram->getNameIO(prop.idGainD       ).c_str());
+		FieldList.push_back(string(buf));
+
+		sprintf(buf, "%s %s", _("Output (OP):"      ), Diagram->getNameIO(prop.idOutput      ).c_str());
+		FieldList.push_back(string(buf));
+
+		sprintf(buf, "%s %s", _("Process Value(PV):"), Diagram->getNameIO(prop.idProcessValue).c_str());
+		FieldList.push_back(string(buf));
+
+		// Agora desenha os campos na tela
+
+		r.left   += 5;
+		r.top    += 3;
+
+		vector<string>::iterator it;
+		for(it = FieldList.begin(); it != FieldList.end(); it++) {
+			r.bottom  = r.top + FONT_HEIGHT;
+			gui.DrawText(it->c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+
+			pInt  = new int;
+			*pInt = count++;
+			gui.AddCommand(source, r, PIDCmdChangeValue, pInt, true, false);
+
+			r.top = r.bottom + 5;
+		}
 	}
 
 	return poweredAfter;

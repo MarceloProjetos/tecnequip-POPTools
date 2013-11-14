@@ -1,17 +1,5 @@
 #include "poptools.h"
 
-static HWND SimpleDialog;
-
-#define MAX_BOXES 5
-
-static HWND Textboxes[MAX_BOXES];
-static HWND Labels[MAX_BOXES];
-
-static LONG_PTR PrevAlnumOnlyProc[MAX_BOXES];
-static LONG_PTR PrevNumOnlyProc[MAX_BOXES];
-
-static BOOL NoCheckingOnBox[MAX_BOXES];
-
 static HWND SetBitDialog;
 
 static HWND NameTextbox;
@@ -43,54 +31,6 @@ void PopulateModBUSMasterCombobox(HWND h, bool has_new)
 }
 
 /*** End of Helper Functions for MbNodeList ***/
-
-//-----------------------------------------------------------------------------
-// Don't allow any characters other than -A-Za-z0-9_ in the box.
-//-----------------------------------------------------------------------------
-static LRESULT CALLBACK MyAlnumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
-    LPARAM lParam)
-{
-    if(msg == WM_CHAR) {
-        if(!(isalpha(wParam) || isdigit(wParam) || wParam == '_' ||
-            wParam == '\b' || wParam == '-' || wParam == '\''))
-        {
-            return 0;
-        }
-    }
-
-    int i;
-    for(i = 0; i < MAX_BOXES; i++) {
-        if(hwnd == Textboxes[i]) {
-            return CallWindowProc((WNDPROC)PrevAlnumOnlyProc[i], hwnd, msg, 
-                wParam, lParam);
-        }
-    }
-    oops();
-}
-
-//-----------------------------------------------------------------------------
-// Don't allow any characters other than -0-9. in the box.
-//-----------------------------------------------------------------------------
-static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
-    LPARAM lParam)
-{
-    if(msg == WM_CHAR) {
-        if(!(isdigit(wParam) || wParam == '.' || wParam == '\b' 
-            || wParam == '-'))
-        {
-            return 0;
-        }
-    }
-
-    int i;
-    for(i = 0; i < MAX_BOXES; i++) {
-        if(hwnd == Textboxes[i]) {
-            return CallWindowProc((WNDPROC)PrevNumOnlyProc[i], hwnd, msg, 
-                wParam, lParam);
-        }
-    }
-    oops();
-}
 
 static void MakeControls(void)
 {

@@ -10,8 +10,6 @@ static HWND Labels[MAX_BOXES];
 static LONG_PTR PrevAlnumOnlyProc[MAX_BOXES];
 static LONG_PTR PrevNumOnlyProc[MAX_BOXES];
 
-static BOOL NoCheckingOnBox[MAX_BOXES];
-
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than -A-Za-z0-9_ in the box.
 //-----------------------------------------------------------------------------
@@ -130,7 +128,7 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask,
 // Default para types: Vetor vazio, todos os tipos...
 BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
     DWORD alnumOnlyMask, DWORD fixedFontMask, DWORD useComboBox, char **dests,
-	POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types = vector<eType>())
+	POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types, bool isTxt)
 {
     BOOL didCancel;
 	POINT start = { 100, 100 }, size = { 304, 15 + 30*(boxes < 2 ? 2 : boxes) };
@@ -215,43 +213,41 @@ BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
 
     didCancel = DialogCancel;
 
-	char get[64];
+	char get[1024];
 	char * tmp = new char[sizeof(get) * boxes];
 
 	memcpy(tmp, *dests, sizeof(char*) * boxes);
 
     if(!didCancel) {
         for(i = 0; i < boxes; i++) {
-            if(NoCheckingOnBox[i]) {
-                SendMessage(Textboxes[i], WM_GETTEXT, 14, (LPARAM)get);
-                strcpy(tmp + (i * sizeof(get)), get);
-            } else {
-                SendMessage(Textboxes[i], WM_GETTEXT, (WPARAM)14, (LPARAM)get);
+            SendMessage(Textboxes[i], WM_GETTEXT, (WPARAM)(isTxt ? sizeof(get) : 14), (LPARAM)get);
 
-                if( (!strchr(get, '\'')) ||
-                        (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )
-                {
-                    if(strlen(get) == 0) {
-                        Error(_("Empty textbox; not permitted."));
-						break;
-                    } else {
-                        strcpy(tmp + (i * sizeof(get)), get);
-                    }
-                } else {
-                    Error(_("Bad use of quotes: <%s>"), get);
+            if( (!strchr(get, '\'')) ||
+                    (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )
+            {
+                if(strlen(get) == 0) {
+                    Error(_("Empty textbox; not permitted."));
 					break;
+                } else {
+                    strcpy(tmp + (i * sizeof(get)), get);
                 }
+            } else {
+                Error(_("Bad use of quotes: <%s>"), get);
+				break;
             }
         }
 		if (i == boxes)
 		{
 			for (i = 0; i < boxes; i++)
 				strcpy(dests[i], tmp + (i * sizeof(get)));
+		} else {
+			didCancel = true;
 		}
     }
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(SimpleDialog);
+	SetFocus(MainWindow);
 
 	delete [] tmp;
 
@@ -268,32 +264,25 @@ void ShowSimulationVarSetDialog(const char *name, char *val)
 
 	strcpy(val_tmp, val);
 
-	if(ShowSimpleDialog(_("Novo Valor"), 1, labels, 0x1, 0x0, 0x1, 0, dests, start, size, GridSize)) {
+	if(ShowSimpleDialog(_("Novo Valor"), 1, labels, 0x1, 0x0, 0x1, 0, dests, start, size, GridSize, vector<eType>(), false)) {
 		if(ladder->IsValidNameAndType(0, val_tmp, eType_Pending, _("Valor"), VALIDATE_IS_NUMBER, 0, 0)) {
 			strcpy(val, val_tmp);
 		}
 	}
 }
 
-bool ShowVarDialog(char *title, char *varname, string *name, vector<eType> types)
-{
-	POINT start = { 0, 0 }, size = { 0, 0 }, GridSize = { 0, 0 };
-
-	return ShowVarDialog(title, varname, name, start, size, GridSize, types);
-}
-
-bool ShowVarDialog(char *title, char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types)
+bool ShowVarDialog(char *title, char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types, bool isTxt)
 {
 	bool changed = false;
 
-	char name_tmp[MAX_NAME_LEN];
+	char name_tmp[1024];
 
 	char *labels[] = { varname };
     char *dests[] = { name_tmp };
 
 	strcpy(name_tmp, name->c_str());
 
-	if(ShowSimpleDialog(title, 1, labels, 0, 0x1, 0x1, 0x1, dests, start, size, GridSize, types)) {
+	if(ShowSimpleDialog(title, 1, labels, 0, 0x1, 0x1, 0x1, dests, start, size, GridSize, types, isTxt)) {
 		changed = true;
 		*name = name_tmp;
 	}

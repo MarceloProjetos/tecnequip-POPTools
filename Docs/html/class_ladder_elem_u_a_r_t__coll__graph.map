@@ -21,5 +21,5 @@
 <area shape="rect" id="node20" href="$struct_ladder_settings_modbus_slave.html" title="Configuracoes do protocolo ModBUS. " alt="" coords="2859,167,3045,244"/>
 <area shape="rect" id="node22" href="$class_ladder_circuit.html" title="{LadderCircuit\n|&#45; isSeries\l&#45; vectorSubckt\l|+ LadderCircuit()\l+ LadderCircuit()\l+ ~LadderCircuit()\l+ DrawTXT()\l+ DrawGUI()\l+ IsComment()\l+ IsEmpty()\l+ IsLast()\l+ IsSeries()\l+ HasEOL()\land 30 more...\l# InsertSubckt()\l# DeleteSubckt()\l# MoveSubckt()\l&#45; DrawElementTXT()\l&#45; VerticalWireTXT()\l}" alt="" coords="541,49,677,361"/>
 <area shape="rect" id="node23" href="$structt_request_i_o.html" title="Estrutura auxiliar para solicitar um I/O. " alt="" coords="5,123,120,288"/>
-<area shape="rect" id="node24" href="$struct_ladder_elem_u_a_r_t_prop.html" title="{LadderElemUARTProp\n|+ idName\l|}" alt="" coords="144,167,296,244"/>
+<area shape="rect" id="node24" href="$struct_ladder_elem_u_a_r_t_prop.html" title="Estrutura que define as propriedades de um elemento LadderElemUART. " alt="" coords="144,167,296,244"/>
 </map>

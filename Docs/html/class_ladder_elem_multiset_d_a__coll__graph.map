@@ -21,5 +21,5 @@
 <area shape="rect" id="node20" href="$struct_ladder_settings_modbus_slave.html" title="Configuracoes do protocolo ModBUS. " alt="" coords="2889,167,3076,244"/>
 <area shape="rect" id="node22" href="$class_ladder_circuit.html" title="{LadderCircuit\n|&#45; isSeries\l&#45; vectorSubckt\l|+ LadderCircuit()\l+ LadderCircuit()\l+ ~LadderCircuit()\l+ DrawTXT()\l+ DrawGUI()\l+ IsComment()\l+ IsEmpty()\l+ IsLast()\l+ IsSeries()\l+ HasEOL()\land 30 more...\l# InsertSubckt()\l# DeleteSubckt()\l# MoveSubckt()\l&#45; DrawElementTXT()\l&#45; VerticalWireTXT()\l}" alt="" coords="572,49,708,361"/>
 <area shape="rect" id="node23" href="$structt_request_i_o.html" title="Estrutura auxiliar para solicitar um I/O. " alt="" coords="5,123,120,288"/>
-<area shape="rect" id="node24" href="$struct_ladder_elem_multiset_d_a_prop.html" title="{LadderElemMultisetDAProp\n|+ idTime\l+ idDesl\l+ linear\l+ forward\l+ speedup\l+ initval\l+ type\l+ gaint\l+ gainr\l+ StartFromCurrentValue\l+ ramp_abort_mode\l|}" alt="" coords="145,93,327,317"/>
+<area shape="rect" id="node24" href="$struct_ladder_elem_multiset_d_a_prop.html" title="Estrutura que define as propriedades de um elemento LadderElemMultisetDA. " alt="" coords="145,93,327,317"/>
 </map>

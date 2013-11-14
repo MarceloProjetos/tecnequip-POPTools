@@ -20,6 +20,6 @@
 <area shape="rect" id="node19" href="$struct_ladder_settings_d_a_c.html" title="Configuracoes da interface Digital para Analogica (D/A) " alt="" coords="2707,167,2845,244"/>
 <area shape="rect" id="node20" href="$struct_ladder_settings_modbus_slave.html" title="Configuracoes do protocolo ModBUS. " alt="" coords="2869,167,3056,244"/>
 <area shape="rect" id="node22" href="$class_ladder_circuit.html" title="{LadderCircuit\n|&#45; isSeries\l&#45; vectorSubckt\l|+ LadderCircuit()\l+ LadderCircuit()\l+ ~LadderCircuit()\l+ DrawTXT()\l+ DrawGUI()\l+ IsComment()\l+ IsEmpty()\l+ IsLast()\l+ IsSeries()\l+ HasEOL()\land 30 more...\l# InsertSubckt()\l# DeleteSubckt()\l# MoveSubckt()\l&#45; DrawElementTXT()\l&#45; VerticalWireTXT()\l}" alt="" coords="552,49,688,361"/>
-<area shape="rect" id="node23" href="$struct_ladder_elem_contact_prop.html" title="{LadderElemContactProp\n|+ negated\l+ idName\l|}" alt="" coords="5,159,168,251"/>
+<area shape="rect" id="node23" href="$struct_ladder_elem_contact_prop.html" title="Estrutura que define as propriedades de um elemento LadderElemContact. " alt="" coords="5,159,168,251"/>
 <area shape="rect" id="node24" href="$structt_request_i_o.html" title="Estrutura auxiliar para solicitar um I/O. " alt="" coords="192,123,307,288"/>
 </map>
