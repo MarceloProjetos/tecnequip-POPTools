@@ -32,7 +32,7 @@ void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
 		extra = POS_WIDTH - FormattedStrlen(str);
 	}
 
-    DrawChars(cx + (extra/2), cy + (POS_HEIGHT/2) - 1, str);
+    (ladder->getFncDrawChars())(cx + (extra/2), cy + (POS_HEIGHT/2) - 1, str);
 }
 
 void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
@@ -48,6 +48,7 @@ void CenterWithSpaces(int cx, int cy, char *str, BOOL powered,
 void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before,
     BOOL after, int totalWidth)
 {
+	tFncDrawChars DrawChars = ladder->getFncDrawChars();
     int extra = totalWidth - FormattedStrlen(str);
 
     DrawChars(cx + (extra/2), cy + (POS_HEIGHT/2), str);

@@ -21,7 +21,7 @@ var searchData=
   ['network',['Network',['../struct_ladder_diagram_1_1t_ladder_settings.html#a80aca73b6943a0f9174ec0f4b90188d9',1,'LadderDiagram::tLadderSettings']]],
   ['newdiagram',['NewDiagram',['../class_ladder_diagram.html#a7821f02a13077d0b85d87481e251e869',1,'LadderDiagram']]],
   ['newprogram',['NewProgram',['../circuit_8cpp.html#aef0f860ad0501214af7d5e3a1c284425',1,'NewProgram(void):&#160;circuit.cpp'],['../poptools_8h.html#aef0f860ad0501214af7d5e3a1c284425',1,'NewProgram(void):&#160;circuit.cpp']]],
-  ['newrung',['NewRung',['../union_ladder_diagram_1_1_undo_redo_data.html#ac0b85cb852615bd371d02c089c790988',1,'LadderDiagram::UndoRedoData::NewRung()'],['../class_ladder_diagram.html#a70ba44a2817eb1de16a2a76ae35ebe7e',1,'LadderDiagram::NewRung()']]],
+  ['newrung',['NewRung',['../union_ladder_diagram_1_1_undo_redo_data.html#ac0b85cb852615bd371d02c089c790988',1,'LadderDiagram::UndoRedoData::NewRung()'],['../class_ladder_diagram.html#a7363a0aae7971906cd10735d20e6cf98',1,'LadderDiagram::NewRung()']]],
   ['next',['next',['../structstr_cmd_state_list.html#a8914e85c5f5d8c09c2b81b56d6ebb36b',1,'strCmdStateList']]],
   ['nextindex_5f',['nextIndex_',['../class_resource_font_file_enumerator.html#a316ac160faa227e24c290e49ce50af63',1,'ResourceFontFileEnumerator']]],
   ['nicefont',['NiceFont',['../miscutil_8cpp.html#a8bbc5d8765fa6ab99dbd6e879af0cee4',1,'NiceFont(HWND h):&#160;miscutil.cpp'],['../poptools_8h.html#a8bbc5d8765fa6ab99dbd6e879af0cee4',1,'NiceFont(HWND h):&#160;miscutil.cpp']]],

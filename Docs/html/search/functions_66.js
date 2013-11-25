@@ -59,6 +59,8 @@ var searchData=
   ['fm_5fverify',['fm_verify',['../flashmagiccommon_8h.html#ae9bd19f2ddaee5f8a0557b052056bb86',1,'flashmagiccommon.h']]],
   ['fm_5fverify_5fpassword',['fm_verify_password',['../flashmagiccommon_8h.html#a137dbc5d4c0f11b7d0c1b23aeccf345b',1,'flashmagiccommon.h']]],
   ['fm_5fversion',['fm_version',['../flashmagiccommon_8h.html#a81fdf968e24c9fd529220ba76c5b80d6',1,'flashmagiccommon.h']]],
+  ['fmtstrcmdexpandedlinebreak',['FmtStrCmdExpandedLineBreak',['../_ladder_g_u_i_8cpp.html#a9c4da5cda13059f43b62fff92e2bbf3a',1,'LadderGUI.cpp']]],
+  ['fmtstrcmdexpandedvariable',['FmtStrCmdExpandedVariable',['../_ladder_g_u_i_8cpp.html#a1abe00438b9f3a2b26a5ade48691876f',1,'LadderGUI.cpp']]],
   ['fmtstringcmdchangevalue',['FmtStringCmdChangeValue',['../_ladder_g_u_i_8cpp.html#accb73f5e316d91d1f6616b2e66f92331',1,'LadderGUI.cpp']]],
   ['formattedstrlen',['FormattedStrlen',['../draw_8cpp.html#a2f927882a16283452babd30c720f5b3f',1,'FormattedStrlen(const char *str):&#160;draw.cpp'],['../poptools_8h.html#a2f927882a16283452babd30c720f5b3f',1,'FormattedStrlen(const char *str):&#160;draw.cpp']]],
   ['fread_5fbool',['fread_bool',['../loadsave_8cpp.html#afdf7b26b2f29ea3015a980d176dca584',1,'fread_bool(FILE *f, bool *var):&#160;loadsave.cpp'],['../poptools_8h.html#afdf7b26b2f29ea3015a980d176dca584',1,'fread_bool(FILE *f, bool *var):&#160;loadsave.cpp']]],

@@ -7,6 +7,12 @@ int                 ScrollWidth;
 int                 ScrollHeight;
 BOOL                NeedHoriz;
 
+// Parameters that determine our offset if we are scrolled
+int ScrollXOffset;
+int ScrollYOffset;
+int ScrollXOffsetMax;
+int ScrollYOffsetMax;
+
 // Window where to draw schematic
 HWND                DrawWindow;
 HWND                TabCtrl;

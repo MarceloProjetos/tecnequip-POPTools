@@ -1028,8 +1028,8 @@ HRESULT EngineRenderD2D::DrawLine(POINT start, POINT end, unsigned int brush, un
 	if(pRT != NULL && pBrush != nullptr) {
 		D2D1_POINT_2F center;
 		if(angle) {
-			center.x = start.x + (end.x - start.x)/2;
-			center.y = start.y + (end.y - start.y)/2;
+			center.x = (FLOAT)(start.x + (FLOAT)(end.x - start.x)/2);
+			center.y = (FLOAT)(start.y + (FLOAT)(end.y - start.y)/2);
 			pRT->SetTransform(D2D1::Matrix3x2F::Rotation((float)angle, center));
 		}
 

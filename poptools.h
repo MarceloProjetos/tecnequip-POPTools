@@ -709,7 +709,6 @@ void CenterWithWiresWidth(int cx, int cy, char *str, BOOL before, BOOL after, in
 void CenterWithWires(int cx, int cy, char *str, BOOL before, BOOL after);
 
 // draw_outputdev.cpp
-extern void (*DrawChars)(int, int, char *);
 void CALLBACK BlinkCursor(HWND hwnd, UINT msg, UINT_PTR id, DWORD time);
 void PaintWindow(void);
 void ExportDrawingAsText(char *file);

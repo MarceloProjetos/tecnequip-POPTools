@@ -228,6 +228,21 @@ int KBH_Cursor_MoveUp(void *user_data)
 	return 1;
 }
 
+// Default for Portuguese: Page Up
+int KBH_Cursor_PageUp(void *user_data)
+{
+	RECT r;
+	GetClientRect(DrawWindow, &r);
+	ScrollYOffset -= r.bottom / gui.getGridSize().y;
+	if(ScrollYOffset < 0)
+		ScrollYOffset = 0;
+
+	RefreshScrollbars();
+	InvalidateRect(MainWindow, NULL, FALSE);
+
+	return 1;
+}
+
 // Default for Portuguese: SHIFT + DOWN
 int KBH_Rung_MoveDown(void *user_data)
 {
@@ -244,6 +259,21 @@ int KBH_Cursor_MoveDown(void *user_data)
 	if(ladder->getContext().inSimulationMode) return 0;
 
 	MoveCursorKeyboard(VK_DOWN, FALSE);
+
+	return 1;
+}
+
+// Default for Portuguese: DOWN
+int KBH_Cursor_PageDown(void *user_data)
+{
+	RECT r;
+	GetClientRect(DrawWindow, &r);
+	ScrollYOffset += r.bottom / gui.getGridSize().y;
+	if(ScrollYOffset > ScrollYOffsetMax)
+		ScrollYOffset = ScrollYOffsetMax;
+
+	RefreshScrollbars();
+	InvalidateRect(MainWindow, NULL, FALSE);
 
 	return 1;
 }
@@ -922,9 +952,11 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_SHIFT  , KBH_Rung_MoveUP                        , NULL);
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_ANY    , KBH_Cursor_MoveUp                      , NULL);
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_NONE   , KBH_Simulation_Up                      , NULL);
+	ShortcutMaps.AddKey(VK_PRIOR     , KBM_KEYFLAG_ANY    , KBH_Cursor_PageUp                      , NULL);
 	ShortcutMaps.AddKey(VK_DOWN      , KBM_KEYFLAG_NONE   , KBH_Simulation_Down                    , NULL);
 	ShortcutMaps.AddKey(VK_DOWN      , KBM_KEYFLAG_SHIFT  , KBH_Rung_MoveDown                      , NULL);
 	ShortcutMaps.AddKey(VK_DOWN      , KBM_KEYFLAG_ANY    , KBH_Cursor_MoveDown                    , NULL);
+	ShortcutMaps.AddKey(VK_NEXT      , KBM_KEYFLAG_ANY    , KBH_Cursor_PageDown                    , NULL);
 	ShortcutMaps.AddKey(VK_LEFT      , KBM_KEYFLAG_NONE   , KBH_Cursor_Left                        , NULL);
 	ShortcutMaps.AddKey(VK_LEFT      , KBM_KEYFLAG_NONE   , KBH_Simulation_Left                    , NULL);
 	ShortcutMaps.AddKey(VK_RIGHT     , KBM_KEYFLAG_NONE   , KBH_Simulation_Right                   , NULL);
@@ -1010,9 +1042,11 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_NONE   , KBH_Simulation_Up                      , NULL);
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_SHIFT  , KBH_Rung_MoveUP                        , NULL);
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_ANY    , KBH_Cursor_MoveUp                      , NULL);
+	ShortcutMaps.AddKey(VK_PRIOR     , KBM_KEYFLAG_ANY    , KBH_Cursor_PageUp                      , NULL);
 	ShortcutMaps.AddKey(VK_DOWN      , KBM_KEYFLAG_NONE   , KBH_Simulation_Down                    , NULL);
 	ShortcutMaps.AddKey(VK_DOWN      , KBM_KEYFLAG_SHIFT  , KBH_Rung_MoveDown                      , NULL);
 	ShortcutMaps.AddKey(VK_DOWN      , KBM_KEYFLAG_ANY    , KBH_Cursor_MoveDown                    , NULL);
+	ShortcutMaps.AddKey(VK_NEXT      , KBM_KEYFLAG_ANY    , KBH_Cursor_PageDown                    , NULL);
 	ShortcutMaps.AddKey(VK_LEFT      , KBM_KEYFLAG_NONE   , KBH_Cursor_Left                        , NULL);
 	ShortcutMaps.AddKey(VK_LEFT      , KBM_KEYFLAG_NONE   , KBH_Simulation_Left                    , NULL);
 	ShortcutMaps.AddKey(VK_RIGHT     , KBM_KEYFLAG_NONE   , KBH_Simulation_Right                   , NULL);

@@ -34,6 +34,7 @@ var searchData=
   ['release',['Release',['../class_resource_font_collection_loader.html#aa5e7a778176b856dc22ea0cd34336818',1,'ResourceFontCollectionLoader::Release()'],['../class_resource_font_file_enumerator.html#a67dffdfda8092e36425a9445cc189dfc',1,'ResourceFontFileEnumerator::Release()'],['../class_resource_font_file_loader.html#a9fba78074003205b21cb24d8ebf5adec',1,'ResourceFontFileLoader::Release()'],['../class_resource_font_file_stream.html#a963e399b8a36d02d1af29a096021a294',1,'ResourceFontFileStream::Release()']]],
   ['releasefilefragment',['ReleaseFileFragment',['../class_resource_font_file_stream.html#a8f24ef617d76d2d6ae513bd40875c12f',1,'ResourceFontFileStream']]],
   ['releasepoint',['ReleasePoint',['../multisetdadialog_8cpp.html#a6815e146420519f5edb700458b32a80a',1,'multisetdadialog.cpp']]],
+  ['removelinebreakifneeded',['RemoveLineBreakIfNeeded',['../_ladder_g_u_i_8cpp.html#ac8e011fda00e9787aed96412635eb5e9',1,'LadderGUI.cpp']]],
   ['removeunnecessarysubckts',['RemoveUnnecessarySubckts',['../class_ladder_circuit.html#ae71ff20b64d47d1a54769eb7229ac4f1',1,'LadderCircuit']]],
   ['removewp',['RemoveWP',['../poptools_8h.html#a3a02ee7414294372e6ff46b5775cb43a',1,'RemoveWP(char *name):&#160;simulate.cpp'],['../simulate_8cpp.html#a3a02ee7414294372e6ff46b5775cb43a',1,'RemoveWP(char *name):&#160;simulate.cpp']]],
   ['render',['Render',['../multisetdadialog_8cpp.html#a436830dff9fbce05c931c5a6d8d5366d',1,'multisetdadialog.cpp']]],

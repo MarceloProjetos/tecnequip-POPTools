@@ -7,6 +7,8 @@ var searchData=
   ['kbh_5fcursor_5fleft',['KBH_Cursor_Left',['../_keyboard_handlers_8cpp.html#a749edff8ec9fab8fdd80f3a8d2b1f43a',1,'KeyboardHandlers.cpp']]],
   ['kbh_5fcursor_5fmovedown',['KBH_Cursor_MoveDown',['../_keyboard_handlers_8cpp.html#a4eeed4366a5633891e4fcacacc7f2b35',1,'KeyboardHandlers.cpp']]],
   ['kbh_5fcursor_5fmoveup',['KBH_Cursor_MoveUp',['../_keyboard_handlers_8cpp.html#a4a5ff878fbb2f73249c84ea9c9e7110d',1,'KeyboardHandlers.cpp']]],
+  ['kbh_5fcursor_5fpagedown',['KBH_Cursor_PageDown',['../_keyboard_handlers_8cpp.html#a3acddb666d9706b20bc90221dd740e71',1,'KeyboardHandlers.cpp']]],
+  ['kbh_5fcursor_5fpageup',['KBH_Cursor_PageUp',['../_keyboard_handlers_8cpp.html#a1a6925a406b60bcde140842a0d883c2d',1,'KeyboardHandlers.cpp']]],
   ['kbh_5fcursor_5fright',['KBH_Cursor_Right',['../_keyboard_handlers_8cpp.html#a9af09b85e95f27ed92b9aaf395c3125c',1,'KeyboardHandlers.cpp']]],
   ['kbh_5fdebug',['KBH_Debug',['../_keyboard_handlers_8cpp.html#a885b6444cb6299e453bc08e890c07375',1,'KeyboardHandlers.cpp']]],
   ['kbh_5felement_5fadd_5fad',['KBH_Element_Add_AD',['../_keyboard_handlers_8cpp.html#a36e487ff899a6cf2c45caff7fd9e118b',1,'KeyboardHandlers.cpp']]],

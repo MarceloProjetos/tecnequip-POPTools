@@ -1,7 +1,7 @@
 <map id="LadderDiagram::UndoRedoData" name="LadderDiagram::UndoRedoData">
 <area shape="rect" id="node2" href="$struct_ladder_mb_node.html" title="Estrutura que representa um no do ModBUS. " alt="" coords="5,101,115,222"/>
-<area shape="rect" id="node3" href="$struct_ladder_diagram_1_1_ladder_mb_node_list.html" title="{LadderDiagram::LadderMbNodeList\n|+ NodeID\l+ NodeCount\l|}" alt="" coords="357,382,581,474"/>
-<area shape="rect" id="node4" href="$struct_ladder_diagram_1_1t_ladder_settings.html" title="{LadderDiagram::tLadderSettings\n||}" alt="" coords="829,389,1037,467"/>
+<area shape="rect" id="node3" href="$struct_ladder_diagram_1_1_ladder_mb_node_list.html" title="Estrutura que armazena dados de um item da fila de nodes do ModBUS. " alt="" coords="357,382,581,474"/>
+<area shape="rect" id="node4" href="$struct_ladder_diagram_1_1t_ladder_settings.html" title="Estrutura que agraga todas as configuracoes do Diagrama Ladder. " alt="" coords="829,389,1037,467"/>
 <area shape="rect" id="node5" href="$struct_ladder_settings_u_a_r_t.html" title="Configuracoes da Interface Serial do CLP. " alt="" coords="139,115,281,207"/>
 <area shape="rect" id="node6" href="$struct_ladder_settings_s_n_t_p.html" title="Configuracoes de Data/Hora do CLP. " alt="" coords="306,101,448,222"/>
 <area shape="rect" id="node7" href="$struct_ladder_settings_general.html" title="Configuracoes gerais do diagrama. " alt="" coords="473,108,628,215"/>

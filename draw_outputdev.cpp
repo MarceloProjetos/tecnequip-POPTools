@@ -1,16 +1,8 @@
 #include "poptools.h"
 
-void (*DrawChars)(int, int, char *);
-
 // Buffer that we write to when exporting (drawing) diagram to a text file. 
 // Dynamically allocated so that we're at least slightly efficient.
 static char **ExportBuffer;
-
-// Parameters that determine our offset if we are scrolled
-int ScrollXOffset;
-int ScrollYOffset;
-int ScrollXOffsetMax;
-int ScrollYOffsetMax;
 
 //-----------------------------------------------------------------------------
 // DrawChars function, for drawing to the export buffer instead of to the
@@ -51,8 +43,7 @@ void ExportDrawingAsText(char *file)
         ExportBuffer[i][l-1] = '\0';
     }
 
-    DrawChars = DrawCharsToExportBuffer;
-	ladder->DrawTXT(6);
+	ladder->DrawTXT(DrawCharsToExportBuffer);
 
     FILE *f = fopen(file, "w");
     if(!f) {

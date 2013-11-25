@@ -105,14 +105,19 @@ Diagrama de colaboração para LadderElemModBUSProp:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Atributos Públicos</h2></td></tr>
 <tr class="memitem:a1c3098e19ba87eba059eaea5ec94ce87"><td class="memItemLeft" align="right" valign="top">pair&lt; unsigned long, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_mod_b_u_s_prop.html#a1c3098e19ba87eba059eaea5ec94ce87">idName</a></td></tr>
+<tr class="memdesc:a1c3098e19ba87eba059eaea5ec94ce87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Referencia do I/O associado ao elemento.  <a href="#a1c3098e19ba87eba059eaea5ec94ce87">Mais...</a><br/></td></tr>
 <tr class="separator:a1c3098e19ba87eba059eaea5ec94ce87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aada611eb923ac9b1b4927aa39247c166"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_mod_b_u_s_prop.html#aada611eb923ac9b1b4927aa39247c166">elem</a></td></tr>
+<tr class="memdesc:aada611eb923ac9b1b4927aa39247c166"><td class="mdescLeft">&#160;</td><td class="mdescRight">ID de referencia ao no do ModBUS associado a este elemento.  <a href="#aada611eb923ac9b1b4927aa39247c166">Mais...</a><br/></td></tr>
 <tr class="separator:aada611eb923ac9b1b4927aa39247c166"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3d7393c3817dd2a4a0fc393e5fe2a73"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_mod_b_u_s_prop.html#ab3d7393c3817dd2a4a0fc393e5fe2a73">address</a></td></tr>
+<tr class="memdesc:ab3d7393c3817dd2a4a0fc393e5fe2a73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Numero do registrador a ser acessado.  <a href="#ab3d7393c3817dd2a4a0fc393e5fe2a73">Mais...</a><br/></td></tr>
 <tr class="separator:ab3d7393c3817dd2a4a0fc393e5fe2a73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1eedaa952c12e599c491876060dba6b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_mod_b_u_s_prop.html#ae1eedaa952c12e599c491876060dba6b">int32</a></td></tr>
+<tr class="memdesc:ae1eedaa952c12e599c491876060dba6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indica se esta operacao trabalhara com um registrador de 32 bits (true) ou 16 bits (false).  <a href="#ae1eedaa952c12e599c491876060dba6b">Mais...</a><br/></td></tr>
 <tr class="separator:ae1eedaa952c12e599c491876060dba6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c2959d1b11706d1cecee340e87fa342"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_ladder_elem_mod_b_u_s_prop.html#a8c2959d1b11706d1cecee340e87fa342">retransmitir</a></td></tr>
+<tr class="memdesc:a8c2959d1b11706d1cecee340e87fa342"><td class="mdescLeft">&#160;</td><td class="mdescRight">Se true, o pacote sera reenviado em caso de falha na transmissao.  <a href="#a8c2959d1b11706d1cecee340e87fa342">Mais...</a><br/></td></tr>
 <tr class="separator:a8c2959d1b11706d1cecee340e87fa342"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Descrição Detalhada</h2>
@@ -128,6 +133,8 @@ Atributos Públicos</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Numero do registrador a ser acessado. </p>
+
 </div>
 </div>
 <a class="anchor" id="aada611eb923ac9b1b4927aa39247c166"></a>
@@ -139,6 +146,8 @@ Atributos Públicos</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>ID de referencia ao no do ModBUS associado a este elemento. </p>
 
 </div>
 </div>
@@ -152,6 +161,8 @@ Atributos Públicos</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Referencia do I/O associado ao elemento. </p>
+
 </div>
 </div>
 <a class="anchor" id="ae1eedaa952c12e599c491876060dba6b"></a>
@@ -163,6 +174,8 @@ Atributos Públicos</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Indica se esta operacao trabalhara com um registrador de 32 bits (true) ou 16 bits (false). </p>
 
 </div>
 </div>
@@ -176,6 +189,8 @@ Atributos Públicos</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Se true, o pacote sera reenviado em caso de falha na transmissao. </p>
+
 </div>
 </div>
 <hr/>A documentação para esta estrutura foi gerada a partir do seguinte arquivo:<ul>
@@ -184,7 +199,7 @@ Atributos Públicos</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Quinta, 7 de Novembro de 2013 16:07:53 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Segunda, 25 de Novembro de 2013 14:58:23 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

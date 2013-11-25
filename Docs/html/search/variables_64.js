@@ -38,7 +38,6 @@ var searchData=
   ['dns',['dns',['../struct_ladder_settings_network.html#aa82050906150014625a4057943f4163e',1,'LadderSettingsNetwork']]],
   ['dontdraw',['DontDraw',['../structt_data_draw_g_u_i.html#aa55b0f6fc75dd5a8a0128495ee2d23b2',1,'tDataDrawGUI']]],
   ['dot',['dot',['../structt_connection_dot.html#a244f9d12a670cd0bb95bfaa0ff58f4f1',1,'tConnectionDot']]],
-  ['drawchars',['DrawChars',['../draw__outputdev_8cpp.html#a3ac773feeb5f8ae0b3a0af95a2d162cf',1,'DrawChars():&#160;draw_outputdev.cpp'],['../poptools_8h.html#a3ac773feeb5f8ae0b3a0af95a2d162cf',1,'DrawChars():&#160;draw_outputdev.cpp']]],
   ['drawoffset',['DrawOffset',['../class_engine_g_u_i.html#ab1bb1dd2a016f8d380f7f63d895e0aaf',1,'EngineGUI']]],
   ['drawwindow',['DrawWindow',['../maincontrols_8cpp.html#ad14a59719758ff791751433504b11960',1,'DrawWindow():&#160;maincontrols.cpp'],['../poptools_8h.html#ad14a59719758ff791751433504b11960',1,'DrawWindow():&#160;maincontrols.cpp']]],
   ['dword',['DWORD',['../miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c',1,'miscutil.cpp']]]

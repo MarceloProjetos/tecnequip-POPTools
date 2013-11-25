@@ -107,6 +107,7 @@ Diagrama de colaboração para LadderCircuit:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Componentes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">union &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="union_ladder_circuit_1_1_undo_redo_data.html">UndoRedoData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estrutura de dados para acoes de Desfazer / Refazer.  <a href="union_ladder_circuit_1_1_undo_redo_data.html#details">Mais...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -117,8 +118,8 @@ Métodos Públicos</h2></td></tr>
 <tr class="separator:a591845a7627d6dc4da984a7e5a54e825"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac850244f3f0883d080c1c44f560e5860"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#ac850244f3f0883d080c1c44f560e5860">~LadderCircuit</a> (void)</td></tr>
 <tr class="separator:ac850244f3f0883d080c1c44f560e5860"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a902fb5573126a4386aca42f6309f5739"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a902fb5573126a4386aca42f6309f5739">DrawTXT</a> (vector&lt; vector&lt; int &gt; &gt; &amp;DisplayMatrix, int *cx, int *cy, bool poweredBefore, int <a class="el" href="poptools_8h.html#a0e94e2871e0998e6ae49597094021fad">ColsAvailable</a>)</td></tr>
-<tr class="separator:a902fb5573126a4386aca42f6309f5739"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aceb8589d21362c666103f0023dca052a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#aceb8589d21362c666103f0023dca052a">DrawTXT</a> (<a class="el" href="_ladder_objects_8h.html#a35858990ebd472f59ece28bfc58544d4">tFncDrawChars</a> DrawChars, vector&lt; vector&lt; int &gt; &gt; &amp;DisplayMatrix, int *cx, int *cy, bool poweredBefore, int <a class="el" href="poptools_8h.html#a0e94e2871e0998e6ae49597094021fad">ColsAvailable</a>)</td></tr>
+<tr class="separator:aceb8589d21362c666103f0023dca052a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76d363c0d1b9f750a34603341e1984c8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a76d363c0d1b9f750a34603341e1984c8">DrawGUI</a> (bool poweredBefore, void *data)</td></tr>
 <tr class="separator:a76d363c0d1b9f750a34603341e1984c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa7a478cef7e74d4ec31a9ff9f375383"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#afa7a478cef7e74d4ec31a9ff9f375383">IsComment</a> (void)</td></tr>
@@ -155,10 +156,10 @@ Métodos Públicos</h2></td></tr>
 <tr class="separator:a725b879995b1805d40b5e02112792856"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae10bef7e261dc3891690412d0f99b91e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#ae10bef7e261dc3891690412d0f99b91e">setDiagram</a> (<a class="el" href="class_ladder_diagram.html">LadderDiagram</a> *newDiagram)</td></tr>
 <tr class="separator:ae10bef7e261dc3891690412d0f99b91e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3cf9ce530c2d950f4a1f7ecb56a46c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#ac3cf9ce530c2d950f4a1f7ecb56a46c6">AddPlaceHolderIfNoEOL</a> (<a class="el" href="struct_ladder_context.html">LadderContext</a> context)</td></tr>
-<tr class="separator:ac3cf9ce530c2d950f4a1f7ecb56a46c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab118f0dec69df370e4b326a8fb2c72f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#ab118f0dec69df370e4b326a8fb2c72f0">DeleteEndPlaceHolder</a> (<a class="el" href="struct_ladder_context.html">LadderContext</a> context)</td></tr>
-<tr class="separator:ab118f0dec69df370e4b326a8fb2c72f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50519adaea00cfcf33e320e62a5b271b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a50519adaea00cfcf33e320e62a5b271b">AddPlaceHolderIfNoEOL</a> (<a class="el" href="struct_ladder_context.html">LadderContext</a> context, <a class="el" href="class_ladder_elem.html">LadderElem</a> *elem)</td></tr>
+<tr class="separator:a50519adaea00cfcf33e320e62a5b271b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad51cfd8478cf3cd999f07381b5edcad3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#ad51cfd8478cf3cd999f07381b5edcad3">DeleteEndPlaceHolder</a> (<a class="el" href="struct_ladder_context.html">LadderContext</a> context, <a class="el" href="class_ladder_elem.html">LadderElem</a> *elem)</td></tr>
+<tr class="separator:ad51cfd8478cf3cd999f07381b5edcad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4219e61d00df41af771227fbd93ad72f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a4219e61d00df41af771227fbd93ad72f">AddElement</a> (<a class="el" href="class_ladder_elem.html">LadderElem</a> *elem, <a class="el" href="struct_ladder_context.html">LadderContext</a> &amp;context)</td></tr>
 <tr class="separator:a4219e61d00df41af771227fbd93ad72f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55e9e35a6e8d2905bee5be1380edeb7f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a55e9e35a6e8d2905bee5be1380edeb7f">InsertParallel</a> (<a class="el" href="class_ladder_elem.html">LadderElem</a> *elem, unsigned int start, unsigned int end, <a class="el" href="struct_ladder_context.html">LadderContext</a> &amp;context)</td></tr>
@@ -169,16 +170,16 @@ Métodos Públicos</h2></td></tr>
 <tr class="separator:ae71ff20b64d47d1a54769eb7229ac4f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a435604093cdd1d6e35dfb0eb146a1b94"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a435604093cdd1d6e35dfb0eb146a1b94">SearchMatch</a> (<a class="el" href="class_ladder_circuit.html">LadderCircuit</a> *series, int direction)</td></tr>
 <tr class="separator:a435604093cdd1d6e35dfb0eb146a1b94"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a96141987f7c71b37a7497f15d292c314"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a96141987f7c71b37a7497f15d292c314">ElemInSubcktSeries</a> (<a class="el" href="struct_ladder_context.html">LadderContext</a> &amp;context, <a class="el" href="struct_insertion_point.html">InsertionPoint</a> *point)</td></tr>
-<tr class="separator:a96141987f7c71b37a7497f15d292c314"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9a2f7e172ce87b7b67ee81cbbfa56fd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#aa9a2f7e172ce87b7b67ee81cbbfa56fd">ElemInSubcktSeries</a> (<a class="el" href="struct_ladder_context.html">LadderContext</a> context, <a class="el" href="struct_insertion_point.html">InsertionPoint</a> *point)</td></tr>
+<tr class="separator:aa9a2f7e172ce87b7b67ee81cbbfa56fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53aca622fef040ead057145de34cbc2e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_ladder_circuit.html">LadderCircuit</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a53aca622fef040ead057145de34cbc2e">Clone</a> (<a class="el" href="class_ladder_diagram.html">LadderDiagram</a> *diagram)</td></tr>
 <tr class="separator:a53aca622fef040ead057145de34cbc2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f55b0f2c276222b77c50d8dc9a14888"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a5f55b0f2c276222b77c50d8dc9a14888">doPostInsert</a> (void)</td></tr>
 <tr class="separator:a5f55b0f2c276222b77c50d8dc9a14888"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a34770fe88f488cd9311c63d3a36014ab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a34770fe88f488cd9311c63d3a36014ab">doPostRemove</a> (void)</td></tr>
 <tr class="separator:a34770fe88f488cd9311c63d3a36014ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a880eba756722d65f571334ae740a2717"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a880eba756722d65f571334ae740a2717">Save</a> (<a class="el" href="class_ladder_diagram.html">LadderDiagram</a> *diagram, FILE *f)</td></tr>
-<tr class="separator:a880eba756722d65f571334ae740a2717"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeeaca31e5b4497535d378539e27e0023"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#aeeaca31e5b4497535d378539e27e0023">Save</a> (FILE *f)</td></tr>
+<tr class="separator:aeeaca31e5b4497535d378539e27e0023"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a904052549d1f10a052acdd064571fb8e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a904052549d1f10a052acdd064571fb8e">Load</a> (<a class="el" href="class_ladder_diagram.html">LadderDiagram</a> *diagram, FILE *f, unsigned int version)</td></tr>
 <tr class="separator:a904052549d1f10a052acdd064571fb8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac89d1e01b7aae3e36fdc71604fc5d3e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#aac89d1e01b7aae3e36fdc71604fc5d3e">acceptIO</a> (unsigned long id, <a class="el" href="_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60e">eType</a> <a class="el" href="inputlist_8cpp.html#ac765329451135abec74c45e1897abf26">type</a>)</td></tr>
@@ -208,23 +209,28 @@ Tipos Privados</h2></td></tr>
 <a class="el" href="class_ladder_circuit.html#a608e063f5bd7e7fe2a8f8375602536cea9983826791d72de3a8bc33eeedb0d8ac">eDeleteSubckt</a>, 
 <a class="el" href="class_ladder_circuit.html#a608e063f5bd7e7fe2a8f8375602536cea58659c66d6698cfbf60b159f64e2bf42">eMoveSubckt</a>
  }</td></tr>
+<tr class="memdesc:a608e063f5bd7e7fe2a8f8375602536ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeracao com os tipos de eventos de Undo/Redo suportados por esta classe.  <a href="class_ladder_circuit.html#a608e063f5bd7e7fe2a8f8375602536ce">Mais...</a><br/></td></tr>
 <tr class="separator:a608e063f5bd7e7fe2a8f8375602536ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Métodos Privados</h2></td></tr>
-<tr class="memitem:a007688cd745a06c7817294028d9546b9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a007688cd745a06c7817294028d9546b9">DrawElementTXT</a> (vector&lt; vector&lt; int &gt; &gt; &amp;DisplayMatrix, <a class="el" href="class_ladder_elem.html">LadderElem</a> *elem, int *cx, int *cy, bool poweredBefore)</td></tr>
-<tr class="separator:a007688cd745a06c7817294028d9546b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab021647981354dcf12e3d5488cf231c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#ab021647981354dcf12e3d5488cf231c7">VerticalWireTXT</a> (int cx, int cy)</td></tr>
-<tr class="separator:ab021647981354dcf12e3d5488cf231c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4be2e94219d4fcdb48c85c0223b12410"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a4be2e94219d4fcdb48c85c0223b12410">DrawElementTXT</a> (<a class="el" href="_ladder_objects_8h.html#a35858990ebd472f59ece28bfc58544d4">tFncDrawChars</a> DrawChars, vector&lt; vector&lt; int &gt; &gt; &amp;DisplayMatrix, <a class="el" href="class_ladder_elem.html">LadderElem</a> *elem, int *cx, int *cy, bool poweredBefore)</td></tr>
+<tr class="separator:a4be2e94219d4fcdb48c85c0223b12410"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78a1f556448569e7e0da6baa33379996"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a78a1f556448569e7e0da6baa33379996">VerticalWireTXT</a> (<a class="el" href="_ladder_objects_8h.html#a35858990ebd472f59ece28bfc58544d4">tFncDrawChars</a> DrawChars, int cx, int cy)</td></tr>
+<tr class="separator:a78a1f556448569e7e0da6baa33379996"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Atributos Privados</h2></td></tr>
 <tr class="memitem:a5257792f5c3a2954c23dc7473c5ba62e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#a5257792f5c3a2954c23dc7473c5ba62e">isSeries</a></td></tr>
+<tr class="memdesc:a5257792f5c3a2954c23dc7473c5ba62e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indica se este circuito eh do tipo serie (true) ou paralelo (false)  <a href="#a5257792f5c3a2954c23dc7473c5ba62e">Mais...</a><br/></td></tr>
 <tr class="separator:a5257792f5c3a2954c23dc7473c5ba62e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0faa873ea1c3e61588231d2ab8910b9"><td class="memItemLeft" align="right" valign="top">vector&lt; <a class="el" href="struct_subckt.html">Subckt</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_ladder_circuit.html#aa0faa873ea1c3e61588231d2ab8910b9">vectorSubckt</a></td></tr>
+<tr class="memdesc:aa0faa873ea1c3e61588231d2ab8910b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vetor que contem os elementos que compoem este circuito, podendo ser um elemento diretamente ou outro subcircuito.  <a href="#aa0faa873ea1c3e61588231d2ab8910b9">Mais...</a><br/></td></tr>
 <tr class="separator:aa0faa873ea1c3e61588231d2ab8910b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Enumerações</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Descrição Detalhada</h2>
+<div class="textblock"><p>Classe que representa os circuitos (Serie / Paralelo) que compoem o Diagrama Ladder </p>
+</div><h2 class="groupheader">Enumerações</h2>
 <a class="anchor" id="a608e063f5bd7e7fe2a8f8375602536ce"></a>
 <div class="memitem">
 <div class="memproto">
@@ -242,14 +248,20 @@ Atributos Privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Enumeracao com os tipos de eventos de Undo/Redo suportados por esta classe. </p>
 <table class="fieldtable">
 <tr><th colspan="2">Valores enumerados</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a608e063f5bd7e7fe2a8f8375602536cea533cc9baadd1b0986be905a60f7b1fb4"></a>eCheckpoint</em>&nbsp;</td><td class="fielddoc">
+<p>Marcador de Checkpoint. </p>
 </td></tr>
 <tr><td class="fieldname"><em><a class="anchor" id="a608e063f5bd7e7fe2a8f8375602536ceab99d53b08398ade5d2c964ed43adf7c3"></a>eInsertSubckt</em>&nbsp;</td><td class="fielddoc">
+<p>Acao de insercao de subcircuito no circuito atual. </p>
 </td></tr>
 <tr><td class="fieldname"><em><a class="anchor" id="a608e063f5bd7e7fe2a8f8375602536cea9983826791d72de3a8bc33eeedb0d8ac"></a>eDeleteSubckt</em>&nbsp;</td><td class="fielddoc">
+<p>Acao de remocao de subcircuito no circuito atual. </p>
 </td></tr>
 <tr><td class="fieldname"><em><a class="anchor" id="a608e063f5bd7e7fe2a8f8375602536cea58659c66d6698cfbf60b159f64e2bf42"></a>eMoveSubckt</em>&nbsp;</td><td class="fielddoc">
+<p>Acao de mover subcircuito do / para o circuito atual. </p>
 </td></tr>
 </table>
 
@@ -269,6 +281,7 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Construtor geral </p>
 
 </div>
 </div>
@@ -285,6 +298,13 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Construtor </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">newSeries</td><td>Flag que indica se o circuito sendo criado eh do tipo serie (true) ou paralelo (false). </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -301,6 +321,7 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Destrutor </p>
 
 </div>
 </div>
@@ -328,6 +349,15 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que indica se o tipo fornecido eh aceito pelos elementos/subcircuitos que o utilizam </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID que identifica o I/O que estamos consultando </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>tipo de I/O a ser checado </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se o tipo eh aceito (true) ou nao (false) </dd></dl>
 
 </div>
 </div>
@@ -354,10 +384,19 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que adiciona um elemento ao circuito </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">elem</td><td>Ponteiro para o elemento a ser adicionado ao circuito </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">context</td><td>Contexto indicando a situacao atual do diagrama ladder, sendo alterado para refletir as alteracoes realizadas </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a operacao foi realizada com sucesso (true) ou se falhou (false) </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ac3cf9ce530c2d950f4a1f7ecb56a46c6"></a>
+<a class="anchor" id="a50519adaea00cfcf33e320e62a5b271b"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -365,11 +404,29 @@ Atributos Privados</h2></td></tr>
           <td class="memname">void LadderCircuit::AddPlaceHolderIfNoEOL </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_ladder_context.html">LadderContext</a>&#160;</td>
-          <td class="paramname"><em>context</em></td><td>)</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="class_ladder_elem.html">LadderElem</a> *&#160;</td>
+          <td class="paramname"><em>elem</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que adiciona um elemento de placeholder ao final do circuito se nao houver elemento de final de linha e o ultimo elemento for um subcircuito do tipo paralelo. </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>contexto contendo a situacao atual do diagrama </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">elem</td><td>ponteiro para o elemento sendo adicionado no caso de estarmos adicionando o placeholder de inicio de paralelo </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -386,6 +443,14 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que retorna uma copia do circuito com todos os elementos/subcircuitos </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">diagram</td><td>Ponteiro para o diagrama ao qual os elementos/subcircuitos devem ser associados </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Ponteiro para o circuito criado </dd></dl>
 
 </div>
 </div>
@@ -412,10 +477,19 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que remove um elemento do circuito </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">elem</td><td>Ponteiro para o elemento a ser removido do circuito </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">context</td><td>Contexto indicando a situacao atual do diagrama ladder, sendo alterado para refletir as alteracoes realizadas </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a operacao foi realizada com sucesso (true) ou se falhou (false) </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ab118f0dec69df370e4b326a8fb2c72f0"></a>
+<a class="anchor" id="ad51cfd8478cf3cd999f07381b5edcad3"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -423,11 +497,29 @@ Atributos Privados</h2></td></tr>
           <td class="memname">void LadderCircuit::DeleteEndPlaceHolder </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_ladder_context.html">LadderContext</a>&#160;</td>
-          <td class="paramname"><em>context</em></td><td>)</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="class_ladder_elem.html">LadderElem</a> *&#160;</td>
+          <td class="paramname"><em>elem</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que remove um placeholder de final de linha se ele nao for mais necessario (como quando estamos adicionando um novo placeholder ao final do circuito apos alguma modificacao </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Contexto indicando a situacao atual do diagrama ladder </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">elem</td><td>Ponteiro para o elemento sendo adicionado no caso de estarmos adicionando o placeholder de inicio de paralelo, para que ele nao seja removido indevidamente </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -474,6 +566,17 @@ Atributos Privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Funcao que remove um subcircuito de uma determinada posicao do circuito atual </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Contexto indicando a situacao atual do diagrama ladder </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pos</td><td>Indice da posicao de onde o subcircuito deve ser removido </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">isMove</td><td>Flag que indica se a operacao atual eh uma remocao normal (false) ou se faz parte de um comando Move (true) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">isUndoRedo</td><td>Flag que informa se a operacao atual esta sendo executada normalmente (false) ou se trata-se de uma operacao de desfazer / refazer (true) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a operacao foi realizada com sucesso (true) ou se falhou (false) </dd></dl>
 
 </div>
 </div>
@@ -490,6 +593,7 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao chamada apos a inclusao de um elemento no circuito para que etapas adicionais de atualizacao possam ser realizadas, como a atualizacao de referencia aos nodes do ModBUS </p>
 
 </div>
 </div>
@@ -506,6 +610,7 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao chamada apos a remocao de um elemento do circuito para que etapas adicionais de atualizacao possam ser realizadas, como a atualizacao de referencia aos nodes do ModBUS </p>
 
 </div>
 </div>
@@ -538,10 +643,20 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que executa uma acao de desfazer / refazer no circuito </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">IsUndo</td><td>Indica se a acao se refere a operacao de Desfazer (true) ou Refazer (false) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">isDiscard</td><td>Indica se devemos descartar a acao (true) ou executa-la (false) </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">action</td><td>Variavel contendo os dados para Desfazer/Refazer a operacao </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a operacao foi realizada com sucesso (true) ou se falhou (false) </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="a007688cd745a06c7817294028d9546b9"></a>
+<a class="anchor" id="a4be2e94219d4fcdb48c85c0223b12410"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -551,6 +666,12 @@ Atributos Privados</h2></td></tr>
         <tr>
           <td class="memname">bool LadderCircuit::DrawElementTXT </td>
           <td>(</td>
+          <td class="paramtype"><a class="el" href="_ladder_objects_8h.html#a35858990ebd472f59ece28bfc58544d4">tFncDrawChars</a>&#160;</td>
+          <td class="paramname"><em>DrawChars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">vector&lt; vector&lt; int &gt; &gt; &amp;&#160;</td>
           <td class="paramname"><em>DisplayMatrix</em>, </td>
         </tr>
@@ -590,6 +711,19 @@ Atributos Privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Funcao que desenha um elemento em modo texto, usado para imprimir ou exportar em .txt </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">DrawChars</td><td>Ponteiro para a funcao que desenha os caracteres no buffer, fornecida pelo usuario </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">DisplayMatrix</td><td>Matriz que representa o diagrama, indicando se naquela coordenada [x,y] existe algum elemento, apenas uma linha ou se eh um espaco vazio </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">elem</td><td>Ponteiro para o elemento que sera desenhado </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">cx</td><td>Ponteiro para variavel contendo a coordenada atual no eixo X, atualiza para refletir o deslocamento ocorrido ao desenhar o elemento atual </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">cy</td><td>Ponteiro para variavel contendo a coordenada atual no eixo Y, atualiza para refletir o deslocamento ocorrido ao desenhar o elemento atual </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">poweredBefore</td><td>Indica se a entrada do elemento esta energizada (true) ou nao (false). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a saida do elemento esta energizada (true) ou nao (false). </dd></dl>
 
 </div>
 </div>
@@ -616,16 +750,31 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que desenha o circuito em modo grafico </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">poweredBefore</td><td>Indica se a entrada do elemento esta energizada (true) ou nao (false). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Ponteiro para os dados relevantes para desenhar graficamente o circuito, dependente da implementacao da interface grafica </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a saida do circuito esta energizada (true) ou nao (false). </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="a902fb5573126a4386aca42f6309f5739"></a>
+<a class="anchor" id="aceb8589d21362c666103f0023dca052a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">bool LadderCircuit::DrawTXT </td>
           <td>(</td>
+          <td class="paramtype"><a class="el" href="_ladder_objects_8h.html#a35858990ebd472f59ece28bfc58544d4">tFncDrawChars</a>&#160;</td>
+          <td class="paramname"><em>DrawChars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">vector&lt; vector&lt; int &gt; &gt; &amp;&#160;</td>
           <td class="paramname"><em>DisplayMatrix</em>, </td>
         </tr>
@@ -660,17 +809,30 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que desenha o circuito em modo texto, usado para imprimir ou exportar em .txt </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">DrawChars</td><td>Ponteiro para funcao que desenha os caracteres, dependente de implementacao do usuario conforme sua necessidade </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">DisplayMatrix</td><td>Matriz que representa o diagrama, indicando se naquela coordenada [x,y] existe algum elemento, apenas uma linha ou se eh um espaco vazio </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">cx</td><td>Ponteiro para variavel contendo a coordenada atual no eixo X, atualiza para refletir o deslocamento ocorrido ao desenhar o elemento atual </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">cy</td><td>Ponteiro para variavel contendo a coordenada atual no eixo Y, atualiza para refletir o deslocamento ocorrido ao desenhar o elemento atual </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">poweredBefore</td><td>Indica se a entrada do elemento esta energizada (true) ou nao (false). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ColsAvailable</td><td>Tamanho de colunas disponiveis ate o fim do diagrama, permitindo com que seja completado o desenho do circuito atual ate o final da linha ao inves de deixar os elementos sem ligacao na extremidade direita </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a saida do circuito esta energizada (true) ou nao (false). </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="a96141987f7c71b37a7497f15d292c314"></a>
+<a class="anchor" id="aa9a2f7e172ce87b7b67ee81cbbfa56fd"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">int LadderCircuit::ElemInSubcktSeries </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct_ladder_context.html">LadderContext</a> &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="struct_ladder_context.html">LadderContext</a>&#160;</td>
           <td class="paramname"><em>context</em>, </td>
         </tr>
         <tr>
@@ -686,6 +848,21 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que busca do elemento referenciado na estrutura <a class="el" href="struct_insertion_point.html" title="Estrutura que representa um ponto de insercao para o paralelo. ">InsertionPoint</a>, preenchendo os campos que indicam o subcircuito serie e paralelo relacionados ao elemento (quando possivel) </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Contexto indicando a situacao atual do diagrama ladder, sendo alterado para refletir as alteracoes realizadas </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">point</td><td>Ponteiro para o ponto de insercao con a referencia ao elemento e os subcircuitos relacionados </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Resultado da operacao conforme os status a seguir:<ul>
+<li>SUBCKT_STATUS_NOTFOUND: Elemento nao encontrado.</li>
+<li>SUBCKT_STATUS_FIRST : Elemento encontrado e eh o primeiro elemento do circuito.</li>
+<li>SUBCKT_STATUS_INSIDE : Elemento encontrado e esta interno ao circuito, ou seja, nao se encontra em uma extremidade.</li>
+<li>SUBCKT_STATUS_LAST : Elemento encontrado e eh o ultimo elemento do circuito. </li>
+</ul>
+</dd></dl>
 
 </div>
 </div>
@@ -702,6 +879,14 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que gera o codigo intermediario de todo o circuito </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ic</td><td>Referencia ao vetor contendo o codigo intermediario, onde as novas instrucoes serao agregadas </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a operacao foi realizada com sucesso (true) ou se falhou (false) </dd></dl>
 
 </div>
 </div>
@@ -728,6 +913,14 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que carrega no vetor passado como parametro todos os tipos aceitos pelos elementos/subcircuitos para o I/O passado como parametro </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID que identifica o I/O que estamos consultando </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">types</td><td>vetor onde serao carregados os tipos de I/O aceitos pelos elementos/subcircuitos </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -744,6 +937,8 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que retorna o primeiro elemento (nao subcircuito) do circuito atual. Se o primeiro elemento for um subcircuito, busca o primeiro elemento desse subcircuito </p>
+<dl class="section return"><dt>Retorna</dt><dd>Ponteiro para o primeiro elemento do circuito ou nulo se nao existente </dd></dl>
 
 </div>
 </div>
@@ -760,6 +955,8 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que retorna a altura do circuito em numero de elementos para o modo texto. </p>
+<dl class="section return"><dt>Retorna</dt><dd>Altura do circuito em numero de elementos. Por exemplo: um circuito paralelo com 3 elementos retornara 3. Um circuito serie com 3 elementos retornara 1. </dd></dl>
 
 </div>
 </div>
@@ -776,6 +973,8 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que retorna o ultimo elemento (nao subcircuito) do circuito atual. Se o ultimo elemento for um subcircuito, busca o ultimo elemento desse subcircuito </p>
+<dl class="section return"><dt>Retorna</dt><dd>Ponteiro para o ultimo elemento do circuito ou nulo se nao existente </dd></dl>
 
 </div>
 </div>
@@ -792,6 +991,14 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que retorna o proximo elemento do circuito (ou algum de seus subcircuitos) tendo como referencia um subcircuito. </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">next</td><td>Subcircuito de referencia para a busca do subcircuito seguinte </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Proximo subcircuito de acordo com a referencia passada como parametro. Se ambos elemento e circuito do subcircuito retornado forem nulos, indica que o subcircuito de referencia nao foi encontrado ou nao existia um proximo elemento para a referencia fornecida. </dd></dl>
 
 </div>
 </div>
@@ -808,6 +1015,14 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que retorna o ponteiro para o circuito pai do circuito passado como referencia </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">subckt</td><td>Subcircuito sendo buscado </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Ponteiro para o circuito pai do circuito passado como parametro ou nulo se nao for encontrado </dd></dl>
 
 </div>
 </div>
@@ -832,6 +1047,8 @@ Atributos Privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Funcao que retorna o numero de elementos do circuito </p>
+<dl class="section return"><dt>Retorna</dt><dd>Numero de elementos existentes no circuito </dd></dl>
 
 </div>
 </div>
@@ -848,6 +1065,14 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que retorna o subcircuito na posicao indicada </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pos</td><td>Indice da posicao do subcircuito sendo solicitado </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Subcircuito da posicao solicitada. Se nao encontrado, tanto circuito como elemento do subcircuito retornado serao nulos </dd></dl>
 
 </div>
 </div>
@@ -864,6 +1089,14 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que retorna o ponteiro para o circuito ao qual o elemento pertence </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">elem</td><td>Elemento sendo buscado </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Ponteiro para o circuito onde se encontra o elemento passado como parametro ou nulo se nao for encontrado </dd></dl>
 
 </div>
 </div>
@@ -880,6 +1113,14 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que retorna a largura do circuito em colunas para o modo texto. </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ColsAvailable</td><td>Colunas disponiveis ate o final do diagrama </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Numero de colunas ocupadas pelo circuito </dd></dl>
 
 </div>
 </div>
@@ -896,6 +1137,8 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que indica se o circuito possui um elemento de final de linha </p>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se o elemento eh o ultimo do circuito (true) ou nao (false). </dd></dl>
 
 </div>
 </div>
@@ -934,6 +1177,17 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que adiciona um elemento em paralelo a elementos/subcircuitos deste circuito </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">elem</td><td>Ponteiro para o elemento a ser adicionado ao circuito </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start</td><td>Indice da posicao inicial da insercao </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">end</td><td>Indice da posicao final da insercao </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">context</td><td>Contexto indicando a situacao atual do diagrama ladder, sendo alterado para refletir as alteracoes realizadas </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a operacao foi realizada com sucesso (true) ou se falhou (false) </dd></dl>
 
 </div>
 </div>
@@ -986,6 +1240,18 @@ Atributos Privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Funcao que insere um subcircuito em uma determinada posicao do circuito atual </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Contexto indicando a situacao atual do diagrama ladder </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pos</td><td>Indice da posicao onde o subcircuito deve ser inserido </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>Subcircuito que deve ser inserido </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">isMove</td><td>Flag que indica se a operacao atual eh uma inclusao normal (false) ou se faz parte de um comando Move (true) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">isUndoRedo</td><td>Flag que informa se a operacao atual esta sendo executada normalmente (false) ou se trata-se de uma operacao de desfazer / refazer (true) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a operacao foi realizada com sucesso (true) ou se falhou (false) </dd></dl>
 
 </div>
 </div>
@@ -1002,6 +1268,8 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que indica se o circuito representa um comentario </p>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se o circuito representa um comentario (true) ou um circuito normal (false). </dd></dl>
 
 </div>
 </div>
@@ -1018,6 +1286,8 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que indica se o circuito esta vazio, ou seja, sem elementos ou apenas o placeholder inicial </p>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se o circuito esta vazio (true) ou nao (false). </dd></dl>
 
 </div>
 </div>
@@ -1034,6 +1304,14 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que busca pelo elemento passado como parametro, indicando se ele eh o ultimo elemento do circuito </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">elem</td><td>Ponteiro para o elemento sendo analisado </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se o elemento eh o ultimo do circuito (true) ou nao (false). </dd></dl>
 
 </div>
 </div>
@@ -1058,6 +1336,8 @@ Atributos Privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Funcao que indica o tipo do circuito (serie ou paralelo) </p>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se o circuito eh serie (true) ou paralelo (false). </dd></dl>
 
 </div>
 </div>
@@ -1090,6 +1370,16 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que carrega o circuito do disco </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">diagram</td><td>Ponteiro para o diagrama ao qual os elementos/subcircuitos sendo carregados devem ser associados </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">f</td><td>Handler do arquivo de onde o circuito deve ser carregado </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">version</td><td>Numero da versao do arquivo que esta sendo carregado </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a operacao foi realizada com sucesso (true) ou se falhou (false) </dd></dl>
 
 </div>
 </div>
@@ -1142,6 +1432,18 @@ Atributos Privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Funcao que insere um subcircuito em uma determinada posicao do circuito atual </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Contexto indicando a situacao atual do diagrama ladder </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pos</td><td>Indice da posicao no circuito atual para onde o subcircuito deve ser movido </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fromCircuit</td><td>Circuito de origem do subcircuito que deve ser movido </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fromPos</td><td>Indice da posicao do subcircuito no circuito de origem </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">isUndoRedo</td><td>Flag que informa se a operacao atual esta sendo executada normalmente (false) ou se trata-se de uma operacao de desfazer / refazer (true) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a operacao foi realizada com sucesso (true) ou se falhou (false) </dd></dl>
 
 </div>
 </div>
@@ -1158,32 +1460,37 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que verifica o circuito, removendo subcircuitos desnecessarios como, por exemplo, um subcircuito contendo apenas 1 elemento. </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Contexto indicando a situacao atual do diagrama ladder, sendo alterado para refletir as alteracoes realizadas </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a class="anchor" id="a880eba756722d65f571334ae740a2717"></a>
+<a class="anchor" id="aeeaca31e5b4497535d378539e27e0023"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">bool LadderCircuit::Save </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="class_ladder_diagram.html">LadderDiagram</a> *&#160;</td>
-          <td class="paramname"><em>diagram</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">FILE *&#160;</td>
-          <td class="paramname"><em>f</em>&#160;</td>
-        </tr>
-        <tr>
+          <td class="paramname"><em>f</em></td><td>)</td>
           <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que salva o circuito em disco </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">f</td><td>Handler do arquivo onde o circuito deve ser salvo </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se a operacao foi realizada com sucesso (true) ou se falhou (false) </dd></dl>
 
 </div>
 </div>
@@ -1222,6 +1529,17 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que executa uma busca ou substituicao nos I/Os dos elementos/subcircuitos </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">refElem</td><td>Ponteiro que contem um ponteiro para o elemento de referencia para a busca. Ponteiro aponta para nulo se nao houver uma referencia (como no caso de buscar a partir do inicio, por exemplo) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">idSearch</td><td>ID que identifica o I/O que estamos trabalhando </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sNewText</td><td>Novo texto para o I/O sendo trabalhado </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">mode</td><td>Operacao de busca / substituicao a ser executada </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Numero de correspondencias encontradas. Se ocorrer um erro, retorna -1. </dd></dl>
 
 </div>
 </div>
@@ -1248,6 +1566,15 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que busca um subcircuito serie no circuito conforme a direcao solicitada </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">series</td><td>Ponteiro para o subcircuito a ser buscado </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">direction</td><td>Direcao em que a busca deve ser realizada: SUBCKT_STATUS_FIRST (primeiro elemento) ou SUBCKT_STATUS_LAST (ultimo elemento) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se o subcircuito foi encontrado (SUBCKT_STATUS_INSIDE) ou nao (SUBCKT_STATUS_NOTFOUND) </dd></dl>
 
 </div>
 </div>
@@ -1264,6 +1591,13 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que associa os elementos e subcircuitos deste circuito para um novo diagrama </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">newDiagram</td><td>Ponteiro para o novo diagrama ao qual os elementos deste circuito devem ser associados. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1280,6 +1614,8 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que indica se o circuito possui um elemento que utilize a interface serial </p>
+<dl class="section return"><dt>Retorna</dt><dd>Indica se algum elemento do circuito utiliza a interface serial (true) ou nao (false). </dd></dl>
 
 </div>
 </div>
@@ -1306,10 +1642,18 @@ Atributos Privados</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Funcao que atualiza o I/O dos elementos do circuito, descartando ou fazendo request conforme a necessidade. </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">owner</td><td>Ponteiro para o diagrama ao qual pertencia este circuito. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">isDiscard</td><td>Indica se a operacao eh de descarte (true) ou nao (false). </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a class="anchor" id="ab021647981354dcf12e3d5488cf231c7"></a>
+<a class="anchor" id="a78a1f556448569e7e0da6baa33379996"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1319,6 +1663,12 @@ Atributos Privados</h2></td></tr>
         <tr>
           <td class="memname">void LadderCircuit::VerticalWireTXT </td>
           <td>(</td>
+          <td class="paramtype"><a class="el" href="_ladder_objects_8h.html#a35858990ebd472f59ece28bfc58544d4">tFncDrawChars</a>&#160;</td>
+          <td class="paramname"><em>DrawChars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>cx</em>, </td>
         </tr>
@@ -1340,6 +1690,15 @@ Atributos Privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Funcao que desenha uma linha vertical em modo texto </p>
+<dl class="params"><dt>Parâmetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">DrawChars</td><td>Ponteiro para a funcao que desenha os caracteres no buffer, fornecida pelo usuario </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cx</td><td>Ponteiro para variavel contendo a coordenada atual no eixo X, atualiza para refletir o deslocamento ocorrido ao desenhar o elemento atual </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cy</td><td>Ponteiro para variavel contendo a coordenada atual no eixo Y, atualiza para refletir o deslocamento ocorrido ao desenhar o elemento atual </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1362,6 +1721,8 @@ Atributos Privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Indica se este circuito eh do tipo serie (true) ou paralelo (false) </p>
+
 </div>
 </div>
 <a class="anchor" id="aa0faa873ea1c3e61588231d2ab8910b9"></a>
@@ -1382,6 +1743,8 @@ Atributos Privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Vetor que contem os elementos que compoem este circuito, podendo ser um elemento diretamente ou outro subcircuito. </p>
+
 </div>
 </div>
 <hr/>A documentação para esta classe foi gerada a partir dos seguintes arquivos:<ul>
@@ -1392,7 +1755,7 @@ Atributos Privados</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Quinta, 7 de Novembro de 2013 16:07:53 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Segunda, 25 de Novembro de 2013 14:58:22 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

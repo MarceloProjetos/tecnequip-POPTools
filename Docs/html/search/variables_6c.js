@@ -13,6 +13,7 @@ var searchData=
   ['linear',['linear',['../struct_engine_g_u_i_1_1t_brush_data.html#a70fb7f4cef1d419eedc00ddc4494aebb',1,'EngineGUI::tBrushData::linear()'],['../structt_brush_data_d2_d.html#a1bcd580c1b1ecc18467bfeff532d74ba',1,'tBrushDataD2D::linear()'],['../struct_ladder_elem_multiset_d_a_prop.html#ad9a577c43fe32f7ab042fdc20cdaa335',1,'LadderElemMultisetDAProp::linear()']]],
   ['listid',['ListID',['../struct_gallery_items.html#a581003b5818ef5b1e49f4889da48e43c',1,'GalleryItems']]],
   ['literal',['literal',['../struct_int_op_tag.html#a7e410eca78990d2a2f3fd1e0f9865918',1,'IntOpTag']]],
+  ['logbufferuart',['logBufferUART',['../simulate_8cpp.html#a545a793eeebdf0e3584db3cf0ac95e9d',1,'simulate.cpp']]],
   ['logdataio',['logDataIO',['../simulate_8cpp.html#a75d35b31635bbbb54b8bfcb353f325f0',1,'simulate.cpp']]],
   ['logrefio',['logRefIO',['../simulate_8cpp.html#aea03f244c7cad83c0762550deccc2996',1,'simulate.cpp']]],
   ['lpc1768adcpininfo',['LPC1768AdcPinInfo',['../mcutable_8h.html#a697d816f869eda79e3f3b1008b9ef86b',1,'mcutable.h']]],

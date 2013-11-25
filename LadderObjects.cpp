@@ -799,6 +799,10 @@ bool LadderElemCoil::internalUpdateNameTypeIO(unsigned int index, string name, e
 	pair<unsigned long, int> pin = prop.idName;
 
 	if(type == eType_Reserved) {
+		type = Diagram->getDetailsIO(name).type;
+	}
+
+	if(type != eType_DigOutput && type != eType_InternalRelay) {
 		type = eType_DigOutput;
 	}
 
@@ -7892,7 +7896,7 @@ LadderCircuit::~LadderCircuit(void)
 	vectorSubckt.clear();
 }
 
-bool LadderCircuit::DrawElementTXT(vector< vector<int> > &DisplayMatrix, LadderElem *elem, int *cx, int *cy, bool poweredBefore)
+bool LadderCircuit::DrawElementTXT(tFncDrawChars DrawChars, vector< vector<int> > &DisplayMatrix, LadderElem *elem, int *cx, int *cy, bool poweredBefore)
 {
 	if(elem == nullptr) return false;
 
@@ -7954,7 +7958,7 @@ bool LadderCircuit::DrawElementTXT(vector< vector<int> > &DisplayMatrix, LadderE
 // Draw a vertical wire one leaf element unit high up from (cx, cy), where cx
 // and cy are in charcter units.
 //-----------------------------------------------------------------------------
-void LadderCircuit::VerticalWireTXT(int cx, int cy)
+void LadderCircuit::VerticalWireTXT(tFncDrawChars DrawChars, int cx, int cy)
 {
     int j;
     for(j = 1; j < POS_HEIGHT; j++) {
@@ -7964,7 +7968,7 @@ void LadderCircuit::VerticalWireTXT(int cx, int cy)
     DrawChars(cx, cy + (POS_HEIGHT/2 - POS_HEIGHT), "+");
 }
 
-bool LadderCircuit::DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *cy, bool poweredBefore, int ColsAvailable)
+bool LadderCircuit::DrawTXT(tFncDrawChars DrawChars, vector< vector<int> > &DisplayMatrix, int *cx, int *cy, bool poweredBefore, int ColsAvailable)
 {
     int cx0 = *cx, cy0 = *cy;
 
@@ -7974,9 +7978,9 @@ bool LadderCircuit::DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *
 	if(isSeries) {
 		for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
 			if(it->elem != nullptr) {
-				poweredAfter = DrawElementTXT(DisplayMatrix, it->elem, cx, cy, poweredAfter);
+				poweredAfter = DrawElementTXT(DrawChars, DisplayMatrix, it->elem, cx, cy, poweredAfter);
 			} else {
-				poweredAfter = it->subckt->DrawTXT(DisplayMatrix, cx, cy, poweredAfter, ColsAvailable);
+				poweredAfter = it->subckt->DrawTXT(DrawChars, DisplayMatrix, cx, cy, poweredAfter, ColsAvailable);
 			}
 		}
 	} else {
@@ -7992,10 +7996,10 @@ bool LadderCircuit::DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *
 			bool poweredThis;
 
 			if(it->elem != nullptr) {
-				poweredThis = DrawElementTXT(DisplayMatrix, it->elem, cx, cy, poweredBefore);
+				poweredThis = DrawElementTXT(DrawChars, DisplayMatrix, it->elem, cx, cy, poweredBefore);
 				justDrewHeight = 1;
 			} else {
-				poweredThis = it->subckt->DrawTXT(DisplayMatrix, cx, cy, poweredBefore, ColsAvailable);
+				poweredThis = it->subckt->DrawTXT(DrawChars, DisplayMatrix, cx, cy, poweredBefore, ColsAvailable);
 				justDrewHeight = it->subckt->getHeightTXT();
 			}
 
@@ -8040,7 +8044,7 @@ bool LadderCircuit::DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *
 				if(DisplayMatrix[gx - 1][gy + j] != ELEM_PLACEHOLDER) {
 					needWire = true;
 				}
-				if(needWire) VerticalWireTXT(*cx - 1, *cy + j*POS_HEIGHT);
+				if(needWire) VerticalWireTXT(DrawChars, *cx - 1, *cy + j*POS_HEIGHT);
 			}
 		}
 
@@ -8049,7 +8053,7 @@ bool LadderCircuit::DrawTXT(vector< vector<int> > &DisplayMatrix, int *cx, int *
 			if(DisplayMatrix[cx0/POS_WIDTH][*cy/POS_HEIGHT + j]) {
 				needWire = true;
 			}
-			if(needWire) VerticalWireTXT(cx0 - 1, *cy + j*POS_HEIGHT);
+			if(needWire) VerticalWireTXT(DrawChars, cx0 - 1, *cy + j*POS_HEIGHT);
 		}
 	}
 
@@ -8561,7 +8565,7 @@ bool LadderCircuit::InsertParallel(LadderElem *elem, unsigned int start, unsigne
 	return ret;
 }
 
-int LadderCircuit::ElemInSubcktSeries(LadderContext &context, InsertionPoint *point)
+int LadderCircuit::ElemInSubcktSeries(LadderContext context, InsertionPoint *point)
 {
 	unsigned int i, status = SUBCKT_STATUS_NOTFOUND;
 
@@ -8640,7 +8644,6 @@ int LadderCircuit::SearchMatch(LadderCircuit *series, int direction)
 				Subckt s = vectorSubckt[i].subckt->getSubckt(index);
 
 				if(series == vectorSubckt[i].subckt) {
-					series = vectorSubckt[i].subckt;
 					status = SUBCKT_STATUS_INSIDE;
 				} else if(s.elem == nullptr && !s.subckt->IsSeries()) {
 					status = s.subckt->SearchMatch(series, direction);
@@ -8849,7 +8852,7 @@ void LadderCircuit::doPostRemove(void)
 	}
 }
 
-bool LadderCircuit::Save(LadderDiagram *diagram, FILE *f)
+bool LadderCircuit::Save(FILE *f)
 {
 	bool ret = false;
 
@@ -8864,7 +8867,7 @@ bool LadderCircuit::Save(LadderDiagram *diagram, FILE *f)
 						break; // erro durante a gravacao
 				}
 			} else {
-				if(!fwrite_bool(f, false) || !it->subckt->Save(diagram, f)) {
+				if(!fwrite_bool(f, false) || !it->subckt->Save(f)) {
 					break; // erro durante a gravacao
 				}
 			}
@@ -9251,6 +9254,10 @@ LadderDiagram::LadderDiagram(void)
 			break;
 		}
 	}
+
+	// Somente precisamos inicializar a variavel aqui e nao para cada vez que inicializarmos o diagrama
+	// pois a propria funcao DrawTXT se encarregara de limpa-la ao terminar
+	fncDrawChars = nullptr;
 
 	Init();
 
@@ -9720,15 +9727,15 @@ int LadderDiagram::RungContainingSelected(void)
 	return RungContainingElement(context.SelectedElem);
 }
 
-bool LadderDiagram::IsRungEmpty(unsigned int n)
+bool LadderDiagram::IsRungEmpty(unsigned int rung)
 {
-	return (n < rungs.size()) ? rungs[n]->rung->IsEmpty() : true;
+	return (rung < rungs.size()) ? rungs[rung]->rung->IsEmpty() : true;
 }
 
-void LadderDiagram::NewRung(bool isAfter)
+bool LadderDiagram::NewRung(bool isAfter)
 {
 	// Se diagrama bloqueado, retorna
-	if(IsLocked()) return;
+	if(IsLocked()) return false;
 
 	vector<LadderRung *>::iterator it;
 	int position = RungContainingSelected();
@@ -9776,6 +9783,8 @@ void LadderDiagram::NewRung(bool isAfter)
 
 	// Indica que houve alteracao no programa
 	ProgramChanged();
+
+	return true;
 }
 
 bool LadderDiagram::PushRung(int rung, bool up)
@@ -10175,12 +10184,18 @@ bool LadderDiagram::PasteElement(LadderClipboard clipboard)
 	return ret;
 }
 
-void LadderDiagram::DrawTXT(int OffsetX)
+void LadderDiagram::DrawTXT(tFncDrawChars fnc)
 {
     int i;
+	const int OffsetX = 6;
 	int cx = OffsetX, cy = 0;
 	int ColsAvailable = getWidthTXT();
 	int RowsAvailable = getHeightTXT();
+
+	// Verifica se recebemos um ponteiro para funcao de desenhar caracteres
+	if(fnc == nullptr) return;
+
+	fncDrawChars = fnc;
 
 	vector< vector<int> > DisplayMatrix(ColsAvailable, vector<int>(RowsAvailable, 0));
 
@@ -10196,9 +10211,9 @@ void LadderDiagram::DrawTXT(int OffsetX)
         } else {
 			_itoa(it, ch, 10);
         }
-		DrawChars(0, cy, ch);
+		fncDrawChars(0, cy, ch);
 
-		rungs[it]->rung->DrawTXT(DisplayMatrix, &cx, &cy, true, ColsAvailable);
+		rungs[it]->rung->DrawTXT(fncDrawChars, DisplayMatrix, &cx, &cy, true, ColsAvailable);
 
 		cx  = OffsetX;
 		cy += (rungs[it]->rung->getHeightTXT() + 1) * POS_HEIGHT;
@@ -10208,13 +10223,15 @@ void LadderDiagram::DrawTXT(int OffsetX)
     char *str = _("[END]");
     int lead = (ColsAvailable*POS_WIDTH - strlen(str))/2;
     for(i = 0; i < lead; i++) {
-        DrawChars(cx + i, cy + (POS_HEIGHT/2), "-");
+        fncDrawChars(cx + i, cy + (POS_HEIGHT/2), "-");
     }
-    DrawChars(cx + i, cy + (POS_HEIGHT/2), str);
+    fncDrawChars(cx + i, cy + (POS_HEIGHT/2), str);
     i += strlen(str);
     for(; i < ColsAvailable*POS_WIDTH; i++) {
-        DrawChars(cx + i, cy + (POS_HEIGHT/2), "-");
+        fncDrawChars(cx + i, cy + (POS_HEIGHT/2), "-");
     }
+
+	fncDrawChars = nullptr;
 }
 
 bool LadderDiagram::AddParallelStart(void)
@@ -10425,17 +10442,17 @@ bool LadderDiagram::Save(string filename, bool dontSaveFilename)
 		return false; // Nome do arquivo carregado e flag nao permite sobrescrever! Retorna erro.
 	}
 
-	// Alguns arquivos (como exemplos) nao podem ser sobrescritos. Dessa forma existe uma flag
-	// interna nas configuracoes do projeto que inibe esse salvamento. A linha a seguir usa
-	// essa flag para que o arquivo salvo neste momento tenha essa protecao.
-	// Desative a linha abaixo apenas quando desejar impedir que o arquivo seja sobrescrito.
-	//LadderSettings.General.canSave = false;
-
 	FILE *f = fopen(filename.c_str(), "wb+");
     if(!f) return failed;
 
 	// Desmarca a flag que indica que nao pode salvar pois esse novo arquivo podera ser salvo.
 	LadderSettings.General.canSave = true;
+
+	// Alguns arquivos (como exemplos) nao podem ser sobrescritos. Dessa forma existe uma flag
+	// interna nas configuracoes do projeto que inibe esse salvamento. A linha a seguir usa
+	// essa flag para que o arquivo salvo neste momento tenha essa protecao.
+	// Desative a linha abaixo apenas quando desejar impedir que o arquivo seja sobrescrito.
+	//LadderSettings.General.canSave = false;
 
 	// Ao salvar, se houver o inicio de um paralelo, ele deve ser removido
 	// A acao de exclusao constara na lista de desfazer.
@@ -10531,7 +10548,7 @@ bool LadderDiagram::Save(string filename, bool dontSaveFilename)
 
 				if(fwrite_uint(f, rungs.size())) {
 					for(it = rungs.begin(); it != rungs.end(); it++) {
-						if(!fwrite_bool(f, (*it)->hasBreakpoint) || !(*it)->rung->Save(this, f)) {
+						if(!fwrite_bool(f, (*it)->hasBreakpoint) || !(*it)->rung->Save(f)) {
 							break;
 						}
 					}

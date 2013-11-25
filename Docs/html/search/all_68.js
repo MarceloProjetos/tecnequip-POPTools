@@ -15,6 +15,7 @@ var searchData=
   ['haspwm',['HasPWM',['../gcc_8cpp.html#a09da34d647844fc6779fb8866b19ad94',1,'gcc.cpp']]],
   ['hasqei',['HasQEI',['../gcc_8cpp.html#ab7b0081fac11dd949df9588700ab348a',1,'gcc.cpp']]],
   ['hasssi',['HasSSI',['../gcc_8cpp.html#a1126d972d5a457685fa86c8ad454ff1e',1,'gcc.cpp']]],
+  ['hasvariable',['hasVariable',['../structt_data_string_u_a_r_t.html#a71dd0bd056cd04ab83a55a6d40702356',1,'tDataStringUART']]],
   ['hbitmap',['hBitmap',['../class_s_p_l_a_s_h.html#ab3eb1f4b9d1845d16352c3daf691c505',1,'SPLASH::hBitmap()'],['../splash_8cpp.html#a9fc5abab889d6fd98fcc0efdc177bd7e',1,'hBitmap():&#160;splash.cpp']]],
   ['hcommport',['hCommPort',['../modbus__master_8cpp.html#a57f5c1613e7b3911d9ca082d5ba06607',1,'modbus_master.cpp']]],
   ['hdc',['Hdc',['../poptools_8cpp.html#ad68c7668261ef8ce7456980c4d78acde',1,'Hdc():&#160;poptools.cpp'],['../poptools_8h.html#ad68c7668261ef8ce7456980c4d78acde',1,'Hdc():&#160;poptools.cpp']]],

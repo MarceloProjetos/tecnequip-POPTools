@@ -1,7 +1,7 @@
 var searchData=
 [
   ['margin',['MARGIN',['../multisetdadialog_8cpp.html#ab05a798afd72aac947f417e1dab73c87',1,'multisetdadialog.cpp']]],
-  ['max_5fboxes',['MAX_BOXES',['../modbusdialog_8cpp.html#abe040ae255b70ffb201aacc407ed614d',1,'MAX_BOXES():&#160;modbusdialog.cpp'],['../simpledialog_8cpp.html#abe040ae255b70ffb201aacc407ed614d',1,'MAX_BOXES():&#160;simpledialog.cpp']]],
+  ['max_5fboxes',['MAX_BOXES',['../simpledialog_8cpp.html#abe040ae255b70ffb201aacc407ed614d',1,'simpledialog.cpp']]],
   ['max_5fcomment_5flen',['MAX_COMMENT_LEN',['../poptools_8h.html#ae742528c5ebc9542c3e69a98a26f03b1',1,'poptools.h']]],
   ['max_5fgain_5fresolution_5fval',['MAX_GAIN_RESOLUTION_VAL',['../multisetdadialog_8cpp.html#a6706a4a56e0f59ea26d45db2704623c3',1,'multisetdadialog.cpp']]],
   ['max_5fgain_5ftime_5fval',['MAX_GAIN_TIME_VAL',['../multisetdadialog_8cpp.html#ae4d67b08b11694c51e10c1ae55ea28db',1,'multisetdadialog.cpp']]],

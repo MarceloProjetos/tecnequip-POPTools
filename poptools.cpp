@@ -1414,6 +1414,7 @@ cmp:
 		case MNU_EXAMPLE_MUL:
 		case MNU_EXAMPLE_DIV:
 		case MNU_EXAMPLE_SQRT:
+		case MNU_EXAMPLE_MOD:
             OpenDialog("examples\\math.ld");
 			break;
 		case MNU_EXAMPLE_RAND:

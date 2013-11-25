@@ -2028,7 +2028,7 @@ bool ContactCmdExpandedSource(LadderElem *elem, unsigned int selected)
 	mapDetails             detailsIO = ladder->getDetailsIO(prop->idName.first);
 	string                 name      = ladder->getNameIO(prop->idName);
 
-	// Apenas atualiza o tipo do I/O diretamente se mais ninguem estiver utilizando
+	// Apenas atualiza o tipo do I/O diretamente se mais ninguem estiver utilizando e nao for reservado
 	if(detailsIO.countRequestBit == 1 && detailsIO.type != eType_Reserved) {
 		ret = contact->updateNameTypeIO(0, name, type);
 	} else {
@@ -2041,7 +2041,9 @@ bool ContactCmdExpandedSource(LadderElem *elem, unsigned int selected)
 
 		ContactCmdChangeName(source, &dataChangeName);
 		ret = dataChangeName.reply;
-	} else {
+	}
+
+	if(ret) {
 		UpdateMainWindowTitleBar();
 	}
 
@@ -2243,8 +2245,8 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 		gui.addControlList(this, rExp[0], list);
 
 		list.items.clear();
-		list.items.push_back("No");
-		list.items.push_back("Yes");
+		list.items.push_back(_("No" ));
+		list.items.push_back(_("Yes"));
 
 		list.fnc      = ContactCmdExpandedNegated;
 		list.selected = prop.negated ? 1 : 0;
@@ -2276,7 +2278,12 @@ bool CoilCmdChangeName(tCommandSource source, void *data)
 		type = dataChangeName->type;
 	}
 
-	types.push_back((type == eType_Reserved) ? eType_DigOutput : type);
+	if(type == eType_Reserved) {
+		types.push_back(eType_InternalRelay);
+		types.push_back(eType_DigOutput);
+	} else {
+		types.push_back(type);
+	}
 
 	ret = cmdChangeName(source.elem, 0, prop->idName, type, types, _("Coil"), _("Name:"));
 	if(dataChangeName != nullptr) {
@@ -2310,9 +2317,14 @@ bool CoilCmdExpandedSource(LadderElem *elem, unsigned int selected)
 	// Aqui desalocamos as propriedades
 	delete prop;
 
-	ret = coil->updateNameTypeIO(0, name, type);
+	// Apenas atualiza o tipo do I/O diretamente se mais ninguem estiver utilizando e nao for reservado
+	if(detailsIO.countRequestBit == 1 && detailsIO.type != eType_Reserved) {
+		ret = coil->updateNameTypeIO(0, name, type);
+	} else {
+		ret = false;
+	}
 
-	if(!ret || detailsIO.type == eType_Reserved) {
+	if(!ret) {
 		tCommandSource source = { nullptr, nullptr, elem };
 		dataChangeName.type   = type;
 
@@ -5678,8 +5690,8 @@ bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 		gui.addControlList(this, rExp[0], list);
 
 		list.items.clear();
-		list.items.push_back("No");
-		list.items.push_back("Yes");
+		list.items.push_back(_("No" ));
+		list.items.push_back(_("Yes"));
 
 		list.fnc      = ModBUSCmdExpandedResend;
 		list.selected = prop.retransmitir ? 1 : 0;

@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['warning',['Warning',['../miscutil_8cpp.html#a46e28f0133c98b0bae3d781f2e573354',1,'Warning(char *title, char *str,...):&#160;miscutil.cpp'],['../poptools_8h.html#a46e28f0133c98b0bae3d781f2e573354',1,'Warning(char *title, char *str,...):&#160;miscutil.cpp']]],
   ['watchpoints',['Watchpoints',['../simulate_8cpp.html#a932ed1e9b113bd754e1ac6d594516e21',1,'simulate.cpp']]],
   ['wchildren',['wChildren',['../struct_v_s___v_e_r_s_i_o_n_i_n_f_o.html#a9e3509c60e112d1dbbcee73f8b118d6a',1,'VS_VERSIONINFO']]],
   ['wcodepage',['wCodePage',['../maincontrols_8cpp.html#afe3e6e5465c1cbd40892d32625776b51',1,'maincontrols.cpp']]],

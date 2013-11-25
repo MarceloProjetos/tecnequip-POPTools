@@ -11,6 +11,7 @@ var searchData=
   ['tcontrollist',['tControlList',['../structt_control_list.html',1,'']]],
   ['tconvstring',['tConvString',['../structt_conv_string.html',1,'']]],
   ['tdatadrawgui',['tDataDrawGUI',['../structt_data_draw_g_u_i.html',1,'']]],
+  ['tdatastringuart',['tDataStringUART',['../structt_data_string_u_a_r_t.html',1,'']]],
   ['tdiagramdata',['tDiagramData',['../structt_diagram_data.html',1,'']]],
   ['tdialogdata',['tDialogData',['../structt_dialog_data.html',1,'']]],
   ['tladdercolorgroup',['tLadderColorGroup',['../structt_ladder_color_group.html',1,'']]],

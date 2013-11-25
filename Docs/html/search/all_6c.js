@@ -126,6 +126,7 @@ var searchData=
   ['loadprojectfromfile',['LoadProjectFromFile',['../loadsave_8cpp.html#ad67234e51ac3d4b87234cdff255402bf',1,'LoadProjectFromFile(char *filename):&#160;loadsave.cpp'],['../poptools_8h.html#ad67234e51ac3d4b87234cdff255402bf',1,'LoadProjectFromFile(char *filename):&#160;loadsave.cpp']]],
   ['loadsave_2ecpp',['loadsave.cpp',['../loadsave_8cpp.html',1,'']]],
   ['loadsettings',['LoadSettings',['../poptools_8cpp.html#aeb2eb8ec1d703539637b101a4c278862',1,'poptools.cpp']]],
+  ['logbufferuart',['logBufferUART',['../simulate_8cpp.html#a545a793eeebdf0e3584db3cf0ac95e9d',1,'simulate.cpp']]],
   ['logdataio',['logDataIO',['../simulate_8cpp.html#a75d35b31635bbbb54b8bfcb353f325f0',1,'simulate.cpp']]],
   ['logget',['LogGet',['../debugdialog_8cpp.html#ab688fdbd708d19e686dd9e2d0ce87f72',1,'debugdialog.cpp']]],
   ['logput',['LogPut',['../debugdialog_8cpp.html#aa5faac947435f4f8d7cedce2048268f8',1,'debugdialog.cpp']]],
