@@ -4583,6 +4583,7 @@ bool ReadAdcCmdChangeName(tCommandSource source, void *data)
 
 	vector<eType> types;
 	types.push_back(eType_ReadADC);
+	types.push_back(eType_General);
 
 	bool ret = cmdChangeName(source.elem, 0, prop->idName, eType_ReadADC, types, _("Read A/D Converter"), _("Destination:"));
 	if(dataChangeName != nullptr) {
@@ -7846,6 +7847,7 @@ bool cmdToggleBreakpoint(tCommandSource source, void *data)
 // Classe LadderDiagram
 void LadderDiagram::DrawGUI(void)
 {
+	static LadderDiagram *lastDiagram = nullptr;
 	if(context.isLoadingFile) return; // Durante o carregamento de um arquivo nao devemos desenhar a tela...
 
 	// Aqui criamos um novo mapa (no caso de um novo diagrama)
@@ -7881,7 +7883,8 @@ void LadderDiagram::DrawGUI(void)
 	RECT rWindow;
 	GetClientRect(DrawWindow, &rWindow);
 
-	bool isFullRedraw = gui.getNeedFullRedraw();
+	bool isFullRedraw = gui.getNeedFullRedraw() || (lastDiagram != this);
+	lastDiagram = this;
 
 	if(isFullRedraw) {
 		bool isFirstStep = true, needAnotherStep = false;

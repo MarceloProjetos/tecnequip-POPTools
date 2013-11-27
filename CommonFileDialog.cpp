@@ -121,6 +121,19 @@ HRESULT FileDialogShow(enum FDS_Mode mode, char *DefExt, char *FileName)
 	tConvString pStr;
     IFileDialog *pfd = NULL;
 
+	char *PathName = nullptr, *pSlashPosition = strrchr(FileName, '\\');
+
+	if(pSlashPosition != NULL) {
+		int bufSize = strlen(FileName) + 1, pos = pSlashPosition - FileName;
+
+		PathName = new char[bufSize];
+
+		strncpy(PathName, FileName, pos);
+		PathName[pos] = 0;
+
+		strcpy (FileName, FileName + pos + 1);
+	}
+
     HRESULT hr = CoCreateInstance(mode == LoadLadder ? CLSID_FileOpenDialog : CLSID_FileSaveDialog           , NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
     if (SUCCEEDED(hr))
     {
@@ -167,6 +180,16 @@ HRESULT FileDialogShow(enum FDS_Mode mode, char *DefExt, char *FileName)
 								hr = pfd->SetDefaultExtension(pStr.pWideChar);
 								delete pStr.pWideChar;
 
+								if (SUCCEEDED(hr) && PathName != nullptr) {
+									IShellItem *psiFolder;
+									pStr.pWideChar = ConvString_Convert(nullptr, PathName);
+									hr = SHCreateItemFromParsingName ( pStr.pWideChar, NULL, IID_PPV_ARGS(&psiFolder) );
+ 									if ( SUCCEEDED(hr) ) {
+										hr=pfd->SetFolder ( psiFolder );
+									}
+									delete pStr.pWideChar;
+								}
+
 								if (SUCCEEDED(hr))
 								{
 									// Show the dialog
@@ -207,6 +230,10 @@ HRESULT FileDialogShow(enum FDS_Mode mode, char *DefExt, char *FileName)
     }
 
 	if(!SUCCEEDED(hr)) *FileName = 0;
+
+	if(PathName != nullptr) {
+		delete [] PathName;
+	}
 	
 	return hr;
 }

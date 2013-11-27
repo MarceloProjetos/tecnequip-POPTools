@@ -129,6 +129,8 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 void mapIO::Clear(void)
 {
 	IO.clear();
+	mapCachedIO.clear();
+
 	countIO = 0;
 	selectedIO = 0;
 	SyncVectorIO();
@@ -510,6 +512,10 @@ void mapIO::Discard(tRequestIO infoIO)
 
 		// Se Variavel nao usada, remove do mapa
 		if(IO[name].second.countRequestBit == 0 && IO[name].second.countRequestInt == 0) {
+			// Antes de descartar, salva no cache
+			mapCachedIO[IO[name].first] = pair<string, eType>(name, IO[name].second.type);
+
+			// Registra acao para Desfazer / Refazer a acao
 			UndoRedoAction action;
 			UndoRedoData *data = new UndoRedoData;
 
@@ -665,6 +671,15 @@ vector<string> mapIO::getList(void)
 void mapIO::Select(unsigned int index)
 {
 	selectedIO = getID(index, true);
+}
+
+pair<string, eType> mapIO::getCachedIO(unsigned long id)
+{
+	if(mapCachedIO.count(id) > 0) {
+		return mapCachedIO[id];
+	}
+
+	return pair<string, eType>("", eType_Pending);
 }
 
 string mapIO::getNextVar(string prefix)
@@ -1044,6 +1059,10 @@ bool mapIO::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 		if(isDiscard) {
 			delete [] data->Add.name; // Descarta o buffer com o nome do I/O
 		} else if(IsUndo) {
+			// Ao desfazer a criacao de um I/O tambem devemos copia-lo para o cache pois um objeto
+			// na area de transferencia pode ter referencia a ele
+			mapCachedIO[IO[data->Add.name].first] = pair<string, eType>(data->Add.name, data->Add.type);
+
 			IO.erase(IO.find(data->Add.name));
 			countIO--;
 		} else {

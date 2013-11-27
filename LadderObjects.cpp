@@ -5230,7 +5230,7 @@ pair<string, string> LadderElemModBUS::DrawTXT(void)
 	char buf[100];
 	LadderMbNode node = Diagram->mbGetNodeByNodeID(prop.elem);
 
-	sprintf(buf, "%s:%d", node.name, prop.address);
+	sprintf(buf, "%s:%d", node.name.c_str(), prop.address);
 
 	if(getWhich() == ELEM_READ_MODBUS) {
 		bot = (node.iface == eMbTypeNode_RS485) ? _("{READ MB 485}")  : _("{READ MB ETH}");
@@ -5868,6 +5868,7 @@ LadderElemShiftRegister::LadderElemShiftRegister(LadderDiagram *diagram) : Ladde
 void LadderElemShiftRegister::createRegs(void)
 {
 	int i;
+	eType type;
 	vector< pair<unsigned long, int> >::iterator it;
 
 	// Primeiro descarta os I/Os anteriores, solicitando I/O para o valor zero.
@@ -5888,7 +5889,16 @@ void LadderElemShiftRegister::createRegs(void)
 			strcat(cname, "0");
 		}
 		sprintf(cname, "%s%d", cname, i);
-		if(!Diagram->getIO(pin, _(cname), eType_General, InfoIO_Regs)) {
+
+		type = eType_General;
+		if(i == 0) {
+			mapDetails detailsIO = Diagram->getDetailsIO(cname);
+			if(Diagram->IsGenericTypeIO(detailsIO.type)) {
+				type = detailsIO.type;
+			}
+		}
+
+		if(!Diagram->getIO(pin, _(cname), type, InfoIO_Regs)) {
 			// Ocorreu algum erro ao registrar os I/Os. Solicita novamente com valor padrao
 			prop.nameReg = _("reg");
 			createRegs();
@@ -6020,7 +6030,8 @@ bool LadderElemShiftRegister::acceptIO(unsigned long id, eType type)
 
 	for(it = prop.vectorIdRegs.begin(); it != prop.vectorIdRegs.end(); it++) {
 		if(id == it->first && type != eType_General && type != eType_Reserved) {
-			return false;
+			// Se for o primeiro elemento e o tipo for generico, aceita. Caso contrario, nao aceita...
+			return (it == prop.vectorIdRegs.begin() && Diagram->IsGenericTypeIO(type));
 		}
 	}
 
@@ -9884,7 +9895,14 @@ bool LadderDiagram::DeleteRung(int rung)
 
 	if(rung == RungContainingSelected()) {
 		context.SelectedElem    = nullptr;
-		context.SelectedCircuit = nullptr;
+
+		if(rung < (int)rungs.size() - 1) {
+			context.SelectedElem = rungs[rung + 1]->rung->getFirstElement();
+		} else if(rung > 0) {
+			context.SelectedElem = rungs[rung - 1]->rung->getFirstElement();
+		}
+
+		context.SelectedCircuit = getSubcktForElement(context.SelectedElem);
 	}
 
 	if(rung == RungContainingElement(context.ParallelStart)) {
@@ -11269,6 +11287,56 @@ bool LadderDiagram::acceptIO(unsigned long id, enum eType type)
 	return true;
 }
 
+eType LadderDiagram::getAllowedType(unsigned long id, eType default_type)
+{
+	eType ret = eType_Pending;
+	vector<eType> allowedTypes;
+	vector<LadderCircuit>::size_type i;
+
+	// Inicialmente montamos a lista com os tipos permitidos para o I/O
+	for(i = 0; i < rungs.size(); i++) {
+		rungs[i]->rung->getAllowedTypes(id, &allowedTypes);
+	}
+
+	// Depois verificamos se entre eles existe o tipo atual.
+	// Se existir, nao faz nada pois significa que podemos continuar com ele
+	// Se nao existir, vamos passando a lista 1 a 1 ate encontrarmos um tipo
+	// aceito por todos os elementos.
+	// O tipo Geral deve ser a ultima opcao. Devemos dar preferencia a tipos
+	// especificos.
+	if(find(allowedTypes.begin(), allowedTypes.end(), getDetailsIO(id).type) == allowedTypes.end()) {
+		vector<eType>::iterator it;
+		// Nao existe mais o tipo atual. Devemos buscar 1 a 1 ate chegar no tipo aceito por todos
+		for(it = allowedTypes.begin(); it != allowedTypes.end(); it++) {
+			for(i = 0; i < rungs.size(); i++) {
+				if(!rungs[i]->rung->acceptIO(id, *it)) {
+					break;
+				}
+			}
+
+			// Se foi ate o final, significa que foi aceito por todos. atualiza o tipo!
+			if(i == rungs.size()) {
+				ret = *it;
+				if(ret != eType_General) {
+					// Se for tipo Geral, continuamos a busca para verificar se existe outra opcao.
+					// Fazemos isso pois devemos dar preferencia por tipos especificos.
+					// Assim, caso nao for encontrado outro tipo aceito, usaremos o
+					// tipo Geral.
+					break;
+				}
+			}
+		}
+	} else {
+		ret = getDetailsIO(id).type;
+	}
+
+	if(ret == eType_Pending) {
+		ret = default_type;
+	}
+
+	return ret;
+}
+
 void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDiscard)
 {
 	if(infoIO.pin.first == 0) return; // id nao esta em uso, indica que eh um numero e nao um I/O
@@ -11331,6 +11399,10 @@ void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDi
 			}
 		}
 	} else {
+		string name;
+		// Tipo a ser usado pelo I/O
+		eType type = eType_Pending;
+
 		// Se nao for descarte, indica que devemos atualizar o I/O conforme os passos abaixo:
 		// 1) Se o I/O tem como origem outro diagrama ladder, verificar se existe um compativel
 		// no diagrama atual
@@ -11341,8 +11413,18 @@ void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDi
 		// Etapa 1
 		if(owner != this) { // I/O veio de outro diagrama!!!
 			if(owner != nullptr) {
-				string name          = owner->getNameIO   (infoIO.pin);
-				mapDetails detailsIO = owner->getDetailsIO(infoIO.pin.first);
+				name = owner->getNameIO   (infoIO.pin);
+				eType  ownerType;
+
+				// Se o nome estiver vazio, o I/O deve ter sido excluido. Recupera do cache!
+				if(name.size() == 0) {
+					pair<string, eType> cachedIO = owner->getCachedIO(infoIO.pin.first);
+					name = cachedIO.first;
+					ownerType = cachedIO.second;
+				} else {
+					ownerType = owner->getDetailsIO(infoIO.pin.first).type;
+				}
+
 				infoIO.pin.first = 0;
 
 				pair <unsigned long, int> pin = pair<unsigned long, int>(0, 0);
@@ -11353,13 +11435,15 @@ void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDi
 						// Se pin.first for 0, significa que nao existe no diagrama atual um
 						// I/O com o mesmo nome que no diagrama de onde foi copiado este elemento.
 						// Assim, para tentar manter a logica o mais proxima da original possivel,
-						// vamos atualizar a estrutura que solicita o I/O para usar o nome e tipo
-						// do I/O original. Como o I/O ja existe no diagrama original, podemos
-						// considerar que o I/O tem nome e tipo validos.
+						// vamos atualizar a estrutura que solicita o I/O para usar o nome do I/O
+						// original. Nao utilizaremos o tipo do I/O no diagrama de origem pois pode
+						// nao ser valido. Ex.: se estivermos copiando um move que usava variavel de
+						// um A/D, o tipo sera Leitura de A/D mas neste diagrama deve ser tipo geral.
 						infoIO.name = name;
-						infoIO.type = detailsIO.type;
-					} else if(getDetailsIO(pin.first).type == detailsIO.type) { // Compativel!
-						infoIO.pin = pin;
+					} else if(getDetailsIO(pin.first).type == ownerType ||
+						acceptIO(pin.first, ownerType)) { // Compativel!
+							infoIO.pin = pin;
+							type = getAllowedType(pin.first, ownerType);
 					}
 				}
 			} else {
@@ -11368,12 +11452,32 @@ void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDi
 		}
 
 		// Etapa 2
-		if(IO->getName(infoIO.pin.first).size() > 0) { // id valido!
-			mapDetails DetailsIO = IO->getDetails(infoIO.pin.first);
-			if(acceptIO(infoIO.pin.first, DetailsIO.type)) {
+		name = IO->getName(infoIO.pin.first);
+
+		// Se o nome estiver vazio, o I/O deve ter sido excluido. Recupera do cache!
+		if(name.size() == 0 && infoIO.pin.first != 0) {
+			pair<string, eType> cachedIO = getCachedIO(infoIO.pin.first);
+			name = cachedIO.first;
+			type = cachedIO.second;
+
+			// Pode ser que ja exista um novo I/O com o mesmo nome do I/O recuperado do cache.
+			// Assim devemos atualizar o id para o novo mas podemos tentar usar o I/O em cache
+			// pois sera verificado posteriormente a compatibilidade entre os tipos.
+			unsigned long id = IO->getID(name);
+			if(id != 0) {
+				infoIO.pin.first = id;
+			}
+		}
+
+		if(name.size() > 0) { // id valido!
+			if(type == eType_Pending) {
+				type = IO->getDetails(infoIO.pin.first).type;
+			}
+
+			if(acceptIO(infoIO.pin.first, type)) {
 				tRequestIO copyInfoIO = infoIO;
-				copyInfoIO.name = IO->getName(infoIO.pin.first);
-				copyInfoIO.type = DetailsIO.type;
+				copyInfoIO.name  = name;
+				copyInfoIO.type  = type;
 				infoIO.pin.first = IO->Request(copyInfoIO);
 			} else {
 				infoIO.pin.first = 0;
@@ -12024,6 +12128,11 @@ vector<string> LadderDiagram::getListIO(void)
 string LadderDiagram::getReservedNameIO(eType type)
 {
 	return IO->getReservedName(type);
+}
+
+pair<string, eType> LadderDiagram::getCachedIO(unsigned long id)
+{
+	return IO->getCachedIO(id);
 }
 
 // Funcoes relacionadas aos comandos de Desfazer / Refazer

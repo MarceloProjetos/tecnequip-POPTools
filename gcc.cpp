@@ -1036,15 +1036,22 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "#include \"poptools.h\"\n");
 
 	fprintf(f, "\n");
+	fprintf(f, "// Prototipo para a funcao que inicializa um ciclo de execucao\n");
 	fprintf(f, "void Cycle_Init(void);\n");
 
 	fprintf(f, "\n");
+	fprintf(f, "// Flag que indica se o ModBUS na interface RS-485 funcionara como master (true) ou slave (false)\n");
 	fprintf(f, "extern volatile unsigned char 	MODBUS_RS485_MASTER; // 0 = Slave, 1 = Master\n");
+	fprintf(f, "// Flag que indica se o ModBUS na interface Ethernet funcionara como master (true) ou slave (false)\n");
 	fprintf(f, "extern volatile unsigned char 	MODBUS_TCP_MASTER; // 0 = Slave, 1 = Master\n");
+	fprintf(f, "// Vetor com os registradores acessiveis pelo ModBUS (Holding Registers)\n");
 	fprintf(f, "extern volatile int 			MODBUS_REGISTER[32];\n");
+	fprintf(f, "// Ultima hora lida do RTC, atualizada ao iniciar um ciclo de execucao\n");
 	fprintf(f, "extern struct tm 				RTC_NowTM;\n");
+	fprintf(f, "// As Variaveis a seguir armazenam a data/hora inicial e final (respectivamente) de um elemento de\n");
+	fprintf(f, "// agendamento de tarefa, compartilhado com todos os elementos para economizar memoria.\n");
 	fprintf(f, "struct tm 						RTC_StartTM;\n");
-	fprintf(f, "struct tm 						RTC_EndTM;\n");
+	fprintf(f, "struct tm 						RTC_EndTM;\n\n");
 
 	vector<string> vInternalFlags = ladder->getVectorInternalFlagsIO();
 	for(i=0; i < vInternalFlags.size(); i++) {
@@ -1070,6 +1077,7 @@ DWORD GenerateCFile(char *filename)
 
 	fprintf(f, "\n");
 
+	fprintf(f, "// Funcao que executa um ciclo de processamento da logica criada pelo usuario\n");
     fprintf(f,"void PLC_Run(void)\n{\n");
 
     GenerateAnsiC(f, ad_mask);
@@ -1078,6 +1086,8 @@ DWORD GenerateCFile(char *filename)
 
 	fprintf(f, "\n");
 
+	fprintf(f, "// Funcao que contem os passos adicionais para inicializacao da Ethernet, quando necessario\n");
+	fprintf(f, "// Ex.: Configuracao de servidores utilizados para sincronismo de data/hora via SNTP (Quando em uso)\n");
 	fprintf(f, "void PLC_Net_Init(void)\n");
 	fprintf(f, "{\n");
 
@@ -1089,6 +1099,7 @@ DWORD GenerateCFile(char *filename)
 
 	fprintf(f, "\n");
 
+	fprintf(f, "// Funcao que inicializa o controlador, executado apenas ao ligar o equipamento\n");
 	fprintf(f, "void PLC_Init(void)\n");
 	fprintf(f, "{\n");
 	fprintf(f, "	MODBUS_RS485_MASTER = %d;\n", MODBUS_RS485_MASTER);
@@ -1155,6 +1166,8 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "}\n");
 	fprintf(f, "\n");
 
+	fprintf(f, "// Funcao que contem os passos adicionais para inicializacao de um ciclo de execucao, quando necessario\n");
+	fprintf(f, "// Ex.: Atualizacao da leitura dos canais A/D (Quando em uso)\n");
 	fprintf(f, "void Cycle_Init(void)\n");
 	fprintf(f, "{\n");
 	if(HasADC) {

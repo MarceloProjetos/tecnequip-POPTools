@@ -21,6 +21,8 @@ private:
 	typedef pair<string, pair<unsigned long, mapDetails> > tVectorIO;
 	vector<tVectorIO> vectorIO;
 
+	map<unsigned long, pair<string, eType> > mapCachedIO;
+
 	unsigned int maxNameSize;
 
 	vector<string>                 vectorInternalFlag;
@@ -84,6 +86,9 @@ public:
 	vector<string>  getList           (void);
 	void            Select            (unsigned int index);
 
+	// Funcao que retorna um I/O do cache
+	pair<string, eType> getCachedIO   (unsigned long id);
+	 
 	// Funcao que retorna string para a proxima variavel da sequencia
 	string         getNextVar        (string prefix = "seq");
 

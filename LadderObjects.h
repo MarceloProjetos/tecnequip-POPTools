@@ -2663,7 +2663,8 @@ public:
 struct LadderElemXProp {
 };
 
-/// Classe derivada de LadderElem que representa o elemento X. Esta classe serve apenas como referencia para criar novos objetos, nao sendo um elem ento utilizavel
+/// Classe derivada de LadderElem que representa o elemento X.
+/// Esta classe serve apenas como referencia para criar novos objetos, nao sendo um elemento utilizavel
 class LadderElemX : public LadderElem {
 private:
 	// Sem propriedades privadas...
@@ -3719,6 +3720,19 @@ public:
 	 *  @return         Nome da variavel reservada para o tipo solicitado
 	 */
 	string          getReservedNameIO       (eType type);
+
+	/** Funcao que retorna um I/O do cache
+	 *  @param[in] id ID do I/O sendo requisitado
+	 *  @return       Nome e tipo do I/O. Se inexistente, retorna nome vazio e tipo pendente
+	 */
+	pair<string, eType> getCachedIO(unsigned long id);
+
+	/** Funcao que retorna o tipo de I/O permitido para o ID fornecido como parametro
+	 *  @param[in] id           ID do I/O sendo verificado
+	 *  @param[in] default_type Tipo padrao a ser retornado caso nao se encontre um tipo permitido
+	 *  @return                 Tipo de I/O permitido para o ID fornecido como parametro
+	 */
+	eType getAllowedType(unsigned long id, eType default_type);
 
 	/** Funcao para ordenar a lista de I/Os conforme o campo especificado
 	 *  @param[in] sortby Campo que deve ser usado para ordenar a lista de I/Os
