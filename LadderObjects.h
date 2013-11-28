@@ -3831,6 +3831,8 @@ public:
 	 */
 	eValidateResult Validate(void);
 
+	eReply ShowValidateDialog(bool isError, char *msg);
+
 	/** Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
 	 *  @param[in] type      Tipo de janela de dialogo a ser exibida
 	 *  @param[in] hasCancel Flag indicando se deve ser exibida a opcao para cancelar (true) ou nao (false)

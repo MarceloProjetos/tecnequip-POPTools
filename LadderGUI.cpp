@@ -1291,6 +1291,8 @@ eReply LadderGUI::ShowDialog(eDialogType type, bool hasCancel, char *title, char
 
 	buttonActive = -1;
 
+	InvalidateRect(DrawWindow, NULL, FALSE);
+
 	isDialogActive = true;
 	while(DoEvents() && reply == eReply_Pending); // Aguarda resposta ao dialogo
 	isDialogActive = false;

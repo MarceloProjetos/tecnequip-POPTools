@@ -828,29 +828,51 @@ void mapIO::Sort(eSortBy sortby)
 
 bool mapIO::Validate(eValidateIO mode)
 {
-	bool ret = true;
+	char buf[1024];
+	bool ret = true, isError = false;
 	tMapIO::iterator it;
 
 	for(it = IO.begin(); it != IO.end(); it++) {
+		buf[0] = 0; // Limpa o buffer
+		isError = false;
+
 		if(it->second.second.pin == 0 && mode == eValidateIO_Full) {
+			isError = true; // Marca como se estivesse com erro para nao ter que fazer isso em cada case. No default arruma!
 			switch(it->second.second.type) {
 			case eType_ReadADC:
-				Error(_("Variável A/D '%s' deve ser associado a um canal válido!"), it->first.c_str());
+				sprintf(buf, _("Variável A/D '%s' deve ser associado a um canal válido!"), it->first.c_str());
 				ret = false;
 				break;
 			case eType_ReadEnc:
-				Error(_("Leitura de Encoder '%s' deve ser associada a um canal válido!"), it->first.c_str());
+				sprintf(buf, _("Leitura de Encoder '%s' deve ser associada a um canal válido!"), it->first.c_str());
 				ret = false;
 				break;
 			case eType_ResetEnc:
-				Error(_("Escrita de Encoder '%s' deve ser associada a um canal válido!"), it->first.c_str());
+				sprintf(buf, _("Escrita de Encoder '%s' deve ser associada a um canal válido!"), it->first.c_str());
 				ret = false;
 				break;
 			case eType_DigInput:
 			case eType_DigOutput:
-				Error(_("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), it->first.c_str());
+				sprintf(buf, _("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), it->first.c_str());
 				ret = false;
 				break;
+			default:
+				// Se chegamos aqui, nao existe erro. Limpa a flag!
+				isError = false;
+			}
+		}
+
+		if(!isError && it->second.second.type != eType_Reserved) {
+			if(it->second.second.countRequestRead  == 0 && it->second.second.type != eType_DigOutput) { // Nao tem leitura!
+				sprintf(buf, _("Variável '%s' não é lida, apenas escrita!"), it->first.c_str());
+			} else if(it->second.second.countRequestWrite == 0 && it->second.second.type != eType_DigInput) { // Nao tem escrita!
+				sprintf(buf, _("Variável '%s' não é escrita, apenas lida!"), it->first.c_str());
+			}
+		}
+
+		if(strlen(buf)) {
+			if(diagram->ShowValidateDialog(isError, buf) == eReply_Cancel) {
+				break; // Usuario interrompeu!
 			}
 		}
 	}

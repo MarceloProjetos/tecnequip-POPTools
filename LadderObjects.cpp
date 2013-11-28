@@ -12001,14 +12001,26 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 	return IsValidNameAndType(id, name, type, NULL, VALIDATE_IS_VAR, 0, 0, reply);
 }
 
+eReply LadderDiagram::ShowValidateDialog(bool isError, char *msg)
+{
+	eReply reply;
+	if(isError) {
+		reply = ShowDialog(eDialogType_Message, false, _("Erro ao validar diagrama!"), _(msg));
+	} else {
+		reply = ShowDialog(eDialogType_Message, true , _("Atenção"                  ), _(msg));
+	}
+
+	return reply;
+}
+
 eValidateResult LadderDiagram::Validate(void)
 {
 	char msg_error[1024] = "", msg_warning[1024] = "";
 	int  WarningPersist = 0, CountPWM = 0;
 	eValidateResult ret = eValidateResult_OK;
 
-	// Validate I/O Pin Assignment
-	// Only Names if in Simulation Mode
+	// Valida o mapa de I/Os
+	// Na simulacao valida apenas os nomes, nao as atribuicoes
 	if(IO->Validate(context.inSimulationMode ? eValidateIO_OnlyNames : eValidateIO_Full) == false) {
 		ret = eValidateResult_Error;
 	}
@@ -12035,14 +12047,13 @@ eValidateResult LadderDiagram::Validate(void)
 			}
 
 			if(msg_error[0]) {
-				ShowDialog(eDialogType_Message, false, _("Erro ao validar diagrama!"), _(msg_error));
+				ShowValidateDialog(true, _(msg_error));
 				ret = eValidateResult_Error;
 				break;
 			}
 
 			if(msg_warning[0]) {
-				eReply reply;
-				ShowDialog(eDialogType_Message, true, _("Atenção"), _(msg_warning), &reply);
+				eReply reply = ShowValidateDialog(false, _(msg_warning));
 				if(reply == eReply_Cancel) { // Se usuario escolheu cancelar, interrompe validacao e retorna erro
 					ret = eValidateResult_Error;
 					break;
