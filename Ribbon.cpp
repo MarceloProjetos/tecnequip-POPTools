@@ -555,6 +555,7 @@ public:
 
 			EXEC_OPCODE(cmdExamplePWM               , MNU_EXAMPLE_SET_PWM         );
 			EXEC_OPCODE(cmdExampleRampDA            , MNU_EXAMPLE_MULTISET_DA     );
+			EXEC_OPCODE(cmdExamplePID               , MNU_EXAMPLE_PID             );
 			EXEC_OPCODE(cmdExampleReadEnc           , MNU_EXAMPLE_READ_ENC        );
 			EXEC_OPCODE(cmdExampleResetEnc          , MNU_EXAMPLE_RESET_ENC       );
 

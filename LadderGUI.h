@@ -31,7 +31,6 @@ typedef struct {
 	bool  isFullRedraw;
 
 	bool  hasBreakpoint;
-	bool  isBreakpointActive;
 
 	LadderContext *context;
 } tDataDrawGUI;

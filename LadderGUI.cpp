@@ -1283,19 +1283,36 @@ eReply LadderGUI::ShowDialog(eDialogType type, bool hasCancel, char *title, char
 {
 	eReply reply = eReply_Pending;
 
-	DialogData.type      = type;
-	DialogData.hasCancel = hasCancel;
-	DialogData.reply     = &reply;
-	DialogData.title     = _(title);
-	DialogData.message   = _(message);
+	HWND h = GetForegroundWindow();
+	if(h == MainWindow) {
+		DialogData.type      = type;
+		DialogData.hasCancel = hasCancel;
+		DialogData.reply     = &reply;
+		DialogData.title     = _(title);
+		DialogData.message   = _(message);
 
-	buttonActive = -1;
+		buttonActive = -1;
 
-	InvalidateRect(DrawWindow, NULL, FALSE);
+		InvalidateRect(DrawWindow, NULL, FALSE);
 
-	isDialogActive = true;
-	while(DoEvents() && reply == eReply_Pending); // Aguarda resposta ao dialogo
-	isDialogActive = false;
+		isDialogActive = true;
+		while(DoEvents() && reply == eReply_Pending); // Aguarda resposta ao dialogo
+		isDialogActive = false;
+	} else {
+		int mbflags = 0;
+		switch(type) {
+			case eDialogType_Error   : mbflags |= (hasCancel ? MB_OKCANCEL    : MB_OK   ) | MB_ICONERROR      ; break;
+			case eDialogType_Question: mbflags |= (hasCancel ? MB_YESNOCANCEL : MB_YESNO) | MB_ICONQUESTION   ; break;
+			case eDialogType_Message : mbflags |= (hasCancel ? MB_OKCANCEL    : MB_OK   ) | MB_ICONEXCLAMATION; break;
+		}
+		switch(MessageBox(h, message, title, mbflags)) {
+			case IDOK : reply = eReply_Ok ; break;
+			case IDYES: reply = eReply_Yes; break;
+			case IDNO : reply = eReply_No ; break;
+			default:
+			case IDCANCEL: reply = eReply_Cancel; break;
+		}
+	}
 
 	return reply;
 }
@@ -6648,7 +6665,7 @@ bool FmtStrCmdExpandedVariable(LadderElem *elem, unsigned int selected)
 	string newtxt = UpdateStringUART(prop->txt, data);
 
 	if(prop->txt != newtxt) {
-		ladder->CheckpointBegin("Alterar ModBUS");
+		ladder->CheckpointBegin("Alterar String Formatada");
 
 		prop->txt = newtxt;
 
@@ -6685,7 +6702,7 @@ bool FmtStrCmdExpandedLineBreak(LadderElem *elem, unsigned int selected)
 	string newtxt = UpdateStringUART(prop->txt, data);
 
 	if(prop->txt != newtxt) {
-		ladder->CheckpointBegin("Alterar ModBUS");
+		ladder->CheckpointBegin("Alterar String Formatada");
 
 		prop->txt = newtxt;
 
@@ -7714,12 +7731,9 @@ bool LadderCircuit::DrawGUI(bool poweredBefore, void *data)
 		if(it->elem != nullptr) {
 			bool isPowered = isSeries ? poweredAfter : poweredBefore;
 
-			// Se for elemento de linha, marca a flag e verifica se existe breakpoint
+			// Se for elemento de final de linha, marca a flag e verifica se existe breakpoint
 			if(it->elem->IsEOL()) {
 				HasEOL = true;
-				if(isPowered && ddg->hasBreakpoint) {
-					ddg->isBreakpointActive = true;
-				}
 			}
 
 			ElemDDG.expanded = gui.IsExpanded(it->elem);
@@ -7740,9 +7754,6 @@ bool LadderCircuit::DrawGUI(bool poweredBefore, void *data)
 			poweredThis = it->subckt->DrawGUI(isSeries ? poweredAfter : poweredBefore, &ElemDDG);
 			if(!IsRegionZero(ElemDDG.regionSelected)) {
 				ddg->regionSelected = ElemDDG.regionSelected;
-			}
-			if(ElemDDG.isBreakpointActive) {
-				ddg->isBreakpointActive = ElemDDG.isBreakpointActive;
 			}
 		}
 
@@ -7880,7 +7891,7 @@ void LadderDiagram::DrawGUI(void)
 
 	vector<LadderCircuit>::size_type i;
 	tDataDrawGUI RungDDG;
-	tDataDrawGUI zeroRungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, true, false, false, &context };
+	tDataDrawGUI zeroRungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, true, false, &context };
 
 	RECT rWindow;
 	GetClientRect(DrawWindow, &rWindow);
@@ -7979,14 +7990,20 @@ void LadderDiagram::DrawGUI(void)
 	gui.DrawStart(rDrawArea.left, rDrawArea.top);
 
 	// Etapa 2: Desenha o diagrama na tela
-	unsigned int isBreakpointActiveAtRung = 0;
-
 	RungDDG.isFullRedraw = isFullRedraw;
 	RungDDG.DontDraw = false;
 	RungDDG.start.y = 0;
+
+	POINT start = { 0, 0 };
+	r = gui.getRECT(start, DiagramData.SizeMax);
+	r.left  -= Grid1x1.x/2;
+	r.right += Grid1x1.x/2;
+
+	RECT rBusLeft  = { r.left - 5, 0, r.left     , r.bottom };
+	RECT rBusRight = { r.right   , 0, r.right + 5, r.bottom };
+
 	for(i = 0; i < rungs.size(); i++) {
 		RungDDG.hasBreakpoint      = rungs[i]->hasBreakpoint;
-		RungDDG.isBreakpointActive = false;
 
 		if(isFullRedraw || (rungs[i]->hasBreakpoint && context.inSimulationMode) ||
 			(DiagramData.rungData[i].region.bottom >= rDrawArea.top && DiagramData.rungData[i].region.top <= rDrawArea.bottom)) {
@@ -8003,12 +8020,6 @@ void LadderDiagram::DrawGUI(void)
 			RungDDG = DiagramData.rungData[i];
 		}
 
-		// Linha desenhada. Agora verificamos se devemos interromper devido a um breakpoint.
-		if(context.inSimulationMode && RungDDG.isBreakpointActive) {
-			PauseSimulation();
-			isBreakpointActiveAtRung = i + 1;
-		}
-
 		RECT r = gui.getRECT(RungDDG.start, RungDDG.size);
 		r.right = r.left;
 		r.left  = 0;
@@ -8023,44 +8034,98 @@ void LadderDiagram::DrawGUI(void)
 		gui.AddCommand(source, r, cmdToggleBreakpoint, rung, true, context.inSimulationMode);
 
 		// Agora desenha o numero da linha
-		r.left  = 5;
+		r.right = rBusLeft.left;
+		if(rungs[i]->hasBreakpoint) {
+			// Se tem breakpoint, desconta a altura da imagem (32) e espacamento (5)
+			// para que a imagem nao fique muito para baixo
+			r.bottom -= 37;
+		}
 		sprintf(num, "%3d", i + 1);
-		gui.DrawText(num, r, 0, colors.Foreground, eAlignMode_TopLeft, eAlignMode_Center);
+		gui.DrawText(num, r, 0, colors.Foreground, eAlignMode_Center, eAlignMode_Center);
 
 		// Agora desenha o breakpoint, se ativo
-		if(rungs[i]->hasBreakpoint) {
-			r.top     = r.top + (r.bottom - r.top)/2 + FONT_HEIGHT + 5;
-			r.bottom  = r.top + 14;
-			r.left    = Grid1x1.x/2 - 7;
-			r.right   = Grid1x1.x/2 + 7;
-			gui.DrawEllipse(r, colors.Breakpoint);
+		if(rungs[i]->hasBreakpoint) {/*
+			POINT         pointOutside, pointInside, startOutside, startInside;
+			vector<POINT> pointsOutside, pointsInside;
+
+			pointOutside.x = r.left + 20;
+			pointOutside.y = r.top + (r.bottom - r.top)/2 + FONT_HEIGHT + 5;
+			startOutside   = pointOutside;
+
+			pointInside.x  = pointOutside.x;
+			pointInside.y  = pointOutside.y + 3;
+			startInside    = pointInside;
+
+			pointsOutside.push_back(pointOutside);
+			pointsInside.push_back(pointInside );
+
+			pointOutside.x += 15;
+			pointInside .x  = pointOutside.x;
+			pointsOutside.push_back(pointOutside);
+			pointsInside .push_back(pointInside );
+
+			pointOutside.x += 15;
+			pointOutside.y += 15;
+			pointInside .x  = pointOutside.x - 3;
+			pointInside .y  = pointOutside.y;
+			pointsOutside.push_back(pointOutside);
+			pointsInside .push_back(pointInside );
+
+			pointOutside.y += 15;
+			pointInside .y  = pointOutside.y;
+			pointsOutside.push_back(pointOutside);
+			pointsInside .push_back(pointInside );
+
+			pointOutside.x -= 15;
+			pointOutside.y += 15;
+			pointInside .x  = pointOutside.x;
+			pointInside .y  = pointOutside.y - 3;
+			pointsOutside.push_back(pointOutside);
+			pointsInside .push_back(pointInside );
+
+			pointOutside.x -= 15;
+			pointInside .x  = pointOutside.x;
+			pointsOutside.push_back(pointOutside);
+			pointsInside .push_back(pointInside );
+
+			pointOutside.x -= 15;
+			pointOutside.y -= 15;
+			pointInside .x  = pointOutside.x + 3;
+			pointInside .y  = pointOutside.y;
+			pointsOutside.push_back(pointOutside);
+			pointsInside .push_back(pointInside );
+
+			pointOutside.y -= 15;
+			pointInside .y  = pointOutside.y;
+			pointsOutside.push_back(pointOutside);
+			pointsInside .push_back(pointInside );
+
+			// Fecha o poligono
+			pointsOutside.push_back(startOutside);
+			pointsInside .push_back(startInside );
+
+//			gui.DrawPolygon(pointsOutside, colors.White);
+			gui.DrawPolygon(pointsInside , colors.Breakpoint);*/
+			POINT startPicture = { r.left + 10, r.top + (r.bottom - r.top)/2 + FONT_HEIGHT + 5 };
+			POINT size  = { 0, 0 };
+			gui.DrawPictureFromResource(IDB_LADDER_BREAKPOINT, startPicture, size);
 		}
 
 		RungDDG.start.y += RungDDG.size.y + 1;
 	}
 
-	POINT start = { 0, 0 };
-	r = gui.getRECT(start, DiagramData.SizeMax);
-	r.left  -= Grid1x1.x/2;
-	r.right += Grid1x1.x/2;
-
-	RECT rBus = { r.left - 5, 0, r.left, r.bottom };
-	gui.DrawRectangle(rBus, colors.Bus);
-
-	rBus.left  = r.right;
-	rBus.right = r.right + 5;
-	gui.DrawRectangle(rBus, colors.BusOff);
+	gui.DrawRectangle(rBusLeft , colors.Bus);
+	gui.DrawRectangle(rBusRight, colors.BusOff);
 
 	gui.DrawEnd();
 	gui.NeedRedraw(false);
 
-	if(isBreakpointActiveAtRung > 0) {
+	if(ladder->getBreakPointActiveAtRung() > 0) {
 		if(DiagramData.needSelectRung) {
 			DiagramData.needSelectRung = false;
-			SelectElement(rungs[isBreakpointActiveAtRung - 1]->rung->getFirstElement(), SELECTED_RIGHT);
+			SelectElement(rungs[ladder->getBreakPointActiveAtRung() - 1]->rung->getFirstElement(), SELECTED_RIGHT);
 			InvalidateRect(DrawWindow, NULL, FALSE);
 		}
-//		ShowDialog(true, false, _("Breakpoint"), _("Simulacao interrompida na linha %d"), isBreakpointActiveAtRung);
 	} else {
 		DiagramData.needSelectRung = true;
 	}

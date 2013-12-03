@@ -36,12 +36,7 @@ void Error(char *title, char *str, va_list f)
     char buf[1024];
     vsprintf(buf, str, f);
 
-	HWND h = GetForegroundWindow();
-	if(h == MainWindow) {
-		ladder->ShowDialog(eDialogType_Error, false, title, buf);
-	} else {
-		MessageBox(h, buf, title, MB_OK | MB_ICONERROR);
-	}
+	ladder->ShowDialog(eDialogType_Error, false, title, buf);
 }
 
 void Error(char *str, ...)
@@ -61,12 +56,7 @@ void Warning(char *title, char *str, ...)
 
     vsprintf(buf, str, f);
 
-	HWND h = GetForegroundWindow();
-	if(h == MainWindow) {
-		ladder->ShowDialog(eDialogType_Message, false, title, buf);
-	} else {
-		MessageBox(h, buf, title, MB_OK | MB_ICONEXCLAMATION);
-	}
+	ladder->ShowDialog(eDialogType_Message, false, title, buf);
 }
 
 //-----------------------------------------------------------------------------

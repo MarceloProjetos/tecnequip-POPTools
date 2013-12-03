@@ -168,7 +168,7 @@ void CheckWP(const char *name, int val)
 	if(NeedStop) {
 		PauseSimulation();
 		DescribeForIoList(wpval, ladder->getDetailsIO(name).type, desc);
-		Error(_("Simulação interrompida!\n\n%s = %s"), name, desc);
+		Warning(_("Simulação interrompida"), _("Valor atingido!\n\n%s = %s"), name, desc);
 	}
 }
 
@@ -1379,6 +1379,12 @@ void SimulateOneCycle(BOOL forceRefresh)
 		}
 
 		logDataIO.push_back(ioData);
+	}
+
+	unsigned int rung = ladder->getBreakPointActiveAtRung();
+	if(rung > 0) {
+		PauseSimulation();
+		Warning(_("Breakpoint"), _("Simulacao interrompida na linha %d"), rung);
 	}
 
 	PlcCycleCounter++;

@@ -257,7 +257,6 @@ typedef struct {
 	bool canPushUp;                 ///< Indica se a linha atual pode ser movida para cima
 	bool canPushDown;               ///< Indica se a linha atual pode ser movida para baixo
 	bool canDelete;                 ///< Indica se o elemento atual pode ser excluido
-	bool canDeleteRung;             ///< Indica se a linha atual pode ser excluida
 	bool canInsertEnd;              ///< Indica se pode ser adicionado um elemento de final de linha
 	bool canInsertOther;            ///< Indica se pode ser adicionado um elemento de meio de linha
 	bool canInsertComment;          ///< Indica se um comentario pode ser adicionado
@@ -486,6 +485,11 @@ public:
 	 *  @return Booleano indicando se este elemento utiliza a interface serial (true) ou nao (false)
 	 */
 	inline bool           IsUART        (void)                      { return isUART;       }
+
+	/** Funcao que informa se este elemento eh de fim de linha e esta ativado na simulacao
+	 *  @return Booleano indicando se este elemento eh de fim de linha e esta ativado na simulacao (true) ou nao (false)
+	 */
+	inline bool           IsActiveEOL   (void)                      { return isEndOfLine && poweredAfter; }
 
 	/** Funcao que retorna o ID do elemento
 	 *  @return Codigo que indica o tipo do elemento (LadderElemContact, LadderElemCoil, etc)
@@ -2848,10 +2852,15 @@ public:
 	 *  @return Indica se o circuito eh serie (true) ou paralelo (false).
 	 */
 	bool IsSeries(void) { return isSeries; }
-	/** Funcao que indica se o circuito possui um elemento de final de linha
-	 *  @return Indica se o elemento eh o ultimo do circuito (true) ou nao (false).
+	/** Funcao que indica se o circuito possui um elemento de final de linha e, opcionalmente, se esta com a saida ativa na simulacao
+	 *  @param[in] checkActive Indica se devemos verificar se o elemento esta com a saida ativa na simulacao (true) ou nao (false)
+	 *  @return Indica se o circuito possui um elemento de final de linha (true) ou nao (false).
 	 */
-	bool HasEOL(void);
+	bool HasEOL(bool checkActive = false);
+	/** Funcao que indica se o circuito possui um elemento de final de linha com a saida ativa na simulacao
+	 *  @return Indica se o o circuito possui um elemento de final de linha com a saida ativa na simulacao (true) ou nao (false).
+	 */
+	bool HasActiveEOL(void) { return HasEOL(true); }
 	/** Funcao que indica se o circuito possui um elemento que utilize a interface serial
 	 *  @return Indica se algum elemento do circuito utiliza a interface serial (true) ou nao (false).
 	 */
@@ -3319,10 +3328,11 @@ public:
 	 */
 	bool PushRung   (int rung, bool up);
 	/** Funcao que move no diagrama a linha da posicao indicada
-	 *  @param[in] rung Indice da linha que deve ser removida
-	 *  @return         Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 *  @param[in] rung          Indice da linha que deve ser removida
+	 *  @param[in] isFreeDiagram Flag que indica se esta operacao esta sendo realizada devido a descarte do diagrama (true) ou nao (false)
+	 *  @return                  Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool DeleteRung (int rung);
+	bool DeleteRung (int rung, bool isFreeDiagram = false);
 	/** Funcao que indica se a linha esta vazia
 	 *  @param[in] rung Indice da linha que deve ser verificada
 	 *  @return         Indica se a linha esta vazia (true) ou nao (false)
@@ -3423,10 +3433,17 @@ public:
 	 */
 	McuIoInfo *getMCU(void) { return mcu; }
 
+	/*** Funcoes relacionadas ao Breakpoint ***/
+
 	/** Funcao que inverte o estado do breakpoint (ativo / inativo) em uma determinada linha
 	 *  @param[in] rung Indice da linha que deve ser utilizada
 	 */
 	void ToggleBreakPoint(unsigned int rung);
+
+	/** Funcao que retorna o numero da linha (a partir de 1) que contem um breakpoint ativo ou zero se nao houver
+	 *  @return Indice a partir de 1 da linha que possui breakpoint ativo. 0 = Nenhuma linha com breakpoint ativo
+	 */
+	unsigned int getBreakPointActiveAtRung(void);
 
 	/*** Funcoes para ler / gravar a configuracao do ladder ***/
 

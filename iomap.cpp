@@ -871,7 +871,7 @@ bool mapIO::Validate(eValidateIO mode)
 		}
 
 		if(strlen(buf)) {
-			if(diagram->ShowValidateDialog(isError, buf) == eReply_Cancel) {
+			if(diagram->ShowValidateDialog(isError, buf) == eReply_Cancel || isError) {
 				break; // Usuario interrompeu!
 			}
 		}

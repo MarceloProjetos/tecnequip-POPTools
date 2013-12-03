@@ -503,12 +503,6 @@ bool DeleteSelectedFromProgram(void)
 //-----------------------------------------------------------------------------
 bool DeleteSelectedRung(void)
 {
-	LadderContext context = ladder->getContext();
-	if(!context.canDeleteRung) {
-        Error(_("Cannot delete rung; program must have at least one rung."));
-        return false;
-    }
-
 	ladder->DeleteRung(-1);
 
 	return true;

@@ -12,7 +12,6 @@ LadderContext getEmptyContext(void)
 	context.canPushUp              = false;
 	context.canPushDown            = false;
 	context.canDelete              = false;
-	context.canDeleteRung          = false;
 	context.canInsertEnd           = false;
 	context.canInsertOther         = false;
 	context.canInsertComment       = false;
@@ -2209,16 +2208,8 @@ LadderElem *LadderElemMath::Clone(LadderDiagram *diagram)
 
 bool LadderElemMath::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idOp1.first && !Diagram->IsGenericTypeIO(type)) {
-		return false;
-	}
-
-	if(id == prop.idOp2.first && !Diagram->IsGenericTypeIO(type)) {
-		return false;
-	}
-
-	if(id == prop.idDest.first && type != eType_General && type != eType_Reserved) {
-		return false;
+	if(id == prop.idOp1.first || id == prop.idOp2.first || id == prop.idDest.first) {
+		return Diagram->IsGenericTypeIO(type);
 	}
 
 	return true;
@@ -2326,41 +2317,32 @@ int LadderElemMath::SearchAndReplace(unsigned long idSearch, string sNewText, bo
 
 bool LadderElemMath::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
 {
-	bool isValid;
+	char *field;
 	tRequestIO request;
 	pair<unsigned long, int> pin;
 
 	if(index == 0) {
 		request = infoIO_Op1;
 		pin     = prop.idOp1;
-
-		// Se variavel sem tipo, usa tipo geral.
-		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
-		if(type == eType_Reserved) {
-			type = eType_General;
-		}
-
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+		field   = _("Primeiro Parâmetro");
 	} else if(index == 1) {
 		request = infoIO_Op2;
 		pin     = prop.idOp2;
-
-		// Se variavel sem tipo, usa tipo geral.
-		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
-		if(type == eType_Reserved) {
-			type = eType_General;
-		}
-
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, NULL, VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+		field   = _("Segundo Parâmetro");
 	} else {
 		request = infoIO_Dest;
 		pin     = prop.idDest;
-
-		type    = eType_General;
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
+		field   = _("Destino");
 	}
 
-	if(isValid) {
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field,
+			(index == 2) ? VALIDATE_IS_VAR : VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
 		if(Diagram->getIO(pin, name, type, request)) {
 			LadderElemMathProp *data = (LadderElemMathProp *)getProperties();
 
@@ -8087,16 +8069,16 @@ bool LadderCircuit::IsLast(LadderElem *elem)
 	return !vectorSubckt.empty() && vectorSubckt[vectorSubckt.size() - 1].elem == elem;
 }
 
-bool LadderCircuit::HasEOL(void)
+bool LadderCircuit::HasEOL(bool checkActive)
 {
 	vector<Subckt>::iterator it;
 
 	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
 		if(it->elem != nullptr) {
-			if(it->elem->IsEOL()) {
+			if(checkActive ? it->elem->IsActiveEOL() : it->elem->IsEOL()) {
 				return true;
 			}
-		} else if(it->subckt->HasEOL()) {
+		} else if(it->subckt->HasEOL(checkActive)) {
 			return true;
 		}
 	}
@@ -9293,7 +9275,7 @@ void LadderDiagram::FreeDiagram(void)
 	unsigned int i;
 
 	while(rungs.size() > 0) {
-		DeleteRung(0);
+		DeleteRung(0, true);
 	}
 
 	while(UndoList.size() > 0) {
@@ -9566,7 +9548,6 @@ void LadderDiagram::updateContext(void)
 		context.canPushUp        = false;
 		context.canPushDown      = false;
 		context.canDelete        = false;
-		context.canDeleteRung    = false;
 		context.canInsertEnd     = false;
 		context.canInsertOther   = false;
 		context.canInsertComment = false;
@@ -9578,7 +9559,6 @@ void LadderDiagram::updateContext(void)
 		context.canPushUp        = true;
 		context.canPushDown      = true;
 		context.canDelete        = true;
-		context.canDeleteRung    = false;
 		context.canInsertEnd     = false;
 		context.canInsertOther   = true;
 		context.canInsertComment = false;
@@ -9592,10 +9572,6 @@ void LadderDiagram::updateContext(void)
 			{
 				context.canDelete = false;
 			}
-		}
-
-		if(rungs.size() > 1) {
-			context.canDeleteRung = true;
 		}
 
 		if(context.SelectedElem == nullptr) {
@@ -9861,7 +9837,7 @@ bool LadderDiagram::PushRung(int rung, bool up)
 	return true;
 }
 
-bool LadderDiagram::DeleteRung(int rung)
+bool LadderDiagram::DeleteRung(int rung, bool isFreeDiagram)
 {
 	// Se diagrama bloqueado, retorna
 	if(IsLocked()) return false;
@@ -9870,7 +9846,7 @@ bool LadderDiagram::DeleteRung(int rung)
 		rung = RungContainingSelected();
 	}
 
-	if(rung < 0) return false;
+	if(rung < 0 || (!isFreeDiagram && rungs.size() == 1 && rungs[0]->rung->IsEmpty())) return false;
 
 	CheckpointBegin(_("Remover Linha"));
 
@@ -9912,6 +9888,10 @@ bool LadderDiagram::DeleteRung(int rung)
 	(*it)->rung->doPostRemove();
 	(*it)->rung->updateIO(this, true);
 	rungs.erase(it);
+
+	if(!isFreeDiagram && rungs.size() == 0) {
+		NewRung(false);
+	}
 
 	CheckpointEnd();
 
@@ -10885,6 +10865,18 @@ void LadderDiagram::ToggleBreakPoint(unsigned int rung)
 	if(rung > rungs.size() || rungs[rung]->rung->IsComment()) return;
 
 	rungs[rung]->hasBreakpoint = !rungs[rung]->hasBreakpoint;
+}
+
+unsigned int LadderDiagram::getBreakPointActiveAtRung(void)
+{
+	unsigned int i;
+
+	for(i = 0; i < rungs.size(); i++) {
+		if(rungs[i]->hasBreakpoint && rungs[i]->rung->HasActiveEOL())
+			return i + 1;
+	}
+
+	return 0;
 }
 
 void LadderDiagram::ProgramChanged(void)

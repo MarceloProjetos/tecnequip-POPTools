@@ -231,7 +231,6 @@ void SetMenusEnabled(LadderContext *context)
 {
 	EnableInterfaceItem(MNU_PUSH_RUNG_UP, context->canPushUp);
     EnableInterfaceItem(MNU_PUSH_RUNG_DOWN, context->canPushDown);
-    EnableInterfaceItem(MNU_DELETE_RUNG, context->canDeleteRung);
 
     EnableInterfaceItem(MNU_NEGATE, context->canNegate);
     EnableInterfaceItem(MNU_MAKE_NORMAL, context->canNormal);

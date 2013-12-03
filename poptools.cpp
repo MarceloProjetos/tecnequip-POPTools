@@ -1434,6 +1434,9 @@ cmp:
 		case MNU_EXAMPLE_MULTISET_DA:
             OpenDialog("examples\\motors.ld");
             break;
+		case MNU_EXAMPLE_PID:
+            OpenDialog("examples\\PID.ld");
+            break;
 		case MNU_EXAMPLE_UART_SEND:
 		case MNU_EXAMPLE_UART_RECV:
             OpenDialog("examples\\char.ld");
