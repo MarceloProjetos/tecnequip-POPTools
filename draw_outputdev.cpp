@@ -8,7 +8,7 @@ static char **ExportBuffer;
 // DrawChars function, for drawing to the export buffer instead of to the
 // screen.
 //-----------------------------------------------------------------------------
-static void DrawCharsToExportBuffer(int cx, int cy, char *str)
+static void DrawCharsToExportBuffer(int cx, int cy, const char *str)
 {
     while(*str) {
         if(*str >= 10) {

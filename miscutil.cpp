@@ -31,7 +31,7 @@ void dbp(char *str, ...)
 //-----------------------------------------------------------------------------
 // For error messages to the user; printf-like, to a message box.
 //-----------------------------------------------------------------------------
-void Error(char *title, char *str, va_list f)
+void Error(const char *title, const char *str, va_list f)
 {
     char buf[1024];
     vsprintf(buf, str, f);
@@ -39,7 +39,7 @@ void Error(char *title, char *str, va_list f)
 	ladder->ShowDialog(eDialogType_Error, false, title, buf);
 }
 
-void Error(char *str, ...)
+void Error(const char *str, ...)
 {
     va_list f;
     va_start(f, str);
@@ -47,7 +47,7 @@ void Error(char *str, ...)
 	Error(_("POPTools Error"), str, f);
 }
 
-void Warning(char *title, char *str, ...)
+void Warning(const char *title, const char *str, ...)
 {
     char buf[1024];
 
@@ -106,7 +106,7 @@ void CheckFree(void *p)
 //-----------------------------------------------------------------------------
 // Create a window with a given client area.
 //-----------------------------------------------------------------------------
-HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
+HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param)
 {
@@ -578,4 +578,23 @@ wchar_t *ConvString_Convert(wchar_t *pwc, char *pc)
 	}
 
 	return pwc;
+}
+
+long long ElapsedTime(bool ShowDialog, void (*fnc)(void *), void *data)
+{
+	FILETIME start, end;
+	GetSystemTimeAsFileTime(&start);
+
+	if(fnc != nullptr) {
+		(*fnc)(data);
+	}
+
+	GetSystemTimeAsFileTime(&end);
+
+	long long elapsed = ((long long)(end.dwHighDateTime - start.dwHighDateTime) << 32) + (end.dwLowDateTime - start.dwLowDateTime);
+	if(ShowDialog) {
+		Warning("Tempo medido", "O teste executou em %d milissegundos", elapsed/10000);
+	}
+
+	return elapsed;
 }

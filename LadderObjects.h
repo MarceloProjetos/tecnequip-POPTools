@@ -94,7 +94,7 @@ typedef struct {
 	time_t ProgramDate; ///< Dat/Hora da ultima gravacao do diagrama em um CLP
 } LadderSettingsInformation;
 
-typedef void (*tFncDrawChars)(int, int, char *);
+typedef void (*tFncDrawChars)(int, int, const char *);
 
 /*** Estruturas auxiliares relacionadas com o I/O ***/
 
@@ -2883,6 +2883,13 @@ public:
 	 *                  para a referencia fornecida.
 	 */
 	Subckt         getNext            (Subckt         next);
+	/** Funcao que retorna o elemento anterior do circuito (ou algum de seus subcircuitos) tendo como referencia um subcircuito.
+	 *  @param[in] previous Subcircuito de referencia para a busca do subcircuito anterior
+	 *  @return             Subcircuito anterior de acordo com a referencia passada como parametro. Se ambos elemento e circuito do subcircuito
+	 *                      retornado forem nulos, indica que o subcircuito de referencia nao foi encontrado ou nao existia um elemento anterior
+	 *                      para a referencia fornecida.
+	 */
+	Subckt         getPrevious        (Subckt         previous);
 	/** Funcao que retorna o ponteiro para o circuito ao qual o elemento pertence
 	 *  @param[in] elem Elemento sendo buscado
 	 *  @return         Ponteiro para o circuito onde se encontra o elemento passado como parametro ou nulo se nao for encontrado
@@ -3677,7 +3684,7 @@ public:
 	 *  @param[in] index Indice com a posicao no vetor de I/Os
 	 *  @return          Nome do tipo do I/O solicitado ou string vazia se inexistente
 	 */
-	char           *getStringTypeIO         (unsigned int   index);
+	const char     *getStringTypeIO         (unsigned int   index);
 	/** Funcao que retorna o numero de I/Os registrados
 	 *  @return Numero de I/Os registrados
 	 */
@@ -3848,7 +3855,7 @@ public:
 	 */
 	eValidateResult Validate(void);
 
-	eReply ShowValidateDialog(bool isError, char *msg);
+	eReply ShowValidateDialog(bool isError, const char *msg);
 
 	/** Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
 	 *  @param[in] type      Tipo de janela de dialogo a ser exibida
@@ -3857,7 +3864,7 @@ public:
 	 *  @param[in] message   Mensagem da janela de dialogo. Formato de printf, podendo passar argumentos adicionais para montar o texto conforme o formato
 	 *  @return              Resposta do usuario para a janela de dialogo
 	 */
-	eReply ShowDialog(eDialogType type, bool hasCancel, char *title, char *message, ...);
+	eReply ShowDialog(eDialogType type, bool hasCancel, const char *title, const char *message, ...);
 
 	/** Funcao que executa uma acao de desfazer / refazer registrada para o diagrama
 	 *  @param[in]     IsUndo    Indice se a acao se refere a operacao de Desfazer (true) ou Refazer (false)

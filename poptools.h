@@ -197,10 +197,10 @@ typedef SDWORD SWORD;
 // etc.
 
 struct strSerialConfig {
-	BYTE  bByteSize;
-	BYTE  bParity;
-	BYTE  bStopBits;
-	char *ConfigName;
+	BYTE        bByteSize;
+	BYTE        bParity;
+	BYTE        bStopBits;
+	const char *ConfigName;
 };
 
 // Menu IDs
@@ -627,10 +627,10 @@ extern McuIoInfo SupportedMcus[NUM_SUPPORTED_MCUS];
 #define PROGRESS_STATUS_DONE   2
 
 typedef struct {
-	int   iCurrentStage;
-	int   iStagePercent;
-	int   bStageState;
-	char *szMsg;
+	int         iCurrentStage;
+	int         iStagePercent;
+	int         bStageState;
+	const char *szMsg;
 } ProgressStatus;
 
 void HideProgressWindow  (void);
@@ -683,7 +683,7 @@ void StopSimulation(void);
 void PauseSimulation(void);
 void StartSimulation(void);
 void UpdateMainWindowTitleBar(void);
-void StatusBarSetText(int bar, char * text);
+void StatusBarSetText(int bar, const char * text);
 void RefreshDrawWindow();
 void ShowTabCtrl(bool visible);
 extern int TabHeight;
@@ -761,7 +761,7 @@ bool AddSetPwm(void);
 bool AddUart(int which);
 bool AddPersist(void);
 bool AddPID(void);
-bool AddComment(char *text);
+bool AddComment(void);
 bool AddSetBit(void);
 bool AddCheckBit(void);
 bool AddShiftRegister(void);
@@ -823,19 +823,19 @@ bool ShowCommentDialog(char *comment, POINT ElemStart, POINT ElemSize, POINT Gri
 // multisetdadialog.cpp
 bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *time, string *desl);
 // simpledialog.cpp
-bool ShowVarDialog(char *title, char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types, bool isTxt = false);
+bool ShowVarDialog(const char *title, const char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types, bool isTxt = false);
 bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end, POINT ElemStart, POINT ElemSize, POINT GridSize);
-bool ShowVarBitDialog(char *title, char *varname, string *name, int * bit, POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types);
+bool ShowVarBitDialog(const char *title, const char *varname, string *name, int * bit, POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types);
 bool ShowModbusDialog(int mode_write, string *name, int *id, int *address, POINT ElemStart, POINT ElemSize, POINT GridSize);
 void ShowSimulationVarSetDialog(const char *name, char *val);
 bool ShowLookUpTableDialog(LadderElemLUTProp *t, POINT ElemStart, POINT ElemSize, POINT GridSize);
 bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, POINT ElemStart, POINT ElemSize, POINT GridSize);
 // confdialog.cpp
 extern struct strSerialConfig SerialConfig[];
-extern char *SerialParityString[];
+extern const char *SerialParityString[];
 bool ShowConfDialog(eConfSection confSection);
-extern char *EncAbsConfig[];
-extern char *EncoderConvModes[];
+extern const char *EncAbsConfig[];
+extern const char *EncoderConvModes[];
 // modbusdialog.cpp
 void PopulateModBUSMasterCombobox(HWND h, bool has_new);
 // helpdialog.cpp
@@ -861,13 +861,14 @@ bool         IoMap_IsModBUS(mapDetails detailsIO);
         exit(1); \
     }
 void dbp(char *str, ...);
-void Error(char *str, ...);
-void Error(char *title, char *str, va_list f);
-void Warning(char *title, char *str, ...);
+void Error(const char *str, ...);
+void Error(const char *title, const char *str, va_list f);
+void Warning(const char *title, const char *str, ...);
+long long ElapsedTime(bool ShowDialog, void (*fnc)(void *), void *data);
 void *CheckMalloc(size_t n);
 void CheckFree(void *p);
 extern HANDLE MainHeap;
-HWND CreateWindowClient(DWORD exStyle, char *className, char *windowName,
+HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
 void MakeDialogBoxClass(void);
@@ -926,7 +927,9 @@ enum eExampleGalleryHeader {
 	eExampleGalleryHeader_Applications,
 };
 
-char *_(char *in);
+const char *_(const char *in);
+void initLangTables(void);
+void freeLangTables(void);
 void setLanguage(unsigned int id);
 PCWSTR getRibbonLocalizedLabel(UINT nCmdID);
 PCWSTR getRibbonLocalizedTooltipTitle(UINT nCmdID);
@@ -977,11 +980,12 @@ void  ClearListWP(void);
 
 typedef struct strHardwareRegisters HardwareRegisters;
 struct strHardwareRegisters {
-	unsigned int  DigitalInput;
-	unsigned int  DigitalOutput;
-	         int  ModBUS[HWR_MODBUS_SIZE];
-			 bool Syncing;
-			 bool NeedUpdate;
+	unsigned int            DigitalInput;
+	unsigned int            DigitalOutput;
+	         int            ModBUS[HWR_MODBUS_SIZE];
+			 bool           Syncing;
+			 bool           NeedUpdate;
+	map<string, mapDetails> DetailsIO;
 };
 
 extern HardwareRegisters hwreg;

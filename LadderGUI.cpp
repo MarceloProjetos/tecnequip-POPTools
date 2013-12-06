@@ -654,13 +654,20 @@ void LadderGUI::DrawEnd(void)
 	}
 
 #ifdef SHOW_DEBUG_INFO
+	unsigned int i;
 	char buf[1024];
-	sprintf(buf, "*** Mouse ***\nAgora: %4d, %4d\nUltimo Clique: %4d, %4d\nUltimo Duplo-Clique: %4d, %4d\n\n*** D2D ***\nUltimo Erro: 0x%x",
-		MousePosition.x, MousePosition.y,
-		mouse_last_click.x, mouse_last_click.y,
-		mouse_last_doubleclick.x, mouse_last_doubleclick.y,
-		d2d_last_error
-		);
+	vector<string> txt;
+
+	txt.push_back("*** Mouse ***");
+	sprintf(buf, "Agora: %4d, %4d", MousePosition.x, MousePosition.y);
+	txt.push_back(buf);
+	sprintf(buf, "Ultimo Clique: %4d, %4d", mouse_last_click.x, mouse_last_click.y);
+	txt.push_back(buf);
+	sprintf(buf, "Ultimo Duplo-Clique: %4d, %4d", mouse_last_doubleclick.x, mouse_last_doubleclick.y);
+	txt.push_back(buf);
+	txt.push_back("*** D2D ***");
+	sprintf(buf, "Ultimo Erro: 0x%x", d2d_last_error);
+	txt.push_back(buf);
 
 	RECT r;
 	GetClientRect(DrawWindow, &r);
@@ -670,7 +677,10 @@ void LadderGUI::DrawEnd(void)
 	r.left   += MousePosition.x + 10 + ScrollXOffset;
 	r.right  += MousePosition.x + 10 + ScrollXOffset;
 
-	DrawText(buf, r, 0, LadderColors[0].White, eAlignMode_TopLeft, eAlignMode_TopLeft);
+	for(i = 0; i < txt.size(); i++) {
+		DrawText(txt[i].c_str(), r, 0, LadderColors[0].White, eAlignMode_TopLeft, eAlignMode_TopLeft);
+		r.top += FONT_HEIGHT + 5;
+	}
 
 	d2d_last_error = EndDraw();
 #else
@@ -1279,7 +1289,7 @@ void LadderGUI::addControlList(LadderElem *elem, RECT r, tControlList list)
 }
 
 // Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
-eReply LadderGUI::ShowDialog(eDialogType type, bool hasCancel, char *title, char *message)
+eReply LadderGUI::ShowDialog(eDialogType type, bool hasCancel, const char *title, const char *message)
 {
 	eReply reply = eReply_Pending;
 
@@ -1788,7 +1798,7 @@ void DrawArrowAndText(RECT r, string txt, COLORREF color, bool isRead)
 
 // Funcao que atualiza o Nome/Tipo de um I/O
 bool cmdChangeName(LadderElem *elem, unsigned int index, pair<unsigned long, int> pin, eType type,
-	vector<eType> types, char *title, char *field)
+	vector<eType> types, const char *title, const char *field)
 {
 	bool ret    = false;
 	string name = ladder->getNameIO(pin);
@@ -2560,7 +2570,7 @@ bool TimerCmdChangeName(tCommandSource source, void *data)
 	eType            type  = getTimerTypeIO(which);
 	LadderElemTimer *timer = dynamic_cast<LadderElemTimer *>(source.elem);
 
-	char *s;
+	const char *s;
     switch(which) 
 	{ 
         case ELEM_TON: s = _("Turn-On Delay"); break;
@@ -2592,7 +2602,7 @@ bool TimerCmdChangeTime(tCommandSource source, void *data)
 	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
 	LadderElemTimer    *timer = dynamic_cast<LadderElemTimer *>(source.elem);
 
-	char *s;
+	const char *s;
     switch(which) 
 	{ 
         case ELEM_TON: s = _("Turn-On Delay"); break;
@@ -2976,7 +2986,7 @@ bool CounterCmdChangeName(tCommandSource source, void *data)
 	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
 	LadderElemCounter *counter = dynamic_cast<LadderElemCounter *>(source.elem);
 
-	char *title;
+	const char *title;
     switch(which) 
 	{ 
         case ELEM_CTU: title = _("Count Up"        ); break;
@@ -3010,7 +3020,7 @@ bool CounterCmdChangeValue(tCommandSource source, void *data)
 	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
 	LadderElemCounter *counter = dynamic_cast<LadderElemCounter *>(source.elem);
 
-	char *title, *desc;
+	const char *title, *desc;
     switch(which) 
 	{ 
         case ELEM_CTU: desc = _("True if >= :"); title = _("Count Up"        ); break;
@@ -3107,7 +3117,7 @@ bool LadderElemCounter::DrawGUI(bool poweredBefore, void *data)
 
 	int which = getWhich();
 
-	char *title;
+	const char *title;
     switch(which) {
         case ELEM_CTU:  title = _("Count Up"); break;
         case ELEM_CTD:  title = _("Count Down"); break;
@@ -3127,7 +3137,7 @@ bool LadderElemCounter::DrawGUI(bool poweredBefore, void *data)
 	tCommandSource source = { nullptr, nullptr, this };
 
 	// Desenha o simbolo conforme o tipo de contador
-	char *txt;
+	const char *txt;
 	POINT start, end;
 	if(which == ELEM_CTC) {
 		txt = ddg->expanded ? _("Max value:") : _("Max:");
@@ -3416,7 +3426,7 @@ bool CmpCmdChangeOp(tCommandSource source, void *data)
 
 	mapDetails detailsIO = ladder->getDetailsIO(nOp == 0 ? prop->idOp1.first : prop->idOp2.first);
 
-	char *s;
+	const char *s;
 	switch(which) {
 		case ELEM_EQU: s = _("If Equals"                  ); break;
 		case ELEM_NEQ: s = _("If Not Equals"              ); break;
@@ -3546,7 +3556,7 @@ bool MathCmdChangeName(tCommandSource source, void *data)
 
 	mapDetails detailsIO = ladder->getDetailsIO(pin.first);
 
-	char *title;
+	const char *title;
 	switch(which) {
 		case ELEM_ADD: title = _("Add"     ); break;
 		case ELEM_SUB: title = _("Subtract"); break;
@@ -3594,7 +3604,7 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 	POINT size, GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
-	char *s, *title;
+	const char *s, *title;
 	switch(which) {
 		case ELEM_ADD: s = "+"; title = _("SOMAR"      ); break;
 		case ELEM_SUB: s = "-"; title = _("SUBTRAIR"   ); break;
@@ -3866,7 +3876,7 @@ bool RandCmdChangeVar(tCommandSource source, void *data)
 	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
 	LadderElemRandProp *prop = (LadderElemRandProp *)rand->getProperties();
 
-	char * field;
+	const char * field;
 	pair<unsigned long, int> pin;
 	switch(nVar) {
 	case 0:
@@ -5381,7 +5391,7 @@ bool USSCmdChangeValue(tCommandSource source, void *data)
 
 	int max = 0;
 	char cname[100];
-	char *title = (which == ELEM_READ_USS) ? _("Ler Parâmetro por USS") : _("Escrever Parâmetro por USS"), *desc, *FieldName;
+	const char *title = (which == ELEM_READ_USS) ? _("Ler Parâmetro por USS") : _("Escrever Parâmetro por USS"), *desc, *FieldName;
     switch(field) 
 	{
         case 0:
@@ -6583,7 +6593,7 @@ bool FmtStringCmdChangeValue(tCommandSource source, void *data)
 	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
 	LadderElemFmtStringProp *prop = (LadderElemFmtStringProp *)elem->getProperties();
 
-	char *title = (which == ELEM_READ_FORMATTED_STRING) ? _("Receive Formatted String Over UART") : _("Send Formatted String Over UART");
+	const char *title = (which == ELEM_READ_FORMATTED_STRING) ? _("Receive Formatted String Over UART") : _("Send Formatted String Over UART");
 
 	// Passa a posicao do objeto para a janela para que seja exibida centralizada ao elemento
 	POINT start, size, GridSize = gui.getGridSize();
@@ -6877,7 +6887,7 @@ bool YaskawaCmdChangeValue(tCommandSource source, void *data)
 
 	int max = 0;
 	char cname[100];
-	char *title = (which == ELEM_READ_SERVO_YASKAWA) ? _("Read Servo Yaskawa") : _("Write Servo Yaskawa"), *desc, *FieldName;
+	const char *title = (which == ELEM_READ_SERVO_YASKAWA) ? _("Read Servo Yaskawa") : _("Write Servo Yaskawa"), *desc, *FieldName;
     switch(field) 
 	{
         case 0:
@@ -7237,7 +7247,7 @@ bool PIDCmdChangeValue(tCommandSource source, void *data)
 	LadderElemPIDProp *prop = (LadderElemPIDProp *)elem->getProperties();
 
 	int max = 0;
-	char *desc, *FieldName;
+	const char *desc, *FieldName;
 	pair<unsigned long, int> pin;
 
 	switch(field) 
@@ -8044,77 +8054,20 @@ void LadderDiagram::DrawGUI(void)
 		gui.DrawText(num, r, 0, colors.Foreground, eAlignMode_Center, eAlignMode_Center);
 
 		// Agora desenha o breakpoint, se ativo
-		if(rungs[i]->hasBreakpoint) {/*
-			POINT         pointOutside, pointInside, startOutside, startInside;
-			vector<POINT> pointsOutside, pointsInside;
+		if(rungs[i]->hasBreakpoint) {
+			unsigned int idb = IDB_LADDER_BREAKPOINT_PARE;
+			if(POPSettings.idLanguage == 1 || POPSettings.idLanguage == 2) {
+				idb = IDB_LADDER_BREAKPOINT_STOP;
+			}
 
-			pointOutside.x = r.left + 20;
-			pointOutside.y = r.top + (r.bottom - r.top)/2 + FONT_HEIGHT + 5;
-			startOutside   = pointOutside;
-
-			pointInside.x  = pointOutside.x;
-			pointInside.y  = pointOutside.y + 3;
-			startInside    = pointInside;
-
-			pointsOutside.push_back(pointOutside);
-			pointsInside.push_back(pointInside );
-
-			pointOutside.x += 15;
-			pointInside .x  = pointOutside.x;
-			pointsOutside.push_back(pointOutside);
-			pointsInside .push_back(pointInside );
-
-			pointOutside.x += 15;
-			pointOutside.y += 15;
-			pointInside .x  = pointOutside.x - 3;
-			pointInside .y  = pointOutside.y;
-			pointsOutside.push_back(pointOutside);
-			pointsInside .push_back(pointInside );
-
-			pointOutside.y += 15;
-			pointInside .y  = pointOutside.y;
-			pointsOutside.push_back(pointOutside);
-			pointsInside .push_back(pointInside );
-
-			pointOutside.x -= 15;
-			pointOutside.y += 15;
-			pointInside .x  = pointOutside.x;
-			pointInside .y  = pointOutside.y - 3;
-			pointsOutside.push_back(pointOutside);
-			pointsInside .push_back(pointInside );
-
-			pointOutside.x -= 15;
-			pointInside .x  = pointOutside.x;
-			pointsOutside.push_back(pointOutside);
-			pointsInside .push_back(pointInside );
-
-			pointOutside.x -= 15;
-			pointOutside.y -= 15;
-			pointInside .x  = pointOutside.x + 3;
-			pointInside .y  = pointOutside.y;
-			pointsOutside.push_back(pointOutside);
-			pointsInside .push_back(pointInside );
-
-			pointOutside.y -= 15;
-			pointInside .y  = pointOutside.y;
-			pointsOutside.push_back(pointOutside);
-			pointsInside .push_back(pointInside );
-
-			// Fecha o poligono
-			pointsOutside.push_back(startOutside);
-			pointsInside .push_back(startInside );
-
-//			gui.DrawPolygon(pointsOutside, colors.White);
-			gui.DrawPolygon(pointsInside , colors.Breakpoint);*/
-			POINT startPicture = { r.left + 10, r.top + (r.bottom - r.top)/2 + FONT_HEIGHT + 5 };
-			POINT size  = { 0, 0 };
-			gui.DrawPictureFromResource(IDB_LADDER_BREAKPOINT, startPicture, size);
+			POINT startPicture = { r.left + 10, r.top + (r.bottom - r.top)/2 + FONT_HEIGHT + 5 }, size  = { 0, 0 };
+			gui.DrawPictureFromResource(idb, startPicture, size);
 		}
 
 		RungDDG.start.y += RungDDG.size.y + 1;
 	}
 
-	gui.DrawRectangle(rBusLeft , colors.Bus);
+	gui.DrawRectangle(rBusLeft , colors.Bus   );
 	gui.DrawRectangle(rBusRight, colors.BusOff);
 
 	gui.DrawEnd();
@@ -8193,7 +8146,7 @@ void LadderDiagram::ShowIoMapDialog(int item)
 }
 
 // Funcao que exibe uma janela de dialogo para o usuario. Dependente de implementacao da interface
-eReply LadderDiagram::ShowDialog(eDialogType type, bool hasCancel, char *title, char *message, ...)
+eReply LadderDiagram::ShowDialog(eDialogType type, bool hasCancel, const char *title, const char *message, ...)
 {
 	va_list f;
 	va_start(f, message);

@@ -29,7 +29,7 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
     return CallWindowProc((WNDPROC)PrevNameProc, hwnd, msg, wParam, lParam);
 }
 
-static void MakeControls(char *varname, vector<eType> types)
+static void MakeControls(const char *varname, vector<eType> types)
 {
     HWND textLabel = CreateWindowEx(0, WC_STATIC, varname,
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -68,7 +68,7 @@ static void MakeControls(char *varname, vector<eType> types)
         (LONG_PTR)MyNameProc);
 }
 
-bool ShowVarBitDialog(char *title, char *varname, string *name, int * bit,
+bool ShowVarBitDialog(const char *title, const char *varname, string *name, int * bit,
 	POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types)
 {
 	bool changed = false;

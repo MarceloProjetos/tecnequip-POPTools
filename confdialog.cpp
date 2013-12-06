@@ -95,13 +95,13 @@ struct strSerialConfig SerialConfig[] = {
 	{ 7, ODDPARITY , ONESTOPBIT, _("7-Odd-1" ) }
 };
 
-char *EncAbsConfig[] = { _("Leitura Gray"), _("Leitura Binário") };
+const char *EncAbsConfig[] = { _("Leitura Gray"), _("Leitura Binário") };
 
-char *SerialParityString[] = { _("Sem Paridade"), _("Paridade Ímpar"), _("Paridade Par") };
+const char *SerialParityString[] = { _("Sem Paridade"), _("Paridade Ímpar"), _("Paridade Par") };
 
-char *ModBUSInterfaces[] = { _("RS-485"), _("Ethernet") };
+const char *ModBUSInterfaces[] = { _("RS-485"), _("Ethernet") };
 
-char *EncoderConvModes[] = { _("Sem conversão"), _("Metros"), _("Milímetros"), _("Décimos de milímetro") };
+const char *EncoderConvModes[] = { _("Sem conversão"), _("Metros"), _("Milímetros"), _("Décimos de milímetro") };
 
 #define CONFTVI_ID_INFO              0
 #define CONFTVI_ID_INFO_PROJECT      1

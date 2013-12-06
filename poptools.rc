@@ -35,7 +35,8 @@ IDB_LADDER_CYCLE				RCDATA					"imgs/guiContadorCircular.png"
 IDB_LADDER_DIALOG_ERROR			RCDATA					"imgs/DialogError.png"
 IDB_LADDER_DIALOG_QUESTION		RCDATA					"imgs/DialogQuestion.png"
 IDB_LADDER_DIALOG_EXCLAMATION	RCDATA					"imgs/DialogExclamation.png"
-IDB_LADDER_BREAKPOINT			RCDATA					"imgs/breakpoint.png"
+IDB_LADDER_BREAKPOINT_PARE		RCDATA					"imgs/breakpoint_pare.png"
+IDB_LADDER_BREAKPOINT_STOP		RCDATA					"imgs/breakpoint_stop.png"
 
 /////////////////////////////////////////////////////////////////////////////
 //

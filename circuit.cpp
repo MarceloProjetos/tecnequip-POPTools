@@ -20,7 +20,7 @@ bool AddParallelStart(void)
 	return ladder->AddParallelStart();
 }
 
-bool AddComment(char *str)
+bool AddComment(void)
 {
 	ladder->CheckpointBegin(_("Adicionar Comentário"));
 	bool ret = ladder->AddElement(new LadderElemComment(ladder));
@@ -583,7 +583,7 @@ bool NewProgram(void)
 	TCITEM container_tabs;
 	container_tabs.mask   = TCIF_TEXT;
 
-	container_tabs.pszText = _("-");
+	container_tabs.pszText = (char *)_("-");
 	TabCtrl_InsertItem(TabCtrl, ladderList.size() - 1, &container_tabs);
 
 	SwitchProgram(newladder);

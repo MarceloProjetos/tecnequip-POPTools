@@ -250,7 +250,7 @@ public:
 	// Funcoes para adicionar controles aos itens expandidos
 	void addControlList(LadderElem *elem, RECT r, tControlList list);
 
-	eReply      ShowDialog    (eDialogType type, bool hasCancel, char *title, char *message);
+	eReply      ShowDialog    (eDialogType type, bool hasCancel, const char *title, const char *message);
 	tDialogData getDialogData (void);
 	bool IsDialogActive       (void);
 	void setDialogActiveButton(bool isNext);

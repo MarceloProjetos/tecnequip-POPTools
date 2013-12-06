@@ -56,7 +56,9 @@ static LRESULT CALLBACK MyNameProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static void MakeControls(void)
 {
-	char *WeekDays = _("SMTWTFS"), WeekDay[2] = { 0, 0 };
+	char WeekDays[8], WeekDay[2] = { 0, 0 };
+
+	strcpy(WeekDays, _("SMTWTFS"));
 
 	HWND grouper1 = CreateWindowEx(0, WC_BUTTON, _("Modo"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,

@@ -58,7 +58,7 @@ static LRESULT CALLBACK MyNumOnlyProc(HWND hwnd, UINT msg, WPARAM wParam,
     oops();
 }
 
-static void MakeControls(int boxes, char **labels, DWORD fixedFontMask,
+static void MakeControls(int boxes, const char **labels, DWORD fixedFontMask,
 	DWORD useComboBox, vector<eType> types)
 {
     int i;
@@ -126,7 +126,7 @@ static void MakeControls(int boxes, char **labels, DWORD fixedFontMask,
 }
 
 // Default para types: Vetor vazio, todos os tipos...
-BOOL ShowSimpleDialog(char *title, int boxes, char **labels, DWORD numOnlyMask,
+BOOL ShowSimpleDialog(const char *title, int boxes, const char **labels, DWORD numOnlyMask,
     DWORD alnumOnlyMask, DWORD fixedFontMask, DWORD useComboBox, char **dests,
 	POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types, bool isTxt)
 {
@@ -259,7 +259,7 @@ void ShowSimulationVarSetDialog(const char *name, char *val)
 	POINT start = { 0, 0 }, size = { 0, 0 }, GridSize = { 0, 0 };
 
 	char val_tmp[MAX_NAME_LEN];
-	char *labels[] = { _("Valor:") };
+	const char *labels[] = { _("Valor:") };
     char *dests[] = { val_tmp };
 
 	strcpy(val_tmp, val);
@@ -271,13 +271,13 @@ void ShowSimulationVarSetDialog(const char *name, char *val)
 	}
 }
 
-bool ShowVarDialog(char *title, char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types, bool isTxt)
+bool ShowVarDialog(const char *title, const char *varname, string *name, POINT start, POINT size, POINT GridSize, vector<eType> types, bool isTxt)
 {
 	bool changed = false;
 
 	char name_tmp[1024];
 
-	char *labels[] = { varname };
+	const char *labels[] = { varname };
     char *dests[] = { name_tmp };
 
 	strcpy(name_tmp, name->c_str());

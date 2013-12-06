@@ -26,7 +26,8 @@
 #define IDB_LADDER_DIALOG_ERROR        6007
 #define IDB_LADDER_DIALOG_QUESTION     6008
 #define IDB_LADDER_DIALOG_EXCLAMATION  6009
-#define IDB_LADDER_BREAKPOINT          6010
+#define IDB_LADDER_BREAKPOINT_PARE     6010
+#define IDB_LADDER_BREAKPOINT_STOP     6011
 
 // Next default values for new objects
 // 

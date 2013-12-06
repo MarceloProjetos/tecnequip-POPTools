@@ -286,7 +286,7 @@ void IntCode::SimState(bool *b, const char *name)
 //-----------------------------------------------------------------------------
 // printf-like comment function
 //-----------------------------------------------------------------------------
-void IntCode::Comment(char *str, ...)
+void IntCode::Comment(const char *str, ...)
 {
     va_list f;
     char buf[MAX_NAME_LEN];

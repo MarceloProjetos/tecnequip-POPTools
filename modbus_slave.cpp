@@ -192,7 +192,7 @@ void SimulationServer_Stop(void)
 
 int SimulationServer_Start(void)
 {
-	char *error_msg = _("Erro ao criar servidor ModBUS. Código do Erro: %d\nNão será possível receber conexões externas nessa sessão!");
+	const char *error_msg = _("Erro ao criar servidor ModBUS. Código do Erro: %d\nNão será possível receber conexões externas nessa sessão!");
 
 	SimSocket = socket(AF_UNSPEC,SOCK_STREAM,IPPROTO_TCP);
 	if(SimSocket == INVALID_SOCKET) {

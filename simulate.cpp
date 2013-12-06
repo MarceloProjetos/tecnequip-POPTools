@@ -185,8 +185,38 @@ HardwareRegisters hwreg;
 void HardwareRegisters_Init(HardwareRegisters *hwr)
 {
 	if(hwr != NULL) {
-		memset(hwr, 0, sizeof(HardwareRegisters));
+		hwr->DigitalInput  = 0;
+		hwr->DigitalOutput = 0;
+		hwr->NeedUpdate    = false;
+		hwr->Syncing       = false;
+
+		memset(hwr->ModBUS, 0, sizeof(hwr->ModBUS));
+
+		hwr->DetailsIO.clear();
+
+		// Loop que carrega os detalhes de todos os I/Os que possuem atribuicao
+		string name;
+		mapDetails detailsIO;
+		unsigned int i, count = ladder->getCountIO();
+		for(i = 0; i < count; i++) {
+			name = ladder->getNameIObyIndex(i);
+			detailsIO = ladder->getDetailsIO(name);
+			if(detailsIO.pin > 0) {
+				hwr->DetailsIO[name] = detailsIO;
+			}
+		}
 	}
+}
+
+mapDetails HardwareRegisters_getDetailsIO(HardwareRegisters *hwr, string name)
+{
+	static mapDetails nullDetailsIO = { 0, 0, 0, 0, false, false, eType_Pending, 0, 0 };
+
+	if(hwr->DetailsIO.count(name) > 0) {
+		return hwr->DetailsIO[name];
+	}
+
+	return nullDetailsIO;
 }
 
 void HardwareRegisters_SetBit(HardwareRegisters *hwr, int reg, int index, int bit, int val)
@@ -236,7 +266,7 @@ void HardwareRegisters_Update(HardwareRegisters *hwr, const char *name, int val)
 {
 	if(name == NULL) return;
 
-	mapDetails detailsIO = ladder->getDetailsIO(name);
+	mapDetails detailsIO = HardwareRegisters_getDetailsIO(hwr, name);
 
 	if(detailsIO.pin > 0) { // name has assignment
 		unsigned int index = IoMap_GetIndex(detailsIO);
@@ -275,7 +305,7 @@ void HardwareRegisters_Sync(HardwareRegisters *hwr)
 
 	for(i = 0; i < count; i++) {
 		name = ladder->getNameIObyIndex(i);
-		detailsIO = ladder->getDetailsIO(name);
+		detailsIO = HardwareRegisters_getDetailsIO(hwr, name);
 		if(detailsIO.pin > 0) {
 			index = IoMap_GetIndex(detailsIO);
 			ismb  = IoMap_IsModBUS(detailsIO);
@@ -916,12 +946,14 @@ static void SimulateIntCode(void)
     for(; IntPc < IntCodeLen; IntPc++) {
         IntOp *a = &vectorIntCode[IntPc];
         switch(a->op) {
-            case INT_SIMULATE_NODE_STATE:
-                if(*(a->poweredAfter) != SingleBitOn(a->name1)) {
+            case INT_SIMULATE_NODE_STATE: {
+				bool state = SingleBitOn(a->name1);
+                if(*(a->poweredAfter) != state) {
                     NeedRedraw = TRUE;
-	                *(a->poweredAfter) = SingleBitOn(a->name1);
+	                *(a->poweredAfter) = state;
 				}
                 break;
+			}
 
             case INT_SET_BIT:
                 SetSingleBit(a->name1, true);
@@ -1285,6 +1317,8 @@ void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
     }
 }
 
+vector< pair<FILETIME, FILETIME> > vectorNow;
+
 //-----------------------------------------------------------------------------
 // Simulate one cycle of the PLC. Update everything, and keep track of whether
 // any outputs have changed. If so, force a screen refresh. If requested do
@@ -1292,7 +1326,10 @@ void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 //-----------------------------------------------------------------------------
 void SimulateOneCycle(BOOL forceRefresh)
 {
-    // When there is an error message up, the modal dialog makes its own
+	FILETIME start, end;
+	GetSystemTimeAsFileTime(&start);
+
+	// When there is an error message up, the modal dialog makes its own
     // event loop, and there is risk that we would go recursive. So let
     // us fix that. (Note that there are no concurrency issues; we really
     // would get called recursively, not just reentrantly.)
@@ -1388,6 +1425,9 @@ void SimulateOneCycle(BOOL forceRefresh)
 	}
 
 	PlcCycleCounter++;
+
+	GetSystemTimeAsFileTime(&end);
+	vectorNow.push_back(pair<FILETIME, FILETIME>(start, end));
 }
 
 //-----------------------------------------------------------------------------
@@ -1414,6 +1454,8 @@ void StartSimulationTimer(void)
 //-----------------------------------------------------------------------------
 void ClearSimulationData(void)
 {
+	vectorNow.clear();
+
 	logRefIO     .clear();
 	logDataIO    .clear();
 	logBufferUART.clear();

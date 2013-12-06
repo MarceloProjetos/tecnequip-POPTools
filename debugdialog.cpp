@@ -568,7 +568,7 @@ static void MakeControls(void)
 
 #define LV_ADD_COLUMN(hWnd, i, w, s) do { \
         lvc.iSubItem = i; \
-        lvc.pszText = s; \
+        lvc.pszText = (char *)s; \
         lvc.iOrder = 0; \
         lvc.cx = w; \
         ListView_InsertColumn(hWnd, i, &lvc); \

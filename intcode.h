@@ -128,7 +128,7 @@ public:
 	void Op   (int op                                                                                       ) { Op(op,  NULL,  NULL,  NULL,         0,   0); }
 
 	void SimState(bool *b, const char *name);
-	void Comment (char *str, ...);
+	void Comment (const char *str, ...);
 
 	const char *VarFromExpr(const char *expr, char *tempName);
 };

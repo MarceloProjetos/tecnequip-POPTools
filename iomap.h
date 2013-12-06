@@ -81,7 +81,7 @@ public:
 	mapDetails      getDetails        (unsigned long id);
 	unsigned long   getID             (string name);
 	unsigned long   getID             (unsigned int  index, bool fromVectorIO = false);
-	char           *getTypeString     (eType type);
+	const char     *getTypeString     (eType type);
 	unsigned int    getCount          (void);
 	vector<string>  getList           (void);
 	void            Select            (unsigned int index);

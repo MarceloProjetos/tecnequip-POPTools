@@ -882,7 +882,7 @@ int LadderElemTimer::TimerPeriod(void)
 
 pair<string, string> LadderElemTimer::DrawTXT(void)
 {
-	char *s;
+	const char *s;
 	int which = getWhich();
 
 	if(which == ELEM_TON)
@@ -1292,7 +1292,8 @@ LadderElemCounter::LadderElemCounter(LadderDiagram *diagram, int which) : Ladder
 pair<string, string> LadderElemCounter::DrawTXT(void)
 {
 	int which = getWhich();
-	char *s, op, buf[256];
+	const char *s;
+	char op, buf[256];
 
 	if(which == ELEM_CTC) {
 		sprintf(buf, _("{\x01""CTC\x02 0:%d}"), prop.max);
@@ -2317,7 +2318,7 @@ int LadderElemMath::SearchAndReplace(unsigned long idSearch, string sNewText, bo
 
 bool LadderElemMath::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
 {
-	char *field;
+	const char *field;
 	tRequestIO request;
 	pair<unsigned long, int> pin;
 
@@ -5208,7 +5209,7 @@ LadderElemModBUS::LadderElemModBUS(LadderDiagram *diagram, int which) : LadderEl
 
 pair<string, string> LadderElemModBUS::DrawTXT(void)
 {
-	char *bot;
+	const char *bot;
 	char buf[100];
 	LadderMbNode node = Diagram->mbGetNodeByNodeID(prop.elem);
 
@@ -8173,6 +8174,53 @@ LadderCircuit *LadderCircuit::getSubcktForElement(LadderElem *elem)
 	return subckt;
 }
 
+Subckt LadderCircuit::getPrevious(Subckt previous)
+{
+	Subckt ret = { nullptr, nullptr };
+	vector<Subckt>::size_type i;
+
+	if(previous.subckt != nullptr) {
+		if(previous.elem != nullptr && previous.subckt != this) {
+			return previous.subckt->getPrevious(previous);
+		} else if(previous.elem != nullptr || previous.subckt != this) {
+			if(previous.elem != nullptr) {
+				for(i = 0; i < vectorSubckt.size(); i++) {
+					if(vectorSubckt[i].elem == previous.elem) {
+						break;
+					}
+				}
+			} else {
+				for(i = 0; i < vectorSubckt.size(); i++) {
+					if(vectorSubckt[i].elem == nullptr) {
+						if(vectorSubckt[i].subckt == previous.subckt) {
+							break;
+						} else {
+							ret = vectorSubckt[i].subckt->getPrevious(previous);
+							if(ret.subckt != nullptr) {
+								return ret;
+							}
+						}
+					}
+				}
+			}
+
+			// Recua para o item anterior e verifica se nao alcancou o inicio do vetor
+			if(i > 0) {
+				i--;
+				ret.elem = vectorSubckt[i].elem;
+				if(ret.elem == nullptr) { // Elemento eh um subcircuito
+					ret.elem   = vectorSubckt[i].subckt->getLastElement();
+					ret.subckt = vectorSubckt[i].subckt->getSubcktForElement(previous.elem);
+				} else { // Elemento nao eh subcircuito, nos somos o subcircuito do elemento
+					ret.subckt = this;
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
 Subckt LadderCircuit::getNext(Subckt next)
 {
 	Subckt ret = { nullptr, nullptr };
@@ -10084,31 +10132,51 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 	int rung = RungContainingElement(elem);
 
 	CheckpointBegin(_("Remover Elemento"));
-	if(rungs[rung]->rung->DelElement(elem, context)) {
-		// Elemento removido, chama a funcao para que o elemento realize qualquer etapa
-		// adicional apos a sua exclusao no circuito.
-		// Especificamente para o caso do ModBUS, que precisa referenciar o node que ele usa.
-		elem->doPostRemove();
-
-		elem->updateIO(this, true);
-		rungs[rung]->rung->RemoveUnnecessarySubckts(context);
-		rungs[rung]->rung->AddPlaceHolderIfNoEOL(context, nullptr);
-
-		if(elem == context.ParallelStart) {
-			context.ParallelStart = nullptr;
+	if(rungs[rung]->rung->IsComment()) {
+		bool ret = DeleteRung(rung);
+		CheckpointEnd();
+		return ret;
+	} else {
+		int state          = SELECTED_LEFT;
+		eMoveCursor moveTo = eMoveCursor_Left;
+		// Se for o primeiro elemento do circuito, deve buscar para a direita, nao esquerda...
+		if(getSubcktForElement(elem)->getFirstElement() == elem) {
+			state  = SELECTED_RIGHT;
+			moveTo = eMoveCursor_Right;
 		}
 
-		LadderElem *first = rungs[rung]->rung->getFirstElement();
-		SelectElement(first, first->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT);
+		SelectElement(elem, state);
+		MoveCursor(moveTo);
 
-		CheckpointEnd();
+		if(rungs[rung]->rung->DelElement(elem, context)) {
+			// Elemento removido, chama a funcao para que o elemento realize qualquer etapa
+			// adicional apos a sua exclusao no circuito.
+			// Especificamente para o caso do ModBUS, que precisa referenciar o node que ele usa.
+			elem->doPostRemove();
 
-		// Indica que houve alteracao no programa
-		ProgramChanged();
+			elem->updateIO(this, true);
+			rungs[rung]->rung->RemoveUnnecessarySubckts(context);
+			rungs[rung]->rung->AddPlaceHolderIfNoEOL(context, nullptr);
 
-		updateContext();
+			if(elem == context.ParallelStart) {
+				context.ParallelStart = nullptr;
+			}
 
-		return true;
+			// Se nao houver elemento selecionado, seleciona o primeiro elemento do circuito
+			if(context.SelectedElem == nullptr) {
+				elem = rungs[rung]->rung->getFirstElement();
+				SelectElement(elem, elem->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT);
+			}
+
+			CheckpointEnd();
+
+			// Indica que houve alteracao no programa
+			ProgramChanged();
+
+			updateContext();
+
+			return true;
+		}
 	}
 
 	CheckpointRollback();
@@ -10218,7 +10286,7 @@ void LadderDiagram::DrawTXT(tFncDrawChars fnc)
 	}
 
 	// Desenha a linha final
-    char *str = _("[END]");
+    const char *str = _("[END]");
     int lead = (ColsAvailable*POS_WIDTH - strlen(str))/2;
     for(i = 0; i < lead; i++) {
         fncDrawChars(cx + i, cy + (POS_HEIGHT/2), "-");
@@ -11651,7 +11719,7 @@ mapDetails LadderDiagram::getDetailsIO(string name)
 	return getDetailsIO(IO->getID(name));
 }
 
-char *LadderDiagram::getStringTypeIO(unsigned int index)
+const char *LadderDiagram::getStringTypeIO(unsigned int index)
 {
 	return IO->getTypeString(IO->getDetails(IO->getID(index, true)).type);
 }
@@ -11993,7 +12061,7 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 	return IsValidNameAndType(id, name, type, NULL, VALIDATE_IS_VAR, 0, 0, reply);
 }
 
-eReply LadderDiagram::ShowValidateDialog(bool isError, char *msg)
+eReply LadderDiagram::ShowValidateDialog(bool isError, const char *msg)
 {
 	eReply reply;
 	if(isError) {

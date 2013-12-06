@@ -988,7 +988,7 @@ bool mapIO::Load(FILE *f, unsigned int version)
 // Map an I/O type to a string describing it. Used both in the on-screen
 // list and when we write a text file to describe it.
 //-----------------------------------------------------------------------------
-char *mapIO::getTypeString(eType type)
+const char *mapIO::getTypeString(eType type)
 {
     switch(type) {
         case eType_Reserved:			return _("reservado");
@@ -1481,7 +1481,7 @@ void mapIO::ShowIoMapDialog(int item)
 		if(detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) {
             for(j = 0; j < mcu->encCount; j++) 
 			{
-				char *strEnc[] = { _("Enc. Inc."), _("Enc. Abs.") };
+				const char *strEnc[] = { _("Enc. Inc."), _("Enc. Abs.") };
 					sprintf(buf, "%3d %s", mcu->encInfo[j].pin, strEnc[j]);
 					SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
 					PinListItemCount++;

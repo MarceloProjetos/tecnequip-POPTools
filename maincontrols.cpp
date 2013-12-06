@@ -33,7 +33,7 @@ BOOL         RealTimeSimulationRunning;
 // Altura das abas
 int TabHeight = 25;
 
-void StatusBarSetText(int bar, char * text)
+void StatusBarSetText(int bar, const char * text)
 {
 	SendMessage(StatusBar, SB_SETTEXT, bar, (LPARAM)text);
 }
@@ -60,7 +60,7 @@ void MakeMainWindowControls(void)
     lvc.fmt = LVCFMT_LEFT;
 #define LV_ADD_COLUMN(hWnd, i, w, s) do { \
         lvc.iSubItem = i; \
-        lvc.pszText = s; \
+        lvc.pszText = (char *)s; \
         lvc.iOrder = 0; \
         lvc.cx = w; \
         ListView_InsertColumn(hWnd, i, &lvc); \
@@ -588,7 +588,7 @@ void ToggleSimulationMode(void)
             ShowUartSimulationWindow();
         }
 
-		col.pszText = _("Interromper se =");
+		col.pszText = (char *)_("Interromper se =");
 		
 		ClearSimulationData();
 
@@ -604,7 +604,7 @@ void ToggleSimulationMode(void)
 		RibbonSetCmdState(cmdUndo    , TRUE);
 		RibbonSetCmdState(cmdRedo    , TRUE);
 
-		col.pszText = _("Pin on Processor");
+		col.pszText = (char *)_("Pin on Processor");
 
 		if(ladder->UartFunctionUsed()) {
             DestroyUartSimulationWindow();

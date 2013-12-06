@@ -205,6 +205,17 @@ void UpdateRecentList(char *filename)
 	strcpy(POPSettings.recent_list[0], filename);
 }
 
+// Funcao para testar o desempenho da logica de traducao
+void TranslateSpeed(void *data)
+{
+	int i = 0;
+	while(i++ < 100000) {
+		_("bla");
+		_("in");
+		_("Yes");
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Get a filename with a common dialog box and then save the program to that
 // file and then set our default filename to that.
@@ -1032,7 +1043,7 @@ void ProcessMenu(int code)
             break;
 
         case MNU_INSERT_COMMENT:
-			AddComment(_("--add comment here--"));
+			AddComment();
             break;
 
         case MNU_INSERT_PARALLEL:
@@ -1330,7 +1341,9 @@ cmp:
             break;
 
         case MNU_MCU_PREFERENCES:
-            ShowPrefDialog();
+//			ElapsedTime(true, TranslateSpeed, nullptr);
+
+			ShowPrefDialog();
 	        RefreshControlsToSettings();
             break;
 
@@ -1975,6 +1988,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     MainHeap = HeapCreate(0, 1024*64, 0);
 
 	LoadSettings();
+
+	initLangTables();
 	setLanguage(POPSettings.idLanguage);
 
     MakeWindowClass();
@@ -2069,6 +2084,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	WSACleanup();
 
 	DestroyRibbon();
+	freeLangTables();
 
 	return 0;
 }
