@@ -72,7 +72,7 @@ static void MakeControls(void)
         213, 10, 70, 23, SetBitDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         213, 40, 70, 23, SetBitDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);

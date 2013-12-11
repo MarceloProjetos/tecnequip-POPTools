@@ -163,8 +163,6 @@ void LadderElem::setProperties(LadderContext context, void *propData)
 	// Altera as propriedades do elemento
 	if(internalSetProperties(propData, false) == false) { // Retornou erro, cancela!
 		context.Diagram->CheckpointRollback();
-		// Se nao atualizou, devemos desalocar *propData
-		delete propData;
 	}
 
 	// Finaliza a operacao
@@ -280,7 +278,7 @@ bool LadderElemPlaceHolder::internalDoUndoRedo(bool IsUndo, bool isDiscard, Undo
 LadderElemComment::LadderElemComment(LadderDiagram *diagram) : LadderElem(false, true, false, false, ELEM_COMMENT)
 {
 	Diagram  = diagram;
-	prop.str = _("--add comment here--");
+	prop.str = _("--Adicione Comentários Aqui--");
 }
 
 pair<string, string> LadderElemComment::DrawTXT(void)
@@ -868,12 +866,11 @@ int LadderElemTimer::TimerPeriod(void)
     unsigned int period = (prop.delay / settings.cycleTime) - 1;
 
     if(period < 1)  {
-        Error(_("Timer period too short (needs faster cycle time)."));
+        Error(_("Período de Tempo muito curto (necessita de um tempo de ciclo menor)."));
         CompileError();
     }
     if(period >= (((unsigned int)(1 << 31)) - 1)) {
-        Error(_("Timer period too long (max 2147483647 times cycle time); use a "
-            "slower cycle time."));
+        Error(_("Tempo do Temporizador muito grande(max. 2147483647 tempo de ciclo); use um tempo de ciclo maior."));
         CompileError();
     }
 
@@ -1163,7 +1160,7 @@ pair<string, string> LadderElemRTC::DrawTXT(void)
 		{
 			int i;
 
-			sprintf(linha ? bufe : bufs, "[\x01%s %02d:%02d:%02d\x02]", _("SMTWTFS"),
+			sprintf(linha ? bufe : bufs, "[\x01%s %02d:%02d:%02d\x02]", _("DSTQQSS"),
 				ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 
 			if(linha || prop.mode == ELEM_RTC_MODE_FIXED) {
@@ -2126,7 +2123,7 @@ bool LadderElemMath::internalGenerateIntCode(IntCode &ic)
 	const char *dest = sdest.c_str();
 
 	if(IsNumber(dest)) {
-		Error(_("Math instruction: '%s' not a valid destination."), dest);
+		Error(_("Instruções Math: o destino '%s' não é válido."), dest);
 		CompileError();
 	}
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
@@ -3250,7 +3247,7 @@ bool LadderElemMove::internalGenerateIntCode(IntCode &ic)
 	const char *dest = sdest.c_str();
 
 	if(IsNumber(dest)) {
-		Error(_("Move instruction: '%s' not a valid destination."), src);
+		Error(_("Instrução Mover: o destino '%s' não é válido."), src);
 		CompileError();
 	}
 
@@ -6338,7 +6335,7 @@ bool LadderElemLUT::internalUpdateNameTypeIO(unsigned int index, string name, eT
 			type = eType_General;
 		}
 
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Indice" ), VALIDATE_IS_VAR, 0, 0);
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Índice" ), VALIDATE_IS_VAR, 0, 0);
 	} else {
 		type    = eType_General;
 		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
@@ -6442,7 +6439,7 @@ bool LadderElemPiecewise::internalGenerateIntCode(IntCode &ic)
 	// perform the linear interpolation, using our 16-bit fixed
 	// point math.
 	if(prop.count == 0) {
-		Error(_("Piecewise linear lookup table with zero elements!"));
+		Error(_("Consulta da Tabela de Linearização por Segmentos sem elementos!"));
 		CompileError();
 	}
 
@@ -6512,8 +6509,7 @@ bool LadderElemPiecewise::internalSetProperties(void *data, bool isUndoRedo)
 	int xThis = newProp->vals[0];
 	for(i = 1; i < newProp->count; i++) {
 		if(newProp->vals[i*2] <= xThis) {
-			Error(_("x values in piecewise linear table must be "
-				"strictly increasing."));
+			Error(_("Os valores X na Tabela de Linearização por Segmentos deve ser estritamente incrementais."));
 			ret = false;
 			break;
 		}
@@ -6689,7 +6685,7 @@ bool LadderElemPiecewise::internalUpdateNameTypeIO(unsigned int index, string na
 			type = eType_General;
 		}
 
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Indice" ), VALIDATE_IS_VAR, 0, 0);
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Índice" ), VALIDATE_IS_VAR, 0, 0);
 	} else {
 		type    = eType_General;
 		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
@@ -11589,8 +11585,8 @@ bool LadderDiagram::getIO(tRequestIO &infoIO)
 			// os elementos
 			if((detailsIO.countRequestBit + detailsIO.countRequestInt) > 1) {
 				// Precisamos saber do usuario se devemos atualizar o IO ou se vamos criar uma nova variavel
-				if(ShowDialog(eDialogType_Question, false, "Nome Alterado", "Nome '%s' utilizado também em outros elementos.\n"
-					"Alterar o nome em todos os elementos que o utilizam?", IO->getName(newpin.first).c_str()) == eReply_No) {
+				if(ShowDialog(eDialogType_Question, false, _("Nome Alterado"), _("Nome '%s' utilizado também em outros elementos.\n"
+					"Alterar o nome em todos os elementos que o utilizam?"), IO->getName(newpin.first).c_str()) == eReply_No) {
 						newpin.first = 0;
 				}
 			}
@@ -11599,7 +11595,7 @@ bool LadderDiagram::getIO(tRequestIO &infoIO)
 		// Verifica se o tipo do I/O eh aceito pelos outros elementos que ja o utilizam
 		if(newpin.first && !acceptIO(newpin.first, infoIO.type)) {
 			// Alguem compartilhando desta variavel nao aceita a alteracao de tipo. Cancela a alteracao!
-			ShowDialog(eDialogType_Message, false, "Tipo Inválido", "Conflito entre tipos para '%s' ! Operação não permitida.", IO->getName(newpin.first).c_str());
+			ShowDialog(eDialogType_Message, false, _("Tipo Inválido"), _("Conflito entre tipos para '%s' ! Operação não permitida."), IO->getName(newpin.first).c_str());
 			return false; // retorna pino invalido
 		}
 
@@ -11952,25 +11948,25 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 
 	// Check for Internal Flags and Reserved Names restrictions
 	if((type != eType_InternalFlag && name_is_internal_flag) || name_is_reserved) {
-		ShowDialog(eDialogType_Message, false, "Nome Inválido", "Nome '%s' reservado para uso interno, favor escolher outro nome.", name.c_str());
+		ShowDialog(eDialogType_Message, false, _("Nome Inválido"), _("Nome '%s' reservado para uso interno, favor escolher outro nome."), name.c_str());
 		return false;
 	} else  if(type == eType_InternalFlag && !name_is_internal_flag) {
-		ShowDialog(eDialogType_Message, false, "Nome Inválido", "Para o tipo 'Flag Interna' é obrigatório selecionar um item da lista.");
+		ShowDialog(eDialogType_Message, false, _("Nome Inválido"), _("Para o tipo 'Flag Interna' é obrigatório selecionar um item da lista."));
 		return false;
 	}
 
 	// Check for Variable and Number restrictions
 	if(!name_is_number && !IsValidVarName(name)) {
-		ShowDialog(eDialogType_Message, false, "Nome Inválido", "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não iniciar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", FieldName ? FieldName : "Nome", name.c_str());
+		ShowDialog(eDialogType_Message, false, _("Nome Inválido"), _("%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não iniciar com número\nNúmero: Apenas números, podendo iniciar por - (menos)"), FieldName ? FieldName : _("Nome"), name.c_str());
 		return false;
 	} else if((Rules & VALIDATE_IS_VAR) && name_is_number) {
-		ShowDialog(eDialogType_Message, false, "Nome Inválido", "'%s' não pode ser número!", FieldName ? FieldName : name.c_str());
+		ShowDialog(eDialogType_Message, false, _("Nome Inválido"), _("'%s' não pode ser número!"), FieldName ? FieldName : name.c_str());
 		return false;
 	} else if((Rules & VALIDATE_IS_NUMBER) && !name_is_number) {
-		ShowDialog(eDialogType_Message, false, "Número Inválido", "'%s' deve ser número!", FieldName ? FieldName : name.c_str());
+		ShowDialog(eDialogType_Message, false, _("Número Inválido"), _("'%s' deve ser número!"), FieldName ? FieldName : name.c_str());
 		return false;
 	} else if(name_is_number && !IsValidNumber(name)) {
-		ShowDialog(eDialogType_Message, false, "Número Inválido", "Número '%s' inválido!", name.c_str());
+		ShowDialog(eDialogType_Message, false, _("Número Inválido"), _("Número '%s' inválido!"), name.c_str());
 		return false;
 	}
 
@@ -11978,7 +11974,7 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 	if((MinVal || MaxVal) && (Rules & (VALIDATE_IS_NUMBER | VALIDATE_IS_VAR_OR_NUMBER)) && name_is_number) {
 		val = atoi(name.c_str());
 		if(val < MinVal || val > MaxVal) {
-			ShowDialog(eDialogType_Message, false, "Número Inválido", "'%s' fora dos limites! Deve estar entre %d e %d.", FieldName ? FieldName : name.c_str(), MinVal, MaxVal);
+			ShowDialog(eDialogType_Message, false, _("Número Inválido"), _("'%s' fora dos limites! Deve estar entre %d e %d."), FieldName ? FieldName : name.c_str(), MinVal, MaxVal);
 			return false;
 		}
 	}
@@ -11987,14 +11983,14 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 	if(!name_is_number) {
 		// If types must match and types are different or cannot accept io_pending type, generates an error
 		if((Rules & VALIDATE_TYPES_MUST_MATCH) && current_type != type && !((current_type == eType_Pending || type == eType_Pending) && (Rules & VALIDATE_ACCEPT_IO_PENDING))) {
-			ShowDialog(eDialogType_Message, false, "Tipo Inválido", "Conflito entre tipos! Operação não permitida.");
+			ShowDialog(eDialogType_Message, false, _("Tipo Inválido"), _("Conflito entre tipos! Operação não permitida."));
 		} else if(type == eType_DigInput || type == eType_DigOutput || type == eType_InternalRelay) {
 			if(type == current_type) { // no type change, ok!
 				ret = true;
 			} else if(current_type == eType_Pending) { // Inexistent name, ok!
 				ret = true;
 			} else if(type == eType_DigInput && (current_type == eType_DigOutput || current_type == eType_InternalRelay) && !acceptIO(newid, type)) {
-				*reply = ShowDialog(eDialogType_Message, true, "Saída em uso", "Não é possível alterar para Entrada.\r\nSerá utilizado o tipo atual.");
+				*reply = ShowDialog(eDialogType_Message, true, _("Saída em uso"), _("Não é possível alterar para Entrada.\r\nSerá utilizado o tipo atual."));
 				if(*reply != eReply_Cancel) {
 					ret = true;
 				}
@@ -12003,36 +11999,36 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 			// name changed, check for type changes
 			} else if(type == eType_InternalRelay && current_type == eType_DigOutput) { // changing existent output to internal relay, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					ShowDialog(eDialogType_Message, false, "Tipo inválido", "Conflito de tipos: Rele Interno <-> Saída");
+					ShowDialog(eDialogType_Message, false, _("Tipo inválido"), _("Conflito de tipos: Rele Interno <-> Saída"));
 				} else {
-					*reply = ShowDialog(eDialogType_Question, true, "Confirmar alteração de Saída para Rele Interno", "Já existe uma Saída com este nome. Alterar para Rele Interno?");
+					*reply = ShowDialog(eDialogType_Question, true, _("Confirmar alteração de Saída para Rele Interno"), _("Já existe uma Saída com este nome. Alterar para Rele Interno?"));
 					if(*reply != eReply_Cancel) {
 						ret = true;
 					}
 				}
 			} else if(type == eType_DigOutput && current_type == eType_InternalRelay) { // changing existent output to internal relay, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					ShowDialog(eDialogType_Message, false, "Tipo inválido", "Conflito de tipos: Rele Interno <-> Saída");
+					ShowDialog(eDialogType_Message, false, _("Tipo inválido"), _("Conflito de tipos: Rele Interno <-> Saída"));
 				} else {
-					*reply = ShowDialog(eDialogType_Question, true, "Confirmar alteração de Rele Interno para Saída", "Já existe um Rele Interno com este nome. Alterar para Saída?");
+					*reply = ShowDialog(eDialogType_Question, true, _("Confirmar alteração de Rele Interno para Saída"), _("Já existe um Rele Interno com este nome. Alterar para Saída?"));
 					if(*reply != eReply_Cancel) {
 						ret = true;
 					}
 				}
 			} else if(type == eType_DigOutput && current_type == eType_DigInput) { // changing existent input to output, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					ShowDialog(eDialogType_Message, false, "Tipo inválido", "Conflito de tipos: Entrada <-> Saída");
+					ShowDialog(eDialogType_Message, false, _("Tipo inválido"), _("Conflito de tipos: Entrada <-> Saída"));
 				} else {
-					*reply = ShowDialog(eDialogType_Question, true, "Confirmar alteração de Entrada para Saída", "Já existe uma Entrada com este nome. Alterar para Saída?");
+					*reply = ShowDialog(eDialogType_Question, true, _("Confirmar alteração de Entrada para Saída"), _("Já existe uma Entrada com este nome. Alterar para Saída?"));
 					if(*reply != eReply_Cancel) {
 						ret = true;
 					}
 				}
 			} else if(type == eType_InternalRelay && current_type == eType_DigInput) { // changing existent input to internal relay, needs confirmation
 				if(Rules & VALIDATE_DONT_ASK) {
-					ShowDialog(eDialogType_Message, false, "Tipo inválido", "Conflito de tipos: Rele Interno <-> Entrada");
+					ShowDialog(eDialogType_Message, false, _("Tipo inválido"), _("Conflito de tipos: Rele Interno <-> Entrada"));
 				} else {
-					*reply = ShowDialog(eDialogType_Question, true, "Confirmar alteração de Entrada para Relé Interno", "Já existe uma Entrada com este nome. Alterar para Relé Interno?");
+					*reply = ShowDialog(eDialogType_Question, true, _("Confirmar alteração de Entrada para Relé Interno"), _("Já existe uma Entrada com este nome. Alterar para Relé Interno?"));
 					if(*reply != eReply_Cancel) {
 						ret = true;
 					}
@@ -12044,7 +12040,7 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 			if(type == eType_Counter || type == eType_TOF || type == eType_TON) {
 				ret = true;
 			} else {
-				ShowDialog(eDialogType_Message, false, "Nome inválido", "'Nome' deve ser um contador ou timer!");
+				ShowDialog(eDialogType_Message, false, _("Nome inválido"), _("'%s' deve ser um contador ou timer!"), name);
 			}
 		} else {
 			ret = true;
@@ -12065,9 +12061,9 @@ eReply LadderDiagram::ShowValidateDialog(bool isError, const char *msg)
 {
 	eReply reply;
 	if(isError) {
-		reply = ShowDialog(eDialogType_Message, false, _("Erro ao validar diagrama!"), _(msg));
+		reply = ShowDialog(eDialogType_Message, false, _("Erro ao validar diagrama!"), msg);
 	} else {
-		reply = ShowDialog(eDialogType_Message, true , _("Atenção"                  ), _(msg));
+		reply = ShowDialog(eDialogType_Message, true , _("Atenção"                  ), msg);
 	}
 
 	return reply;
@@ -12083,6 +12079,20 @@ eValidateResult LadderDiagram::Validate(void)
 	// Na simulacao valida apenas os nomes, nao as atribuicoes
 	if(IO->Validate(context.inSimulationMode ? eValidateIO_OnlyNames : eValidateIO_Full) == false) {
 		ret = eValidateResult_Error;
+	}
+
+	// Valida diagrama
+	if(ret != eValidateResult_Error) {
+		vector<LadderRung *>::size_type len = rungs.size(), i;
+
+		for(i = 0; i < len; i++) {
+			if(rungs[i]->rung->IsEmpty()) {
+				SelectElement(rungs[i]->rung->getFirstElement(), SELECTED_RIGHT);
+				Error(_("Linha Vazia; apague ou adicione instruções antes de simular/compilar."));
+				ret = eValidateResult_Error;
+				break;
+			}
+		}
 	}
 
 	// Validate Generated IntCode
@@ -12107,13 +12117,13 @@ eValidateResult LadderDiagram::Validate(void)
 			}
 
 			if(msg_error[0]) {
-				ShowValidateDialog(true, _(msg_error));
+				ShowValidateDialog(true, msg_error);
 				ret = eValidateResult_Error;
 				break;
 			}
 
 			if(msg_warning[0]) {
-				eReply reply = ShowValidateDialog(false, _(msg_warning));
+				eReply reply = ShowValidateDialog(false, msg_warning);
 				if(reply == eReply_Cancel) { // Se usuario escolheu cancelar, interrompe validacao e retorna erro
 					ret = eValidateResult_Error;
 					break;

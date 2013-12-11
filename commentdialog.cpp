@@ -17,7 +17,7 @@ static void MakeControls(void)
         620,  6, 70, 23, CommentDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         620, 36, 70, 23, CommentDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -46,7 +46,7 @@ bool ShowCommentDialog(char *comment, POINT ElemStart, POINT ElemSize, POINT Gri
 	}
 
     CommentDialog = CreateWindowClient(0, "POPToolsDialog",
-        _("Comment"), WS_OVERLAPPED | WS_SYSMENU,
+        _("Comentário"), WS_OVERLAPPED | WS_SYSMENU,
         start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL);
 
     MakeControls();

@@ -539,7 +539,7 @@ static void ExportLogAsCSV(void)
 
     FILE *f = fopen(exportFile, "w");
     if(!f) {
-        Error(_("Couldn't open '%s'\n"), f);
+        Error(_("Não pode abrir o arquivo '%s'\n"), f);
         return;
     }
 
@@ -581,7 +581,7 @@ static void ExportLogAsCSV(void)
 
 	fclose(f);
 
-	ladder->ShowDialog(eDialogType_Message, false, "Sucesso", "Arquivo exportado com sucesso!!!");
+	ladder->ShowDialog(eDialogType_Message, false, _("Sucesso"), _("Arquivo exportado com sucesso!!!"));
 }
 
 //-----------------------------------------------------------------------------
@@ -1317,8 +1317,6 @@ void CALLBACK PlcCycleTimer(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
     }
 }
 
-vector< pair<FILETIME, FILETIME> > vectorNow;
-
 //-----------------------------------------------------------------------------
 // Simulate one cycle of the PLC. Update everything, and keep track of whether
 // any outputs have changed. If so, force a screen refresh. If requested do
@@ -1326,9 +1324,6 @@ vector< pair<FILETIME, FILETIME> > vectorNow;
 //-----------------------------------------------------------------------------
 void SimulateOneCycle(BOOL forceRefresh)
 {
-	FILETIME start, end;
-	GetSystemTimeAsFileTime(&start);
-
 	// When there is an error message up, the modal dialog makes its own
     // event loop, and there is risk that we would go recursive. So let
     // us fix that. (Note that there are no concurrency issues; we really
@@ -1425,9 +1420,6 @@ void SimulateOneCycle(BOOL forceRefresh)
 	}
 
 	PlcCycleCounter++;
-
-	GetSystemTimeAsFileTime(&end);
-	vectorNow.push_back(pair<FILETIME, FILETIME>(start, end));
 }
 
 //-----------------------------------------------------------------------------
@@ -1454,8 +1446,6 @@ void StartSimulationTimer(void)
 //-----------------------------------------------------------------------------
 void ClearSimulationData(void)
 {
-	vectorNow.clear();
-
 	logRefIO     .clear();
 	logDataIO    .clear();
 	logBufferUART.clear();

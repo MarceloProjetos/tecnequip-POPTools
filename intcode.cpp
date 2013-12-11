@@ -310,7 +310,7 @@ SWORD CheckMakeNumber(const char *str)
     }
 
     if(val < (int)-2147483647 || val > (int)2147483647) {   
-        Error(_("Constant %d out of range: -2147483648 to 2147483647 inclusive."), val);
+        Error(_("Constante %d fora do range: -2147483648 a 2147483647 inclusive."), val);
         CompileError();
     }
 

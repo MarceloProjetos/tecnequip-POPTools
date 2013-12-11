@@ -976,13 +976,6 @@ DWORD InvokeGCC(char* dest)
 	return exitCode;
 }
 
-void CheckPinAssignments(void)
-{
-	if(ladder->Validate() == eValidateResult_Error) {
-		CompileError();
-	}
-}
-
 DWORD GenerateCFile(char *filename)
 {
 	unsigned int i, ad_mask;
@@ -996,7 +989,7 @@ DWORD GenerateCFile(char *filename)
 
 	FILE *f = fopen(filename, "w");
     if(!f) {
-        Error(_("Couldn't open file '%s'"), filename);
+        Error(_("Não pode abrir o arquivo '%s'\n"), filename);
         return 0;
     }
 
@@ -1019,8 +1012,6 @@ DWORD GenerateCFile(char *filename)
 	HasDAC = 0;
 	HasQEI = 0;
 	HasSSI = 0;
-
-	CheckPinAssignments();
 
 	for(i = 0; i < SEENVAR_LISTS; i++) {
 	    SeenVariablesCount[i] = 0;

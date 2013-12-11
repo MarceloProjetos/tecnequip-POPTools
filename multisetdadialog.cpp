@@ -70,8 +70,8 @@ static LadderElemMultisetDAProp current;
 
 static vector<D2D1_POINT_2F>	DAPoints;
 
-const LPCTSTR ResollTypeItens[] = { _("(12 bits)[2047 ~ -2048]"), _("(mV)[10000 ~ -10000]"), _("(%)[0 ~ 100]") };
-const LPCTSTR RampAbortModes [] = { _("Default"), _("Leave"), _("Stop"), _("Decelerate") };
+const LPCTSTR ResollTypeItens[] = { "(12 bits)[2047 ~ -2048]", "(mV)[10000 ~ -10000]", "(%)[0 ~ 100]" };
+const LPCTSTR RampAbortModes [] = { "Padrão", "Manter", "Parar", "Desacelerar" };
 
 void CalcLinearUp(int calc_tempo, int calc_initval)
 {
@@ -1306,7 +1306,7 @@ static void MakeControls(void)
         800, 10, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         800, 40, 70, 23, MultisetDADialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -1332,7 +1332,7 @@ static void MakeControls(void)
 void PopulateAbortModeCombobox(HWND AbortModeCombobox, bool IncludeDefault)
 {
 	for (int i = IncludeDefault ? 0 : 1; i < sizeof(RampAbortModes) / sizeof(RampAbortModes[0]); i++)
-		SendMessage(AbortModeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)RampAbortModes[i]));
+		SendMessage(AbortModeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)_(RampAbortModes[i])));
 }
 
 bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *stime, string *sdesl)
@@ -1360,7 +1360,7 @@ bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *stime, string *sd
 	SendMessage(AbortModeCombobox, CB_SETCURSEL, current.ramp_abort_mode, 0);
 
 	for (int i = 0; i < sizeof(ResollTypeItens) / sizeof(ResollTypeItens[0]); i++)
-		SendMessage(ResolTypeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ResollTypeItens[i]));
+		SendMessage(ResolTypeCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)_(ResollTypeItens[i])));
 
 	SendMessage(ResolTypeCombobox, CB_SETCURSEL, current.type, 0);
 	SendMessage(ResolTypeCombobox, CB_SETDROPPEDWIDTH, 150, 0);

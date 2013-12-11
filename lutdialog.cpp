@@ -69,7 +69,7 @@ static LRESULT CALLBACK MyDigitsProc(HWND hwnd, UINT msg, WPARAM wParam,
 //-----------------------------------------------------------------------------
 static void MakeFixedControls(BOOL forPwl)
 {
-    Labels = CreateWindowEx(0,WC_STATIC, forPwl ? _("Points:") : _("Count:"),
+    Labels = CreateWindowEx(0,WC_STATIC, forPwl ? _("Pontos:") : _("Contador:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         0, 10, 78, 21, LutDialog, NULL, Instance, NULL);
     NiceFont(Labels);
@@ -80,7 +80,7 @@ static void MakeFixedControls(BOOL forPwl)
     NiceFont(CountTextbox);
 
     if(!forPwl) {
-		Labels = CreateWindowEx(0,WC_STATIC, _("Edit table of ASCII values like a string"),
+		Labels = CreateWindowEx(0,WC_STATIC, _("Editar tabela do ASCII, valores como uma string"),
 			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_LEFT,
 			27, 35, 205, 34, LutDialog, NULL, Instance, NULL);
 		NiceFont(Labels);
@@ -97,7 +97,7 @@ static void MakeFixedControls(BOOL forPwl)
         231, 10, 70, 23, LutDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         231, 40, 70, 23, LutDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -322,7 +322,7 @@ bool ShowLookUpTableDialog(LadderElemLUTProp *t, POINT ElemStart, POINT ElemSize
     // Now create the dialog's fixed controls, plus the changing (depending
     // on show style/entry count) controls for the initial configuration.
     LutDialog = CreateWindowClient(0, "POPToolsDialog",
-        _("Look-Up Table"), WS_OVERLAPPED | WS_SYSMENU,
+        _("Tabela de Busca"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 320, 375, MainWindow, NULL, Instance, NULL);
     MakeFixedControls(FALSE);
     MakeLutControls(asString, count, FALSE, ElemStart, ElemSize, GridSize);
@@ -448,7 +448,7 @@ bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, POINT ElemStart, POIN
     // Now create the dialog's fixed controls, plus the changing (depending
     // on show style/entry count) controls for the initial configuration.
     LutDialog = CreateWindowClient(0, "POPToolsDialog",
-        _("Piecewise Linear Table"), WS_OVERLAPPED | WS_SYSMENU,
+        _("Tabela de Linearização por Segmentos"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 320, 375, MainWindow, NULL, Instance, NULL);
     MakeFixedControls(TRUE);
     MakeLutControls(FALSE, count*2, TRUE, ElemStart, ElemSize, GridSize);

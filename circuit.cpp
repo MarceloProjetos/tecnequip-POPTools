@@ -583,7 +583,7 @@ bool NewProgram(void)
 	TCITEM container_tabs;
 	container_tabs.mask   = TCIF_TEXT;
 
-	container_tabs.pszText = (char *)_("-");
+	container_tabs.pszText = "-";
 	TabCtrl_InsertItem(TabCtrl, ladderList.size() - 1, &container_tabs);
 
 	SwitchProgram(newladder);

@@ -29,13 +29,8 @@ static HWND ModeIntermittentRadio;
 
 static LONG_PTR PrevNameProc;
 
-const LPCTSTR MDayItens[] = { _("Todos"), "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
-									"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", 
-									"21", "22", "23", "24", "25", "26", "27", "28", "29", "30", 
-									"31"};
-
-const LPCTSTR MonthItens[] = { _("Todos"), _("Janeiro"), _("Fevereiro"), _("Março"), _("Abril"), _("Maio"), _("Junho"), _("Julho"), _("Agosto"), _("Setembro"), _("Outubro"), 
-									_("Novembro"), _("Dezembro")};
+const LPCTSTR MonthItens[] = { "Todos", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+								"Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"};
 
 //-----------------------------------------------------------------------------
 // Don't allow any characters other than A-Za-z0-9_ in the name.
@@ -58,7 +53,7 @@ static void MakeControls(void)
 {
 	char WeekDays[8], WeekDay[2] = { 0, 0 };
 
-	strcpy(WeekDays, _("SMTWTFS"));
+	strcpy(WeekDays, _("DSTQQSS"));
 
 	HWND grouper1 = CreateWindowEx(0, WC_BUTTON, _("Modo"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
@@ -311,7 +306,7 @@ static void MakeControls(void)
         240, 235, 70, 23, RTCDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         315, 235, 70, 23, RTCDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -327,7 +322,7 @@ bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *
 
 	time_t now;
 	struct tm *t;
-	char buf[10];
+	char buf[1024];
 	int y;
 
 	POINT startPoint = { 100, 100 }, size = { 393, 265 };
@@ -365,21 +360,27 @@ bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *
 	y = t->tm_year + 1900;
 
     RTCDialog = CreateWindowClient(0, "POPToolsDialog",
-        _("Scheduler"), WS_OVERLAPPED | WS_SYSMENU,
+        _("Agendador de Tarefa"), WS_OVERLAPPED | WS_SYSMENU,
         startPoint.x, startPoint.y, size.x, size.y, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
    
 	int i;
 
-	for (i = 0; i < sizeof(MDayItens) / sizeof(MDayItens[0]); i++) {
-		SendMessage(StartMDayCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)MDayItens[i]));
-		SendMessage(EndMDayCombobox  , CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)MDayItens[i]));
+	for (i = 0; i <= 31; i++) {
+		if(i == 0) {
+			strcpy(buf, _("Todos"));
+		} else {
+			sprintf(buf, "%d", i);
+		}
+
+		SendMessage(StartMDayCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)buf));
+		SendMessage(EndMDayCombobox  , CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)buf));
 	}
 
 	for (i = 0; i < sizeof(MonthItens) / sizeof(MonthItens[0]); i++) {
-		SendMessage(StartMonthCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)MonthItens[i]));
-		SendMessage(EndMonthCombobox  , CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)MonthItens[i]));
+		SendMessage(StartMonthCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)_(MonthItens[i])));
+		SendMessage(EndMonthCombobox  , CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)_(MonthItens[i])));
 	}
 
 	SendMessage(StartYearCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)_("Todos")));

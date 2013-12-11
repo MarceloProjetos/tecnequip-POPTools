@@ -117,9 +117,9 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 	vectorInternalVar.push_back(pair<string, string>("AbsFatorCorr"  ,"ABS_Factor10k"));
 
 	// Adicionando variaveis reservadas
-	vectorReservedName.push_back(_("in"  ));
-	vectorReservedName.push_back(_("out" ));
-	vectorReservedName.push_back(_("new" ));
+	vectorReservedName.push_back(_("entrada"  ));
+	vectorReservedName.push_back(_("saida" ));
+	vectorReservedName.push_back(_("novo" ));
 	vectorReservedName.push_back(_("var" ));
 	vectorReservedName.push_back(_("char"));
 	vectorReservedName.push_back(_("dest"));
@@ -600,10 +600,10 @@ string mapIO::getInternalVarName(string name)
 string mapIO::getReservedName(eType type)
 {
 	switch(type) {
-		case eType_DigInput:			return _("in");
+		case eType_DigInput:			return _("entrada");
 		case eType_InternalRelay:
-        case eType_DigOutput:			return _("out");
-        default:                        return _("new");
+        case eType_DigOutput:			return _("saida");
+        default:                        return _("novo");
 	}
 }
 
@@ -760,13 +760,13 @@ string mapIO::getPortName(int index)
 		if((mcu->uartNeeds.rxPin == detailsIO.pin) ||
 			(mcu->uartNeeds.txPin == detailsIO.pin))
 		{
-			return string(_("<UART needs!>"));
+			return string(_("<UART necessária!>"));
 		}
 	}
 
 	if(PwmFunctionUsed() && mcu != nullptr) {
 		if(mcu->pwmNeedsPin == detailsIO.pin && detailsIO.type == eType_DigOutput) {
-			return string(_("<PWM needs!>"));
+			return string(_("<PWM necessário!>"));
 		}
 	}
 
@@ -786,7 +786,7 @@ string mapIO::getPortName(int index)
 	else if (detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc)
 		strcpy(buf, detailsIO.pin == 1 ? _("Enc. Inc.") : _("Enc. Abs."));
 	else
-		strcpy(buf, _("<not an I/O!>"));
+		strcpy(buf, _("<Não é uma E/S!>"));
 
 	return string(buf);
 }
@@ -801,7 +801,7 @@ string mapIO::getPinName(int index)
 	} else if(detailsIO.type == eType_DigInput || detailsIO.type == eType_DigOutput ||
 		detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc ||
 		detailsIO.type == eType_ReadADC) {
-			strcpy(buf, _("(not assigned)"));
+			strcpy(buf, _("(sem atribuição)"));
 	} else {
 			strcpy(buf, "");
 	}
@@ -841,25 +841,26 @@ bool mapIO::Validate(eValidateIO mode)
 			switch(it->second.second.type) {
 			case eType_ReadADC:
 				sprintf(buf, _("Variável A/D '%s' deve ser associado a um canal válido!"), it->first.c_str());
-				ret = false;
 				break;
 			case eType_ReadEnc:
 				sprintf(buf, _("Leitura de Encoder '%s' deve ser associada a um canal válido!"), it->first.c_str());
-				ret = false;
 				break;
 			case eType_ResetEnc:
 				sprintf(buf, _("Escrita de Encoder '%s' deve ser associada a um canal válido!"), it->first.c_str());
-				ret = false;
 				break;
 			case eType_DigInput:
 			case eType_DigOutput:
-				sprintf(buf, _("Must assign pins for all I/O.\r\n\r\n'%s' is not assigned."), it->first.c_str());
-				ret = false;
+				sprintf(buf, _("Deve associar pinos a todas E/S.\r\n\r\n'%s' não está associado."), it->first.c_str());
 				break;
 			default:
 				// Se chegamos aqui, nao existe erro. Limpa a flag!
 				isError = false;
 			}
+		}
+
+		if(!strlen(buf) && IsReserved(it->first) && mode == eValidateIO_Full) {
+			isError = true; // Marca como erro pois nao podemos aceitar compilar com variaveis reservadas!
+			sprintf(buf, _("Variável '%s' reservada! Favor alterar para um nome válido"), it->first.c_str());
 		}
 
 		if(!isError && it->second.second.type != eType_Reserved) {
@@ -872,6 +873,7 @@ bool mapIO::Validate(eValidateIO mode)
 
 		if(strlen(buf)) {
 			if(diagram->ShowValidateDialog(isError, buf) == eReply_Cancel || isError) {
+				ret = false; // Se foi cancelado ou foi erro, marca a flag para indicar o erro na saida
 				break; // Usuario interrompeu!
 			}
 		}
@@ -992,18 +994,18 @@ const char *mapIO::getTypeString(eType type)
 {
     switch(type) {
         case eType_Reserved:			return _("reservado");
-		case eType_DigInput:			return _("digital in");
-        case eType_DigOutput:			return _("digital out");
-		case eType_InternalRelay:		return _("int. relay");
+		case eType_DigInput:			return _("entrada digital");
+        case eType_DigOutput:			return _("saída digital");
+		case eType_InternalRelay:		return _("rele interno");
         case eType_TxUART:				return _("UART tx");
 		case eType_RxUART:				return _("UART rx");
-        case eType_PWM:					return _("PWM out");
-		case eType_TON:					return _("turn-on delay");
-		case eType_TOF:					return _("turn-off delay");
-        case eType_RTO:					return _("retentive timer");
-        case eType_Counter:				return _("counter");
-		case eType_General:				return _("general var");
-        case eType_ReadADC:				return _("adc input");
+        case eType_PWM:					return _("saída PWM");
+		case eType_TON:					return _("atraso p/ ativar");
+		case eType_TOF:					return _("atraso p/ desativar");
+        case eType_RTO:					return _("atraso com memória");
+        case eType_Counter:				return _("contador");
+		case eType_General:				return _("var geral");
+        case eType_ReadADC:				return _("entrada adc");
         case eType_ReadEnc:				return _("entrada encoder");
         case eType_ResetEnc:			return _("write encoder");
         case eType_ReadUSS:				return _("read USS");
@@ -1300,7 +1302,7 @@ static BOOL MakeWindowClass()
 
 static void MakeControls(void)
 {
-    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Assign:"),
+    HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Atribua:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         6, 1, 50, 17, IoDialog, NULL, Instance, NULL);
     NiceFont(textLabel);
@@ -1330,7 +1332,7 @@ static void MakeControls(void)
         10, 365, 107, 23, IoDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         10, 396, 107, 23, IoDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -1343,23 +1345,11 @@ void mapIO::ShowIoMapDialog(int item)
 	mapDetails detailsIO = getDetails(id);
 
 	if(mcu == nullptr) {
-		ladder->ShowDialog(eDialogType_Error, false, _("I/O Pin Assignment"),
+		ladder->ShowDialog(eDialogType_Error, false, _("Atribuição de Pinos de E/S"),
             _("No microcontroller has been selected. You must select a "
             "microcontroller before you can assign I/O pins.\r\n\r\n"
             "Select a microcontroller under the Settings menu and try "
             "again."));
-        return;
-    }
-
-    if(mcu->whichIsa == ISA_ANSIC) {
-        Error(_("Can't specify I/O assignment for ANSI C target; compile and "
-            "see comments in generated source code."));
-        return;
-    }
-
-    if(mcu->whichIsa == ISA_INTERPRETED) {
-        Error(_("Can't specify I/O assignment for interpretable target; see "
-            "comments in reference implementation of interpreter."));
         return;
     }
 
@@ -1381,12 +1371,12 @@ void mapIO::ShowIoMapDialog(int item)
        detailsIO.type != eType_ReadEnc &&
 	   detailsIO.type != eType_ResetEnc)
     {
-        Error(_("Can only assign pin number to input/output pins or general variable."));
+        Error(_("Somente pode atribuir números dos pinos aos pinos de Entrada/Saída ou Variável de Uso Geral."));
         return;
     }
 
     if(detailsIO.type == eType_ReadADC && mcu->adcCount == 0) {
-        Error(_("No ADC or ADC not supported for this micro."));
+        Error(_("O dispositivo selecionado não possui ADC ou não suporta."));
         return;
     }
 
@@ -1402,7 +1392,7 @@ void mapIO::ShowIoMapDialog(int item)
     // APPWINDOW style, it becomes impossible to get the window back (by
     // Alt+Tab or taskbar).
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
-        "POPToolsIo", _("I/O Pin"),
+        "POPToolsIo", _("Pino E/S"),
         WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 127, 430, MainWindow, NULL, Instance, NULL);
 
@@ -1433,7 +1423,7 @@ void mapIO::ShowIoMapDialog(int item)
 		SetWindowPos(PinList, NULL, 6, 18, r.right - r.left, r.bottom - r.top, SWP_NOZORDER);
 	}
 
-    SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(no pin)"));
+    SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(sem pino)"));
 	PinListItemCount++;
 
 	tMapIO::iterator it;
@@ -1634,7 +1624,7 @@ int *ShowWatchPointDialog(char *name, eType type, int *curval, int *newval)
 		Button_SetCheck(CheckON , BST_CHECKED  );
 		Button_SetCheck(CheckOFF, BST_UNCHECKED);
 	} else {
-		HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Name:"),
+		HWND textLabel = CreateWindowEx(0, WC_STATIC, _("Nome:"),
 			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
 			10, 45, 40, 21, WPDialog, NULL, Instance, NULL);
 		NiceFont(textLabel);
@@ -1650,7 +1640,7 @@ int *ShowWatchPointDialog(char *name, eType type, int *curval, int *newval)
         150, 10, 70, 30, WPDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         150, 45, 70, 30, WPDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -1747,7 +1737,6 @@ void IoMapListProc(NMHDR *h)
 			}
 			break;
         case LVN_GETDISPINFO: {
-			McuIoInfo *mcu = ladder->getMCU();
             NMLVDISPINFO *i = (NMLVDISPINFO *)h;
             int item = i->item.iItem;
             switch(i->item.iSubItem) {
@@ -1763,15 +1752,6 @@ void IoMapListProc(NMHDR *h)
 							strcpy(i->item.pszText, "");
 						}
 					} else {
-						// Don't confuse people by displaying bogus pin assignments
-						// for the C target.
-						if(mcu != nullptr && (mcu->whichIsa == ISA_ANSIC ||
-										mcu->whichIsa == ISA_INTERPRETED) )
-						{
-							strcpy(i->item.pszText, "");
-							break;
-						}
-
 						strcpy(i->item.pszText, ladder->getPinNameIO(item).c_str());
 					}
                     break;
@@ -1788,16 +1768,7 @@ void IoMapListProc(NMHDR *h)
 				}
 
                 case LV_IO_PORT: {
-					McuIoInfo *mcu = ladder->getMCU();
-                    // Don't confuse people by displaying bogus pin assignments
-                    // for the C target.
-                    if(mcu != nullptr && mcu->whichIsa == ISA_ANSIC) {
-                        strcpy(i->item.pszText, "");
-                        break;
-                    }
-
 					strcpy(i->item.pszText, ladder->getPortNameIO(item).c_str());
-
 					break;
                 }
 
@@ -1931,7 +1902,7 @@ SWORD ShowSliderPopup(const char *name, SWORD currentVal, SWORD minVal, SWORD ma
     }
     if(top < 0) top = 0;
 
-    HWND SliderMain = CreateWindowClient(0, "POPToolsSlider", _("I/O Pin"),
+    HWND SliderMain = CreateWindowClient(0, "POPToolsSlider", _("Pino E/S"),
         WS_VISIBLE | WS_POPUP | WS_DLGFRAME,
         left, top, 195, 100, MainWindow, NULL, Instance, NULL);
 	HWND SliderTrackbar = CreateWindowEx(0, TRACKBAR_CLASS, "", WS_CHILD |
@@ -1955,7 +1926,7 @@ SWORD ShowSliderPopup(const char *name, SWORD currentVal, SWORD minVal, SWORD ma
         40, 65, 70, 23, SliderMain, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         120, 65, 70, 23, SliderMain, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -2039,7 +2010,7 @@ void ShowAnalogSliderPopup(const char *name)
 	}
 
 	if(maxVal == 0) {
-        Error(_("No ADC or ADC not supported for selected micro."));
+        Error(_("O dispositivo selecionado não possui ADC ou não suporta."));
         return;
     }
 

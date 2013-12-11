@@ -370,7 +370,6 @@
     <ClInclude Include="flashmagiccommon.h" />
     <ClInclude Include="freeze.h" />
     <ClInclude Include="intcode.h" />
-    <ClInclude Include="lang-tables.h" />
     <ClInclude Include="poptools.h" />
     <ClInclude Include="mcutable.h" />
     <ClInclude Include="resource.h" />

@@ -191,9 +191,6 @@
     <ClInclude Include="intcode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="lang-tables.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="mcutable.h">
       <Filter>Header Files</Filter>
     </ClInclude>

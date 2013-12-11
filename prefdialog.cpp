@@ -127,7 +127,7 @@ static void MakeControls(void)
         135, 280, 70, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         210, 280, 70, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -181,7 +181,7 @@ void ShowPrefDialog(void)
 
 	// Load Combobox items
 	for (i = 0; AutoSaveItems[i].text; i++)
-		SendMessage(AutoSaveIntervalCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)AutoSaveItems[i].text));
+		SendMessage(AutoSaveIntervalCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)_(AutoSaveItems[i].text)));
 	// Search for item to be selected
 	for (i = 0; AutoSaveItems[i].text; i++) {
 		if(AutoSaveItems[i].interval >= POPSettings.AutoSaveInterval)

@@ -47,7 +47,7 @@ void ExportDrawingAsText(char *file)
 
     FILE *f = fopen(file, "w");
     if(!f) {
-        Error(_("Couldn't open '%s'\n"), f);
+        Error(_("Não pode abrir o arquivo '%s'\n"), f);
         return;
     }
 
@@ -72,9 +72,9 @@ void ExportDrawingAsText(char *file)
     CheckFree(ExportBuffer);
     ExportBuffer = NULL;
 
-    fprintf(f, _("\n\nI/O ASSIGNMENT:\n\n"));
+    fprintf(f, _("\n\nE/S ATRIBUIDA:\n\n"));
     
-    fprintf(f, _("  Name                       | Type               | Pin\n"));
+    fprintf(f, _("  Nome                       | Tipo               | Pino\n"));
     fprintf(f,   " ----------------------------+--------------------+------\n");
 
 	string name;

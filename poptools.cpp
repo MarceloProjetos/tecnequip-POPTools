@@ -211,8 +211,8 @@ void TranslateSpeed(void *data)
 	int i = 0;
 	while(i++ < 100000) {
 		_("bla");
-		_("in");
-		_("Yes");
+		_("entrada");
+		_("Sim");
 	}
 }
 
@@ -235,7 +235,7 @@ static bool SaveAsDialog(void)
 		return false;
 
 	if(!SaveProjectToFile(CurrentSaveFile)) {
-        Error(_("Couldn't write to '%s'."), CurrentSaveFile);
+        Error(_("Não pode gravar para '%s'."), CurrentSaveFile);
         return false;
     } else {
 		UpdateRecentList(CurrentSaveFile);
@@ -379,7 +379,7 @@ static bool SaveProgram(void)
 	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
 	if(ladder->getCurrentFilename().size() > 0 && settings.canSave) {
 		if(!SaveProjectToFile(ladder->getCurrentFilename().c_str())) {
-			Error(_("Couldn't write to '%s'."), ladder->getCurrentFilename().c_str());
+			Error(_("Não pode gravar para '%s'."), ladder->getCurrentFilename().c_str());
             return false;
         } else {
             return true;
@@ -655,7 +655,7 @@ void ShowProgressWindow(int mode)
         10, 40 + offset, 340, 20, hProgressWindow, NULL, Instance, NULL);
     NiceFont(hMessageLabel);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         145, 70 + offset, 70, 23, hProgressWindow, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -684,17 +684,17 @@ static BOOL CompileProgram(BOOL ShowSuccessMessage)
 	if(!GenerateIntermediateCode()) goto CompileProgramEnd;
 
     if(mcu == nullptr) {
-        Error(_("Must choose a target microcontroller before compiling."));
+        Error(_("Deve selecionar um dispositivo antes de compilar."));
         goto CompileProgramEnd;
     }
 
     if(ladder->UartFunctionUsed() && mcu->uartNeeds.rxPin == 0) {
-        Error(_("UART function used but not supported for this micro."));
+        Error(_("Função UART é usada porem não suportada por este dispositivo."));
         goto CompileProgramEnd;
     }
     
     if(ladder->PwmFunctionUsed() && mcu->pwmNeedsPin == 0) {
-        Error(_("PWM function used but not supported for this micro."));
+        Error(_("Função PWM é usada porem não suportada por este dispositivo."));
         goto CompileProgramEnd;
     }
 
@@ -819,8 +819,7 @@ bool CheckSaveUserCancels(void)
     }
 
 	eReply r = ladder->ShowDialog(eDialogType_Question, true, "POPTools",
-        _("The program has changed since it was last saved.\r\n\r\n"
-        "Do you want to save the changes?"));
+        _("Este programa contém mudanças desde a última vez salva.\r\n\r\n Você quer salvar as mudanças?"));
     switch(r) {
 		case eReply_Yes:
             if(SaveProgram())
@@ -917,7 +916,7 @@ static void OpenDialog(char *filename)
 	}
 
     if(!LoadProjectFromFile(tempSaveFile)) {
-        Error(_("Couldn't open '%s'."), tempSaveFile);
+        Error(_("Não pode abrir '%s'."), tempSaveFile);
 		if(newProgramCreated) {
 			CloseProgram(ladder);
 		}
@@ -1989,7 +1988,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	LoadSettings();
 
-	initLangTables();
 	setLanguage(POPSettings.idLanguage);
 
     MakeWindowClass();

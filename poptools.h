@@ -536,10 +536,6 @@ typedef struct McuEncPinInfoTag {
     BYTE    muxRegValue;
 } McuEncPinInfo;
 
-#define ISA_AVR             0x00
-#define ISA_PIC16           0x01
-#define ISA_ANSIC           0x02
-#define ISA_INTERPRETED     0x03
 #define ISA_LPC17	        0x04
 
 #define MAX_IO_PORTS        256

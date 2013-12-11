@@ -119,7 +119,7 @@ static void MakeControls(int boxes, const char **labels, DWORD fixedFontMask,
         218, 11, 70, 23, SimpleDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         218, 41, 70, 23, SimpleDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -226,13 +226,13 @@ BOOL ShowSimpleDialog(const char *title, int boxes, const char **labels, DWORD n
                     (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )
             {
                 if(strlen(get) == 0) {
-                    Error(_("Empty textbox; not permitted."));
+                    Error(_("Texto vazio; não é permitido"));
 					break;
                 } else {
                     strcpy(tmp + (i * sizeof(get)), get);
                 }
             } else {
-                Error(_("Bad use of quotes: <%s>"), get);
+                Error(_("Mau uso das aspas: <%s>"), get);
 				break;
             }
         }

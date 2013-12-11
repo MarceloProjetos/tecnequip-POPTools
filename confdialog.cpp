@@ -62,19 +62,19 @@ static LONG_PTR PrevBaudProc;
 
 //const LPCTSTR ComboboxPLCItens[] = { _("POP7"), _("POP9") };
 
-const LPCTSTR ComboboxGMTItens[] = { _("(GMT-12) Linha de Data Internacional Oeste"), _("(GMT-11) Ilhas Midway,Samoa"),
-								_("(GMT-10) Hawaí"), _("(GMT-09) Alasca"),
-								_("(GMT-08) Hora do Pacífico"), _("(GMT-07) Hora das Montanhas (EUA e Canadá)"),
-								_("(GMT-06) América Central, Hora Central EUA/Canadá"), _("(GMT-05) Lima, Bogotá"),
-								_("(GMT-04) Rio Branco, Manaus, Caracas, La Paz"), _("(GMT-03) Brasilia, Buenos Aires"),
-								_("(GMT-02) Atlântico Central"), _("(GMT-01) Açores, Cabo Verde"),
-								_("(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa"), _("(GMT+01) Berlim, Estocolmo, Roma, Bruxelas"),
-								_("(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém"), _("(GMT+03) Bagdá, Kuwait, Nairóbi, Moscou,Riad"),
-								_("(GMT+04) Abu Dhabi, Mascate, Hora Padrão do Cáucaso"), _("(GMT+05) Islamabad, Karachi, Ekaterinburgo"),
-								_("(GMT+06) Almaty, Dacca"), _("(GMT+07) Bangcoc, Jacarta, Hanói"),
-								_("(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura"), _("(GMT+09) Tóquio, Osaka, Sapporo, Seul, Yakutsk"),
-								_("(GMT+10) Brisbane, Camberra, Melbourne, Sydney"), _("(GMT+11) Magadã, Ilhas Salomão, Nova Caledônia"),
-								_("(GMT+12) Fiji, Kamchatka, Auckland"), _("(GMT+13) Nuku'alofa") };
+const LPCTSTR ComboboxGMTItens[] = { "(GMT-12) Linha de Data Internacional Oeste", "(GMT-11) Ilhas Midway,Samoa",
+								"(GMT-10) Hawaí", "(GMT-09) Alasca",
+								"(GMT-08) Hora do Pacífico", "(GMT-07) Hora das Montanhas (EUA e Canadá)",
+								"(GMT-06) América Central, Hora Central EUA/Canadá", "(GMT-05) Lima, Bogotá",
+								"(GMT-04) Rio Branco, Manaus, Caracas, La Paz", "(GMT-03) Brasilia, Buenos Aires",
+								"(GMT-02) Atlântico Central", "(GMT-01) Açores, Cabo Verde",
+								"(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa", "(GMT+01) Berlim, Estocolmo, Roma, Bruxelas",
+								"(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém", "(GMT+03) Bagdá, Kuwait, Nairóbi, Moscou,Riad",
+								"(GMT+04) Abu Dhabi, Mascate, Hora Padrão do Cáucaso", "(GMT+05) Islamabad, Karachi, Ekaterinburgo",
+								"(GMT+06) Almaty, Dacca", "(GMT+07) Bangcoc, Jacarta, Hanói",
+								"(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura", "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Yakutsk",
+								"(GMT+10) Brisbane, Camberra, Melbourne, Sydney", "(GMT+11) Magadã, Ilhas Salomão, Nova Caledônia",
+								"(GMT+12) Fiji, Kamchatka, Auckland", "(GMT+13) Nuku'alofa" };
 
 const LPCTSTR ComboboxBaudRateItens[] = { /*"2400", "4800", "7200",*/ "9600", "14400", "19200"/*, "28800", 
 						"38400", "57600", "115200"*/ };
@@ -87,21 +87,21 @@ const LPCTSTR ComboboxBaudRateItens[] = { /*"2400", "4800", "7200",*/ "9600", "1
 const LPCTSTR ComboboxSNTPItens[] = { "br.pool.ntp.org", "a.ntp.br", "gps.ntp.br", "pool.ntp.org", "time-nw.nist.gov", "time.microsoft.com" };
 
 struct strSerialConfig SerialConfig[] = {
-	{ 8, NOPARITY  , ONESTOPBIT, _("8-None-1") },
-	{ 8, EVENPARITY, ONESTOPBIT, _("8-Even-1") },
-	{ 8, ODDPARITY , ONESTOPBIT, _("8-Odd-1" ) },
-	{ 7, NOPARITY  , ONESTOPBIT, _("7-None-1") },
-	{ 7, EVENPARITY, ONESTOPBIT, _("7-Even-1") },
-	{ 7, ODDPARITY , ONESTOPBIT, _("7-Odd-1" ) }
+	{ 8, NOPARITY  , ONESTOPBIT, "8-Nenhum-1" },
+	{ 8, EVENPARITY, ONESTOPBIT, "8-Par-1"    },
+	{ 8, ODDPARITY , ONESTOPBIT, "8-Ímpar-1"  },
+	{ 7, NOPARITY  , ONESTOPBIT, "7-Nenhum-1" },
+	{ 7, EVENPARITY, ONESTOPBIT, "7-Par-1"    },
+	{ 7, ODDPARITY , ONESTOPBIT, "7-Ímpar-1"  }
 };
 
-const char *EncAbsConfig[] = { _("Leitura Gray"), _("Leitura Binário") };
+const char *EncAbsConfig[] = { "Leitura Gray", "Leitura Binário" };
 
-const char *SerialParityString[] = { _("Sem Paridade"), _("Paridade Ímpar"), _("Paridade Par") };
+const char *SerialParityString[] = { "Sem Paridade", "Paridade Ímpar", "Paridade Par" };
 
-const char *ModBUSInterfaces[] = { _("RS-485"), _("Ethernet") };
+const char *ModBUSInterfaces[] = { "RS-485", "Ethernet" };
 
-const char *EncoderConvModes[] = { _("Sem conversão"), _("Metros"), _("Milímetros"), _("Décimos de milímetro") };
+const char *EncoderConvModes[] = { "Sem conversão", "Metros", "Milímetros", "Décimos de milímetro" };
 
 #define CONFTVI_ID_INFO              0
 #define CONFTVI_ID_INFO_PROJECT      1
@@ -595,7 +595,7 @@ static void MakeControls(void)
         155, 67, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
 //    NiceFont(ip);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Mascara:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Máscara:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 97, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
     NiceFont(textLabel);
@@ -983,7 +983,7 @@ static void MakeControls(void)
         365, 207, 69, 23, ConfDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
-    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancel"),
+    CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         441, 207, 69, 23, ConfDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
@@ -994,7 +994,7 @@ bool ShowConfDialog(eConfSection confSection)
 	bool changed = false;
 	unsigned int i;
     // The window's height will be resized later, to fit the explanation text.
-    ConfDialog = CreateWindowClient(0, "POPToolsDialog", _("PLC Configuration"),
+    ConfDialog = CreateWindowClient(0, "POPToolsDialog", _("Configuração PLC"),
         WS_OVERLAPPED | WS_SYSMENU,
         150, 160, 517, 237, MainWindow, NULL, Instance, NULL); //The cofig windows size
 
@@ -1075,11 +1075,11 @@ bool ShowConfDialog(eConfSection confSection)
 	SendMessage(AbortModeCombobox, CB_SETCURSEL, settingsDac.ramp_abort_mode-1, 0);
 
 	for (i = 0; i < sizeof(ModBUSInterfaces) / sizeof(ModBUSInterfaces[0]); i++)
-		SendMessage(MBiface, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ModBUSInterfaces[i]));
+		SendMessage(MBiface, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(ModBUSInterfaces[i])));
 
 	for (i = 0; i < sizeof(EncoderConvModes) / sizeof(EncoderConvModes[0]); i++) {
-		SendMessage(IncConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)EncoderConvModes[i]));
-		SendMessage(SSIConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)EncoderConvModes[i]));
+		SendMessage(IncConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(EncoderConvModes[i])));
+		SendMessage(SSIConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(EncoderConvModes[i])));
 	}
 	SendMessage(IncConvModeCombobox, CB_SETCURSEL, settingsEncInc.conv_mode, 0);
 	SendMessage(SSIConvModeCombobox, CB_SETCURSEL, settingsEncSSI.conv_mode, 0);
@@ -1088,7 +1088,7 @@ bool ShowConfDialog(eConfSection confSection)
 	LoadMBMasterControls(0);
 
 	for (i = 0; i < sizeof(SerialConfig) / sizeof(SerialConfig[0]); i++)
-		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)SerialConfig[i].ConfigName));
+		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(SerialConfig[i].ConfigName)));
 
 	SendMessage(ParityCombobox, CB_SETCURSEL, settingsUart.UART, 0);
 	SendMessage(ParityCombobox, CB_SETDROPPEDWIDTH, 100, 0);
@@ -1109,12 +1109,12 @@ bool ShowConfDialog(eConfSection confSection)
 	SendMessage(SNTPCombobox, WM_SETTEXT, 0, (LPARAM)settingsSntp.sntp_server.c_str());
 
 	for (i = 0; i < sizeof(ComboboxGMTItens) / sizeof(ComboboxGMTItens[0]); i++)
-		SendMessage(GMTCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxGMTItens[i]));
+		SendMessage(GMTCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(ComboboxGMTItens[i])));
 	SendMessage(GMTCombobox, CB_SETCURSEL, settingsSntp.gmt, 0);
 	SendMessage(GMTCombobox, CB_SETDROPPEDWIDTH, 300, 0);
 
 	for (i = 0; i < sizeof(EncAbsConfig) / sizeof(EncAbsConfig[0]); i++)
-		SendMessage(SSIModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)EncAbsConfig[i]));
+		SendMessage(SSIModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(EncAbsConfig[i])));
 	SendMessage(SSIModeCombobox, CB_SETCURSEL, settingsEncSSI.mode, 0);
 
 	if (settingsSntp.dailysave)

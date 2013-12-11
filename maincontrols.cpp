@@ -75,11 +75,11 @@ void MakeMainWindowControls(void)
     int pinWidth = 100;
     int portWidth = 90;
     
-    LV_ADD_COLUMN(IoList, LV_IO_NAME,  250,       _("Name"));
-    LV_ADD_COLUMN(IoList, LV_IO_TYPE,  typeWidth, _("Type"));
-    LV_ADD_COLUMN(IoList, LV_IO_STATE, 100,       _("State"));
-    LV_ADD_COLUMN(IoList, LV_IO_PIN,   pinWidth,  _("Pin on Processor"));
-    LV_ADD_COLUMN(IoList, LV_IO_PORT,  portWidth, _("MCU Port"));
+    LV_ADD_COLUMN(IoList, LV_IO_NAME,  250,       _("Nome"));
+    LV_ADD_COLUMN(IoList, LV_IO_TYPE,  typeWidth, _("Tipo"));
+    LV_ADD_COLUMN(IoList, LV_IO_STATE, 100,       _("Estado"));
+    LV_ADD_COLUMN(IoList, LV_IO_PIN,   pinWidth,  _("Nro Porta E/S"));
+    LV_ADD_COLUMN(IoList, LV_IO_PORT,  portWidth, _("Porta do PLC"));
 
     HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS, 
@@ -93,7 +93,7 @@ void MakeMainWindowControls(void)
     GetWindowRect(VertScrollBar, &scroll);
     ScrollWidth = scroll.right - scroll.left;
 
-    TabCtrl = CreateWindowEx(0, WC_TABCONTROL, _("TabControl"),
+    TabCtrl = CreateWindowEx(0, WC_TABCONTROL, "TabControl",
 		WS_CLIPSIBLINGS | WS_VISIBLE | WS_CHILD,
 		0, 0, 1, 1, MainWindow, NULL, Instance, NULL);// The tabCtrl size inside windows
 	NiceFont(TabCtrl);
@@ -182,12 +182,12 @@ void UpdateMainWindowTitleBar(void)
     char line[MAX_PATH+100];
     if(ladder->getContext().inSimulationMode) {
         if(RealTimeSimulationRunning) {
-            strcpy(line, _("POPTools - Simulation (Running)"));
+            strcpy(line, _("POPTools - Simulação (Executando)"));
         } else {
-            strcpy(line, _("POPTools - Simulation (Stopped)"));
+            strcpy(line, _("POPTools - Simulação (Parado)"));
         }
     } else {
-        strcpy(line, _("POPTools - Program Editor"));
+        strcpy(line, _("POPTools"));
     }
 
 	char buf[1024];
@@ -205,7 +205,7 @@ void UpdateMainWindowTitleBar(void)
 		string basename = currentFilename.substr(pos + 1);
 		strcpy(buf, basename.c_str());
     } else {
-		strcpy(buf, _(" - (not yet saved)"));
+		strcpy(buf, _(" - (ainda não salvo)"));
         sprintf(line+strlen(line), " - %d.%d.%d.%d%s", 
 			wMajor,
 			wMinor,
@@ -454,13 +454,8 @@ void RefreshControlsToSettings(void)
 	sprintf(buf, _("ModBUS ID: %d"), settingsMbSlave.ModBUSID);
     SendMessage(StatusBar, SB_SETTEXT, 2, (LPARAM)buf);
 
-    if(mcu != nullptr && (mcu->whichIsa == ISA_ANSIC || mcu->whichIsa == ISA_INTERPRETED))
-    {
-		strcpy(buf, "");
-    } else {
-		sprintf(buf, _("RS-485: %d bps, %d bits de dados, %s, Bits de Parada: %d"), settingsUart.baudRate, SerialConfig[settingsUart.UART].bByteSize,
-			SerialParityString[SerialConfig[settingsUart.UART].bParity], SerialConfig[settingsUart.UART].bStopBits == ONESTOPBIT ? 1 : 2);
-    }
+	sprintf(buf, _("RS-485: %d bps, %d bits de dados, %s, Bits de Parada: %d"), settingsUart.baudRate, SerialConfig[settingsUart.UART].bByteSize,
+		_(SerialParityString[SerialConfig[settingsUart.UART].bParity]), SerialConfig[settingsUart.UART].bStopBits == ONESTOPBIT ? 1 : 2);
     SendMessage(StatusBar, SB_SETTEXT, 3, (LPARAM)buf);
 }
 
@@ -604,7 +599,7 @@ void ToggleSimulationMode(void)
 		RibbonSetCmdState(cmdUndo    , TRUE);
 		RibbonSetCmdState(cmdRedo    , TRUE);
 
-		col.pszText = (char *)_("Pin on Processor");
+		col.pszText = (char *)_("Nro Porta E/S");
 
 		if(ladder->UartFunctionUsed()) {
             DestroyUartSimulationWindow();

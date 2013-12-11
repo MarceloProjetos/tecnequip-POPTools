@@ -44,7 +44,7 @@ void Error(const char *str, ...)
     va_list f;
     va_start(f, str);
 
-	Error(_("POPTools Error"), str, f);
+	Error(_("POPTools Erro"), str, f);
 }
 
 void Warning(const char *title, const char *str, ...)
