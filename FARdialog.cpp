@@ -24,7 +24,7 @@ static bool changed;
 static LRESULT CALLBACK FARWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	unsigned int matches, validate_mode;
-	wchar_t texto[100];
+	char texto[100];
 	char search_text[MAX_NAME_LEN], new_text[MAX_NAME_LEN];
 
 	switch (msg) {
@@ -73,9 +73,8 @@ static LRESULT CALLBACK FARWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						if(ladder->IsValidNameAndType(ladder->getIdIO(search_text), new_text, ladder->getDetailsIO(new_text).type, _("Substituir por"),
 								validate_mode | VALIDATE_DONT_ASK | VALIDATE_TYPES_MUST_MATCH | VALIDATE_ACCEPT_IO_PENDING, 0, 0)) {
 							matches = FindAndReplace(search_text, new_text, eSearchAndReplaceMode_ReplaceAll);
-							// TODO: Internacionalizar
 							if(matches) {
-								swprintf(texto, sizeof(texto)/sizeof(*texto), L"Encontrada(s) %d ocorrência(s)", matches);
+								sprintf(texto, _("Encontrada(s) %d ocorrência(s)"), matches);
 								ShowTaskDialog(texto, NULL, TD_INFORMATION_ICON, TDCBF_OK_BUTTON);
 								changed = true;
 							} else {

@@ -11,39 +11,22 @@
 
 #pragma comment(linker, "\"/manifestdependency:type='Win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
-const COMDLG_FILTERSPEC c_rgSaveTypes[][2] =
+const char *c_rgSaveTypes[][2][2] =
 {
-#ifdef LDLANG_PT
-		{ { L"Projetos POPTools (*.ld)", L"*.ld" },
-		  { L"Todos os Arquivos (*.*)", L"*.*"  } },
+		{ { "Projetos POPTools (*.ld)", "*.ld" },
+		  { "Todos os Arquivos (*.*)", "*.*"  } },
 
-		{ { L"Projetos POPTools (*.ld)", L"*.ld" },
-		  { L"Todos os Arquivos (*.*)", L"*.*"  } },
+		{ { "Projetos POPTools (*.ld)", "*.ld" },
+		  { "Todos os Arquivos (*.*)", "*.*"  } },
 
-		{ { L"Arquivos de Texto (*.txt)", L"*.txt" },
-		  { L"Todos os Arquivos (*.*)", L"*.*"  } },
+		{ { "Arquivos de Texto (*.txt)", "*.txt" },
+		  { "Todos os Arquivos (*.*)", "*.*"  } },
 
-		{ { L"Arquivos de Linguagem C (*.c)", L"*.c" },
-		  { L"Todos os Arquivos (*.*)", L"*.*"  } },
+		{ { "Arquivos de Linguagem C (*.c)", "*.c" },
+		  { "Todos os Arquivos (*.*)", "*.*"  } },
 
-		{ { L"Arquivos CSV (*.csv)", L"*.csv" },
-		  { L"Todos os Arquivos (*.*)", L"*.*"  } },
-#else
-		{ { L"POPTools Projects (*.ld)", L"*.ld" },
-		  { L"All Files (*.*)", L"*.*"  } },
-
-		{ { L"POPTools Projects (*.ld)", L"*.ld" },
-		  { L"All Files (*.*)", L"*.*"  } },
-
-		{ { L"Text Files (*.txt)", L"*.txt" },
-		  { L"All Files (*.*)", L"*.*"  } },
-
-		{ { L"C Language Files (*.c)", L"*.c" },
-		  { L"All Files (*.*)", L"*.*"  } },
-
-		{ { L"CSV Files (*.csv)", L"*.csv" },
-		  { L"All Files (*.*)", L"*.*"  } },
-#endif
+		{ { "Arquivos CSV (*.csv)", "*.csv" },
+		  { "Todos os Arquivos (*.*)", "*.*"  } },
 };
 
 /* File Dialog Event Handler *****************************************************************************************************/
@@ -172,8 +155,15 @@ HRESULT FileDialogShow(enum FDS_Mode mode, char *DefExt, char *FileName)
 						hr = pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM);
 						if (SUCCEEDED(hr))
 						{
+							int i, size = ARRAYSIZE(c_rgSaveTypes[mode]);
+							COMDLG_FILTERSPEC *filter = new COMDLG_FILTERSPEC[size];
+							for(i = 0; i < size; i++) {
+								filter[i].pszName = ConvString_Convert(NULL, _(c_rgSaveTypes[mode][i][0]));
+								filter[i].pszSpec = ConvString_Convert(NULL,   c_rgSaveTypes[mode][i][1] );
+							}
+
 							// Set the file types to display only. Notice that, this is a 1-based array.
-							hr = pfd->SetFileTypes(ARRAYSIZE(c_rgSaveTypes[mode]), c_rgSaveTypes[mode]);
+							hr = pfd->SetFileTypes(size, filter);
 							if (SUCCEEDED(hr))
 							{
 								pStr.pWideChar = ConvString_Convert(NULL, DefExt);
@@ -218,6 +208,13 @@ HRESULT FileDialogShow(enum FDS_Mode mode, char *DefExt, char *FileName)
 									}
 								}
 							}
+
+							for(i = 0; i < size; i++) {
+								delete filter[i].pszName;
+								delete filter[i].pszSpec;
+							}
+
+							delete [] filter;
 						}
 					}
                 }

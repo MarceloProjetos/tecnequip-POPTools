@@ -2210,25 +2210,26 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 	char ch[] = { 0, 0 };
 	int selected = 0;
 
+	const char *typeLetters = _("ESRF");
 	switch(detailsIO.type) {
 	case eType_Reserved:
 		selected = -1;
 	case eType_DigInput:
-		ch[0] = 'E';
+		ch[0] = typeLetters[0];
 		break;
 
 	case eType_DigOutput:
-		ch[0] = 'S';
+		ch[0] = typeLetters[1];
 		selected = 1;
 		break;
 
 	case eType_InternalRelay:
-		ch[0] = 'R';
+		ch[0] = typeLetters[2];
 		selected = 2;
 		break;
 
 	case eType_InternalFlag:
-		ch[0] = 'F';
+		ch[0] = typeLetters[3];
 		selected = 3;
 		break;
 
@@ -2263,10 +2264,10 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 		// Caixas desenhadas. Agora criamos o conteudo
 		tControlList list;
 
-		list.items.push_back("Entrada");
-		list.items.push_back("Saida");
-		list.items.push_back("Rele Interno");
-		list.items.push_back("Flag Interna");
+		list.items.push_back(_("Entrada"));
+		list.items.push_back(_("Saída"));
+		list.items.push_back(_("Rele Interno"));
+		list.items.push_back(_("Flag Interna"));
 
 		list.selected = selected;
 		list.fnc      = ContactCmdExpandedSource;
@@ -2487,15 +2488,16 @@ bool LadderElemCoil::DrawGUI(bool poweredBefore, void *data)
 	unsigned int selected;
 	mapDetails detailsIO = ladder->getDetailsIO(prop.idName.first);
 
+	const char *typeLetters = _("ESRF");
 	switch(detailsIO.type) {
 	case eType_Reserved:
 	case eType_DigOutput:
-		ch[0] = 'S';
+		ch[0] = typeLetters[1];
 		selected = 0;
 		break;
 
 	case eType_InternalRelay:
-		ch[0] = 'R';
+		ch[0] = typeLetters[2];
 		selected = 1;
 		break;
 
@@ -2848,7 +2850,7 @@ bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
 
 	// Se expandido, desenha o texto com o nome da variavel
 	if(ddg->expanded) {
-		string txt = _("Nome: ") + Diagram->getNameIO(prop.idName);
+		string txt = string(_("Nome:")) + " " + Diagram->getNameIO(prop.idName);
 		rText.top = r.bottom - GridSize.y + 5;
 		rText.bottom = r.bottom;
 		rText.left = r.left + 10;
@@ -3428,17 +3430,17 @@ bool CmpCmdChangeOp(tCommandSource source, void *data)
 
 	const char *s;
 	switch(which) {
-		case ELEM_EQU: s = _("Se Igual"                  ); break;
-		case ELEM_NEQ: s = _("Se Diferente"              ); break;
-		case ELEM_GRT: s = _("Se Maior Que"            ); break;
+		case ELEM_EQU: s = _("Se Igual"             ); break;
+		case ELEM_NEQ: s = _("Se Diferente"         ); break;
+		case ELEM_GRT: s = _("Se Maior Que"         ); break;
 		case ELEM_GEQ: s = _("Se Maior ou Igual Que"); break;
-		case ELEM_LES: s = _("Se Menor Que"               ); break;
-		case ELEM_LEQ: s = _("Se Menor ou Igual Que"   ); break;
+		case ELEM_LES: s = _("Se Menor Que"         ); break;
+		case ELEM_LEQ: s = _("Se Menor ou Igual Que"); break;
 		default: oops();
 	}
 
 	bool ret = cmdChangeName(source.elem, nOp, nOp == 0 ? prop->idOp1 : prop->idOp2, detailsIO.type,
-		ladder->getGeneralTypes(), s, _("Nome:"));
+		ladder->getGeneralTypes(), s, nOp == 0 ? _("Operador 1:") : _("Operador 2:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
@@ -3562,12 +3564,12 @@ bool MathCmdChangeName(tCommandSource source, void *data)
 		case ELEM_SUB: title = _("Subtrair"); break;
 		case ELEM_DIV: title = _("Dividir"  ); break;
 		case ELEM_MUL: title = _("Multiplicar"); break;
-		case ELEM_MOD: title = _("Modulo"  ); break;
+		case ELEM_MOD: title = _("Resto da Divisão"  ); break;
 		default: oops();
 	}
 
 	bool ret = cmdChangeName(source.elem, nVar, pin, detailsIO.type, ladder->getGeneralTypes(),
-		title, nVar == 0 ? _("Operator 1") : (nVar == 1 ? _("Operator 2") : _("Destino:")));
+		title, nVar == 0 ? _("Operador 1:") : (nVar == 1 ? _("Operador 2:") : _("Destino:")));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
@@ -3754,7 +3756,7 @@ bool SqrtCmdChangeName(tCommandSource source, void *data)
 	mapDetails detailsIO = ladder->getDetailsIO(nVar == 0 ? prop->idSrc.first : prop->idDest.first);
 
 	bool ret = cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
-		ladder->getGeneralTypes(), _("Square Root"), nVar == 0 ? _("Origem:") : _("Destino:"));
+		ladder->getGeneralTypes(), _("Raiz Quadrada"), nVar == 0 ? _("Origem:") : _("Destino:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
@@ -3895,7 +3897,7 @@ bool RandCmdChangeVar(tCommandSource source, void *data)
 
 	mapDetails detailsIO = ladder->getDetailsIO(pin.first);
 
-	bool ret = cmdChangeName(source.elem, nVar, pin, detailsIO.type, ladder->getGeneralTypes(), _("Rand"), field);
+	bool ret = cmdChangeName(source.elem, nVar, pin, detailsIO.type, ladder->getGeneralTypes(), _("Randômico"), field);
 
 	// Aqui desalocamos as propriedades
 	delete prop;
@@ -4063,7 +4065,7 @@ bool AbsCmdChangeName(tCommandSource source, void *data)
 	mapDetails detailsIO = ladder->getDetailsIO(nVar == 0 ? prop->idSrc.first : prop->idDest.first);
 
 	bool ret = cmdChangeName(source.elem, nVar, nVar == 0 ? prop->idSrc : prop->idDest, detailsIO.type,
-		ladder->getGeneralTypes(), _("Abs"), nVar == 0 ? _("Origem:") : _("Destino:"));
+		ladder->getGeneralTypes(), _("Absoluto"), nVar == 0 ? _("Origem:") : _("Destino:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
@@ -4114,7 +4116,7 @@ bool LadderElemAbs::DrawGUI(bool poweredBefore, void *data)
 	DoEOL(ddg->start, size, ddg->size, poweredBefore);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "ABSOLUTO", false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("ABSOLUTO"), false, poweredBefore);
 	ddg->region = r;
 
 	unsigned long *pULong;
@@ -4367,7 +4369,7 @@ bool LadderElemSetBit::ShowDialog(LadderContext context)
 	size .x = rArea.right  - rArea.left;
 	size .y = rArea.bottom - rArea.top;
 
-	bool changed = ShowVarBitDialog(_("Set Bit"), _("Nome:"), &NewName, &NewBit, start, size, GridSize, Diagram->getGeneralTypes());
+	bool changed = ShowVarBitDialog(_("Ligar/Desligar Bit"), _("Nome:"), &NewName, &NewBit, start, size, GridSize, Diagram->getGeneralTypes());
 
 	if(changed) {
 		if(Diagram->IsValidNameAndType(prop.idName.first, NewName, eType_General, _("Nome"), VALIDATE_IS_VAR, 0, 0)) {
@@ -4500,7 +4502,7 @@ bool LadderElemCheckBit::ShowDialog(LadderContext context)
 	size .x = rArea.right  - rArea.left;
 	size .y = rArea.bottom - rArea.top;
 
-	bool changed = ShowVarBitDialog(_("Check Bit"), _("Nome:"), &NewName, &NewBit, start, size, GridSize, Diagram->getGeneralTypes());
+	bool changed = ShowVarBitDialog(_("Checar Bit"), _("Nome:"), &NewName, &NewBit, start, size, GridSize, Diagram->getGeneralTypes());
 
 	if(changed) {
 		// Se variavel sem tipo, usa tipo geral.
@@ -4831,7 +4833,7 @@ bool ReadEncCmdChangeName(tCommandSource source, void *data)
 	types.push_back(eType_ReadEnc);
 	types.push_back(eType_General);
 
-	bool ret = cmdChangeName(source.elem, 0, prop->idName, eType_ReadEnc, types, _("Read Encoder"), _("Destino:"));
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, eType_ReadEnc, types, _("Ler do Encoder"), _("Destino:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
@@ -5077,7 +5079,7 @@ bool ResetEncCmdChangeName(tCommandSource source, void *data)
 	types.push_back(eType_ResetEnc);
 	types.push_back(eType_General);
 
-	bool ret = cmdChangeName(source.elem, 0, prop->idName, eType_ResetEnc, types, _("Write Encoder"), _("Origem:"));
+	bool ret = cmdChangeName(source.elem, 0, prop->idName, eType_ResetEnc, types, _("Escrever no Encoder"), _("Origem:"));
 
 	// Aqui desalocamos as propriedades
 	delete prop;
@@ -5536,10 +5538,10 @@ bool LadderElemUSS::DrawGUI(bool poweredBefore, void *data)
 	sprintf(buf, "%s %d", _("ID:"), prop.id);
 	FieldList.push_back(string(buf));
 
-	sprintf(buf, "%s %d", _("Parametro:"), prop.parameter);
+	sprintf(buf, "%s %d", _("Parâmetro:"), prop.parameter);
 	FieldList.push_back(string(buf));
 
-	sprintf(buf, "%s %d", _("Set de Parametro:"), prop.parameter_set);
+	sprintf(buf, "%s %d", _("Set de Parâmetro:"), prop.parameter_set);
 	FieldList.push_back(string(buf));
 
 	sprintf(buf, "%s %d", _("Índice:"), prop.index);
@@ -6820,7 +6822,7 @@ bool LadderElemFmtString::DrawGUI(bool poweredBefore, void *data)
 
 		// Desenha o trecho inicial da string de envio (Antes da variavel)
 		rText.top += FONT_HEIGHT + 5;
-		sprintf(buf, _("Inicio: %s"), getStartStringUART(prop.txt, data).c_str());
+		sprintf(buf, _("Início: %s"), getStartStringUART(prop.txt, data).c_str());
 		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
 
 		pInt = new int;
@@ -6838,14 +6840,14 @@ bool LadderElemFmtString::DrawGUI(bool poweredBefore, void *data)
 
 		vector<tExpandedItem> items;
 		items.push_back(tExpandedItem(_("Fim linha"), 2));
-		items.push_back(tExpandedItem(_("Variavel" ), 1));
+		items.push_back(tExpandedItem(_("Variável" ), 1));
 
 		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 4, items);
 
 		// Caixas desenhadas. Agora criamos o conteudo
 		tControlList list;
 
-		list.items.push_back(_("No"));
+		list.items.push_back(_("Não"));
 		list.items.push_back(_("CR"));
 		list.items.push_back(_("LF"));
 		list.items.push_back(_("CR+LF"));
@@ -6887,13 +6889,13 @@ bool YaskawaCmdChangeValue(tCommandSource source, void *data)
 
 	int max = 0;
 	char cname[100];
-	const char *title = (which == ELEM_READ_SERVO_YASKAWA) ? _("Read Servo Yaskawa") : _("Write Servo Yaskawa"), *desc, *FieldName;
+	const char *title = (which == ELEM_READ_SERVO_YASKAWA) ? _("Ler do Servo Yaskawa") : _("Escrever no Servo Yaskawa"), *desc, *FieldName;
     switch(field) 
 	{
         case 0:
 			strcpy(cname, ladder->getNameIO(prop->idVar).c_str());
 			desc      = _("Variável:");
-			FieldName = _("Variavel" );
+			FieldName = _("Variável" );
 			break;
         case 1:
 			sprintf(cname, "%d", prop->id);
@@ -7089,7 +7091,7 @@ bool LadderElemYaskawa::DrawGUI(bool poweredBefore, void *data)
 	if(ddg->expanded) {
 		tDataStringUART data = getDataStringUART(prop.txt); 
 		vector<tExpandedItem> items;
-		items.push_back(tExpandedItem(_("Variavel" ), 1));
+		items.push_back(tExpandedItem(_("Variável" ), 1));
 
 		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 4, items);
 
@@ -7259,17 +7261,17 @@ bool PIDCmdChangeValue(tCommandSource source, void *data)
 			break;
         case 1:
 			pin = prop->idGainP;
-			desc      = _("Gain P:");
+			desc      = _("Ganho P:");
 			FieldName = _("P" );
 			break;
         case 2:
 			pin = prop->idGainI;
-			desc      = _("Gain I:");
+			desc      = _("Ganho I:");
 			FieldName = _("I" );
 			break;
         case 3:
 			pin = prop->idGainD;
-			desc      = _("Gain D:");
+			desc      = _("Ganho D:");
 			FieldName = _("D" );
 			break;
         case 4:
@@ -7664,13 +7666,13 @@ bool LadderElemPID::DrawGUI(bool poweredBefore, void *data)
 		sprintf(buf, "%s %s", _("Setpoint (SP):"    ), Diagram->getNameIO(prop.idSetpoint    ).c_str());
 		FieldList.push_back(string(buf));
 
-		sprintf(buf, "%s %s", _("Gain P:"           ), Diagram->getNameIO(prop.idGainP       ).c_str());
+		sprintf(buf, "%s %s", _("Ganho P:"           ), Diagram->getNameIO(prop.idGainP       ).c_str());
 		FieldList.push_back(string(buf));
 
-		sprintf(buf, "%s %s", _("Gain I:"           ), Diagram->getNameIO(prop.idGainI       ).c_str());
+		sprintf(buf, "%s %s", _("Ganho I:"           ), Diagram->getNameIO(prop.idGainI       ).c_str());
 		FieldList.push_back(string(buf));
 
-		sprintf(buf, "%s %s", _("Gain D:"           ), Diagram->getNameIO(prop.idGainD       ).c_str());
+		sprintf(buf, "%s %s", _("Ganho D:"           ), Diagram->getNameIO(prop.idGainD       ).c_str());
 		FieldList.push_back(string(buf));
 
 		sprintf(buf, "%s %s", _("Output (OP):"      ), Diagram->getNameIO(prop.idOutput      ).c_str());

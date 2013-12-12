@@ -23,13 +23,7 @@ SPLASH mysplash;
 static HHOOK       MouseHookHandle;
 static int         MouseY;
 
-// For the open/save dialog boxes
-#define LDMICRO_PATTERN _("POPTools Projeto Ladder (*.ld)\0*.ld\0All files\0*\0\0")
-
-#define C_PATTERN    _("Linguagem C (*.c)\0*.c\0Todos os Arquivos\0*\0\0")
 char CurrentCompileFile[MAX_PATH];
-
-#define TXT_PATTERN  _("Arquivos de Texto (*.txt)\0*.txt\0Todos os Arquivos\0*\0\0")
 
 // Internal flags available to the users.
 char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "RampActive", "TcpReady", "TcpTimeout", "" };
@@ -38,14 +32,31 @@ char *InternalFlags[] = { "SerialReady", "SerialTimeout", "SerialAborted", "Ramp
 Settings POPSettings;
 
 // Functions to show Task Dialogs. Task Dialog is a replacement for MessageBox since Windows Vista
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
-	TASKDIALOG_BUTTON *pButtons, TASKDIALOG_BUTTON *pRadioButtons, PCWSTR pszVerificationText, PCWSTR pszExpandedInformation,
-	int *pnRadioButton, BOOL *pfVerificationFlagChecked)
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, PCWSTR pszMainIcon,
+	TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,	TASKDIALOG_BUTTON *pButtons, TASKDIALOG_BUTTON *pRadioButtons,
+	const char *pszVerificationText, const char *pszExpandedInformation, int *pnRadioButton, BOOL *pfVerificationFlagChecked)
 {
 	HRESULT hr;
 	int iButton = 0;
 	UINT cButtons = 0, cRadioButtons = 0;
 	TASKDIALOGCONFIG tdConfig;
+
+	// Converte as strings de char * para wchar *
+	PCWSTR pwszMainInstruction = nullptr, pwszContent = nullptr,
+		pwszVerificationText = nullptr, pwszExpandedInformation = nullptr;
+
+	if(pszMainInstruction != nullptr) {
+		pwszMainInstruction = ConvString_Convert(NULL, pszMainInstruction);
+	}
+	if(pszContent != nullptr) {
+		pwszContent = ConvString_Convert(NULL, pszContent);
+	}
+	if(pszVerificationText != nullptr) {
+		pwszVerificationText = ConvString_Convert(NULL, pszVerificationText);
+	}
+	if(pszExpandedInformation != nullptr) {
+		pwszExpandedInformation = ConvString_Convert(NULL, pszExpandedInformation);
+	}
 
 	tdConfig.cbSize     = sizeof(TASKDIALOGCONFIG);
 	tdConfig.hwndParent = MainWindow;
@@ -66,11 +77,10 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 			;
 	}
 
-	// TODO: Internacionalizar
 	tdConfig.pszWindowTitle     = L"POPTools";
 	tdConfig.pszMainIcon        = pszMainIcon;
-	tdConfig.pszMainInstruction = pszMainInstruction;
-	tdConfig.pszContent         = pszContent;
+	tdConfig.pszMainInstruction = pwszMainInstruction;
+	tdConfig.pszContent         = pwszContent;
 
 	tdConfig.dwCommonButtons = dwCommonButtons;
 	tdConfig.cButtons        = cButtons;
@@ -79,11 +89,14 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 	tdConfig.cRadioButtons   = cRadioButtons;
 	tdConfig.pRadioButtons   = pRadioButtons;
 
-	tdConfig.pszVerificationText     = pszVerificationText;
-	tdConfig.pszExpandedInformation  = pszExpandedInformation;
-	// TODO: Internacionalizar
-	tdConfig.pszExpandedControlText  = L"Mais informações";
-	tdConfig.pszCollapsedControlText = L"Menos informações";
+	tdConfig.pszVerificationText     = pwszVerificationText;
+	tdConfig.pszExpandedInformation  = pwszExpandedInformation;
+
+	PCWSTR pszMoreInfo = ConvString_Convert(NULL, _("Mais informações"));
+	PCWSTR pszLessInfo = ConvString_Convert(NULL, _("Menos informações"));
+
+	tdConfig.pszExpandedControlText  = pszMoreInfo;
+	tdConfig.pszCollapsedControlText = pszLessInfo;
 	tdConfig.hFooterIcon             = NULL;
 	tdConfig.pszFooterIcon           = NULL;
 	tdConfig.pszFooter               = NULL;
@@ -93,22 +106,41 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 	tdConfig.cxWidth        = 0;
 
 	hr = TaskDialogIndirect(&tdConfig, &iButton, pnRadioButton, pfVerificationFlagChecked);
+
+	// Desaloca as strings convertidas
+	if(pwszMainInstruction != nullptr) {
+		delete pwszMainInstruction;
+	}
+	if(pwszContent != nullptr) {
+		delete pwszContent;
+	}
+	if(pwszVerificationText != nullptr) {
+		delete pwszVerificationText;
+	}
+	if(pwszExpandedInformation != nullptr) {
+		delete pwszExpandedInformation;
+	}
+
+	delete pszMoreInfo;
+	delete pszLessInfo;
+
 	return iButton;
 }
 
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons)
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, PCWSTR pszMainIcon,
+	TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons)
 {
 	return ShowTaskDialog(pszMainInstruction, pszContent, pszMainIcon, dwCommonButtons, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
-	PCWSTR pszVerificationText, BOOL *pfVerificationFlagChecked)
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, PCWSTR pszMainIcon,
+	TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,	const char *pszVerificationText, BOOL *pfVerificationFlagChecked)
 {
 	return ShowTaskDialog(pszMainInstruction, pszContent, pszMainIcon, dwCommonButtons, NULL, NULL, pszVerificationText, NULL, NULL, pfVerificationFlagChecked);
 }
 
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
-	PCWSTR pszVerificationText, bool *pfVerificationFlagChecked)
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, PCWSTR pszMainIcon,
+	TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,	const char *pszVerificationText, bool *pfVerificationFlagChecked)
 {
 	BOOL flagBOOL = pfVerificationFlagChecked ? 1 : 0;
 	int ret = ShowTaskDialog(pszMainInstruction, pszContent, pszMainIcon, dwCommonButtons, NULL, NULL, pszVerificationText, NULL, NULL, &flagBOOL);
@@ -118,7 +150,7 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 	return ret;
 }
 
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR *pszButtons)
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, const char **pszButtons)
 {
 	int ret;
 	const unsigned int ID_OFFSET = 1000;
@@ -135,7 +167,7 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR *pszButt
 
 	for(i=0; i < qty; i++) {
 		(pButtons+i)->nButtonID = i+ID_OFFSET+1;
-		(pButtons+i)->pszButtonText = pszButtons[i];
+		(pButtons+i)->pszButtonText = ConvString_Convert(NULL, pszButtons[i]);
 	}
 	(pButtons+i)->pszButtonText = NULL;
 
@@ -143,13 +175,17 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR *pszButt
 	if(ret)
 		ret -= ID_OFFSET;
 
+	for(i=0; i < qty; i++) {
+		delete (pButtons+i)->pszButtonText;
+	}
+
 	delete [] pButtons;
 
 	return ret;
 }
 
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
-	PCWSTR *pszRadioButtons, int *pnRadioButton)
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, PCWSTR pszMainIcon,
+	TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,	const char **pszRadioButtons, int *pnRadioButton)
 {
 	int ret;
 	const unsigned int ID_OFFSET = 1000;
@@ -166,13 +202,17 @@ int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainI
 
 	for(i=0; i < qty; i++) {
 		(pRadioButtons+i)->nButtonID = i+ID_OFFSET+1;
-		(pRadioButtons+i)->pszButtonText = pszRadioButtons[i];
+		(pRadioButtons+i)->pszButtonText = ConvString_Convert(NULL, pszRadioButtons[i]);
 	}
 	(pRadioButtons+i)->pszButtonText = NULL;
 
 	ret = ShowTaskDialog(pszMainInstruction, pszContent, pszMainIcon, dwCommonButtons, NULL, pRadioButtons, NULL, NULL, pnRadioButton, NULL);
 	if(ret)
 		ret -= ID_OFFSET;
+
+	for(i=0; i < qty; i++) {
+		delete (pRadioButtons+i)->pszButtonText;
+	}
 
 	delete [] pRadioButtons;
 
@@ -572,7 +612,7 @@ void ShowProgressWindow(int mode)
 
 	// Creating Progress Window
 	hProgressWindow = CreateWindowClient(0, "POPToolsDialog",
-        _("Progress"), WS_OVERLAPPED | WS_SYSMENU,
+        _("Progresso"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 360, 100, MainWindow, NULL, Instance, NULL);
 
 	// Compile Progress Controls
@@ -1816,8 +1856,7 @@ void LoadSettings(void)
 	}
 
 	if(failed) {
-		// TODO: Internacionalizar
-		ShowTaskDialog(L"Erro ao carregar as preferências", L"Será utilizada a configuração padrão", TD_ERROR_ICON, TDCBF_OK_BUTTON);
+		ShowTaskDialog(_("Erro ao carregar as preferências"), _("Será utilizada a configuração padrão"), TD_ERROR_ICON, TDCBF_OK_BUTTON);
 
 		POPSettings.idLanguage = 0;
 		POPSettings.AutoSaveInterval = 0;

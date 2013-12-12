@@ -274,7 +274,7 @@ static LRESULT CALLBACK ConfDialogProc_ModBusMasterGrouper(HWND hwnd, UINT msg, 
             HWND h = (HWND)lParam;
             if(h == MBok && wParam == BN_CLICKED) {
 				char buf[MAX_NAME_LEN];
-				PCWSTR msg;
+				const char *msg;
 				int i = ComboBox_GetCurSel(MBelem), pos = 1;
 
 				// Check if name already in the list
@@ -287,20 +287,20 @@ static LRESULT CALLBACK ConfDialogProc_ModBusMasterGrouper(HWND hwnd, UINT msg, 
 				}
 
 				if(new_node.name.size() > 0 && !nameOK) {
-					ShowTaskDialog(L"Já existe um elemento com esse nome!", NULL, TD_ERROR_ICON, TDCBF_OK_BUTTON);
+					ShowTaskDialog(_("Já existe um elemento com esse nome!"), NULL, TD_ERROR_ICON, TDCBF_OK_BUTTON);
 				} else { // Name not found,  we can insert / update element.
 					if(!i) { // New element
 						i = ladder->mbCreateNode(buf); // Create the new node
 
 						if(i < 0) {
-							msg = L"Erro ao criar elemento!";
+							msg = _("Erro ao criar elemento!");
 						} else {
-							msg = L"Elemento adicionado com sucesso!";
+							msg = _("Elemento adicionado com sucesso!");
 
 							new_node = ladder->mbGetNodeByIndex(i);
 						}
 					} else { // Updating existent element
-						msg = L"Elemento alterado com sucesso!";
+						msg = _("Elemento alterado com sucesso!");
 
 						new_node = ladder->mbGetNodeByIndex(i-1);
 					}
@@ -333,9 +333,9 @@ static LRESULT CALLBACK ConfDialogProc_ModBusMasterGrouper(HWND hwnd, UINT msg, 
 				int NodeID = ladder->mbGetNodeIDByIndex(i);
 
 				if(ladder->mbGetNodeCount(NodeID) > 0) {
-					ShowTaskDialog(L"Este elemento está em uso!", L"Primeiro remova sua referência de todas as instruções que o utilizam.",
+					ShowTaskDialog(_("Este elemento está em uso!"), _("Primeiro remova sua referência de todas as instruções que o utilizam."),
 						TD_ERROR_ICON, TDCBF_OK_BUTTON);
-				} else if(ShowTaskDialog(L"Tem certeza que deseja excluir o item selecionado?", NULL,
+				} else if(ShowTaskDialog(_("Tem certeza que deseja excluir o item selecionado?"), NULL,
 					TD_WARNING_ICON, TDCBF_YES_BUTTON | TDCBF_NO_BUTTON) == IDYES) {
 						ladder->mbDeleteNode(NodeID);
 						PopulateModBUSMasterCombobox(MBelem, true);
@@ -368,7 +368,7 @@ static LRESULT CALLBACK ConfDialogProc_ModBusMasterGrouper(HWND hwnd, UINT msg, 
 //
 // g_nClosed, and g_nDocument - global indexes of the images.
 
-HTREEITEM AddItemToTree(HWND hwndTV, LPTSTR lpszItem, int nLevel, int nID)
+HTREEITEM AddItemToTree(HWND hwndTV, const char *lpszItem, int nLevel, int nID)
 { 
     TVITEM tvi; 
     TVINSERTSTRUCT tvins; 
@@ -379,7 +379,7 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPTSTR lpszItem, int nLevel, int nID)
     tvi.mask = TVIF_TEXT | TVIF_PARAM; 
 
     // Set the text of the item. 
-    tvi.pszText = lpszItem; 
+    tvi.pszText = (LPSTR)lpszItem; 
     tvi.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
 
     // Save the heading ID in the item's application-defined 
@@ -444,18 +444,11 @@ BOOL InitTreeViewItems(HWND hwndTV)
 { 
     HTREEITEM hti;
 
-    // g_rgDocHeadings is an application-defined global array of 
-    // the following structures: 
-    //     typedef struct 
-    //       { 
-    //         TCHAR tchHeading[MAX_HEADING_LEN]; 
-    //         int tchLevel; 
-    //     } Heading; 
     for (int i = 0; i < ARRAYSIZE(g_rgDocHeadings); i++) 
     { 
         // Add the item to the tree-view control. 
-        hti = AddItemToTree(hwndTV, g_rgDocHeadings[i].tchHeading, 
-            g_rgDocHeadings[i].tchLevel, g_rgDocHeadings[i].tchID);
+        hti = AddItemToTree(hwndTV, _(g_rgDocHeadings[i].tchHeading),
+			g_rgDocHeadings[i].tchLevel, g_rgDocHeadings[i].tchID);
 
         if (hti == NULL)
             return FALSE;

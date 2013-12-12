@@ -636,25 +636,23 @@ int  UpdateProgressWindow(ProgressStatus *ps);
 /*** ShowTaskDialog prototypes ***/
 
 // Full version
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
-	TASKDIALOG_BUTTON *pButtons, TASKDIALOG_BUTTON *pRadioButtons, PCWSTR pszVerificationText, PCWSTR pszExpandedInformation,
-	int *pnRadioButton, BOOL *pfVerificationFlagChecked);
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, PCWSTR pszMainIcon,
+	TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, TASKDIALOG_BUTTON *pButtons, TASKDIALOG_BUTTON *pRadioButtons,
+	const char *pszVerificationText, const char *pszExpandedInformation, int *pnRadioButton, BOOL *pfVerificationFlagChecked);
 
 // MessageBox replacement
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons);
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons);
 
 // MessageBox replacement with CheckBox
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
-	PCWSTR pszVerificationText, BOOL *pfVerificationFlagChecked);
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
-	PCWSTR pszVerificationText, bool *pfVerificationFlagChecked);
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, PCWSTR pszMainIcon,
+	TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,	const char *pszVerificationText, bool *pfVerificationFlagChecked);
 
 // With custom buttons
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR *pszButtons);
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, const char **pszButtons);
 
 // With radio buttons
-int ShowTaskDialog(PCWSTR pszMainInstruction, PCWSTR pszContent, PCWSTR pszMainIcon, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,
-	PCWSTR *pszRadioButtons, int *pnRadioButton);
+int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, PCWSTR pszMainIcon,
+	TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons,	const char **pszRadioButtons, int *pnRadioButton);
 
 /*** End of ShowTaskDialog prototypes ***/
 
@@ -892,7 +890,7 @@ typedef struct {
 void ConvString_Free(tConvString *pStr, bool both);
 void ConvString_Convert(tConvString *pStr);
 char *ConvString_Convert(char *pc, wchar_t *pwc);
-wchar_t *ConvString_Convert(wchar_t *pwc, char *pc);
+wchar_t *ConvString_Convert(wchar_t *pwc, const char *pc);
 
 // multisetdadialog.cpp
 void PopulateAbortModeCombobox(HWND AbortModeCombobox, bool IncludeDefault);

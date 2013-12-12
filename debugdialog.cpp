@@ -701,7 +701,7 @@ void ShowDebugDialog(void)
 	RotateList_Init(&RotateLog);
 
 	DebugDialog = CreateWindowClient(0, "POPDebugDialog",
-        _("Debug"), WS_OVERLAPPED | WS_SYSMENU,
+        _("Depurar"), WS_OVERLAPPED | WS_SYSMENU,
         100, 100, 664, 590, MainWindow, NULL, Instance, NULL);
 
     MakeControls();

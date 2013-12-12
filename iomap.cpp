@@ -1007,15 +1007,15 @@ const char *mapIO::getTypeString(eType type)
 		case eType_General:				return _("var geral");
         case eType_ReadADC:				return _("entrada adc");
         case eType_ReadEnc:				return _("entrada encoder");
-        case eType_ResetEnc:			return _("write encoder");
-        case eType_ReadUSS:				return _("read USS");
-		case eType_WriteUSS:			return _("write USS");
+        case eType_ResetEnc:			return _("escrever encoder");
+        case eType_ReadUSS:				return _("ler USS");
+		case eType_WriteUSS:			return _("escrever USS");
 		case eType_SetDAC:				return _("Set D/A");
 		case eType_ReadModbus:			return _("leitura modbus");
 		case eType_WriteModbus:			return _("escrita modbus");
 		case eType_ReadYaskawa:			return _("leitura NS600");
 		case eType_WriteYaskawa:		return _("escrita NS600");
-		case eType_InternalFlag:		return _("Flag Interna");
+		case eType_InternalFlag:		return _("flag interna");
 		case eType_Pending:				return _("Sem tipo");
         default:                        return "";
     }

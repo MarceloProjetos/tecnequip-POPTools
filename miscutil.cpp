@@ -561,11 +561,11 @@ char *ConvString_Convert(char *pc, wchar_t *pwc)
 	return pc;
 }
 
-wchar_t *ConvString_Convert(wchar_t *pwc, char *pc)
+wchar_t *ConvString_Convert(wchar_t *pwc, const char *pc)
 {
 	tConvString pStr;
 
-	pStr.pChar = pc;
+	pStr.pChar = (char *)pc;
 	pStr.CharToWideChar = true;
 
 	ConvString_Convert(&pStr);

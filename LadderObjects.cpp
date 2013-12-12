@@ -413,22 +413,22 @@ pair<string, string> LadderElemContact::DrawTXT(void)
 	buf[2] = '[';
 	buf[3] = '\0';
 
-	// TODO: Internacionalizar
+	const char *typeLetters = _("ESRF");
 	switch(detailsIO.type) {
 	case eType_DigInput:
-		ch = 'E';
+		ch = typeLetters[0];
 		break;
 
 	case eType_DigOutput:
-		ch = 'S';
+		ch = typeLetters[1];
 		break;
 
 	case eType_InternalRelay:
-		ch = 'R';
+		ch = typeLetters[2];
 		break;
 
 	case eType_InternalFlag:
-		ch = 'F';
+		ch = typeLetters[3];
 		break;
 
 	default:
@@ -651,8 +651,8 @@ pair<string, string> LadderElemCoil::DrawTXT(void)
     buf[2] = ')';
     buf[3] = '\0';
 
-	// TODO: Internacionalizar
-	sprintf(name_with_type, "%s (%c)", name.c_str(), detailsIO.type == eType_DigOutput ? 'S' : 'R');
+	const char *typeLetters = _("ESRF");
+	sprintf(name_with_type, "%s (%c)", name.c_str(), detailsIO.type == eType_DigOutput ? typeLetters[1] : typeLetters[2]);
 
 	return pair<string, string>(name_with_type, buf);
 }
@@ -1273,7 +1273,7 @@ LadderElemCounter::LadderElemCounter(LadderDiagram *diagram, int which) : Ladder
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = eType_Counter;
 	infoIO_Name.access        = which == ELEM_CTC ? eRequestAccessType_ReadWrite : eRequestAccessType_Read;
@@ -1501,7 +1501,7 @@ LadderElemReset::LadderElemReset(LadderDiagram *diagram) : LadderElem(true, fals
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = eType_Pending;
 	infoIO_Name.access        = eRequestAccessType_Write;
@@ -3498,7 +3498,7 @@ LadderElemSetBit::LadderElemSetBit(LadderDiagram *diagram) : LadderElem(false, f
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = eType_General;
 	infoIO_Name.access        = eRequestAccessType_Write;
@@ -3661,7 +3661,7 @@ LadderElemCheckBit::LadderElemCheckBit(LadderDiagram *diagram) : LadderElem(fals
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = eType_General;
 	infoIO_Name.access        = eRequestAccessType_Read;
@@ -3826,7 +3826,7 @@ LadderElemReadAdc::LadderElemReadAdc(LadderDiagram *diagram) : LadderElem(true, 
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = eType_ReadADC;
 	infoIO_Name.access        = eRequestAccessType_Write;
@@ -4028,7 +4028,7 @@ LadderElemSetDa::LadderElemSetDa(LadderDiagram *diagram) : LadderElem(true, fals
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = eType_SetDAC;
 	infoIO_Name.access        = eRequestAccessType_Read;
@@ -4234,7 +4234,7 @@ LadderElemReadEnc::LadderElemReadEnc(LadderDiagram *diagram) : LadderElem(true, 
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = eType_ReadEnc;
 	infoIO_Name.access        = eRequestAccessType_Write;
@@ -4483,7 +4483,7 @@ LadderElemResetEnc::LadderElemResetEnc(LadderDiagram *diagram) : LadderElem(true
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = eType_ResetEnc;
 	infoIO_Name.access        = eRequestAccessType_Read;
@@ -4977,7 +4977,7 @@ LadderElemUSS::LadderElemUSS(LadderDiagram *diagram, int which) : LadderElem(fal
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = (getWhich() == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS;
 	infoIO_Name.access        = (getWhich() == ELEM_READ_USS) ? eRequestAccessType_Write : eRequestAccessType_Read;
@@ -5188,7 +5188,7 @@ LadderElemModBUS::LadderElemModBUS(LadderDiagram *diagram, int which) : LadderEl
 
 	// Caracteristicas do I/O Name
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Name.name          = _("new");
+	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
 	infoIO_Name.type          = (getWhich() == ELEM_READ_MODBUS) ? eType_ReadModbus : eType_WriteModbus;
 	infoIO_Name.access        = (getWhich() == ELEM_READ_MODBUS) ? eRequestAccessType_Write : eRequestAccessType_Read;
@@ -5399,7 +5399,7 @@ bool LadderElemModBUS::internalUpdateNameTypeIO(unsigned int index, string name,
 
 	type = (getWhich() == ELEM_WRITE_MODBUS) ? eType_WriteModbus : eType_ReadModbus;
 
-	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Variavel"), VALIDATE_IS_VAR, 0, 0)) {
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Variável"), VALIDATE_IS_VAR, 0, 0)) {
 		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
 			LadderElemModBUSProp *data = (LadderElemModBUSProp *)getProperties();
 
@@ -5864,7 +5864,7 @@ void LadderElemShiftRegister::createRegs(void)
 	pair<unsigned long, int> pin;
 	for(i = 0; i < prop.stages; i++) {
 		pin = pair<unsigned long, int>(0, 0);
-		strcpy(cname, prop.nameReg.c_str());
+		strcpy(cname, _(prop.nameReg.c_str()));
 		if(i < 10 && prop.stages > 10) {
 			strcat(cname, "0");
 		}
@@ -5878,7 +5878,7 @@ void LadderElemShiftRegister::createRegs(void)
 			}
 		}
 
-		if(!Diagram->getIO(pin, _(cname), type, InfoIO_Regs)) {
+		if(!Diagram->getIO(pin, cname, type, InfoIO_Regs)) {
 			// Ocorreu algum erro ao registrar os I/Os. Solicita novamente com valor padrao
 			prop.nameReg = _("reg");
 			createRegs();
@@ -6088,7 +6088,7 @@ LadderElemLUT::LadderElemLUT(LadderDiagram *diagram) : LadderElem(true, false, f
 
 	// Caracteristicas do I/O Index
 	infoIO_Index.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Index.name          = _("index");
+	infoIO_Index.name          = _("indice");
 	infoIO_Index.isBit         = false;
 	infoIO_Index.type          = eType_General;
 	infoIO_Index.access        = eRequestAccessType_Read;
@@ -6735,7 +6735,7 @@ LadderElemFmtString::LadderElemFmtString(LadderDiagram *diagram, int which) : La
 
 	Diagram->getIO(infoIO_Var);
 
-	prop.txt   = _("value: %d\\r\\n");
+	prop.txt   = _("valor: %d\\r\\n");
 	prop.idVar = infoIO_Var.pin;
 }
 
@@ -7321,7 +7321,7 @@ LadderElemPID::LadderElemPID(LadderDiagram *diagram) : LadderElem(true, false, f
 
 	// Caracteristicas do I/O Setpoint
 	infoIO_Setpoint.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Setpoint.name          = _("new");
+	infoIO_Setpoint.name          = _("novo");
 	infoIO_Setpoint.isBit         = false;
 	infoIO_Setpoint.type          = eType_General;
 	infoIO_Setpoint.access        = eRequestAccessType_Read;
@@ -7333,7 +7333,7 @@ LadderElemPID::LadderElemPID(LadderDiagram *diagram) : LadderElem(true, false, f
 
 	// Caracteristicas do I/O ProcessValue
 	infoIO_ProcessValue.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_ProcessValue.name          = _("new");
+	infoIO_ProcessValue.name          = _("novo");
 	infoIO_ProcessValue.isBit         = false;
 	infoIO_ProcessValue.type          = eType_General;
 	infoIO_ProcessValue.access        = eRequestAccessType_Read;
@@ -7345,7 +7345,7 @@ LadderElemPID::LadderElemPID(LadderDiagram *diagram) : LadderElem(true, false, f
 
 	// Caracteristicas do I/O GainP
 	infoIO_GainP.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_GainP.name          = _("new");
+	infoIO_GainP.name          = _("novo");
 	infoIO_GainP.isBit         = false;
 	infoIO_GainP.type          = eType_General;
 	infoIO_GainP.access        = eRequestAccessType_Read;
@@ -7357,7 +7357,7 @@ LadderElemPID::LadderElemPID(LadderDiagram *diagram) : LadderElem(true, false, f
 
 	// Caracteristicas do I/O GainI
 	infoIO_GainI.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_GainI.name          = _("new");
+	infoIO_GainI.name          = _("novo");
 	infoIO_GainI.isBit         = false;
 	infoIO_GainI.type          = eType_General;
 	infoIO_GainI.access        = eRequestAccessType_Read;
@@ -7369,7 +7369,7 @@ LadderElemPID::LadderElemPID(LadderDiagram *diagram) : LadderElem(true, false, f
 
 	// Caracteristicas do I/O GainD
 	infoIO_GainD.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_GainD.name          = _("new");
+	infoIO_GainD.name          = _("novo");
 	infoIO_GainD.isBit         = false;
 	infoIO_GainD.type          = eType_General;
 	infoIO_GainD.access        = eRequestAccessType_Read;
@@ -7381,7 +7381,7 @@ LadderElemPID::LadderElemPID(LadderDiagram *diagram) : LadderElem(true, false, f
 
 	// Caracteristicas do I/O Output
 	infoIO_Output.pin           = pair<unsigned long, int>(0, 0);
-	infoIO_Output.name          = _("new");
+	infoIO_Output.name          = _("novo");
 	infoIO_Output.isBit         = false;
 	infoIO_Output.type          = eType_General;
 	infoIO_Output.access        = eRequestAccessType_Write;
@@ -8106,7 +8106,7 @@ bool LadderCircuit::GenerateIntCode(IntCode &ic)
 	unsigned int i;
 
 	if(isSeries) {
-		ic.Comment(_("start series ["));
+		ic.Comment(_("iniciando serie ["));
 		for(i = 0; i < vectorSubckt.size() && ret; i++) {
 			if(vectorSubckt[i].elem != nullptr) {
 				ret = vectorSubckt[i].elem->GenerateIntCode(ic);
@@ -8114,7 +8114,7 @@ bool LadderCircuit::GenerateIntCode(IntCode &ic)
 				ret = vectorSubckt[i].subckt->GenerateIntCode(ic);
 			}
 		}
-		ic.Comment(_("finish series ["));
+		ic.Comment(_("terminando serie ["));
 	} else {
 		string parThis, parOut;
 		parThis = ic.GenSymParThis();
@@ -8123,7 +8123,7 @@ bool LadderCircuit::GenerateIntCode(IntCode &ic)
 		string stateInOut = ic.getStateInOut();
 		ic.setStateInOut(parThis);
 
-		ic.Comment(_("start parallel ["));
+		ic.Comment(_("iniciando paralelo ["));
 		ic.Op(INT_CLEAR_BIT, parOut.c_str());
 
         for(i = 0; i < vectorSubckt.size() && ret; i++) {
@@ -8143,7 +8143,7 @@ bool LadderCircuit::GenerateIntCode(IntCode &ic)
 		ic.Op(INT_COPY_BIT_TO_BIT, stateInOut.c_str(), parOut.c_str());
 		ic.setStateInOut(stateInOut);
 
-		ic.Comment(_("finish parallel ["));
+		ic.Comment(_("terminando paralelo ["));
 	}
 
 	return ret;
@@ -9382,7 +9382,7 @@ bool LadderDiagram::GenerateIntCode(void)
 		if(rungs[i]->rung->IsComment()) continue;
 
 		ic.Comment("");
-        ic.Comment(_("start rung %d"), i+1);
+        ic.Comment(_("iniciando linha %d"), i+1);
 		ic.ClearParallelCount();
         ic.Op(INT_COPY_BIT_TO_BIT, "$rung_top", "$mcr");
 		ic.SimState(&rungs[i]->isPowered, "$rung_top");

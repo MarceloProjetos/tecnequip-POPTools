@@ -118,7 +118,7 @@ bool ShowModbusDialog(int mode_write, string *name, int *elem, int *address,
 
 	char name_temp[MAX_NAME_LEN];
     SetBitDialog = CreateWindowClient(0, "POPToolsDialog",
-        mode_write ? _("Write ModBUS") : _("Read ModBUS"), WS_OVERLAPPED | WS_SYSMENU,
+        mode_write ? _("Escrever Registrador do ModBUS") : _("Ler Registrador do ModBUS"), WS_OVERLAPPED | WS_SYSMENU,
         start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL);
 
     MakeControls();

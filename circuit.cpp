@@ -260,7 +260,7 @@ bool AddCmp(int which)
 {
 	switch(which) {
 	case ELEM_EQU:
-		ladder->CheckpointBegin(_("Adicionar Condicional Igual a "));
+		ladder->CheckpointBegin(_("Adicionar Condicional Igual a"));
 		break;
 
 	case ELEM_NEQ:
@@ -268,7 +268,7 @@ bool AddCmp(int which)
 		break;
 
 	case ELEM_GRT:
-		ladder->CheckpointBegin(_("Adicionar Condicional Maior que "));
+		ladder->CheckpointBegin(_("Adicionar Condicional Maior que"));
 		break;
 
 	case ELEM_GEQ:
@@ -276,7 +276,7 @@ bool AddCmp(int which)
 		break;
 
 	case ELEM_LES:
-		ladder->CheckpointBegin(_("Adicionar Condicional Menor que "));
+		ladder->CheckpointBegin(_("Adicionar Condicional Menor que"));
 		break;
 
 	case ELEM_LEQ:
