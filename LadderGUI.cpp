@@ -2090,7 +2090,7 @@ bool ContactCmdExpandedNegated(LadderElem *elem, unsigned int negated)
 	LadderElemContactProp *prop = (LadderElemContactProp *)contact->getProperties();
 
 	if(prop->negated != new_negated) {
-		ladder->CheckpointBegin("Inverter Contato");
+		ladder->CheckpointBegin(_("Inverter Contato"));
 
 		prop->negated = new_negated;
 
@@ -2118,6 +2118,27 @@ bool ContactCmdToggleNegated(tCommandSource source, void *data)
 	delete prop;
 
 	return true;
+}
+
+bool ContactCmdChangeType(tCommandSource source, void *data)
+{
+	unsigned int selected;
+	LadderElemContactProp *prop = (LadderElemContactProp *)source.elem->getProperties();
+
+	switch(ladder->getDetailsIO(prop->idName.first).type) {
+		case eType_Reserved     :
+		case eType_DigInput     : selected = 1; break; // Entrada Digital ou Reservado -> Saida
+		case eType_DigOutput    : selected = 2; break; // Saida Digital -> Rele Interno
+		default: // Se for algum tipo invalido, vai para entrada
+		case eType_InternalRelay: selected = 0; break; // Rele interno -> Entrada
+	}
+
+	// Altera o tipo do I/O, ciclando entre os tipos possiveis: Entrada -> Saida -> Rele Interno -> Entrada -> ...
+	bool ret = ContactCmdExpandedSource(source.elem, selected);
+
+	delete prop;
+
+	return ret;
 }
 
 bool LadderElemContact::ShowDialog(LadderContext context)
@@ -2241,9 +2262,9 @@ bool LadderElemContact::DrawGUI(bool poweredBefore, void *data)
 
 	rText      = r;
 	rText.top  = end.y + 5;
-	rText.left = end.x - 15;
-	rText.bottom -= 5;
-	gui.DrawText(ch, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+	rText.left = end.x - 20;
+	gui.DrawText(ch, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.AddCommand(source, rText, ContactCmdChangeType, nullptr, true, false);
 
 	// Desenha o sinal de fechado, se ativado
 	if(prop.negated) {
@@ -2384,7 +2405,7 @@ bool CoilCmdExpandedType(LadderElem *elem, unsigned int type)
 	}
 
 	if(prop->negated != new_negated || prop->setOnly != new_setonly || prop->resetOnly != new_resetonly) {
-		ladder->CheckpointBegin("Alterar Tipo de Bobina");
+		ladder->CheckpointBegin(_("Alterar Tipo de Bobina"));
 
 		prop->negated   = new_negated;
 		prop->setOnly   = new_setonly;
@@ -2401,6 +2422,44 @@ bool CoilCmdExpandedType(LadderElem *elem, unsigned int type)
 	} else {
 		delete prop;
 	}
+
+	return ret;
+}
+
+bool CoilCmdChangeSource(tCommandSource source, void *data)
+{
+	unsigned int selected = 1;
+	LadderElemCoilProp *prop = (LadderElemCoilProp *)source.elem->getProperties();
+
+	if(ladder->getDetailsIO(prop->idName.first).type == eType_InternalRelay) {
+		selected = 0;
+	}
+
+	// Altera o tipo do I/O, ciclando entre os tipos Saida e Rele Interno
+	bool ret = CoilCmdExpandedSource(source.elem, selected);
+
+	delete prop;
+
+	return ret;
+}
+
+bool CoilCmdChangeType(tCommandSource source, void *data)
+{
+	unsigned int selected = 1; // Se nada for selecionado, selecionamos negado, ou seja, 1.
+	LadderElemCoilProp *prop = (LadderElemCoilProp *)source.elem->getProperties();
+
+	if(prop->negated) {
+		selected = 2; // Negado -> Set-Only
+	} else if(prop->setOnly) {
+		selected = 3; // Set-Only -> Reset-Only
+	} else if(prop->resetOnly) {
+		selected = 0; // Reset-Only -> Normal
+	}
+
+	// Altera o tipo do I/O, ciclando entre os tipos possiveis: Normal -> Negado -> Set-Only -> Reset-Only -> Normal -> ...
+	bool ret = CoilCmdExpandedType(source.elem, selected);
+
+	delete prop;
 
 	return ret;
 }
@@ -2468,7 +2527,9 @@ bool LadderElemCoil::DrawGUI(bool poweredBefore, void *data)
 	gui.DrawLine(start, end, colorWire);
 
 	start.x  = end.x + 10;
-	gui.DrawEllipse(start, 10, 10, colorWire, false);
+	RECT rCircle = { start.x - 10, start.y - 10, start.x + 10, start.y + 10 };
+	gui.DrawEllipse(rCircle, colorWire, false);
+	gui.AddCommand(source, rCircle, CoilCmdChangeType, nullptr, true, false);
 
 	if(prop.setOnly || prop.resetOnly) {
 		rText.top    = start.y - 10;
@@ -2509,9 +2570,9 @@ bool LadderElemCoil::DrawGUI(bool poweredBefore, void *data)
 
 	rText      = r;
 	rText.top  = end.y + 5;
-	rText.left = end.x - 15;
-	rText.bottom -= 5;
-	gui.DrawText(ch, rText, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft);
+	rText.left = end.x - 20;
+	gui.DrawText(ch, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.AddCommand(source, rText, CoilCmdChangeSource, nullptr, true, false);
 
 	// Desenha o sinal de fechado, se ativado
 	if(prop.negated) {
@@ -3302,7 +3363,7 @@ bool LadderElemReset::DrawGUI(bool poweredBefore, void *data)
 	DoEOL(ddg->start, size, ddg->size, poweredBefore);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "ZERAR", false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("ZERAR"), false, poweredBefore);
 	ddg->region = r;
 
 	tCommandSource source = { nullptr, nullptr, this };
@@ -3807,7 +3868,7 @@ bool LadderElemSqrt::DrawGUI(bool poweredBefore, void *data)
 	DoEOL(ddg->start, size, ddg->size, poweredBefore);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "RAIZ", false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("RAIZ"), false, poweredBefore);
 	ddg->region = r;
 
 	unsigned long *pULong;
@@ -4232,7 +4293,7 @@ bool LadderElemMove::DrawGUI(bool poweredBefore, void *data)
 	DoEOL(ddg->start, size, ddg->size, poweredBefore);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "MOVER", false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("MOVER"), false, poweredBefore);
 	ddg->region = r;
 
 	unsigned long *pULong;
@@ -4337,7 +4398,7 @@ bool SetBitCmdExpandedChangeMode(LadderElem *elem, unsigned int set)
 	LadderElemSetBitProp *prop = (LadderElemSetBitProp *)setbit->getProperties();
 
 	if(prop->set != new_set) {
-		ladder->CheckpointBegin("Configurar Modo SetBit");
+		ladder->CheckpointBegin(_("Configurar Modo Lida/Desliga Bit"));
 
 		prop->set = new_set;
 
@@ -4468,7 +4529,7 @@ bool CheckBitCmdExpandedChangeMode(LadderElem *elem, unsigned int set)
 	LadderElemCheckBitProp *prop = (LadderElemCheckBitProp *)checkbit->getProperties();
 
 	if(prop->set != new_set) {
-		ladder->CheckpointBegin("Configurar Modo CheckBit");
+		ladder->CheckpointBegin(_("Configurar Modo Checar Bit"));
 
 		prop->set = new_set;
 
@@ -4732,7 +4793,7 @@ bool SetDaCmdExpandedChangeMode(LadderElem *elem, unsigned int mode)
 	LadderElemSetDaProp *prop = (LadderElemSetDaProp *)setda->getProperties();
 
 	if(prop->mode != mode && setda->isValidDaValue(ladder->getNameIO(prop->idName), mode)) {
-		ladder->CheckpointBegin("Configurar Modo D/A");
+		ladder->CheckpointBegin(_("Configurar Modo D/A"));
 
 		prop->mode = mode;
 
@@ -5577,7 +5638,7 @@ bool ModBUSCmdExpandedMode(LadderElem *elem, unsigned int selected)
 	LadderElemModBUSProp *prop = (LadderElemModBUSProp *)mb->getProperties();
 
 	if(prop->int32 != int32) {
-		ladder->CheckpointBegin("Alterar ModBUS");
+		ladder->CheckpointBegin(_("Alterar ModBUS"));
 
 		prop->int32 = int32;
 
@@ -5605,7 +5666,7 @@ bool ModBUSCmdExpandedResend(LadderElem *elem, unsigned int selected)
 	LadderElemModBUSProp *prop = (LadderElemModBUSProp *)mb->getProperties();
 
 	if(prop->retransmitir != retransmitir) {
-		ladder->CheckpointBegin("Alterar ModBUS");
+		ladder->CheckpointBegin(_("Alterar ModBUS"));
 
 		prop->retransmitir = retransmitir;
 
@@ -6677,7 +6738,7 @@ bool FmtStrCmdExpandedVariable(LadderElem *elem, unsigned int selected)
 	string newtxt = UpdateStringUART(prop->txt, data);
 
 	if(prop->txt != newtxt) {
-		ladder->CheckpointBegin("Alterar String Formatada");
+		ladder->CheckpointBegin(_("Alterar String Formatada"));
 
 		prop->txt = newtxt;
 
@@ -6714,7 +6775,7 @@ bool FmtStrCmdExpandedLineBreak(LadderElem *elem, unsigned int selected)
 	string newtxt = UpdateStringUART(prop->txt, data);
 
 	if(prop->txt != newtxt) {
-		ladder->CheckpointBegin("Alterar String Formatada");
+		ladder->CheckpointBegin(_("Alterar String Formatada"));
 
 		prop->txt = newtxt;
 
@@ -6982,7 +7043,7 @@ bool YaskawaCmdExpandedVariable(LadderElem *elem, unsigned int selected)
 	string newtxt = UpdateStringUART(prop->txt, data);
 
 	if(prop->txt != newtxt) {
-		ladder->CheckpointBegin("Alterar Yaskawa");
+		ladder->CheckpointBegin(_("Alterar Yaskawa"));
 
 		prop->txt = newtxt;
 
@@ -7157,7 +7218,7 @@ bool LadderElemPersist::DrawGUI(bool poweredBefore, void *data)
 	DoEOL(ddg->start, size, ddg->size, poweredBefore);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, "PERSISTENTE", false, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("PERSISTENTE"), false, poweredBefore);
 	ddg->region = r;
 
 	unsigned long *pULong;

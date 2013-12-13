@@ -84,7 +84,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Relé Interno", "Internal Relay");
 		addTextToLangTable(l, "Entrada Digital", "Input pin");
 		addTextToLangTable(l, "Contatos", "Contacts");
-		addTextToLangTable(l, "O dispositivo selecionado não possui ADC ou não suporta.", "No ADC or ADC not supported for selected micro.");
+		addTextToLangTable(l, "O dispositivo selecionado não possui ADC ou não suporta.", "No ADC or ADC not supported for selected device.");
 		addTextToLangTable(l, "Atribua:", "Assign:");
 		addTextToLangTable(l, "Atribuição de Pinos de E/S", "I/O Pin Assignment");
 		addTextToLangTable(l, "Somente pode atribuir números dos pinos aos pinos de Entrada/Saída ou Variável de Uso Geral.", "Can only assign pin number to input/output pins or general variable.");
@@ -95,16 +95,15 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "<PWM necessário!>", "<PWM needs!>");
 		addTextToLangTable(l, "<Não é uma E/S!>", "<not an I/O!>");
 		addTextToLangTable(l, "Não pode gravar para '%s'.", "Couldn't write to '%s'.");
-		addTextToLangTable(l, "Deve selecionar um dispositivo antes de compilar.", "Must choose a target microcontroller before compiling.");
-		addTextToLangTable(l, "Função UART é usada porem não suportada por este dispositivo.", "UART function used but not supported for this micro.");
-		addTextToLangTable(l, "Função PWM é usada porem não suportada por este dispositivo.", "PWM function used but not supported for this micro.");
+		addTextToLangTable(l, "Deve selecionar um dispositivo antes de compilar.", "Must choose a target device before compiling.");
+		addTextToLangTable(l, "Função UART é usada porem não suportada por este dispositivo.", "UART function used but not supported for this device.");
+		addTextToLangTable(l, "Função PWM é usada porem não suportada por este dispositivo.", "PWM function used but not supported for this device.");
 		addTextToLangTable(l, "Este programa contém mudanças desde a última vez salva.\r\n\r\n Você quer salvar as mudanças?", "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?");
 		addTextToLangTable(l, "--Adicione Comentários Aqui--", "--add comment here--");
-		addTextToLangTable(l, "Não pode abrir '%s'.", "Couldn't open '%s'.");
 		addTextToLangTable(l, "Nome", "Name");
 		addTextToLangTable(l, "Estado", "State");
 		addTextToLangTable(l, "Nro Porta E/S", "Pin on Processor");
-		addTextToLangTable(l, "Porta do PLC", "MCU Port");
+		addTextToLangTable(l, "Porta do CLP", "MCU Port");
 		addTextToLangTable(l, "POPTools - Simulação (Executando)", "POPTools - Simulation (Running)");
 		addTextToLangTable(l, "POPTools - Simulação (Parado)", "POPTools - Simulation (Stopped)");
 		addTextToLangTable(l, "POPTools", "POPTools - Program Editor");
@@ -163,7 +162,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Constante %d fora do range: -2147483648 a 2147483647 inclusive.", "Constant %d out of range: -2147483648 to 2147483647 inclusive.");
 		addTextToLangTable(l, "Instrução Mover: o destino '%s' não é válido.", "Move instruction: '%s' not a valid destination.");
 		addTextToLangTable(l, "Instruções Math: o destino '%s' não é válido.", "Math instruction: '%s' not a valid destination.");
-		addTextToLangTable(l, "Consulta da Tabela de Linearização por Segmentos sem elementos!", "Piecewise linear lookup table with zero elements!");
+		addTextToLangTable(l, "Tabela de Linearização por Segmentos sem elementos!", "Piecewise linear lookup table with zero elements!");
 		addTextToLangTable(l, "Os valores X na Tabela de Linearização por Segmentos deve ser estritamente incrementais.", "x values in piecewise linear table must be strictly increasing.");
 		addTextToLangTable(l, "Linha Vazia; apague ou adicione instruções antes de simular/compilar.", "Empty row; delete it or add instructions before compiling.");
 		addTextToLangTable(l, "Índice:", "Index:");
@@ -397,7 +396,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Número Pulsos:", "Pulse Count:");
 		addTextToLangTable(l, "Nao encontrado!", "Not Found!");
 		addTextToLangTable(l, "novo", "new");
-		addTextToLangTable(l, "Sem encoder ou Encoder não suportado para o dispositivo selecionado.", "No Encoder or Encoder not supported for selected micro.");
+		addTextToLangTable(l, "Sem encoder ou Encoder não suportado para o dispositivo selecionado.", "No Encoder or Encoder not supported for selected device.");
 		addTextToLangTable(l, "Nome '%s' reservado para uso interno, favor escolher outro nome.", "Name '%s' reserved for internal use, please choose another name.");
 		addTextToLangTable(l, "Nome Inválido! Para o tipo 'Flag Interna' é obrigatório selecionar um item da lista.", "Name invalid! For 'Internal Flag' type is mandatory to select an item from list");
 		addTextToLangTable(l, "Não foi possível abrir o arquivo .hex ao apagar a memória flash !", "Couldn't to open .hex file while erasing flash memory");
@@ -411,7 +410,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Novo Valor", "New value");
 		addTextToLangTable(l, "O valor máximo permitido para o campo Resolução (%%) da Curva de Ganho é %s.", "Maximum allowed value for field Resolution (%%) of Gain Curve is %s.");
 		addTextToLangTable(l, "O valor máximo permitido para o campo Tempo (%%) da Curva de Ganho é %d.", "Maximum allowed value for field Time (%%) of Gain Curve is %s.");
-		addTextToLangTable(l, "O valor permitido para o campo Resolução DA no Tamanho da Rampa está entre %d e %d.", "Allowed value for field DA Resolution of Ramp Size is between %d and %d.");
+		addTextToLangTable(l, "O valor permitido para o campo Resolução DA no Tamanho da Rampa está entre %d e %d.", "Allowed value for field D/A Resolution of Ramp Size is between %d and %d.");
 		addTextToLangTable(l, "O valor permitido para o campo Tempo (ms) no Tamanho da Rampa está entre %d e %d.", "Allowed value for field Time (ms) of Ramp Size is between %d and %d.");
 		addTextToLangTable(l, "Ocorreu um erro ao desenhar o gráfico do D/A.", "An unknown error ocurred when drawing graphic D/A.");
 		addTextToLangTable(l, "Ocorreu um erro desconhecido ao apagar a memória flash !", "An unknown error ocurred when erasing flash memory !");
@@ -454,7 +453,790 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Registrador:", "Register:");
 		addTextToLangTable(l, "Registro", "Data");
 		addTextToLangTable(l, "Relógio da POP", "POP Clock");
-		addTextToLangTable(l, "Resolução DA (%):", "DA Resolution (%):");
+		addTextToLangTable(l, "Resolução DA (%):", "D/A Resolution (%):");
+		addTextToLangTable(l, "Resolução DA (%)[-100 ~ 100]", "D/A Resolution (%)[-100 ~ 100]");
+		addTextToLangTable(l, "Resolução DA (12 bits)[-2048 ~ 2047]", "D/A Resolution (12 bits)[-2048 ~ 2047]");
+		addTextToLangTable(l, "Resolução DA (mV)[-10000 ~ 10000]", "D/A Resolution (mV)[-10000 ~ 10000]");
+		addTextToLangTable(l, "Resposta", "Reply");
+		addTextToLangTable(l, "Retransmitir", "Retransmit");
+		addTextToLangTable(l, "Retransmitir Pacote", "Retransmit Packet");
+		addTextToLangTable(l, "RS485 Baud Rate (bps):", "RS485 Baud Rate (bps):");
+		addTextToLangTable(l, "RST", "RST");
+		addTextToLangTable(l, "RTC", "RTC");
+		addTextToLangTable(l, "RTO", "RTO");
+		addTextToLangTable(l, "RX NS600", "RX NS600");
+		addTextToLangTable(l, "Sair", "Exit");
+		addTextToLangTable(l, "Salvar como linguagem C", "Save as C Language");
+		addTextToLangTable(l, "Saída em uso! Não é possível alterar para Entrada.", "Output in Use! Cannot change to Input");
+		addTextToLangTable(l, "Segundo inválido, deve estar entre 0 e 59.", "Second invalid, should be between 0 and 59.");
+		addTextToLangTable(l, "Serial", "Serial");
+		addTextToLangTable(l, "Servidor de Tempo:", "Time server:");
+		addTextToLangTable(l, "Servo Yaskawa", "Servo Yaskawa");
+		addTextToLangTable(l, "SET", "SET");
+		addTextToLangTable(l, "Set Bit:", "Set Bit");
+		addTextToLangTable(l, "Set D/A", "Set D/A");
+		addTextToLangTable(l, "Set de Parâmetro", "Parameter Set:");
+		addTextToLangTable(l, "Setembro", "September");
+		addTextToLangTable(l, "Sobre...", "About...");
+		addTextToLangTable(l, "src", "src");
+		addTextToLangTable(l, "SUB\x02", "SUB\x02");
+		addTextToLangTable(l, "Replace", "Substituir");
+		addTextToLangTable(l, "Substituir por", "Replace by");
+		addTextToLangTable(l, "Substituir por:", "Replace by:");
+		addTextToLangTable(l, "Substituir Todos", "Reaplce All");
+		addTextToLangTable(l, "Sucesso", "Success");
+		addTextToLangTable(l, "Tamanho da Rampa", "Ramp Size");
+		addTextToLangTable(l, "Tempo", "Time");
+		addTextToLangTable(l, "Tempo (%):", "Time (%):");
+		addTextToLangTable(l, "Tempo:", "Time:");
+		addTextToLangTable(l, "Tipo de arquivo deve ser .hex\nA extensão será alterada automaticamente.", "File type must be .hex\nThe extension will be changed automatically.");
+		addTextToLangTable(l, "Tipo de Rampa", "Ramp Type");
+		addTextToLangTable(l, "Todos", "All");
+		addTextToLangTable(l, "TOF", "TOF");
+		addTextToLangTable(l, "TON", "TON");
+		addTextToLangTable(l, "TX NS600", "TX NS600");
+		addTextToLangTable(l, "Incapaz de conectar ao servidor!", "Unable to connect to server!");
+		addTextToLangTable(l, "USS: id=%d, param=%d, index=%d, name=%s, value=%d\r\n", "USS: id=%d, param=%d, index=%d, name=%s, value=%d\r\n");
+		addTextToLangTable(l, "Valor", "Value");
+		addTextToLangTable(l, "Valor inválido no campo Resolução (%) !", "Invalid value in field Resolution (%) !");
+		addTextToLangTable(l, "Valor inválido no campo Resolução DA !", "Invalid value in field D/A Resolution !");
+		addTextToLangTable(l, "Valor inválido no campo Tempo (%) !", "Invalid value in field Time (%) !");
+		addTextToLangTable(l, "Valor inválido no campo Tempo (ms) !", "Invalid value in field Time (ms) !");
+		addTextToLangTable(l, "Conflito de tipos: Entrada <-> Saída", "Invalid value! Conflict between types: Input <-> Output");
+		addTextToLangTable(l, "Conflito de tipos: Rele Interno <-> Entrada", "Invalid value! Conflict between types: Internal Relay <-> Input");
+		addTextToLangTable(l, "Conflito de tipos: Rele Interno <-> Saída", "Invalid value! Conflict between types: Internal Relay <-> Output");
+		addTextToLangTable(l, "Valor:", "Value:");
+		addTextToLangTable(l, "valor: %d\\r\\n", "value: %d\\r\\n");
+		addTextToLangTable(l, "var", "var");
+		addTextToLangTable(l, "Variação Velocidade", "Speed Variation");
+		addTextToLangTable(l, "Variável:", "Variable:");
+		addTextToLangTable(l, "Variável", "Variable");
+		addTextToLangTable(l, "Verificando... %d%% concluído !", "Verifying... %d%% done !");
+		addTextToLangTable(l, "Verifying done successfully !", "Verificação concluída com sucesso !");
+		addTextToLangTable(l, "ESCREVER", "WRITE");
+		addTextToLangTable(l, "escrever USS", "write USS");
+		addTextToLangTable(l, "x 2", "x 2");
+		addTextToLangTable(l, "x 4", "x 4");
+		addTextToLangTable(l, "xvar", "xvar");
+		addTextToLangTable(l, "yvar", "yvar");
+		addTextToLangTable(l, "Operador 1:", "Operator 1:");
+		addTextToLangTable(l, "Operador 2:", "Operator 2:");
+		addTextToLangTable(l, "Raiz Quadrada", "Square Root");
+		addTextToLangTable(l, "Depurar", "Debug");
+		addTextToLangTable(l, "Padrão", "Default");
+		addTextToLangTable(l, "Manter", "Leave");
+		addTextToLangTable(l, "Parar", "Stop");
+		addTextToLangTable(l, "Desacelerar", "Decelerate");
+		addTextToLangTable(l, "Data Específica", "Mode Fixed");
+		addTextToLangTable(l, "{\x01 Fila de Variáveis\x02}", "{\x01SHIFT REG\x02   }");
+		addTextToLangTable(l, "Escrever Registrador do ModBUS", "Write ModBUS");
+		addTextToLangTable(l, "Ler Registrador do ModBUS", "Read ModBUS");
+		addTextToLangTable(l, "Escrever no Servo Yaskawa", "Write Servo Yaskawa");
+		addTextToLangTable(l, "Ler do Servo Yaskawa", "Read Servo Yaskawa");
+		addTextToLangTable(l, "Progresso", "Progress");
+		addTextToLangTable(l, "Agendador de Tarefa", "Scheduler");
+		addTextToLangTable(l, "Sim", "Yes");
+		addTextToLangTable(l, "Não", "No");
+		addTextToLangTable(l, "IP: %d.%d.%d.%d", "IP: %d.%d.%d.%d");
+		addTextToLangTable(l, "ModBUS ID: %d", "ModBUS ID: %d");
+		addTextToLangTable(l, "RS-485: %d bps, %d bits de dados, %s, Bits de Parada: %d", "RS-485: %d bps, %d data bits, %s, Stop Bits: %d");
+		addTextToLangTable(l, "Ir Para:", "Go To:");
+		addTextToLangTable(l, "Preencha abaixo os dados referentes ao projeto para sua referência.", "Enter below the data related to the project for your reference.");
+		addTextToLangTable(l, "Nome do Projeto:", "Project Name:");
+		addTextToLangTable(l, "Autor do Projeto:", "Project Author:");
+		addTextToLangTable(l, "Observações:", "Remarks:");
+		addTextToLangTable(l, "Abaixo são exibidas informações sobre o projeto.", "Information about the project are shown below.");
+		addTextToLangTable(l, "Versão do Firmware:", "Firmware Version:");
+		addTextToLangTable(l, "Número da Compilação:", "Build Number:");
+		addTextToLangTable(l, "Data de Compilação:", "Build date:");
+		addTextToLangTable(l, "Data de Gravação:", "Flash date:");
+		addTextToLangTable(l, "Ajuste a configuração da rede conforme a sua necessidade", "Set the network configuration according to your needs");
+		addTextToLangTable(l, "Ajuste o fuso horário e indique se o horário de verão está ativado", "Set the time zone and indicate whether daylight saving is enabled");
+		addTextToLangTable(l, "Ativar sincronização", "Enable syncing");
+		addTextToLangTable(l, "Ajuste aqui a configuração da interface RS-485 da POP-7", "Set here the configuration of the RS-485 interface of POP-7");
+		addTextToLangTable(l, "Sem Paridade", "No Parity");
+		addTextToLangTable(l, "Paridade Ímpar", "Odd Parity");
+		addTextToLangTable(l, "Paridade Par", "Even Parity");
+		addTextToLangTable(l, "Inserir Linha", "Insert Rung");
+		addTextToLangTable(l, "Idioma atual:", "Current Language:");
+		addTextToLangTable(l, "Idioma da Interface", "Interface Language");
+		addTextToLangTable(l, "Intervalo:", "Interval:");
+		addTextToLangTable(l, "Cópia de Segurança", "Backup copy");
+		addTextToLangTable(l, "Portas Seriais", "Serial Ports");
+		addTextToLangTable(l, "RS485 Baud Rate(bps):", "RS485 Baud Rate(bps):");
+		addTextToLangTable(l, "Aqui indicamos o tipo de escala utilizada ao ler o canal de A/D do sensor de temperatura.", "Here we set the type of scale used to read A/D channel: temperature sensor.");
+		addTextToLangTable(l, "Escala:", "Scale:");
+		addTextToLangTable(l, "Celsius", "Celsius");
+		addTextToLangTable(l, "Fahrenheit", "Fahrenheit");
+		addTextToLangTable(l, "Este Modo de Abandono será utilizado em todas as rampas de D/A selecionadas para o modo Padrão.", "This Abandon mode will be used on all D/A ramps selected for the Default mode.");
+		addTextToLangTable(l, "Modo de Abandono:", "Abandon Mode:");
+		addTextToLangTable(l, "Modo de Conversão:", "Conversion Mode:");
+		addTextToLangTable(l, "Modo de Leitura:", "Read Mode:");
+		addTextToLangTable(l, "Resolução total em bits:", "Total resolution in bits:");
+		addTextToLangTable(l, "Sendo bits por volta:", "Bits per revolution:");
+		addTextToLangTable(l, "Elemento:", "Element:");
+		addTextToLangTable(l, "Interface:", "Interface:");
+		addTextToLangTable(l, "ID do ModBUS:", "ModBUS ID:");
+		addTextToLangTable(l, "Adicionar", "Add");
+		addTextToLangTable(l, "Excluir", "Delete");
+		addTextToLangTable(l, "Dados do Elemento Selecionado", "Selected Element Data");
+		addTextToLangTable(l, "Preencha aqui o ID utilizado pela interface ModBUS quando atuando em modo escravo.\r\nPreencha com valor entre 0 e 127", "Fill in the ID when operating ModBUS interface as Slave.\r\nFill in with values between 0 and 127");
+		addTextToLangTable(l, "Indefinido", "Undefined");
+		addTextToLangTable(l, "Alterar Configurações", "Change Configuration");
+		addTextToLangTable(l, "Remover Linha", "Delete Rung");
+		addTextToLangTable(l, "Modo", "Mode");
+		addTextToLangTable(l, "Período Contínuo", "Continuous Period");
+		addTextToLangTable(l, "Período Intermitente", "Intermittent Period");
+		addTextToLangTable(l, "De", "Fro");
+		addTextToLangTable(l, "Até", "To");
+		addTextToLangTable(l, "Horário Inicial:", "Initial Time:");
+		addTextToLangTable(l, "Horário Final:", "Final Time:");
+		addTextToLangTable(l, "Alterado Elemento", "Element Changed");
+		addTextToLangTable(l, "RS-485", "RS-485");
+		addTextToLangTable(l, "Ethernet", "Ethernet");
+		addTextToLangTable(l, "Sem conversão", "No conversion");
+		addTextToLangTable(l, "Metros", "Meters");
+		addTextToLangTable(l, "Milímetros", "Milimeters");
+		addTextToLangTable(l, "Décimos de milímetro", "Tenths of a millimeter");
+		addTextToLangTable(l, "Leitura Gray", "Gray Code");
+		addTextToLangTable(l, "Leitura Binário", "Binary Code");
+		addTextToLangTable(l, "Idioma alterado", "Language changed");
+		addTextToLangTable(l, "O idioma da interface foi alterado.\nFavor reiniciar o programa para que as mudanças tenham efeito", "Interface language has been changed.\nChanges will take effect the next time you execute POPTools.");
+		addTextToLangTable(l, "Desativado", "Disabled");
+		addTextToLangTable(l, "1 Minuto", "1 Minute");
+		addTextToLangTable(l, "5 Minutos", "5 Minutes");
+		addTextToLangTable(l, "10 Minutos", "10 Minutes");
+		addTextToLangTable(l, "15 Minutos", "15 Minutes");
+		addTextToLangTable(l, "30 Minutos", "30 Minutes");
+		addTextToLangTable(l, "1 Hora", "1 Hour");
+		addTextToLangTable(l, "Editar Elemento", "Edit Element");
+		addTextToLangTable(l, "Duplo clique para editar:", "Double-click to edit:");
+		addTextToLangTable(l, "Inverter Contato", "Toggle Contact");
+		addTextToLangTable(l, "CONTATO", "CONTACT");
+		addTextToLangTable(l, "Negado", "Negated");
+		addTextToLangTable(l, "Solicitar I/O", "Request I/O");
+		addTextToLangTable(l, "Adicionar I/O", "Add I/O");
+		addTextToLangTable(l, "reservado", "reserved");
+		addTextToLangTable(l, "Descartar I/O", "Discard I/O");
+		addTextToLangTable(l, "Atualizar I/O", "Update I/O");
+		addTextToLangTable(l, "SOMAR", "ADD");
+		addTextToLangTable(l, "SUBTRAIR", "SUBTRACT");
+		addTextToLangTable(l, "MULTIPLICAR", "MULTIPLY");
+		addTextToLangTable(l, "DIVIDIR", "DIVIDE");
+		addTextToLangTable(l, "RESTO", "REMAINDER");
+		addTextToLangTable(l, "BRD", "BRD");
+		addTextToLangTable(l, "ABERTO", "OPEN");
+		addTextToLangTable(l, "FECHADO", "CLOSED");
+		addTextToLangTable(l, "BOBINA", "COIL");
+		addTextToLangTable(l, "CHAVE MESTRE", "MASTER RELAY");
+		addTextToLangTable(l, "ATRASO", "DELAY");
+		addTextToLangTable(l, "CONTADOR", "COUNTER");
+		addTextToLangTable(l, "ESCREVER BIT", "WRITE BIT");
+		addTextToLangTable(l, "%s bit %d", "%s bit %d");
+		addTextToLangTable(l, "CHECAR BIT", "CHECK BIT");
+		addTextToLangTable(l, "bit %d %s?", "bit %d %s?");
+		addTextToLangTable(l, "Max:", "Max:");
+		addTextToLangTable(l, "COMPARAR", "COMPARE");
+		addTextToLangTable(l, "LISTA", "LIST");
+		addTextToLangTable(l, "TABELA DE BUSCA", "LOOKUP TABLE");
+		addTextToLangTable(l, "LINEARIZACAO", "PWL");
+		addTextToLangTable(l, "ALEATORIO", "RANDOM");
+		addTextToLangTable(l, "LER A/D", "A/D READ");
+		addTextToLangTable(l, "ESCREVER D/A", "D/A WRITE");
+		addTextToLangTable(l, "RAMPA D/A", "D/A RAMP");
+		addTextToLangTable(l, "PWM", "PWM");
+		addTextToLangTable(l, "LER ENCODER", "ENCODER READ");
+		addTextToLangTable(l, "ESCR. ENCODER", "ENCODER WRITE");
+		addTextToLangTable(l, "LER MB", "MB READ");
+		addTextToLangTable(l, "ESCREVER MB", "MB WRITE");
+		addTextToLangTable(l, "LER STRING", "STRING READ");
+		addTextToLangTable(l, "ESCR. STRING", "STRING WRITE");
+		addTextToLangTable(l, "LER SERIAL", "UART READ");
+		addTextToLangTable(l, "ESCR. SERIAL", "UART WRITE");
+		addTextToLangTable(l, "LER USS", "USS READ");
+		addTextToLangTable(l, "ESCREVER USS", "USS WRITE");
+		addTextToLangTable(l, "LER NS-600", "NS-600 READ");
+		addTextToLangTable(l, "ESCREVER NS-600", "NS-600 WRITE");
+		addTextToLangTable(l, "Enc. Inc.", "Inc. Enc.");
+		addTextToLangTable(l, "Enc. Abs.", "Abs. Enc.");
+		addTextToLangTable(l, "Associar I/O", "Assign I/O");
+		addTextToLangTable(l, "Checar Bit", "Check Bit");
+		addTextToLangTable(l, "Ligar/Desligar Bit", "Set Bit");
+		addTextToLangTable(l, "Resto da Divisão", "Modulo");
+		addTextToLangTable(l, "Absoluto", "Absolute");
+		addTextToLangTable(l, "ABSOLUTO", "ABSOLUTE");
+		addTextToLangTable(l, "Mínimo:", "Minimum:");
+		addTextToLangTable(l, "Mínimo", "Minimum");
+		addTextToLangTable(l, "Máximo", "Maximum");
+		addTextToLangTable(l, "Máximo:", "Maximum:");
+		addTextToLangTable(l, "Randômico", "Random");
+		addTextToLangTable(l, "Coincidir", "Coincide");
+		addTextToLangTable(l, "Resolução DA:", "DA Resolution:");
+		addTextToLangTable(l, "(12 bits)[2047 ~ -2048]", "(12 bits)[2047 ~ -2048]");
+		addTextToLangTable(l, "(mV)[10000 ~ -10000]", "(mV)[10000 ~ -10000]");
+		addTextToLangTable(l, "(%)[0 ~ 100]", "(%)[0 ~ 100]");
+		addTextToLangTable(l, "Configuração PWM", "PWM Configuration");
+		addTextToLangTable(l, "Interromper se =", "Break if =");
+		addTextToLangTable(l, "Variável '%s' não é lida, apenas escrita!", "Variable '%s' is not read, just write!");
+		addTextToLangTable(l, "Variável '%s' não é escrita, apenas lida!", "Variable '%s' is not write, just read!");
+		addTextToLangTable(l, "Erro ao criar servidor ModBUS. Código do Erro: %d\nNão será possível receber conexões externas nessa sessão!", "Error while creating ModBUS server. Error code: %d\nWill not be possible to receive external connections on this session!");
+		addTextToLangTable(l, "Texto: %s", "Text: %s");
+		addTextToLangTable(l, "Início: %s", "Start: %s");
+		addTextToLangTable(l, "Fim: %s", "End: %s");
+		addTextToLangTable(l, "Fim linha", "End Line");
+		addTextToLangTable(l, "CR", "CR");
+		addTextToLangTable(l, "LF", "LF");
+		addTextToLangTable(l, "CR+LF", "CR+LF");
+		addTextToLangTable(l, "Reenviar", "Resend");
+		addTextToLangTable(l, "Nome '%s' utilizado também em outros elementos.\nAlterar o nome em todos os elementos que o utilizam?", "Name '%s' also used in other elements.\nChange the name of all elements that use it?");
+		addTextToLangTable(l, "Nome Alterado", "Name Changed");
+		addTextToLangTable(l, "escrever encoder", "write encoder");
+		addTextToLangTable(l, "Entrada", "Input");
+		addTextToLangTable(l, "Saída", "Output");
+		addTextToLangTable(l, "Rele Interno", "Internal Relay");
+		addTextToLangTable(l, "Mult.", "Mult.");
+		addTextToLangTable(l, "x2", "x2");
+		addTextToLangTable(l, "x4", "x4");
+		addTextToLangTable(l, "Eixo X: %s", "X Axis: %s");
+		addTextToLangTable(l, "Eixo Y: %s", "Y Axis: %s");
+		addTextToLangTable(l, "Registradores:", "Registers:");
+		addTextToLangTable(l, "BORDA DE SUBIDA", "ONE-SHOT RISING");
+		addTextToLangTable(l, "BORDA DE DESCIDA", "ONE-SHOT FALLING");
+		addTextToLangTable(l, "PID", "PID");
+		addTextToLangTable(l, "Setpoint (SP):", "Setpoint (SP):");
+		addTextToLangTable(l, "Ganho P:", "Gain P:");
+		addTextToLangTable(l, "Ganho I:", "Gain I:");
+		addTextToLangTable(l, "Ganho D:", "Gain D:");
+		addTextToLangTable(l, "Output (OP):", "Output (OP):");
+		addTextToLangTable(l, "Process Value(PV):", "Process Value(PV):");
+		addTextToLangTable(l, "SP", "SP");
+		addTextToLangTable(l, "P", "P");
+		addTextToLangTable(l, "I", "I");
+		addTextToLangTable(l, "D", "D");
+		addTextToLangTable(l, "OP", "OP");
+		addTextToLangTable(l, "PV", "PV");
+		addTextToLangTable(l, "Nome Inválido", "Invalid Name");
+		addTextToLangTable(l, "Atenção", "Warning");
+		addTextToLangTable(l, "Variáveis persistentes devem ser usadas cautelosamente. Excesso no uso pode interferir no desempenho da execução do diagrama ladder e reduzir a vida útil do CLP.\nA memória interna possui um limite no número de gravações.", "Persistent variables should be used carefully. Excess use can interfere in the ladder logic performance and reduce the life of the PLC.\nThe internal memory has a limit of writes before to be damaged");
+		addTextToLangTable(l, "Atualizar Data/Hora", "Update Date/Time");
+		addTextToLangTable(l, "Informações da POP-7 (Lido a partir da interface USB)", "POP-7 Information (Read from USB Interface)");
+		addTextToLangTable(l, "Data:", "Date:");
+		addTextToLangTable(l, "--/--/----", "--/--/----");
+		addTextToLangTable(l, "Hora:", "Time:");
+		addTextToLangTable(l, "--:--:--", "--:--:--");
+		addTextToLangTable(l, "Entradas:", "Inputs:");
+		addTextToLangTable(l, "Saídas:", "Outputs:");
+		addTextToLangTable(l, "Fabricante:", "Manufacturer:");
+		addTextToLangTable(l, "Produto:", "Product:");
+		addTextToLangTable(l, "Versão:", "Version:");
+		addTextToLangTable(l, "Projeto:", "Project:");
+		addTextToLangTable(l, "Compilando :", "Compiling :");
+		addTextToLangTable(l, "Compilando...", "Compiling...");
+		addTextToLangTable(l, "Variável '%s' reservada! Favor alterar para um nome válido", "Variable '%s' reserved! Please change to a valid name");
+		addTextToLangTable(l, "Cuidado ao utilizar mais de uma instrução PWM em sua lógica.\nSe duas instruções PWM forem ativadas ao mesmo tempo, o PWM não funcionará corretamente.", "Be careful when using more than one PWM instruction in ladder logic.\nIf two or more of them are activated at the same time, PWM will not work properly.");
+		addTextToLangTable(l, "Erro durante Compilação! Código de erro: %d", "Error while compiling! Error code: %d");
+		addTextToLangTable(l, "Erro ao validar diagrama!", "Error when validating diagram!");
+		addTextToLangTable(l, "Log indisponível", "Log unavailable");
+		addTextToLangTable(l, "Adicionar Condicional Igual a", "Add Conditional Equal To");
+		addTextToLangTable(l, "Adicionar Condicional Diferente de", "Add Conditional Different of");
+		addTextToLangTable(l, "Adicionar Condicional Maior que", "Add Conditional Greater than");
+		addTextToLangTable(l, "Adicionar Condicional Maior ou igual a", "Add Conditional Greater or Equal To");
+		addTextToLangTable(l, "Adicionar Condicional Menor que", "Add Conditional Lesser than");
+		addTextToLangTable(l, "Adicionar Condicional Menor ou igual a", "Add Conditional Lesser or Equal To");
+		addTextToLangTable(l, "Adicionar Condicional", "Add Conditional");
+		addTextToLangTable(l, "Adicionar Comentário", "Add Comment");
+		addTextToLangTable(l, "Adicionar Contato", "Add Contact");
+		addTextToLangTable(l, "Adicionar Bobina", "Add Coil");
+		addTextToLangTable(l, "Adicionar Atraso para Ligar", "Add Turn-On Delay");
+		addTextToLangTable(l, "Adicionar Atraso para Desligar", "Add Turn-Off Delay");
+		addTextToLangTable(l, "Adicionar Atraso Retentivo para Ligar", "Add Retentive Turn-On Delay");
+		addTextToLangTable(l, "Adicionar Temporizador", "Add Timer");
+		addTextToLangTable(l, "Adicionar Agendador de Tarefas", "Add Scheduler");
+		addTextToLangTable(l, "Adicionar Circuito Aberto", "Add Open Circuit");
+		addTextToLangTable(l, "Adicionar Circuito Fechado", "Add Closed Circuit");
+		addTextToLangTable(l, "Adicionar Borda de Subida", "Add One-Shot Rising");
+		addTextToLangTable(l, "Adicionar Borda de Descida", "Add One-Shot Falling");
+		addTextToLangTable(l, "Adicionar Zerar Temporizador/Contador", "Add Reset Timer/Counter");
+		addTextToLangTable(l, "Adicionado Relé Mestre", "Add Master Relay");
+		addTextToLangTable(l, "Adicionar Liga/Desliga Bit", "Add Turn On/Turn Off Bit");
+		addTextToLangTable(l, "Adicionar Checar Bit", "Add Check Bit");
+		addTextToLangTable(l, "Adicionar Fila de Variáveis", "Add Shift Register");
+		addTextToLangTable(l, "Adicionar Tabela de Busca", "Add LookUp Table");
+		addTextToLangTable(l, "Adicionar Linearização por Segmentos", "Add Piecewise Linear");
+		addTextToLangTable(l, "Adicionar Mover Valor", "Add Move Value");
+		addTextToLangTable(l, "Adicionar Raiz Quadrado", "Add Square Root");
+		addTextToLangTable(l, "Adicionar Operação Somar", "Add Math Add Operation");
+		addTextToLangTable(l, "Adicionar Operação Subtrair", "Add Math Subtract Operation");
+		addTextToLangTable(l, "Adicionar Operação Multiplicar", "Add Math Multiply Operation");
+		addTextToLangTable(l, "Adicionar Operação Dividir", "Add Math Divide Operation");
+		addTextToLangTable(l, "Adicionar Operação Matemática", "Add Math Operation");
+		addTextToLangTable(l, "Adicionar Número Randômico", "Add Random Number");
+		addTextToLangTable(l, "Adicionar Valor Absoluto", "Add Absolut Number");
+		addTextToLangTable(l, "Adicionar Contador Incremental", "Add Incremental Counter");
+		addTextToLangTable(l, "Adicionar Contador Decremental", "Add Decremental Counter");
+		addTextToLangTable(l, "Adicionar Contador Circular", "Add Circular Counter");
+		addTextToLangTable(l, "Adicionar Contador", "Add Counter");
+		addTextToLangTable(l, "Adicionar Escrita no D/A", "Add D/A Write");
+		addTextToLangTable(l, "Adicionar Leitura do A/D", "Add A/D Read");
+		addTextToLangTable(l, "Adicionar Leitura do Encoder", "Add Encoder Read");
+		addTextToLangTable(l, "Adicionar Escrita no Encoder", "Add Encoder Write");
+		addTextToLangTable(l, "Adicionar Rampa de Aceleração/Desaceleração", "Add Acceleration/Deceleration Ramp");
+		addTextToLangTable(l, "Adicionar Ler String Formatada", "Add Formatted String Read");
+		addTextToLangTable(l, "Adicionar Escrever String Formatada", "Add Formatted String Write");
+		addTextToLangTable(l, "Adicionar Leitura de NS-600 Yaskawa", "Add NS-600 Read");
+		addTextToLangTable(l, "Adicionar Escrita de NS-600 Yaskawa", "Add NS-600 Write");
+		addTextToLangTable(l, "Adicionar Leitura USS", "Add USS Read");
+		addTextToLangTable(l, "Adicionar Escrita USS", "Add USS Write");
+		addTextToLangTable(l, "Adicionar Ler Registrador ModBUS", "Add ModBUS Register Read");
+		addTextToLangTable(l, "Adicionar Escrever Registrador ModBUS", "Add ModBUS Register Write");
+		addTextToLangTable(l, "Adicionar Saída PWM", "Add Set PWM");
+		addTextToLangTable(l, "Adicionar Leitura de Caracter da RS-485", "Add UART Read");
+		addTextToLangTable(l, "Adicionar Escrita de Caracter na RS-485", "Add UART Write");
+		addTextToLangTable(l, "Adicionar Elemento", "Add Element");
+		addTextToLangTable(l, "Adicionar Persistente", "Add Persistent");
+		addTextToLangTable(l, "Adicionar PID", "Add PID");
+		addTextToLangTable(l, "iniciando linha %d", "start rung %d");
+		addTextToLangTable(l, "iniciando serie [", "start series [");
+		addTextToLangTable(l, "iniciando paralelo [", "start parallel [");
+		addTextToLangTable(l, "terminando serie [", "finish series [");
+		addTextToLangTable(l, "terminando paralelo [", "finish parallel [");
+		addTextToLangTable(l, "Tem certeza que deseja sair da simulação?", "Are you sure you want to end the simulation?");
+		addTextToLangTable(l, "O processo será interrompido", "The process will be interrupted");
+		addTextToLangTable(l, "Sempre mostrar avisos da simulação", "Always show simulation warnings");
+		addTextToLangTable(l, "Encontrada(s) %d ocorrência(s)", "Found %d matches");
+		addTextToLangTable(l, "Já existe um elemento com esse nome!", "There is already an element with this name!");
+		addTextToLangTable(l, "Este elemento está em uso!", "Element in use!");
+		addTextToLangTable(l, "Primeiro remova sua referência de todas as instruções que o utilizam.", "First remove references from all instructions that use it");
+		addTextToLangTable(l, "Tem certeza que deseja excluir o item selecionado?", "Are you sure you want to delete the selected item?");
+		addTextToLangTable(l, "Erro ao carregar as preferências", "Error while loading saved preferences");
+		addTextToLangTable(l, "Será utilizada a configuração padrão", "The default preferences will be used instead");
+		addTextToLangTable(l, "Informações", "Information");
+		addTextToLangTable(l, "Projeto", "Project");
+		addTextToLangTable(l, "Detalhes", "Details");
+		addTextToLangTable(l, "Comunicação", "Communication");
+		addTextToLangTable(l, "Fuso Horário", "Timezone");
+		addTextToLangTable(l, "Interfaces", "Interfaces");
+		addTextToLangTable(l, "Entrada Analógica", "A/D Input");
+		addTextToLangTable(l, "Saída Analógica", "D/A Output");
+		addTextToLangTable(l, "Encoder Incremental", "Incremental Encoder");
+		addTextToLangTable(l, "Encoder Absoluto", "Absolute Encoder");
+		addTextToLangTable(l, "ModBUS", "ModBUS");
+		addTextToLangTable(l, "Mestre", "Master");
+		addTextToLangTable(l, "Escravo", "Slave");
+		addTextToLangTable(l, "Projetos POPTools (*.ld)", "POPTools Projects (*.ld)");
+		addTextToLangTable(l, "Arquivos de Texto (*.txt)", "Text Files (*.txt)");
+		addTextToLangTable(l, "Arquivos de Linguagem C (*.c)", "C Language Files (*.c)");
+		addTextToLangTable(l, "Arquivos CSV (*.csv)", "CSV Files (*.csv)");
+		addTextToLangTable(l, "Todos os Arquivos (*.*)", "All Files (*.*)");
+		addTextToLangTable(l, "Mais informações", "More Information");
+		addTextToLangTable(l, "Menos informações", "Less Information");
+		addTextToLangTable(l, "ESRF", "IORF");
+		addTextToLangTable(l, "ZERAR", "RESET");
+		addTextToLangTable(l, "MOVER", "MOVE");
+		addTextToLangTable(l, "PERSISTENTE", "PERSISTENT");
+		addTextToLangTable(l, "RAIZ", "SQUARE ROOT");
+		addTextToLangTable(l, "Remover Elemento", "Delete element");
+		addTextToLangTable(l, "Não é possível alterar para Entrada.\r\nSerá utilizado o tipo atual.", "Cannot change to Input.\r\nWill be used current type instead.");
+		addTextToLangTable(l, "Saída em uso", "Output in use");
+		addTextToLangTable(l, "Alterar Tipo de Bobina", "Change Coil Type");
+		addTextToLangTable(l, "Configurar Modo Lida/Desliga Bit", "Configure Set Bit Mode");
+		addTextToLangTable(l, "Configurar Modo Checar Bit", "Configure Check Bit Mode");
+		addTextToLangTable(l, "Configurar Modo D/A", "Configure D/A Mode");
+		addTextToLangTable(l, "Alterar ModBUS", "Change ModBUS");
+		addTextToLangTable(l, "Alterar String Formatada", "Change Formatted String");
+		addTextToLangTable(l, "Alterar Yaskawa", "Change Yaskawa");
+		addTextToLangTable(l, "Alterar Nome/Tipo do I/O", "Change I/O Name/Type");
+		addTextToLangTable(l, "Mover Linha", "Move Rung");
+		addTextToLangTable(l, "Colar Linha", "Paste Rung");
+		addTextToLangTable(l, "Copiar Elemento", "Copy Element");
+		addTextToLangTable(l, "Colar Elemento", "Paste Element");
+		addTextToLangTable(l, "Salvar", "Save");
+	} else if(id == 2) { // Idioma Espanhol
+		l = newLangTableChar();
+
+		addTextToLangTable(l, "( ) Normal", "( ) Normal");
+		addTextToLangTable(l, "(/) Negado", "(/) Negado");
+		addTextToLangTable(l, "(S) Ativar", "(S) Activar");
+		addTextToLangTable(l, "(R) Desativar", "(R) Desactivar");
+		addTextToLangTable(l, "Saída Digital", "Salida Digital");
+		addTextToLangTable(l, "Bobina", "Bobina");
+		addTextToLangTable(l, "Comentário", "Comentario");
+		addTextToLangTable(l, "Tempo de Ciclo (ms):", "Tiempo Ciclo (ms):");
+		addTextToLangTable(l, "Configuração PLC", "Configuración PLC");
+		addTextToLangTable(l, "Fonte", "Fuente");
+		addTextToLangTable(l, "Relé Interno", "Rele Interno");
+		addTextToLangTable(l, "Entrada Digital", "Entrada Digital");
+		addTextToLangTable(l, "Contatos", "Contactos");
+		addTextToLangTable(l, "O dispositivo selecionado não possui ADC ou não suporta.", "Este dispositivo no tiene ADC o no esta soportado.");
+		addTextToLangTable(l, "Atribua:", "Asignar:");
+		addTextToLangTable(l, "Atribuição de Pinos de E/S", "Asignación de pin E/S");
+		addTextToLangTable(l, "Somente pode atribuir números dos pinos aos pinos de Entrada/Saída ou Variável de Uso Geral.", "Solo puede asignar numero de pin a los pines de Entrada/Salida o variable de propósito general.");
+		addTextToLangTable(l, "Renomear as E/S para um nome diferente do padrão ('%s') antes de atribuir um pino.", "Cambie el nombre por defecto ('%s') antes de asignarle una pin del dispositivo.");
+		addTextToLangTable(l, "Pino E/S", "E/S Pin");
+		addTextToLangTable(l, "(sem pino)", "(falta pin)");
+		addTextToLangTable(l, "<UART necessária!>", "<Se necesita UART!>");
+		addTextToLangTable(l, "<PWM necessário!>", "<Se necesita PWM!>");
+		addTextToLangTable(l, "<Não é uma E/S!>", "<No es una E/S!>");
+		addTextToLangTable(l, "Não pode gravar para '%s'.", "No puedo escribir en '%s'.");
+		addTextToLangTable(l, "Deve selecionar um dispositivo antes de compilar.", "Debe elegir un micro antes de compilar.");
+		addTextToLangTable(l, "Função UART é usada porem não suportada por este dispositivo.", "Usadas Funciones para UART. Este dispositivo no las soporta.");
+		addTextToLangTable(l, "Função PWM é usada porem não suportada por este dispositivo.", "Usadas Funciones para PWM. Este dispositivo no las soporta.");
+		addTextToLangTable(l, "Este programa contém mudanças desde a última vez salva.\r\n\r\n Você quer salvar as mudanças?", "El programa ha cambiado desde la última vez que los guardo.\r\n\r\n¿Quieres guardar los cambios?");
+		addTextToLangTable(l, "--Adicione Comentários Aqui--", "--añade el comentario aquí--");
+		addTextToLangTable(l, "Nome", "Nombre");
+		addTextToLangTable(l, "Estado", "Estado");
+		addTextToLangTable(l, "Nro Porta E/S", "Nro Pin E/S");
+		addTextToLangTable(l, "Porta do CLP", "Puerta PLC");
+		addTextToLangTable(l, "POPTools - Simulação (Executando)", "POPTools - Simulación (Ejecutando)");
+		addTextToLangTable(l, "POPTools - Simulação (Parado)", "POPTools - Simulación (Parada)");
+		addTextToLangTable(l, "POPTools", "POPTools - Editor de Programa");
+		addTextToLangTable(l, " - (ainda não salvo)", " - (no guardado aún)");
+		addTextToLangTable(l, "Escrita de String Formatada na Serial RS485", "Escritura de cadena formateada en la UART");
+		addTextToLangTable(l, "Leitura de String Formatada na Serial RS485", "Lectura de cadena formateada de la UART");
+		addTextToLangTable(l, "Tipo", "Tipo");
+		addTextToLangTable(l, "Contador", "Contador");
+		addTextToLangTable(l, "Reiniciar", "Reiniciar");
+		addTextToLangTable(l, "OK", "OK");
+		addTextToLangTable(l, "Ok", "Ok");
+		addTextToLangTable(l, "Cancelar", "Cancelar");
+		addTextToLangTable(l, "Texto vazio; não é permitido", "Texto vacio; no permitido");
+		addTextToLangTable(l, "Mau uso das aspas: <%s>", "Mal uso de las comillas: <%s>");
+		addTextToLangTable(l, "Atraso Ligar", "Activar Retardado");
+		addTextToLangTable(l, "Atraso Desligar", "Desactivar Retardado");
+		addTextToLangTable(l, "Atraso com memória", "Activar Retardado con Memoria");
+		addTextToLangTable(l, "Tempo (ms):", "Retardo (ms):");
+		addTextToLangTable(l, "Contador Crescente", "Contador Creciente");
+		addTextToLangTable(l, "Contador Decrescente", "Contador Decreciente");
+		addTextToLangTable(l, "Contador Circular", "Contador Circular");
+		addTextToLangTable(l, "Valor Max:", "Valor Max:");
+		addTextToLangTable(l, "Verdadeiro se >= :", "Verdad si >= :");
+		addTextToLangTable(l, "Verdadeiro se <= :", "Verdad si <= :");
+		addTextToLangTable(l, "Se Igual", "Si igual");
+		addTextToLangTable(l, "Se Diferente", "Si NO igual");
+		addTextToLangTable(l, "Se Maior Que", "Si mayor que");
+		addTextToLangTable(l, "Se Maior ou Igual Que", "Si mayor o igual que");
+		addTextToLangTable(l, "Se Menor Que", "Si menor que");
+		addTextToLangTable(l, "Se Menor ou Igual Que", "Si menor o igual que");
+		addTextToLangTable(l, "Mover Valor", "Mover");
+		addTextToLangTable(l, "Ler Conversor A/D", "Ler Conversor A/D");
+		addTextToLangTable(l, "% Ciclo Trabalho:", "Var Ancho Ciclo:");
+		addTextToLangTable(l, "Frequencia (Hz):", "Frecuencia (Hz):");
+		addTextToLangTable(l, "Acionar PWM Duty Cycle", "Poner Ancho de Pulso PWM");
+		addTextToLangTable(l, "Origem:", "Fuente:");
+		addTextToLangTable(l, "Recebe da UART", "Recibido en la UART");
+		addTextToLangTable(l, "Envia para UART", "Enviado a la UART");
+		addTextToLangTable(l, "Somar", "Sumar");
+		addTextToLangTable(l, "Subtrair", "Restar");
+		addTextToLangTable(l, "Multiplicar", "Multiplicar");
+		addTextToLangTable(l, "Dividir", "Dividir");
+		addTextToLangTable(l, "Destino:", "Destino:");
+		addTextToLangTable(l, "Nome:", "Nombre:");
+		addTextToLangTable(l, "Fases:", "Fases:");
+		addTextToLangTable(l, "Fila de Variáveis", "Registro Desplazamiento");
+		addTextToLangTable(l, "String:", "Cadena:");
+		addTextToLangTable(l, "String", "Cadena");
+		addTextToLangTable(l, "Variavel:", "Variable:");
+		addTextToLangTable(l, "Fazer Permanente", "Hacer permanente");
+		addTextToLangTable(l, "Erro", "Error");
+		addTextToLangTable(l, "Deve associar pinos a todas E/S.\r\n\r\n'%s' não está associado.", "Debe asignar pines a todas las E/S.\r\n\r\n'%s' no esta asignada.");
+		addTextToLangTable(l, "Não pode abrir o arquivo '%s'\n", "No puedo abrir el archivo '%s'");
+		addTextToLangTable(l, "Período de Tempo muito curto (necessita de um tempo de ciclo menor).", "Periodo de Tiempo demasiado corto (se necesita un tiempo de ciclo menor).");
+		addTextToLangTable(l, "Tempo do Temporizador muito grande(max. 2147483647 tempo de ciclo); use um tempo de ciclo maior.", "Periodo del temporizador demasiado largo (max. 32767 veces el tiempo de ciclo); use un tiempo de ciclo mayor.");
+		addTextToLangTable(l, "Constante %d fora do range: -2147483648 a 2147483647 inclusive.", "Constante %d fuera de rango: -32768 a 32767 inclusive.");
+		addTextToLangTable(l, "Instrução Mover: o destino '%s' não é válido.", "Instrucción Move: '%s' no es valido el destino.");
+		addTextToLangTable(l, "Instruções Math: o destino '%s' não é válido.", "Instrucción Math: '%s' no es valido el destino.");
+		addTextToLangTable(l, "Tabela de Linearização por Segmentos sem elementos!", "Tabla de linealizacion por segmentos con cero elementos!");
+		addTextToLangTable(l, "Os valores X na Tabela de Linearização por Segmentos deve ser estritamente incrementais.", "Los valores X en la tabla de linealización por segmentos deben ser estrictamente incrementales.");
+		addTextToLangTable(l, "Linha Vazia; apague ou adicione instruções antes de simular/compilar.", "Fila vacia; borrela o añada instrucciones antes de compilar.");
+		addTextToLangTable(l, "Índice:", "Indice:");
+		addTextToLangTable(l, "Pontos:", "Puntos:");
+		addTextToLangTable(l, "Contador:", "Cantidad:");
+		addTextToLangTable(l, "Editar tabela do ASCII, valores como uma string", "Editar tabla de valores ascii como una cadena");
+		addTextToLangTable(l, "Tabela de Busca", "Buscar en Tabla");
+		addTextToLangTable(l, "Tabela de Linearização por Segmentos", "Tabla de linealización por segmentos");
+		addTextToLangTable(l, "POPTools Erro", "POPTools Error");
+		addTextToLangTable(l, "entrada digital", "entrada digital");
+		addTextToLangTable(l, "saída digital", "salida digital");
+		addTextToLangTable(l, "rele interno", "rele interno");
+		addTextToLangTable(l, "UART tx", "UART tx");
+		addTextToLangTable(l, "UART rx", "UART rx");
+		addTextToLangTable(l, "saída PWM", "Salida PWM");
+		addTextToLangTable(l, "atraso p/ ativar", "activar retardo");
+		addTextToLangTable(l, "atraso p/ desativar", "desactivar retardo");
+		addTextToLangTable(l, "atraso com memória", "temporizador con memoria");
+		addTextToLangTable(l, "contador", "contador");
+		addTextToLangTable(l, "var geral", "var general");
+		addTextToLangTable(l, "entrada adc", "entrada adc");
+		addTextToLangTable(l, "(sem atribuição)", "(no asignado)");
+		addTextToLangTable(l, "\n\nE/S ATRIBUIDA:\n\n", "\n\nE/S ASIGNACIÓN:\n\n");
+		addTextToLangTable(l, "  Nome                       | Tipo               | Pino\n", "  Nombre                     | Tipo               | Pin\n");
+		addTextToLangTable(l, "'%s' deve ser número!", "'%s' must be number!");
+		addTextToLangTable(l, "'%s' fora dos limites! Deve estar entre %d e %d.", "'%s' out of range! Must be between %d and %d");
+		addTextToLangTable(l, "'%s' não pode ser número!", "'%s' cannot be a number!");
+		addTextToLangTable(l, "'%s' deve ser um contador ou timer!", "'%s' must be a counter or a timer!");
+		addTextToLangTable(l, "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não inicar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", "%s '%s' invalid!\n\nVariable: only letter (A to Z), numbers or _ (underline) and do not start with numbers\nNumbers: only numbers, can start with - (minus)");
+		addTextToLangTable(l, "(GMT-01) Açores, Cabo Verde", "(GMT-01) Açores, Cabo Verde");
+		addTextToLangTable(l, "(GMT-02) Atlântico Central", "(GMT-02) Atlântico Central");
+		addTextToLangTable(l, "(GMT-03) Brasilia, Buenos Aires", "(GMT-03) Brasilia, Buenos Aires");
+		addTextToLangTable(l, "(GMT-04) Rio Branco, Manaus, Caracas, La Paz", "(GMT-04) Rio Branco, Manaus, Caracas, La Paz");
+		addTextToLangTable(l, "(GMT-05) Lima, Bogotá", "(GMT-05) Lima, Bogotá");
+		addTextToLangTable(l, "(GMT-06) América Central, Hora Central EUA/Canadá", "(GMT-06) América Central, Hora Central EUA/Canadá");
+		addTextToLangTable(l, "(GMT-07) Hora das Montanhas (EUA e Canadá)", "(GMT-07) Hora das Montanhas (EUA e Canadá)");
+		addTextToLangTable(l, "(GMT-08) Hora do Pacífico", "(GMT-08) Hora do Pacífico");
+		addTextToLangTable(l, "(GMT-09) Alasca", "(GMT-09) Alasca");
+		addTextToLangTable(l, "(GMT-10) Hawaí", "(GMT-10) Hawaí");
+		addTextToLangTable(l, "(GMT-11) Ilhas Midway,Samoa", "(GMT-11) Ilhas Midway,Samoa");
+		addTextToLangTable(l, "(GMT-12) Linha de Data Internacional Oeste", "(GMT-12) Linha de Data Internacional Oeste");
+		addTextToLangTable(l, "(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa", "(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa");
+		addTextToLangTable(l, "(GMT+01) Berlim, Estocolmo, Roma, Bruxelas", "(GMT+01) Berlim, Estocolmo, Roma, Bruxelas");
+		addTextToLangTable(l, "(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém", "(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém");
+		addTextToLangTable(l, "(GMT+03) Bagdá, Kuwait, Nairóbi, Moscou,Riad", "(GMT+03) Bagdá, Kuwait, Nairóbi, Moscou,Riad");
+		addTextToLangTable(l, "(GMT+04) Abu Dhabi, Mascate, Hora Padrão do Cáucaso", "(GMT+04) Abu Dhabi, Mascate, Hora Padrão do Cáucaso");
+		addTextToLangTable(l, "(GMT+05) Islamabad, Karachi, Ekaterinburgo", "(GMT+05) Islamabad, Karachi, Ekaterinburgo");
+		addTextToLangTable(l, "(GMT+06) Almaty, Dacca", "(GMT+06) Almaty, Dacca");
+		addTextToLangTable(l, "(GMT+07) Bangcoc, Jacarta, Hanói", "(GMT+07) Bangcoc, Jacarta, Hanói");
+		addTextToLangTable(l, "(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura", "(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura");
+		addTextToLangTable(l, "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Yakutsk", "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Yakutsk");
+		addTextToLangTable(l, "(GMT+10) Brisbane, Camberra, Melbourne, Sydney", "(GMT+10) Brisbane, Camberra, Melbourne, Sydney");
+		addTextToLangTable(l, "(GMT+11) Magadã, Ilhas Salomão, Nova Caledônia", "(GMT+11) Magadã, Ilhas Salomão, Nova Caledônia");
+		addTextToLangTable(l, "(GMT+12) Fiji, Kamchatka, Auckland", "(GMT+12) Fiji, Kamchatka, Auckland");
+		addTextToLangTable(l, "(GMT+13) Nuku'alofa", "(GMT+13) Nuku'alofa");
+		addTextToLangTable(l, "[\x01""BRD\x02 \\_]", "[\x01OSF\x02 \\_]");
+		addTextToLangTable(l, "[\x01""BRD\x02_/ ]", "[\x01OSR\x02_/ ]");
+		addTextToLangTable(l, "[FIM]", "[END]");
+		addTextToLangTable(l, "\nDiagrama Ladder:\n\n", "\nLadderDiagram:\n\n");
+		addTextToLangTable(l, "{%s BIT:%d}", "{%s BIT:%d}");
+		addTextToLangTable(l, "{%s MOV}", "{%s MOV}");
+		addTextToLangTable(l, "{\x01""CTC\x02 0:%d}", "{\x01""CTC\x02 0:%d}");
+		addTextToLangTable(l, "{\x01SHIFT REG\x02   }", "{\x01SHIFT REG\x02   }");
+		addTextToLangTable(l, "{ACELERACAO}", "{ACCEL}");
+		addTextToLangTable(l, "{CHECAR %s:%d}", "{CHECK %s:%d}");
+		addTextToLangTable(l, "{DESACELERACAO}", "{DECEL}");
+		addTextToLangTable(l, "{CHAVE GERAL}", "{MASTER RLY}");
+		addTextToLangTable(l, "{PERSIST}", "{PERSIST}");
+		addTextToLangTable(l, "{PWM %.1f kHz}", "{PWM %.1f kHz}");
+		addTextToLangTable(l, "{PWM %.2f kHz}", "{PWM %.2f kHz}");
+		addTextToLangTable(l, "{PWM %d Hz}", "{PWM %d Hz}");
+		addTextToLangTable(l, "{PWM %d kHz}", "{PWM %d kHz}");
+		addTextToLangTable(l, "{LER A/D %s }", "{READ ADC %s }");
+		addTextToLangTable(l, "{LER ENC}", "{READ ENC}");
+		addTextToLangTable(l, "{LER MB 485}", "{READ MB 485}");
+		addTextToLangTable(l, "{LER MB ETH}", "{READ MB ETH}");
+		addTextToLangTable(l, "{LER USS}", "{READ USS}");
+		addTextToLangTable(l, "{RES}", "{RES}");
+		addTextToLangTable(l, "{ZERAR ENC}", "{RESET ENC}");
+		addTextToLangTable(l, "{SET DA}", "{SET DA}");
+		addTextToLangTable(l, "{UART RECEBE}", "{UART RECV}");
+		addTextToLangTable(l, "{UART ENVIA}", "{UART SEND}");
+		addTextToLangTable(l, "{ESCR MB 485}", "{WRITE MB 485}");
+		addTextToLangTable(l, "{ESCR MB ETH}", "{WRITE MB ETH}");
+		addTextToLangTable(l, "{ESCR USS}", "{WRITE USS}");
+		addTextToLangTable(l, "Índice", "Index");
+		addTextToLangTable(l, "0ZSET%d", "0ZSET%d");
+		addTextToLangTable(l, "16 bits", "16 bits");
+		addTextToLangTable(l, "32 bits", "32 bits");
+		addTextToLangTable(l, "7-Par-1", "7-Even-1");
+		addTextToLangTable(l, "7-Nenhum-1", "7-None-1");
+		addTextToLangTable(l, "7-Ímpar-1", "7-Odd-1");
+		addTextToLangTable(l, "8-Par-1", "8-Even-1");
+		addTextToLangTable(l, "8-Nenhum-1", "8-None-1");
+		addTextToLangTable(l, "8-Ímpar-1", "8-Odd-1");
+		addTextToLangTable(l, "A Data/Hora do relógio da POP não foi atualizada.\n\nAplicações que dependem do relogio RTC da placa talvez não funcionem corretamente.", "Date/Time of POP's RTC was not updated.\n\nApplications depending on RTC may not operate correctly.");
+		addTextToLangTable(l, "Abril", "April");
+		addTextToLangTable(l, "Aceleração", "Acceleration");
+		addTextToLangTable(l, "ADD\x02", "ADD\x02");
+		addTextToLangTable(l, "Agosto", "August");
+		addTextToLangTable(l, "Ao cancelar:", "When cancelling:");
+		addTextToLangTable(l, "Arquivo gerado com sucesso!", "File successfully created!");
+		addTextToLangTable(l, "Atualizando o relógio RTC da POP...", "Updating POP's RTC clock...");
+		addTextToLangTable(l, "Avançar", "Forward");
+		addTextToLangTable(l, "Warning", "Aviso");
+		addTextToLangTable(l, "Aviso: Este projeto não pode ser aberto porque foi gravado com uma versão mais nova do programa POPTools !", "Warning: This project cannot be opened because was saved using a newer version of POPTools software!");
+		addTextToLangTable(l, "Aviso: O arquivo deste projeto é de uma versão anterior e será atualizado para a versão atual quando for gravado !", "Warning: This project was saved using an older version of POPTools software and will be updated for current version when saved");
+		addTextToLangTable(l, "Avisos durante a simulação", "Warnings during simulation");
+		addTextToLangTable(l, "Bit:", "Bit:");
+		addTextToLangTable(l, "char", "char");
+		addTextToLangTable(l, "Comando inválido durante a gravação do programa !", "Invalid command while writing program !");
+		addTextToLangTable(l, "Comando inválido enviado ao apagar a memória flash !", "Invalid command sent while trying to erase flash memory !");
+		addTextToLangTable(l, "Compilando... aguarde !", "Compiling... please wait !");
+		addTextToLangTable(l, "Conexão cancelada !", "Connection canceled");
+		addTextToLangTable(l, "Configurações", "Configuration");
+		addTextToLangTable(l, "Confirmar alteração de Entrada para Relé Interno", "Confirm change from Input to Internal Relay");
+		addTextToLangTable(l, "Confirmar alteração de Entrada para Saída", "Confirm change from Input to Output");
+		addTextToLangTable(l, "Confirmar alteração de Rele Interno para Saída", "Confirm change from Internal Relay to Output");
+		addTextToLangTable(l, "Confirmar alteração de Saída para Rele Interno", "Confirm change from Output to Internal Relay");
+		addTextToLangTable(l, "Conflito entre tipos! Operação não permitida.", "Type conflict! Operation not allowed.");
+		addTextToLangTable(l, "Conexão encerrada", "Connection closed");
+		addTextToLangTable(l, "Não foi possível carregar imagem de abertura!", "Could not load splash image!");
+		addTextToLangTable(l, "CTD", "CTD");
+		addTextToLangTable(l, "CTU", "CTU");
+		addTextToLangTable(l, "Curva", "Curve");
+		addTextToLangTable(l, "Curva de Ganho", "Gain Curve");
+		addTextToLangTable(l, "Data inválida.", "Invalid date");
+		addTextToLangTable(l, "Data/Paridade/Stop:", "Data/Parity/Stop:");
+		addTextToLangTable(l, "Desaceleração", "Deceleration");
+		addTextToLangTable(l, "Desligado", "Turned off");
+		addTextToLangTable(l, "Desligar", "Turn off");
+		addTextToLangTable(l, "dest", "dest");
+		addTextToLangTable(l, "Destino", "Destination");
+		addTextToLangTable(l, "Dezembro", "December");
+		addTextToLangTable(l, "Dia da Semana", "Day of Week");
+		addTextToLangTable(l, "Dia do Mês", "Day Month");
+		addTextToLangTable(l, "Perímetro Roda:", "Wheel Perimeter:");
+		addTextToLangTable(l, "Dias", "Days");
+		addTextToLangTable(l, "Direção do Movimento", "Moviment Direction");
+		addTextToLangTable(l, "DIV\x02", "DIV\x02");
+		addTextToLangTable(l, "Divisão por zero na variavel: '%s', a simulação será interrompida.", "Divided by zero on variable: '%s', simulation will be interrupted.");
+		addTextToLangTable(l, "DNS", "DNS");
+		addTextToLangTable(l, "DNS:", "DNS:");
+		addTextToLangTable(l, "DSTQQSS", "SMTWTFS");
+		addTextToLangTable(l, "duty_cycle", "duty_cycle");
+		addTextToLangTable(l, "Endereço IP:", "IP Address:");
+		addTextToLangTable(l, "Endereço:", "Address");
+		addTextToLangTable(l, "entrada encoder", "encoder input");
+		addTextToLangTable(l, "Enviado comando inválido (conectando) !", "Invalid command sent (connecting) !");
+		addTextToLangTable(l, "Enviado comando inválido (verificando) !", "Invalid command sent (verifying) !");
+		addTextToLangTable(l, "ERRO", "ERROR");
+		addTextToLangTable(l, "Erro abrindo porta serial!", "Error opening serial port!");
+		addTextToLangTable(l, "Erro ao abrir o arquivo de programa (.hex) !", "Error opening program file (.hex) !");
+		addTextToLangTable(l, "Erro ao conectar na porta COM%d !", "Connection error on port COM%d !");
+		addTextToLangTable(l, "Erro ao gerar checksum durante a gravação do programa !", "Error creating checksum while writing program !");
+		addTextToLangTable(l, "Erro ao preencher a memória flash !", "Error filling flash memory !");
+		addTextToLangTable(l, "Erro de checksum ao gravar o programa !", "Checksum error while writing program !");
+		addTextToLangTable(l, "Erro de checksum no arquivo de programa (.hex) !", "Checksum error in program file (.hex) !");
+		addTextToLangTable(l, "Erro durante a gravação do programa !", "Error while writing program !");
+		addTextToLangTable(l, "Erro na compilacao !!!", "Compile error !!!");
+		addTextToLangTable(l, "Erro na execução do módulo JIT !", "Error while running JIT Module");
+		addTextToLangTable(l, "Erro na verificação !", "Verify error !");
+		addTextToLangTable(l, "Escrever", "Write");
+		addTextToLangTable(l, "escrita modbus", "modbus write");
+		addTextToLangTable(l, "escrita modbus eth", "eth modbus write");
+		addTextToLangTable(l, "escrita NS600", "NS600 write");
+		addTextToLangTable(l, "Estágios", "Stages");
+		addTextToLangTable(l, "Executar", "Execute");
+		addTextToLangTable(l, "Fator Correção:", "Correction factor:");
+		addTextToLangTable(l, "Fator Multiplicação:", "Multiplication Factor:");
+		addTextToLangTable(l, "Fevereiro", "February");
+		addTextToLangTable(l, "Flag Interna", "Internal Flag");
+		addTextToLangTable(l, "flag interna", "internal flag");
+		addTextToLangTable(l, "Frequency", "Frequência");
+		addTextToLangTable(l, "Função", "function");
+		addTextToLangTable(l, "Fuso Horário:", "Timezone");
+		addTextToLangTable(l, "Gateway:", "Gateway:");
+		addTextToLangTable(l, "Gravando... %d%% concluído !", "Writing... %d%% done !");
+		addTextToLangTable(l, "Gravação concluída com sucesso", "Write successfully done");
+		addTextToLangTable(l, "Gravação concluída com sucesso !", "Write successfully done !");
+		addTextToLangTable(l, "Gravação do programa cancelada !", "Program write canceled !");
+		addTextToLangTable(l, "GW", "GW");
+		addTextToLangTable(l, "Hora invalida, deve estar entre 0 e 23.", "Invalid hour, should be between 0 and 23");
+		addTextToLangTable(l, "Horário de verão", "Daylight saving");
+		addTextToLangTable(l, "ID", "ID");
+		addTextToLangTable(l, "ID deve ser maior ou igual a zero!", "ID should be equal or bigger than zero");
+		addTextToLangTable(l, "ID:", "ID:");
+		addTextToLangTable(l, "Impossível criar paralelo entre os pontos selecionados!", "Impossible to create a parallel between selected points");
+		addTextToLangTable(l, "entrada", "in");
+		addTextToLangTable(l, "indice", "index");
+		addTextToLangTable(l, "Interface", "Interface");
+		addTextToLangTable(l, "IP", "IP");
+		addTextToLangTable(l, "IP:", "IP:");
+		addTextToLangTable(l, "Janeiro", "January");
+		addTextToLangTable(l, "Já existe um Rele Interno com este nome. Alterar para Saída?", "There is an Internal Relay with the same name. Change for Output?");
+		addTextToLangTable(l, "Já existe uma Entrada com este nome. Alterar para Relé Interno?", "There is an Input with the same name. Change for Internal Relay?");
+		addTextToLangTable(l, "Já existe uma Entrada com este nome. Alterar para Saída?", "There is an Input with the same name. Change for Output?");
+		addTextToLangTable(l, "Já existe uma Saída com este nome. Alterar para Rele Interno?", "There is an Output with the same name. Change for Internal Relay?");
+		addTextToLangTable(l, "Julho", "July");
+		addTextToLangTable(l, "Junho", "June");
+		addTextToLangTable(l, "leitura modbus", "modbus read");
+		addTextToLangTable(l, "leitura modbus eth", "modbus eth read");
+		addTextToLangTable(l, "leitura NS600", "NS600 read");
+		addTextToLangTable(l, "Ler", "Read");
+		addTextToLangTable(l, "Ler Parâmetro por USS", "Read Parameter by USS");
+		addTextToLangTable(l, "Escrever Parâmetro por USS", "Write Parameter by USS");
+		addTextToLangTable(l, "Ligado", "Turned On");
+		addTextToLangTable(l, "Ligar", "Turn On");
+		addTextToLangTable(l, "Limpar Registro", "Clear Data");
+		addTextToLangTable(l, "Limpar!", "Clear!");
+		addTextToLangTable(l, "Limpeza da memória flash cancelada !", "Flash memory blanking canceled !");
+		addTextToLangTable(l, "Limpeza da memória flash não suportado !", "Flash memory blanking not supported !");
+		addTextToLangTable(l, "Linear", "Linear");
+		addTextToLangTable(l, "Localizar", "Find");
+		addTextToLangTable(l, "Localizar e Substituir", "Find and Replace");
+		addTextToLangTable(l, "Localizar:", "Find:");
+		addTextToLangTable(l, "LUT", "LUT");
+		addTextToLangTable(l, "Maio", "May");
+		addTextToLangTable(l, "Março", "March");
+		addTextToLangTable(l, "Máscara:", "Mask:");
+		addTextToLangTable(l, "MASK", "MASK");
+		addTextToLangTable(l, "Minuto inválido, deve estar entre 0 e 59.", "Minute invalid, should be between 0 and 59");
+		addTextToLangTable(l, "Modbus", "Modbus");
+		addTextToLangTable(l, "ModBUS ID:", "ModBUS ID:");
+		addTextToLangTable(l, "MODBUS: id=%d, address=%d, name=%s\r\n", "MODBUS: id=%d, address=%d, name=%s\r\n");
+		addTextToLangTable(l, "MODBUS_ETH: id=%d, address=%d, name=%s\r\n", "MODBUS_ETH: id=%d, address=%d, name=%s\r\n");
+		addTextToLangTable(l, "Modelo do CLP:", "CLP Model:");
+		addTextToLangTable(l, "Write Mode", "Modo de Escrita");
+		addTextToLangTable(l, "MUL\x02", "MUL\x02");
+		addTextToLangTable(l, "Número '%s' inválido!", "Number '%s' invalid!");
+		addTextToLangTable(l, "Número Pulsos:", "Pulse Count:");
+		addTextToLangTable(l, "Nao encontrado!", "Not Found!");
+		addTextToLangTable(l, "novo", "new");
+		addTextToLangTable(l, "Sem encoder ou Encoder não suportado para o dispositivo selecionado.", "No Encoder or Encoder not supported for selected micro.");
+		addTextToLangTable(l, "Nome '%s' reservado para uso interno, favor escolher outro nome.", "Name '%s' reserved for internal use, please choose another name.");
+		addTextToLangTable(l, "Nome Inválido! Para o tipo 'Flag Interna' é obrigatório selecionar um item da lista.", "Name invalid! For 'Internal Flag' type is mandatory to select an item from list");
+		addTextToLangTable(l, "Não foi possível abrir o arquivo .hex ao apagar a memória flash !", "Couldn't to open .hex file while erasing flash memory");
+		addTextToLangTable(l, "Não foi possível alocar memória durante a gravação do programa !", "Couldn't to allocate memory while writing program");
+		addTextToLangTable(l, "Não foi possível conectar com baudrate %i !", "Couldn't to connect with baudrate %i !");
+		addTextToLangTable(l, "Não foi possível conectar para apagar a memória flash !", "Couldn't to connect for erase flash memory !");
+		addTextToLangTable(l, "Couldn't to connect for write flash memory", "Não foi possível conectar para gravar o programa !");
+		addTextToLangTable(l, "Não suporta gravação do programa !", "Program write not supported !");
+		addTextToLangTable(l, "Não suporta verificação !", "Verification not supported !");
+		addTextToLangTable(l, "Novembro", "November");
+		addTextToLangTable(l, "Novo Valor", "New value");
+		addTextToLangTable(l, "O valor máximo permitido para o campo Resolução (%%) da Curva de Ganho é %s.", "Maximum allowed value for field Resolution (%%) of Gain Curve is %s.");
+		addTextToLangTable(l, "O valor máximo permitido para o campo Tempo (%%) da Curva de Ganho é %d.", "Maximum allowed value for field Time (%%) of Gain Curve is %s.");
+		addTextToLangTable(l, "O valor permitido para o campo Resolução DA no Tamanho da Rampa está entre %d e %d.", "Allowed value for field D/A Resolution of Ramp Size is between %d and %d.");
+		addTextToLangTable(l, "O valor permitido para o campo Tempo (ms) no Tamanho da Rampa está entre %d e %d.", "Allowed value for field Time (ms) of Ramp Size is between %d and %d.");
+		addTextToLangTable(l, "Ocorreu um erro ao desenhar o gráfico do D/A.", "An unknown error ocurred when drawing graphic D/A.");
+		addTextToLangTable(l, "Ocorreu um erro desconhecido ao apagar a memória flash !", "An unknown error ocurred when erasing flash memory !");
+		addTextToLangTable(l, "Ocorreu um erro desconhecido ao conectar !", "An unknown error ocurred when connecting !");
+		addTextToLangTable(l, "Ocorreu um erro desconhecido ao desconectar !", "An unknown error ocurred when disconnecting !");
+		addTextToLangTable(l, "Ocorreu um erro desconhecido ao gravar o programa !", "An unknown error ocurred when writing program !");
+		addTextToLangTable(l, "Ocorreu um erro desconhecido ao verificar a gravação do programa !", "An unknown error ocurred when verifying program !");
+		addTextToLangTable(l, "OFF", "OFF");
+		addTextToLangTable(l, "ON", "ON");
+		addTextToLangTable(l, "Operação", "Operation");
+		addTextToLangTable(l, "Operação bit", "Bit Operation");
+		addTextToLangTable(l, "Origem", "Source");
+		addTextToLangTable(l, "saida", "out");
+		addTextToLangTable(l, "Outubro", "October");
+		addTextToLangTable(l, "Parâmetro:", "Parameter:");
+		addTextToLangTable(l, "Set de Parâmetro:", "Parameter Set:");
+		addTextToLangTable(l, "Parâmetros de conexão inválidos !", "Invalid connection parameters !");
+		addTextToLangTable(l, "Parâmetros inválidos ao apagar a memória flash !", "Invalid parameters while erasing flash memory !");
+		addTextToLangTable(l, "Parâmetro", "Parameter");
+		addTextToLangTable(l, "POP-7 não encontrada!", "POP-7 not found!");
+		addTextToLangTable(l, "POPTools iniciado", "POPTools started");
+		addTextToLangTable(l, "Porta de Depuração:", "Debug Port:");
+		addTextToLangTable(l, "Porta de Gravação:", "Write Port:");
+		addTextToLangTable(l, "Posicionamento", "Positioning");
+		addTextToLangTable(l, "Preferências", "Preferences");
+		addTextToLangTable(l, "Preparando para gravar... %d%% concluído !", "Preparing for write... %d%% done !");
+		addTextToLangTable(l, "Preparação concluída com sucesso !", "Preparing done succesfully !");
+		addTextToLangTable(l, "Projetos Recentes:", "Recent Projects:");
+		addTextToLangTable(l, "PWL", "PWL");
+		addTextToLangTable(l, "RAMPA", "RAMP");
+		addTextToLangTable(l, "Rampa de Aceleração/Desaceleração", "Acceleration/Deceleration Ramp");
+		addTextToLangTable(l, "LER", "READ");
+		addTextToLangTable(l, "Ler do Encoder", "Read Encoder");
+		addTextToLangTable(l, "Escrever no Encoder", "Write Encoder");
+		addTextToLangTable(l, "ler USS", "read USS");
+		addTextToLangTable(l, "Recuar", "Backward");
+		addTextToLangTable(l, "Rede", "Network");
+		addTextToLangTable(l, "reg", "reg");
+		addTextToLangTable(l, "Registrador", "Register");
+		addTextToLangTable(l, "Registrador:", "Register:");
+		addTextToLangTable(l, "Registro", "Data");
+		addTextToLangTable(l, "Relógio da POP", "POP Clock");
+		addTextToLangTable(l, "Resolução DA (%):", "D/A Resolution (%):");
 		addTextToLangTable(l, "Resolução DA (%)[-100 ~ 100]", "D/A Resolution (%)[-100 ~ 100]");
 		addTextToLangTable(l, "Resolução DA (12 bits)[-2048 ~ 2047]", "D/A Resolution (12 bits)[-2048 ~ 2047]");
 		addTextToLangTable(l, "Resolução DA (mV)[-10000 ~ 10000]", "D/A Resolution (mV)[-10000 ~ 10000]");
@@ -612,7 +1394,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "1 Hora", "1 Hour");
 		addTextToLangTable(l, "Editar Elemento", "Edit element");
 		addTextToLangTable(l, "Duplo clique para editar:", "Double-click to edit:");
-		addTextToLangTable(l, "Inverter Contato", "Reverse Contact");
+		addTextToLangTable(l, "Inverter Contato", "Toggle Contact");
 		addTextToLangTable(l, "CONTATO", "CONTACT");
 		addTextToLangTable(l, "Negado", "Negated");
 		addTextToLangTable(l, "Solicitar I/O", "Request I/O");
@@ -720,7 +1502,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Atenção", "Warning");
 		addTextToLangTable(l, "Variáveis persistentes devem ser usadas cautelosamente. Excesso no uso pode interferir no desempenho da execução do diagrama ladder e reduzir a vida útil do CLP.\nA memória interna possui um limite no número de gravações.", "Persistent variables should be used carefully. Excess use can interfere in the ladder logic performance and reduce the life of the PLC.\nThe internal memory has a limit of writes before to be damaged");
 		addTextToLangTable(l, "Atualizar Data/Hora", "Update Date/Time");
-		addTextToLangTable(l, "Informações da POP-7 (Lido a partir da interface USB)", "POP-7 Information (Read from USB Interface");
+		addTextToLangTable(l, "Informações da POP-7 (Lido a partir da interface USB)", "POP-7 Information (Read from USB Interface)");
 		addTextToLangTable(l, "Data:", "Date:");
 		addTextToLangTable(l, "--/--/----", "--/--/----");
 		addTextToLangTable(l, "Hora:", "Time:");
@@ -832,265 +1614,26 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Mais informações", "More Information");
 		addTextToLangTable(l, "Menos informações", "Less Information");
 		addTextToLangTable(l, "ESRF", "IORF");
-	} else if(id == 2) { // Idioma Espanhol
-		l = newLangTableChar();
-
-		addTextToLangTable(l, "Target frequency %d Hz, closest achievable is %d Hz (warning, >5%% error).", "Frecuencia Micro %d Hz, la mejor aproximación es %d Hz (aviso, >5%% error).");
-		addTextToLangTable(l, "Compile successful; wrote IHEX for AVR to '%s'.\r\n\r\nRemember to set the processor configuration (fuses) correctly. This does not happen automatically.", "Compilación correcta; se escribió IHEX para AVR en '%s'.\r\n\r\nRecuerde marcar la configuración (fuses) del micro correctamente. Esto NO se hace automaticamente.");
-		addTextToLangTable(l, "( ) Normal", "( ) Normal");
-		addTextToLangTable(l, "(/) Negated", "(/) Negado");
-		addTextToLangTable(l, "(S) Set-Only", "(S) Activar");
-		addTextToLangTable(l, "(R) Reset-Only", "(R) Desactivar");
-		addTextToLangTable(l, "Pin on MCU", "Pata del Micro");
-		addTextToLangTable(l, "Coil", "Bobina");
-		addTextToLangTable(l, "Comment", "Comentario");
-		addTextToLangTable(l, "Cycle Time (ms):", "Tiempo Ciclo (ms):");
-		addTextToLangTable(l, "Crystal Frequency (MHz):", "Frecuencia Cristal (MHz):");
-		addTextToLangTable(l, "UART Baud Rate (bps):", "Baudios UART (bps):");
-		addTextToLangTable(l, "Serie (UART) will use pins %d and %d.\r\n\r\n", "Puerto Serie (UART) usará las patas %d y %d.\r\n\r\n");
-		addTextToLangTable(l, "Please select a micro with a UART.\r\n\r\n", "Por favor. Seleccione un micro con UART.\r\n\r\n");
-		addTextToLangTable(l, "No serial instructions (UART Send/UART Receive) are in use; add one to program before setting baud rate.\r\n\r\n", "No se han usado instrucciones (UART Enviar/UART Recibir) para el puerto serie aun; Añada una al programa antes de configurar los baudios.\r\n\r\n");
-		addTextToLangTable(l, "The cycle time for the 'PLC' runtime generated by LDmicro is user-configurable. Very short cycle times may not be achievable due to processor speed constraints, and very long cycle times may not be achievable due to hardware overflows. Cycle times between 10 ms and 100 ms will usually be practical.\r\n\r\nThe compiler must know what speed crystal you are using with the micro to convert between timing in clock cycles and timing in seconds. A 4 MHz to 20 MHz crystal is typical; check the speed grade of the part you are using to determine the maximum allowable clock speed before choosing a crystal.", "El tiempo de ciclo de ejecución para el 'PLC' es configurable. Un tiempo de ciclo muy corto puede no funcionar debido a la baja velocidad del micro, y un tiempo de ciclo muy largo puede no funcionar por limitaciones del temporizador del micro. Ciclos de tiempo entre 10 y 100 ms suele ser lo normal.\r\n\r\nEl compilador debe conocer la velocidad del cristal que estas usando para poder convertir entre tiempo en ciclos de reloj y tiempo en segundos. Un cristal entre 4 Mhz y 20 Mhz es lo típico; Comprueba la velocidad a la que puede funcionar tu micro y calcula la velocidad máxima del reloj antes de elegir el cristal.");
-		addTextToLangTable(l, "PLC Configuration", "Configuración PLC");
-		addTextToLangTable(l, "Zero cycle time not valid; resetting to 10 ms.", "No es valido un tiempo de ciclo 0; forzado a 10 ms.");
-		addTextToLangTable(l, "Source", "Fuente");
-		addTextToLangTable(l, "Internal Relay", "Rele Interno");
-		addTextToLangTable(l, "Input pin", "Pata Entrada");
-		addTextToLangTable(l, "Output pin", "Pata Salida");
-		addTextToLangTable(l, "|/| Negated", "|/| Negado");
-		addTextToLangTable(l, "Contacts", "Contacto");
-		addTextToLangTable(l, "No ADC or ADC not supported for selected micro.", "El micro seleccionado no tiene ADC o no esta soportado.");
-		addTextToLangTable(l, "Assign:", "Asignar:");
-		addTextToLangTable(l, "No microcontroller has been selected. You must select a microcontroller before you can assign I/O pins.\r\n\r\nSelect a microcontroller under the Settings menu and try again.", "No se ha seleccionado micro. Debes seleccionar un micro antes de asignar patas E/S.\r\n\r\nElije un micro en el menu de configuración y prueba otra vez.");
-		addTextToLangTable(l, "I/O Pin Assignment", "Asignación de pata E/S");
-		addTextToLangTable(l, "Can't specify I/O assignment for ANSI C target; compile and see comments in generated source code.", "No se puede asignar la E/S especificadas para el ANSI C generado; compile y vea los comentarios generados en el código fuente.");
-		addTextToLangTable(l, "Can't specify I/O assignment for interpretable target; see comments in reference implementation of interpreter.", "No se puede asignar la E/S especificadas para el código generado para el interprete; vea los comentarios en la implementación del interprete.");
-		addTextToLangTable(l, "Can only assign pin number to input/output pins or general variable.", "Solo puede asignar numero de pata a las patas de Entrada/Salida.");
-		addTextToLangTable(l, "No ADC or ADC not supported for this micro.", "Este micro no tiene ADC o no esta soportado.");
-		addTextToLangTable(l, "Renomear as E/S para um nome diferente do padrão ('%s') antes de atribuir um pino.", "Cambie el nombre por defecto ('%s') antes de asignarle una pata del micro.");
-		addTextToLangTable(l, "Pino E/S", "E/S Pata");
-		addTextToLangTable(l, "(sem pino)", "(falta pata)");
-		addTextToLangTable(l, "<UART necessária!>", "<Se necesita UART!>");
-		addTextToLangTable(l, "<PWM necessário!>", "<Se necesita PWM!>");
-		addTextToLangTable(l, "<Não é uma E/S!>", "<No es una E/S!>");
-		addTextToLangTable(l, "Export As Text", "Exportar como Texto");
-		addTextToLangTable(l, "Não pode gravar para '%s'.", "No puedo escribir en '%s'.");
-		addTextToLangTable(l, "Compile To", "Compilar");
-		addTextToLangTable(l, "Deve selecionar um dispositivo antes de compilar.", "Debe elegir un micro antes de compilar.");
-		addTextToLangTable(l, "UART function used but not supported for this micro.", "Usadas Funciones para UART. Este micro no las soporta.");
-		addTextToLangTable(l, "PWM function used but not supported for this micro.", "Usadas Funciones para PWM. Este micro no las soporta.");
-		addTextToLangTable(l, "The program has changed since it was last saved.\r\n\r\nDo you want to save the changes?", "El programa ha cambiado desde la última vez que los guardo.\r\n\r\n¿Quieres guardar los cambios?");
-		addTextToLangTable(l, "--add comment here--", "--añade el comentario aquí--");
-		addTextToLangTable(l, "Start new program?", "¿Empezar un nuevo programa?");
-		addTextToLangTable(l, "Couldn't open '%s'.", "No puedo abrir '%s'.");
-		addTextToLangTable(l, "Name", "Nombre");
-		addTextToLangTable(l, "State", "Estado");
-		addTextToLangTable(l, "Pin on Processor", "Pata del Micro");
-		addTextToLangTable(l, "MCU Port", "Puerto del Micro");
-		addTextToLangTable(l, "POPTools - Simulation (Running)", "POPTools - Simulación (Ejecutando)");
-		addTextToLangTable(l, "POPTools - Simulation (Stopped)", "POPTools - Simulación (Parada)");
-		addTextToLangTable(l, "POPTools - Program Editor", "POPTools – Editor de Programa");
-		addTextToLangTable(l, " - (not yet saved)", " - (no guardado aún)");
-		addTextToLangTable(l, "&New\tCtrl+N", "&Nuevo\tCtrl+N");
-		addTextToLangTable(l, "&Open...\tCtrl+O", "&Abrir...\tCtrl+O");
-		addTextToLangTable(l, "&Save\tCtrl+S", "&Guardar\tCtrl+S");
-		addTextToLangTable(l, "Save &As...", "Guardar &Como...");
-		addTextToLangTable(l, "&Export As Text...\tCtrl+E", "&Exportar a Texto...\tCtrl+E");
-		addTextToLangTable(l, "E&xit", "&Salir");
-		addTextToLangTable(l, "&Undo\tCtrl+Z", "&Deshacer\tCtrl+Z");
-		addTextToLangTable(l, "&Redo\tCtrl+Y", "&Rehacer\tCtrl+Y");
-		addTextToLangTable(l, "Insert Rung &Before\tShift+INS", "Insertar Línea (Rung) &Antes\tShift+INS");
-		addTextToLangTable(l, "Insert Rung &After\tINS", "Insertar Línea (Rung) &Despues\tINS");
-		addTextToLangTable(l, "Move Selected Rung &Up\tShift+Up", "Subir Línea (Rung) Seleccionada\tShift+Up");
-		addTextToLangTable(l, "Move Selected Rung &Down\tShift+Down", "Bajar Línea (Rung) Seleccionada\tShift+Down");
-		addTextToLangTable(l, "&Delete Selected Element\tDel", "&Borrar Elemento Seleccionado\tSupr");
-		addTextToLangTable(l, "D&elete Rung\tShift+Del", "B&orrar Línea (Rung) Seleccionada\tShift+Supr");
-		addTextToLangTable(l, "Insert Co&mment\tF2", "Insertar Co&mentario\tF2");
-		addTextToLangTable(l, "Insert &Contacts\tC", "Insertar &Contacto\tC");
-		addTextToLangTable(l, "Insert OSR (One Shot Rising)\t/", "Insertar OSR (Flanco de Subida)\t/");
-		addTextToLangTable(l, "Insert OSF (One Shot Falling)\t\\", "Insertar OSF (Flanco de Bajada)\t\\");
-		addTextToLangTable(l, "Insert T&ON (Delayed Turn On)\tO", "Insertar T&ON (Encendido Retardado)\tO");
-		addTextToLangTable(l, "Insert TO&F (Delayed Turn Off)\tF", "Insertar TO&F (Apagado Retardado)\tF");
-		addTextToLangTable(l, "Insert R&TO (Retentive Delayed Turn On)\tT", "Insertar R&TO (Encendido Retardado con Memoria)\tT");
-		addTextToLangTable(l, "Insert CT&U (Count Up)\tI", "Insertar CT&U (Contador Incremental)\tU");
-		addTextToLangTable(l, "Insert CT&D (Count Down)\tU", "Insertar CT&D (Contador Decremental)\tI");
-		addTextToLangTable(l, "Insert CT&C (Count Circular)\tJ", "Insertar CT&C (Contador Circular)\tJ");
-		addTextToLangTable(l, "Insert EQU (Compare for Equals)\t=", "Insertar EQU (Comparador si Igual)\t=");
-		addTextToLangTable(l, "Insert NEQ (Compare for Not Equals)\t!", "Insertar NEQ (Comparador si NO Igual)\t!");
-		addTextToLangTable(l, "Insert GRT (Compare for Greater Than)\t>", "Insertar GRT (Comparador si Mayor que)\t>");
-		addTextToLangTable(l, "Insert GEQ (Compare for Greater Than or Equal)\t.", "Insertar GEQ (Comparador si Mayor o Igual que)\t.");
-		addTextToLangTable(l, "Insert LES (Compare for Less Than)\t<", "Insertar LES (Comparador si Menor que)\t<");
-		addTextToLangTable(l, "Insert LEQ (Compare for Less Than or Equal)\t,", "Insertar LEQ (Comparador si Menor o Igual que)\t,");
-		addTextToLangTable(l, "Insert Open-Circuit", "Insertar Circuito-Abierto");
-		addTextToLangTable(l, "Insert Short-Circuit", "Insertar Circuito-Cerrado");
-		addTextToLangTable(l, "Insert Master Control Relay", "Insertar Rele de Control Maestro");
-		addTextToLangTable(l, "Insert Coi&l\tL", "Insertar &Bobina\tL");
-		addTextToLangTable(l, "Insert R&ES (Counter/RTO Reset)\tE", "Insertar R&ES (Contador/RTO Reinicio)\tE");
-		addTextToLangTable(l, "Insert MOV (Move)\tM", "Insertar MOV (Mover)\tM");
-		addTextToLangTable(l, "Insert ADD (16-bit Integer Add)\t+", "Insertar ADD (Suma Entero 16-bit)\t+");
-		addTextToLangTable(l, "Insert SUB (16-bit Integer Subtract)\t-", "Insertar SUB (Resta Entero 16-bit)\t-");
-		addTextToLangTable(l, "Insert MUL (16-bit Integer Multiply)\t*", "Insertar MUL (Multiplica Entero 16-bit)\t*");
-		addTextToLangTable(l, "Insert DIV (16-bit Integer Divide)\tD", "Insertar DIV (Divide Entero 16-bit)\tD");
-		addTextToLangTable(l, "Insert Shift Register", "Insertar Registro de Desplazamiento");
-		addTextToLangTable(l, "Insert Look-Up Table", "Insertar Tabla de Busqueda");
-		addTextToLangTable(l, "Insert Piecewise Linear", "Insertar Linealización por Segmentos");
-		addTextToLangTable(l, "Insert Formatted String Over UART", "Insertar Cadena Formateada en la UART");
-		addTextToLangTable(l, "Insert &UART Send", "Insertar &UART Enviar");
-		addTextToLangTable(l, "Insert &UART Receive", "Insertar &UART Recibir");
-		addTextToLangTable(l, "Insert Set PWM Output", "Insertar Valor Salida PWM");
-		addTextToLangTable(l, "Insert A/D Converter Read\tP", "Insertar Lectura Conversor A/D\tP");
-		addTextToLangTable(l, "Insert Make Persistent", "Insertar Hacer Permanente");
-		addTextToLangTable(l, "Make Norm&al\tA", "Hacer Norm&al\tA");
-		addTextToLangTable(l, "Make &Negated\tN", "Hacer &Negado\tN");
-		addTextToLangTable(l, "Make &Set-Only\tS", "Hacer &Solo-Activar\tS");
-		addTextToLangTable(l, "Make &Reset-Only\tR", "Hace&r Solo-Desactivar\tR");
-		addTextToLangTable(l, "&MCU Parameters...", "&Parametros del Micro...");
-		addTextToLangTable(l, "(no microcontroller)", "(no microcontrolador)");
-		addTextToLangTable(l, "&Microcontroller", "&Microcontrolador");
-		addTextToLangTable(l, "Si&mulation Mode\tCtrl+M", "Modo Si&mulación \tCtrl+M");
-		addTextToLangTable(l, "Start &Real-Time Simulation\tCtrl+R", "Empezar Simulación en Tiempo &Real\tCtrl+R");
-		addTextToLangTable(l, "&Halt Simulation\tCtrl+H", "Parar Simulación\tCtrl+H");
-		addTextToLangTable(l, "Single &Cycle\tSpace", "Solo un &Ciclo\tSpace");
-		addTextToLangTable(l, "&Compile\tF5", "&Compilar\tF5");
-		addTextToLangTable(l, "Compile &As...", "Compilar &Como...");
-		addTextToLangTable(l, "&Manual...\tF1", "&Manual...\tF1");
-		addTextToLangTable(l, "&About...", "&Acerca de...");
-		addTextToLangTable(l, "&File", "&Archivo");
-		addTextToLangTable(l, "&Edit", "&Editar");
-		addTextToLangTable(l, "&Settings", "&Configuraciones");
-		addTextToLangTable(l, "&Instruction", "&Instrucción");
-		addTextToLangTable(l, "Si&mulate", "Si&mular");
-		addTextToLangTable(l, "&Compile", "&Compilar");
-		addTextToLangTable(l, "&Help", "&Ayuda");
-		addTextToLangTable(l, "no MCU selected", "micro no seleccionado");
-		addTextToLangTable(l, "cycle time %.2f ms", "tiempo ciclo %.2f ms");
-		addTextToLangTable(l, "processor clock %.4f MHz", "reloj procesador %.4f MHz");
-		addTextToLangTable(l, "Internal error relating to PIC paging; make program smaller or reshuffle it.", "Error interno relativo a la paginación del PIC; Haz el programa mas pequeño o reorganizalo");
-		addTextToLangTable(l, "PWM frequency too fast.", "Frecuencia del PWM demasiado alta.");
-		addTextToLangTable(l, "PWM frequency too slow.", "Frecuencia del PWM demasiado baja.");
-		addTextToLangTable(l, "Cycle time too fast; increase cycle time, or use faster crystal.", "Tiempo del Ciclo demasiado rapido; aumenta el tiempo de ciclo, o usa un cristal de mas Mhz.");
-		addTextToLangTable(l, "Cycle time too slow; decrease cycle time, or use slower crystal.", "Tiempo del Ciclo demasiado lento; incrementa el tiempo de ciclo, o usa un cristal de menos Mhz.");
-		addTextToLangTable(l, "Couldn't open file '%s'", "No puedo abrir el archivo '%s'");
-		addTextToLangTable(l, "Zero baud rate not possible.", "Cero baudios no es posible.");
-		addTextToLangTable(l, "Compile successful; wrote IHEX for PIC16 to '%s'.\r\n\r\nConfiguration word (fuses) has been set for crystal oscillator, BOD enabled, LVP disabled, PWRT enabled, all code protection off.\r\n\r\nUsed %d/%d words of program flash (chip %d%% full).", "Compilación correcta; escrito IHEX para PIC16 en '%s'.\r\n\r\nBits de Configurarión (fuses) han sido establecidos para oscilador a cristal, BOD activado, LVP desactivado, PWRT activado, Todos los bits de protección desactivados.\r\n\r\nUsadas %d/%d palabras de programa en flash (Chip %d%% lleno).");
-		addTextToLangTable(l, "Type", "Tipo");
-		addTextToLangTable(l, "Timer", "Temporizador");
-		addTextToLangTable(l, "Counter", "Contador");
-		addTextToLangTable(l, "Reset", "Reiniciar");
-		addTextToLangTable(l, "OK", "OK");
-		addTextToLangTable(l, "Cancel", "Cancelar");
-		addTextToLangTable(l, "Empty textbox; not permitted.", "Texto vacio; no permitido");
-		addTextToLangTable(l, "Bad use of quotes: <%s>", "Mal uso de las comillas: <%s>");
-		addTextToLangTable(l, "Turn-On Delay", "Activar Retardado");
-		addTextToLangTable(l, "Turn-Off Delay", "Desactivar Retardado");
-		addTextToLangTable(l, "Retentive Turn-On Delay", "Activar Retardado con Memoria");
-		addTextToLangTable(l, "Delay (ms):", "Retardo (ms):");
-		addTextToLangTable(l, "Delay too long; maximum is 2**31 us.", "Retardo demasiado largo; maximo 2**31 us.");
-		addTextToLangTable(l, "Delay cannot be zero or negative.", "El retardo no puede ser cero o negativo.");
-		addTextToLangTable(l, "Count Up", "Contador Creciente");
-		addTextToLangTable(l, "Count Down", "Contador Decreciente");
-		addTextToLangTable(l, "Circular Counter", "Contador Circular");
-		addTextToLangTable(l, "Max value:", "Valor Max:");
-		addTextToLangTable(l, "True if >= :", "Verdad si >= :");
-		addTextToLangTable(l, "True if <= :", "Verdad si <= :");
-		addTextToLangTable(l, "If Equals", "Si igual");
-		addTextToLangTable(l, "If Not Equals", "Si NO igual");
-		addTextToLangTable(l, "If Greater Than", "Si mayor que");
-		addTextToLangTable(l, "If Greater Than or Equal To", "Si mayor o igual que");
-		addTextToLangTable(l, "If Less Than", "Si menor que");
-		addTextToLangTable(l, "If Less Than or Equal To", "Si menor o igual que");
-		addTextToLangTable(l, "'Closed' if:", "'Cerrado' si:");
-		addTextToLangTable(l, "Move", "Mover");
-		addTextToLangTable(l, "Read A/D Converter", "Ler Conversor A/D");
-		addTextToLangTable(l, "Duty cycle var:", "Var Ancho Ciclo:");
-		addTextToLangTable(l, "Frequency (Hz):", "Frecuencia (Hz):");
-		addTextToLangTable(l, "Set PWM Duty Cycle", "Poner Ancho de Pulso PWM");
-		addTextToLangTable(l, "Source:", "Fuente:");
-		addTextToLangTable(l, "Receive from UART", "Recibido en la UART");
-		addTextToLangTable(l, "Send to UART", "Enviado a la UART");
-		addTextToLangTable(l, "Add", "Sumar");
-		addTextToLangTable(l, "Subtract", "Restar");
-		addTextToLangTable(l, "Multiply", "Multiplicar");
-		addTextToLangTable(l, "Divide", "Dividir");
-		addTextToLangTable(l, "Destination:", "Destino:");
-		addTextToLangTable(l, "is set := :", "esta puesto := :");
-		addTextToLangTable(l, "Name:", "Nombre:");
-		addTextToLangTable(l, "Stages:", "Fases:");
-		addTextToLangTable(l, "Shift Register", "Registro Desplazamiento");
-		addTextToLangTable(l, "Not a reasonable size for a shift register.", "No es un tamaño razonable para el Registro de Desplazamiento.");
-		addTextToLangTable(l, "String:", "Cadena:");
-		addTextToLangTable(l, "Formatted String Over UART", "Cadena Formateada para UART");
-		addTextToLangTable(l, "Variable:", "Variable:");
-		addTextToLangTable(l, "Make Persistent", "Hacer permanente");
-		addTextToLangTable(l, "Too many elements in subcircuit!", "Demasiados elementos en un SubCircuito!");
-		addTextToLangTable(l, "Too many rungs!", "Demasiadas Lineas (rungs)!");
-		addTextToLangTable(l, "Error", "Error");
-		addTextToLangTable(l, "ANSI C target does not support peripherals (UART, PWM, ADC, EEPROM). Skipping that instruction.", "ANSI C de destino no soporta perifericos (UART, PWM, ADC, EEPROM). Evite esa instrucción.");
-		addTextToLangTable(l, "Compile successful; wrote C source code to '%s'.\r\n\r\nThis is not a complete C program. You have to provide the runtime and all the I/O routines. See the comments in the source code for information about how to do this.", "Compilación correcta: Escrito Código Fuente en C en '%s'.\r\n\r\nNo es un programa completo en C. Tiene que añadirle el procedimiento principal y todas las rutinas de E/S. Vea los comentarios en el código fuente para mas información sobre como hacer esto");
-		addTextToLangTable(l, "Cannot delete rung; program must have at least one rung.", "No puedo borrar la Linea (rung); el programa debe tener al menos una Linea (rung).");
-		addTextToLangTable(l, "Out of memory; simplify program or choose microcontroller with more memory.", "Fuera de Memoria; Simplifique el programa o elija un micro con mas memoria..");
-		addTextToLangTable(l, "Must assign pins for all ADC inputs (name '%s').", "Debe asignar patas para todas las entradas del ADC (nombre '%s').");
-		addTextToLangTable(l, "Internal limit exceeded (number of vars)", "Limite interno superado (numero de variables)");
-		addTextToLangTable(l, "Internal relay '%s' never assigned; add its coil somewhere.", "No ha asignado el rele interno '%s'; añada la bobina en cualquier parte del programa.");
-		addTextToLangTable(l, "Must assign pins for all I/O.\r\n\r\n'%s' is not assigned.", "Debe asignar patas a todas las E/S.\r\n\r\n'%s' no esta asignada.");
-		addTextToLangTable(l, "UART in use; pins %d and %d reserved for that.", "UART en uso; patas %d y %d reservadas para eso.");
-		addTextToLangTable(l, "PWM in use; pin %d reserved for that.", "PWM en uso; pata %d reservada para eso.");
-		addTextToLangTable(l, "UART baud rate generator: divisor=%d actual=%.4f for %.2f%% error.\r\n\r\nThis is too large; try a different baud rate (slower probably), or a crystal frequency chosen to be divisible by many common baud rates (e.g. 3.6864 MHz, 14.7456 MHz).\r\n\r\nCode will be generated anyways but serial may be unreliable or completely broken.", "UART generador de baudios: divisor=%d actual=%.4f para %.2f%% error.\r\n\r\nEs demasiado grande; Prueba con otro valor de baudios (probablemente menor), o un cristal cuya frecuencia sea divible por los baudios mas comunes (p.e. 3.6864MHz, 14.7456MHz).\r\n\r\nEl código se genera de todas formas pero las tramas serie sean inestable o no entendible.");
-		addTextToLangTable(l, "UART baud rate generator: too slow, divisor overflows. Use a slower crystal or a faster baud rate.\r\n\r\nCode will be generated anyways but serial will likely be completely broken.", "UART generador de baudios: demasiado lento, divisor demasiado grande. Use un cristal mas lento o mayor baudios.\r\n\r\nEl código se genera de todas formas pero las tramas serie serán no entendible..");
-		addTextToLangTable(l, "Couldn't open '%s'\n", "No puedo abrir '%s'\n");
-		addTextToLangTable(l, "Timer period too short (needs faster cycle time).", "Periodo de Tiempo demasiado corto (se necesita un tiempo de ciclo menor).");
-		addTextToLangTable(l, "Timer period too long (max 32767 times cycle time); use a slower cycle time.", "Periodo del temporizador demasiado largo (max. 32767 veces el tiempo de ciclo); use un tiempo de ciclo mayor.");
-		addTextToLangTable(l, "Constant %d out of range: -32768 to 32767 inclusive.", "Constante %d fuera de rango: -32768 a 32767 inclusive.");
-		addTextToLangTable(l, "Move instruction: '%s' not a valid destination.", "Instrucción Move: '%s' no es valido el destino.");
-		addTextToLangTable(l, "Math instruction: '%s' not a valid destination.", "Instrucción Math: '%s' no es valido el destino.");
-		addTextToLangTable(l, "Piecewise linear lookup table with zero elements!", "tabla de linealizacion por segmentos con cero elementos!");
-		addTextToLangTable(l, "x values in piecewise linear table must be strictly increasing.", "Los valores X en la tabla de linealización por segmentos deben ser estrictamente incrementales.");
-		addTextToLangTable(l, "Numerical problem with piecewise linear lookup table. Either make the table entries smaller, or space the points together more closely.\r\n\r\nSee the help file for details.", "Problema numérico con la tabla de linealización por segmentos. Haz la tabla de entradas mas pequeña, o aleja mas los puntos juntos.\r\n\r\nMira la ayuda para mas detalles.");
-		addTextToLangTable(l, "Multiple escapes (\\0-9) present in format string, not allowed.", "No esta permitido mas de un caracter especial (\\0-9) dentro de la cadena de caractares.");
-		addTextToLangTable(l, "Bad escape: correct form is \\xAB.", "Caracter Especial Erroneo: la forma correcta es = \\xAB.");
-		addTextToLangTable(l, "Bad escape '\\%c'", "Caracter Especial Erroneo '\\%c'");
-		addTextToLangTable(l, "Variable is interpolated into formatted string, but none is specified.", "Se ha declarado un parametro dentro la cadena de caracteres, pero falta especificar la variable.");
-		addTextToLangTable(l, "No variable is interpolated into formatted string, but a variable name is specified. Include a string like '\\-3', or leave variable name blank.", "No se ha declarado un parametro dentro de la cadena de caractares pero sin embargo se ha especificado una variable. Añada un cadena como '\\-3', o quite el nombre de la variable.");
-		addTextToLangTable(l, "Empty row; delete it or add instructions before compiling.", "Fila vacia; borrela o añada instrucciones antes de compilar.");
-		addTextToLangTable(l, "Couldn't write to '%s'", "No puedo escribir en  '%s'.");
-		addTextToLangTable(l, "Unsupported op (anything ADC, PWM, UART, EEPROM) for interpretable target.", "Op no soportada en el interprete (algun ADC, PWM, UART, EEPROM).");
-		addTextToLangTable(l, "Compile successful; wrote interpretable code to '%s'.\r\n\r\nYou probably have to adapt the interpreter to your application. See the documentation.", "Compilación correcta: Código para interprete escrito en '%s'.\r\n\r\nProblablemente tengas que adaptar el interprete a tu aplicación. Mira la documentación.");
-		addTextToLangTable(l, "Microcontroller '%s' not supported.\r\n\r\nDefaulting to no selected MCU.", "Microcontrolador '%s' no sorportado.\r\n\r\nForzando ninguna CPU.");
-		addTextToLangTable(l, "File format error; perhaps this program is for a newer version of LDmicro?", "Error en el formato de archivo; quizas este programa es una version mas moderna de LDmicro?.");
-		addTextToLangTable(l, "Index:", "Indice:");
-		addTextToLangTable(l, "Points:", "Puntos:");
-		addTextToLangTable(l, "Count:", "Cantidad:");
-		addTextToLangTable(l, "Edit table of ASCII values like a string", "Editar tabla de valores ascii como una cadena");
-		addTextToLangTable(l, "Look-Up Table", "Buscar en Tabla");
-		addTextToLangTable(l, "Piecewise Linear Table", "Tabla de linealización por segmentos");
-		addTextToLangTable(l, "POPTools Error", "POPTools Error");
-		addTextToLangTable(l, "Compile Successful", "Compilación Correcta");
-		addTextToLangTable(l, "digital in", "entrada digital");
-		addTextToLangTable(l, "digital out", "salida digital");
-		addTextToLangTable(l, "int. relay", "rele interno");
-		addTextToLangTable(l, "UART tx", "UART tx");
-		addTextToLangTable(l, "UART rx", "UART rx");
-		addTextToLangTable(l, "PWM out", "salida PWM");
-		addTextToLangTable(l, "turn-on delay", "activar retardo");
-		addTextToLangTable(l, "turn-off delay", "desactivar retardo");
-		addTextToLangTable(l, "retentive timer", "temporizador con memoria");
-		addTextToLangTable(l, "counter", "contador");
-		addTextToLangTable(l, "general var", "var general");
-		addTextToLangTable(l, "adc input", "entrada adc");
-		addTextToLangTable(l, "<corrupt!>", "<estropeado!>");
-		addTextToLangTable(l, "(not assigned)", "(no asignado)");
-		addTextToLangTable(l, "<no UART!>", "<no UART!>");
-		addTextToLangTable(l, "<no PWM!>", "<no PWM!>");
-		addTextToLangTable(l, "TOF: variable cannot be used elsewhere", "TOF: la variable no puede ser usada en otra parte");
-		addTextToLangTable(l, "TON: variable cannot be used elsewhere", "TON: la variable no puede ser usada en otra parte");
-		addTextToLangTable(l, "RTO: variable can only be used for RES elsewhere", "RTO: la variable solo puede ser usada como RES en otra parte");
-		addTextToLangTable(l, "Variable '%s' not assigned to, e.g. with a MOV statement, an ADD statement, etc.\r\n\r\nThis is probably a programming error; now it will always be zero.", "Variable '%s' no asignada, p.e. con el comando MOV, una instrucción ADD, etc.\r\n\r\nEsto es probablemente un error de programación; valdrá cero.");
-		addTextToLangTable(l, "Variable for '%s' incorrectly assigned: %s.", "Variable para '%s' incorrectamente asignada: %s.");
-		addTextToLangTable(l, "Division by zero; halting simulation", "División por cero; Parando simulación");
-		addTextToLangTable(l, "!!!too long!!!", "!!Muy grande!!");
-		addTextToLangTable(l, "\n\nI/O ASSIGNMENT:\n\n", "\n\nE/S ASIGNACIÓN:\n\n");
-		addTextToLangTable(l, "  Name                       | Type               | Pin\n", "  Nombre                     | Tipo               | Pata\n");
-		addTextToLangTable(l, "Serial (UART) will use pins %d and %d.\r\n\r\n", "El Puerto Serie (UART) usará los pines %d y %d.\r\n\r\n");
+		addTextToLangTable(l, "ZERAR", "RESET");
+		addTextToLangTable(l, "MOVER", "MOVE");
+		addTextToLangTable(l, "PERSISTENTE", "PERSISTENT");
+		addTextToLangTable(l, "RAIZ", "SQUARE ROOT");
+		addTextToLangTable(l, "Remover Elemento", "Delete element");
+		addTextToLangTable(l, "Não é possível alterar para Entrada.\r\nSerá utilizado o tipo atual.", "Cannot change to Input.\r\nWill be used current type instead.");
+		addTextToLangTable(l, "Saída em uso", "Output in use");
+		addTextToLangTable(l, "Alterar Tipo de Bobina", "Change Coil Type");
+		addTextToLangTable(l, "Configurar Modo Lida/Desliga Bit", "Configure Set Bit Mode");
+		addTextToLangTable(l, "Configurar Modo Checar Bit", "Configure Check Bit Mode");
+		addTextToLangTable(l, "Configurar Modo D/A", "Configure D/A Mode");
+		addTextToLangTable(l, "Alterar ModBUS", "Change ModBUS");
+		addTextToLangTable(l, "Alterar String Formatada", "Change Formatted String");
+		addTextToLangTable(l, "Alterar Yaskawa", "Change Yaskawa");
+		addTextToLangTable(l, "Alterar Nome/Tipo do I/O", "Change I/O Name/Type");
+		addTextToLangTable(l, "Mover Linha", "Move Rung");
+		addTextToLangTable(l, "Colar Linha", "Paste Rung");
+		addTextToLangTable(l, "Copiar Elemento", "Copy Element");
+		addTextToLangTable(l, "Colar Elemento", "Paste Element");
+		addTextToLangTable(l, "Salvar", "Save");
 	} else {
 		l = nullptr;
 	}
@@ -1545,164 +2088,164 @@ PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID)
 	switch(nCmdID) {
 			SET_LANGUAGE_STRINGS(cmdFileNew                  ,
 				L"Criar um novo Diagrama Ladder.",
-				L"",
-				L"");
+				L"Create a new Ladder Diagram",
+				L"Crear un nuevo Diagrama Ladder");
 			SET_LANGUAGE_STRINGS(cmdFileOpen                 ,
 				L"Abrir um Diagrama Ladder existente.",
-				L"",
-				L"");
+				L"Open an existing Ladder Diagram",
+				L"Abrir un Diagrama Ladder existente");
 			SET_LANGUAGE_STRINGS(cmdFileClose                ,
 				L"Fechar o diagrama atual.",
-				L"",
-				L"");
+				L"Close the current diagram",
+				L"Cerrar el diagrama actual");
 			SET_LANGUAGE_STRINGS(cmdFileSave                 ,
 				L"Salvar o Diagrama Ladder atual.",
-				L"",
-				L"");
+				L"Save the current Ladder Diagram",
+				L"Salvar el Diagrama Ladder actual");
 			SET_LANGUAGE_STRINGS(cmdFileSaveAsText           ,
 				L"Exportar Diagrama Ladder atual como um novo arquivo de texto.",
-				L"",
-				L"");
+				L"Export the current Ladder Diagram as a new text file",
+				L"Exportar el Diagrama Ladder como un nuevo archivo de texto");
 
 			SET_LANGUAGE_STRINGS(cmdUndo                     ,
 				L"Desfazer a última ação.",
-				L"",
-				L"");
+				L"Undo the last action",
+				L"Deshacer la ultima accion");
 			SET_LANGUAGE_STRINGS(cmdRedo                     ,
 				L"Refazer a última ação desfeita.",
-				L"",
-				L"");
+				L"Redo the last undone action",
+				L"Rehacer la ultima ccion deshecha");
 			SET_LANGUAGE_STRINGS(cmdInsertLine               ,
 				L"Obter outras formas para inserir uma linha",
-				L"",
-				L"");
+				L"Take other ways to insert a rung",
+				L"Obtener otras formas para incluir una linea");
 			SET_LANGUAGE_STRINGS(cmdMoveLineUp               ,
 				L"Mover a linha atualmente selecionada para cima",
-				L"",
-				L"");
+				L"Move up the current selected rung",
+				L"Mover para arriba la linea actual seleccionada");
 			SET_LANGUAGE_STRINGS(cmdMoveLineDown             ,
 				L"Mover a linha atualmente selecionada para baixo",
-				L"",
-				L"");
+				L"Move down the current selected rung",
+				L"Mover para bajo la linea actual seleccionada");
 			SET_LANGUAGE_STRINGS(cmdCopyLine                 ,
 				L"Copia a linha atualmente selecionada para a memória.",
-				L"",
-				L"");
+				L"Copy to memory the current selected rung",
+				L"Copia la linea actualmente seleccionada para la memoria");
 			SET_LANGUAGE_STRINGS(cmdPasteLine                ,
 				L"Obter outras formas para colar uma linha",
-				L"",
-				L"");
+				L"Take other ways to paste a rung",
+				L"Obtener otras formas de pegar una linea");
 			SET_LANGUAGE_STRINGS(cmdPasteLineBefore          ,
 				L"Colar a linha previamente copiada antes da linha atualmente selecionada.",
-				L"",
-				L"");
+				L"Paste the line already copied before the rung currently selected",
+				L"Pegar la linea previamente copiada antes de la linea actualmente seleccionada");
 			SET_LANGUAGE_STRINGS(cmdPasteLineAfter           ,
 				L"Colar a linha previamente copiada após a linha atualmente selecionada.",
-				L"",
-				L"");
+				L"Paste the line already copied after the rung currently selected",
+				L"Pegar la linea previamente despues de la linea actualmente seleccionada");
 			SET_LANGUAGE_STRINGS(cmdInsertLineAfter          ,
 				L"Insere uma linha vazia após a linha atualmente selecionada.",
-				L"",
-				L"");
+				L"Insert an empty rung after the current selected rung",
+				L"Inserir una linea vacia despues de la linea actualmente seleccionada");
 			SET_LANGUAGE_STRINGS(cmdInsertLineBefore         ,
 				L"Insere uma linha vazia antes da linha atualmente selecionada.",
-				L"",
-				L"");
+				L"Insert an empty rung before the current selected rung",
+				L"Inserir una linea vacaia antes de la linea actualmente seleccionada");
 			SET_LANGUAGE_STRINGS(cmdGoHome                   ,
 				L"Move o cursor para o início do diagrama.",
-				L"",
-				L"");
+				L"Move the cursor to the beginning of the diagram",
+				L"Mover el cursor para el inicio del diagrama");
 			SET_LANGUAGE_STRINGS(cmdGoEnd                    ,
 				L"Move o cursor para o final do diagrama.",
-				L"",
-				L"");
+				L"Move the cursor to the end of the diagram",
+				L"Mover el cursor para el final del diagrama");
 			SET_LANGUAGE_STRINGS(cmdInstrParallel            ,
 				L"Inserir início de paralelo na posição do cursor.",
-				L"",
-				L"");
+				L"Insert paralel start on the cursor position",
+				L"Inserir inicio de paralelo en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdCopyInstr                ,
 				L"Copia o objeto selecionado para a memória.",
-				L"",
-				L"");
+				L"Copy to memory the selected object",
+				L"Copie el objeto seleccionado para la memoria");
 			SET_LANGUAGE_STRINGS(cmdPasteInstr               ,
 				L"Insere na posição atual o objeto previamente copiado para a memória.",
-				L"",
-				L"");
+				L"Insert in the current position the object priorly copied to memory",
+				L"Inserir en la posicion actual el objeto previamente copiado para la memoria");
 			SET_LANGUAGE_STRINGS(cmdDeleteInstr              ,
 				L"Exclui o comando atualmente selecionado",
-				L"",
-				L"");
+				L"Exclude the comand currently selected",
+				L"Excluye el comando actualmente seleccionado");
 			SET_LANGUAGE_STRINGS(cmdDeleteLine               ,
 				L"Exclui a linha atualmente selecionada",
-				L"",
-				L"");
+				L"Exclude the rung currently selected",
+				L"Excluye la linea actualmente seleccionada");
 			SET_LANGUAGE_STRINGS(cmdFindDialog               ,
 				L"Abrir a janela de busca.",
-				L"",
-				L"");
+				L"Open the search window",
+				L"Abrir la ventana de busqueda");
 			SET_LANGUAGE_STRINGS(cmdFind                     ,
 				L"Procura pelo texto informado na caixa de busca a partir do objeto atualmente selecionado.",
-				L"",
-				L"");
+				L"Search the informed text in the searching window from the object currently selected",
+				L"Busca el texto informado en la caja de busqueda a partir del objeto actualmente seleccionado");
 
 			SET_LANGUAGE_STRINGS(cmdInstrComment             ,
 				L"Inserir comentário na linha atual. Se a linha não estiver vazia, uma nova será criada.",
-				L"",
-				L"");
+				L"Insert a coment in the current rung. If the rung isn't empty create a new one",
+				L"Inserir comentario en la linea actual. Si no estuviera vacia la linea, una nueva será creada");
 
 			SET_LANGUAGE_STRINGS(cmdInstrContact             ,
 				L"Inserir um contato na posição do cursor.",
-				L"",
-				L"");
+				L"Insert a contact in the cursor's position",
+				L"Inserir una contacto en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrCoil                ,
 				L"Inserir bobina na posição do cursor.",
-				L"",
-				L"");
+				L"Insert coil in the cursor's position ",
+				L"Inserir bobina en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrOneShotFalling      ,
 				L"Inserir detecção de borda de descida na posição do cursor.",
-				L"",
-				L"");
+				L"Insert one shot falling on cursor's position",
+				L"Inserir detector de borde de bajada en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrOneShotRising       ,
 				L"Inserir detecção de borda de subida na posição do cursor.",
-				L"",
-				L"");
+				L"Insert one shot rising on cursor's position",
+				L"Inserir detector de borde de subida en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrCircuitOpen         ,
 				L"Inserir circuito aberto na posição do cursor.",
-				L"",
-				L"");
+				L"Insert open circuit on cursor's position",
+				L"Inserir circuito abierto en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrCircuitClosed       ,
 				L"Inserir circuito fechado na posição do cursor.",
-				L"",
-				L"");
+				L"Insert closed circuit on cursor's position",
+				L"Inserir circuito cerrado en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrMasterRelayControl  ,
 				L"Inserir chave geral na posição do cursor. Utilizado para desativar o barramento abaixo desta instrução.",
-				L"",
-				L"");
+				L"Insert master relay on cursor's position. Used to disable the bus below this instruction.",
+				L"Inserir llave general en la posicion del cursor. Utilizando para desactivar el _____ abajo de esta instruccion");
 
 			SET_LANGUAGE_STRINGS(cmdInstrTimerON             ,
 				L"Inserir temporizador com atraso para ligar na posição do cursor.",
-				L"",
-				L"");
+				L"Insert turn-on timer on cursor's position",
+				L"Inserir activar retardado en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrTimerOFF            ,
 				L"Inserir temporizador com atraso para desligar na posição do cursor.",
-				L"",
-				L"");
+				L"Insert turn-off timer on cursor's position",
+				L"Inserir desactivar retardado en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrTimerONRet          ,
-				L"Abrir exemplo de instrução atraso com memória.",
-				L"",
-				L"");
+				L"Inserir atraso com memória na posição do cursor.",
+				L"Insert retentive turn-on timer on cursor's position.",
+				L"Inserir activar retardado con memoria en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrSchedule            ,
 				L"Inserir tarefa agendada na posição do cursor.",
-				L"",
-				L"");
+				L"Insert scheduler on cursor's position",
+				L"Inserir tarea agendada en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrTimerReset          ,
 				L"Inserir zerar atraso na posição do cursor.",
-				L"",
-				L"");
+				L"Insert reset timer on cursor's position",
+				L"Inserir reset retrazo en la posicion del cursor");
 
 			SET_LANGUAGE_STRINGS(cmdInstrCounterInc          ,
 				L"Inserir contador incremental na posição do cursor.",
-				L"",
+				L"Insert",
 				L"");
 			SET_LANGUAGE_STRINGS(cmdInstrCounterDec          ,
 				L"Inserir contador decremental na posição do cursor.",
@@ -1719,259 +2262,259 @@ PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID)
 
 			SET_LANGUAGE_STRINGS(cmdInstrMathAdd             ,
 				L"Inserir instrução matemática somar na posição do cursor.",
-				L"",
-				L"");
+				L"Insert mathematic instruction add on cursor's position",
+				L"Inserir instruccion matematica sumar en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrMathSub             ,
 				L"Inserir instrução matemática subtrair na posição do cursor.",
-				L"",
-				L"");
+				L"Insert mathematic instruction minus on cursor's position",
+				L"Inserir instruccion matematica subtrair en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrMathMult            ,
 				L"Inserir instrução matemática multiplicar na posição do cursor.",
-				L"",
-				L"");
+				L"Insert mathematic instruction multiply on cursor's position",
+				L"Inserir instruccion matematica multiplicar en la posicion del curso");
 			SET_LANGUAGE_STRINGS(cmdInstrMathDivide          ,
 				L"Inserir instrução matemática dividir na posição do cursor.",
-				L"",
-				L"");
+				L"Insert mathematic instruction divide on cursor's position",
+				L"Inserir instruccion matematica dividir en la posicion del curso");
 			SET_LANGUAGE_STRINGS(cmdInstrMathModulo          ,
 				L"Inserir instrução matemática resto de divisão na posição do cursor.",
-				L"",
-				L"");
+				L"Insert mathematics instruction modulo on cursor's position",
+				L"Inserir instruccion matematica modulo en la posicion del curso");
 			SET_LANGUAGE_STRINGS(cmdInstrMathSqrt            ,
 				L"Inserir instrução matemática raiz quadrada na posição do cursor.",
-				L"",
-				L"");
+				L"Insert mathematics instruction square root on cursor's position",
+				L"Inserir instruccion matemática raiz quadrada en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrShiftRegister       ,
 				L"Inserir fila de variáveis na posição do cursor.",
-				L"",
-				L"");
+				L"Insert a shift register on cursor's position",
+				L"Inserir fila de variábles en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrLookUpTable         ,
 				L"Inserir tabela de busca na posição do cursor.",
-				L"",
-				L"");
+				L"Insert lookup table on cursor's position",
+				L"Inserir tabla de busqueda en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrPieceWiseLinear     ,
 				L"Inserir linearização por segmentos na posição do cursor.",
-				L"",
-				L"");
+				L"Insert piecewise linear on cursor's position",
+				L"Inserir linelizacion por seguimientos en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrRand                ,
 				L"Inserir Número Randômico na posição do cursor.",
-				L"",
-				L"");
+				L"Insert Randomic number on cursor's position",
+				L"Inserir numero randomico en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrAbs                 ,
 				L"Inserir a instrução de Valor Absoluto na posição do cursor.",
-				L"",
-				L"");
+				L"Insert Instruction for Absolut value on cursor's position",
+				L"Inserir la instruccion de valor Absoluto en la posicion del cursor");
 
 			SET_LANGUAGE_STRINGS(cmdInstrMov                 ,
 				L"Inserir mover valor na posição do cursor.",
-				L"",
-				L"");
+				L"Insert move on cursor's position",
+				L"Inserir movel valor en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrSetBit              ,
 				L"Inserir liga/desliga bit na posição do cursor.",
-				L"",
-				L"");
+				L"Insert set bit on cursor's position",
+				L"Inserir bit de prende/apaga en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrCheckBit            ,
 				L"Inserir checar bit na posição do cursor.",
-				L"",
-				L"");
+				L"Insert check bit on cursor's position",
+				L"Inserir chequear bit en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrPersist             ,
 				L"Inserir persistente na posição do cursor.",
-				L"",
-				L"");
+				L"Insert Persistent on cursor's position",
+				L"Inserir persistente en la posicion del cursor");
 
 			SET_LANGUAGE_STRINGS(cmdInstrCondEqual           ,
 				L"Inserir condicional igual na posição do cursor.",
-				L"",
-				L"");
+				L"Insert equal conditional on cursorr's position",
+				L"Inserir condicional igual en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrCondNotEqual        ,
 				L"Inserir condicional diferente na posição do cursor.",
-				L"",
-				L"");
+				L"Insert different conditional on cursor's position",
+				L"Inserir condicional diferente en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrCondGreater         ,
 				L"Inserir condicional maior na posição do cursor.",
-				L"",
-				L"");
+				L"Insert greater conditional on cursor's position",
+				L"Inserir condicional mayor en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrCondGreaterEqual    ,
 				L"Inserir condicional maior ou igual na posição do cursor.",
-				L"",
-				L"");
+				L"Insert greater or equal conditional on cursor's position",
+				L"Inserir condicional mayor o igual en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrCondLesser          ,
 				L"Inserir condicional menor na posição do cursor.",
-				L"",
-				L"");
+				L"Insert lesser conditional on cursor's position",
+				L"Inserir condicional menor en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrCondLesserEqual     ,
 				L"Inserir condicional menor ou igual na posição do cursor.",
-				L"",
-				L"");
+				L"Insert lesser or equal conditional on cursor's position",
+				L"Inserir condicional menor o igual en la posicion del cursor");
 
 			SET_LANGUAGE_STRINGS(cmdInstrReadAD              ,
 				L"Inserir leitura de A/D na posição do cursor.",
-				L"",
-				L"");
+				L"Insert A/D read on cursor's position",
+				L"Inserir lectura de A/D en la posicion");
 			SET_LANGUAGE_STRINGS(cmdInstrWriteDA             ,
 				L"Inserir escrita no D/A na posição do cursor.",
-				L"",
-				L"");
+				L"Insert A/D write on cursor's position",
+				L"Inserir escita en el D/A en la posicion del cursor");
 
 			SET_LANGUAGE_STRINGS(cmdInstrPWM                 ,
 				L"Inserir saída PWM na posição do cursor.",
-				L"",
-				L"");
+				L"Insert set PWM on cursor's position",
+				L"Inserir salida PWM en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrRampDA              ,
 				L"Inserir rampa de aceleração/desaceleração na posição do cursor.",
-				L"",
-				L"");
+				L"Insert acceleration/deceleration ramp on cursor's position",
+				L"Inserir rampa de aceleracion/desaceleracion en la posicion de cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrReadEnc             ,
 				L"Inserir leitura de encoder na posição do cursor.",
-				L"",
-				L"");
+				L"Insert encoder read on cursor's position",
+				L"Inserir lectura de encoder en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrResetEnc            ,
 				L"Inserir escrita no encoder na posição do cursor.",
-				L"",
-				L"");
+				L"Insert encoder write on cursor's position",
+				L"Inserir escrita en el encoder en la posicion de cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrPID                 ,
 				L"Inserir Controle PID na posição do cursor.",
-				L"",
-				L"");
+				L"Insert PID Control on cursor's position",
+				L"Inserir Control PID en la posicion del cursor");
 
 			SET_LANGUAGE_STRINGS(cmdInstrWriteChar           ,
 				L"Inserir escrita de caracter na posição do cursor.",
-				L"",
-				L"");
+				L"Insert UART write on cursor's position",
+				L"Inserir escrita de caracteres en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrReadChar            ,
 				L"Inserir leitura de caracter na posição do cursor.",
-				L"",
-				L"");
+				L"Insert UART read on cursor's position",
+				L"Inserir lectura de caractere en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrReadFormatString    ,
 				L"Inserir ler string formatada na posição do cursor.",
-				L"",
-				L"");
+				L"Insert read formatted string on cursor's position",
+				L"Inserir leer string formatada en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrWriteFormatString   ,
 				L"Inserir escrever string formatada na posição do cursor.",
-				L"",
-				L"");
+				L"Insert write formatted string on cursor's position",
+				L"Inserir escribir string formatada en la posicion do cursor");
 
 			SET_LANGUAGE_STRINGS(cmdInstrReadUSS             ,
 				L"Inserir leitura uss na posição do cursor.",
-				L"",
-				L"");
+				L"Insert uss read on cursor's position",
+				L"Inserir lectura uss en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrWriteUSS            ,
 				L"Inserir escrita uss na posição do cursor.",
-				L"",
-				L"");
+				L"Insert uss write on cursor's position",
+				L"Inserir escrita uss en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrReadNS600           ,
 				L"Inserir leitura de NS-600 Yaskawa na posição do cursor.",
-				L"",
-				L"");
+				L"Insert NS-600 Yaskawa read on cursor's reading",
+				L"Inserir lectura NS-Yaskawa en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrWriteNS600          ,
 				L"Inserir escrita no NS-600 Yaskawa na posição do cursor.",
-				L"",
-				L"");
+				L"Insert NS-600 Yaskawa write on cursor's reading",
+				L"Inserir escrita NS-600 Yaskawa en la posicion del cursor");
 
 			SET_LANGUAGE_STRINGS(cmdInstrReadModBUS          ,
 				L"Inserir ler registrador modbus na posição do cursor.",
-				L"",
-				L"");
+				L"Insert read modbus register read on cursor's position",
+				L"Inserir leer registrador modbus en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrWriteModBUS         ,
 				L"Inserir escrever registrador modbus na posição do cursor.",
-				L"",
-				L"");
+				L"Insert write modbus register read on cursor's position",
+				L"Inserir escribir registrador modbus en la posicion del curso");
 
 			SET_LANGUAGE_STRINGS(cmdConfig                   ,
 				L"Abrir a janela de configurações do projeto atual.",
-				L"",
-				L"");
+				L"Open configuration window of current project",
+				L"Abrir ventana de configuraciones del proyecto actual");
 			SET_LANGUAGE_STRINGS(cmdSettings                 ,
 				L"Abrir a janela para configuração do programa POPTools como porta serial para gravação, desativar avisos, etc.",
-				L"",
-				L"");
+				L"Open configuration window from POPTools program like serial port for write, disable warnings, etc.",
+				L"Abrir la ventana para configuracion del programa POPTools como puerta serial para gravacion, desactivar avisis, tec.");
 
 			SET_LANGUAGE_STRINGS(cmdSimulation               ,
 				L"Entrar no modo de simulação do Diagrama Ladder.",
-				L"",
-				L"");
+				L"Enter simulation mode for Ladder Diagram",
+				L"Entrar en modo de simulacion del Diagrama Ladder");
 			SET_LANGUAGE_STRINGS(cmdSimulationExit           ,
 				L"Sair do modo de simulação do Diagrama Ladder.",
-				L"",
-				L"");
+				L"Exit simulation mode for Ladder Diagram",
+				L"Salir del modo de simulacion del Diagrama Ladder");
 			SET_LANGUAGE_STRINGS(cmdSimulationStart          ,
 				L"Iniciar a simulação em tempo real do Diagrama Ladder.",
-				L"",
-				L"");
+				L"Start simulation mode in real time from Ladder Diagram",
+				L"Iniciar la simulacion en tiempo real del Diagrama Ladder");
 			SET_LANGUAGE_STRINGS(cmdSimulationPause          ,
 				L"Pausar a simulação em tempo real do Diagrama Ladder.",
-				L"",
-				L"");
+				L"Pause simulation in real time from Ladder Diagram",
+				L"Pausar la simulacion en tiempo real del Diagrama Ladder");
 			SET_LANGUAGE_STRINGS(cmdSimulationStop           ,
 				L"Interromper a simulação do Diagrama Ladder, retornando toda a lógica ao estado inicial.",
-				L"",
-				L"");
+				L"Interrupt Ladder Diagram simulation, returning all logic to initial state",
+				L"Interrrumpir la simulacion del Diagrama Ladder, retornando toda la lógica al estado inicial");
 			SET_LANGUAGE_STRINGS(cmdSimulationSingleCycle    ,
 				L"Executar um único ciclo.",
-				L"",
-				L"");
+				L"Execute only one cycle",
+				L"Ejecutar un unico ciclo");
 			SET_LANGUAGE_STRINGS(cmdSimulationLogStart       ,
 				L"Iniciar o registro de dados da Simulação.",
-				L"",
-				L"");
+				L"Start data logging of simulation",
+				L"Iniciar el registro de datos de simulacion");
 			SET_LANGUAGE_STRINGS(cmdSimulationLogStop        ,
 				L"Parar o registro de dados da Simulação.",
-				L"",
-				L"");
+				L"Stop data logging of simulation",
+				L"Parar el registro de datos de simulacion");
 
 			SET_LANGUAGE_STRINGS(cmdCompile                  ,
-				L"Gerar arquivo .hex para gravação na POP-7 a patir do Diagrama Ladder.",
-				L"",
-				L"");
+				L"Gerar arquivo .hex para gravação na POP-7 a partir do Diagrama Ladder.",
+				L"Generate file .hex for POP-7 write from Ladder Diagram",
+				L"Generar archivo .hex para grabacion en la POP-7 a partir del Diagrama Ladder");
 			SET_LANGUAGE_STRINGS(cmdCompileAndProgram        ,
 				L"Gerar arquivo .hex e gravá-lo na POP-7 a partir do Diagrama Ladder.",
-				L"",
-				L"");
+				L"Generate file .hex and write it on POP-7 from Ladder Diagram",
+				L"Generar archivo .hex y grabarlo en la POP-7 a partir del Diagrama Ladder");
 
 			SET_LANGUAGE_STRINGS(cmdDebug                    ,
 				L"Abrir janela de depuração da POP-7, onde é possível ler e alterar seus registradores.",
-				L"",
-				L"");
+				L"Open POP-7 depuration window, where it is possible to read and write its registers",
+				L"Abrir la ventana de depuracion de la POP-7, donde es posible leer y alterar sus registradores");
 
 			SET_LANGUAGE_STRINGS(cmdSplitUserManual          ,
 				L"Abrir o Manual do Usuário, contendo a ajuda para todo o programa.",
-				L"",
-				L"");
+				L"Open User's Manual, owns help for all program",
+				L"Abrir el manual de Usuario, conteniendo la ayuda para todo el programa");
 			SET_LANGUAGE_STRINGS(cmdUserManual          ,
 				L"Abrir o Manual do Usuário, contendo a ajuda para todo o programa.",
-				L"",
-				L"");
+				L"Open User Manual, owns help for all program",
+				L"Abrir el manual de Usuario, conteniendo la ayuda para todo el programa");
 			SET_LANGUAGE_STRINGS(cmdKeyboardManual           ,
 				L"Abrir o Manual do Teclado, contendo todos os atalhos para os comandos da interface.",
-				L"",
-				L"");
+				L"Open Keyboard Manual, owns all command shortcuts",
+				L"Abrir el Manual del Teclado, conteniendo todos los atajos para los comandos de interface");
 
 			// Example comands list
 			SET_LANGUAGE_STRINGS(cmdExamples                 ,
 				L"Abrir a lista de lógicas de exemplo.",
-				L"",
-				L"");
+				L"Open logic list of example",
+				L"Abrir la lista de lógicas de ejemplo");
 
 			SET_LANGUAGE_STRINGS(cmdExampleComment           ,
 				L"Abrir exemplo de comentário.",
-				L"",
-				L"");
+				L"Open comment example",
+				L"Abrir ejemplo de comentário");
 
 			SET_LANGUAGE_STRINGS(cmdExampleContact           ,
 				L"Abrir exemplo de instrução contato.",
-				L"",
-				L"");
+				L"Open contact instruction example",
+				L"Abrir ejemplo de instruccion contacto");
 			SET_LANGUAGE_STRINGS(cmdExampleCoil              ,
 				L"Abrir exemplo de instrução bobina.",
-				L"",
-				L"");
+				L"Open coil instruction example",
+				L"Abrir ejemplo de instruccion bobina");
 			SET_LANGUAGE_STRINGS(cmdExampleOneShotFalling    ,
 				L"Abrir exemplo de instrução detecção de borda de descida.",
-				L"",
-				L"");
+				L"Open one shot falling example",
+				L"Abrir ejemplo de instruccion deteccion del borde de bajada");
 			SET_LANGUAGE_STRINGS(cmdExampleOneShotRising     ,
 				L"Abrir exemplo de instrução detecção de borda de subida.",
-				L"",
+				L"Open one shot rising example",
 				L"");
 			SET_LANGUAGE_STRINGS(cmdExampleCircuitOpen       ,
 				L"Abrir exemplo de instrução circuito aberto.",

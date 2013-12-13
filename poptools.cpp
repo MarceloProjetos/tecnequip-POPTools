@@ -956,7 +956,7 @@ static void OpenDialog(char *filename)
 	}
 
     if(!LoadProjectFromFile(tempSaveFile)) {
-        Error(_("Não pode abrir '%s'."), tempSaveFile);
+        Error(_("Não pode abrir o arquivo '%s'\n"), tempSaveFile);
 		if(newProgramCreated) {
 			CloseProgram(ladder);
 		}

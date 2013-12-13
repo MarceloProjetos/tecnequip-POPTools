@@ -79,7 +79,7 @@ void MakeMainWindowControls(void)
     LV_ADD_COLUMN(IoList, LV_IO_TYPE,  typeWidth, _("Tipo"));
     LV_ADD_COLUMN(IoList, LV_IO_STATE, 100,       _("Estado"));
     LV_ADD_COLUMN(IoList, LV_IO_PIN,   pinWidth,  _("Nro Porta E/S"));
-    LV_ADD_COLUMN(IoList, LV_IO_PORT,  portWidth, _("Porta do PLC"));
+    LV_ADD_COLUMN(IoList, LV_IO_PORT,  portWidth, _("Porta do CLP"));
 
     HorizScrollBar = CreateWindowEx(0, WC_SCROLLBAR, "", WS_CHILD |
         SBS_HORZ | SBS_BOTTOMALIGN | WS_VISIBLE | WS_CLIPSIBLINGS, 

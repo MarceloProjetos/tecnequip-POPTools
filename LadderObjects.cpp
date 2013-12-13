@@ -193,7 +193,7 @@ bool LadderElem::Load(FILE *f, unsigned int version)
 
 bool LadderElem::updateNameTypeIO(unsigned int index, string name, eType type)
 {
-	Diagram->CheckpointBegin("Alterar Nome/Tipo do I/O");
+	Diagram->CheckpointBegin(_("Alterar Nome/Tipo do I/O"));
 
 	if(internalUpdateNameTypeIO(index, name, type)) {
 		Diagram->CheckpointEnd();
@@ -6439,7 +6439,7 @@ bool LadderElemPiecewise::internalGenerateIntCode(IntCode &ic)
 	// perform the linear interpolation, using our 16-bit fixed
 	// point math.
 	if(prop.count == 0) {
-		Error(_("Consulta da Tabela de Linearização por Segmentos sem elementos!"));
+		Error(_("Tabela de Linearização por Segmentos sem elementos!"));
 		CompileError();
 	}
 
@@ -9426,7 +9426,7 @@ bool LadderDiagram::EditSelectedElement(void)
 	bool ret = false;
 
 	if(context.SelectedElem != nullptr && !IsLocked()) {
-		CheckpointBegin("Editar Elemento");
+		CheckpointBegin(_("Editar Elemento"));
 		ret = context.SelectedElem->ShowDialog(context);
 		if(ret) {
 			ProgramChanged();
