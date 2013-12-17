@@ -409,12 +409,14 @@ inline float DegreeToRadian(float angle)
     return 3.14159f * angle / 180.0f;
 }
 
-HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
+HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ,
+	unsigned int brushBG, unsigned int brushGradient, unsigned int brushIntBorder, unsigned int brushExtBorder,
 	bool filled, float radiusX, float radiusY, float angle)
 {
 //	DrawRectangle(r, brushBG       , true , (unsigned int)radiusX, (unsigned int)radiusY, angle);
 //	DrawRectangle(r, brushExtBorder, false, (unsigned int)radiusX, (unsigned int)radiusY, angle);
 //	return S_OK;
+	float borderWidth = 2.0f;
 	ID2D1PathGeometry *pGeometry;
 	HRESULT hr = pD2DFactory->CreatePathGeometry(&pGeometry);
 
@@ -579,13 +581,18 @@ HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ, unsigned int brush
 
 			// Desenha o fundo
 			if(filled) {
-				pRT->FillGeometry(pGeometry, getBrush(brushBG, rectRoundedRect));
+				if(brushGradient != brushBG) {
+					pRT->FillGeometry(pGeometry, getBrush(brushGradient, rectRoundedRect));
+					pRT->FillRoundedRectangle(D2D1::RoundedRect(rectRoundedRect, radiusX, radiusY), getBrush(brushBG, rectRoundedRect));
+				} else {
+					pRT->FillGeometry(pGeometry, getBrush(brushBG, rectRoundedRect));
+				}
 			}
 
 			if(brushBG != brushIntBorder) {
 				ID2D1Brush *pBrush = getBrush(brushIntBorder, rectRoundedRect);
 				// Desenha a borda interna
-				pRT->DrawRoundedRectangle(D2D1::RoundedRect(rectRoundedRect, radiusX, radiusY), pBrush, 4);
+				pRT->DrawRoundedRectangle(D2D1::RoundedRect(rectRoundedRect, radiusX, radiusY), pBrush, borderWidth);
 
 				// Faltam os pontos iniciais das linhas. Calculamos atraves de rectRoundedRect
 				pointLines[0].x = rectRoundedRect.right - radiusX; // Ponto inicial da primeira linha
@@ -594,12 +601,13 @@ HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ, unsigned int brush
 				pointLines[2].y = rectRoundedRect.top + radiusY; // Ponto inicial da segunda linha
 
 				// Desenha as duas linhas superiores
-				pRT->DrawLine(pointLines[0], pointLines[1], pBrush, 4);
-				pRT->DrawLine(pointLines[2], pointLines[3], pBrush, 4);
+				pBrush = getBrush(brushExtBorder, rectRoundedRect);
+				pRT->DrawLine(pointLines[0], pointLines[1], pBrush, borderWidth);
+				pRT->DrawLine(pointLines[2], pointLines[3], pBrush, borderWidth);
 			}
 
 			// Desenha a borda externa
-			pRT->DrawGeometry(pGeometry, getBrush(brushExtBorder, rectRoundedRect), 4);
+			pRT->DrawGeometry(pGeometry, getBrush(brushExtBorder, rectRoundedRect), borderWidth);
 
 			// Se usando rotacao, volta ao normal
 			if(angle) pRT->SetTransform(D2D1::Matrix3x2F::Rotation(0.0f, xy));

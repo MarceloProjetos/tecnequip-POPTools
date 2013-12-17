@@ -7,6 +7,8 @@ HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
 
+extern vector<string> vectorNoMatchFound;
+
 // Estrutura que armazena ambos elemento e linha copiados: Area de Transferencia
 LadderClipboard clipboard;
 
@@ -1429,6 +1431,12 @@ cmp:
             WriteProgram();
             break;
 
+        case MNU_VALIDATE:
+			if(ladder->Validate() == eValidateResult_OK) {
+				ladder->ShowDialog(eDialogType_Message, false, _("Diagrama Válido"), _("Validação finalizada. Diagrama válido!"));
+			}
+            break;
+
 		case MNU_DEBUG:
 			ShowDebugDialog();
 			break;
@@ -2121,6 +2129,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	WSACleanup();
 
 	DestroyRibbon();
+	if(vectorNoMatchFound.size() > 0) {
+		Sleep(1);
+	}
 	freeLangTables();
 
 	return 0;

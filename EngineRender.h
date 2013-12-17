@@ -37,7 +37,7 @@ public:
 	virtual HRESULT DrawPictureFromFile    (char *filename, POINT start, POINT size)=0;
 	virtual HRESULT DrawPictureFromResource(int   id      , POINT start, POINT size)=0;
 
-	virtual HRESULT DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
+	virtual HRESULT DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushGradient, unsigned int brushIntBorder, unsigned int brushExtBorder,
 		bool filled = true, float radiusX = 20.0f, float radiusY = 20.0f, float angle = 0.0f)=0;
 };
 

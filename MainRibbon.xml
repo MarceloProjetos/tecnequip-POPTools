@@ -2302,6 +2302,21 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name         = "Validate"
+               Symbol     = "cmdValidate"
+               Id         = "30701"
+               LabelTitle = "Validar"
+             LabelDescription = "Verificar por erros no Diagrama Ladder.">
+      <Command.TooltipTitle      >Validar</Command.TooltipTitle>
+      <Command.TooltipDescription>Verificar por erros no Diagrama Ladder.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/ValidateHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/ValidateHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
     <Command Name         = "CompileAndProgram"
                Symbol     = "cmdCompileAndProgram"
                Id         = "30702"
@@ -2415,7 +2430,8 @@
             <Button CommandName="Config"/>
             <Button CommandName="Settings"/>
           </Group>
-          <Group CommandName="GroupActions" SizeDefinition="ThreeButtons">
+          <Group CommandName="GroupActions" SizeDefinition="FourButtons">
+            <Button CommandName="Validate"/>
             <Button CommandName="Compile"/>
             <Button CommandName="CompileAndProgram"/>
             <Button CommandName="Debug"/>

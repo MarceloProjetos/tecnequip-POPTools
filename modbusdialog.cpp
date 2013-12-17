@@ -160,18 +160,22 @@ bool ShowModbusDialog(int mode_write, string *name, int *elem, int *address,
     }
 
     if(!DialogCancel) {
-        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_temp));
-
-		changed = true;
-
-		*name = name_temp;
-
-		ladder->mbDelRef(*elem);
-		*elem = ladder->mbGetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
-		ladder->mbAddRef(*elem);
 		SendMessage(AddressTextbox, WM_GETTEXT, 16, (LPARAM)(addr));
 
-		*address = atoi(addr);
+		if(ladder->IsValidNumber(addr)) {
+			changed = true;
+
+	        SendMessage(NameTextbox, WM_GETTEXT, (WPARAM)17, (LPARAM)(name_temp));
+			*name = name_temp;
+
+			ladder->mbDelRef(*elem);
+			*elem = ladder->mbGetNodeIDByIndex(SendMessage(ElemTextbox, CB_GETCURSEL, 0, 0));
+			ladder->mbAddRef(*elem);
+
+			*address = atoi(addr);
+		} else {
+			ladder->ShowDialog(eDialogType_Error, false, _("Número Inválido"), _("Número '%s' inválido!"), addr);
+		}
 	}
 
     EnableWindow(MainWindow, TRUE);

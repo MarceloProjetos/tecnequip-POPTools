@@ -191,32 +191,32 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "'%s' fora dos limites! Deve estar entre %d e %d.", "'%s' out of range! Must be between %d and %d");
 		addTextToLangTable(l, "'%s' não pode ser número!", "'%s' cannot be a number!");
 		addTextToLangTable(l, "'%s' deve ser um contador ou timer!", "'%s' must be a counter or a timer!");
-		addTextToLangTable(l, "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não inicar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", "%s '%s' invalid!\n\nVariable: only letter (A to Z), numbers or _ (underline) and do not start with numbers\nNumbers: only numbers, can start with - (minus)");
-		addTextToLangTable(l, "(GMT-01) Açores, Cabo Verde", "(GMT-01) Açores, Cabo Verde");
-		addTextToLangTable(l, "(GMT-02) Atlântico Central", "(GMT-02) Atlântico Central");
-		addTextToLangTable(l, "(GMT-03) Brasilia, Buenos Aires", "(GMT-03) Brasilia, Buenos Aires");
-		addTextToLangTable(l, "(GMT-04) Rio Branco, Manaus, Caracas, La Paz", "(GMT-04) Rio Branco, Manaus, Caracas, La Paz");
-		addTextToLangTable(l, "(GMT-05) Lima, Bogotá", "(GMT-05) Lima, Bogotá");
-		addTextToLangTable(l, "(GMT-06) América Central, Hora Central EUA/Canadá", "(GMT-06) América Central, Hora Central EUA/Canadá");
-		addTextToLangTable(l, "(GMT-07) Hora das Montanhas (EUA e Canadá)", "(GMT-07) Hora das Montanhas (EUA e Canadá)");
-		addTextToLangTable(l, "(GMT-08) Hora do Pacífico", "(GMT-08) Hora do Pacífico");
-		addTextToLangTable(l, "(GMT-09) Alasca", "(GMT-09) Alasca");
-		addTextToLangTable(l, "(GMT-10) Hawaí", "(GMT-10) Hawaí");
-		addTextToLangTable(l, "(GMT-11) Ilhas Midway,Samoa", "(GMT-11) Ilhas Midway,Samoa");
-		addTextToLangTable(l, "(GMT-12) Linha de Data Internacional Oeste", "(GMT-12) Linha de Data Internacional Oeste");
-		addTextToLangTable(l, "(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa", "(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa");
-		addTextToLangTable(l, "(GMT+01) Berlim, Estocolmo, Roma, Bruxelas", "(GMT+01) Berlim, Estocolmo, Roma, Bruxelas");
-		addTextToLangTable(l, "(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém", "(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém");
-		addTextToLangTable(l, "(GMT+03) Bagdá, Kuwait, Nairóbi, Moscou,Riad", "(GMT+03) Bagdá, Kuwait, Nairóbi, Moscou,Riad");
-		addTextToLangTable(l, "(GMT+04) Abu Dhabi, Mascate, Hora Padrão do Cáucaso", "(GMT+04) Abu Dhabi, Mascate, Hora Padrão do Cáucaso");
-		addTextToLangTable(l, "(GMT+05) Islamabad, Karachi, Ekaterinburgo", "(GMT+05) Islamabad, Karachi, Ekaterinburgo");
-		addTextToLangTable(l, "(GMT+06) Almaty, Dacca", "(GMT+06) Almaty, Dacca");
-		addTextToLangTable(l, "(GMT+07) Bangcoc, Jacarta, Hanói", "(GMT+07) Bangcoc, Jacarta, Hanói");
-		addTextToLangTable(l, "(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura", "(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura");
-		addTextToLangTable(l, "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Yakutsk", "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Yakutsk");
-		addTextToLangTable(l, "(GMT+10) Brisbane, Camberra, Melbourne, Sydney", "(GMT+10) Brisbane, Camberra, Melbourne, Sydney");
-		addTextToLangTable(l, "(GMT+11) Magadã, Ilhas Salomão, Nova Caledônia", "(GMT+11) Magadã, Ilhas Salomão, Nova Caledônia");
-		addTextToLangTable(l, "(GMT+12) Fiji, Kamchatka, Auckland", "(GMT+12) Fiji, Kamchatka, Auckland");
+		addTextToLangTable(l, "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não iniciar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", "%s '%s' invalid!\n\nVariable: only letter (A to Z), numbers or _ (underline) and do not start with numbers\nNumbers: only numbers, can start with - (minus)");
+		addTextToLangTable(l, "(GMT-01) Açores, Cabo Verde", "(GMT-01)Azores, Cape Verde Is.");
+		addTextToLangTable(l, "(GMT-02) Atlântico Central", "(GMT-02) Mid Atlantic");
+		addTextToLangTable(l, "(GMT-03) Brasília, Buenos Aires", "(GMT-03) Brasilia, Buenos Aires");
+		addTextToLangTable(l, "(GMT-04) Rio Branco, Manaus, Caracas, La Paz", "(GMT-04) Manaus, La Paz, Santiago, Asuncion");
+		addTextToLangTable(l, "(GMT-05) Lima, Bogotá", "(GMT-05) Lima, Bogota, Eastern Time (US & Canada)");
+		addTextToLangTable(l, "(GMT-06) América Central, Hora Central EUA/Canadá", "(GMT-06) Central America, Central Time (US & Canada)");
+		addTextToLangTable(l, "(GMT-07) Hora das Montanhas (EUA e Canadá)", "(GMT-07) Arizona, Mountain Time (US & Canada)");
+		addTextToLangTable(l, "(GMT-08) Hora do Pacífico", "(GMT-08) Pacific Time, Baja California");
+		addTextToLangTable(l, "(GMT-09) Alasca", "(GMT-09) Alaska");
+		addTextToLangTable(l, "(GMT-10) Hawaí", "(GMT-10) Hawaii");
+		addTextToLangTable(l, "(GMT-11) Ilhas Midway", "(GMT-11) Midway Island");
+		addTextToLangTable(l, "(GMT-12) Linha de Data Internacional Oeste", "(GMT-12) International Date Line West");
+		addTextToLangTable(l, "(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa", "(GMT 00) Coordinated Universal Time, London, Dublin, Lisbon");
+		addTextToLangTable(l, "(GMT+01) Berlim, Estocolmo, Roma, Bruxelas", "(GMT+01) Berlin, Amsterdam, Stockholm, Rome, Brussels");
+		addTextToLangTable(l, "(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém", "(GMT+02) Athens, Helsinki, E. Europe, Jerusalem");
+		addTextToLangTable(l, "(GMT+03) Bagdá, Kuwait, Nairóbi, Riad", "(GMT+03) Baghdad, Kuwait, Nairobi, Riyadh");
+		addTextToLangTable(l, "(GMT+04) Abu Dhabi, Mascate, Moscou", "(GMT+04) Abu Dhabi, Muscat, Moscow");
+		addTextToLangTable(l, "(GMT+05) Islamabad, Karachi, Tashkent", "(GMT+05) Islamabad, Karachi, Tashkent");
+		addTextToLangTable(l, "(GMT+06) Astana, Dacca", "(GMT+06) Astana, Dhaka");
+		addTextToLangTable(l, "(GMT+07) Bangcoc, Jacarta, Hanói", "(GMT+07) Bangkok, Jakarta, Hanoi");
+		addTextToLangTable(l, "(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura", "(GMT+08) Beijing, Hong Kong, Taipei, Singapore");
+		addTextToLangTable(l, "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Irkutsk", "(GMT+09) Tokyo, Osaka, Sapporo, Seoul, Irkutsk");
+		addTextToLangTable(l, "(GMT+10) Brisbane, Camberra, Melbourne, Sydney", "(GMT+10) Brisbane, Canberra, Melbourne, Sydney");
+		addTextToLangTable(l, "(GMT+11) Vladivostok, Ilhas Salomão, Nova Caledônia", "(GMT+11) Vladivostok, Solomon Is., New Caledonia");
+		addTextToLangTable(l, "(GMT+12) Fiji, Wellington, Auckland", "(GMT+12) Fiji, Wellington, Auckland");
 		addTextToLangTable(l, "(GMT+13) Nuku'alofa", "(GMT+13) Nuku'alofa");
 		addTextToLangTable(l, "[\x01""BRD\x02 \\_]", "[\x01OSF\x02 \\_]");
 		addTextToLangTable(l, "[\x01""BRD\x02_/ ]", "[\x01OSR\x02_/ ]");
@@ -385,7 +385,6 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Máscara:", "Mask:");
 		addTextToLangTable(l, "MASK", "MASK");
 		addTextToLangTable(l, "Minuto inválido, deve estar entre 0 e 59.", "Minute invalid, should be between 0 and 59");
-		addTextToLangTable(l, "Modbus", "Modbus");
 		addTextToLangTable(l, "ModBUS ID:", "ModBUS ID:");
 		addTextToLangTable(l, "MODBUS: id=%d, address=%d, name=%s\r\n", "MODBUS: id=%d, address=%d, name=%s\r\n");
 		addTextToLangTable(l, "MODBUS_ETH: id=%d, address=%d, name=%s\r\n", "MODBUS_ETH: id=%d, address=%d, name=%s\r\n");
@@ -521,6 +520,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "yvar", "yvar");
 		addTextToLangTable(l, "Operador 1:", "Operator 1:");
 		addTextToLangTable(l, "Operador 2:", "Operator 2:");
+		addTextToLangTable(l, "Operador 1", "Operator 1");
+		addTextToLangTable(l, "Operador 2", "Operator 2");
 		addTextToLangTable(l, "Raiz Quadrada", "Square Root");
 		addTextToLangTable(l, "Depurar", "Debug");
 		addTextToLangTable(l, "Padrão", "Default");
@@ -851,6 +852,15 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Copiar Elemento", "Copy Element");
 		addTextToLangTable(l, "Colar Elemento", "Paste Element");
 		addTextToLangTable(l, "Salvar", "Save");
+		addTextToLangTable(l, "Conflito entre tipos para '%s' ! Operação não permitida.", "Type conflict for '%s' ! Operation not allowed.");
+		addTextToLangTable(l, "Tipo Inválido", "Invalid Type");
+		addTextToLangTable(l, "Alterar Liga/Desliga Bit", "Update Turn On/Turn Off Bit");
+		addTextToLangTable(l, "Alterar Rampa de Aceleração/Desaceleração", "Update Acceleration/Deceleration Ramp");
+		addTextToLangTable(l, "Número Inválido", "Invalid Number");
+		addTextToLangTable(l, "Dados insuficientes para exibicao de grafico", "Not enough data to show graph");
+		addTextToLangTable(l, "Diagrama Válido", "Diagram is Valid");
+		addTextToLangTable(l, "Validação finalizada. Diagrama válido!", "Validation finished. Diagram is valid!");
+		addTextToLangTable(l, "D/A", "D/A");
 	} else if(id == 2) { // Idioma Espanhol
 		l = newLangTableChar();
 
@@ -974,32 +984,32 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "'%s' fora dos limites! Deve estar entre %d e %d.", "'%s' out of range! Must be between %d and %d");
 		addTextToLangTable(l, "'%s' não pode ser número!", "'%s' cannot be a number!");
 		addTextToLangTable(l, "'%s' deve ser um contador ou timer!", "'%s' must be a counter or a timer!");
-		addTextToLangTable(l, "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não inicar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", "%s '%s' invalid!\n\nVariable: only letter (A to Z), numbers or _ (underline) and do not start with numbers\nNumbers: only numbers, can start with - (minus)");
-		addTextToLangTable(l, "(GMT-01) Açores, Cabo Verde", "(GMT-01) Açores, Cabo Verde");
-		addTextToLangTable(l, "(GMT-02) Atlântico Central", "(GMT-02) Atlântico Central");
-		addTextToLangTable(l, "(GMT-03) Brasilia, Buenos Aires", "(GMT-03) Brasilia, Buenos Aires");
-		addTextToLangTable(l, "(GMT-04) Rio Branco, Manaus, Caracas, La Paz", "(GMT-04) Rio Branco, Manaus, Caracas, La Paz");
-		addTextToLangTable(l, "(GMT-05) Lima, Bogotá", "(GMT-05) Lima, Bogotá");
-		addTextToLangTable(l, "(GMT-06) América Central, Hora Central EUA/Canadá", "(GMT-06) América Central, Hora Central EUA/Canadá");
-		addTextToLangTable(l, "(GMT-07) Hora das Montanhas (EUA e Canadá)", "(GMT-07) Hora das Montanhas (EUA e Canadá)");
-		addTextToLangTable(l, "(GMT-08) Hora do Pacífico", "(GMT-08) Hora do Pacífico");
-		addTextToLangTable(l, "(GMT-09) Alasca", "(GMT-09) Alasca");
-		addTextToLangTable(l, "(GMT-10) Hawaí", "(GMT-10) Hawaí");
-		addTextToLangTable(l, "(GMT-11) Ilhas Midway,Samoa", "(GMT-11) Ilhas Midway,Samoa");
-		addTextToLangTable(l, "(GMT-12) Linha de Data Internacional Oeste", "(GMT-12) Linha de Data Internacional Oeste");
-		addTextToLangTable(l, "(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa", "(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa");
-		addTextToLangTable(l, "(GMT+01) Berlim, Estocolmo, Roma, Bruxelas", "(GMT+01) Berlim, Estocolmo, Roma, Bruxelas");
-		addTextToLangTable(l, "(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém", "(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém");
-		addTextToLangTable(l, "(GMT+03) Bagdá, Kuwait, Nairóbi, Moscou,Riad", "(GMT+03) Bagdá, Kuwait, Nairóbi, Moscou,Riad");
-		addTextToLangTable(l, "(GMT+04) Abu Dhabi, Mascate, Hora Padrão do Cáucaso", "(GMT+04) Abu Dhabi, Mascate, Hora Padrão do Cáucaso");
-		addTextToLangTable(l, "(GMT+05) Islamabad, Karachi, Ekaterinburgo", "(GMT+05) Islamabad, Karachi, Ekaterinburgo");
-		addTextToLangTable(l, "(GMT+06) Almaty, Dacca", "(GMT+06) Almaty, Dacca");
-		addTextToLangTable(l, "(GMT+07) Bangcoc, Jacarta, Hanói", "(GMT+07) Bangcoc, Jacarta, Hanói");
-		addTextToLangTable(l, "(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura", "(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura");
-		addTextToLangTable(l, "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Yakutsk", "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Yakutsk");
-		addTextToLangTable(l, "(GMT+10) Brisbane, Camberra, Melbourne, Sydney", "(GMT+10) Brisbane, Camberra, Melbourne, Sydney");
-		addTextToLangTable(l, "(GMT+11) Magadã, Ilhas Salomão, Nova Caledônia", "(GMT+11) Magadã, Ilhas Salomão, Nova Caledônia");
-		addTextToLangTable(l, "(GMT+12) Fiji, Kamchatka, Auckland", "(GMT+12) Fiji, Kamchatka, Auckland");
+		addTextToLangTable(l, "%s '%s' inválido!\n\nVariável: Apenas letras (A a Z), números ou _ (underline) e não iniciar com número\nNúmero: Apenas números, podendo iniciar por - (menos)", "%s '%s' invalid!\n\nVariable: only letter (A to Z), numbers or _ (underline) and do not start with numbers\nNumbers: only numbers, can start with - (minus)");
+		addTextToLangTable(l, "(GMT-01) Açores, Cabo Verde", "(GMT-01)Azores, Cape Verde Is.");
+		addTextToLangTable(l, "(GMT-02) Atlântico Central", "(GMT-02) Mid Atlantic");
+		addTextToLangTable(l, "(GMT-03) Brasília, Buenos Aires", "(GMT-03) Brasilia, Buenos Aires");
+		addTextToLangTable(l, "(GMT-04) Rio Branco, Manaus, Caracas, La Paz", "(GMT-04) Manaus, La Paz, Santiago, Asuncion");
+		addTextToLangTable(l, "(GMT-05) Lima, Bogotá", "(GMT-05) Lima, Bogota, Eastern Time (US & Canada)");
+		addTextToLangTable(l, "(GMT-06) América Central, Hora Central EUA/Canadá", "(GMT-06) Central America, Central Time (US & Canada)");
+		addTextToLangTable(l, "(GMT-07) Hora das Montanhas (EUA e Canadá)", "(GMT-07) Arizona, Mountain Time (US & Canada)");
+		addTextToLangTable(l, "(GMT-08) Hora do Pacífico", "(GMT-08) Pacific Time, Baja California");
+		addTextToLangTable(l, "(GMT-09) Alasca", "(GMT-09) Alaska");
+		addTextToLangTable(l, "(GMT-10) Hawaí", "(GMT-10) Hawaii");
+		addTextToLangTable(l, "(GMT-11) Ilhas Midway", "(GMT-11) Midway Island");
+		addTextToLangTable(l, "(GMT-12) Linha de Data Internacional Oeste", "(GMT-12) International Date Line West");
+		addTextToLangTable(l, "(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa", "(GMT 00) Coordinated Universal Time, London, Dublin, Lisbon");
+		addTextToLangTable(l, "(GMT+01) Berlim, Estocolmo, Roma, Bruxelas", "(GMT+01) Berlin, Amsterdam, Stockholm, Rome, Brussels");
+		addTextToLangTable(l, "(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém", "(GMT+02) Athens, Helsinki, E. Europe, Jerusalem");
+		addTextToLangTable(l, "(GMT+03) Bagdá, Kuwait, Nairóbi, Riad", "(GMT+03) Baghdad, Kuwait, Nairobi, Riyadh");
+		addTextToLangTable(l, "(GMT+04) Abu Dhabi, Mascate, Moscou", "(GMT+04) Abu Dhabi, Muscat, Moscow");
+		addTextToLangTable(l, "(GMT+05) Islamabad, Karachi, Tashkent", "(GMT+05) Islamabad, Karachi, Tashkent");
+		addTextToLangTable(l, "(GMT+06) Astana, Dacca", "(GMT+06) Astana, Dhaka");
+		addTextToLangTable(l, "(GMT+07) Bangcoc, Jacarta, Hanói", "(GMT+07) Bangkok, Jakarta, Hanoi");
+		addTextToLangTable(l, "(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura", "(GMT+08) Beijing, Hong Kong, Taipei, Singapore");
+		addTextToLangTable(l, "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Irkutsk", "(GMT+09) Tokyo, Osaka, Sapporo, Seoul, Irkutsk");
+		addTextToLangTable(l, "(GMT+10) Brisbane, Camberra, Melbourne, Sydney", "(GMT+10) Brisbane, Canberra, Melbourne, Sydney");
+		addTextToLangTable(l, "(GMT+11) Vladivostok, Ilhas Salomão, Nova Caledônia", "(GMT+11) Vladivostok, Solomon Is., New Caledonia");
+		addTextToLangTable(l, "(GMT+12) Fiji, Wellington, Auckland", "(GMT+12) Fiji, Wellington, Auckland");
 		addTextToLangTable(l, "(GMT+13) Nuku'alofa", "(GMT+13) Nuku'alofa");
 		addTextToLangTable(l, "[\x01""BRD\x02 \\_]", "[\x01OSF\x02 \\_]");
 		addTextToLangTable(l, "[\x01""BRD\x02_/ ]", "[\x01OSR\x02_/ ]");
@@ -1168,7 +1178,6 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Máscara:", "Mask:");
 		addTextToLangTable(l, "MASK", "MASK");
 		addTextToLangTable(l, "Minuto inválido, deve estar entre 0 e 59.", "Minute invalid, should be between 0 and 59");
-		addTextToLangTable(l, "Modbus", "Modbus");
 		addTextToLangTable(l, "ModBUS ID:", "ModBUS ID:");
 		addTextToLangTable(l, "MODBUS: id=%d, address=%d, name=%s\r\n", "MODBUS: id=%d, address=%d, name=%s\r\n");
 		addTextToLangTable(l, "MODBUS_ETH: id=%d, address=%d, name=%s\r\n", "MODBUS_ETH: id=%d, address=%d, name=%s\r\n");
@@ -1304,6 +1313,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "yvar", "yvar");
 		addTextToLangTable(l, "Operador 1:", "Operator 1:");
 		addTextToLangTable(l, "Operador 2:", "Operator 2:");
+		addTextToLangTable(l, "Operador 1", "Operator 1");
+		addTextToLangTable(l, "Operador 2", "Operator 2");
 		addTextToLangTable(l, "Raiz Quadrada", "Square Root");
 		addTextToLangTable(l, "Depurar", "Debug");
 		addTextToLangTable(l, "Padrão", "Default");
@@ -1634,6 +1645,14 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Copiar Elemento", "Copy Element");
 		addTextToLangTable(l, "Colar Elemento", "Paste Element");
 		addTextToLangTable(l, "Salvar", "Save");
+		addTextToLangTable(l, "Conflito entre tipos para '%s' ! Operação não permitida.", "Type conflict for '%s' ! Operation not allowed.");
+		addTextToLangTable(l, "Tipo Inválido", "Invalid Type");
+		addTextToLangTable(l, "Alterar Liga/Desliga Bit", "Update Turn On/Turn Off Bit");
+		addTextToLangTable(l, "Alterar Rampa de Aceleração/Desaceleração", "Update Acceleration/Deceleration Ramp");
+		addTextToLangTable(l, "Número Inválido", "Invalid Number");
+		addTextToLangTable(l, "Dados insuficientes para exibicao de grafico", "Not enough data to show graph");
+		addTextToLangTable(l, "Diagrama Válido", "Diagram is Valid");
+		addTextToLangTable(l, "Validação finalizada. Diagrama válido!", "Validation finished. Diagram is valid!");
 	} else {
 		l = nullptr;
 	}
@@ -1814,6 +1833,7 @@ PCWSTR getRibbonLocalizedLabel(UINT nCmdID)
 		SET_LANGUAGE_STRINGS(cmdCompile                  , L"Compilar"                         , L"Compile"                       , L"Compilar"                           );
 		SET_LANGUAGE_STRINGS(cmdCompileAndProgram        , L"Compilar e Gravar"                , L"Compile and Program"           , L"Compilar y Grabar"                  );
 
+		SET_LANGUAGE_STRINGS(cmdValidate                 , L"Validar"                          , L"Validate"                      , L"Validar"                            );
 		SET_LANGUAGE_STRINGS(cmdDebug                    , L"Depurar"                          , L"Debug"                         , L"Depurar"                            );
 
 		SET_LANGUAGE_STRINGS(cmdUserManual               , L"Manual"                           , L"Manual"                        , L"Manual"                             );
@@ -2114,7 +2134,7 @@ PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID)
 			SET_LANGUAGE_STRINGS(cmdRedo                     ,
 				L"Refazer a última ação desfeita.",
 				L"Redo the last undone action",
-				L"Rehacer la ultima ccion deshecha");
+				L"Rehacer la ultima accion deshecha");
 			SET_LANGUAGE_STRINGS(cmdInsertLine               ,
 				L"Obter outras formas para inserir uma linha",
 				L"Take other ways to insert a rung",
@@ -2515,53 +2535,53 @@ PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID)
 			SET_LANGUAGE_STRINGS(cmdExampleOneShotRising     ,
 				L"Abrir exemplo de instrução detecção de borda de subida.",
 				L"Open one shot rising example",
-				L"");
+				L"Abrir ejemplo de instruccion deteccion de borde de subida");
 			SET_LANGUAGE_STRINGS(cmdExampleCircuitOpen       ,
 				L"Abrir exemplo de instrução circuito aberto.",
-				L"",
-				L"");
+				L"Open example open circuit",
+				L"Abrir ejemplo de instruccion de circuito abierto");
 			SET_LANGUAGE_STRINGS(cmdExampleCircuitClosed     ,
 				L"Abrir exemplo de instrução circuito fechado.",
-				L"",
-				L"");
+				L"Open example of short circuit example",
+				L"Abrir ejemplo de instruccion circuito cerrado");
 			SET_LANGUAGE_STRINGS(cmdExampleMasterRelayControl,
 				L"Abrir exemplo de instrução chave geral.",
-				L"",
-				L"");
+				L"Open example instruccion of general key",
+				L"Abrir ejemplo de instruccion de llave general");
 
 			SET_LANGUAGE_STRINGS(cmdExampleTimerON           ,
 				L"Abrir exemplo de instrução temporizador com atraso para ligar.",
-				L"",
-				L"");
+				L"Open example instruccion of delayed timer to switch on",
+				L"Abrir ejemplo de instruccion temporizador con atraso para conectar");
 			SET_LANGUAGE_STRINGS(cmdExampleTimerOFF          ,
 				L"Abrir exemplo de instrução temporizador com atraso para desligar.",
-				L"",
-				L"");
+				L"Open example instruccion of delayed timer to switch off",
+				L"Abrir ejemplo de instruccion temprorizador con atraso para desconectar");
 			SET_LANGUAGE_STRINGS(cmdExampleTimerONRet        ,
 				L"Abrir exemplo de instrução atraso com memória.",
-				L"",
-				L"");
+				L"Open example of delayed instruccion with memory",
+				L"Abrir ejemplo de instruccion de atraso con memoria");
 			SET_LANGUAGE_STRINGS(cmdExampleSchedule          ,
 				L"Abrir exemplo de instrução tarefa agendada.",
-				L"",
-				L"");
+				L"Open example inwstruccion for scheduled task",
+				L"Abrir ejemplo de instruccion de tarea agendada");
 			SET_LANGUAGE_STRINGS(cmdExampleTimerReset        ,
 				L"Abrir exemplo de instrução zerar atraso.",
 				L"",
-				L"");
+				L"Abrir ejemplo de instruccion..?? ");
 
 			SET_LANGUAGE_STRINGS(cmdExampleCounterInc        ,
 				L"Abrir exemplo de instrução contador incremental.",
 				L"",
-				L"");
+				L"Abrir ejemplo de instruccion contador incremental");
 			SET_LANGUAGE_STRINGS(cmdExampleCounterDec        ,
 				L"Abrir exemplo de instrução contador decremental.",
 				L"",
-				L"");
+				L"Abrir ejemplo de instruccion contador decremental");
 			SET_LANGUAGE_STRINGS(cmdExampleCounterCirc       ,
 				L"Abrir exemplo de instrução contador circular.",
-				L"",
-				L"");
+				L"Open example instruccion of circular counter",
+				L"Abrir ejemplo de instruccion contador circular");
 			SET_LANGUAGE_STRINGS(cmdExampleCounterReset      ,
 				L"Abrir exemplo de instrução zerar contador.",
 				L"",
@@ -2569,32 +2589,32 @@ PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID)
 
 			SET_LANGUAGE_STRINGS(cmdExampleMathAdd           ,
 				L"Abrir exemplo de instrução matemática somar.",
-				L"",
-				L"");
+				L"Open example instruccion mathematics instruccion ad",
+				L"Abrir ejemplo de instruccion matematica sumar");
 			SET_LANGUAGE_STRINGS(cmdExampleMathSub           ,
 				L"Abrir exemplo de instrução matemática subtrair.",
-				L"",
-				L"");
+				L"Open example mathem,atic instruccion decrease",
+				L"Abrir ejemplo de instruccion matematica subtrair");
 			SET_LANGUAGE_STRINGS(cmdExampleMathMult          ,
 				L"Abrir exemplo de instrução matemática multiplicar.",
-				L"",
-				L"");
+				L"Open mathematic instruccion times ",
+				L"Abrir ejemplo de instruccion matenmatica multiplicar");
 			SET_LANGUAGE_STRINGS(cmdExampleMathDivide        ,
 				L"Abrir exemplo de instrução matemática dividir.",
-				L"",
-				L"");
+				L"Open example mathematic istruccion divide)",
+				L"Abrir ejemplo instruccion matematica dividir");
 			SET_LANGUAGE_STRINGS(cmdExampleMathModulo        ,
 				L"Abrir exemplo de instrução matemática resto de divisão.",
-				L"",
-				L"");
+				L"Open example mathematic instruction rest of division",
+				L"Abrir ejemplo de instruccion matematica resto de division");
 			SET_LANGUAGE_STRINGS(cmdExampleMathSqrt          ,
 				L"Abrir exemplo de instrução matemática raiz quadrada.",
-				L"",
-				L"");
+				L"Open example mathematic instruction square root",
+				L"Abrir ejemplo de instruccion matematica raiz cuadrada");
 			SET_LANGUAGE_STRINGS(cmdExampleShiftRegister     ,
 				L"Abrir exemplo de instrução fila de variáveis.",
-				L"",
-				L"");
+				L"Open example instruction of row of variables",
+				L"Abrir ejemplo de instruccion fila de variables");
 			SET_LANGUAGE_STRINGS(cmdExampleLookUpTable       ,
 				L"Abrir exemplo de instrução tabela de busca.",
 				L"",
@@ -2605,140 +2625,140 @@ PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID)
 				L"");
 			SET_LANGUAGE_STRINGS(cmdExampleRand              ,
 				L"Abrir exemplo de Número Randômico.",
-				L"",
-				L"");
+				L"Open exmple random number",
+				L"Abrir ejemplo de numero randomico");
 			SET_LANGUAGE_STRINGS(cmdExampleAbs               ,
 				L"Abrir exemplo de instrução que calcula Valor Absoluto.",
-				L"",
-				L"");
+				L"Open exmple instruction that calculates absolut number",
+				L"Abrir ejemplo de instruccion que calcula numero absoluto");
 
 			SET_LANGUAGE_STRINGS(cmdExampleMov               ,
 				L"Abrir exemplo de instrução mover valor.",
-				L"",
-				L"");
+				L"Open example instruction move value",
+				L"Abrir ejemplo de instrction mover valor");
 			SET_LANGUAGE_STRINGS(cmdExampleSetBit            ,
 				L"Abrir exemplo de instrução liga/desliga bit.",
-				L"",
-				L"");
+				L"Open example instruction on/off bit",
+				L"Abrir ejemplo de instruccion on/off bit");
 			SET_LANGUAGE_STRINGS(cmdExampleCheckBit          ,
 				L"Abrir exemplo de instrução checar bit.",
-				L"",
-				L"");
+				L"Open example of instruction check bit",
+				L"Abrir ejemplo de instruccion check bit");
 			SET_LANGUAGE_STRINGS(cmdExamplePersist           ,
 				L"Abrir exemplo de instrução persistente.",
-				L"",
-				L"");
+				L"Open example of persistent instruccion",
+				L"Abrir ejemplo de instruccion persistente");
 
 			SET_LANGUAGE_STRINGS(cmdExampleCondEqual         ,
 				L"Abrir exemplo de instrução condicional igual.",
-				L"",
-				L"");
+				L"Open example of instruction equal conditional",
+				L"Abrir ejemplo de instruccion condicional igual");
 			SET_LANGUAGE_STRINGS(cmdExampleCondNotEqual      ,
 				L"Abrir exemplo de instrução condicional diferente.",
-				L"",
-				L"");
+				L"Open example of instruction different conditional",
+				L"Abrir ejemplo de instruccion condicional diferente");
 			SET_LANGUAGE_STRINGS(cmdExampleCondGreater       ,
 				L"Abrir exemplo de instrução condicional maior.",
-				L"",
-				L"");
+				L"Open example of instruction greater conditional",
+				L"Abrir ejemplo de instruccion condicional mayor");
 			SET_LANGUAGE_STRINGS(cmdExampleCondGreaterEqual  ,
 				L"Abrir exemplo de instrução condicional maior ou igual.",
-				L"",
-				L"");
+				L"Open example of instruction grater or different conditional",
+				L"Abrir ejemplo de instruccion condicional mayor o igual");
 			SET_LANGUAGE_STRINGS(cmdExampleCondLesser        ,
 				L"Abrir exemplo de instrução condicional menor.",
-				L"",
-				L"");
+				L"Open example of instruction lesser conditional",
+				L"Abrir ejemplo de instruccion condicional menor");
 			SET_LANGUAGE_STRINGS(cmdExampleCondLesserEqual   ,
 				L"Abrir exemplo de instrução condicional menor ou igual.",
-				L"",
-				L"");
+				L"Open example of instruction lesser or equal conditional",
+				L"Abrir ejemplo de instruccion condicional menor o igual");
 
 			SET_LANGUAGE_STRINGS(cmdExampleReadAD            ,
 				L"Abrir exemplo de instrução leitura de A/D.",
-				L"",
-				L"");
+				L"Open example of instruction read A/D",
+				L"Abrir ejemplo de instruccion lectura A/D");
 			SET_LANGUAGE_STRINGS(cmdExampleWriteDA           ,
 				L"Abrir exemplo de instrução escrita no D/A.",
-				L"",
-				L"");
+				L"Open example of instruction write A/D",
+				L"Abrir ejemplo de instruccion escrita A/D");
 
 			SET_LANGUAGE_STRINGS(cmdExamplePWM               ,
 				L"Abrir exemplo de instrução saída PWM.",
 				L"",
-				L"");
+				L"Abrir ejemplo de instruccion dalida PWM");
 			SET_LANGUAGE_STRINGS(cmdExampleRampDA            ,
 				L"Abrir exemplo de instrução rampa de aceleração/desaceleração.",
-				L"",
-				L"");
+				L"Open example of instruction acceleration /desacceleration ramp",
+				L"Abbrir ejemplo de instruccion de rampa de aceleracion / desaceleracion");
 			SET_LANGUAGE_STRINGS(cmdExampleReadEnc           ,
 				L"Abrir exemplo de instrução leitura de encoder.",
-				L"",
-				L"");
+				L"Open example of instruction read encoder",
+				L"Abrir ejemplo de instruccion de lectura de encoder");
 			SET_LANGUAGE_STRINGS(cmdExampleResetEnc          ,
 				L"Abrir exemplo de instrução escrita no encoder.",
-				L"",
-				L"");
+				L"Open example of instruction write encoder",
+				L"Abrir ejemplode instruccion escrita de encoder");
 			SET_LANGUAGE_STRINGS(cmdExamplePID               ,
 				L"Abrir exemplo de instrução Controle de PID.",
-				L"",
-				L"");
+				L"Open example of instruction Control PID",
+				L"Abrir ejemplo de instruccion Control de PID");
 
 			SET_LANGUAGE_STRINGS(cmdExampleWriteChar         ,
 				L"Abrir exemplo de instrução escrita de caracter.",
-				L"",
-				L"");
+				L"Open example of instruction write character",
+				L"Abrir ejemplo de instruccion escrita de caracter");
 			SET_LANGUAGE_STRINGS(cmdExampleReadChar          ,
 				L"Abrir exemplo de instrução leitura de caracter.",
-				L"",
-				L"");
+				L"Open example of instruction read character",
+				L"Abrir ejemplo de instruccion lectura de caracter");
 			SET_LANGUAGE_STRINGS(cmdExampleReadFormatString  ,
 				L"Abrir exemplo de instrução ler string formatada.",
-				L"",
-				L"");
+				L"Open example of instruction read formated string",
+				L"Abrir ejemplo de instruccion lectura de string formatado");
 			SET_LANGUAGE_STRINGS(cmdExampleWriteFormatString ,
 				L"Abrir exemplo de instrução escrever string formatada.",
-				L"",
-				L"");
+				L"Open example of instruction write formated string",
+				L"Abrir ejemplo de instruccion escrita de string formatado");
 
 			SET_LANGUAGE_STRINGS(cmdExampleReadUSS           ,
 				L"Abrir exemplo de instrução leitura uss.",
-				L"",
-				L"");
+				L"Open example of instruction read uss",
+				L"Abrir ejemplo de instruccion lectura uss");
 			SET_LANGUAGE_STRINGS(cmdExampleWriteUSS          ,
 				L"Abrir exemplo de instrução escrita uss.",
-				L"",
-				L"");
+				L"Open example of instruction write uss",
+				L"Abrir ejemplo de instruccion escrita uss");
 			SET_LANGUAGE_STRINGS(cmdExampleReadNS600         ,
 				L"Abrir exemplo de instrução leitura de NS-600 Yaskawa.",
-				L"",
-				L"");
+				L"Open example of instruction read NS-¨00 Yaskawa",
+				L"Abrir ejemplo de instruccion lectura NS-600 Yaskawa");
 			SET_LANGUAGE_STRINGS(cmdExampleWriteNS600        ,
 				L"Abrir exemplo de instrução escrita no NS-600 Yaskawa.",
-				L"",
-				L"");
+				L"Open example of instruction write NS-¨00 Yaskawa",
+				L"Abrir ejemplo de instruccion escrita NS-600 Yaskawa");
 
 			SET_LANGUAGE_STRINGS(cmdExampleReadModBUS        ,
 				L"Abrir exemplo de instrução ler registrador modbus.",
-				L"",
-				L"");
+				L"Open example of instruction read register modbus",
+				L"Abrir ejemplo de instruccion leer registrador modbus");
 			SET_LANGUAGE_STRINGS(cmdExampleWriteModBUS       ,
 				L"Abrir exemplo de instrução escrever registrador modbus.",
-				L"",
-				L"");
+				L"Open example of instruction write register modbus",
+				L"Abrir ejemplo de instruccion escribir registrador modbus");
 
 			SET_LANGUAGE_STRINGS(cmdExampleAdcLed            ,
 				L"Abrir exemplo de aplicação - Barra de Leds.",
 				L"",
-				L"");
+				L"Abrir ejemplo de amplicacion - Barra de Leds");
 			SET_LANGUAGE_STRINGS(cmdExampleSemaphore         ,
 				L"Abrir exemplo de aplicação - Semáforo.",
-				L"",
-				L"");
+				L"Open example os aplication - Semaphore",
+				L"Abrir ejemplo de aplicacion - Samaforo");
 			SET_LANGUAGE_STRINGS(cmdExampleTester            ,
 				L"Abrir exemplo de aplicação - Testador.",
-				L"",
-				L"");
+				L"Open example os aplication - Tester",
+				L"Abrir ejemplo de aplicacion - Testeador");
 	}
 
 	switch(POPSettings.idLanguage) {

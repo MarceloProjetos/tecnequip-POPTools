@@ -494,10 +494,16 @@ bool LadderElemContact::internalSave(FILE *f)
 
 bool LadderElemContact::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second) &&
 		fread_bool (f, &prop.negated);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemContact::Clone(LadderDiagram *diagram)
@@ -722,12 +728,18 @@ bool LadderElemCoil::internalSave(FILE *f)
 
 bool LadderElemCoil::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second) &&
 		fread_bool (f, &prop.negated) &&
 		fread_bool (f, &prop.resetOnly) &&
 		fread_bool (f, &prop.setOnly);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemCoil::Clone(LadderDiagram *diagram)
@@ -1016,10 +1028,16 @@ bool LadderElemTimer::internalSave(FILE *f)
 
 bool LadderElemTimer::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second) &&
 		fread_int  (f, &prop.delay);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemTimer::Clone(LadderDiagram *diagram)
@@ -1402,10 +1420,16 @@ bool LadderElemCounter::internalSave(FILE *f)
 
 bool LadderElemCounter::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second) &&
 		fread_int  (f, &prop.max);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemCounter::Clone(LadderDiagram *diagram)
@@ -1566,9 +1590,15 @@ bool LadderElemReset::internalSave(FILE *f)
 
 bool LadderElemReset::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemReset::Clone(LadderDiagram *diagram)
@@ -1881,11 +1911,18 @@ bool LadderElemCmp::internalSave(FILE *f)
 
 bool LadderElemCmp::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idOp1.first) &&
 		fread_int  (f, &prop.idOp1.second) &&
 		fread_ulong(f, &prop.idOp2.first) &&
 		fread_int  (f, &prop.idOp2.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idOp1.first);
+		Diagram->updateTypeIO(prop.idOp2.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemCmp::Clone(LadderDiagram *diagram)
@@ -1899,12 +1936,8 @@ LadderElem *LadderElemCmp::Clone(LadderDiagram *diagram)
 
 bool LadderElemCmp::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idOp1.first && !Diagram->IsGenericTypeIO(type)) {
-		return false;
-	}
-
-	if(id == prop.idOp2.first && !Diagram->IsGenericTypeIO(type)) {
-		return false;
+	if(id == prop.idOp1.first || id == prop.idOp2.first) {
+		return Diagram->IsGenericTypeIO(type);
 	}
 
 	return true;
@@ -1985,6 +2018,7 @@ int LadderElemCmp::SearchAndReplace(unsigned long idSearch, string sNewText, boo
 
 bool LadderElemCmp::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
 {
+	const char *field = (index == 0) ? _("Operador 1") : _("Operador 2");
 	pair<unsigned long, int> pin = (index == 0) ? prop.idOp1 : prop.idOp2;
 
 	// Se variavel sem tipo, usa tipo geral.
@@ -1993,7 +2027,7 @@ bool LadderElemCmp::internalUpdateNameTypeIO(unsigned int index, string name, eT
 		type = eType_General;
 	}
 
-	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
 		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Op1 : infoIO_Op2)) {
 			LadderElemCmpProp *data = (LadderElemCmpProp *)getProperties();
 
@@ -2186,13 +2220,21 @@ bool LadderElemMath::internalSave(FILE *f)
 
 bool LadderElemMath::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idDest.first) &&
 		fread_int  (f, &prop.idDest.second) &&
 		fread_ulong(f, &prop.idOp1.first) &&
 		fread_int  (f, &prop.idOp1.second) &&
 		fread_ulong(f, &prop.idOp2.first) &&
 		fread_int  (f, &prop.idOp2.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idDest.first);
+		Diagram->updateTypeIO(prop.idOp1 .first);
+		Diagram->updateTypeIO(prop.idOp2 .first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemMath::Clone(LadderDiagram *diagram)
@@ -2478,11 +2520,18 @@ bool LadderElemSqrt::internalSave(FILE *f)
 
 bool LadderElemSqrt::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idDest.first) &&
 		fread_int  (f, &prop.idDest.second) &&
 		fread_ulong(f, &prop.idSrc.first) &&
 		fread_int  (f, &prop.idSrc.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idDest.first);
+		Diagram->updateTypeIO(prop.idSrc .first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemSqrt::Clone(LadderDiagram *diagram)
@@ -2496,12 +2545,8 @@ LadderElem *LadderElemSqrt::Clone(LadderDiagram *diagram)
 
 bool LadderElemSqrt::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idSrc.first && !Diagram->IsGenericTypeIO(type)) {
-		return false;
-	}
-
-	if(id == prop.idDest.first && type != eType_General && type != eType_Reserved) {
-		return false;
+	if(id == prop.idSrc.first || id == prop.idDest.first) {
+		return Diagram->IsGenericTypeIO(type);
 	}
 
 	return true;
@@ -2582,23 +2627,27 @@ int LadderElemSqrt::SearchAndReplace(unsigned long idSearch, string sNewText, bo
 
 bool LadderElemSqrt::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
 {
-	bool isValid;
-	pair<unsigned long, int> pin = (index == 0) ? prop.idSrc : prop.idDest;
+	pair<unsigned long, int> pin;
 
+	const char *field;
+	unsigned int rules;
 	if(index == 0) {
-		// Se variavel sem tipo, usa tipo geral.
-		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
-		if(type == eType_Reserved) {
-			type = eType_General;
-		}
-
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Origem"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+		pin   = prop.idSrc;
+		field = _("Origem");
+		rules = VALIDATE_IS_VAR_OR_NUMBER;
 	} else {
-		type    = eType_General;
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
+		pin   = prop.idDest;
+		field = _("Destino");
+		rules = VALIDATE_IS_VAR;
 	}
 
-	if(isValid) {
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, rules, 0, 0)) {
 		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest)) {
 			LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
 
@@ -2744,13 +2793,21 @@ bool LadderElemRand::internalSave(FILE *f)
 
 bool LadderElemRand::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idMin.first) &&
 		fread_int  (f, &prop.idMin.second) &&
 		fread_ulong(f, &prop.idVar.first) &&
 		fread_int  (f, &prop.idVar.second) &&
 		fread_ulong(f, &prop.idMax.first) &&
 		fread_int  (f, &prop.idMax.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idMin.first);
+		Diagram->updateTypeIO(prop.idVar.first);
+		Diagram->updateTypeIO(prop.idMax.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemRand::Clone(LadderDiagram *diagram)
@@ -2764,16 +2821,8 @@ LadderElem *LadderElemRand::Clone(LadderDiagram *diagram)
 
 bool LadderElemRand::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idVar.first && type != eType_General && type != eType_Reserved) {
-		return false;
-	}
-
-	if(id == prop.idMin.first && type != eType_General && type != eType_Reserved) {
-		return false;
-	}
-
-	if(id == prop.idMax.first && type != eType_General && type != eType_Reserved) {
-		return false;
+	if(id == prop.idVar.first || id == prop.idMin.first || id == prop.idMax.first) {
+		return Diagram->IsGenericTypeIO(type);
 	}
 
 	return true;
@@ -2881,31 +2930,35 @@ int LadderElemRand::SearchAndReplace(unsigned long idSearch, string sNewText, bo
 
 bool LadderElemRand::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
 {
-	bool isValid;
 	tRequestIO request;
 	pair<unsigned long, int> pin;
 
+	const char *field;
+	unsigned int rules;
 	if(index == 0) {
 		request = infoIO_Min;
 		pin     = prop.idMin;
-
-		type    = eType_General;
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Mínimo"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+		field   = _("Mínimo");
+		rules   = VALIDATE_IS_VAR_OR_NUMBER;
 	} else if(index == 1) {
 		request = infoIO_Var;
 		pin     = prop.idVar;
-
-		type    = eType_General;
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
+		field   = _("Destino");
+		rules   = VALIDATE_IS_VAR;
 	} else {
 		request = infoIO_Max;
 		pin     = prop.idMax;
-
-		type    = eType_General;
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Máximo"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+		field   = _("Máximo");
+		rules   = VALIDATE_IS_VAR_OR_NUMBER;
 	}
 
-	if(isValid) {
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, rules, 0, 0)) {
 		if(Diagram->getIO(pin, name, type, request)) {
 			LadderElemRandProp *data = (LadderElemRandProp *)getProperties();
 
@@ -3045,11 +3098,18 @@ bool LadderElemAbs::internalSave(FILE *f)
 
 bool LadderElemAbs::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idDest.first) &&
 		fread_int  (f, &prop.idDest.second) &&
 		fread_ulong(f, &prop.idSrc.first) &&
 		fread_int  (f, &prop.idSrc.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idDest.first);
+		Diagram->updateTypeIO(prop.idSrc .first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemAbs::Clone(LadderDiagram *diagram)
@@ -3063,12 +3123,8 @@ LadderElem *LadderElemAbs::Clone(LadderDiagram *diagram)
 
 bool LadderElemAbs::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idSrc.first && !Diagram->IsGenericTypeIO(type)) {
-		return false;
-	}
-
-	if(id == prop.idDest.first && type != eType_General && type != eType_Reserved) {
-		return false;
+	if(id == prop.idSrc.first || id == prop.idDest.first) {
+		return Diagram->IsGenericTypeIO(type);
 	}
 
 	return true;
@@ -3149,23 +3205,27 @@ int LadderElemAbs::SearchAndReplace(unsigned long idSearch, string sNewText, boo
 
 bool LadderElemAbs::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
 {
-	bool isValid;
-	pair<unsigned long, int> pin = (index == 0) ? prop.idSrc : prop.idDest;
+	pair<unsigned long, int> pin;
 
+	const char *field;
+	unsigned int rules;
 	if(index == 0) {
-		// Se variavel sem tipo, usa tipo geral.
-		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
-		if(type == eType_Reserved) {
-			type = eType_General;
-		}
-
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Origem"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+		pin   = prop.idSrc;
+		field = _("Origem");
+		rules = VALIDATE_IS_VAR_OR_NUMBER;
 	} else {
-		type    = eType_General;
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
+		pin   = prop.idDest;
+		field = _("Destino");
+		rules = VALIDATE_IS_VAR;
 	}
 
-	if(isValid) {
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, rules, 0, 0)) {
 		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest)) {
 			LadderElemAbsProp *data = (LadderElemAbsProp *)getProperties();
 
@@ -3300,11 +3360,18 @@ bool LadderElemMove::internalSave(FILE *f)
 
 bool LadderElemMove::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idDest.first) &&
 		fread_int  (f, &prop.idDest.second) &&
 		fread_ulong(f, &prop.idSrc.first) &&
 		fread_int  (f, &prop.idSrc.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idDest.first);
+		Diagram->updateTypeIO(prop.idSrc .first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemMove::Clone(LadderDiagram *diagram)
@@ -3575,11 +3642,17 @@ bool LadderElemSetBit::internalSave(FILE *f)
 
 bool LadderElemSetBit::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second) &&
 		fread_bool (f, &prop.set) &&
 		fread_int  (f, &prop.bit);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemSetBit::Clone(LadderDiagram *diagram)
@@ -3593,8 +3666,8 @@ LadderElem *LadderElemSetBit::Clone(LadderDiagram *diagram)
 
 bool LadderElemSetBit::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idName.first && type != eType_General && type != eType_Reserved) {
-		return false;
+	if(id == prop.idName.first) {
+		return Diagram->IsGenericTypeIO(type);
 	}
 
 	return true;
@@ -3643,6 +3716,31 @@ int LadderElemSetBit::SearchAndReplace(unsigned long idSearch, string sNewText, 
 	}
 
 	return 0;
+}
+
+bool LadderElemSetBit::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = prop.idName;
+
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome"), VALIDATE_IS_VAR, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+			LadderElemSetBitProp *data = (LadderElemSetBitProp *)getProperties();
+
+			data->idName  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool LadderElemSetBit::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3740,11 +3838,17 @@ bool LadderElemCheckBit::internalSave(FILE *f)
 
 bool LadderElemCheckBit::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second) &&
 		fread_bool (f, &prop.set) &&
 		fread_int  (f, &prop.bit);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemCheckBit::Clone(LadderDiagram *diagram)
@@ -3808,6 +3912,31 @@ int LadderElemCheckBit::SearchAndReplace(unsigned long idSearch, string sNewText
 	}
 
 	return 0;
+}
+
+bool LadderElemCheckBit::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = prop.idName;
+
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome"), VALIDATE_IS_VAR, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+			LadderElemCheckBitProp *data = (LadderElemCheckBitProp *)getProperties();
+
+			data->idName  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool LadderElemCheckBit::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -3930,9 +4059,15 @@ bool LadderElemReadAdc::internalSave(FILE *f)
 
 bool LadderElemReadAdc::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemReadAdc::Clone(LadderDiagram *diagram)
@@ -4112,10 +4247,16 @@ bool LadderElemSetDa::internalSave(FILE *f)
 
 bool LadderElemSetDa::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second) &&
 		fread_int  (f, &prop.mode);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemSetDa::Clone(LadderDiagram *diagram)
@@ -4352,9 +4493,15 @@ bool LadderElemReadEnc::internalSave(FILE *f)
 
 bool LadderElemReadEnc::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemReadEnc::Clone(LadderDiagram *diagram)
@@ -4601,9 +4748,15 @@ bool LadderElemResetEnc::internalSave(FILE *f)
 
 bool LadderElemResetEnc::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemResetEnc::Clone(LadderDiagram *diagram)
@@ -4862,7 +5015,7 @@ bool LadderElemMultisetDA::internalSave(FILE *f)
 
 bool LadderElemMultisetDA::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_int  (f, &prop.gainr) &&
 		fread_int  (f, &prop.gaint) &&
 		fread_int  (f, &prop.initval) &&
@@ -4876,6 +5029,13 @@ bool LadderElemMultisetDA::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idDesl.second) &&
 		fread_ulong(f, &prop.idTime.first) &&
 		fread_int  (f, &prop.idTime.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idDesl.first);
+		Diagram->updateTypeIO(prop.idTime.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemMultisetDA::Clone(LadderDiagram *diagram)
@@ -4889,12 +5049,8 @@ LadderElem *LadderElemMultisetDA::Clone(LadderDiagram *diagram)
 
 bool LadderElemMultisetDA::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idTime.first && type != eType_General && type != eType_Reserved) {
-		return false;
-	}
-
-	if(id == prop.idDesl.first && type != eType_General && type != eType_Reserved) {
-		return false;
+	if(id == prop.idTime.first || id == prop.idDesl.first) {
+		return Diagram->IsGenericTypeIO(type);
 	}
 
 	return true;
@@ -4959,6 +5115,44 @@ int LadderElemMultisetDA::SearchAndReplace(unsigned long idSearch, string sNewTe
 	}
 
 	return n;
+}
+
+bool LadderElemMultisetDA::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin;
+
+	const char *field;
+	if(index == 0) {
+		pin   = prop.idTime;
+		field = _("Tempo");
+	} else {
+		pin   = prop.idDesl;
+		field = _("Valor");
+	}
+
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Time : infoIO_Desl)) {
+			LadderElemMultisetDAProp *data = (LadderElemMultisetDAProp *)getProperties();
+
+			if(index == 0) {
+				data->idTime = pin;
+			} else {
+				data->idDesl = pin;
+			}
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool LadderElemMultisetDA::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
@@ -5080,13 +5274,19 @@ bool LadderElemUSS::internalSave(FILE *f)
 
 bool LadderElemUSS::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_int  (f, &prop.id) &&
 		fread_int  (f, &prop.index) &&
 		fread_int  (f, &prop.parameter) &&
 		fread_int  (f, &prop.parameter_set) &&
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemUSS::Clone(LadderDiagram *diagram)
@@ -5327,13 +5527,19 @@ bool LadderElemModBUS::internalSave(FILE *f)
 
 bool LadderElemModBUS::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_int  (f, &prop.address) &&
 		fread_int  (f, &prop.elem) &&
 		fread_bool (f, &prop.int32) &&
 		fread_bool (f, &prop.retransmitir) &&
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemModBUS::Clone(LadderDiagram *diagram)
@@ -5516,10 +5722,16 @@ bool LadderElemSetPWM::internalSave(FILE *f)
 
 bool LadderElemSetPWM::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_int  (f, &prop.targetFreq) &&
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemSetPWM::Clone(LadderDiagram *diagram)
@@ -5685,9 +5897,15 @@ bool LadderElemUART::internalSave(FILE *f)
 
 bool LadderElemUART::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idName.first) &&
 		fread_int  (f, &prop.idName.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemUART::Clone(LadderDiagram *diagram)
@@ -5985,6 +6203,7 @@ bool LadderElemShiftRegister::internalLoad(FILE *f, unsigned int version)
 		for(i = 0; i < prop.stages; i++) {
 			ret = fread_ulong(f, &pin.first) && fread_int(f, &pin.second);
 			if(ret == true) {
+				Diagram->updateTypeIO(pin.first);
 				prop.vectorIdRegs.push_back(pin);
 			} else {
 				break;
@@ -6225,6 +6444,11 @@ bool LadderElemLUT::internalLoad(FILE *f, unsigned int version)
 		}
 	}
 
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idDest .first);
+		Diagram->updateTypeIO(prop.idIndex.first);
+	}
+
 	return ret;
 }
 
@@ -6239,12 +6463,8 @@ LadderElem *LadderElemLUT::Clone(LadderDiagram *diagram)
 
 bool LadderElemLUT::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idDest.first && type != eType_General && type != eType_Reserved) {
-		return false;
-	}
-
-	if(id == prop.idIndex.first && !Diagram->IsGenericTypeIO(type)) {
-		return false;
+	if(id == prop.idDest.first || id == prop.idIndex.first) {
+		return Diagram->IsGenericTypeIO(type);
 	}
 
 	return true;
@@ -6325,23 +6545,24 @@ int LadderElemLUT::SearchAndReplace(unsigned long idSearch, string sNewText, boo
 
 bool LadderElemLUT::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
 {
-	bool isValid;
-	pair<unsigned long, int> pin = (index == 0) ? prop.idIndex : prop.idDest;
+	pair<unsigned long, int> pin;
 
+	const char *field;
 	if(index == 0) {
-		// Se variavel sem tipo, usa tipo geral.
-		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
-		if(type == eType_Reserved) {
-			type = eType_General;
-		}
-
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Índice" ), VALIDATE_IS_VAR, 0, 0);
+		pin   = prop.idIndex;
+		field = _("Índice");
 	} else {
-		type    = eType_General;
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
+		pin   = prop.idDest;
+		field = _("Destino");
 	}
 
-	if(isValid) {
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, VALIDATE_IS_VAR, 0, 0)) {
 		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Index : infoIO_Dest)) {
 			LadderElemLUTProp *data = (LadderElemLUTProp *)getProperties();
 
@@ -6575,6 +6796,11 @@ bool LadderElemPiecewise::internalLoad(FILE *f, unsigned int version)
 		}
 	}
 
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idDest .first);
+		Diagram->updateTypeIO(prop.idIndex.first);
+	}
+
 	return ret;
 }
 
@@ -6589,12 +6815,8 @@ LadderElem *LadderElemPiecewise::Clone(LadderDiagram *diagram)
 
 bool LadderElemPiecewise::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idDest.first && type != eType_General && type != eType_Reserved) {
-		return false;
-	}
-
-	if(id == prop.idIndex.first && !Diagram->IsGenericTypeIO(type)) {
-		return false;
+	if(id == prop.idDest.first || id == prop.idIndex.first) {
+		return Diagram->IsGenericTypeIO(type);
 	}
 
 	return true;
@@ -6675,23 +6897,24 @@ int LadderElemPiecewise::SearchAndReplace(unsigned long idSearch, string sNewTex
 
 bool LadderElemPiecewise::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
 {
-	bool isValid;
-	pair<unsigned long, int> pin = (index == 0) ? prop.idIndex : prop.idDest;
+	pair<unsigned long, int> pin;
 
+	const char *field;
 	if(index == 0) {
-		// Se variavel sem tipo, usa tipo geral.
-		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
-		if(type == eType_Reserved) {
-			type = eType_General;
-		}
-
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Índice" ), VALIDATE_IS_VAR, 0, 0);
+		pin   = prop.idIndex;
+		field = _("Índice");
 	} else {
-		type    = eType_General;
-		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Destino"), VALIDATE_IS_VAR, 0, 0);
+		pin   = prop.idDest;
+		field = _("Destino");
 	}
 
-	if(isValid) {
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, VALIDATE_IS_VAR, 0, 0)) {
 		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Index : infoIO_Dest)) {
 			LadderElemPiecewiseProp *data = (LadderElemPiecewiseProp *)getProperties();
 
@@ -6817,10 +7040,16 @@ bool LadderElemFmtString::internalSave(FILE *f)
 
 bool LadderElemFmtString::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_string(f, &prop.txt) &&
 		fread_ulong (f, &prop.idVar.first) &&
 		fread_int   (f, &prop.idVar.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idVar.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemFmtString::Clone(LadderDiagram *diagram)
@@ -7022,11 +7251,17 @@ bool LadderElemYaskawa::internalSave(FILE *f)
 
 bool LadderElemYaskawa::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_int   (f, &prop.id) &&
 		fread_string(f, &prop.txt) &&
 		fread_ulong (f, &prop.idVar.first) &&
 		fread_int   (f, &prop.idVar.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idVar.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemYaskawa::Clone(LadderDiagram *diagram)
@@ -7216,9 +7451,15 @@ bool LadderElemPersist::internalSave(FILE *f)
 
 bool LadderElemPersist::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong (f, &prop.idVar.first) &&
 		fread_int   (f, &prop.idVar.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idVar.first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemPersist::Clone(LadderDiagram *diagram)
@@ -7504,7 +7745,7 @@ bool LadderElemPID::internalSave(FILE *f)
 
 bool LadderElemPID::internalLoad(FILE *f, unsigned int version)
 {
-	return
+	bool ret =
 		fread_ulong(f, &prop.idSetpoint.first) &&
 		fread_int  (f, &prop.idSetpoint.second) &&
 		fread_ulong(f, &prop.idProcessValue.first) &&
@@ -7517,6 +7758,17 @@ bool LadderElemPID::internalLoad(FILE *f, unsigned int version)
 		fread_int  (f, &prop.idGainD.second) &&
 		fread_ulong(f, &prop.idOutput.first) &&
 		fread_int  (f, &prop.idOutput.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idSetpoint    .first);
+		Diagram->updateTypeIO(prop.idProcessValue.first);
+		Diagram->updateTypeIO(prop.idGainP       .first);
+		Diagram->updateTypeIO(prop.idGainI       .first);
+		Diagram->updateTypeIO(prop.idGainD       .first);
+		Diagram->updateTypeIO(prop.idOutput      .first);
+	}
+
+	return ret;
 }
 
 LadderElem *LadderElemPID::Clone(LadderDiagram *diagram)
@@ -11298,7 +11550,7 @@ void LadderDiagram::mbAddRef(int NodeID)
 // Decrement Reference Count for given NodeID
 void LadderDiagram::mbDelRef(int NodeID)
 {
-	unsigned int index = mbGetIndexByNodeID(NodeID);
+	int index = mbGetIndexByNodeID(NodeID);
 
 	if(index >= 0 && vectorMbNodeList[index]->NodeCount > 0) {
 		// Registro da acao para desfazer / refazer
@@ -11546,6 +11798,11 @@ void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDi
 			getIO(infoIO);
 		}
 	}
+}
+
+void LadderDiagram::updateTypeIO(unsigned long id)
+{
+	IO->updateType(id);
 }
 
 bool LadderDiagram::getIO(tRequestIO &infoIO)

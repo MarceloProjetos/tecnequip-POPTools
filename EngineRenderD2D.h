@@ -90,7 +90,7 @@ public:
 	HRESULT DrawPictureFromFile    (char *filename, POINT start, POINT size);
 	HRESULT DrawPictureFromResource(int   id      , POINT start, POINT size);
 
-	HRESULT DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
+	HRESULT DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushGradient, unsigned int brushIntBorder, unsigned int brushExtBorder,
 		bool filled, float radiusX, float radiusY, float angle);
 };
 

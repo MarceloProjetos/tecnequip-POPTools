@@ -62,19 +62,19 @@ static LONG_PTR PrevBaudProc;
 
 //const LPCTSTR ComboboxPLCItens[] = { _("POP7"), _("POP9") };
 
-const LPCTSTR ComboboxGMTItens[] = { "(GMT-12) Linha de Data Internacional Oeste", "(GMT-11) Ilhas Midway,Samoa",
+const LPCTSTR ComboboxGMTItens[] = { "(GMT-12) Linha de Data Internacional Oeste", "(GMT-11) Ilhas Midway",
 								"(GMT-10) Hawaí", "(GMT-09) Alasca",
 								"(GMT-08) Hora do Pacífico", "(GMT-07) Hora das Montanhas (EUA e Canadá)",
 								"(GMT-06) América Central, Hora Central EUA/Canadá", "(GMT-05) Lima, Bogotá",
-								"(GMT-04) Rio Branco, Manaus, Caracas, La Paz", "(GMT-03) Brasilia, Buenos Aires",
+								"(GMT-04) Rio Branco, Manaus, Caracas, La Paz", "(GMT-03) Brasília, Buenos Aires",
 								"(GMT-02) Atlântico Central", "(GMT-01) Açores, Cabo Verde",
 								"(GMT 00) Hora de Greenwich: Londres, Dublin, Lisboa", "(GMT+01) Berlim, Estocolmo, Roma, Bruxelas",
-								"(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém", "(GMT+03) Bagdá, Kuwait, Nairóbi, Moscou,Riad",
-								"(GMT+04) Abu Dhabi, Mascate, Hora Padrão do Cáucaso", "(GMT+05) Islamabad, Karachi, Ekaterinburgo",
-								"(GMT+06) Almaty, Dacca", "(GMT+07) Bangcoc, Jacarta, Hanói",
-								"(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura", "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Yakutsk",
-								"(GMT+10) Brisbane, Camberra, Melbourne, Sydney", "(GMT+11) Magadã, Ilhas Salomão, Nova Caledônia",
-								"(GMT+12) Fiji, Kamchatka, Auckland", "(GMT+13) Nuku'alofa" };
+								"(GMT+02) Atenas, Helsinque, Leste Europeu, Jerusalém", "(GMT+03) Bagdá, Kuwait, Nairóbi, Riad",
+								"(GMT+04) Abu Dhabi, Mascate, Moscou", "(GMT+05) Islamabad, Karachi, Tashkent",
+								"(GMT+06) Astana, Dacca", "(GMT+07) Bangcoc, Jacarta, Hanói",
+								"(GMT+08) Pequim, Hong Kong, Taiwan, Cingapura", "(GMT+09) Tóquio, Osaka, Sapporo, Seul, Irkutsk",
+								"(GMT+10) Brisbane, Camberra, Melbourne, Sydney", "(GMT+11) Vladivostok, Ilhas Salomão, Nova Caledônia",
+								"(GMT+12) Fiji, Wellington, Auckland", "(GMT+13) Nuku'alofa" };
 
 const LPCTSTR ComboboxBaudRateItens[] = { /*"2400", "4800", "7200",*/ "9600", "14400", "19200"/*, "28800", 
 						"38400", "57600", "115200"*/ };
@@ -1104,7 +1104,7 @@ bool ShowConfDialog(eConfSection confSection)
 	for (i = 0; i < sizeof(ComboboxGMTItens) / sizeof(ComboboxGMTItens[0]); i++)
 		SendMessage(GMTCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(ComboboxGMTItens[i])));
 	SendMessage(GMTCombobox, CB_SETCURSEL, settingsSntp.gmt, 0);
-	SendMessage(GMTCombobox, CB_SETDROPPEDWIDTH, 300, 0);
+	SendMessage(GMTCombobox, CB_SETDROPPEDWIDTH, 400, 0);
 
 	for (i = 0; i < sizeof(EncAbsConfig) / sizeof(EncAbsConfig[0]); i++)
 		SendMessage(SSIModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(EncAbsConfig[i])));

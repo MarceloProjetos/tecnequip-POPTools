@@ -80,6 +80,7 @@ typedef struct {
 	COLORREF Foreground;
 	COLORREF Border;
 	COLORREF BorderText;
+	COLORREF BackgroundGradient;
 } tLadderColorGroup;
 
 // Estrutura que define um ponto de conexao entre linhas

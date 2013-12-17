@@ -119,6 +119,9 @@ public:
 	// usadas em mais de 1 lugar ao mesmo tempo, I/Os nao associados a uma entrada / saida, etc.
 	bool Validate(eValidateIO mode);
 
+	// Funcao que atualiza o tipo do I/O, corrigindo falhas como uma variavel reservada mas marcada com algum tipo especifico
+	void            updateType            (unsigned long id);
+
 	// Funcoes para gravar / carregar o mapa de I/O do disco
 	bool Load(FILE *f, unsigned int version);
 	bool Save(FILE *f);

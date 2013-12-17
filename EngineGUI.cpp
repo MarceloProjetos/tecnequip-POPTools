@@ -333,7 +333,8 @@ HRESULT EngineGUI::DrawPictureFromResource(int id, POINT start, POINT size)
 	return hr;
 }
 
-HRESULT EngineGUI::DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder,
+HRESULT EngineGUI::DrawRectangle3D(RECT r, float sizeZ,
+	unsigned int brushBG, unsigned int brushGradient, unsigned int brushIntBorder, unsigned int brushExtBorder,
 	bool filled, float radiusX, float radiusY, float angle)
 {
 	if(pRender != NULL) {
@@ -341,7 +342,7 @@ HRESULT EngineGUI::DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, un
 		r.right  += DrawOffset.x;
 		r.top    += DrawOffset.y;
 		r.bottom += DrawOffset.y;
-		return pRender->DrawRectangle3D(r, sizeZ, brushBG + BrushOffset, brushIntBorder + BrushOffset, brushExtBorder + BrushOffset,
+		return pRender->DrawRectangle3D(r, sizeZ, brushBG + BrushOffset, brushGradient + BrushOffset, brushIntBorder + BrushOffset, brushExtBorder + BrushOffset,
 			filled, radiusX, radiusY, angle);
 	}
 

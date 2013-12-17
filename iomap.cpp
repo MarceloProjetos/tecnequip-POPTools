@@ -124,6 +124,9 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 	vectorReservedName.push_back(_("char"));
 	vectorReservedName.push_back(_("dest"));
 	vectorReservedName.push_back(_("src" ));
+	vectorReservedName.push_back(_("xvar" ));
+	vectorReservedName.push_back(_("yvar" ));
+	vectorReservedName.push_back(_("indice" ));
 }
 
 void mapIO::Clear(void)
@@ -880,6 +883,14 @@ bool mapIO::Validate(eValidateIO mode)
 	}
 
 	return ret;
+}
+
+void mapIO::updateType(unsigned long id)
+{
+	string name = getName(id);
+	if(IsReserved(name)) {
+		IO[name].second.type = eType_Reserved;
+	}
 }
 
 bool mapIO::Save(FILE *f)

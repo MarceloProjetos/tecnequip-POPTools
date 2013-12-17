@@ -499,6 +499,7 @@ public:
 			EXEC_OPCODE(cmdCompile                , MNU_COMPILE                );
 			EXEC_OPCODE(cmdCompileAndProgram      , MNU_PROGRAM                );
 
+			EXEC_OPCODE(cmdValidate               , MNU_VALIDATE               );
 			EXEC_OPCODE(cmdDebug                  , MNU_DEBUG                  );
 
 			EXEC_OPCODE(cmdUserManual             , MNU_MANUAL                 );
@@ -953,6 +954,7 @@ void EnableInterfaceItem(int item, BOOL enabled)
 			RIBBON_UPDATE_CMD_STATE(cmdCompile                , MNU_COMPILE                );
 			RIBBON_UPDATE_CMD_STATE(cmdCompileAndProgram      , MNU_PROGRAM                );
 
+			RIBBON_UPDATE_CMD_STATE(cmdValidate               , MNU_VALIDATE               );
 			RIBBON_UPDATE_CMD_STATE(cmdDebug                  , MNU_DEBUG                  );
 
 			RIBBON_UPDATE_CMD_STATE(cmdUserManual             , MNU_MANUAL                 );

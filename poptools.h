@@ -313,6 +313,7 @@ struct strSerialConfig {
 #define MNU_COMPILE             0x70
 #define MNU_PROGRAM				0x72
 #define MNU_DEBUG               0x74
+#define MNU_VALIDATE            0x71
 
 #define MNU_MANUAL              0x80
 #define MNU_KEYBOARD_MANUAL     0x81
