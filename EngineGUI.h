@@ -19,6 +19,8 @@ private:
 
 	void InvalidateTarget(void);
 
+	void ErrorHandling(HRESULT hr);
+
 	float brushWidth;
 
 	EngineRender *pRender;

@@ -1356,17 +1356,14 @@ void mapIO::ShowIoMapDialog(int item)
 	mapDetails detailsIO = getDetails(id);
 
 	if(mcu == nullptr) {
-		ladder->ShowDialog(eDialogType_Error, false, _("Atribuição de Pinos de E/S"),
-            _("No microcontroller has been selected. You must select a "
-            "microcontroller before you can assign I/O pins.\r\n\r\n"
-            "Select a microcontroller under the Settings menu and try "
-            "again."));
+		ladder->ShowDialog(eDialogType_Error, false, _("Atribuição de Pinos de E/S"), _("Nenhum dispositivo selecionado!"));
         return;
     }
 
-	if(IsReserved(getName(id))) {
-        Error(_("Rename I/O from default name ('%s') before assigning "
-			"MCU pin."), getName(id).c_str());
+	string name = getName(id);
+	if(IsReserved(name)) {
+		diagram->SearchAndReplace(name, "", eSearchAndReplaceMode_FindFirst);
+        Error(_("Renomear as E/S para um nome diferente do padrão ('%s') antes de atribuir um pino."), getName(id).c_str());
         return;
     }
 

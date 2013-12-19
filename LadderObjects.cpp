@@ -2028,7 +2028,7 @@ bool LadderElemCmp::internalUpdateNameTypeIO(unsigned int index, string name, eT
 	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Op1 : infoIO_Op2)) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Op1 : infoIO_Op2, true)) {
 			LadderElemCmpProp *data = (LadderElemCmpProp *)getProperties();
 
 			if(index == 0) {
@@ -2383,7 +2383,7 @@ bool LadderElemMath::internalUpdateNameTypeIO(unsigned int index, string name, e
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field,
 			(index == 2) ? VALIDATE_IS_VAR : VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, request)) {
+		if(Diagram->getIO(pin, name, type, request, true)) {
 			LadderElemMathProp *data = (LadderElemMathProp *)getProperties();
 
 			if(index == 0) {
@@ -2648,7 +2648,7 @@ bool LadderElemSqrt::internalUpdateNameTypeIO(unsigned int index, string name, e
 	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, rules, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest)) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest, true)) {
 			LadderElemSqrtProp *data = (LadderElemSqrtProp *)getProperties();
 
 			if(index == 0) {
@@ -2959,7 +2959,7 @@ bool LadderElemRand::internalUpdateNameTypeIO(unsigned int index, string name, e
 	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, rules, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, request)) {
+		if(Diagram->getIO(pin, name, type, request, true)) {
 			LadderElemRandProp *data = (LadderElemRandProp *)getProperties();
 
 			if(index == 0) {
@@ -3226,7 +3226,7 @@ bool LadderElemAbs::internalUpdateNameTypeIO(unsigned int index, string name, eT
 	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, rules, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest)) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest, true)) {
 			LadderElemAbsProp *data = (LadderElemAbsProp *)getProperties();
 
 			if(index == 0) {
@@ -3487,7 +3487,7 @@ bool LadderElemMove::internalUpdateNameTypeIO(unsigned int index, string name, e
 	}
 
 	if(isValid) {
-		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest)) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Src : infoIO_Dest, true)) {
 			LadderElemMoveProp *data = (LadderElemMoveProp *)getProperties();
 
 			if(index == 0) {
@@ -3729,7 +3729,7 @@ bool LadderElemSetBit::internalUpdateNameTypeIO(unsigned int index, string name,
 	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome"), VALIDATE_IS_VAR, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Name, true)) {
 			LadderElemSetBitProp *data = (LadderElemSetBitProp *)getProperties();
 
 			data->idName  = pin;
@@ -3925,7 +3925,7 @@ bool LadderElemCheckBit::internalUpdateNameTypeIO(unsigned int index, string nam
 	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome"), VALIDATE_IS_VAR, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, infoIO_Name)) {
+		if(Diagram->getIO(pin, name, type, infoIO_Name, true)) {
 			LadderElemCheckBitProp *data = (LadderElemCheckBitProp *)getProperties();
 
 			data->idName  = pin;
@@ -5137,7 +5137,7 @@ bool LadderElemMultisetDA::internalUpdateNameTypeIO(unsigned int index, string n
 	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Time : infoIO_Desl)) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Time : infoIO_Desl, true)) {
 			LadderElemMultisetDAProp *data = (LadderElemMultisetDAProp *)getProperties();
 
 			if(index == 0) {
@@ -6563,7 +6563,7 @@ bool LadderElemLUT::internalUpdateNameTypeIO(unsigned int index, string name, eT
 	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, VALIDATE_IS_VAR, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Index : infoIO_Dest)) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Index : infoIO_Dest, true)) {
 			LadderElemLUTProp *data = (LadderElemLUTProp *)getProperties();
 
 			if(index == 0) {
@@ -6915,7 +6915,7 @@ bool LadderElemPiecewise::internalUpdateNameTypeIO(unsigned int index, string na
 	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, VALIDATE_IS_VAR, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Index : infoIO_Dest)) {
+		if(Diagram->getIO(pin, name, type, (index == 0) ? infoIO_Index : infoIO_Dest, true)) {
 			LadderElemPiecewiseProp *data = (LadderElemPiecewiseProp *)getProperties();
 
 			if(index == 0) {
@@ -7115,7 +7115,7 @@ bool LadderElemFmtString::internalUpdateNameTypeIO(unsigned int index, string na
 	pair<unsigned long, int> pin = prop.idVar;
 
 	type = mode_read ? eType_RxUART : eType_TxUART;
-	// Se variavel sem tipo, usa tipo geral.
+	// Se variavel sem tipo, usa tipo da UART.
 	eType NewType = Diagram->getTypeIO(Diagram->getNameIO(pin), name, type, true);
 	if(NewType != eType_Reserved && NewType != eType_General) {
 		type = NewType;
@@ -8027,7 +8027,7 @@ bool LadderElemPID::internalUpdateNameTypeIO(unsigned int index, string name, eT
 	}
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, rules, 0, 0)) {
-		if(Diagram->getIO(pin, name, type, request)) {
+		if(Diagram->getIO(pin, name, type, request, true)) {
 			LadderElemPIDProp *data = (LadderElemPIDProp *)getProperties();
 
 			switch(index) {
@@ -11805,7 +11805,7 @@ void LadderDiagram::updateTypeIO(unsigned long id)
 	IO->updateType(id);
 }
 
-bool LadderDiagram::getIO(tRequestIO &infoIO)
+bool LadderDiagram::getIO(tRequestIO &infoIO, bool tryGeneralTypeFirst)
 {
 	bool ret = true;
 	pair<unsigned long, int> newpin;
@@ -11849,6 +11849,12 @@ bool LadderDiagram::getIO(tRequestIO &infoIO)
 			}
 		}
 
+		// Se devemos primeiro tentar o tipo geral, checamos se ele eh aceito pelos outros I/Os.
+		// Se for aceito, podemos atualizar para o tipo geral pois vai funcionar!
+		if(tryGeneralTypeFirst && acceptIO(newpin.first, eType_General)) {
+			infoIO.type = eType_General;
+		}
+
 		// Verifica se o tipo do I/O eh aceito pelos outros elementos que ja o utilizam
 		if(newpin.first && !acceptIO(newpin.first, infoIO.type)) {
 			// Alguem compartilhando desta variavel nao aceita a alteracao de tipo. Cancela a alteracao!
@@ -11886,13 +11892,13 @@ bool LadderDiagram::getIO(tRequestIO &infoIO)
 	return ret;
 }
 
-bool LadderDiagram::getIO(pair<unsigned long, int> &pin, string name, eType type, tRequestIO infoIO)
+bool LadderDiagram::getIO(pair<unsigned long, int> &pin, string name, eType type, tRequestIO infoIO, bool tryGeneralTypeFirst)
 {
 	infoIO.pin  = pin;
 	infoIO.name = name;
 	infoIO.type = type;
 
-	bool ret = getIO(infoIO);
+	bool ret = getIO(infoIO, tryGeneralTypeFirst);
 	
 	pin = infoIO.pin;
 
@@ -12297,7 +12303,7 @@ bool LadderDiagram::IsValidNameAndType(unsigned long id, string name, eType type
 			if(type == eType_Counter || type == eType_TOF || type == eType_TON) {
 				ret = true;
 			} else {
-				ShowDialog(eDialogType_Message, false, _("Nome inválido"), _("'%s' deve ser um contador ou timer!"), name);
+				ShowDialog(eDialogType_Message, false, _("Nome Inválido"), _("'%s' deve ser um contador ou timer!"), name.c_str());
 			}
 		} else {
 			ret = true;

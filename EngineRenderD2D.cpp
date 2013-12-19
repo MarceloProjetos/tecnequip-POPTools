@@ -837,14 +837,25 @@ HRESULT EngineRenderD2D::EndDraw(void)
 	if(pRT != NULL) {
 		hr = pRT->EndDraw();
 		if(FAILED(hr) && !locked) {
-			locked = true;
-//			char buf[1024];
-//			sprintf(buf, "erro em EndDraw: %ld", hr);
-//			MessageBox(NULL, buf, "ERRO D2D", MB_OK);
+			if(hr != D2DERR_RECREATE_TARGET) {
+				locked = true;
+//				char buf[1024];
+//				sprintf(buf, "erro em EndDraw: %ld", hr);
+//				MessageBox(NULL, buf, "ERRO D2D", MB_OK);
+			}
 		}
 	}
 
 	return hr;
+}
+
+eTranslatedError EngineRenderD2D::TranslateError(HRESULT hr)
+{
+	switch(hr) {
+		case D2DERR_RECREATE_TARGET: return eTranslatedError_RecreateTarget;
+	}
+
+	return eTranslatedError_Unknown;
 }
 
 HRESULT EngineRenderD2D::DrawPolygon(vector<POINT> points, unsigned int brush, bool filled, unsigned int angle, float brushWidth)

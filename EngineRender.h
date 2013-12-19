@@ -7,6 +7,9 @@ enum eAlignMode { eAlignMode_TopLeft = 0, eAlignMode_Center, eAlignMode_BottomRi
 // Enumeracao com os tipos de pincel disponiveis.
 enum eBrushType { eBrushType_SolidColor, eBrushType_GradientLinear };
 
+// Enumeracao com todos os erros traduzidos a partir de HRESULT
+enum eTranslatedError { eTranslatedError_Unknown = 0, eTranslatedError_RecreateTarget };
+
 class EngineRender
 {
 private:
@@ -26,6 +29,8 @@ public:
 	virtual void    StartDraw(void)=0;
 	virtual void    Clear(unsigned int brush)=0;
 	virtual HRESULT EndDraw(void)=0;
+
+	virtual eTranslatedError TranslateError(HRESULT hr)=0;
 
 	virtual HRESULT DrawPolygon  (vector<POINT> points, unsigned int brush, bool filled = true, unsigned int angle = 0, float brushWidth = 2.0f) = 0;
 	virtual void    DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned int radiusY = 0, unsigned int angle = 0, float brushWidth = 2.0f)=0;

@@ -80,6 +80,8 @@ public:
 	void    Clear(unsigned int brush);
 	HRESULT EndDraw(void);
 
+	eTranslatedError TranslateError(HRESULT hr);
+
 	HRESULT DrawPolygon  (vector<POINT> points, unsigned int brush, bool filled = true, unsigned int angle = 0, float brushWidth = 2.0f);
 	void    DrawRectangle(RECT r, unsigned int brush, bool filled = true, unsigned int radiusX = 0, unsigned int radiusY = 0, unsigned int angle = 0, float brushWidth = 2.0f);
 	HRESULT DrawEllipse  (POINT center, float rx, float ry, unsigned int brush, bool filled = true, float brushWidth = 2.0f);

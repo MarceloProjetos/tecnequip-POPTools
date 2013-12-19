@@ -3631,7 +3631,7 @@ public:
 	 *  @param[inout] infoIO Dados do I/O sendo requisitado. O pino contido nesta estrutura sera atualizado com o ID do I/O
 	 *  @return              Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool            getIO                   (tRequestIO &infoIO);
+	bool            getIO                   (tRequestIO &infoIO, bool tryGeneralTypeFirst = false);
 	/** Funcao que requisita um I/O conforme dados passados por parametro. Se nao for possivel, tenta utilizar os dados da estrutura infoIO
 	 *  @param[out] pin    Referencia ao pino do I/O, sera carregada com o ID do I/O solicitado
 	 *  @param[in]  name   Nome do I/O sendo requisitado
@@ -3639,7 +3639,7 @@ public:
 	 *  @param[in]  infoIO Dados padrao do I/O sendo requisitado para que , caso falhar com os dados passados, tente utilizar os contidos nesta estrutura
 	 *  @return            Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool            getIO                   (pair<unsigned long, int> &pin, string name, eType type, tRequestIO infoIO);
+	bool            getIO                   (pair<unsigned long, int> &pin, string name, eType type, tRequestIO infoIO, bool tryGeneralTypeFirst = false);
 	/** Funcao que requisita varios I/Os simultaneamente conforme vetor de dados de I/O passado por parametro.
 	 *  @param[inout] vectorGetIO Vetor de dados dos I/Os sendo requisitados. Os pinos de cada item do vetor serao atualizados para o ID do I/O solicitado
 	 *  @return                   Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)

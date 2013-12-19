@@ -88,7 +88,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Atribua:", "Assign:");
 		addTextToLangTable(l, "Atribuição de Pinos de E/S", "I/O Pin Assignment");
 		addTextToLangTable(l, "Somente pode atribuir números dos pinos aos pinos de Entrada/Saída ou Variável de Uso Geral.", "Can only assign pin number to input/output pins or general variable.");
-		addTextToLangTable(l, "Renomear as E/S para um nome diferente do padrão ('%s') antes de atribuir um pino.", "Rename I/O from default name ('%s') before assigning MCU pin.");
+		addTextToLangTable(l, "Renomear as E/S para um nome diferente do padrão ('%s') antes de atribuir um pino.", "Rename I/O from default name ('%s') before assigning pin.");
+		addTextToLangTable(l, "Nenhum dispositivo selecionado!", "No selected device!");
 		addTextToLangTable(l, "Pino E/S", "I/O Pin");
 		addTextToLangTable(l, "(sem pino)", "(no pin)");
 		addTextToLangTable(l, "<UART necessária!>", "<UART needs!>");
@@ -103,7 +104,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Nome", "Name");
 		addTextToLangTable(l, "Estado", "State");
 		addTextToLangTable(l, "Nro Porta E/S", "Pin on Processor");
-		addTextToLangTable(l, "Porta do CLP", "MCU Port");
+		addTextToLangTable(l, "Porta do CLP", "PLC Port");
 		addTextToLangTable(l, "POPTools - Simulação (Executando)", "POPTools - Simulation (Running)");
 		addTextToLangTable(l, "POPTools - Simulação (Parado)", "POPTools - Simulation (Stopped)");
 		addTextToLangTable(l, "POPTools", "POPTools - Program Editor");
@@ -882,6 +883,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Atribuição de Pinos de E/S", "Asignación de pin E/S");
 		addTextToLangTable(l, "Somente pode atribuir números dos pinos aos pinos de Entrada/Saída ou Variável de Uso Geral.", "Solo puede asignar numero de pin a los pines de Entrada/Salida o variable de propósito general.");
 		addTextToLangTable(l, "Renomear as E/S para um nome diferente do padrão ('%s') antes de atribuir um pino.", "Cambie el nombre por defecto ('%s') antes de asignarle una pin del dispositivo.");
+		addTextToLangTable(l, "Nenhum dispositivo selecionado!", "No selected device!");
 		addTextToLangTable(l, "Pino E/S", "E/S Pin");
 		addTextToLangTable(l, "(sem pino)", "(falta pin)");
 		addTextToLangTable(l, "<UART necessária!>", "<Se necesita UART!>");

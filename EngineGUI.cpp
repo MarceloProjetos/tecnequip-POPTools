@@ -52,6 +52,17 @@ void EngineGUI::InvalidateTarget(void)
 	TargetInvalid = true;
 }
 
+void EngineGUI::ErrorHandling(HRESULT hr)
+{
+	if(FAILED(hr) && pRender != nullptr) {
+		eTranslatedError error = pRender->TranslateError(hr);
+
+		switch(error) {
+			case eTranslatedError_RecreateTarget: InvalidateTarget(); break;
+		}
+	}
+}
+
 void EngineGUI::FreeRender(void)
 {
 	if(pRender != NULL) {
@@ -148,6 +159,10 @@ HRESULT EngineGUI::EndDraw(void)
 
 	if(pRender != NULL) {
 		hr = pRender->EndDraw();
+	}
+
+	if(FAILED(hr)) {
+		ErrorHandling(hr);
 	}
 
 	return hr;
