@@ -116,8 +116,8 @@ Definições e Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Funções</h2></td></tr>
-<tr class="memitem:a207598b561f75713ebeb959015064c09"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="maincontrols_8cpp.html#a207598b561f75713ebeb959015064c09">StatusBarSetText</a> (int bar, char *text)</td></tr>
-<tr class="separator:a207598b561f75713ebeb959015064c09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99f2d488ddd986a720fd28203a03c1f5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="maincontrols_8cpp.html#a99f2d488ddd986a720fd28203a03c1f5">StatusBarSetText</a> (int bar, const char *text)</td></tr>
+<tr class="separator:a99f2d488ddd986a720fd28203a03c1f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8bb52096d00d411d4e2885ec62488e05"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="maincontrols_8cpp.html#a8bb52096d00d411d4e2885ec62488e05">MakeMainWindowControls</a> (void)</td></tr>
 <tr class="separator:a8bb52096d00d411d4e2885ec62488e05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f6f0fb2d38dd23a235a4c908ed028f6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="maincontrols_8cpp.html#a3f6f0fb2d38dd23a235a4c908ed028f6">UpdateMainWindowTitleBar</a> (void)</td></tr>
@@ -223,7 +223,7 @@ Variáveis</h2></td></tr>
 </div><div class="memdoc">
 <b>Valor:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
 <div class="line">        lvc.iSubItem = i; \</div>
-<div class="line">        lvc.pszText = s; \</div>
+<div class="line">        lvc.pszText = (<span class="keywordtype">char</span> *)s; \</div>
 <div class="line">        lvc.iOrder = 0; \</div>
 <div class="line">        lvc.cx = w; \</div>
 <div class="line">        ListView_InsertColumn(hWnd, i, &amp;lvc); \</div>
@@ -455,7 +455,7 @@ Variáveis</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a207598b561f75713ebeb959015064c09"></a>
+<a class="anchor" id="a99f2d488ddd986a720fd28203a03c1f5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -468,7 +468,7 @@ Variáveis</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>text</em>&#160;</td>
         </tr>
         <tr>
@@ -753,7 +753,7 @@ Variáveis</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Segunda, 25 de Novembro de 2013 14:58:22 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Terça, 7 de Janeiro de 2014 10:51:31 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

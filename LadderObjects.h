@@ -2876,6 +2876,12 @@ public:
 	 *  @return Numero de elementos existentes no circuito
 	 */
 	unsigned int   getSize            (void) { return vectorSubckt.size(); }
+
+	/** Funcao que retorna a posicao do subcircuito passado como parametro no circuito atual
+	 *  @return Indice do subcircuito ou o tamanho do vetor em caso de nao ser encontrado (mesmo que getSize())
+	 */
+	unsigned int   getSubcktIndex     (Subckt s);
+
 	/** Funcao que retorna o proximo elemento do circuito (ou algum de seus subcircuitos) tendo como referencia um subcircuito.
 	 *  @param[in] next Subcircuito de referencia para a busca do subcircuito seguinte
 	 *  @return         Proximo subcircuito de acordo com a referencia passada como parametro. Se ambos elemento e circuito do subcircuito
@@ -2965,9 +2971,9 @@ public:
 	bool DelElement(LadderElem *elem, LadderContext &context);
 
 	/** Funcao que verifica o circuito, removendo subcircuitos desnecessarios como, por exemplo, um subcircuito contendo apenas 1 elemento.
-	 *  @param[in] context Contexto indicando a situacao atual do diagrama ladder, sendo alterado para refletir as alteracoes realizadas
+	 *  @param[inout] context Contexto indicando a situacao atual do diagrama ladder, sendo alterado para refletir as alteracoes realizadas
 	 */
-	void RemoveUnnecessarySubckts(LadderContext context);
+	void RemoveUnnecessarySubckts(LadderContext &context);
 
 	/** Funcao que busca um subcircuito serie no circuito conforme a direcao solicitada
 	 *  @param[in]    series    Ponteiro para o subcircuito a ser buscado
@@ -3619,25 +3625,28 @@ public:
 	bool            acceptIO                (unsigned long  id, eType type);
 	/** Funcao que atualiza um I/O
 	 *  @param[in]    owner     Ponteiro para o diagrama a que pertence o I/O, utilizado no caso de estarmos copiando o I/O de outro diagrama
+	 *  @param[in]    elem      Ponteiro para o elemento a que pertence o I/O, utilizado no caso de estarmos copiando o I/O de outro diagrama
 	 *  @param[inout] infoIO    Dados do I/O sendo requisitado / descartado
 	 *  @param[in]    isDiscard Flag indicando se o I/O esta sendo requisitado (false) ou descartado (true)
 	 */
-	void            updateIO                (LadderDiagram *owner, tRequestIO &infoIO, bool isDiscard);
+	void            updateIO                (LadderDiagram *owner, LadderElem *elem, tRequestIO &infoIO, bool isDiscard);
 	/** Funcao que atualiza o tipo de um I/O, corrigindo falhas como uma variavel reservada mas marcada com algum tipo especifico
 	 *  @param[in] id ID para o I/O sendo atualizado
 	 */
 	void            updateTypeIO            (unsigned long id);
 	/** Funcao que requisita um I/O
-	 *  @param[inout] infoIO Dados do I/O sendo requisitado. O pino contido nesta estrutura sera atualizado com o ID do I/O
-	 *  @return              Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 *  @param[inout] infoIO              Dados do I/O sendo requisitado. O pino contido nesta estrutura sera atualizado com o ID do I/O
+	 *  @param[in]    tryGeneralTypeFirst Indica que devemos tentar usar o tipo geral e, se falhar, usar o tipo passado em infoIO
+	 *  @return                           Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
 	bool            getIO                   (tRequestIO &infoIO, bool tryGeneralTypeFirst = false);
 	/** Funcao que requisita um I/O conforme dados passados por parametro. Se nao for possivel, tenta utilizar os dados da estrutura infoIO
-	 *  @param[out] pin    Referencia ao pino do I/O, sera carregada com o ID do I/O solicitado
-	 *  @param[in]  name   Nome do I/O sendo requisitado
-	 *  @param[in]  type   Tipo para o I/O sendo requisitado
-	 *  @param[in]  infoIO Dados padrao do I/O sendo requisitado para que , caso falhar com os dados passados, tente utilizar os contidos nesta estrutura
-	 *  @return            Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 *  @param[out] pin                 Referencia ao pino do I/O, sera carregada com o ID do I/O solicitado
+	 *  @param[in]  name                Nome do I/O sendo requisitado
+	 *  @param[in]  type                Tipo para o I/O sendo requisitado
+	 *  @param[in]  infoIO              Dados padrao do I/O sendo requisitado para que , caso falhar com os dados passados, tente utilizar os contidos nesta estrutura
+	 *  @param[in]  tryGeneralTypeFirst Indica que devemos tentar usar o tipo geral e, se falhar, usar o tipo em type
+	 *  @return                         Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
 	bool            getIO                   (pair<unsigned long, int> &pin, string name, eType type, tRequestIO infoIO, bool tryGeneralTypeFirst = false);
 	/** Funcao que requisita varios I/Os simultaneamente conforme vetor de dados de I/O passado por parametro.

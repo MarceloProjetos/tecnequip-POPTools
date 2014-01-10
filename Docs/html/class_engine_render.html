@@ -99,12 +99,14 @@ Diagrama de Hierarquia para EngineRender:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_engine_render__inherit__graph.png" border="0" usemap="#_engine_render_inherit__map" alt="Inheritance graph"/></div>
 <map name="_engine_render_inherit__map" id="_engine_render_inherit__map">
-<area shape="rect" id="node2" href="class_engine_render_d2_d.html" title="{EngineRenderD2D\n|&#45; pD2DFactory\l&#45; pWICFactory\l&#45; pWriteFactory\l&#45; pRT\l&#45; pFontCollection\l&#45; pFontContext\l&#45; Brushes\l&#45; TextFormats\l|+ EngineRenderD2D()\l+ ~EngineRenderD2D()\l+ CreateRenderTarget()\l+ ResizeRenderTarget()\l+ CreateBrush()\l+ CreateGradient()\l+ CreateTextFormat()\l+ getTextSize()\l+ getBrush()\l+ getSolidColorBrush()\land 13 more...\l&#45; Init()\l&#45; FreeAll()\l&#45; FreeRenderTarget()\l&#45; DrawPicture()\l&#45; Flush()\l}" alt="" coords="5,307,163,707"/></map>
+<area shape="rect" id="node2" href="class_engine_render_d2_d.html" title="{EngineRenderD2D\n|&#45; pD2DFactory\l&#45; pWICFactory\l&#45; pWriteFactory\l&#45; pRT\l&#45; pFontCollection\l&#45; pFontContext\l&#45; Brushes\l&#45; TextFormats\l|+ EngineRenderD2D()\l+ ~EngineRenderD2D()\l+ CreateRenderTarget()\l+ ResizeRenderTarget()\l+ CreateBrush()\l+ CreateGradient()\l+ CreateTextFormat()\l+ getTextSize()\l+ getBrush()\l+ getSolidColorBrush()\land 14 more...\l&#45; Init()\l&#45; FreeAll()\l&#45; FreeRenderTarget()\l&#45; DrawPicture()\l&#45; Flush()\l}" alt="" coords="5,307,163,707"/></map>
 </div>
 <div class="dynheader">
 Diagrama de colaboração para EngineRender:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_engine_render__coll__graph.png" border="0" usemap="#_engine_render_coll__map" alt="Collaboration graph"/></div>
+<map name="_engine_render_coll__map" id="_engine_render_coll__map">
+</map>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -127,6 +129,8 @@ Métodos Públicos</h2></td></tr>
 <tr class="separator:ab79ea5186b14eaba38f62b440da15804"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae925f3dc0627d4015ab1ae37e15d6db0"><td class="memItemLeft" align="right" valign="top">virtual HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#ae925f3dc0627d4015ab1ae37e15d6db0">EndDraw</a> (void)=0</td></tr>
 <tr class="separator:ae925f3dc0627d4015ab1ae37e15d6db0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a64e6044482507d9f230e72c06bce96"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="_engine_render_8h.html#a789f98dd8250cc3fd4a93bb1d8a9a6d1">eTranslatedError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a2a64e6044482507d9f230e72c06bce96">TranslateError</a> (HRESULT hr)=0</td></tr>
+<tr class="separator:a2a64e6044482507d9f230e72c06bce96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae57893f1f5e300b15298d9aef667dd21"><td class="memItemLeft" align="right" valign="top">virtual HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#ae57893f1f5e300b15298d9aef667dd21">DrawPolygon</a> (vector&lt; POINT &gt; points, unsigned int brush, bool filled=true, unsigned int angle=0, float brushWidth=2.0f)=0</td></tr>
 <tr class="separator:ae57893f1f5e300b15298d9aef667dd21"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e34edc812b813a2836f118276dc117e"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a9e34edc812b813a2836f118276dc117e">DrawRectangle</a> (RECT r, unsigned int brush, bool filled=true, unsigned int radiusX=0, unsigned int radiusY=0, unsigned int angle=0, float brushWidth=2.0f)=0</td></tr>
@@ -143,8 +147,8 @@ Métodos Públicos</h2></td></tr>
 <tr class="separator:a1261a3ce472a2b93bd382ebd61be4983"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a16841455d17cccb27b468e2953d66083"><td class="memItemLeft" align="right" valign="top">virtual HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a16841455d17cccb27b468e2953d66083">DrawPictureFromResource</a> (int id, POINT start, POINT size)=0</td></tr>
 <tr class="separator:a16841455d17cccb27b468e2953d66083"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a22c73482820f4481e001d7167c5ab151"><td class="memItemLeft" align="right" valign="top">virtual HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a22c73482820f4481e001d7167c5ab151">DrawRectangle3D</a> (RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder, bool filled=true, float radiusX=20.0f, float radiusY=20.0f, float angle=0.0f)=0</td></tr>
-<tr class="separator:a22c73482820f4481e001d7167c5ab151"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06c9fdbc180911d4a24f07c761b101a2"><td class="memItemLeft" align="right" valign="top">virtual HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a06c9fdbc180911d4a24f07c761b101a2">DrawRectangle3D</a> (RECT r, float sizeZ, unsigned int brushBG, unsigned int brushGradient, unsigned int brushIntBorder, unsigned int brushExtBorder, bool filled=true, float radiusX=20.0f, float radiusY=20.0f, float angle=0.0f)=0</td></tr>
+<tr class="separator:a06c9fdbc180911d4a24f07c761b101a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Métodos Privados</h2></td></tr>
@@ -711,7 +715,7 @@ Métodos Privados</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a22c73482820f4481e001d7167c5ab151"></a>
+<a class="anchor" id="a06c9fdbc180911d4a24f07c761b101a2"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -735,6 +739,12 @@ Métodos Privados</h2></td></tr>
           <td></td>
           <td class="paramtype">unsigned int&#160;</td>
           <td class="paramname"><em>brushBG</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>brushGradient</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -785,7 +795,7 @@ Métodos Privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implementado por <a class="el" href="class_engine_render_d2_d.html#a7add6bcd954002a40a47545833704099">EngineRenderD2D</a>.</p>
+<p>Implementado por <a class="el" href="class_engine_render_d2_d.html#ab08631b6ad2858f5b47f864bb59d19a7">EngineRenderD2D</a>.</p>
 
 </div>
 </div>
@@ -1027,13 +1037,39 @@ Métodos Privados</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a2a64e6044482507d9f230e72c06bce96"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="_engine_render_8h.html#a789f98dd8250cc3fd4a93bb1d8a9a6d1">eTranslatedError</a> EngineRender::TranslateError </td>
+          <td>(</td>
+          <td class="paramtype">HRESULT&#160;</td>
+          <td class="paramname"><em>hr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implementado por <a class="el" href="class_engine_render_d2_d.html#a7a9bb8effa63ac30a3efae710a05d47d">EngineRenderD2D</a>.</p>
+
+</div>
+</div>
 <hr/>A documentação para esta classe foi gerada a partir do seguinte arquivo:<ul>
 <li>F:/SVN/POPTools/<a class="el" href="_engine_render_8h_source.html">EngineRender.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Segunda, 25 de Novembro de 2013 14:58:22 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Terça, 7 de Janeiro de 2014 10:51:31 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

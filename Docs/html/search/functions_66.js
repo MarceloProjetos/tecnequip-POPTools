@@ -75,6 +75,8 @@ var searchData=
   ['fread_5fulong',['fread_ulong',['../loadsave_8cpp.html#aafd110bf959caccad7c3cf802fae15b0',1,'fread_ulong(FILE *f, unsigned long *var):&#160;loadsave.cpp'],['../poptools_8h.html#aafd110bf959caccad7c3cf802fae15b0',1,'fread_ulong(FILE *f, unsigned long *var):&#160;loadsave.cpp']]],
   ['freeall',['FreeAll',['../class_engine_g_u_i.html#a56a64b749465e02562ee01844aabb085',1,'EngineGUI::FreeAll()'],['../class_engine_render.html#adbbbbe69ceaeceee6f4294b424747931',1,'EngineRender::FreeAll()'],['../class_engine_render_d2_d.html#ae0a99a3085621a499683ac824243baea',1,'EngineRenderD2D::FreeAll()']]],
   ['freediagram',['FreeDiagram',['../class_ladder_diagram.html#acfb0e7b5fb3ef36a1256c37dd88e7b28',1,'LadderDiagram']]],
+  ['freelangtable',['freeLangTable',['../lang_8cpp.html#a827f1d5b13e4056cc5e80c96b33122ae',1,'lang.cpp']]],
+  ['freelangtables',['freeLangTables',['../lang_8cpp.html#a44345be0dfc8afa1e61489a42cf7288b',1,'freeLangTables(void):&#160;lang.cpp'],['../poptools_8h.html#a44345be0dfc8afa1e61489a42cf7288b',1,'freeLangTables(void):&#160;lang.cpp']]],
   ['freerender',['FreeRender',['../class_engine_g_u_i.html#a13ec4db9ac429795d8f3af8a951018f5',1,'EngineGUI']]],
   ['freerendertarget',['FreeRenderTarget',['../class_engine_render_d2_d.html#a192ffcbbf7dcaed01b8e96f40443947a',1,'EngineRenderD2D']]],
   ['freezedwordf',['FreezeDWORDF',['../freeze_8cpp.html#acfeb0b77e8bb899da5e4331415a1de21',1,'FreezeDWORDF(DWORD val, char *subKey, char *name):&#160;freeze.cpp'],['../freeze_8h.html#acfeb0b77e8bb899da5e4331415a1de21',1,'FreezeDWORDF(DWORD val, char *subKey, char *name):&#160;freeze.cpp']]],

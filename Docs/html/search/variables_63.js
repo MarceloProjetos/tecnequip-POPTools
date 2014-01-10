@@ -1,9 +1,8 @@
 var searchData=
 [
-  ['c_5frgsavetypes',['c_rgSaveTypes',['../_common_file_dialog_8cpp.html#a8a0b2624855e7ec9605815c8ca2ed1d4',1,'CommonFileDialog.cpp']]],
+  ['c_5frgsavetypes',['c_rgSaveTypes',['../_common_file_dialog_8cpp.html#a78e8d4978bbe528df2d5d1d4dcb98411',1,'CommonFileDialog.cpp']]],
   ['cancelbutton',['CancelButton',['../miscutil_8cpp.html#a218047857ae1e0f90e5f7cb648036c96',1,'CancelButton():&#160;miscutil.cpp'],['../poptools_8h.html#a218047857ae1e0f90e5f7cb648036c96',1,'CancelButton():&#160;miscutil.cpp']]],
   ['candelete',['canDelete',['../struct_ladder_context.html#a32ac15238228f4ede02f7b07c83eb83e',1,'LadderContext']]],
-  ['candeleterung',['canDeleteRung',['../struct_ladder_context.html#ab8d097fa1a3afa4b24264e4b5f682bdc',1,'LadderContext']]],
   ['caninsertcomment',['canInsertComment',['../struct_ladder_context.html#aa86f43c59776db56278771b6fc3a1397',1,'LadderContext']]],
   ['caninsertend',['canInsertEnd',['../struct_ladder_context.html#a430ac7b219ae5df9630a3cb98750b943',1,'LadderContext']]],
   ['caninsertother',['canInsertOther',['../struct_ladder_context.html#a9f2ec64de0e09b8fa9478cca28c61708',1,'LadderContext']]],
@@ -40,7 +39,7 @@ var searchData=
   ['compileerrorbuf',['CompileErrorBuf',['../intcode_8cpp.html#adc14c17e5a1146f9d78f07b1536c28d0',1,'CompileErrorBuf():&#160;intcode.cpp'],['../poptools_8h.html#adc14c17e5a1146f9d78f07b1536c28d0',1,'CompileErrorBuf():&#160;intcode.cpp']]],
   ['comportdebug',['COMPortDebug',['../struct_settings_tag.html#a929f488648aacb5c51ae2037a4439882',1,'SettingsTag']]],
   ['comportflash',['COMPortFlash',['../struct_settings_tag.html#a4311cc5ebdea4c4037d3a5f6a0ac1782',1,'SettingsTag']]],
-  ['configname',['ConfigName',['../structstr_serial_config.html#aa588953fc89297ab0e82615e040ea7d1',1,'strSerialConfig']]],
+  ['configname',['ConfigName',['../structstr_serial_config.html#a38d3920404435d2890894a6050488958',1,'strSerialConfig']]],
   ['configurationword',['configurationWord',['../struct_mcu_io_info_tag.html#ae40a541aafa0c3a8c6ff5aa536405b76',1,'McuIoInfoTag']]],
   ['connectiondot',['ConnectionDot',['../structt_ladder_colors.html#a4110231e4369b2158478fd23f1fafcb5',1,'tLadderColors']]],
   ['connectiondotoff',['ConnectionDotOff',['../structt_ladder_colors.html#a0952d6dbc030de3d780d7f0368a99767',1,'tLadderColors']]],

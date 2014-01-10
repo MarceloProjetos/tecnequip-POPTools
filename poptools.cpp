@@ -889,24 +889,13 @@ static void OpenDialog(char *filename)
 	bool newProgramCreated = false;
     char tempSaveFile[MAX_PATH] = "";
 
-	// Se o programa atual tiver sido carregado/salvo ou possuir modificacoes,
-	// abrimos o ladder em uma nova aba. Caso contrario abrimos na aba atual.
-	if(ladder->getCurrentFilename().size() > 0 || ladder->getContext().programChangedNotSaved) {
-		if(!NewProgram()) {
-			if(CheckSaveUserCancels()) {
-				return;
-			}
-		} else {
-			newProgramCreated = true;
-		}
-	}
-
 	if(filename != NULL && strlen(filename)) {
 		strcpy(tempSaveFile, filename);
 	} else {
 		FileDialogShow(LoadLadder, "ld", tempSaveFile);
-		if(!strlen(tempSaveFile))
+		if(!strlen(tempSaveFile)) {
 			return;
+		}
 	}
 
 	// Antes de abrir o projeto, verifica se ele ja esta aberto
@@ -931,10 +920,7 @@ static void OpenDialog(char *filename)
 						break; // Nao faz nada. Realiza acao padrao: seleciona aba
 
 					case eReply_Cancel:
-						// Operacao cancelada! Exclui o novo programa, se criado...
-						if(newProgramCreated) {
-							CloseProgram(ladder);
-						}
+						// Operacao cancelada! Apenas retorna...
 						return;
 
 					default:
@@ -945,15 +931,22 @@ static void OpenDialog(char *filename)
 			if(openNewCopy == false) {
 				// Nao devemos abrir uma copia. Dessa forma devemos apenas selecionar
 				// a aba com o diagrama solicitado.
-
-				if(newProgramCreated) {
-					CloseProgram(ladder);
-				}
-
 				SwitchProgram(ladderList[i]);
 
 				return;
 			}
+		}
+	}
+
+	// Se o programa atual tiver sido carregado/salvo ou possuir modificacoes,
+	// abrimos o ladder em uma nova aba. Caso contrario abrimos na aba atual.
+	if(ladder->getCurrentFilename().size() > 0 || ladder->getContext().programChangedNotSaved) {
+		if(!NewProgram()) {
+			if(CheckSaveUserCancels()) {
+				return;
+			}
+		} else {
+			newProgramCreated = true;
 		}
 	}
 
@@ -1372,8 +1365,8 @@ cmp:
             break;
 
         case MNU_FIND_AND_REPLACE_NEXT:
-			if(!FindAndReplace(NULL, NULL, eSearchAndReplaceMode_FindNext))
-				FindAndReplace(NULL, NULL, eSearchAndReplaceMode_FindFirst);
+			if(!FindAndReplace("", "", eSearchAndReplaceMode_FindNext))
+				FindAndReplace("", "", eSearchAndReplaceMode_FindFirst);
             break;
 
         case MNU_MCU_SETTINGS:

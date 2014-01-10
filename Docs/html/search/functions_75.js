@@ -17,6 +17,8 @@ var searchData=
   ['updateribbonheight',['UpdateRibbonHeight',['../_ladder_g_u_i_8cpp.html#a4cd5ecc5a5d0317526c680da761bdb74',1,'UpdateRibbonHeight(void):&#160;Ribbon.cpp'],['../_ribbon_8cpp.html#a4cd5ecc5a5d0317526c680da761bdb74',1,'UpdateRibbonHeight(void):&#160;Ribbon.cpp']]],
   ['updatesimulation',['UpdateSimulation',['../simulate_8cpp.html#a03762b745e1199acbb5327cc37dfa916',1,'simulate.cpp']]],
   ['updatestringuart',['UpdateStringUART',['../_ladder_g_u_i_8cpp.html#a15eab637b937fb6a1207ae87752147d1',1,'LadderGUI.cpp']]],
+  ['updatetype',['updateType',['../classmap_i_o.html#a79535ad6f2248cf8d156b32d1f816ad2',1,'mapIO']]],
+  ['updatetypeio',['updateTypeIO',['../class_ladder_diagram.html#a95e6650408d1c477c4f54fad9b940ca3',1,'LadderDiagram']]],
   ['updateundocontextafter',['updateUndoContextAfter',['../class_ladder_diagram.html#a65e2bfbcdf62d60f7d0cd1aabab6d7cf',1,'LadderDiagram']]],
   ['updatewindow',['UpdateWindow',['../multisetdadialog_8cpp.html#a46b546e05af6bccf4652aeb0a47c8503',1,'multisetdadialog.cpp']]],
   ['usb_5fgetdatetime',['USB_GetDateTime',['../modbus__usb_8cpp.html#a14a59c5db2aa5e0c36bd61abc40e248b',1,'USB_GetDateTime(struct tm *t):&#160;modbus_usb.cpp'],['../poptools_8h.html#a14a59c5db2aa5e0c36bd61abc40e248b',1,'USB_GetDateTime(struct tm *t):&#160;modbus_usb.cpp']]],

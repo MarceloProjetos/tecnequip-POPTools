@@ -7,5 +7,7 @@ var searchData=
   ['timercmdchangetime',['TimerCmdChangeTime',['../_ladder_g_u_i_8cpp.html#ad64cd9cc6cc13a17e5cff18b347f676c',1,'LadderGUI.cpp']]],
   ['timerperiod',['TimerPeriod',['../class_ladder_elem_timer.html#ad010e923e16e81906ba23151db3b5e1f',1,'LadderElemTimer']]],
   ['togglebreakpoint',['ToggleBreakPoint',['../class_ladder_diagram.html#a6e2de735f45b6cd06813e6aa440a0627',1,'LadderDiagram']]],
-  ['togglesimulationmode',['ToggleSimulationMode',['../maincontrols_8cpp.html#ac34f502843e257391aab132dcb989df5',1,'ToggleSimulationMode(void):&#160;maincontrols.cpp'],['../poptools_8h.html#ac34f502843e257391aab132dcb989df5',1,'ToggleSimulationMode(void):&#160;maincontrols.cpp']]]
+  ['togglesimulationmode',['ToggleSimulationMode',['../maincontrols_8cpp.html#ac34f502843e257391aab132dcb989df5',1,'ToggleSimulationMode(void):&#160;maincontrols.cpp'],['../poptools_8h.html#ac34f502843e257391aab132dcb989df5',1,'ToggleSimulationMode(void):&#160;maincontrols.cpp']]],
+  ['translateerror',['TranslateError',['../class_engine_render.html#a2a64e6044482507d9f230e72c06bce96',1,'EngineRender::TranslateError()'],['../class_engine_render_d2_d.html#a7a9bb8effa63ac30a3efae710a05d47d',1,'EngineRenderD2D::TranslateError()']]],
+  ['translatespeed',['TranslateSpeed',['../poptools_8cpp.html#ac201fd16c06fdc29ee6838db97bdfe27',1,'poptools.cpp']]]
 ];

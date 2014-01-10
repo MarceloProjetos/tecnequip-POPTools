@@ -33,11 +33,11 @@
 //     since January 1, 2001 local time. The Y equals to the number of seconds since
 //     midnight local time, divided evenly by 10. The Z equals to the incremented build
 //     number and the letters A, B, C, D indicate that they remain unchanged.
-#define TEMPLATE "2.0.*"
+#define TEMPLATE "2.1.*"
 
 // Use this constant to display the version number.
-#define VERSION TEXT("2.0.1673.4139")
+#define VERSION TEXT("2.1.1695.5792")
 
 // Don't remove the line below. This number is incrementing by building process.
-#define BUILD 10420
+#define BUILD 10512
 

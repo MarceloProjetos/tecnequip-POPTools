@@ -74,6 +74,8 @@ var searchData=
   ['esortby_5fpin',['eSortBy_Pin',['../_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7a5c73324909b73b69a8dc123383c428ef',1,'LadderObjects.h']]],
   ['esortby_5fport',['eSortBy_Port',['../_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7a6f596d93a656c392dbc5a10f88a8f14c',1,'LadderObjects.h']]],
   ['esortby_5ftype',['eSortBy_Type',['../_ladder_objects_8h.html#a6bdf4cb9866dda788f7b21b7c8f37ee7a79dc98ce9968c641698ed3b646ad9dba',1,'LadderObjects.h']]],
+  ['etranslatederror_5frecreatetarget',['eTranslatedError_RecreateTarget',['../_engine_render_8h.html#a789f98dd8250cc3fd4a93bb1d8a9a6d1ae3696f1e03271173adeffd76350f25df',1,'EngineRender.h']]],
+  ['etranslatederror_5funknown',['eTranslatedError_Unknown',['../_engine_render_8h.html#a789f98dd8250cc3fd4a93bb1d8a9a6d1a5221606c758546c9f6dedc3d8731124b',1,'EngineRender.h']]],
   ['etype_5fcounter',['eType_Counter',['../_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea6f85dad0e5dd092a9acb3b41de7408ef',1,'LadderObjects.h']]],
   ['etype_5fdiginput',['eType_DigInput',['../_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60eae1338b6cc13179e91abe6fda44a67a42',1,'LadderObjects.h']]],
   ['etype_5fdigoutput',['eType_DigOutput',['../_ladder_objects_8h.html#a12f8ec8f0e7a4584b9fe481bb53fa60ea7d660b80d28988f6aa4b197c201de207',1,'LadderObjects.h']]],

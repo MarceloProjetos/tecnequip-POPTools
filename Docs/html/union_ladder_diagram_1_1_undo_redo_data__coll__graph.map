@@ -13,5 +13,5 @@
 <area shape="rect" id="node13" href="$struct_ladder_settings_d_a_c.html" title="Configuracoes da interface Digital para Analogica (D/A) " alt="" coords="1641,123,1780,200"/>
 <area shape="rect" id="node14" href="$struct_ladder_settings_modbus_slave.html" title="Configuracoes do protocolo ModBUS. " alt="" coords="1804,123,1991,200"/>
 <area shape="rect" id="node15" href="$struct_ladder_rung.html" title="{LadderRung\n|+ hasBreakpoint\l+ isPowered\l|}" alt="" coords="1543,382,1660,474"/>
-<area shape="rect" id="node16" href="$class_ladder_circuit.html" title="{LadderCircuit\n|&#45; isSeries\l&#45; vectorSubckt\l|+ LadderCircuit()\l+ LadderCircuit()\l+ ~LadderCircuit()\l+ DrawTXT()\l+ DrawGUI()\l+ IsComment()\l+ IsEmpty()\l+ IsLast()\l+ IsSeries()\l+ HasEOL()\land 30 more...\l# InsertSubckt()\l# DeleteSubckt()\l# MoveSubckt()\l&#45; DrawElementTXT()\l&#45; VerticalWireTXT()\l}" alt="" coords="2015,5,2151,317"/>
+<area shape="rect" id="node16" href="$class_ladder_circuit.html" title="{LadderCircuit\n|&#45; isSeries\l&#45; vectorSubckt\l|+ LadderCircuit()\l+ LadderCircuit()\l+ ~LadderCircuit()\l+ DrawTXT()\l+ DrawGUI()\l+ IsComment()\l+ IsEmpty()\l+ IsLast()\l+ IsSeries()\l+ HasEOL()\land 32 more...\l# InsertSubckt()\l# DeleteSubckt()\l# MoveSubckt()\l&#45; DrawElementTXT()\l&#45; VerticalWireTXT()\l}" alt="" coords="2015,5,2151,317"/>
 </map>

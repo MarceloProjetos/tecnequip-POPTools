@@ -1,6 +1,7 @@
 var searchData=
 [
   ['background',['Background',['../structt_ladder_colors.html#aba2451c1474eb83146440b18c5467a39',1,'tLadderColors::Background()'],['../structt_ladder_color_group.html#ab8dcb7e1f6a87a1ab3267d4eb4ea368c',1,'tLadderColorGroup::Background()']]],
+  ['backgroundgradient',['BackgroundGradient',['../structt_ladder_color_group.html#a65919f6d68f09eda374f18609964cb54',1,'tLadderColorGroup']]],
   ['baudrate',['baudRate',['../struct_ladder_settings_u_a_r_t.html#ab16b1099f740d957f4c848d271952bba',1,'LadderSettingsUART::baudRate()'],['../structfm__connectoptions__com.html#acef5c48fc2615a837e7ddfa27283eb99',1,'fm_connectoptions_com::baudrate()'],['../structfm__connectoptions__can.html#a825eabcd2e80faa2033325b994f31579',1,'fm_connectoptions_can::baudrate()']]],
   ['bbytesize',['bByteSize',['../structstr_serial_config.html#aa6d4be7e69575af7e1359f50d5a66645',1,'strSerialConfig']]],
   ['bit',['bit',['../struct_int_op_tag.html#abdf4dc9631aea42dee6d8b6f740e489c',1,'IntOpTag::bit()'],['../unionmap_i_o_1_1_undo_redo_data.html#a396f7444a6a0ef1d985cad74b3fb37a0',1,'mapIO::UndoRedoData::bit()'],['../structmap_details.html#ad4776dabc2fe18c9a48e821da335f0d1',1,'mapDetails::bit()'],['../struct_ladder_elem_set_bit_prop.html#abde23362872741a5565a4aa36fbe1a52',1,'LadderElemSetBitProp::bit()'],['../struct_ladder_elem_check_bit_prop.html#aa2bf712bfe21b69416f09aa870b64e0b',1,'LadderElemCheckBitProp::bit()'],['../struct_mcu_io_pin_info_tag.html#a28f4b8f6297f3306808a2cdfcbe48157',1,'McuIoPinInfoTag::bit()']]],

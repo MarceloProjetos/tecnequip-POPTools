@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['tab',['tab',['../struct_lang_tag.html#a7cf6777f4e36eb96cd2194134f0dee0d',1,'LangTag']]],
   ['tabctrl',['TabCtrl',['../maincontrols_8cpp.html#add5287484ba9aca1435bff48a8431422',1,'TabCtrl():&#160;maincontrols.cpp'],['../poptools_8h.html#add5287484ba9aca1435bff48a8431422',1,'TabCtrl():&#160;maincontrols.cpp']]],
   ['tabheight',['TabHeight',['../maincontrols_8cpp.html#ae12f61e71e01ea3695a96a568c342d79',1,'TabHeight():&#160;maincontrols.cpp'],['../poptools_8h.html#ae12f61e71e01ea3695a96a568c342d79',1,'TabHeight():&#160;maincontrols.cpp']]],
   ['target',['Target',['../class_engine_g_u_i.html#a3871cd972fb7f3170c6fb3fb85f0809d',1,'EngineGUI']]],
@@ -28,7 +27,7 @@ var searchData=
   ['template',['TEMPLATE',['../_version_info_8h.html#a491ddbf322aef9661794e38b7ff82c02',1,'VersionInfo.h']]],
   ['texpandeditem',['tExpandedItem',['../_ladder_g_u_i_8h.html#ab7bb049d0330732b19d8c7e1da452bec',1,'LadderGUI.h']]],
   ['textformats',['TextFormats',['../class_engine_render_d2_d.html#a4aa8b5d744d1b6d641300a911980c609',1,'EngineRenderD2D']]],
-  ['tfncdrawchars',['tFncDrawChars',['../_ladder_objects_8h.html#a35858990ebd472f59ece28bfc58544d4',1,'LadderObjects.h']]],
+  ['tfncdrawchars',['tFncDrawChars',['../_ladder_objects_8h.html#a760f65d363be88bbe8023cd30d7d0153',1,'LadderObjects.h']]],
   ['tfncexpandeditem',['tFncExpandedItem',['../_ladder_g_u_i_8h.html#ac5656ce2b3f66890ce7bd25389397ad5',1,'LadderGUI.h']]],
   ['thawdword',['ThawDWORD',['../freeze_8h.html#aa85adb3322f315b01fd742aa979257ea',1,'freeze.h']]],
   ['thawdwordf',['ThawDWORDF',['../freeze_8cpp.html#a2aa6ef3453f610eee076f722c2fc1326',1,'ThawDWORDF(DWORD val, char *subKey, char *name):&#160;freeze.cpp'],['../freeze_8h.html#a2aa6ef3453f610eee076f722c2fc1326',1,'ThawDWORDF(DWORD val, char *subKey, char *name):&#160;freeze.cpp']]],
@@ -51,9 +50,10 @@ var searchData=
   ['tladdersettings',['tLadderSettings',['../struct_ladder_diagram_1_1t_ladder_settings.html',1,'LadderDiagram']]],
   ['tlogrefio',['tLogRefIO',['../structt_log_ref_i_o.html',1,'']]],
   ['tmapio',['tMapIO',['../classmap_i_o.html#a13ca5e590ec156ef964078d212c793eb',1,'mapIO']]],
-  ['to',['to',['../struct_lang_table_tag.html#aeea601ddfa3849dba26ba51077b3f416',1,'LangTableTag']]],
   ['togglebreakpoint',['ToggleBreakPoint',['../class_ladder_diagram.html#a6e2de735f45b6cd06813e6aa440a0627',1,'LadderDiagram']]],
   ['togglesimulationmode',['ToggleSimulationMode',['../maincontrols_8cpp.html#ac34f502843e257391aab132dcb989df5',1,'ToggleSimulationMode(void):&#160;maincontrols.cpp'],['../poptools_8h.html#ac34f502843e257391aab132dcb989df5',1,'ToggleSimulationMode(void):&#160;maincontrols.cpp']]],
+  ['translateerror',['TranslateError',['../class_engine_render.html#a2a64e6044482507d9f230e72c06bce96',1,'EngineRender::TranslateError()'],['../class_engine_render_d2_d.html#a7a9bb8effa63ac30a3efae710a05d47d',1,'EngineRenderD2D::TranslateError()']]],
+  ['translatespeed',['TranslateSpeed',['../poptools_8cpp.html#ac201fd16c06fdc29ee6838db97bdfe27',1,'poptools.cpp']]],
   ['trequestio',['tRequestIO',['../structt_request_i_o.html',1,'']]],
   ['tsimulationstate',['tSimulationState',['../structt_simulation_state.html',1,'']]],
   ['tstaticitemdata',['tStaticItemData',['../structt_static_item_data.html',1,'']]],
@@ -64,7 +64,6 @@ var searchData=
   ['tx',['tx',['../class_s_p_l_a_s_h.html#ae8fd1b18e3b6289d0c65f112e058bb4d',1,'SPLASH']]],
   ['txpin',['txPin',['../struct_mcu_io_info_tag.html#a1f4cf28e3295b95d94e497f601baaa49',1,'McuIoInfoTag']]],
   ['txt',['txt',['../struct_rotate_list_item.html#a6b034bd8af0cf224b58a8fb19789f57d',1,'RotateListItem::txt()'],['../struct_ladder_elem_fmt_string_prop.html#ad90af2417d11c46db937e03a20087624',1,'LadderElemFmtStringProp::txt()'],['../struct_ladder_elem_yaskawa_prop.html#acbe03ef17b6b1e664e63de2665bb2175',1,'LadderElemYaskawaProp::txt()']]],
-  ['txt_5fpattern',['TXT_PATTERN',['../poptools_8cpp.html#a4082ea0d7e63ec39e81c7184208c6726',1,'poptools.cpp']]],
   ['ty',['ty',['../class_s_p_l_a_s_h.html#afb62d7de09957ec6bee6fafb804ef91f',1,'SPLASH']]],
   ['type',['type',['../struct_engine_g_u_i_1_1t_brush_data.html#a8c5a968c1a5f858f4dd8ff249e756084',1,'EngineGUI::tBrushData::type()'],['../unionmap_i_o_1_1_undo_redo_data.html#ab994fd82f4d06f0ebe3bd74a5997c3b1',1,'mapIO::UndoRedoData::type()'],['../structt_cmd_change_name_data.html#a5c82b2a5f4834abb9b1be12c1f403e8c',1,'tCmdChangeNameData::type()'],['../structt_dialog_data.html#a08d2e92a09d11a1da923d461ae34115a',1,'tDialogData::type()'],['../structmap_details.html#a8575983d3c50e2f5b0be0cef38a36e9c',1,'mapDetails::type()'],['../structt_request_i_o.html#a99f5728ff2ac6dd62a00902c5669f35c',1,'tRequestIO::type()'],['../struct_ladder_elem_multiset_d_a_prop.html#ab80ea1e9b54d32c5c1376f9c5eec1cf1',1,'LadderElemMultisetDAProp::type()'],['../structt_log_ref_i_o.html#ae92e449615588897bb7eec873978ca59',1,'tLogRefIO::type()'],['../inputlist_8cpp.html#ac765329451135abec74c45e1897abf26',1,'type():&#160;inputlist.cpp']]]
 ];

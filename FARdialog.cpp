@@ -1,7 +1,7 @@
 #include "poptools.h"
 
 const LONG FarWidth = 296, FarHeight = 135;
-static bool FARWindowDone;
+static bool FARWindowDone = TRUE;
 
 HWND FARWindow = NULL;
 
@@ -14,8 +14,6 @@ static HWND ReplaceButton;
 static HWND ReplaceAllButton;
 
 static LONG_PTR PrevNameProc;
-
-static bool changed;
 
 //-----------------------------------------------------------------------------
 // Window proc for the dialog boxes. This Ok/Cancel stuff is common to a lot
@@ -62,11 +60,7 @@ static LRESULT CALLBACK FARWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 								matches = FindAndReplace(search_text, new_text, eSearchAndReplaceMode_ReplaceFirst);
 								if(!matches) {
 									Error(_("Nao encontrado!"));
-								} else {
-									changed = true;
 								}
-							} else {
-								changed = true;
 							}
 						}
 					} else if(h == ReplaceAllButton) {
@@ -76,7 +70,6 @@ static LRESULT CALLBACK FARWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 							if(matches) {
 								sprintf(texto, _("Encontrada(s) %d ocorrência(s)"), matches);
 								ShowTaskDialog(texto, NULL, TD_INFORMATION_ICON, TDCBF_OK_BUTTON);
-								changed = true;
 							} else {
 								Error(_("Nao encontrado!"));
 							}
@@ -149,9 +142,14 @@ void MoveFARWindow(RECT r)
 	MoveWindow(FARWindow, r.left, r.top, r.right, r.bottom, TRUE);
 }
 
-bool ShowFARWindow(void)
+void ShowFARWindow(void)
 {
-    WNDCLASSEX wc;
+	// Se janela ja exibida, apenas retorna
+	if(FARWindowDone == FALSE) {
+		return;
+	}
+
+	WNDCLASSEX wc;
     memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
 
@@ -165,8 +163,6 @@ bool ShowFARWindow(void)
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
 
     RegisterClassEx(&wc);
-
-	changed = false;
 
     FARWindow = CreateWindowClient(WS_EX_CLIENTEDGE, "POPToolsFARWindow",
         "", WS_CHILD | WS_CLIPSIBLINGS,
@@ -191,7 +187,6 @@ bool ShowFARWindow(void)
     while((ret = GetMessage(&msg, NULL, 0, 0)) && !FARWindowDone) {
         if(msg.message == WM_KEYDOWN) {
             if(msg.wParam == VK_ESCAPE) {
-                FARWindowDone = TRUE;
                 break;
 			} else if(msg.wParam == VK_RETURN) {
 				FARWindowProc(FARWindow, WM_COMMAND, BN_CLICKED, (LPARAM)SearchNextButton);
@@ -202,6 +197,7 @@ bool ShowFARWindow(void)
         DispatchMessage(&msg);
     }
 
+	FARWindowDone = TRUE;
     DestroyWindow(FARWindow);
-    return changed;
+    return;
 }

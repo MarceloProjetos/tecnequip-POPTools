@@ -17,12 +17,18 @@
 
 // Imagens dos elementos no diagrama
 #define IDB_LADDER_RTC                 6000
+#define IDB_LADDER_RTC_SIMON           7000
+#define IDB_LADDER_RTC_SIMOFF          8000
+
+#define IDB_LADDER_CYCLE               6006
+#define IDB_LADDER_CYCLE_SIMON         7006
+#define IDB_LADDER_CYCLE_SIMOFF        8006
+
 #define IDB_LADDER_HOURGLASS           6001
 #define IDB_LADDER_CLOCK               6002
 #define IDB_LADDER_COUNTER             6003
 #define IDB_LADDER_TERMOMETHER         6004
 #define IDB_LADDER_AD                  6005
-#define IDB_LADDER_CYCLE               6006
 #define IDB_LADDER_DIALOG_ERROR        6007
 #define IDB_LADDER_DIALOG_QUESTION     6008
 #define IDB_LADDER_DIALOG_EXCLAMATION  6009

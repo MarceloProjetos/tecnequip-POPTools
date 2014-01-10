@@ -893,7 +893,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Deve selecionar um dispositivo antes de compilar.", "Debe elegir un micro antes de compilar.");
 		addTextToLangTable(l, "Função UART é usada porem não suportada por este dispositivo.", "Usadas Funciones para UART. Este dispositivo no las soporta.");
 		addTextToLangTable(l, "Função PWM é usada porem não suportada por este dispositivo.", "Usadas Funciones para PWM. Este dispositivo no las soporta.");
-		addTextToLangTable(l, "Este programa contém mudanças desde a última vez salva.\r\n\r\n Você quer salvar as mudanças?", "El programa ha cambiado desde la última vez que los guardo.\r\n\r\n¿Quieres guardar los cambios?");
+		addTextToLangTable(l, "Este programa contém mudanças desde a última vez salva.\r\n\r\n Você quer salvar as mudanças?", "El programa ha cambiado desde la última vez que lo guardo.\r\n\r\n¿Quieres guardar los cambios?");
 		addTextToLangTable(l, "--Adicione Comentários Aqui--", "--añade el comentario aquí--");
 		addTextToLangTable(l, "Nome", "Nombre");
 		addTextToLangTable(l, "Estado", "Estado");
@@ -1655,6 +1655,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Dados insuficientes para exibicao de grafico", "Not enough data to show graph");
 		addTextToLangTable(l, "Diagrama Válido", "Diagram is Valid");
 		addTextToLangTable(l, "Validação finalizada. Diagrama válido!", "Validation finished. Diagram is valid!");
+		addTextToLangTable(l, "D/A", "D/A");
 	} else {
 		l = nullptr;
 	}

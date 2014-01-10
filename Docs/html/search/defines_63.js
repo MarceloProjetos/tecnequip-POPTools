@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['c_5fpattern',['C_PATTERN',['../poptools_8cpp.html#a81785651359035f6bc1cb7bf217bda3d',1,'poptools.cpp']]],
   ['cmdabout',['cmdAbout',['../_main_ribbon_8h.html#a9fb2851b4b5cf346df7e64879b89caa8',1,'MainRibbon.h']]],
   ['cmdabout_5flabeltitle_5fresid',['cmdAbout_LabelTitle_RESID',['../_main_ribbon_8h.html#ae61aea0a13837a70034e194343d21519',1,'MainRibbon.h']]],
   ['cmdabout_5flargeimages_5fresid',['cmdAbout_LargeImages_RESID',['../_main_ribbon_8h.html#ae0597cd011468a19d2ac0298010f3f9e',1,'MainRibbon.h']]],
@@ -1066,6 +1065,13 @@ var searchData=
   ['cmdusermanual_5fsmallimages_5fresid',['cmdUserManual_SmallImages_RESID',['../_main_ribbon_8h.html#a7de29170ffea06a6a13b577ee449555a',1,'MainRibbon.h']]],
   ['cmdusermanual_5ftooltipdescription_5fresid',['cmdUserManual_TooltipDescription_RESID',['../_main_ribbon_8h.html#aec60584eab0ad58f6df370a28cba45fd',1,'MainRibbon.h']]],
   ['cmdusermanual_5ftooltiptitle_5fresid',['cmdUserManual_TooltipTitle_RESID',['../_main_ribbon_8h.html#adf3e807459f354a6c263e060f2a4a070',1,'MainRibbon.h']]],
+  ['cmdvalidate',['cmdValidate',['../_main_ribbon_8h.html#afc414eb2a3224d86556db9b677f9cc7f',1,'MainRibbon.h']]],
+  ['cmdvalidate_5flabeldescription_5fresid',['cmdValidate_LabelDescription_RESID',['../_main_ribbon_8h.html#afc6c909d35b53eb507de7bc55b9af9b8',1,'MainRibbon.h']]],
+  ['cmdvalidate_5flabeltitle_5fresid',['cmdValidate_LabelTitle_RESID',['../_main_ribbon_8h.html#aa899a457b0d02879b6f472ece5bf2dbe',1,'MainRibbon.h']]],
+  ['cmdvalidate_5flargeimages_5fresid',['cmdValidate_LargeImages_RESID',['../_main_ribbon_8h.html#ab42c85d9343315eeec887e34b268028e',1,'MainRibbon.h']]],
+  ['cmdvalidate_5fsmallimages_5fresid',['cmdValidate_SmallImages_RESID',['../_main_ribbon_8h.html#ac3742ee48d9bbcb9b5547084e4367cdd',1,'MainRibbon.h']]],
+  ['cmdvalidate_5ftooltipdescription_5fresid',['cmdValidate_TooltipDescription_RESID',['../_main_ribbon_8h.html#a62d53d47c51dd16cd5bfa8c482c67dee',1,'MainRibbon.h']]],
+  ['cmdvalidate_5ftooltiptitle_5fresid',['cmdValidate_TooltipTitle_RESID',['../_main_ribbon_8h.html#a274313a1e7015633a3d173ab0a4bb1e0',1,'MainRibbon.h']]],
   ['commlist_5fcolumn_5ffc',['COMMLIST_COLUMN_FC',['../debugdialog_8cpp.html#a77606134ad578c993116b59474d470c1',1,'debugdialog.cpp']]],
   ['commlist_5fcolumn_5fid',['COMMLIST_COLUMN_ID',['../debugdialog_8cpp.html#a4d91ec8852e07dba1e70cd4b80cf5809',1,'debugdialog.cpp']]],
   ['commlist_5fcolumn_5fiface',['COMMLIST_COLUMN_IFACE',['../debugdialog_8cpp.html#a10bcdae5462709544dd3343b8e4bbe18',1,'debugdialog.cpp']]],

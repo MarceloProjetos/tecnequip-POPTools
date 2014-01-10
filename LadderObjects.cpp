@@ -528,7 +528,7 @@ bool LadderElemContact::acceptIO(unsigned long id, eType type)
 void LadderElemContact::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -763,7 +763,7 @@ bool LadderElemCoil::acceptIO(unsigned long id, eType type)
 void LadderElemCoil::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -820,7 +820,12 @@ bool LadderElemCoil::internalUpdateNameTypeIO(unsigned int index, string name, e
 	if(ret) {
 		if(reply == eReply_No) {
 			mapDetails detailsIO = Diagram->getDetailsIO(name);
-			if(detailsIO.type != eType_Pending) {
+			if(detailsIO.type != eType_DigOutput &&
+				detailsIO.type != eType_InternalRelay &&
+				detailsIO.type != eType_Reserved) {
+					Diagram->ShowDialog(eDialogType_Message, false, _("Tipo Inválido"), _("Conflito entre tipos! Operação não permitida."));
+					return false;
+			} else {
 				type = detailsIO.type;
 			}
 		}
@@ -1061,7 +1066,7 @@ bool LadderElemTimer::acceptIO(unsigned long id, eType type)
 void LadderElemTimer::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -1220,6 +1225,32 @@ pair<string, string> LadderElemRTC::DrawTXT(void)
 
 bool LadderElemRTC::internalGenerateIntCode(IntCode &ic)
 {
+	char sd[10], sm[10], sy[10], sh[10], smm[10], ss[10];
+	char ed[10], em[10], ey[10], eh[10], emm[10], es[10];
+	char mode[10];
+
+	_itoa(prop.start.tm_mday, sd  , 10);
+	_itoa(prop.start.tm_mon , sm  , 10);
+	_itoa(prop.start.tm_year, sy  , 10);
+	_itoa(prop.start.tm_hour, sh  , 10);
+	_itoa(prop.start.tm_min , smm , 10);
+	_itoa(prop.start.tm_sec , ss  , 10);
+
+	_itoa(prop.end.tm_mday  , ed  , 10);
+	_itoa(prop.end.tm_mon   , em  , 10);
+	_itoa(prop.end.tm_year  , ey  , 10);
+	_itoa(prop.end.tm_hour  , eh  , 10);
+	_itoa(prop.end.tm_min   , emm , 10);
+	_itoa(prop.end.tm_sec   , es  , 10);
+
+	_itoa(prop.mode         , mode, 10);
+
+	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
+			ic.Op(INT_SET_RTC, sd, sm, sy, sh, smm, ss, NULL, 0, 0);
+			ic.Op(INT_SET_RTC, ed, em, ey, eh, emm, es, NULL, 0, 1);
+			ic.Op(INT_CHECK_RTC, ic.getStateInOut(), mode, prop.wday);
+	ic.Op(INT_END_IF);
+
 	return true;
 }
 
@@ -1453,7 +1484,7 @@ bool LadderElemCounter::acceptIO(unsigned long id, eType type)
 void LadderElemCounter::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -1623,7 +1654,7 @@ bool LadderElemReset::acceptIO(unsigned long id, eType type)
 void LadderElemReset::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -1946,11 +1977,11 @@ bool LadderElemCmp::acceptIO(unsigned long id, eType type)
 void LadderElemCmp::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Op1.pin = prop.idOp1;
-	Diagram->updateIO(owner, infoIO_Op1, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Op1, isDiscard);
 	prop.idOp1 = infoIO_Op1.pin;
 
 	infoIO_Op2.pin = prop.idOp2;
-	Diagram->updateIO(owner, infoIO_Op2, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Op2, isDiscard);
 	prop.idOp2 = infoIO_Op2.pin;
 }
 
@@ -2258,15 +2289,15 @@ bool LadderElemMath::acceptIO(unsigned long id, eType type)
 void LadderElemMath::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Op1.pin = prop.idOp1;
-	Diagram->updateIO(owner, infoIO_Op1, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Op1, isDiscard);
 	prop.idOp1 = infoIO_Op1.pin;
 
 	infoIO_Op2.pin = prop.idOp2;
-	Diagram->updateIO(owner, infoIO_Op2, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Op2, isDiscard);
 	prop.idOp2 = infoIO_Op2.pin;
 }
 
@@ -2555,11 +2586,11 @@ bool LadderElemSqrt::acceptIO(unsigned long id, eType type)
 void LadderElemSqrt::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Src.pin = prop.idSrc;
-	Diagram->updateIO(owner, infoIO_Src, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Src, isDiscard);
 	prop.idSrc = infoIO_Src.pin;
 }
 
@@ -2831,15 +2862,15 @@ bool LadderElemRand::acceptIO(unsigned long id, eType type)
 void LadderElemRand::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Var.pin = prop.idVar;
-	Diagram->updateIO(owner, infoIO_Var, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
 
 	infoIO_Min.pin = prop.idMin;
-	Diagram->updateIO(owner, infoIO_Min, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Min, isDiscard);
 	prop.idMin = infoIO_Min.pin;
 
 	infoIO_Max.pin = prop.idMax;
-	Diagram->updateIO(owner, infoIO_Max, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Max, isDiscard);
 	prop.idMax = infoIO_Max.pin;
 }
 
@@ -3133,11 +3164,11 @@ bool LadderElemAbs::acceptIO(unsigned long id, eType type)
 void LadderElemAbs::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Src.pin = prop.idSrc;
-	Diagram->updateIO(owner, infoIO_Src, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Src, isDiscard);
 	prop.idSrc = infoIO_Src.pin;
 }
 
@@ -3399,11 +3430,11 @@ bool LadderElemMove::acceptIO(unsigned long id, eType type)
 void LadderElemMove::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Src.pin = prop.idSrc;
-	Diagram->updateIO(owner, infoIO_Src, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Src, isDiscard);
 	prop.idSrc = infoIO_Src.pin;
 }
 
@@ -3676,7 +3707,7 @@ bool LadderElemSetBit::acceptIO(unsigned long id, eType type)
 void LadderElemSetBit::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -3872,7 +3903,7 @@ bool LadderElemCheckBit::acceptIO(unsigned long id, eType type)
 void LadderElemCheckBit::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -4091,7 +4122,7 @@ bool LadderElemReadAdc::acceptIO(unsigned long id, eType type)
 void LadderElemReadAdc::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -4280,7 +4311,7 @@ bool LadderElemSetDa::acceptIO(unsigned long id, eType type)
 void LadderElemSetDa::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -4545,15 +4576,15 @@ bool LadderElemReadEnc::acceptIO(unsigned long id, eType type)
 void LadderElemReadEnc::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 
 	// Atualizacao de variaveis internas
-	Diagram->updateIO(owner, infoIO_IncPerimRoda  , isDiscard);
-	Diagram->updateIO(owner, infoIO_IncPulsosVolta, isDiscard);
-	Diagram->updateIO(owner, infoIO_IncFatorCorr  , isDiscard);
-	Diagram->updateIO(owner, infoIO_AbsPerimRoda  , isDiscard);
-	Diagram->updateIO(owner, infoIO_AbsFatorCorr  , isDiscard);
+	Diagram->updateIO(owner, this, infoIO_IncPerimRoda  , isDiscard);
+	Diagram->updateIO(owner, this, infoIO_IncPulsosVolta, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_IncFatorCorr  , isDiscard);
+	Diagram->updateIO(owner, this, infoIO_AbsPerimRoda  , isDiscard);
+	Diagram->updateIO(owner, this, infoIO_AbsFatorCorr  , isDiscard);
 }
 
 eType LadderElemReadEnc::getAllowedTypeIO(unsigned long id)
@@ -4800,15 +4831,15 @@ bool LadderElemResetEnc::acceptIO(unsigned long id, eType type)
 void LadderElemResetEnc::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 
 	// Atualizacao de variaveis internas
-	Diagram->updateIO(owner, infoIO_IncPerimRoda  , isDiscard);
-	Diagram->updateIO(owner, infoIO_IncPulsosVolta, isDiscard);
-	Diagram->updateIO(owner, infoIO_IncFatorCorr  , isDiscard);
-	Diagram->updateIO(owner, infoIO_AbsPerimRoda  , isDiscard);
-	Diagram->updateIO(owner, infoIO_AbsFatorCorr  , isDiscard);
+	Diagram->updateIO(owner, this, infoIO_IncPerimRoda  , isDiscard);
+	Diagram->updateIO(owner, this, infoIO_IncPulsosVolta, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_IncFatorCorr  , isDiscard);
+	Diagram->updateIO(owner, this, infoIO_AbsPerimRoda  , isDiscard);
+	Diagram->updateIO(owner, this, infoIO_AbsFatorCorr  , isDiscard);
 }
 
 eType LadderElemResetEnc::getAllowedTypeIO(unsigned long id)
@@ -5059,11 +5090,11 @@ bool LadderElemMultisetDA::acceptIO(unsigned long id, eType type)
 void LadderElemMultisetDA::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Time.pin = prop.idTime;
-	Diagram->updateIO(owner, infoIO_Time, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Time, isDiscard);
 	prop.idTime = infoIO_Time.pin;
 
 	infoIO_Desl.pin = prop.idDesl;
-	Diagram->updateIO(owner, infoIO_Desl, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Desl, isDiscard);
 	prop.idDesl = infoIO_Desl.pin;
 }
 
@@ -5310,7 +5341,7 @@ bool LadderElemUSS::acceptIO(unsigned long id, eType type)
 void LadderElemUSS::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -5563,7 +5594,7 @@ bool LadderElemModBUS::acceptIO(unsigned long id, eType type)
 void LadderElemModBUS::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -5755,7 +5786,7 @@ bool LadderElemSetPWM::acceptIO(unsigned long id, eType type)
 void LadderElemSetPWM::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -5929,7 +5960,7 @@ bool LadderElemUART::acceptIO(unsigned long id, eType type)
 void LadderElemUART::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Name.pin = prop.idName;
-	Diagram->updateIO(owner, infoIO_Name, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -6249,7 +6280,7 @@ void LadderElemShiftRegister::updateIO(LadderDiagram *owner, bool isDiscard)
 		InfoIO_Regs.name = cname;
 		InfoIO_Regs.pin  = prop.vectorIdRegs[i];
 
-		Diagram->updateIO(owner, InfoIO_Regs, isDiscard);
+		Diagram->updateIO(owner, this, InfoIO_Regs, isDiscard);
 	}
 
 	InfoIO_Regs.name = previous_name;
@@ -6473,11 +6504,11 @@ bool LadderElemLUT::acceptIO(unsigned long id, eType type)
 void LadderElemLUT::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Index.pin = prop.idIndex;
-	Diagram->updateIO(owner, infoIO_Index, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Index, isDiscard);
 	prop.idIndex = infoIO_Index.pin;
 }
 
@@ -6825,11 +6856,11 @@ bool LadderElemPiecewise::acceptIO(unsigned long id, eType type)
 void LadderElemPiecewise::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Dest.pin = prop.idDest;
-	Diagram->updateIO(owner, infoIO_Dest, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Dest, isDiscard);
 	prop.idDest = infoIO_Dest.pin;
 
 	infoIO_Index.pin = prop.idIndex;
-	Diagram->updateIO(owner, infoIO_Index, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Index, isDiscard);
 	prop.idIndex = infoIO_Index.pin;
 }
 
@@ -7073,7 +7104,7 @@ bool LadderElemFmtString::acceptIO(unsigned long id, eType type)
 void LadderElemFmtString::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Var.pin = prop.idVar;
-	Diagram->updateIO(owner, infoIO_Var, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
 }
 
@@ -7285,7 +7316,7 @@ bool LadderElemYaskawa::acceptIO(unsigned long id, eType type)
 void LadderElemYaskawa::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Var.pin = prop.idVar;
-	Diagram->updateIO(owner, infoIO_Var, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
 }
 
@@ -7483,7 +7514,7 @@ bool LadderElemPersist::acceptIO(unsigned long id, eType type)
 void LadderElemPersist::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Var.pin = prop.idVar;
-	Diagram->updateIO(owner, infoIO_Var, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Var, isDiscard);
 	prop.idVar = infoIO_Var.pin;
 }
 
@@ -7797,27 +7828,27 @@ bool LadderElemPID::acceptIO(unsigned long id, eType type)
 void LadderElemPID::updateIO(LadderDiagram *owner, bool isDiscard)
 {
 	infoIO_Setpoint.pin = prop.idSetpoint;
-	Diagram->updateIO(owner, infoIO_Setpoint, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Setpoint, isDiscard);
 	prop.idSetpoint = infoIO_Setpoint.pin;
 
 	infoIO_ProcessValue.pin = prop.idProcessValue;
-	Diagram->updateIO(owner, infoIO_ProcessValue, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_ProcessValue, isDiscard);
 	prop.idProcessValue = infoIO_ProcessValue.pin;
 
 	infoIO_GainP.pin = prop.idGainP;
-	Diagram->updateIO(owner, infoIO_GainP, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_GainP, isDiscard);
 	prop.idGainP = infoIO_GainP.pin;
 
 	infoIO_GainI.pin = prop.idGainI;
-	Diagram->updateIO(owner, infoIO_GainI, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_GainI, isDiscard);
 	prop.idGainI = infoIO_GainI.pin;
 
 	infoIO_GainD.pin = prop.idGainD;
-	Diagram->updateIO(owner, infoIO_GainD, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_GainD, isDiscard);
 	prop.idGainD = infoIO_GainD.pin;
 
 	infoIO_Output.pin = prop.idOutput;
-	Diagram->updateIO(owner, infoIO_Output, isDiscard);
+	Diagram->updateIO(owner, this, infoIO_Output, isDiscard);
 	prop.idOutput = infoIO_Output.pin;
 }
 
@@ -8401,6 +8432,23 @@ bool LadderCircuit::GenerateIntCode(IntCode &ic)
 	return ret;
 }
 
+unsigned int LadderCircuit::getSubcktIndex(Subckt s)
+{
+	unsigned int i;
+
+	for(i = 0; i < vectorSubckt.size(); i++) {
+		if(vectorSubckt[i].elem != nullptr) {
+			if(s.elem == vectorSubckt[i].elem) {
+				break; // elemento coincide! interrompe busca
+			}
+		} else if(s.subckt == vectorSubckt[i].subckt) {
+			break; // subcircuito coincide! interrompe busca
+		}
+	}
+
+	return i;
+}
+
 LadderCircuit *LadderCircuit::getSubcktForElement(LadderElem *elem)
 {
 	LadderCircuit *subckt = nullptr;
@@ -8697,17 +8745,13 @@ void LadderCircuit::AddPlaceHolderIfNoEOL(LadderContext context, LadderElem *ele
 bool LadderCircuit::InsertSubckt(LadderContext context, unsigned int pos, Subckt s,
 	bool isMove, bool isUndoRedo)
 {
-	bool ret = false;
-
 	if(s.elem != nullptr) {
 		s.subckt = this;
 	}
 
-	if(pos == getSize()) {
-		ret = true;
+	if(pos >= getSize()) {
 		vectorSubckt.push_back(s);
-	} else if(pos < getSize()) {
-		ret = true;
+	} else {
 		vectorSubckt.insert(vectorSubckt.begin() + pos, s);
 	}
 
@@ -8730,7 +8774,7 @@ bool LadderCircuit::InsertSubckt(LadderContext context, unsigned int pos, Subckt
 		context.Diagram->RegisterAction(action);
 	}
 
-	return ret;
+	return true;
 }
 
 bool LadderCircuit::DeleteSubckt(LadderContext context, unsigned int pos,
@@ -8842,7 +8886,7 @@ bool LadderCircuit::InsertParallel(LadderElem *elem, unsigned int start, unsigne
 		Subckt s = { elem, this };
 
 		if(context.SelectedState != SELECTED_ABOVE) {
-			start = getSize();
+			start++;
 		}
 
 		// Inserindo em paralelo
@@ -9056,27 +9100,35 @@ Subckt LadderCircuit::getSubckt(unsigned int pos)
 	return ret;
 }
 
-void LadderCircuit::RemoveUnnecessarySubckts(LadderContext context)
+void LadderCircuit::RemoveUnnecessarySubckts(LadderContext &context)
 {
 	unsigned int i;
 	for(i = 0; i < vectorSubckt.size(); i++) {
 		if(vectorSubckt[i].elem == nullptr) {
 			vectorSubckt[i].subckt->RemoveUnnecessarySubckts(context);
-			if(vectorSubckt[i].subckt->getSize() == 1) {
-				// Recupera o unico elemento do subcircuito
-				Subckt s = vectorSubckt[i].subckt->getSubckt(0);
+			if(vectorSubckt[i].subckt->getSize() < 2) {
+				if(vectorSubckt[i].subckt->getSize() == 1) {
+					// Recupera o unico elemento do subcircuito
+					Subckt s = vectorSubckt[i].subckt->getSubckt(0);
 
-				// Adiciona o elemento ao circuito atual
-				if(s.elem != nullptr || s.subckt->IsSeries() != isSeries) {
-					// Se for um elemento ou um tipo diferente de circuito,
-					// apenas move para o circuito atual na posicao do subcircuito
-					MoveSubckt(context, i, vectorSubckt[i].subckt, 0);
-					// Avanca i para corresponder a nova posicao do circuito vazio
-					i++;
-				} else { // Caso mais complicado: restou um circuito do mesmo tipo do nosso!
-					while(s.subckt->getSize() > 0) {
-						MoveSubckt(context, i++, s.subckt, 0);
+					// Adiciona o elemento ao circuito atual
+					if(s.elem != nullptr || s.subckt->IsSeries() != isSeries) {
+						// Se for um elemento ou um tipo diferente de circuito,
+						// apenas move para o circuito atual na posicao do subcircuito
+						MoveSubckt(context, i, vectorSubckt[i].subckt, 0);
+						// Avanca i para corresponder a nova posicao do circuito vazio
+						i++;
+					} else { // Caso mais complicado: restou um circuito do mesmo tipo do nosso!
+						while(s.subckt->getSize() > 0) {
+							MoveSubckt(context, i++, s.subckt, 0);
+						}
 					}
+				}
+
+				// Se o circuito selecionado estiver sendo excluido, devemos atualizar para o atual pois
+				// indica que os elementos que estavam nele foram transferidos para o atual.
+				if(vectorSubckt[i].subckt == context.SelectedCircuit) {
+					context.SelectedCircuit = this;
 				}
 
 				// Desaloca o subcircuito
@@ -10692,11 +10744,15 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 	// Phase 3: creates a series subcircuit containing all elements between start and end points.
 	if(StartPoint.series != nullptr && StartPoint.series == EndPoint.series && context.SelectedElem->getWhich() != ELEM_PLACEHOLDER) {
 		if(StartPoint.point > EndPoint.point) {
+			UseCurrentParallel = 0;
+
+			if(context.SelectedState != SELECTED_LEFT) {
+				StartPoint.point--;
+			}
+
 			// Special condition: selectedstate is SELECTED_RIGHT
 			if(context.SelectedState == SELECTED_RIGHT) {
 				EndPoint.point++;
-				StartPoint.point--;
-				UseCurrentParallel = 0;
 			}
 
 			i = StartPoint.point;
@@ -10709,7 +10765,18 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 
 			ret = StartPoint.series  ->InsertParallel(elem, StartPoint.point, EndPoint.point, context);
 		} else {
-			ret = StartPoint.parallel->InsertParallel(elem, StartPoint.point, EndPoint.point, context);
+			Subckt s = { context.SelectedElem, context.SelectedCircuit };
+			LadderCircuit *circuit =  context.SelectedCircuit;
+
+			while(circuit != nullptr && circuit != StartPoint.parallel) {
+				s.elem = nullptr;
+				s.subckt = circuit;
+
+				circuit = StartPoint.parallel->getParentSubckt(circuit);
+			}
+
+			unsigned int index = StartPoint.parallel->getSubcktIndex(s);
+			ret = StartPoint.parallel->InsertParallel(elem, index           , index         , context);
 		}
 
 		// Phase 5: free context.ParallelStart and collapse.
@@ -11645,7 +11712,7 @@ eType LadderDiagram::getAllowedType(unsigned long id, eType default_type)
 	return ret;
 }
 
-void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDiscard)
+void LadderDiagram::updateIO(LadderDiagram *owner, LadderElem *elem, tRequestIO &infoIO, bool isDiscard)
 {
 	if(infoIO.pin.first == 0) return; // id nao esta em uso, indica que eh um numero e nao um I/O
 
@@ -11733,6 +11800,7 @@ void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDi
 					ownerType = owner->getDetailsIO(infoIO.pin.first).type;
 				}
 
+				long oldID = infoIO.pin.first; // Salva o ID para se for necessario checar o tipo
 				infoIO.pin.first = 0;
 
 				pair <unsigned long, int> pin = pair<unsigned long, int>(0, 0);
@@ -11748,10 +11816,15 @@ void LadderDiagram::updateIO(LadderDiagram *owner, tRequestIO &infoIO, bool isDi
 						// nao ser valido. Ex.: se estivermos copiando um move que usava variavel de
 						// um A/D, o tipo sera Leitura de A/D mas neste diagrama deve ser tipo geral.
 						infoIO.name = name;
-					} else if(getDetailsIO(pin.first).type == ownerType ||
-						acceptIO(pin.first, ownerType)) { // Compativel!
-							infoIO.pin = pin;
-							type = getAllowedType(pin.first, ownerType);
+					} else if(getDetailsIO(pin.first).type == ownerType) { // Mesmo tipo!
+						infoIO.pin = pin;
+						type       = ownerType;
+					} else if(acceptIO(pin.first, ownerType)) { // Compativel!
+						infoIO.pin = pin;
+						type = getAllowedType(pin.first, ownerType);
+						if(type != ownerType && !elem->acceptIO(oldID, type)) {
+							type = ownerType;
+						}
 					}
 				}
 			} else {
@@ -12124,8 +12197,8 @@ int LadderDiagram::SearchAndReplace(string sSearchText, string sNewText, eSearch
 			// nao houve correspondencias e for a primeira passagem, reinicia da primeira linha
 			if(refElemNotFirstNorNull && firstPass && matches >= 0 &&
 				(mode == eSearchAndReplaceMode_ReplaceAll || matches == 0)) {
-					i                  = 0;
 					count              = startRung + 1;
+					startRung          = 0;
 					firstPass          = false;
 					doSearchAndReplace = true;
 			} else {

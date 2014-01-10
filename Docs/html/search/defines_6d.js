@@ -180,6 +180,7 @@ var searchData=
   ['mnu_5fstop_5flog_5fsimulation',['MNU_STOP_LOG_SIMULATION',['../poptools_8h.html#af1047165887dcda2b114887618c9350a',1,'poptools.h']]],
   ['mnu_5fstop_5fsimulation',['MNU_STOP_SIMULATION',['../poptools_8h.html#a455dba4e6618d73d9a3cae5ebb05bfbf',1,'poptools.h']]],
   ['mnu_5fundo',['MNU_UNDO',['../poptools_8h.html#a1dfcd0ce93870317d12a4390d7433cf6',1,'poptools.h']]],
+  ['mnu_5fvalidate',['MNU_VALIDATE',['../poptools_8h.html#a439e051364e807108e97f13be49fed5b',1,'poptools.h']]],
   ['mnu_5fwrite_5ffmtd_5fstr',['MNU_WRITE_FMTD_STR',['../poptools_8h.html#ab75d7973d9f98e50f26edceda2a2f70a',1,'poptools.h']]],
   ['mnu_5fwrite_5fservo_5fyaskawa',['MNU_WRITE_SERVO_YASKAWA',['../poptools_8h.html#a5d496329eaea3f495c8aa35b037fc5f2',1,'poptools.h']]]
 ];

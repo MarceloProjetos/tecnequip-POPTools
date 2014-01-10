@@ -10,7 +10,7 @@ var searchData=
   ['desc',['desc',['../struct_int_op_tag.html#a8f450f63bc63a7d2e378eace55c240bf',1,'IntOpTag']]],
   ['description',['Description',['../struct_ladder_settings_information.html#a39d70c117bb160fc1a897034313954c8',1,'LadderSettingsInformation::Description()'],['../struct_undo_redo_action.html#ab79813d6b0d719283f76d882ad7fcb11',1,'UndoRedoAction::Description()']]],
   ['details',['details',['../structfm__results.html#ad7fc604180eedd70d34e049e8c92576b',1,'fm_results']]],
-  ['detailsio',['detailsIO',['../unionmap_i_o_1_1_undo_redo_data.html#a42e32beb1ace0a41a91b7fb11b920d8e',1,'mapIO::UndoRedoData']]],
+  ['detailsio',['detailsIO',['../unionmap_i_o_1_1_undo_redo_data.html#a42e32beb1ace0a41a91b7fb11b920d8e',1,'mapIO::UndoRedoData::detailsIO()'],['../structstr_hardware_registers.html#a35036147f71ec957e098bfcbf2763257',1,'strHardwareRegisters::DetailsIO()']]],
   ['developer',['Developer',['../struct_ladder_settings_information.html#afe89939c4effb7bb388a1920d37b15b2',1,'LadderSettingsInformation']]],
   ['diagram',['diagram',['../classmap_i_o.html#a5d1d861b18d2e1983cabd4b173229bc5',1,'mapIO::diagram()'],['../structt_command_source.html#a335e2b480fb4978949f9d39ed437b752',1,'tCommandSource::diagram()'],['../struct_ladder_context.html#aa484b4d3e6dd32cc400bafd4fc27a938',1,'LadderContext::Diagram()'],['../class_ladder_elem.html#a12087129f76e7020d1f85750766c9647',1,'LadderElem::Diagram()']]],
   ['diagramsize',['DiagramSize',['../class_ladder_g_u_i.html#aed37c174d14cf3508a4b4de3420eac8d',1,'LadderGUI']]],

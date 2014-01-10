@@ -986,10 +986,19 @@ bool ShowConfDialog(eConfSection confSection)
 {
 	bool changed = false;
 	unsigned int i;
+
+	RECT rDrawWindow;
+	POINT start, size = { 517, 237 };
+
+	GetWindowRect(DrawWindow, &rDrawWindow);
+
+	start.x = rDrawWindow.left + (rDrawWindow.right  - rDrawWindow.left - size.x)/2;
+	start.y = rDrawWindow.top  + (rDrawWindow.bottom - rDrawWindow.top  - size.y)/2;
+
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "POPToolsDialog", _("Configuração PLC"),
         WS_OVERLAPPED | WS_SYSMENU,
-        150, 160, 517, 237, MainWindow, NULL, Instance, NULL); //The cofig windows size
+        start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL); //The cofig windows size
 
 	PrevConfDialogProc = SetWindowLongPtr(ConfDialog, GWLP_WNDPROC, 
         (LONG_PTR)ConfDialogProc);

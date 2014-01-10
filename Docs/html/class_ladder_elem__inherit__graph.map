@@ -33,6 +33,6 @@
 <area shape="rect" id="node33" href="$class_ladder_elem_timer.html" title="Classe derivada de LadderElem que representa o elemento Timer. " alt="" coords="6825,499,7020,811"/>
 <area shape="rect" id="node34" href="$class_ladder_elem_u_a_r_t.html" title="Classe derivada de LadderElem que representa o elemento Send / Receive UART. " alt="" coords="7045,506,7240,803"/>
 <area shape="rect" id="node35" href="$class_ladder_elem_u_s_s.html" title="Classe derivada de LadderElem que representa o elemento Read / Write USS. " alt="" coords="7265,506,7460,803"/>
-<area shape="rect" id="node36" href="$class_ladder_elem_x.html" title="Classe derivada de LadderElem que representa o elemento X. Esta classe serve apenas como referencia p..." alt="" coords="7485,506,7680,803"/>
+<area shape="rect" id="node36" href="$class_ladder_elem_x.html" title="{LadderElemX\n|&#45; prop\l&#45; infoIO_\l|+ LadderElemX()\l+ DrawTXT()\l+ DrawGUI()\l+ ShowDialog()\l+ internalGenerateIntCode()\l+ getProperties()\l+ CanInsert()\l+ doPostInsert()\l+ doPostRemove()\l+ getWidthTXT()\land 6 more...\l&#45; internalSetProperties()\l&#45; internalSave()\l&#45; internalLoad()\l&#45; internalUpdateNameTypeIO()\l}" alt="" coords="7485,506,7680,803"/>
 <area shape="rect" id="node37" href="$class_ladder_elem_yaskawa.html" title="Classe derivada de LadderElem que representa o elemento Read / Write Yaskawa. " alt="" coords="7705,506,7900,803"/>
 </map>

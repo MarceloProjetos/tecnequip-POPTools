@@ -1982,12 +1982,7 @@ bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 	tCommandSource source = { nullptr, nullptr, this };
 	gui.AddCommand(source, r, CmdSelectBelow, nullptr, false, false);
 
-	RECT rDialog = r;
-	rDialog.left   += GridSize.x;
-	rDialog.right  -= GridSize.x;
-	rDialog.top    += 10;
-	rDialog.bottom -= 10;
-	gui.AddCommand(source, rDialog, CmdShowDialog, nullptr, true, false);
+	gui.AddCommand(source, r, CmdShowDialog, nullptr, true, false);
 
 	// Desenha os textos na tela
 	r.left += 5;
@@ -2760,7 +2755,7 @@ bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
 	if(ddg->expanded) {
-		ddg->size.x = 2;
+		ddg->size.x = 3;
 		ddg->size.y = 3;
 	} else {
 		ddg->size.x = 2;
@@ -2779,8 +2774,17 @@ bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
 	const char *name = sname.c_str();
 	mapDetails detailsIO = ladder->getDetailsIO(prop.idName.first);
 
+	const char *title = _("ATRASO");
+	if(ddg->expanded) {
+		switch(which) {
+			case ELEM_TON: title = _("Atraso Ligar"      ); break;
+			case ELEM_TOF: title = _("Atraso Desligar"   ); break;
+			case ELEM_RTO: title = _("Atraso com memória"); break;
+		}
+	}
+
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("ATRASO"), true, poweredBefore);
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, title, true, poweredBefore);
 	ddg->region = r;
 
 	// Flag que indica se o desenho deve iniciar com nivel alto ou baixo
@@ -2965,7 +2969,7 @@ bool LadderElemRTC::DrawGUI(bool poweredBefore, void *data)
 	POINT GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
-	ddg->size.x = (prop.wday & (1 << 7)) ? 3 : 4;
+	ddg->size.x = 3;
 	ddg->size.y = 2;
 
 	if(ddg->DontDraw) return poweredAfter;
@@ -2979,9 +2983,14 @@ bool LadderElemRTC::DrawGUI(bool poweredBefore, void *data)
 
 	POINT start, size = { 42, 42 };
 
+	int resID = IDB_LADDER_RTC;
+	if(Diagram->getContext().inSimulationMode) {
+		resID = poweredAfter ? IDB_LADDER_RTC_SIMON : IDB_LADDER_RTC_SIMOFF;
+	}
+
 	start.x = r.left + 3;
 	start.y = r.top + 5;
-	gui.DrawPictureFromResource(IDB_LADDER_RTC, start, size);
+	gui.DrawPictureFromResource(resID, start, size);
 
 	int linha;
 	char bufs[256], bufe[256];
@@ -3003,15 +3012,15 @@ bool LadderElemRTC::DrawGUI(bool poweredBefore, void *data)
 			sprintf(linha ? bufe : bufs, "%s %02d:%02d:%02d", _("DSTQQSS"),
 				ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 
-			if(linha || prop.mode == ELEM_RTC_MODE_FIXED) {
+//			if(linha || prop.mode == ELEM_RTC_MODE_FIXED) {
 				for(i=0; i<7; i++) {
 					if(!(prop.wday & (1<<i))) {
-						(linha ? bufe : bufs)[i] = ' ';
+						(linha ? bufe : bufs)[i] = '-';
 					} else if(linha) {
-						bufe[i] = '*';
+//						bufe[i] = '*';
 					}
 				}
-			}
+//			}
 		} else {
 			if (ptm->tm_mday)
 				sprintf(mday, "%02d", ptm->tm_mday);
@@ -3212,37 +3221,17 @@ bool LadderElemCounter::DrawGUI(bool poweredBefore, void *data)
 
 		POINT start, size = { 38, 32 };
 
+		int resID = IDB_LADDER_CYCLE;
+		if(Diagram->getContext().inSimulationMode) {
+			resID = poweredAfter ? IDB_LADDER_CYCLE_SIMON : IDB_LADDER_CYCLE_SIMOFF;
+		}
+
 		start.x = r.left + 5;
 		start.y = r.top  + 10;
-		gui.DrawPictureFromResource(IDB_LADDER_CYCLE, start, size);
+		gui.DrawPictureFromResource(resID, start, size);
 
 		// Carrega a extremidade direita do circulo em end para que os textos sejam exibidos apos o circulo
 		end.x = start.x + size.x;
-
-		/*
-		// Desenha o circulo
-		RECT rCircle = r;
-		rCircle.top    += 10;
-		rCircle.left   += 10;
-		rCircle.bottom  = rCircle.top  + GridSize.y;
-		rCircle.right   = rCircle.left + GridSize.y;
-
-		gui.DrawEllipse(rCircle, colorgroup.Border, false);
-
-		// Desenha a seta
-		start.x = rCircle.right;
-		start.y = rCircle.top + (rCircle.bottom - rCircle.top)/2;
-		end = start;
-		end.x -= 6;
-		end.y -= 5;
-		gui.DrawLine(start, end, colorgroup.Border);
-
-		end.x += 10;
-		gui.DrawLine(start, end, colorgroup.Border);
-
-		// Carrega a extremidade direita do circulo em end para que os textos sejam exibidos apos o circulo
-		end.x = rCircle.right;
-		*/
 	} else {
 		txt = (which == ELEM_CTU ?
 			(ddg->expanded ? _("Verdadeiro se >= :") : ">= :") : 
@@ -4748,7 +4737,7 @@ bool LadderElemReadAdc::DrawGUI(bool poweredBefore, void *data)
 	RECT rText = r;
 	rText.left  += size.x + 5;
 	rText.right -= 5;
-	rText.bottom = rText.top + (3 * GridSize.y)/2 - 5;
+//	rText.bottom = rText.top + (3 * GridSize.y)/2 - 5;
 	gui.DrawText(Diagram->getNameIO(prop.idName).c_str(), rText, 0, colorgroup.Foreground,
 		eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, ReadAdcCmdChangeName, nullptr, true, false);
@@ -4849,7 +4838,7 @@ bool LadderElemSetDa::DrawGUI(bool poweredBefore, void *data)
 	// Escreve o texto superior
 	RECT rText = r;
 	rText.top += 5;
-	gui.DrawText(_("D/A"), rText, 1, colors.Black, eAlignMode_Center, eAlignMode_TopLeft);
+	gui.DrawText(_("D/A"), rText, 1, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 
 	// Escreve o nome do I/O
 	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT - 5;
@@ -8018,7 +8007,7 @@ void LadderDiagram::DrawGUI(void)
 
 				rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
 
-				RungDDG.start.y += RungDDG.size.y + 1;
+				RungDDG.start.y += RungDDG.size.y + 2;
 				if(DiagramData.SizeMax.x < RungDDG.size.x) {
 					DiagramData.SizeMax.x = RungDDG.size.x;
 				}
@@ -8034,6 +8023,16 @@ void LadderDiagram::DrawGUI(void)
 
 		// Fim da Etapa 1. Agora calculamos a altura do diagrama
 		DiagramData.SizeMax.y = RungDDG.start.y;
+
+		// Neste momento conhecemos o tamanho do diagrama. Se o elemento atualmente selecionado for do
+		// tipo Fim de Linha (EOL), devemos corrigir a sua area, deslocando-o para a extremidade direita
+		// Tambem nao podemos usar a funcao para ler a area registrada pois, se ele acabou de ser inserido,
+		// sua area ainda nao foi registrada. As areas sao registradas quando o elemento eh desenhado na tela
+		if(context.SelectedElem != nullptr && context.SelectedElem->IsEOL()) {
+			int deslX = (DiagramData.SizeMax.x * gui.getGridSize().x) - RungDDG.regionSelected.right;
+			RungDDG.regionSelected.left  += deslX;
+			RungDDG.regionSelected.right += deslX;
+		}
 	} else {
 		RungDDG                = zeroRungDDG;
 		RungDDG.regionSelected = gui.getElemArea(context.SelectedElem);
@@ -8115,7 +8114,7 @@ void LadderDiagram::DrawGUI(void)
 		}
 
 		RECT r = gui.getRECT(RungDDG.start, RungDDG.size);
-		r.right = r.left;
+		r.right = r.left - Grid1x1.x/2;
 		r.left  = 0;
 
 		// Adicionando comando para o breakpoint.
@@ -8148,7 +8147,7 @@ void LadderDiagram::DrawGUI(void)
 			gui.DrawPictureFromResource(idb, startPicture, size);
 		}
 
-		RungDDG.start.y += RungDDG.size.y + 1;
+		RungDDG.start.y += RungDDG.size.y + 2;
 	}
 
 	gui.DrawRectangle(rBusLeft , colors.Bus   );

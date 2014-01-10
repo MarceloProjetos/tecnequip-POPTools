@@ -101,14 +101,14 @@ Diagrama de Hierarquia para EngineGUI:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_engine_g_u_i__inherit__graph.png" border="0" usemap="#_engine_g_u_i_inherit__map" alt="Inheritance graph"/></div>
 <map name="_engine_g_u_i_inherit__map" id="_engine_g_u_i_inherit__map">
-<area shape="rect" id="node2" href="class_ladder_g_u_i.html" title="{LadderGUI\n|&#45; Grid1x1\l&#45; MousePosition\l&#45; DiagramSize\l&#45; MouseOverElement\l&#45; vectorConnectionDots\l&#45; vectorWires\l&#45; vectorExpandedElements\l&#45; vectorAreaElements\l&#45; HeaderHeight\l&#45; needFullRedraw\land 14 more...\l|+ LadderGUI()\l+ ~LadderGUI()\l+ getRECT()\l+ getGridSize()\l+ getCenter()\l+ IsExpanded()\l+ setMousePosition()\l+ setDiagramSize()\l+ getDiagramSize()\l+ DrawInit()\land 30 more...\l&#45; ClearCommandLists()\l&#45; MouseOver()\l&#45; PaintScrollAndSplitter()\l}" alt="" coords="6,454,183,869"/></map>
+<area shape="rect" id="node2" href="class_ladder_g_u_i.html" title="{LadderGUI\n|&#45; Grid1x1\l&#45; MousePosition\l&#45; DiagramSize\l&#45; MouseOverElement\l&#45; vectorConnectionDots\l&#45; vectorWires\l&#45; vectorExpandedElements\l&#45; vectorAreaElements\l&#45; HeaderHeight\l&#45; needFullRedraw\land 14 more...\l|+ LadderGUI()\l+ ~LadderGUI()\l+ getRECT()\l+ getGridSize()\l+ getCenter()\l+ IsExpanded()\l+ setMousePosition()\l+ setDiagramSize()\l+ getDiagramSize()\l+ DrawInit()\land 30 more...\l&#45; ClearCommandLists()\l&#45; MouseOver()\l&#45; PaintScrollAndSplitter()\l}" alt="" coords="6,470,183,885"/></map>
 </div>
 <div class="dynheader">
 Diagrama de colaboração para EngineGUI:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_engine_g_u_i__coll__graph.png" border="0" usemap="#_engine_g_u_i_coll__map" alt="Collaboration graph"/></div>
 <map name="_engine_g_u_i_coll__map" id="_engine_g_u_i_coll__map">
-<area shape="rect" id="node2" href="class_engine_render.html" title="{EngineRender\n||+ ~EngineRender()\l+ CreateRenderTarget()\l+ ResizeRenderTarget()\l+ CreateBrush()\l+ CreateGradient()\l+ getTextSize()\l+ StartDraw()\l+ Clear()\l+ EndDraw()\l+ DrawPolygon()\land 8 more...\l&#45; Init()\l&#45; FreeAll()\l}" alt="" coords="15,5,173,259"/></map>
+<area shape="rect" id="node2" href="class_engine_render.html" title="{EngineRender\n||+ ~EngineRender()\l+ CreateRenderTarget()\l+ ResizeRenderTarget()\l+ CreateBrush()\l+ CreateGradient()\l+ getTextSize()\l+ StartDraw()\l+ Clear()\l+ EndDraw()\l+ TranslateError()\land 9 more...\l&#45; Init()\l&#45; FreeAll()\l}" alt="" coords="15,5,173,259"/></map>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -168,8 +168,8 @@ Métodos Públicos</h2></td></tr>
 <tr class="separator:a92c58187c0257ae4d9f54ab05152f9e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a34920930346eeffa575902894cd59130"><td class="memItemLeft" align="right" valign="top">HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#a34920930346eeffa575902894cd59130">DrawPictureFromResource</a> (int id, POINT start, POINT size)</td></tr>
 <tr class="separator:a34920930346eeffa575902894cd59130"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3381c8e44d06325dc891a5a3b0cf2c2"><td class="memItemLeft" align="right" valign="top">HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#ac3381c8e44d06325dc891a5a3b0cf2c2">DrawRectangle3D</a> (RECT r, float sizeZ, unsigned int brushBG, unsigned int brushIntBorder, unsigned int brushExtBorder, bool filled=true, float radiusX=20.0f, float radiusY=20.0f, float angle=0.0f)</td></tr>
-<tr class="separator:ac3381c8e44d06325dc891a5a3b0cf2c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33dfae4dae3b9ad5affdc7032323a6b5"><td class="memItemLeft" align="right" valign="top">HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#a33dfae4dae3b9ad5affdc7032323a6b5">DrawRectangle3D</a> (RECT r, float sizeZ, unsigned int brushBG, unsigned int brushGradient, unsigned int brushIntBorder, unsigned int brushExtBorder, bool filled=true, float radiusX=20.0f, float radiusY=20.0f, float angle=0.0f)</td></tr>
+<tr class="separator:a33dfae4dae3b9ad5affdc7032323a6b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Métodos Privados</h2></td></tr>
@@ -183,6 +183,8 @@ Métodos Privados</h2></td></tr>
 <tr class="separator:aa1f895e6ea17f4bcaacc2907a2fe7621"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a079a4342c8f88486295e1fe7c37878cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#a079a4342c8f88486295e1fe7c37878cc">InvalidateTarget</a> (void)</td></tr>
 <tr class="separator:a079a4342c8f88486295e1fe7c37878cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0a047ba05c47ba48355d4c06ccd28e1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#aa0a047ba05c47ba48355d4c06ccd28e1">ErrorHandling</a> (HRESULT hr)</td></tr>
+<tr class="separator:aa0a047ba05c47ba48355d4c06ccd28e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Atributos Privados</h2></td></tr>
@@ -683,7 +685,7 @@ Atributos Privados</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ac3381c8e44d06325dc891a5a3b0cf2c2"></a>
+<a class="anchor" id="a33dfae4dae3b9ad5affdc7032323a6b5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -704,6 +706,12 @@ Atributos Privados</h2></td></tr>
           <td></td>
           <td class="paramtype">unsigned int&#160;</td>
           <td class="paramname"><em>brushBG</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>brushGradient</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -819,6 +827,30 @@ Atributos Privados</h2></td></tr>
           <td></td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa0a047ba05c47ba48355d4c06ccd28e1"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void EngineGUI::ErrorHandling </td>
+          <td>(</td>
+          <td class="paramtype">HRESULT&#160;</td>
+          <td class="paramname"><em>hr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>
@@ -1263,7 +1295,7 @@ Atributos Privados</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Segunda, 25 de Novembro de 2013 14:58:22 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Terça, 7 de Janeiro de 2014 10:51:31 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

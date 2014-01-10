@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['n',['n',['../struct_lang_tag.html#a8998d4a26d252d0d2eed96596786eb22',1,'LangTag']]],
   ['name',['name',['../unionmap_i_o_1_1_undo_redo_data.html#a3043ca352da4d119a931409d913c464f',1,'mapIO::UndoRedoData::name()'],['../structt_request_i_o.html#a447242044b570b486cfc5e89a8ddf9da',1,'tRequestIO::name()'],['../struct_ladder_mb_node.html#a3b663cbcdd500a028204681bd0000859',1,'LadderMbNode::name()'],['../structt_log_ref_i_o.html#afe766343ce4aad9b9a288b132d63835b',1,'tLogRefIO::name()'],['../struct_ladder_settings_information.html#a04951d72474cc70faa44968dab345d81',1,'LadderSettingsInformation::Name()'],['../inputlist_8cpp.html#af869a309a32425813b56b839f9659b24',1,'name():&#160;inputlist.cpp']]],
   ['name1',['name1',['../struct_int_op_tag.html#a56eba35f7963afa384fd717dca544d44',1,'IntOpTag']]],
   ['name2',['name2',['../struct_int_op_tag.html#ab20020d0b1bcfa3f9db63798ace3a28b',1,'IntOpTag']]],
@@ -20,6 +19,7 @@ var searchData=
   ['negateselected',['NegateSelected',['../poptools_8h.html#ae1c6ecc9b23c006c4d80eaf03b0702d4',1,'NegateSelected(void):&#160;schematic.cpp'],['../schematic_8cpp.html#ae1c6ecc9b23c006c4d80eaf03b0702d4',1,'NegateSelected(void):&#160;schematic.cpp']]],
   ['network',['Network',['../struct_ladder_diagram_1_1t_ladder_settings.html#a80aca73b6943a0f9174ec0f4b90188d9',1,'LadderDiagram::tLadderSettings']]],
   ['newdiagram',['NewDiagram',['../class_ladder_diagram.html#a7821f02a13077d0b85d87481e251e869',1,'LadderDiagram']]],
+  ['newlangtablechar',['newLangTableChar',['../lang_8cpp.html#a9d791f3c7bf4a92402ba7cf7ef71ee98',1,'lang.cpp']]],
   ['newprogram',['NewProgram',['../circuit_8cpp.html#aef0f860ad0501214af7d5e3a1c284425',1,'NewProgram(void):&#160;circuit.cpp'],['../poptools_8h.html#aef0f860ad0501214af7d5e3a1c284425',1,'NewProgram(void):&#160;circuit.cpp']]],
   ['newrung',['NewRung',['../union_ladder_diagram_1_1_undo_redo_data.html#ac0b85cb852615bd371d02c089c790988',1,'LadderDiagram::UndoRedoData::NewRung()'],['../class_ladder_diagram.html#a7363a0aae7971906cd10735d20e6cf98',1,'LadderDiagram::NewRung()']]],
   ['next',['next',['../structstr_cmd_state_list.html#a8914e85c5f5d8c09c2b81b56d6ebb36b',1,'strCmdStateList']]],

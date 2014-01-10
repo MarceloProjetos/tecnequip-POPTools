@@ -51,5 +51,6 @@ var searchData=
   ['logput',['LogPut',['../debugdialog_8cpp.html#aa5faac947435f4f8d7cedce2048268f8',1,'debugdialog.cpp']]],
   ['logsearchpendingio',['logSearchPendingIO',['../simulate_8cpp.html#aa53e5c76c712e80b28d81ea1fd4a1d17',1,'simulate.cpp']]],
   ['logsimulation',['LogSimulation',['../poptools_8h.html#afc17143909e562804a7bd71f359b6da9',1,'LogSimulation(bool isStart):&#160;simulate.cpp'],['../simulate_8cpp.html#afc17143909e562804a7bd71f359b6da9',1,'LogSimulation(bool isStart):&#160;simulate.cpp']]],
-  ['lutcmdchangename',['LUTCmdChangeName',['../_ladder_g_u_i_8cpp.html#a8dd61da93c830150a653ce24d2fb150d',1,'LadderGUI.cpp']]]
+  ['lutcmdchangename',['LUTCmdChangeName',['../_ladder_g_u_i_8cpp.html#a8dd61da93c830150a653ce24d2fb150d',1,'LadderGUI.cpp']]],
+  ['lutcmdchangevalues',['LUTCmdChangeValues',['../_ladder_g_u_i_8cpp.html#af8509a8089b253114dcf3686cb67e908',1,'LadderGUI.cpp']]]
 ];

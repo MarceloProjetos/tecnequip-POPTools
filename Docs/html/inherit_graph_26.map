@@ -34,6 +34,6 @@
 <area shape="rect" id="node33" href="$class_ladder_elem_timer.html" title="Classe derivada de LadderElem que representa o elemento Timer. " alt="" coords="165,1576,288,1603"/>
 <area shape="rect" id="node34" href="$class_ladder_elem_u_a_r_t.html" title="Classe derivada de LadderElem que representa o elemento Send / Receive UART. " alt="" coords="164,1627,289,1653"/>
 <area shape="rect" id="node35" href="$class_ladder_elem_u_s_s.html" title="Classe derivada de LadderElem que representa o elemento Read / Write USS. " alt="" coords="167,1677,286,1704"/>
-<area shape="rect" id="node36" href="$class_ladder_elem_x.html" title="Classe derivada de LadderElem que representa o elemento X. Esta classe serve apenas como referencia p..." alt="" coords="177,1728,276,1755"/>
+<area shape="rect" id="node36" href="$class_ladder_elem_x.html" title="LadderElemX" alt="" coords="177,1728,276,1755"/>
 <area shape="rect" id="node37" href="$class_ladder_elem_yaskawa.html" title="Classe derivada de LadderElem que representa o elemento Read / Write Yaskawa. " alt="" coords="155,1779,299,1805"/>
 </map>

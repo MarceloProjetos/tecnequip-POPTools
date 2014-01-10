@@ -471,6 +471,12 @@ void mapIO::Discard(tRequestIO infoIO)
 			IO[name].second.countRequestInt--;
 		}
 
+		if(IO[name].second.type == eType_Reserved) {
+			infoIO.access        = eRequestAccessType_ReadWrite;
+			infoIO.isUniqueRead  = false;
+			infoIO.isUniqueWrite = false;
+		}
+
 		// Decrementa a contagem do tipo de acesso solicitado
 		bool isRequestRead  = (infoIO.access == eRequestAccessType_Read ) || (infoIO.access == eRequestAccessType_ReadWrite);
 		bool isRequestWrite = (infoIO.access == eRequestAccessType_Write) || (infoIO.access == eRequestAccessType_ReadWrite);
@@ -867,9 +873,9 @@ bool mapIO::Validate(eValidateIO mode)
 		}
 
 		if(!isError && it->second.second.type != eType_Reserved) {
-			if(it->second.second.countRequestRead  == 0 && it->second.second.type != eType_DigOutput) { // Nao tem leitura!
+			if(it->second.second.countRequestRead  == 0 && it->second.second.type != eType_DigOutput && !it->second.second.pin) { // Nao tem leitura!
 				sprintf(buf, _("Variável '%s' não é lida, apenas escrita!"), it->first.c_str());
-			} else if(it->second.second.countRequestWrite == 0 && it->second.second.type != eType_DigInput) { // Nao tem escrita!
+			} else if(it->second.second.countRequestWrite == 0 && it->second.second.type != eType_DigInput && !it->second.second.pin) { // Nao tem escrita!
 				sprintf(buf, _("Variável '%s' não é escrita, apenas lida!"), it->first.c_str());
 			}
 		}
@@ -1395,6 +1401,14 @@ void mapIO::ShowIoMapDialog(int item)
 
     MakeWindowClass();
 
+	RECT rDrawWindow;
+	POINT start, size = { 127, 430 };
+
+	GetWindowRect(DrawWindow, &rDrawWindow);
+
+	start.x = rDrawWindow.left + (rDrawWindow.right  - rDrawWindow.left - size.x)/2;
+	start.y = rDrawWindow.top  + (rDrawWindow.bottom - rDrawWindow.top  - size.y)/2;
+
     // We need the TOOLWINDOW style, or else the window will be forced to
     // a minimum width greater than our current width. And without the
     // APPWINDOW style, it becomes impossible to get the window back (by
@@ -1402,7 +1416,7 @@ void mapIO::ShowIoMapDialog(int item)
     IoDialog = CreateWindowClient(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW,
         "POPToolsIo", _("Pino E/S"),
         WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 127, 430, MainWindow, NULL, Instance, NULL);
+        start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
 
@@ -1799,7 +1813,7 @@ void IoMapListProc(NMHDR *h)
 			NMITEMACTIVATE *i = (NMITEMACTIVATE *)h;
 			if(ladder->getContext().inSimulationMode) {
 				char name[1024];
-				strcpy(name, ladder->getNameIObyIndex(i->iItem).c_str());;
+				strcpy(name, ladder->getNameIObyIndex(i->iItem).c_str());
 				mapDetails detailsIO = ladder->getDetailsIO(name);
 
 				if(i->iSubItem != LV_IO_PIN) {
@@ -1828,9 +1842,14 @@ void IoMapListProc(NMHDR *h)
 					InvalidateRect(IoList, NULL, FALSE);
 				}
             } else {
-                ladder->ShowIoMapDialog(i->iItem);
-				UpdateMainWindowTitleBar();
-                InvalidateRect(MainWindow, NULL, FALSE);
+				if(i->iSubItem == LV_IO_NAME) {
+					FindAndReplace(ladder->getNameIObyIndex(i->iItem), "", eSearchAndReplaceMode_FindNext);
+				} else {
+					ladder->ShowIoMapDialog(i->iItem);
+					UpdateMainWindowTitleBar();
+				}
+
+				InvalidateRect(MainWindow, NULL, FALSE);
             }
             break;
         }

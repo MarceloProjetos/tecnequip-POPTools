@@ -840,7 +840,7 @@ void OpenCHM(unsigned int hID);
 // FARdialog.cpp
 extern HWND FARWindow;
 extern const LONG FarWidth;
-bool ShowFARWindow(void);
+void ShowFARWindow(void);
 void MoveFARWindow(RECT r);
 // prefdialog.cpp
 void ShowPrefDialog(void);

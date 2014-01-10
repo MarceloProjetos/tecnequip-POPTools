@@ -1,6 +1,7 @@
 var searchData=
 [
   ['editselectedelement',['EditSelectedElement',['../class_ladder_diagram.html#a61a00bd5e550aa59f85b401120094f0e',1,'LadderDiagram::EditSelectedElement()'],['../poptools_8h.html#aa64ef78bd081a8b94d52e66e8ed56d0f',1,'EditSelectedElement():&#160;poptools.h']]],
+  ['elapsedtime',['ElapsedTime',['../miscutil_8cpp.html#a49475b3491a0ac88718760968043324b',1,'ElapsedTime(bool ShowDialog, void(*fnc)(void *), void *data):&#160;miscutil.cpp'],['../poptools_8h.html#a49475b3491a0ac88718760968043324b',1,'ElapsedTime(bool ShowDialog, void(*fnc)(void *), void *data):&#160;miscutil.cpp']]],
   ['eleminsubcktseries',['ElemInSubcktSeries',['../class_ladder_circuit.html#aa9a2f7e172ce87b7b67ee81cbbfa56fd',1,'LadderCircuit']]],
   ['elemsimcmdsetvariable',['ElemSimCmdSetVariable',['../_ladder_g_u_i_8cpp.html#ad0ded9d90a138239f16a6798b9ca92b7',1,'LadderGUI.cpp']]],
   ['enableinterfaceitem',['EnableInterfaceItem',['../poptools_8h.html#a825aee64cd501932662e2453c30cc982',1,'EnableInterfaceItem(int item, BOOL enabled):&#160;Ribbon.cpp'],['../_ribbon_8cpp.html#a825aee64cd501932662e2453c30cc982',1,'EnableInterfaceItem(int item, BOOL enabled):&#160;Ribbon.cpp']]],
@@ -9,7 +10,8 @@ var searchData=
   ['enginerenderd2d',['EngineRenderD2D',['../class_engine_render_d2_d.html#a2f7dfb018c157d364d59e639b9a00379',1,'EngineRenderD2D']]],
   ['equalsnameio',['equalsNameIO',['../class_ladder_diagram.html#ad99232bf5443fc063431de0d56dafbc6',1,'LadderDiagram']]],
   ['eraseprogress',['EraseProgress',['../flashmagic_8cpp.html#a0c16c5bd0c1c2bb2069ee9cae0d7dbd6',1,'flashmagic.cpp']]],
-  ['error',['Error',['../miscutil_8cpp.html#ac25847d8b1567ad4b5da1c409e5c585e',1,'Error(char *title, char *str, va_list f):&#160;miscutil.cpp'],['../miscutil_8cpp.html#a255d1383087873fb5f9950d6f6897c8f',1,'Error(char *str,...):&#160;miscutil.cpp'],['../poptools_8h.html#a255d1383087873fb5f9950d6f6897c8f',1,'Error(char *str,...):&#160;miscutil.cpp'],['../poptools_8h.html#ac25847d8b1567ad4b5da1c409e5c585e',1,'Error(char *title, char *str, va_list f):&#160;miscutil.cpp']]],
+  ['error',['Error',['../miscutil_8cpp.html#a50f5615bf4468bd72fcd2b204eface92',1,'Error(const char *title, const char *str, va_list f):&#160;miscutil.cpp'],['../miscutil_8cpp.html#a2058e75a4a2cf82a003fff7f3dbe3497',1,'Error(const char *str,...):&#160;miscutil.cpp'],['../poptools_8h.html#a2058e75a4a2cf82a003fff7f3dbe3497',1,'Error(const char *str,...):&#160;miscutil.cpp'],['../poptools_8h.html#a50f5615bf4468bd72fcd2b204eface92',1,'Error(const char *title, const char *str, va_list f):&#160;miscutil.cpp']]],
+  ['errorhandling',['ErrorHandling',['../class_engine_g_u_i.html#aa0a047ba05c47ba48355d4c06ccd28e1',1,'EngineGUI']]],
   ['exceptiontohresult',['ExceptionToHResult',['../poptools_8h.html#ab4f273155e3f5f9b5b8723fc66bb0a08',1,'poptools.h']]],
   ['execute',['Execute',['../class_keyboard_map.html#ac2f3a764de1cd597aec8f099afdcc123',1,'KeyboardMap::Execute()'],['../class_c_application.html#a5f5e7397c0c70f7fb24e25a2013d031f',1,'CApplication::Execute()']]],
   ['executeaction',['ExecuteAction',['../class_ladder_diagram.html#a3792d8bce4b2de339860052d754dc1eb',1,'LadderDiagram']]],

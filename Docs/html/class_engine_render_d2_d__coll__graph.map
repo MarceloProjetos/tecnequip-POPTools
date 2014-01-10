@@ -1,4 +1,4 @@
 <map id="EngineRenderD2D" name="EngineRenderD2D">
-<area shape="rect" id="node2" href="$class_engine_render.html" title="{EngineRender\n||+ ~EngineRender()\l+ CreateRenderTarget()\l+ ResizeRenderTarget()\l+ CreateBrush()\l+ CreateGradient()\l+ getTextSize()\l+ StartDraw()\l+ Clear()\l+ EndDraw()\l+ DrawPolygon()\land 8 more...\l&#45; Init()\l&#45; FreeAll()\l}" alt="" coords="5,5,163,259"/>
+<area shape="rect" id="node2" href="$class_engine_render.html" title="{EngineRender\n||+ ~EngineRender()\l+ CreateRenderTarget()\l+ ResizeRenderTarget()\l+ CreateBrush()\l+ CreateGradient()\l+ getTextSize()\l+ StartDraw()\l+ Clear()\l+ EndDraw()\l+ TranslateError()\land 9 more...\l&#45; Init()\l&#45; FreeAll()\l}" alt="" coords="5,5,163,259"/>
 <area shape="rect" id="node3" href="$class_resource_font_context.html" title="{ResourceFontContext\n|&#45; g_dwriteFactory\l&#45; hr_\l|+ ResourceFontContext()\l+ ~ResourceFontContext()\l+ Initialize()\l+ CreateFontCollection()\l&#45; ResourceFontContext()\l&#45; operator=()\l&#45; InitializeInternal()\l}" alt="" coords="188,42,364,222"/>
 </map>

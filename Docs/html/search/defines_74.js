@@ -7,6 +7,5 @@ var searchData=
   ['timer_5fautosave',['TIMER_AUTOSAVE',['../poptools_8h.html#a44ebf9eb11939531b4590ddd00e34094',1,'poptools.h']]],
   ['timer_5fblink_5fcursor',['TIMER_BLINK_CURSOR',['../poptools_8h.html#a23e7dde76728dd7cdea0a161491c9c5e',1,'poptools.h']]],
   ['timer_5fdebug_5finfo',['TIMER_DEBUG_INFO',['../poptools_8h.html#a49c7e6b49ddbd35aef61d5be1cf90c3e',1,'poptools.h']]],
-  ['timer_5fsimulate',['TIMER_SIMULATE',['../poptools_8h.html#ada5af808e8bb92560a738bd90ce591f6',1,'poptools.h']]],
-  ['txt_5fpattern',['TXT_PATTERN',['../poptools_8cpp.html#a4082ea0d7e63ec39e81c7184208c6726',1,'poptools.cpp']]]
+  ['timer_5fsimulate',['TIMER_SIMULATE',['../poptools_8h.html#ada5af808e8bb92560a738bd90ce591f6',1,'poptools.h']]]
 ];

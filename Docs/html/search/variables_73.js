@@ -17,7 +17,7 @@ var searchData=
   ['selection',['Selection',['../structt_ladder_colors.html#ab59354a616d8a8722b99ef8d4b8c2b69',1,'tLadderColors']]],
   ['seqno',['seqNo',['../classmap_i_o.html#a5b79a50d5ff317198f477b12b5d358e3',1,'mapIO']]],
   ['serialconfig',['SerialConfig',['../confdialog_8cpp.html#ac575894db6bfe0c68a1a4615d77b515c',1,'SerialConfig():&#160;confdialog.cpp'],['../poptools_8h.html#ac575894db6bfe0c68a1a4615d77b515c',1,'SerialConfig():&#160;confdialog.cpp']]],
-  ['serialparitystring',['SerialParityString',['../confdialog_8cpp.html#a4490856037d79d1407dfbcd362ec79c8',1,'SerialParityString():&#160;confdialog.cpp'],['../poptools_8h.html#a4490856037d79d1407dfbcd362ec79c8',1,'SerialParityString():&#160;confdialog.cpp']]],
+  ['serialparitystring',['SerialParityString',['../confdialog_8cpp.html#a4a315dd1f579baa8764f922016599744',1,'SerialParityString():&#160;confdialog.cpp'],['../poptools_8h.html#a4a315dd1f579baa8764f922016599744',1,'SerialParityString():&#160;confdialog.cpp']]],
   ['series',['series',['../struct_insertion_point.html#a209dd4ba9be92b5dad1cab5cddda3763',1,'InsertionPoint']]],
   ['set',['set',['../struct_ladder_elem_set_bit_prop.html#a61189db763c9eae18ace42a69529887e',1,'LadderElemSetBitProp::set()'],['../struct_ladder_elem_check_bit_prop.html#a89cc8a744143f278422dd7380295e3d4',1,'LadderElemCheckBitProp::set()']]],
   ['setonly',['setOnly',['../struct_ladder_elem_coil_prop.html#af87ddbff2987d1837754c81efee17e08',1,'LadderElemCoilProp']]],
@@ -52,5 +52,5 @@ var searchData=
   ['supportedmcus',['SupportedMcus',['../mcutable_8h.html#a9d8af5c4394fff2dc28098e1e997ee25',1,'SupportedMcus():&#160;mcutable.h'],['../poptools_8h.html#a9d8af5c4394fff2dc28098e1e997ee25',1,'SupportedMcus():&#160;mcutable.h']]],
   ['syncing',['Syncing',['../structstr_hardware_registers.html#a27d20a3ab139cbf4c6819c38482671a5',1,'strHardwareRegisters']]],
   ['szkey',['szKey',['../struct_v_s___v_e_r_s_i_o_n_i_n_f_o.html#abd87f81d1d50f461495c3537210f1fbb',1,'VS_VERSIONINFO']]],
-  ['szmsg',['szMsg',['../struct_progress_status.html#a61bcd7975cee9b969442da7e9a3dc518',1,'ProgressStatus']]]
+  ['szmsg',['szMsg',['../struct_progress_status.html#a95ffa387232d1efe3dfb43e5ee21e542',1,'ProgressStatus']]]
 ];

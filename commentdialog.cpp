@@ -67,6 +67,14 @@ bool ShowCommentDialog(char *comment, POINT ElemStart, POINT ElemSize, POINT Gri
             if(msg.wParam == VK_TAB && GetFocus() == CommentTextbox) {
                 SetFocus(OkButton);
                 continue;
+            } else if(msg.wParam == VK_RETURN) {
+				char buf[1024];
+				SendMessage(CommentTextbox, WM_GETTEXT, (WPARAM)(sizeof(buf)-1), (LPARAM)buf);
+				if(strchr(buf, '\n') != nullptr) {
+					DialogDone = TRUE;
+					DialogCancel = FALSE;
+	                break;
+				}
             } else if(msg.wParam == VK_ESCAPE) {
                 DialogDone = TRUE;
                 DialogCancel = TRUE;

@@ -6,7 +6,6 @@ var searchData=
   ['ladder_5ffile_5fmax_5fsize',['LADDER_FILE_MAX_SIZE',['../_ladder_objects_8cpp.html#a3f12bfde65998ea5fad0dccb261bf625',1,'LadderObjects.cpp']]],
   ['ladder_5fsettings_5fmagic',['LADDER_SETTINGS_MAGIC',['../poptools_8cpp.html#af1d0ca0f43b339ec171467e2122ae378',1,'poptools.cpp']]],
   ['ladder_5fsettings_5fmax_5fsize',['LADDER_SETTINGS_MAX_SIZE',['../poptools_8cpp.html#a126f7a2f47fe11773cf94627dae5e8cc',1,'poptools.cpp']]],
-  ['ldmicro_5fpattern',['LDMICRO_PATTERN',['../poptools_8cpp.html#a5be4797fef93e8668270c49e45c0dfff',1,'poptools.cpp']]],
   ['lv_5fadd_5fcolumn',['LV_ADD_COLUMN',['../debugdialog_8cpp.html#acf9f1a9f25cf79538b5c1ac5dd7a20f8',1,'LV_ADD_COLUMN():&#160;debugdialog.cpp'],['../maincontrols_8cpp.html#acf9f1a9f25cf79538b5c1ac5dd7a20f8',1,'LV_ADD_COLUMN():&#160;maincontrols.cpp']]],
   ['lv_5fio_5fname',['LV_IO_NAME',['../poptools_8h.html#a0bce3a598a6501dde1a8464313e67d32',1,'poptools.h']]],
   ['lv_5fio_5fpin',['LV_IO_PIN',['../poptools_8h.html#ae37408f186f8e70416f1e58af765cc49',1,'poptools.h']]],

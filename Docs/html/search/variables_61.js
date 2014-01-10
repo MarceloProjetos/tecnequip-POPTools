@@ -17,12 +17,5 @@ var searchData=
   ['arrayintcode',['arrayIntCode',['../class_int_code.html#a78c5dc998ed1c6373be7ce0a9f559993',1,'IntCode']]],
   ['assign',['Assign',['../unionmap_i_o_1_1_undo_redo_data.html#a65a0fc775fc8953d2d3bb46424602746',1,'mapIO::UndoRedoData']]],
   ['autosaveinterval',['AutoSaveInterval',['../struct_settings_tag.html#ab21be9e507245ffbf49818dce9a3c349',1,'SettingsTag']]],
-  ['avratmega128_5f64tqfpadcpininfo',['AvrAtmega128_64TQFPAdcPinInfo',['../mcutable_8h.html#a6d3909c35496e3cd61d8aebe2a96dc42',1,'mcutable.h']]],
-  ['avratmega128_5f64tqfpiopininfo',['AvrAtmega128_64TQFPIoPinInfo',['../mcutable_8h.html#a16e99d7d595ccba616bb01960f69eb7e',1,'mcutable.h']]],
-  ['avratmega162iopininfo',['AvrAtmega162IoPinInfo',['../mcutable_8h.html#adb2d6f0e8c2316d5aa3e98b4267526df',1,'mcutable.h']]],
-  ['avratmega16or32adcpininfo',['AvrAtmega16or32AdcPinInfo',['../mcutable_8h.html#aa940921b0b7bc6bf2a7d9ceed093d5ba',1,'mcutable.h']]],
-  ['avratmega16or32iopininfo',['AvrAtmega16or32IoPinInfo',['../mcutable_8h.html#a2adff19ef745f6589c1e9cfb3b2e1de2',1,'mcutable.h']]],
-  ['avratmega8adcpininfo',['AvrAtmega8AdcPinInfo',['../mcutable_8h.html#a21ea3e6df830ef36991b902b422b64b7',1,'mcutable.h']]],
-  ['avratmega8iopininfo',['AvrAtmega8IoPinInfo',['../mcutable_8h.html#a116e05078f9b231870e29393e74f6f23',1,'mcutable.h']]],
   ['avruseijmp',['avrUseIjmp',['../struct_mcu_io_info_tag.html#a4f7e17a8461981d68327600f7ea148b1',1,'McuIoInfoTag']]]
 ];

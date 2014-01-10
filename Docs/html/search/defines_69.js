@@ -5,6 +5,8 @@ var searchData=
   ['idb_5ffont_5flucon',['IDB_FONT_LUCON',['../resource_8h.html#a7cc3848fe7ba7fdcd2f5fbff596ade7b',1,'resource.h']]],
   ['idb_5ffont_5fpoptools',['IDB_FONT_POPTOOLS',['../resource_8h.html#abbb258aa4b0e4d9288786f0fdbf42b96',1,'resource.h']]],
   ['idb_5fladder_5fad',['IDB_LADDER_AD',['../resource_8h.html#a97ae5c61cae8e2ed3d07dfda6435dc4a',1,'resource.h']]],
+  ['idb_5fladder_5fbreakpoint_5fpare',['IDB_LADDER_BREAKPOINT_PARE',['../resource_8h.html#ad18ffe423e7d3d287082c93f41bc1f8f',1,'resource.h']]],
+  ['idb_5fladder_5fbreakpoint_5fstop',['IDB_LADDER_BREAKPOINT_STOP',['../resource_8h.html#afe834e9d56ac71296e68875f9c9baabc',1,'resource.h']]],
   ['idb_5fladder_5fclock',['IDB_LADDER_CLOCK',['../resource_8h.html#ab6ed7c38f3461fa25192e652fc697710',1,'resource.h']]],
   ['idb_5fladder_5fcounter',['IDB_LADDER_COUNTER',['../resource_8h.html#a0a9de972cab3dd85b46dbd696299db8f',1,'resource.h']]],
   ['idb_5fladder_5fcycle',['IDB_LADDER_CYCLE',['../resource_8h.html#a5b306c90f72c07fad78491326e349bf6',1,'resource.h']]],
@@ -81,9 +83,5 @@ var searchData=
   ['intvar_5finc_5ffator',['INTVAR_INC_FATOR',['../poptools_8h.html#af682f106c0818324aeda3d9dee630a7b',1,'poptools.h']]],
   ['intvar_5finc_5fperimroda',['INTVAR_INC_PERIMRODA',['../poptools_8h.html#ad6b87249ecd1b28219751dd4604ad689',1,'poptools.h']]],
   ['intvar_5finc_5fpulsos',['INTVAR_INC_PULSOS',['../poptools_8h.html#a39199762e5dbf267ab7f914a2e3815c3',1,'poptools.h']]],
-  ['isa_5fansic',['ISA_ANSIC',['../poptools_8h.html#af91761f7da8d0ecd5fb771117c8436f1',1,'poptools.h']]],
-  ['isa_5favr',['ISA_AVR',['../poptools_8h.html#a7b480cad1433c2bf8c8ce3e259bd56eb',1,'poptools.h']]],
-  ['isa_5finterpreted',['ISA_INTERPRETED',['../poptools_8h.html#a9fe6b4058971ccee74b487ea2ce49f6e',1,'poptools.h']]],
-  ['isa_5flpc17',['ISA_LPC17',['../poptools_8h.html#ace8523c8ad8e7a6fdddef8b293130656',1,'poptools.h']]],
-  ['isa_5fpic16',['ISA_PIC16',['../poptools_8h.html#a0a416e22dad722cfd63b65608b64f4ae',1,'poptools.h']]]
+  ['isa_5flpc17',['ISA_LPC17',['../poptools_8h.html#ace8523c8ad8e7a6fdddef8b293130656',1,'poptools.h']]]
 ];
