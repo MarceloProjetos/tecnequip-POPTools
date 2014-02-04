@@ -3023,21 +3023,23 @@ public:
 	/*** Funcoes relacionadas com I/O ***/
 
 	/** Funcao que indica se o tipo fornecido eh aceito pelos elementos/subcircuitos que o utilizam
+	 *  @param[in] elem Ponteiro para o elemento a que pertence o I/O. Se nao for nulo, indica que este elemento esta descartando este I/O e portanto nao deve ser verificado se ele aceita o novo tipo
 	 *  @param[in] id   ID que identifica o I/O que estamos consultando
 	 *  @param[in] type tipo de I/O a ser checado
 	 *  @return         Indica se o tipo eh aceito (true) ou nao (false)
 	 */
-	bool acceptIO       (unsigned long id, eType type);
+	bool acceptIO       (LadderElem *elem, unsigned long id, eType type);
 	/** Funcao que atualiza o I/O dos elementos do circuito, descartando ou fazendo request conforme a necessidade.
 	 *  @param[in] owner     Ponteiro para o diagrama ao qual pertencia este circuito.
 	 *  @param[in] isDiscard Indica se a operacao eh de descarte (true) ou nao (false).
 	 */
 	void updateIO       (LadderDiagram *owner, bool isDiscard);
 	/** Funcao que carrega no vetor passado como parametro todos os tipos aceitos pelos elementos/subcircuitos para o I/O passado como parametro
+	 *  @param[in]  elem  Ponteiro para o elemento a que pertence o I/O. Se nao for nulo, indica que os tipos permitidos por este elemento devem ser ignorados
 	 *  @param[in]  id    ID que identifica o I/O que estamos consultando
 	 *  @param[out] types vetor onde serao carregados os tipos de I/O aceitos pelos elementos/subcircuitos
 	 */
-	void getAllowedTypes(unsigned long id, vector<eType> *types);
+	void getAllowedTypes(LadderElem *elem, unsigned long id, vector<eType> *types);
 
 	/** Funcao que executa uma busca ou substituicao nos I/Os dos elementos/subcircuitos
 	 *  @param[inout] refElem  Ponteiro que contem um ponteiro para o elemento de referencia para a busca. Ponteiro aponta para nulo se nao houver uma referencia (como no caso de buscar a partir do inicio, por exemplo)
@@ -3422,11 +3424,11 @@ public:
 	/*** Funcoes para Salvar / Carregar um Diagrama Ladder do disco ***/
 
 	/** Funcao que salva o diagrama em disco
-	 *  @param[in] filename         String com o nome do arquivo em que o diagrama deve ser salvo. Se vazia, sera utilizado o nome atual
-	 *  @param[in] dontSaveFilename Flag que indica se devemos salvar (false) ou nao (true) o nome do arquivo como sendo o arquivo atualmente utilizado
-	 *  @return                     Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 *  @param[in] filename String com o nome do arquivo em que o diagrama deve ser salvo. Se vazia, sera utilizado o nome atual
+	 *  @param[in] isBackup Flag que indica se estamos salvando uma copia de backup (true) ou nao (false)
+	 *  @return             Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool   Save              (string filename, bool dontSaveFilename = false);
+	bool   Save              (string filename, bool isBackup = false);
 	/** Funcao que carrega o diagrama do disco
 	 *  @param[in] filename String com o nome do arquivo de onde o diagrama deve ser carregado. Se vazia, sera utilizado o nome atual
 	 *  @return             Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
@@ -3625,7 +3627,7 @@ public:
 	bool            acceptIO                (unsigned long  id, eType type);
 	/** Funcao que atualiza um I/O
 	 *  @param[in]    owner     Ponteiro para o diagrama a que pertence o I/O, utilizado no caso de estarmos copiando o I/O de outro diagrama
-	 *  @param[in]    elem      Ponteiro para o elemento a que pertence o I/O, utilizado no caso de estarmos copiando o I/O de outro diagrama
+	 *  @param[in]    elem      Ponteiro para o elemento a que pertence o I/O, utilizado no caso de estarmos copiando o I/O de outro diagrama ou para operacoes de descarte
 	 *  @param[inout] infoIO    Dados do I/O sendo requisitado / descartado
 	 *  @param[in]    isDiscard Flag indicando se o I/O esta sendo requisitado (false) ou descartado (true)
 	 */
@@ -3635,12 +3637,14 @@ public:
 	 */
 	void            updateTypeIO            (unsigned long id);
 	/** Funcao que requisita um I/O
+	 *  @param[in]    elem                Ponteiro para o elemento a que pertence o I/O, utilizado em operacoes de descarte para ignorar os tipos aceitos por este elemento
 	 *  @param[inout] infoIO              Dados do I/O sendo requisitado. O pino contido nesta estrutura sera atualizado com o ID do I/O
 	 *  @param[in]    tryGeneralTypeFirst Indica que devemos tentar usar o tipo geral e, se falhar, usar o tipo passado em infoIO
 	 *  @return                           Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool            getIO                   (tRequestIO &infoIO, bool tryGeneralTypeFirst = false);
+	bool            getIO                   (LadderElem *elem, tRequestIO &infoIO, bool tryGeneralTypeFirst = false);
 	/** Funcao que requisita um I/O conforme dados passados por parametro. Se nao for possivel, tenta utilizar os dados da estrutura infoIO
+	 *  @param[in]  elem                Ponteiro para o elemento a que pertence o I/O, utilizado em operacoes de descarte para ignorar os tipos aceitos por este elemento
 	 *  @param[out] pin                 Referencia ao pino do I/O, sera carregada com o ID do I/O solicitado
 	 *  @param[in]  name                Nome do I/O sendo requisitado
 	 *  @param[in]  type                Tipo para o I/O sendo requisitado
@@ -3648,12 +3652,13 @@ public:
 	 *  @param[in]  tryGeneralTypeFirst Indica que devemos tentar usar o tipo geral e, se falhar, usar o tipo em type
 	 *  @return                         Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool            getIO                   (pair<unsigned long, int> &pin, string name, eType type, tRequestIO infoIO, bool tryGeneralTypeFirst = false);
+	bool            getIO                   (LadderElem *elem, pair<unsigned long, int> &pin, string name, eType type, tRequestIO infoIO, bool tryGeneralTypeFirst = false);
 	/** Funcao que requisita varios I/Os simultaneamente conforme vetor de dados de I/O passado por parametro.
+	 *  @param[in]    elem        Ponteiro para o elemento a que pertence o I/O, utilizado em operacoes de descarte para ignorar os tipos aceitos por este elemento
 	 *  @param[inout] vectorGetIO Vetor de dados dos I/Os sendo requisitados. Os pinos de cada item do vetor serao atualizados para o ID do I/O solicitado
 	 *  @return                   Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool            getIO                   (vector<tRequestIO> &vectorGetIO);
+	bool            getIO                   (LadderElem *elem, vector<tRequestIO> &vectorGetIO);
 	/** Funcao que retorna o ID de um I/O a partir de seu nome
 	 *  @param[in] name Nome do I/O sendo pesquisado
 	 *  @return         ID do I/O ou 0 se inexistente
@@ -3765,11 +3770,12 @@ public:
 	pair<string, eType> getCachedIO(unsigned long id);
 
 	/** Funcao que retorna o tipo de I/O permitido para o ID fornecido como parametro
+	 *  @param[in]  elem  Ponteiro para o elemento a que pertence o I/O. Se nao for nulo, indica que os tipos permitidos por este elemento devem ser ignorados
 	 *  @param[in] id           ID do I/O sendo verificado
 	 *  @param[in] default_type Tipo padrao a ser retornado caso nao se encontre um tipo permitido
 	 *  @return                 Tipo de I/O permitido para o ID fornecido como parametro
 	 */
-	eType getAllowedType(unsigned long id, eType default_type);
+	eType getAllowedType(LadderElem *elem, unsigned long id, eType default_type);
 
 	/** Funcao para ordenar a lista de I/Os conforme o campo especificado
 	 *  @param[in] sortby Campo que deve ser usado para ordenar a lista de I/Os

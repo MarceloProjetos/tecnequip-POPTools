@@ -12,6 +12,16 @@ int KBH_Simulation_Toggle(void *user_data)
 	return 1;
 }
 
+// Default for Portuguese: F8
+int KBH_Debug(void *user_data)
+{
+	if(ladder->getContext().inSimulationMode) return 0;
+
+	ProcessMenu(MNU_DEBUG);
+
+	return 1;
+}
+
 // Default for Portuguese: TAB (Inactive Handler)
 int KBH_SetFocus_IoList(void *user_data)
 {
@@ -179,11 +189,11 @@ int KBH_FAR_Next(void *user_data)
 }
 
 // Default for Portuguese: F4
-int KBH_Debug(void *user_data)
+int KBH_CloseDiagram(void *user_data)
 {
 	if(ladder->getContext().inSimulationMode) return 0;
 
-	ProcessMenu(MNU_DEBUG);
+	ProcessMenu(MNU_CLOSE);
 
 	return 1;
 }
@@ -943,10 +953,11 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey(VK_F2        , KBM_KEYFLAG_NONE   , KBH_Config                             , NULL);
 	ShortcutMaps.AddKey(VK_F3        , KBM_KEYFLAG_NONE   , KBH_FAR_Open                           , NULL);
 	ShortcutMaps.AddKey(VK_F3        , KBM_KEYFLAG_SHIFT  , KBH_FAR_Next                           , NULL);
-	ShortcutMaps.AddKey(VK_F4        , KBM_KEYFLAG_NONE   , KBH_Debug                              , NULL);
+	ShortcutMaps.AddKey(VK_F4        , KBM_KEYFLAG_NONE   , KBH_CloseDiagram                       , NULL);
 	ShortcutMaps.AddKey(VK_F5        , KBM_KEYFLAG_NONE   , KBH_Compile                            , NULL);
 	ShortcutMaps.AddKey(VK_F6        , KBM_KEYFLAG_NONE   , KBH_Program                            , NULL);
 	ShortcutMaps.AddKey(VK_F7        , KBM_KEYFLAG_NONE   , KBH_Simulation_Toggle                  , NULL);
+	ShortcutMaps.AddKey(VK_F8        , KBM_KEYFLAG_NONE   , KBH_Debug                              , NULL);
 	ShortcutMaps.AddKey(VK_TAB       , KBM_KEYFLAG_NONE   , KBH_ExpandElement                      , NULL);
 	ShortcutMaps.AddKey(VK_RETURN    , KBM_KEYFLAG_NONE   , KBH_Simulation_SingleCycle             , NULL);
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_SHIFT  , KBH_Rung_MoveUP                        , NULL);
@@ -1033,10 +1044,11 @@ void KeyboardHandlers_Init(void)
 	ShortcutMaps.AddKey(VK_F2        , KBM_KEYFLAG_NONE   , KBH_Config                             , NULL);
 	ShortcutMaps.AddKey(VK_F3        , KBM_KEYFLAG_NONE   , KBH_FAR_Open                           , NULL);
 	ShortcutMaps.AddKey(VK_F3        , KBM_KEYFLAG_SHIFT  , KBH_FAR_Next                           , NULL);
-	ShortcutMaps.AddKey(VK_F4        , KBM_KEYFLAG_NONE   , KBH_Debug                              , NULL);
+	ShortcutMaps.AddKey(VK_F4        , KBM_KEYFLAG_NONE   , KBH_CloseDiagram                       , NULL);
 	ShortcutMaps.AddKey(VK_F5        , KBM_KEYFLAG_NONE   , KBH_Compile                            , NULL);
 	ShortcutMaps.AddKey(VK_F6        , KBM_KEYFLAG_NONE   , KBH_Program                            , NULL);
 	ShortcutMaps.AddKey(VK_F7        , KBM_KEYFLAG_NONE   , KBH_Simulation_Toggle                  , NULL);
+	ShortcutMaps.AddKey(VK_F8        , KBM_KEYFLAG_NONE   , KBH_Debug                              , NULL);
 	ShortcutMaps.AddKey(VK_TAB       , KBM_KEYFLAG_NONE   , KBH_ExpandElement                      , NULL);
 	ShortcutMaps.AddKey(VK_RETURN    , KBM_KEYFLAG_NONE   , KBH_Simulation_SingleCycle             , NULL);
 	ShortcutMaps.AddKey(VK_UP        , KBM_KEYFLAG_NONE   , KBH_Simulation_Up                      , NULL);

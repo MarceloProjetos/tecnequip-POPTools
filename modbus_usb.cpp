@@ -8,6 +8,8 @@ struct MODBUS_Reply USB_Send(unsigned short fc, MODBUS_FCD_Data *mbdata)
 	memset(&reply, 0, sizeof(reply));
 	reply.ExceptionCode = MODBUS_EXCEPTION_SLAVE_DEVICE_FAILURE;
 
+	MBDev_Serial.identification.Id = 1;
+
 	if(OpenCOMPort(POPSettings.COMPortFlash, 115200, 8, NOPARITY, ONESTOPBIT)) {
 		reply = Modbus_RTU_Send(&MBDev_Serial, 0, fc, mbdata);
 		CloseCOMPort();
@@ -88,6 +90,41 @@ bool USB_GetDateTime(struct tm *t)
 
 			ret = true;
 		}
+	}
+
+	return ret;
+}
+
+bool USB_SetRegister(int iReg, int iVal)
+{
+	bool ret = false;
+	struct MODBUS_Reply reply;
+	MODBUS_FCD_Data mbdata1;
+
+	mbdata1.write_single_register.address = iReg;
+	mbdata1.write_single_register.val     = iVal;
+
+	reply = USB_Send(MODBUS_FC_WRITE_SINGLE_REGISTER, &mbdata1);
+	if(reply.ExceptionCode == MODBUS_EXCEPTION_NONE) {
+		ret = true;
+	}
+
+	return ret;
+}
+
+bool USB_GetRegister(int iReg, int &iVal)
+{
+	bool ret = false;
+	struct MODBUS_Reply reply;
+	MODBUS_FCD_Data mbdata1;
+
+	mbdata1.read_holding_registers.quant = 1;
+	mbdata1.read_holding_registers.start = iReg;
+
+	reply = USB_Send(MODBUS_FC_READ_HOLDING_REGISTERS, &mbdata1);
+	if(reply.ExceptionCode == MODBUS_EXCEPTION_NONE) {
+		iVal = (int)(reply.reply.read_holding_registers.data[1])<<8 | reply.reply.read_holding_registers.data[0];
+		ret = true;
 	}
 
 	return ret;

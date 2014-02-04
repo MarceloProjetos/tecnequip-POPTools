@@ -7,6 +7,8 @@ HINSTANCE   Instance;
 HWND        MainWindow;
 HDC         Hdc;
 
+bool isDraggingSplitter = false;
+
 extern vector<string> vectorNoMatchFound;
 
 // Estrutura que armazena ambos elemento e linha copiados: Area de Transferencia
@@ -989,6 +991,8 @@ static LRESULT CALLBACK MouseHook(int code, WPARAM wParam, LPARAM lParam)
 
                 case WM_LBUTTONUP:
                     UnhookWindowsHookEx(MouseHookHandle);
+					isDraggingSplitter = false;
+		            InvalidateRect(MainWindow, NULL, FALSE);
                     break;
             }
             break;
@@ -1653,6 +1657,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 MouseY = pt.y;
                 MouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL,
                         (HOOKPROC)MouseHook, Instance, 0);
+
+				isDraggingSplitter = true;
             } else {
 				ladder->MouseClick(x, y - RibbonHeight - TabHeight, true, false);
 			}
@@ -2104,6 +2110,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ShowWindow(MainWindow, SW_HIDE);
 
 	CloseAllPrograms(true);
+	FreePurgedPrograms();
 
 	// Descarrega a Area de Transferencia
 	if(clipboard.elemCopy != nullptr) {

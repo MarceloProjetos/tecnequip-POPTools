@@ -282,8 +282,8 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	colors.Selection             = RGB(255,   0,   0);
 	colors.Bus                   = RGB(255, 255, 255);
 	colors.BusOff                = RGB(255, 255, 255);
-	colors.ConnectionDot         = RGB(255,   0,   0);
-	colors.ConnectionDotOff      = RGB(255,   0,   0);
+	colors.ConnectionDot         = RGB(220,   0,   0);
+	colors.ConnectionDotOff      = RGB(255, 160, 160);
 	colors.Wire                  = RGB(255, 255, 255);
 	colors.WireOff               = RGB(255, 255, 255);
 	colors.Breakpoint            = RGB(255,   0,   0);
@@ -349,6 +349,9 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	colors.BlackHalfTransparency = RGB(  0,   0,   0);
 
 	setLadderColors(colors, true);
+
+	// Cria o gradiente do ponto de conexao
+	ConnectionDotGradient = CreateGradient(LadderColors[0].ConnectionDotOff, LadderColors[0].ConnectionDot, 315);
 
 #ifdef SHOW_DEBUG_INFO
 	mouse_last_click      .x = 0;
@@ -621,27 +624,42 @@ void LadderGUI::DrawStart(int OffsetX, int OffsetY)
 	}
 }
 
+void LadderGUI::DrawConnectionDot(POINT dot, COLORREF color, float radius)
+{
+	DrawEllipse(dot, radius, radius, (color != 0) ? color : ConnectionDotGradient);
+}
+
 void LadderGUI::DrawEnd(void)
 {
 	vector<tConnectionDot>::iterator it;
+
+	bool InSimulationMode = ladder->getContext().inSimulationMode;
+
 	for(it = vectorConnectionDots.begin(); it != vectorConnectionDots.end(); it++) {
-		bool draw = false;
+		bool drawConnectionDot = false, drawWireCorrection = false;
 		if(it->count > 2) {
-			draw = true;
+			drawConnectionDot = true;
 		} else {
 			unsigned int i, size = vectorWires.size();
 
 			for(i=0; i < size; i++) {
 				if(isPointOverLine(it->dot, vectorWires[i].start, vectorWires[i].end)) {
-					draw = true;
+					drawConnectionDot = true;
 					it->isPowered = it->isPowered || vectorWires[i].isPowered;
 					break;
 				}
 			}
+
+			if(drawConnectionDot == false && it->count > 1) {
+				drawWireCorrection = true;
+			}
 		}
 
-		if(draw) { // Apenas desenha conexoes com mais de duas ligacoes senao eh apenas juncao de duas linhas
-			DrawEllipse(it->dot, 5.0f, 5.0f, it->isPowered ? getLadderColors().ConnectionDot : getLadderColors().ConnectionDotOff);
+		if(drawConnectionDot) { // Apenas desenha conexoes com mais de duas ligacoes senao eh apenas juncao de duas linhas
+			DrawConnectionDot(it->dot, InSimulationMode ? (it->isPowered ? getLadderColors().ConnectionDot : getLadderColors().ConnectionDotOff) : 0);
+		} else if(drawWireCorrection) {
+			RECT r = { it->dot.x - 1, it->dot.y - 1, it->dot.x + 1, it->dot.y + 1 };
+			DrawRectangle(r, it->isPowered ? getLadderColors().Wire : getLadderColors().WireOff);
 		}
 	}
 
@@ -851,7 +869,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	DrawRectangle3D(r3D, (float)SizeZ, colorgroup.Background, colorgroup.BackgroundGradient, bgcolor, bgcolor, true, 10, 10);
 
 	// Desenha a linha de barramento do elemento, ou seja, 1 para baixo no grid e 1/2 grid para cada lado
-	MidPoint.x = r3D.left - 2; // Desconta a borda
+	MidPoint.x = r3D.left - 1; // Desconta a borda
 	MidPoint.y = StartPoint.y;
 	DrawLine(StartPoint, MidPoint, poweredBefore ? colors.Wire : colors.WireOff);
 
@@ -1891,24 +1909,26 @@ bool LadderElemPlaceHolder::DrawGUI(bool poweredBefore, void *data)
 	end.y = start.y;
 
 	// Desenha o PlaceHolder
-	WireCoords = gui.DrawWire(start, end, poweredBefore);
-	gui.addConnectionDot(WireCoords.start, poweredBefore, true);
+	bool isCursorShown = false;
 
-	// Selecao Direita
-	rCursor.left   = WireCoords.start.x - 10;
-	rCursor.right  = WireCoords.start.x + 10;
-	rCursor.top    = WireCoords.start.y - 10;
-	rCursor.bottom = WireCoords.start.y + 10;
+	WireCoords = gui.DrawWire(start, end, poweredBefore);
 
 	if(SelectedState == SELECTED_NONE) {
 		tCommandSource source = { nullptr, nullptr, this };
-		rCursor.top    -= 10;
-		rCursor.bottom += 10;
-		rCursor.left   -= 10;
-		rCursor.right  += 10;
+
+		rCursor.left   = WireCoords.start.x - 20;
+        rCursor.right  = WireCoords.start.x + 20;
+        rCursor.top    = WireCoords.start.y - 20;
+        rCursor.bottom = WireCoords.start.y + 20;
+
 		gui.AddCommand(source, rCursor, CmdSelectRight, nullptr, false, false);
 	} else if(isCursorVisible && !ladder->getContext().inSimulationMode) {
-		gui.DrawEllipse(rCursor, gui.getLadderColors().Selection);
+		isCursorShown = true;
+		gui.DrawConnectionDot(WireCoords.start, 0, 12.0f);
+	}
+
+	if(!isCursorShown) {
+		gui.addConnectionDot(WireCoords.start, poweredBefore, true);
 	}
 
 	return poweredAfter;
@@ -5206,6 +5226,15 @@ bool LadderElemMultisetDA::ShowDialog(LadderContext context)
 
 		Diagram->CheckpointBegin("Alterar Rampa de Aceleração/Desaceleração");
 		if(updateNameTypeIO(0, NewTime, typeTime) && updateNameTypeIO(1, NewDesl, typeDesl)) {
+			LadderElemMultisetDAProp *data = (LadderElemMultisetDAProp *)getProperties();
+
+			// Os pinos ja foram atualizados, atualiza a estrutura para nao usar os antigos.
+			dialogData.idTime = data->idTime;
+			dialogData.idDesl = data->idDesl;
+
+			*data = dialogData;
+			setProperties(context, data);
+
 			changed = true;
 		}
 		Diagram->CheckpointEnd();
@@ -8274,7 +8303,12 @@ void PaintWindow(void)
 		UpdateRibbonHeight();
 	}
 
-	ladder->DrawGUI();
+	if(!isDraggingSplitter) {
+		ladder->DrawGUI();
+	} else {
+		gui.DrawStart(0, 0);
+		gui.DrawEnd();
+	}
 
 	ok();
 }

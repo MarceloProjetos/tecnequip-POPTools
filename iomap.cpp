@@ -97,7 +97,7 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 
 	currentSortBy = eSortBy_Name;
 
-	maxNameSize = 13;
+	maxNameSize = 16;
 
 	diagram = pDiagram;
 
@@ -317,6 +317,7 @@ bool mapIO::Update(unsigned long id, string name, eType type, bool isUndoRedo)
 		data->Update.id   = id;
 		data->Update.name = AllocCharFromString(old_name);
 		data->Update.type = IO[old_name].second.type;
+		data->Update.pin  = IO[old_name].second.pin;
 
 		action.action        = eUpdate;
 		action.contextAfter  = getEmptyContext();
@@ -329,6 +330,11 @@ bool mapIO::Update(unsigned long id, string name, eType type, bool isUndoRedo)
 		diagram->RegisterAction(action);
 
 		diagram->CheckpointEnd();
+	}
+
+	// Se estiver alterando o tipo do I/O, devemos remover a associacao do pino pois nao sera valido
+	if(IO[old_name].second.type != type) {
+		IO[old_name].second.pin = 0;
 	}
 
 	if(name == old_name) { // Nome inalterado, atualiza apenas o tipo!
@@ -872,7 +878,7 @@ bool mapIO::Validate(eValidateIO mode)
 			sprintf(buf, _("Variável '%s' reservada! Favor alterar para um nome válido"), it->first.c_str());
 		}
 
-		if(!isError && it->second.second.type != eType_Reserved) {
+		if(!isError && it->second.second.type != eType_Reserved && it->second.second.type != eType_InternalFlag) {
 			if(it->second.second.countRequestRead  == 0 && it->second.second.type != eType_DigOutput && !it->second.second.pin) { // Nao tem leitura!
 				sprintf(buf, _("Variável '%s' não é lida, apenas escrita!"), it->first.c_str());
 			} else if(it->second.second.countRequestWrite == 0 && it->second.second.type != eType_DigInput && !it->second.second.pin) { // Nao tem escrita!
@@ -1124,11 +1130,13 @@ bool mapIO::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
 			mapDetails  detailsIO = getDetails(data->Update.id);
 
 			Update(data->Update.id, data->Update.name, data->Update.type, true);
+			IO[data->Update.name].second.pin = data->Update.pin;
 
 			if(name != nullptr) {
 				delete [] data->Update.name; // Descarta o buffer com o nome (agora atual) do I/O
 				data->Update.name    = name; // Salva o nome anterior para a operacao de Refazer
 				data->Update.type    = detailsIO.type; // Atualiza o tipo para o anterior
+				data->Update.pin     = detailsIO.pin; // Atualiza o pino pois se houve alteracao de tipo, ele foi zerado
 			}
 		}
 
@@ -2067,7 +2075,7 @@ void ShowEncoderSliderPopup(const char *name)
 		LadderSettingsEncoderIncremental settings = ladder->getSettingsEncoderIncremental();
 
 		if(settings.conv_mode) {
-			float fator = (float)(settings.perimeter * 10)/settings.pulses;
+			float fator = (float)(settings.perimeter * 10)/(settings.pulses * (settings.x4 ? 4 : 2));
 			switch(settings.conv_mode) {
 			case 1: // Metros
 				fator /= 1000;
@@ -2080,7 +2088,7 @@ void ShowEncoderSliderPopup(const char *name)
 				break;
 			}
 
-			maxVal = (SWORD)((float)(maxVal) * fator)/2;
+			maxVal = (SWORD)(((float)(maxVal)/2.0f) * fator);
 			minVal = -maxVal;
 		}
 	} else if(DetailsIO.pin == 2) { // Encoder Absoluto

@@ -7,6 +7,7 @@ static HWND DebugDialog;
 
 static HWND ModeTCPRadio;
 static HWND Mode485Radio;
+static HWND ModeUSBRadio;
 static HWND SendRadio;
 static HWND SendButton;
 static HWND ReceiveRadio;
@@ -33,6 +34,8 @@ static HWND CheckOutput[16];
 static LONG_PTR PrevIdProc;
 
 static bool DebugDone = false;
+
+enum eTransferMode { eTransferMode_TCP = 0, eTransferMode_Serial, eTransferMode_USB };
 
 // CommList Column index
 #define COMMLIST_COLUMN_IFACE 0x00
@@ -158,11 +161,18 @@ char *LogGet(unsigned int item, unsigned int column)
 	return RotateList_GetItem(&RotateLog, RotateList_GetIndex(&RotateLog, item), column);
 }
 
-unsigned int LogPut(bool mode_tcp, unsigned int Id, unsigned int FunctionCode, unsigned int Reg, unsigned int Val, unsigned int ExceptionCode)
+unsigned int LogPut(eTransferMode mode, unsigned int Id, unsigned int FunctionCode, unsigned int Reg, unsigned int Val, unsigned int ExceptionCode)
 {
 	struct RotateListItem item;
 
-	strcpy (item.txt[COMMLIST_COLUMN_IFACE],           mode_tcp ? _("Ethernet") : _("Serial"));
+	const char *iface = "???";
+	switch(mode) {
+		case eTransferMode_TCP   : iface = _("Ethernet"); break;
+		case eTransferMode_Serial: iface = _("Serial"  ); break;
+		case eTransferMode_USB   : iface = _("USB"     ); break;
+	}
+
+	strcpy (item.txt[COMMLIST_COLUMN_IFACE],           iface);
 	strcpy (item.txt[COMMLIST_COLUMN_REPLY],           ExceptionCode == MODBUS_EXCEPTION_NONE ? _("OK") : _("ERRO"));
 	sprintf(item.txt[COMMLIST_COLUMN_ID   ], "%d"    , Id);
 	strcpy (item.txt[COMMLIST_COLUMN_FC   ],           FunctionCode == MODBUS_FC_READ_HOLDING_REGISTERS ? _("Ler") : _("Escrever"));
@@ -201,7 +211,6 @@ void CommList_InsertItem(struct MODBUS_Device *dev, unsigned int FunctionCode, M
 {
 	int val = 0;
 	unsigned int i, reg = 0;
-	bool mode_tcp = MODBUS_MODE_IS_TCP(dev->mode);
 
 	// Check if invalid
 	if(data == NULL || reply == NULL) {
@@ -220,7 +229,15 @@ void CommList_InsertItem(struct MODBUS_Device *dev, unsigned int FunctionCode, M
 		break;
 	}
 
-	LogPut(mode_tcp, dev->identification.Id, FunctionCode, reg, val, reply->ExceptionCode);
+	eTransferMode mode = eTransferMode_USB;
+
+	if(SendMessage(ModeTCPRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+		mode = eTransferMode_TCP;
+	} else if(SendMessage(Mode485Radio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+		mode = eTransferMode_Serial;
+	}
+
+	LogPut(mode, dev->identification.Id, FunctionCode, reg, val, reply->ExceptionCode);
 
 	ListView_DeleteAllItems(CommList);
 	for(i=0; i<RotateList_GetCount(&RotateLog); i++) {
@@ -240,7 +257,7 @@ void CommList_InsertItem(struct MODBUS_Device *dev, unsigned int FunctionCode, M
 
 /*** Trecho relacionado ao protocolo ModBUS/TCP ***/
 
-void MB_Transfer(bool mode_send, bool mode_tcp, bool retry)
+void MB_Transfer(bool mode_send, eTransferMode mode, bool retry)
 {
 	MODBUS_FCD_Data MBData;
 	MODBUS_Reply MBReply;
@@ -265,23 +282,24 @@ void MB_Transfer(bool mode_send, bool mode_tcp, bool retry)
 	} else if(iReg < 0) {
 		Error(_("Registrador deve ser maior que zero!"));
 	} else { // All OK, let's start the communication!
-		MODBUS_Device *mbdev;
+		MODBUS_Device *mbdev = &MBDev_Serial;
 		unsigned int retries = retry ? 2 : 0;
 
-		if(mode_tcp) {
-			mbdev = &MBDev_TCP;
-		} else {
-			mbdev = &MBDev_Serial;
-			LadderSettingsUART settings = ladder->getSettingsUART();
+		if(mode != eTransferMode_USB) {
+			if(mode == eTransferMode_TCP) {
+				mbdev = &MBDev_TCP;
+			} else {
+				LadderSettingsUART settings = ladder->getSettingsUART();
 
-			if(!OpenCOMPort(POPSettings.COMPortDebug, settings.baudRate, SerialConfig[settings.UART].bByteSize,
-					SerialConfig[settings.UART].bParity, SerialConfig[settings.UART].bStopBits)) {
-				Error(_("Erro abrindo porta serial!"));
-				return;
+				if(!OpenCOMPort(POPSettings.COMPortDebug, settings.baudRate, SerialConfig[settings.UART].bByteSize,
+						SerialConfig[settings.UART].bParity, SerialConfig[settings.UART].bStopBits)) {
+					Error(_("Erro abrindo porta serial!"));
+					return;
+				}
 			}
-		}
 
-		mbdev->identification.Id = iID;
+			mbdev->identification.Id = iID;
+		}
 
 		if(mode_send) {
 			MBData.write_single_register.address = iReg;
@@ -292,7 +310,11 @@ void MB_Transfer(bool mode_send, bool mode_tcp, bool retry)
 		}
 
 		do {
-			MBReply = Modbus_RTU_Send(mbdev, 0, mode_send ? MODBUS_FC_WRITE_SINGLE_REGISTER : MODBUS_FC_READ_HOLDING_REGISTERS, &MBData);
+			if(mode == eTransferMode_USB) {
+				MBReply = USB_Send(mode_send ? MODBUS_FC_WRITE_SINGLE_REGISTER : MODBUS_FC_READ_HOLDING_REGISTERS, &MBData);
+			} else {
+				MBReply = Modbus_RTU_Send(mbdev, 0, mode_send ? MODBUS_FC_WRITE_SINGLE_REGISTER : MODBUS_FC_READ_HOLDING_REGISTERS, &MBData);
+			}
 
 			if(MBReply.ExceptionCode == MODBUS_EXCEPTION_NONE) {
 				break;
@@ -387,7 +409,15 @@ LRESULT CALLBACK DebugDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
             HWND h = (HWND)lParam;
 			if(wParam == BN_CLICKED) {
 				if(h == SendButton) {
-					MB_Transfer(SendMessage(SendRadio, BM_GETSTATE, 0, 0) & BST_CHECKED, SendMessage(ModeTCPRadio, BM_GETSTATE, 0, 0) & BST_CHECKED, SendMessage(RetransmitCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED);
+					eTransferMode mode = eTransferMode_USB;
+
+					if(SendMessage(ModeTCPRadio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+						mode = eTransferMode_TCP;
+					} else if(SendMessage(Mode485Radio, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+						mode = eTransferMode_Serial;
+					}
+
+					MB_Transfer(SendMessage(SendRadio, BM_GETSTATE, 0, 0) & BST_CHECKED, mode, SendMessage(RetransmitCheckbox, BM_GETSTATE, 0, 0) & BST_CHECKED);
 			    } else if(h == OkButton) {
 					DebugDone = TRUE;
 				} else if(h == ConfigButton) {
@@ -516,9 +546,14 @@ static void MakeControls(void)
         109, 41, 70, 20, DebugDialog, NULL, Instance, NULL);
     NiceFont(Mode485Radio);
 
+	ModeUSBRadio = CreateWindowEx(0, WC_BUTTON, _("USB"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        109, 61, 65, 20, DebugDialog, NULL, Instance, NULL);
+    NiceFont(ModeUSBRadio);
+
     HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Interface"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        100, 3, 85, 65, DebugDialog, NULL, Instance, NULL);
+        100, 3, 85, 89, DebugDialog, NULL, Instance, NULL);
     NiceFont(grouper2);
 
     HWND grouper3 = CreateWindowEx(0, WC_BUTTON, _("Configurações"),
@@ -546,9 +581,9 @@ static void MakeControls(void)
         85, 56, 85, 21, grouper3, NULL, Instance, NULL);
     NiceFont(txtCOM);
 
-    RetransmitCheckbox = CreateWindowEx(0, WC_BUTTON, _("Retransmitir Pacote"),
+    RetransmitCheckbox = CreateWindowEx(0, WC_BUTTON, _("Retransmitir"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        31, 75, 130, 20, DebugDialog, NULL, Instance, NULL);
+        7, 75, 90, 20, DebugDialog, NULL, Instance, NULL);
     NiceFont(RetransmitCheckbox);
 
     CommList = CreateWindowEx(WS_EX_STATICEDGE, WC_LISTVIEW, "",

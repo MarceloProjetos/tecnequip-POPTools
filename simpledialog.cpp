@@ -220,7 +220,7 @@ BOOL ShowSimpleDialog(const char *title, int boxes, const char **labels, DWORD n
 
     if(!didCancel) {
         for(i = 0; i < boxes; i++) {
-            SendMessage(Textboxes[i], WM_GETTEXT, (WPARAM)(isTxt ? sizeof(get) : 14), (LPARAM)get);
+            SendMessage(Textboxes[i], WM_GETTEXT, (WPARAM)(isTxt ? sizeof(get) : 17), (LPARAM)get);
 
             if( (!strchr(get, '\'')) ||
                     (get[0] == '\'' && get[2] == '\'' && strlen(get)==3) )

@@ -459,7 +459,6 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Resolução DA (mV)[-10000 ~ 10000]", "D/A Resolution (mV)[-10000 ~ 10000]");
 		addTextToLangTable(l, "Resposta", "Reply");
 		addTextToLangTable(l, "Retransmitir", "Retransmit");
-		addTextToLangTable(l, "Retransmitir Pacote", "Retransmit Packet");
 		addTextToLangTable(l, "RS485 Baud Rate (bps):", "RS485 Baud Rate (bps):");
 		addTextToLangTable(l, "RST", "RST");
 		addTextToLangTable(l, "RTC", "RTC");
@@ -596,6 +595,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Alterado Elemento", "Element Changed");
 		addTextToLangTable(l, "RS-485", "RS-485");
 		addTextToLangTable(l, "Ethernet", "Ethernet");
+		addTextToLangTable(l, "USB", "USB");
 		addTextToLangTable(l, "Sem conversão", "No conversion");
 		addTextToLangTable(l, "Metros", "Meters");
 		addTextToLangTable(l, "Milímetros", "Milimeters");
@@ -1253,7 +1253,6 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Resolução DA (mV)[-10000 ~ 10000]", "D/A Resolution (mV)[-10000 ~ 10000]");
 		addTextToLangTable(l, "Resposta", "Reply");
 		addTextToLangTable(l, "Retransmitir", "Retransmit");
-		addTextToLangTable(l, "Retransmitir Pacote", "Retransmit Packet");
 		addTextToLangTable(l, "RS485 Baud Rate (bps):", "RS485 Baud Rate (bps):");
 		addTextToLangTable(l, "RST", "RST");
 		addTextToLangTable(l, "RTC", "RTC");
@@ -1390,6 +1389,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Alterado Elemento", "Element Changed");
 		addTextToLangTable(l, "RS-485", "RS-485");
 		addTextToLangTable(l, "Ethernet", "Ethernet");
+		addTextToLangTable(l, "USB", "USB");
 		addTextToLangTable(l, "Sem conversão", "No conversion");
 		addTextToLangTable(l, "Metros", "Meters");
 		addTextToLangTable(l, "Milímetros", "Milimeters");

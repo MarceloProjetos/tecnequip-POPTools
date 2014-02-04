@@ -5,6 +5,7 @@
 // project file.
 LadderDiagram *ladder = nullptr;
 vector<LadderDiagram *> ladderList;
+vector<LadderDiagram *> purgedLadderList;
 
 /*** Funcoes para manipular a lista de diagramas abertos: novo, abrir, fechar, alternar ***/
 
@@ -630,7 +631,7 @@ bool CloseProgram(LadderDiagram *diagram, bool isPOPToolsExiting)
 		clipboard.rungOwner = nullptr;
 	}
 
-	delete diagram;
+	purgedLadderList.push_back(diagram);
 
 	if(!isPOPToolsExiting) {
 		if(switchTo == nullptr) {
@@ -655,4 +656,15 @@ bool CloseAllPrograms(bool isPOPToolsExiting)
 	}
 
 	return true;
+}
+
+void FreePurgedPrograms(void)
+{
+	vector<LadderDiagram *>::size_type i;
+
+	for(i = 0; i < purgedLadderList.size(); i++) {
+		delete purgedLadderList[i];
+	}
+
+	purgedLadderList.clear();
 }

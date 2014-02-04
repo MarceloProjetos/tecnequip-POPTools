@@ -202,6 +202,7 @@ private:
 	array<tLadderColors, 2>     LadderColors;
 	map<int, tLadderColorGroup> LadderColorGroups;
 	vector<tLadderColorGroup>   LadderColorSimulation;
+	COLORREF                    ConnectionDotGradient;
 
 	// Gradientes utilizados na caixa de dialogo
 	unsigned int gradDialogDefButtonNormal;
@@ -245,6 +246,8 @@ public:
 	RECT DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight);
 
 	void DrawDialogBox(void);
+
+	void DrawConnectionDot(POINT dot, COLORREF color = 0, float radius = 7.0f);
 
 	vector<RECT> DrawExpandedItems(tLadderColorGroup cg, RECT r, POINT GridSize, unsigned int GridOffset, vector<tExpandedItem> items);
 

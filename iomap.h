@@ -51,6 +51,7 @@ private:
 			unsigned long  id;
 			char          *name;
 			eType          type;
+			unsigned int   pin;
 		} Update;
 		struct {
 			char          *name;

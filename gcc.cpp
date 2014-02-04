@@ -541,8 +541,8 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
                 break;
 
             case INT_IF_VARIABLE_GRT_VARIABLE:
-                fprintf(f, "if (%s > %s) {\n", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ),
-                    GenVarCode(buf2, MapSym(vectorIntCode[i].name2), NULL, GENVARCODE_MODE_READ));
+                fprintf(f, "if (%s > %s) { // %s > %s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ),
+                    GenVarCode(buf2, MapSym(vectorIntCode[i].name2), NULL, GENVARCODE_MODE_READ), vectorIntCode[i].name1, vectorIntCode[i].name2);
                 indent++;
                 break;
 

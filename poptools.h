@@ -590,6 +590,8 @@ void SetMenusEnabled(LadderContext *context);
 void RefreshScrollbars(void);
 bool CheckSaveUserCancels(void);
 
+extern bool isDraggingSplitter;
+
 extern HINSTANCE Instance;
 extern HWND MainWindow;
 extern HDC Hdc;
@@ -773,6 +775,7 @@ bool NewProgram(void);
 void SwitchProgram(LadderDiagram *newladder);
 bool CloseProgram(LadderDiagram *diagram, bool isPOPToolsExiting = false);
 bool CloseAllPrograms(bool isPOPToolsExiting = false);
+void FreePurgedPrograms(void);
 
 // loadsave.cpp
 bool fwrite_uint   (FILE *f, unsigned int   var);
@@ -1018,10 +1021,13 @@ void SimulationServer_Stop   (void);
 void SimulationServer_Message(WPARAM wParam, LPARAM lParam);
 
 // modbus_usb.cpp
-bool          USB_SetDateTime(struct tm *t);
-bool          USB_GetDateTime(struct tm *t);
-unsigned long USB_GetInput   (void);
-unsigned int  USB_GetOutput  (void);
+struct MODBUS_Reply USB_Send(unsigned short fc, MODBUS_FCD_Data *mbdata);
+bool                USB_SetDateTime(struct tm *t);
+bool                USB_GetDateTime(struct tm *t);
+bool                USB_SetRegister(int iReg, int iVal);
+bool                USB_GetRegister(int iReg, int &iVal);
+unsigned long       USB_GetInput   (void);
+unsigned int        USB_GetOutput  (void);
 
 // CommonFileDialog.cpp
 enum FDS_Mode { LoadLadder = 0, SaveLadder, SaveText, SaveC, SaveCSV };
