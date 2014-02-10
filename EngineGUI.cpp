@@ -125,9 +125,12 @@ HRESULT EngineGUI::StartDraw(void)
 			for(i=0; i < Brushes.size(); i++) {
 				if(Brushes[i].type == eBrushType_SolidColor) {
 					pRender->CreateBrush(index, Brushes[i].solid.rgb, Brushes[i].solid.alpha);
-				} else {
-					pRender->CreateGradient(index, Brushes[i].linear.brushStart + BrushOffset,
+				} else if(Brushes[i].type == eBrushType_GradientLinear) {
+					pRender->CreateLinearGradient(index, Brushes[i].linear.brushStart + BrushOffset,
 						Brushes[i].linear.brushEnd + BrushOffset, Brushes[i].linear.angle);
+				} else {
+					pRender->CreateRadialGradient(index, Brushes[i].radial.brushStart + BrushOffset,
+						Brushes[i].radial.brushEnd + BrushOffset, Brushes[i].radial.offset, Brushes[i].radial.mode);
 				}
 
 				if(!i) {
@@ -178,6 +181,15 @@ HRESULT EngineGUI::SetBackgroundColor(COLORREF rgb)
 	return S_OK;
 }
 
+HRESULT EngineGUI::SetBackgroundBrush(COLORREF brush)
+{
+	if(Brushes.size() > brush && Brushes[brush].type == eBrushType_SolidColor) {
+		return SetBackgroundColor(Brushes[brush].solid.rgb);
+	}
+
+	return S_FALSE;
+}
+
 unsigned int EngineGUI::CreateBrush(COLORREF rgb, float alpha)
 {
 	tBrushData data;
@@ -191,13 +203,28 @@ unsigned int EngineGUI::CreateBrush(COLORREF rgb, float alpha)
 	return Brushes.size() - 1;
 }
 
-unsigned int EngineGUI::CreateGradient(unsigned int brushStart, unsigned int brushEnd, unsigned int angle)
+unsigned int EngineGUI::CreateLinearGradient(unsigned int brushStart, unsigned int brushEnd, unsigned int angle)
 {
 	tBrushData data;
-	data.type        = eBrushType_GradientLinear;
+	data.type              = eBrushType_GradientLinear;
 	data.linear.brushStart = brushStart;
 	data.linear.brushEnd   = brushEnd;
 	data.linear.angle      = angle;
+	Brushes.push_back(data);
+
+	InvalidateTarget();
+
+	return Brushes.size() - 1;
+}
+
+unsigned int EngineGUI::CreateRadialGradient(unsigned int brushStart, unsigned int brushEnd, POINT offset, eOffsetMode mode)
+{
+	tBrushData data;
+	data.type              = eBrushType_GradientRadial;
+	data.radial.brushStart = brushStart;
+	data.radial.brushEnd   = brushEnd;
+	data.radial.offset     = offset;
+	data.radial.mode       = mode;
 	Brushes.push_back(data);
 
 	InvalidateTarget();

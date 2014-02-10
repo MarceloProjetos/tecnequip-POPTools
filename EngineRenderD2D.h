@@ -37,6 +37,13 @@ typedef struct {
 		ID2D1LinearGradientBrush    *pBrush;
 		ID2D1GradientStopCollection *pGradientStops;
 	} linear;
+
+	struct {
+		eOffsetMode                  mode;
+		D2D1_POINT_2F                offset;
+		ID2D1RadialGradientBrush    *pBrush;
+		ID2D1GradientStopCollection *pGradientStops;
+	} radial;
 } tBrushDataD2D;
 
 class EngineRenderD2D : public EngineRender
@@ -64,17 +71,19 @@ public:
 	EngineRenderD2D(void);
 	~EngineRenderD2D(void);
 
-	HRESULT CreateRenderTarget(HWND hwnd);
-	HRESULT ResizeRenderTarget(HWND hwnd);
-	HRESULT CreateBrush     (unsigned int &index, unsigned int rgb, float alpha = 1.0f);
-	HRESULT CreateGradient  (unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle = 0);
-	HRESULT CreateTextFormat(unsigned int rgb, unsigned int &index);
+	HRESULT CreateRenderTarget  (HWND hwnd);
+	HRESULT ResizeRenderTarget  (HWND hwnd);
+	HRESULT CreateBrush         (unsigned int &index, unsigned int rgb, float alpha = 1.0f);
+	HRESULT CreateLinearGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle  = 0);
+	HRESULT CreateRadialGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, POINT        offset, eOffsetMode mode = eOffsetMode_Units);
+	HRESULT CreateTextFormat    (unsigned int rgb, unsigned int &index);
 
 	POINT   getTextSize     (const char *txt, POINT maxSize, unsigned int format);
 
 	ID2D1Brush               *getBrush              (unsigned int brush, D2D1_RECT_F rf);
 	ID2D1SolidColorBrush     *getSolidColorBrush    (unsigned int brush);
 	ID2D1LinearGradientBrush *getLinearGradientBrush(unsigned int brush, D2D1_RECT_F rf);
+	ID2D1RadialGradientBrush *getRadialGradientBrush(unsigned int brush, D2D1_RECT_F rf);
 
 	void    StartDraw(void);
 	void    Clear(unsigned int brush);
@@ -94,6 +103,9 @@ public:
 
 	HRESULT DrawRectangle3D(RECT r, float sizeZ, unsigned int brushBG, unsigned int brushGradient, unsigned int brushIntBorder, unsigned int brushExtBorder,
 		bool filled, float radiusX, float radiusY, float angle);
+
+	// Funcao utilizada para fazer testes, evitando misturar codigo de teste em funcoes ja existentes e funcionando
+	void DrawTest(void);
 };
 
 #endif

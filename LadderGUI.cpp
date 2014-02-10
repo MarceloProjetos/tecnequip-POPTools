@@ -263,7 +263,7 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	group.Foreground         = CreateBrush(RGB(255, 255, 255));
 	group.Border             = CreateBrush(RGB( 64,  80,  80));
 	group.BorderText         = CreateBrush(RGB(255, 255, 255));
-	group.BackgroundGradient = CreateGradient(group.Background, group.Border, 358);
+	group.BackgroundGradient = CreateLinearGradient(group.Background, group.Border, 0);
 	LadderColorSimulation.push_back(group);
 
 	// Cria o grupo de cores de simulacao - ativo
@@ -271,7 +271,7 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	group.Foreground         = CreateBrush(RGB(255, 255, 255));
 	group.Border             = CreateBrush(RGB(163,  73, 163));
 	group.BorderText         = CreateBrush(RGB(255, 255, 255));
-	group.BackgroundGradient = CreateGradient(group.Background, group.Border, 358);
+	group.BackgroundGradient = CreateLinearGradient(group.Background, group.Border, 0);
 	LadderColorSimulation.push_back(group);
 
 	// Carrega as cores padrao da interface - modo normal
@@ -351,7 +351,8 @@ LadderGUI::LadderGUI(void) : EngineGUI(new EngineRenderD2D)
 	setLadderColors(colors, true);
 
 	// Cria o gradiente do ponto de conexao
-	ConnectionDotGradient = CreateGradient(LadderColors[0].ConnectionDotOff, LadderColors[0].ConnectionDot, 315);
+	POINT offset = { -50, -50 };
+	ConnectionDotGradient = CreateRadialGradient(LadderColors[0].ConnectionDotOff, LadderColors[0].ConnectionDot, offset, eOffsetMode_Percentage);
 
 #ifdef SHOW_DEBUG_INFO
 	mouse_last_click      .x = 0;
@@ -512,7 +513,7 @@ void LadderGUI::DrawInit(void)
 {
 	tLadderColors colors = getLadderColors();
 	SetTarget(DrawWindow);
-	SetBackgroundColor(colors.Background);
+	SetBackgroundBrush(colors.Background);
 
 	InterfaceColors[INTERF_COLOR_3DLIGHT ] = CreateBrush(GetSysColor(COLOR_3DLIGHT   ));
 	InterfaceColors[INTERF_COLOR_3DFACE  ] = CreateBrush(GetSysColor(COLOR_3DFACE    ));
@@ -520,6 +521,14 @@ void LadderGUI::DrawInit(void)
 
 	/*** Grupos de Cores ***/
 	tLadderColorGroup group;
+
+	// Ciano: Comentario
+	group.Background = RGB( 69,  69,  69);
+	group.Foreground = RGB( 52, 198, 244);
+	group.Border     = RGB( 52, 198, 244);
+	group.BorderText = RGB(255, 255, 255);
+
+	setLadderColorGroup(ELEM_COMMENT, group);
 
 	// Azul: I/O
 	group.Background = RGB(170, 170, 255);
@@ -608,6 +617,10 @@ void LadderGUI::DrawInit(void)
 	setLadderColorGroup(ELEM_WRITE_USS             , group);
 	setLadderColorGroup(ELEM_READ_SERVO_YASKAWA    , group);
 	setLadderColorGroup(ELEM_WRITE_SERVO_YASKAWA   , group);
+
+	// Inicia e finaliza o desenho da tela para que todas as estruturas sejam criadas na inicializacao
+	StartDraw();
+	EndDraw  ();
 }
 
 void LadderGUI::DrawStart(int OffsetX, int OffsetY)
@@ -629,14 +642,14 @@ void LadderGUI::DrawConnectionDot(POINT dot, COLORREF color, float radius)
 	DrawEllipse(dot, radius, radius, (color != 0) ? color : ConnectionDotGradient);
 }
 
-void LadderGUI::DrawEnd(void)
+bool LadderGUI::DrawEnd(void)
 {
 	vector<tConnectionDot>::iterator it;
 
 	bool InSimulationMode = ladder->getContext().inSimulationMode;
 
 	for(it = vectorConnectionDots.begin(); it != vectorConnectionDots.end(); it++) {
-		bool drawConnectionDot = false, drawWireCorrection = false;
+		bool drawConnectionDot = false, drawWireArcLeft = false, drawWireArcRight = false;
 		if(it->count > 2) {
 			drawConnectionDot = true;
 		} else {
@@ -650,16 +663,28 @@ void LadderGUI::DrawEnd(void)
 				}
 			}
 
-			if(drawConnectionDot == false && it->count > 1) {
-				drawWireCorrection = true;
+			if(drawConnectionDot == false) {
+				if(it->direction == (eDirection_Right + eDirection_Bottom)) {
+					drawWireArcRight = true;
+				} else if(it->direction == (eDirection_Left + eDirection_Bottom)) {
+					drawWireArcLeft = true;
+				}
 			}
 		}
 
 		if(drawConnectionDot) { // Apenas desenha conexoes com mais de duas ligacoes senao eh apenas juncao de duas linhas
 			DrawConnectionDot(it->dot, InSimulationMode ? (it->isPowered ? getLadderColors().ConnectionDot : getLadderColors().ConnectionDotOff) : 0);
-		} else if(drawWireCorrection) {
-			RECT r = { it->dot.x - 1, it->dot.y - 1, it->dot.x + 1, it->dot.y + 1 };
-			DrawRectangle(r, it->isPowered ? getLadderColors().Wire : getLadderColors().WireOff);
+		} else if(drawWireArcLeft || drawWireArcRight) {
+			RECT r = { it->dot.x - 5, it->dot.y - 5, it->dot.x + 5, it->dot.y + 5 };
+			DrawRectangle(r, getLadderColors().Background);
+
+			if(drawWireArcLeft) {
+				POINT start = { it->dot.x + 5, it->dot.y }, end = { it->dot.x, it->dot.y - 5 };
+				DrawArc(start, end, 5.0f, 5.0f, 90, true , it->isPowered ? getLadderColors().Wire : getLadderColors().WireOff);
+			} else {
+				POINT start = { it->dot.x - 5, it->dot.y }, end = { it->dot.x, it->dot.y - 5 };
+				DrawArc(start, end, 5.0f, 5.0f, 90, false, it->isPowered ? getLadderColors().Wire : getLadderColors().WireOff);
+			}
 		}
 	}
 
@@ -703,8 +728,9 @@ void LadderGUI::DrawEnd(void)
 	}
 
 	d2d_last_error = EndDraw();
+	return SUCCEEDED(d2d_last_error);
 #else
-	EndDraw();
+	return SUCCEEDED(EndDraw());
 #endif
 }
 
@@ -718,8 +744,8 @@ void LadderGUI::registerElementArea(LadderElem *elem, POINT start, POINT size)
 	vectorAreaElements.push_back(pair<LadderElem *, RECT>(elem, getRECT(start, size)));
 }
 
-RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight)
-{
+RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight, int GridWidth)
+{/*
 	RECT r, rCursor;
 	POINT start, size = DiagramSize;
 
@@ -767,6 +793,42 @@ RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGri
 	}
 
 	return r;
+*/
+	POINT start, size;
+
+	// Se a largura solicitada for zero, usamos a largura do diagrama
+	if(GridWidth<= 0) {
+		GridWidth = DiagramSize.x;
+	}
+
+	// Se a largura solicitada for menor que a largura do diagrama, desenhamos as linhas para que o elemento fique centralizado
+	LONG sizeWireLeft = 0, sizeWireRight = 0;
+	if(GridWidth < DiagramSize.x) {
+		sizeWireLeft  = (DiagramSize.x - GridWidth) / 2;
+		sizeWireRight =  DiagramSize.x - GridWidth - sizeWireLeft;
+	}
+
+	start.x = 0;
+	start.y = StartGridY;
+	size.x = GridWidth;
+	size.y = GridHeight + 1;
+
+	if(sizeWireLeft > 0) {
+		start.x--;
+		POINT end = { start.x + sizeWireLeft, start.y };
+		DrawWire(start, end, false);
+		start.x += sizeWireLeft + 1; // atualiza start para o elemento comecar depois da linha
+	}
+
+	RECT ret = DrawElementBox(elem, SelectedState, start, size, "", false, false);
+
+	if(sizeWireRight > 0) {
+		start.x +=  GridWidth;
+		POINT end = { start.x + sizeWireRight, start.y };
+		DrawWire(start, end, false);
+	}
+
+	return ret;
 }
 
 RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, POINT GridSize, string ElemName, bool ShowExpand, bool poweredBefore)
@@ -774,7 +836,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	unsigned int SizeZ = 30;
 	bool inSimulationMode = ladder->getContext().inSimulationMode;
 
-	bool isMouseOver;
+	bool showHeader;
 	RECT r = getRECT(StartTopLeft, GridSize);
 	r.bottom += 10; // Aumenta um pouco alem do grid para a linha de conexao entrar na caixa ao ines de ficar por baixo
 
@@ -792,7 +854,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	tLadderColors     colors     = getLadderColors();
 	tLadderColorGroup colorgroup = getLadderColorGroup(elem->getWhich(), elem->IsPoweredAfter());
 
-	isMouseOver = (MouseOverElement == elem);
+	showHeader = (MouseOverElement == elem) && (ElemName.size() > 0 || ShowExpand);
 
 	// Desenha o indicador de selecao
 	RECT rSel, rCursor = { - 7, - 7, + 7, + 7 };
@@ -833,8 +895,8 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 		if(SelectedState == SELECTED_ABOVE) {
 			rCursor.left   += r.left + (r.right - r.left)/2;
 			rCursor.right  += r.left + (r.right - r.left)/2;
-			rCursor.top    += r.top + (isMouseOver ? 0 : HeaderHeight);
-			rCursor.bottom += r.top + (isMouseOver ? 0 : HeaderHeight);
+			rCursor.top    += r.top + (showHeader ? 0 : HeaderHeight);
+			rCursor.bottom += r.top + (showHeader ? 0 : HeaderHeight);
 		} else {
 			rSel.top    = r.top                - Grid1x1.y/2;
 			rSel.bottom = r.top + HeaderHeight + Grid1x1.y/2;
@@ -860,7 +922,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 
 	// Desenha a caixa 3D
 	RECT r3D = r;
-	if(!isMouseOver) {
+	if(!showHeader) {
 		r3D.top += HeaderHeight;
 	}
 
@@ -877,8 +939,8 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	MidPoint.y = EndPoint.y;
 	DrawLine(MidPoint  , EndPoint, elem->IsPoweredAfter() ? colors.Wire : colors.WireOff);
 
-	addConnectionDot(StartPoint, poweredBefore, false);
-	addConnectionDot(EndPoint, elem->IsPoweredAfter(), false);
+	addConnectionDot(StartPoint, poweredBefore, false, eDirection_Left);
+	addConnectionDot(EndPoint, elem->IsPoweredAfter(), false, eDirection_Right);
 
 	if(SelectedState != SELECTED_NONE && isCursorVisible && inSimulationMode == false) {
 		DrawRectangle(rCursor, colors.Selection, true , 0, 0, 45);
@@ -886,7 +948,7 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	}
 
 	// Desenha a caixa em si. Se mouse estiver sobre o elemento, desenha com borda.
-	if(isMouseOver) {
+	if(showHeader) {
 		RECT rHeader = r, rExpand = { 0, 0, 0, 0 };
 
 		rHeader.bottom = rHeader.top + HeaderHeight;
@@ -1391,6 +1453,7 @@ void LadderGUI::DialogCancel(void)
 
 tWire LadderGUI::DrawWire(POINT StartPoint, POINT EndPoint, bool isPowered)
 {
+	eDirection directionStart, directionEnd;
 	POINT Size = { EndPoint.x - StartPoint.x, EndPoint.y - StartPoint.y };
 	RECT r = getRECT(StartPoint, Size);
 
@@ -1400,11 +1463,21 @@ tWire LadderGUI::DrawWire(POINT StartPoint, POINT EndPoint, bool isPowered)
 	EndPoint.y   = r.bottom + Grid1x1.y + HeaderHeight;
 
 	if(StartPoint.y != EndPoint.y) { // Linha vertical
-		StartPoint.x -= Grid1x1.x/2; // Desenha a linha vertical centralizada ao grid
-		EndPoint.x    = StartPoint.x;
+		directionStart  = eDirection_Top;
+		directionEnd    = eDirection_Bottom;
+		StartPoint.x   -= Grid1x1.x/2; // Desenha a linha vertical centralizada ao grid
+		EndPoint.x      = StartPoint.x;
 	} else {
-		StartPoint.x += Grid1x1.x/2;
-		EndPoint  .x += Grid1x1.x/2;
+		if(StartPoint.x > EndPoint.x) {
+			directionStart  = eDirection_Right;
+			directionEnd    = eDirection_Left;
+		} else {
+			directionStart  = eDirection_Left;
+			directionEnd    = eDirection_Right;
+		}
+
+		StartPoint.x   += Grid1x1.x/2;
+		EndPoint  .x   += Grid1x1.x/2;
 	}
 
 	tWire wire = { StartPoint, EndPoint, isPowered };
@@ -1413,15 +1486,15 @@ tWire LadderGUI::DrawWire(POINT StartPoint, POINT EndPoint, bool isPowered)
 	DrawLine(StartPoint, EndPoint, isPowered ? getLadderColors().Wire : getLadderColors().WireOff);
 
 	// Registra os pontos de conexao da linha
-	addConnectionDot(StartPoint, isPowered, false);
-	addConnectionDot(EndPoint  , isPowered, false);
+	addConnectionDot(StartPoint, isPowered, false, directionStart);
+	addConnectionDot(EndPoint  , isPowered, false, directionEnd  );
 
 	vectorWires.push_back(wire);
 
 	return wire;
 }
 
-void LadderGUI::addConnectionDot(POINT p, bool isPowered, bool isForced)
+void LadderGUI::addConnectionDot(POINT p, bool isPowered, bool isForced, eDirection direction)
 {
 	// Calculamos um retangulo para start.x = 0 pois assim teremos a coordenada do barramento.
 	// Somente adiciona um ponto apos o inicio do barramento...
@@ -1438,6 +1511,7 @@ void LadderGUI::addConnectionDot(POINT p, bool isPowered, bool isForced)
 		if(p.x == vectorConnectionDots[i].dot.x && p.y == vectorConnectionDots[i].dot.y) { // Ja existe!
 			vectorConnectionDots[i].isPowered = vectorConnectionDots[i].isPowered || isPowered;
 			vectorConnectionDots[i].count++;
+			vectorConnectionDots[i].direction += direction;
 
 			if(isForced && vectorConnectionDots[i].count < 3) {
 				vectorConnectionDots[i].count = 3;
@@ -1453,6 +1527,7 @@ void LadderGUI::addConnectionDot(POINT p, bool isPowered, bool isForced)
 	dot.dot       = p;
 	dot.count     = isForced ? 3 : 1;
 	dot.isPowered = isPowered;
+	dot.direction = direction;
 
 	vectorConnectionDots.push_back(dot);
 }
@@ -1677,10 +1752,10 @@ void LadderGUI::setLadderColors(tLadderColors colors, bool isModeSimulation)
 	if(!isModeSimulation) {
 		// Gradientes utilizados na caixa de dialogo
 		// Utilizamos as cores do modo normal
-		gradDialogDefButtonNormal = CreateGradient(LadderColors[index].DialogDefButtonUp  , LadderColors[index].DialogDefButtonDown);
-		gradDialogDefButtonOver   = CreateGradient(LadderColors[index].DialogDefButtonDown, LadderColors[index].DialogDefButtonUp  );
-		gradDialogButtonNormal    = CreateGradient(LadderColors[index].DialogButtonUp     , LadderColors[index].DialogButtonDown   );
-		gradDialogButtonOver      = CreateGradient(LadderColors[index].DialogButtonDown   , LadderColors[index].DialogButtonUp     );
+		gradDialogDefButtonNormal = CreateLinearGradient(LadderColors[index].DialogDefButtonUp  , LadderColors[index].DialogDefButtonDown);
+		gradDialogDefButtonOver   = CreateLinearGradient(LadderColors[index].DialogDefButtonDown, LadderColors[index].DialogDefButtonUp  );
+		gradDialogButtonNormal    = CreateLinearGradient(LadderColors[index].DialogButtonUp     , LadderColors[index].DialogButtonDown   );
+		gradDialogButtonOver      = CreateLinearGradient(LadderColors[index].DialogButtonDown   , LadderColors[index].DialogButtonUp     );
 	}
 }
 
@@ -1698,7 +1773,7 @@ void LadderGUI::setLadderColorGroup(int elem, tLadderColorGroup colors)
 		LadderColorGroups[elem].BorderText = CreateBrush(colors.BorderText);
 
 		// Aqui cria o gradiente para gerar o efeito de sombreamento da caixa 3D
-		LadderColorGroups[elem].BackgroundGradient = CreateGradient(LadderColorGroups[elem].Background, LadderColorGroups[elem].Border, 358);
+		LadderColorGroups[elem].BackgroundGradient = CreateLinearGradient(LadderColorGroups[elem].Background, LadderColorGroups[elem].Border, 0);
 	}
 }
 
@@ -1973,7 +2048,8 @@ bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 	string txt;
 	unsigned int posnl, pos = 0;
 	unsigned int totalHeight = 5;
-	POINT textSize, maxTextSize = { ddg->size.x * GridSize.x - 10, 1000 };
+	POINT textSize, maxTextSize = { max(1, ddg->size.x) * GridSize.x - 10, 1000 };
+	LONG maxTextWidth = 0;
 
 	do {
 		txt   = prop.str.substr(pos);
@@ -1987,10 +2063,16 @@ bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 		textSize = gui.getTextSize(txt.c_str(), maxTextSize, 0);
 		totalHeight += textSize.y + 5;
 
+		// Aqui calculamos o texto mais largo para limitar o tamanho da caixa
+		if(maxTextWidth < textSize.x) {
+			maxTextWidth = textSize.x;
+		}
+
 		lines.push_back(pair<string, unsigned int>(txt, textSize.y));
 		pos += txt.size();
 	} while(pos < prop.str.size());
 
+	ddg->size.x = max(1, ddg->size.x);
 	ddg->size.y = 1 + totalHeight / GridSize.y;
 
 	if(ddg->DontDraw) return poweredAfter;
@@ -1998,7 +2080,7 @@ bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = ddg->region = gui.DrawElementBar(this, SelectedState, ddg->start.y, ddg->size.y);
+	RECT r = ddg->region = gui.DrawElementBar(this, SelectedState, ddg->start.y, ddg->size.y, 1 + (maxTextWidth + 5) / GridSize.x);
 	tCommandSource source = { nullptr, nullptr, this };
 	gui.AddCommand(source, r, CmdSelectBelow, nullptr, false, false);
 
@@ -2010,7 +2092,7 @@ bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 
 	unsigned int i;
 	for(i = 0; i < lines.size(); i++) {
-		gui.DrawText(lines[i].first.c_str(), r, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_TopLeft, true);
+		gui.DrawText(lines[i].first.c_str(), r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft, true);
 		r.top += lines[i].second + 5;
 	}
 
@@ -5493,8 +5575,9 @@ bool USSCmdChangeValue(tCommandSource source, void *data)
 
 	if(field == 0) { // idName, Variavel
 		vector<eType> types;
-		types.push_back((which == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS);
-		types.push_back(eType_General);
+		types.push_back(eType_ReadUSS );
+		types.push_back(eType_WriteUSS);
+		types.push_back(eType_General );
 
 		ret = cmdChangeName(source.elem, 0, prop->idName, eType_ResetEnc, types, title, desc);
 
@@ -7997,7 +8080,7 @@ void LadderDiagram::DrawGUI(void)
 	POINT Grid1x1 = gui.getGridSize();
 	tLadderColors colors = gui.getLadderColors();
 
-	gui.SetBackgroundColor(colors.Background);
+	gui.SetBackgroundBrush(colors.Background);
 
 	char num[20];
 
@@ -8182,8 +8265,11 @@ void LadderDiagram::DrawGUI(void)
 	gui.DrawRectangle(rBusLeft , colors.Bus   );
 	gui.DrawRectangle(rBusRight, colors.BusOff);
 
-	gui.DrawEnd();
-	gui.NeedRedraw(false);
+	if(gui.DrawEnd()) {
+		gui.NeedRedraw(false);
+	} else {
+		gui.NeedRedraw(true);
+	}
 
 	if(ladder->getBreakPointActiveAtRung() > 0) {
 		if(DiagramData.needSelectRung) {

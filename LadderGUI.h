@@ -83,11 +83,15 @@ typedef struct {
 	COLORREF BackgroundGradient;
 } tLadderColorGroup;
 
+// Enumeracao que define uma direcao
+enum eDirection { eDirection_None = 0, eDirection_Left, eDirection_Top, eDirection_Right, eDirection_Bottom };
+
 // Estrutura que define um ponto de conexao entre linhas
 typedef struct {
 	POINT        dot; // Posicao do ponto
 	unsigned int count; // Numero de cruzamentos. Se apenas 1 significa apenas juncao de duas linhas
 	bool         isPowered; // Indica se o ponto esta em um linha energizada ou nao
+	unsigned int direction; // Variavel com bits indicando as direcoes cadastradas para o ponto
 } tConnectionDot;
 
 // Estrutura que define uma linha do ladder
@@ -233,7 +237,7 @@ public:
 
 	void DrawInit  (void);
 	void DrawStart (int OffsetX, int OffsetY);
-	void DrawEnd   (void);
+	bool DrawEnd   (void);
 	void NeedRedraw(bool isRedrawNeeded);
 	bool getNeedFullRedraw(void) { return needFullRedraw; }
 
@@ -243,7 +247,7 @@ public:
 	RECT DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, POINT GridSize, string ElemName, bool ShowExpand, bool poweredBefore);
 	void DrawElementBox(LadderElem *elem, int SelectedState, POINT StartTopLeft, pair<string, string> txt, bool poweredBefore);
 
-	RECT DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight);
+	RECT DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight, int GridWidth = 0);
 
 	void DrawDialogBox(void);
 
@@ -262,7 +266,7 @@ public:
 	void DialogCancel         (void);
 
 	tWire DrawWire(POINT StartPoint, POINT EndPoint, bool poweredBefore);
-	void  addConnectionDot(POINT p, bool isPowered, bool isForced);
+	void  addConnectionDot(POINT p, bool isPowered, bool isForced, eDirection direction = eDirection_None);
 
 	void        MouseClick(int x, int y, bool isDown, bool isDouble);
 	LadderElem *SearchElement(LadderElem *ref, eMoveCursor moveTo);

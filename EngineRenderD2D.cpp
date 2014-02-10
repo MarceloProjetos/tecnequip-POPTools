@@ -41,8 +41,10 @@ void EngineRenderD2D::FreeRenderTarget(void)
 	for(i=0; i<Brushes.size(); i++) {
 		if(Brushes[i].brushType == eBrushType_SolidColor) {
 			SafeRelease(&Brushes[i].solid.pBrush);
-		} else {
+		} else if(Brushes[i].brushType == eBrushType_GradientLinear) {
 			SafeRelease(&Brushes[i].linear.pBrush);
+		} else {
+			SafeRelease(&Brushes[i].radial.pBrush);
 		}
 	}
 	Brushes.clear();
@@ -142,7 +144,7 @@ HRESULT EngineRenderD2D::CreateBrush(unsigned int &index, unsigned int rgb, floa
 	return hr;
 }
 
-HRESULT EngineRenderD2D::CreateGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle)
+HRESULT EngineRenderD2D::CreateLinearGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle)
 {
     HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
@@ -178,12 +180,51 @@ HRESULT EngineRenderD2D::CreateGradient(unsigned int &index, unsigned int brushS
 	return hr;
 }
 
+HRESULT EngineRenderD2D::CreateRadialGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, POINT offset, eOffsetMode mode)
+{
+    HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
+
+	ID2D1SolidColorBrush *pBrushStart = getSolidColorBrush(brushStart), *pBrushEnd = getSolidColorBrush(brushEnd);
+
+	if(pRT != NULL && pBrushStart != nullptr && pBrushEnd != nullptr) {
+		tBrushDataD2D data;
+		data.brushType             = eBrushType_GradientRadial;
+		data.radial.offset         = D2D1::Point2F((FLOAT)offset.x, (FLOAT)offset.y);
+		data.radial.pGradientStops = NULL;
+		data.radial.pBrush         = NULL;
+		data.radial.mode           = mode;
+
+		D2D1_GRADIENT_STOP gradientStops[2];
+		gradientStops[0].color = pBrushStart->GetColor();
+		gradientStops[0].position = 0.0f;
+		gradientStops[1].color = pBrushEnd  ->GetColor();
+		gradientStops[1].position = 1.0f;
+
+		hr = pRT->CreateGradientStopCollection(
+			gradientStops,
+			2,
+			D2D1_GAMMA_2_2,
+			D2D1_EXTEND_MODE_CLAMP,
+			&data.radial.pGradientStops
+			);
+
+		if(SUCCEEDED(hr)) {
+			index = Brushes.size();
+			Brushes.push_back(data);
+		}
+	}
+
+	return hr;
+}
+
 ID2D1Brush *EngineRenderD2D::getBrush(unsigned int brush, D2D1_RECT_F rf)
 {
 	if(Brushes[brush].brushType == eBrushType_SolidColor) {
 		return getSolidColorBrush(brush);
-	} else {
+	} else if(Brushes[brush].brushType == eBrushType_GradientLinear) {
 		return getLinearGradientBrush(brush, rf);
+	} else {
+		return getRadialGradientBrush(brush, rf);
 	}
 }
 
@@ -259,6 +300,40 @@ ID2D1LinearGradientBrush *EngineRenderD2D::getLinearGradientBrush(unsigned int b
 
 		if(SUCCEEDED(hr)) {
 			return Brushes[brush].linear.pBrush;
+		}
+	}
+
+	return nullptr;
+}
+
+ID2D1RadialGradientBrush *EngineRenderD2D::getRadialGradientBrush(unsigned int brush, D2D1_RECT_F rf)
+{
+	if(brush < Brushes.size() && Brushes[brush].brushType == eBrushType_GradientRadial) {
+		SafeRelease(&Brushes[brush].radial.pBrush);
+
+		// Calculo dos deslocamentos
+		float radiusX = (rf.right - rf.left)/2;
+		float radiusY = (rf.bottom - rf.top)/2;
+
+		D2D1_POINT_2F center = { rf.left + radiusX, rf.top + radiusY }, offset = Brushes[brush].radial.offset;
+
+		if(Brushes[brush].radial.mode != eOffsetMode_Units) {
+			offset.x = (radiusX * Brushes[brush].radial.offset.x)/100;
+			offset.y = (radiusY * Brushes[brush].radial.offset.y)/100;
+		}
+
+		HRESULT hr = pRT->CreateRadialGradientBrush(
+			D2D1::RadialGradientBrushProperties(
+				center,
+				offset,
+				radiusX,
+				radiusY),
+			Brushes[brush].radial.pGradientStops,
+			&Brushes[brush].radial.pBrush
+			);
+
+		if(SUCCEEDED(hr)) {
+			return Brushes[brush].radial.pBrush;
 		}
 	}
 
@@ -829,12 +904,62 @@ HRESULT EngineRenderD2D::Flush(void)
 	return hr;
 }
 
+void EngineRenderD2D::DrawTest(void)
+{
+	ID2D1RadialGradientBrush *m_pRadialGradientBrush;
+
+	// Create an array of gradient stops to put in the gradient stop
+	// collection that will be used in the gradient brush.
+	ID2D1GradientStopCollection *pGradientStops = NULL;
+
+	D2D1_GRADIENT_STOP gradientStops[2];
+	gradientStops[0].color = D2D1::ColorF(D2D1::ColorF::LightPink, 1);
+	gradientStops[0].position = 0.0f;
+	gradientStops[1].color = D2D1::ColorF(D2D1::ColorF::DarkRed, 1);
+	gradientStops[1].position = 1.0f;
+	// Create the ID2D1GradientStopCollection from a previously
+	// declared array of D2D1_GRADIENT_STOP structs.
+	HRESULT hr = pRT->CreateGradientStopCollection(
+		gradientStops,
+		2,
+		D2D1_GAMMA_2_2,
+		D2D1_EXTEND_MODE_CLAMP,
+		&pGradientStops
+		);
+
+	// The center of the gradient is in the center of the box.
+	// The gradient origin offset was set to zero(0, 0) or center in this case.
+	if (SUCCEEDED(hr))
+	{
+		hr = pRT->CreateRadialGradientBrush(
+			D2D1::RadialGradientBrushProperties(
+				D2D1::Point2F(400.0f, 200.0f),
+				D2D1::Point2F(-75, -75),
+				150.0f,
+				150.0f),
+			pGradientStops,
+			&m_pRadialGradientBrush
+			);
+	}
+
+
+	D2D1_ELLIPSE ellipse;
+
+	ellipse.point = D2D1::Point2F(400.0f, 200.0f);
+	ellipse.radiusX = 150.0f;
+	ellipse.radiusY = 150.0f;
+
+	pRT->FillEllipse(ellipse, m_pRadialGradientBrush);
+}
+
 HRESULT EngineRenderD2D::EndDraw(void)
 {
 	static bool locked = false;
 	HRESULT hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
 
 	if(pRT != NULL) {
+//		DrawTest();
+
 		hr = pRT->EndDraw();
 		if(FAILED(hr) && !locked) {
 			if(hr != D2DERR_RECREATE_TARGET) {

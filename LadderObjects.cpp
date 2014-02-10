@@ -5334,7 +5334,7 @@ LadderElem *LadderElemUSS::Clone(LadderDiagram *diagram)
 
 bool LadderElemUSS::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idName.first && type != ((getWhich() == ELEM_READ_USS) ? eType_ReadUSS : eType_WriteUSS) && type != eType_Reserved) {
+	if(id == prop.idName.first && type != eType_ReadUSS && type != eType_WriteUSS && type != eType_Reserved) {
 		return false;
 	}
 
@@ -8933,7 +8933,7 @@ int LadderCircuit::ElemInSubcktSeries(LadderContext context, InsertionPoint *poi
 				(point->subckt.elem != context.SelectedElem ? 1 : context.SelectedState == SELECTED_LEFT)) {
 				status = SUBCKT_STATUS_FIRST;
 			} else if(i == vectorSubckt.size() - 1 && (status != SUBCKT_STATUS_FIRST) &&
-				(point->subckt.elem != context.SelectedElem ? 1 : context.SelectedState == SELECTED_RIGHT)) {
+				(point->subckt.elem != context.SelectedElem ? 1 : context.SelectedState != SELECTED_LEFT)) {
 				status = SUBCKT_STATUS_LAST;
 			} else {
 				status = SUBCKT_STATUS_INSIDE;
@@ -10460,8 +10460,19 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 			moveTo = eMoveCursor_Right;
 		}
 
+		// Seleciona o elemento a ser excluido e movimenta o cursor para descobrir para onde devemos deslocar o cursor apos a exclusao
 		SelectElement(elem, state);
 		MoveCursor(moveTo);
+
+		// Salva o ponteiro para o novo elemento e posicao do cursor
+		LadderElem *newElem = context.SelectedElem;
+		int newState = context.SelectedState;
+		if(newElem == elem) { // novo eh o mesmo que o que esta sendo excluido! desconsidera...
+			newElem = nullptr;
+		}
+
+		// Ja sabemos para onde movimentar, seleciona o elemento original novamente
+		SelectElement(elem, state);
 
 		if(rungs[rung]->rung->DelElement(elem, context)) {
 			// Elemento removido, chama a funcao para que o elemento realize qualquer etapa
@@ -10475,6 +10486,10 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 
 			if(elem == context.ParallelStart) {
 				context.ParallelStart = nullptr;
+			}
+
+			if(newElem != nullptr) {
+				SelectElement(newElem, newState);
 			}
 
 			// Se nao houver elemento selecionado, seleciona o primeiro elemento do circuito
@@ -10703,7 +10718,7 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 		} else {
 			Subckt End, Previous = { nullptr, nullptr }, Next = { nullptr, nullptr };
 
-			if(context.SelectedState == SELECTED_RIGHT) {
+			if(context.SelectedState != SELECTED_LEFT) {
 				End = EndPoint.series->getSubckt(EndPoint.point);
 				// Next
 				if(End.elem == EndPoint.subckt.elem && EndPoint.point < (EndPoint.series->getSize()-1)) {
@@ -10724,7 +10739,7 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 					} while(LastIsEndParallel);
 					Previous = EndPoint.series->getSubckt(EndPoint.point);
 				}
-			} else if(context.SelectedState == SELECTED_LEFT) {
+			} else {
 				End = EndPoint.series->getSubckt(EndPoint.point);
 				// Next
 				if(End.elem == nullptr && !End.subckt->IsSeries()) {
@@ -11230,6 +11245,8 @@ bool LadderDiagram::Load(string filename)
 	}
 
 	fclose(f);
+
+	NeedRedraw(true);
 
 	context.isLoadingFile = false;
 

@@ -5,7 +5,10 @@
 enum eAlignMode { eAlignMode_TopLeft = 0, eAlignMode_Center, eAlignMode_BottomRight };
 
 // Enumeracao com os tipos de pincel disponiveis.
-enum eBrushType { eBrushType_SolidColor, eBrushType_GradientLinear };
+enum eBrushType { eBrushType_SolidColor = 0, eBrushType_GradientLinear, eBrushType_GradientRadial };
+
+// Enumeracao com os modos de offset disponiveis
+enum eOffsetMode { eOffsetMode_Units = 0, eOffsetMode_Percentage };
 
 // Enumeracao com todos os erros traduzidos a partir de HRESULT
 enum eTranslatedError { eTranslatedError_Unknown = 0, eTranslatedError_RecreateTarget };
@@ -21,8 +24,9 @@ public:
 
 	virtual HRESULT CreateRenderTarget(HWND hwnd)=0;
 	virtual HRESULT ResizeRenderTarget(HWND hwnd)=0;
-	virtual HRESULT CreateBrush   (unsigned int &index, unsigned int rgb, float alpha = 1.0f)=0;
-	virtual HRESULT CreateGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle = 0)=0;
+	virtual HRESULT CreateBrush         (unsigned int &index, unsigned int rgb, float alpha = 1.0f)=0;
+	virtual HRESULT CreateLinearGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle  = 0)=0;
+	virtual HRESULT CreateRadialGradient(unsigned int &index, unsigned int brushStart, unsigned int brushEnd, POINT        offset, eOffsetMode mode = eOffsetMode_Units)=0;
 
 	virtual POINT getTextSize(const char *txt, POINT maxSize, unsigned int format)=0;
 

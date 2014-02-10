@@ -44,7 +44,12 @@ static void MakeControls(void)
         82, 16, 115, 321, SetBitDialog, NULL, Instance, NULL);
     FixedFont(NameTextbox);
 
-	LoadIOListToComboBox(NameTextbox, vector<eType>()); // Vetor vazio, todos os tipos...
+	vector<eType> types;
+	types.push_back(eType_General);
+	types.push_back(eType_ReadModbus);
+	types.push_back(eType_WriteModbus);
+
+	LoadIOListToComboBox(NameTextbox, types);
 	SendMessage(NameTextbox, CB_SETDROPPEDWIDTH, 300, 0);
 
     HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("Elemento:"),

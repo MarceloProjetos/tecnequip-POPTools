@@ -36,6 +36,12 @@ private:
 			unsigned int brushEnd;
 			unsigned int angle;
 		} linear;
+		struct {
+			unsigned int brushStart;
+			unsigned int brushEnd;
+			POINT        offset;
+			eOffsetMode  mode;
+		} radial;
 	} tBrushData;
 
 	std::vector<tBrushData> Brushes;
@@ -61,8 +67,11 @@ public:
 	HRESULT GetRender(EngineRender **ppRender);
 
 	HRESULT SetBackgroundColor(COLORREF rgb);
+	HRESULT SetBackgroundBrush(COLORREF brush);
+
 	unsigned int CreateBrush(COLORREF rgb, float alpha = 1.0f);
-	unsigned int CreateGradient(unsigned int brushStart, unsigned int brushEnd, unsigned int angle = 0);
+	unsigned int CreateLinearGradient(unsigned int brushStart, unsigned int brushEnd, unsigned int angle = 0);
+	unsigned int CreateRadialGradient(unsigned int brushStart, unsigned int brushEnd, POINT offset, eOffsetMode mode = eOffsetMode_Units);
 
 	POINT getTextSize(const char *txt, POINT maxSize, unsigned int format);
 

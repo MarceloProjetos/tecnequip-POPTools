@@ -2082,6 +2082,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     SetTimer(MainWindow, TIMER_BLINK_CURSOR, 800, BlinkCursor);
 	SetAutoSaveInterval(POPSettings.AutoSaveInterval);
 
+    RefreshScrollbars();
+	RefreshControlsToSettings();
+    UpdateMainWindowTitleBar();
+
+	// Initialize ModBUS protocol and devices
+	Init_MBDev();
+	Init_MBDev_Slave();
+
 	if(strlen(lpCmdLine) > 0) {
         char line[MAX_PATH], CurrentSaveFile[MAX_PATH];
         if(*lpCmdLine == '"') { 
@@ -2095,14 +2103,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         GetFullPathName(line, sizeof(CurrentSaveFile), CurrentSaveFile, &s);
         OpenDialog(CurrentSaveFile);
     }
-
-    RefreshScrollbars();
-	RefreshControlsToSettings();
-    UpdateMainWindowTitleBar();
-
-	// Initialize ModBUS protocol and devices
-	Init_MBDev();
-	Init_MBDev_Slave();
 
 	// Loop de mensagens
 	while(DoEvents());
