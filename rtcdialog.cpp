@@ -698,6 +698,7 @@ bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *
 
 	EnableWindow(MainWindow, TRUE);
 	DestroyWindow(RTCDialog);
+	SetFocus(MainWindow);
 
 	return changed;
 }

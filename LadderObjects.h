@@ -187,14 +187,15 @@ enum eSearchAndReplaceMode {
 
 /// Enumeracao que define os modos de movimentacao do cursor
 enum eMoveCursor  {
-	eMoveCursor_DiagramHome = 0, ///< Movimenta o cursor para o inicio do diagrama, ou seja, o primeiro elemento da primeira linha
-	eMoveCursor_RungHome,        ///< Movimenta o cursor para o inicio da linha atual
-	eMoveCursor_DiagramEnd,      ///< Movimenta o cursor para o final do diagrama, ou seja, o ultimo elemento da ultima linha
-	eMoveCursor_RungEnd,         ///< Movimenta o cursor para o final da linha atual
-	eMoveCursor_Up,              ///< Movimenta o cursor para cima. Altera a selecao do objeto atual para a parte superior e, caso ja selecionado, busca o objeto mais proximo.
-	eMoveCursor_Down,            ///< Movimenta o cursor para baixo. Altera a selecao do objeto atual para a parte inferior e, caso ja selecionado, busca o objeto mais proximo.
-	eMoveCursor_Left,            ///< Movimenta o cursor para a esquerda. Altera a selecao do objeto atual para a lateral esquerda e, caso ja selecionado, busca o objeto mais proximo.
-	eMoveCursor_Right,           ///< Movimenta o cursor para a direita. Altera a selecao do objeto atual para a lateral direita e, caso ja selecionado, busca o objeto mais proximo.
+	eMoveCursor_Any = 0,     ///< Movimenta o cursor em qualquer direcao, indicando que devemos localizar o elemento mais proximo
+	eMoveCursor_DiagramHome, ///< Movimenta o cursor para o inicio do diagrama, ou seja, o primeiro elemento da primeira linha
+	eMoveCursor_RungHome,    ///< Movimenta o cursor para o inicio da linha atual
+	eMoveCursor_DiagramEnd,  ///< Movimenta o cursor para o final do diagrama, ou seja, o ultimo elemento da ultima linha
+	eMoveCursor_RungEnd,     ///< Movimenta o cursor para o final da linha atual
+	eMoveCursor_Up,          ///< Movimenta o cursor para cima. Altera a selecao do objeto atual para a parte superior e, caso ja selecionado, busca o objeto mais proximo.
+	eMoveCursor_Down,        ///< Movimenta o cursor para baixo. Altera a selecao do objeto atual para a parte inferior e, caso ja selecionado, busca o objeto mais proximo.
+	eMoveCursor_Left,        ///< Movimenta o cursor para a esquerda. Altera a selecao do objeto atual para a lateral esquerda e, caso ja selecionado, busca o objeto mais proximo.
+	eMoveCursor_Right,       ///< Movimenta o cursor para a direita. Altera a selecao do objeto atual para a lateral direita e, caso ja selecionado, busca o objeto mais proximo.
 };
 
 /// Enumeracao que define o retorno das caixas de dialogo

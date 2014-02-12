@@ -1347,9 +1347,17 @@ bool ShowMultisetDADialog(LadderElemMultisetDAProp *l, string *stime, string *sd
 	tempo = IsNumber(time) ? atoi(time) : 600;
 	//initval = current.initval;
 
+	RECT rDrawWindow;
+	POINT start, size = { 880, 600 };
+
+	GetWindowRect(DrawWindow, &rDrawWindow);
+
+	start.x = rDrawWindow.left + (rDrawWindow.right  - rDrawWindow.left - size.x)/2;
+	start.y = rDrawWindow.top  + (rDrawWindow.bottom - rDrawWindow.top  - size.y)/2;
+
 	MultisetDADialog = CreateWindowClient(0, "POPToolsDialog",
         _("Rampa de Aceleração/Desaceleração"), WS_OVERLAPPED | WS_SYSMENU | WS_EX_CONTROLPARENT,
-        100, 100, 880, 600, MainWindow, NULL, Instance, NULL);
+        start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL);
 
 	PrevMultisetDADialogProc = SetWindowLongPtr(MultisetDADialog, GWLP_WNDPROC, 
         (LONG_PTR)MultisetDADialogProc);

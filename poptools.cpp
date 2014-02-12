@@ -2030,8 +2030,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	Instance = hInstance;
 
-    MainHeap = HeapCreate(0, 1024*64, 0);
-
 	LoadSettings();
 
 	setLanguage(POPSettings.idLanguage);

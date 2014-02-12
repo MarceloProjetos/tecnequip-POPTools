@@ -30,11 +30,11 @@ void ExportDrawingAsText(char *file)
 
 	ColsAvailable = maxWidth;
 
-    ExportBuffer = (char **)CheckMalloc(totalHeight * sizeof(char *));
+    ExportBuffer = (char **)malloc(totalHeight * sizeof(char *));
    
     int l = maxWidth*POS_WIDTH + 8;
     for(i = 0; i < totalHeight; i++) {
-        ExportBuffer[i] = (char *)CheckMalloc(l);
+        ExportBuffer[i] = (char *)malloc(l);
         memset(ExportBuffer[i], ' ', l-1);
         ExportBuffer[i][5] = '|';
         ExportBuffer[i][4] = '|';
@@ -67,9 +67,9 @@ void ExportDrawingAsText(char *file)
     for(i = 0; i < totalHeight; i++) {
         ExportBuffer[i][l-3] = '|';
         fprintf(f, "%s\n", ExportBuffer[i]);
-        CheckFree(ExportBuffer[i]);
+        free(ExportBuffer[i]);
     }
-    CheckFree(ExportBuffer);
+    free(ExportBuffer);
     ExportBuffer = NULL;
 
     fprintf(f, _("\n\nE/S ATRIBUIDA:\n\n"));

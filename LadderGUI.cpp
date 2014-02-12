@@ -1666,6 +1666,45 @@ LadderElem *LadderGUI::SearchElement(LadderElem *ref, eMoveCursor moveTo)
 	return elem;
 }
 
+LadderElem *LadderGUI::getNearestElem(LadderElem *ref)
+{
+	LadderElem *elem = nullptr;
+
+	if(ref != nullptr) {
+		unsigned int i;
+		LONG newxy, minxy = 0;
+		POINT refCenter, elemCenter;
+		RECT refArea = { 0, 0, 0, 0 }, elemArea;
+
+		// Primeiro buscamos a area do elemento de referencia
+		for(i = 0; i < vectorAreaElements.size(); i++) {
+			if(vectorAreaElements[i].first == ref) { // Encontrado!
+				refArea = vectorAreaElements[i].second;
+				break;
+			}
+		}
+
+		refCenter  = getCenter(refArea);
+
+		// Agora comecamos o loop entre todos os elementos cadastrados, calculando a diagonal entre seus centros
+		for(i = 0; i < vectorAreaElements.size(); i++) {
+			if(vectorAreaElements[i].first != ref) { // Elemento nao eh o de referencia, calcula diagonal
+				elemArea   = vectorAreaElements[i].second;
+				elemCenter = getCenter(elemArea);
+
+				newxy = abs(refCenter.x - elemCenter.x) + abs(refCenter.y - elemCenter.y);
+
+				if(!minxy || minxy > newxy) {
+					minxy = newxy;
+					elem  = vectorAreaElements[i].first;
+				}
+			}
+		}
+	}
+
+	return elem;
+}
+
 RECT LadderGUI::getElemArea(LadderElem *elem)
 {
 	unsigned int i;
@@ -8334,7 +8373,11 @@ void LadderDiagram::MouseClick(int x, int y, bool isDown, bool isDouble)
 
 LadderElem *LadderDiagram::SearchElement(eMoveCursor moveTo)
 {
-	return gui.SearchElement(context.SelectedElem, moveTo);
+	if(moveTo == eMoveCursor_Any) {
+		return gui.getNearestElem(context.SelectedElem);
+	} else {
+		return gui.SearchElement(context.SelectedElem, moveTo);
+	}
 }
 
 void LadderDiagram::ShowIoMapDialog(int item)
@@ -8381,8 +8424,6 @@ void PaintWindow(void)
 {
 	static bool first = true;
 
-    ok();
-
 	// Update Ribbon Height
 	if(!RibbonHeight || first) {
 		first = false;
@@ -8395,8 +8436,6 @@ void PaintWindow(void)
 		gui.DrawStart(0, 0);
 		gui.DrawEnd();
 	}
-
-	ok();
 }
 
 //-----------------------------------------------------------------------------

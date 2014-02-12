@@ -9859,7 +9859,7 @@ void LadderDiagram::MoveCursor(eMoveCursor moveTo)
 		}
 		break;
 
-	default: return;
+	default: elem = SearchElement(moveTo);
 	}
 
 	if(elem != nullptr) {
@@ -10452,17 +10452,9 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 		CheckpointEnd();
 		return ret;
 	} else {
-		int state          = SELECTED_LEFT;
-		eMoveCursor moveTo = eMoveCursor_Left;
-		// Se for o primeiro elemento do circuito, deve buscar para a direita, nao esquerda...
-		if(getSubcktForElement(elem)->getFirstElement() == elem) {
-			state  = SELECTED_RIGHT;
-			moveTo = eMoveCursor_Right;
-		}
-
 		// Seleciona o elemento a ser excluido e movimenta o cursor para descobrir para onde devemos deslocar o cursor apos a exclusao
-		SelectElement(elem, state);
-		MoveCursor(moveTo);
+		SelectElement(elem, SELECTED_LEFT);
+		MoveCursor(eMoveCursor_Any); // busca o elemento mais proximo em qualquer direcao
 
 		// Salva o ponteiro para o novo elemento e posicao do cursor
 		LadderElem *newElem = context.SelectedElem;
@@ -10472,7 +10464,8 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 		}
 
 		// Ja sabemos para onde movimentar, seleciona o elemento original novamente
-		SelectElement(elem, state);
+		// Seleciona em qualquer sentido pois sera excluido de qualquer forma
+		SelectElement(elem, SELECTED_LEFT);
 
 		if(rungs[rung]->rung->DelElement(elem, context)) {
 			// Elemento removido, chama a funcao para que o elemento realize qualquer etapa

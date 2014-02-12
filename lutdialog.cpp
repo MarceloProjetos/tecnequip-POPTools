@@ -422,6 +422,7 @@ bool ShowLookUpTableDialog(LadderElemLUTProp *t, POINT ElemStart, POINT ElemSize
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(LutDialog);
+	SetFocus(MainWindow);
 
 	return changed;
 }
@@ -516,6 +517,7 @@ bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, POINT ElemStart, POIN
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(LutDialog);
+	SetFocus(MainWindow);
 
 	return changed;
 }

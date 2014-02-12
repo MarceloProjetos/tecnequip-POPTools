@@ -735,9 +735,17 @@ void ShowDebugDialog(void)
 
 	RotateList_Init(&RotateLog);
 
+	RECT rDrawWindow;
+	POINT start, size = { 664, 590 };
+
+	GetWindowRect(DrawWindow, &rDrawWindow);
+
+	start.x = rDrawWindow.left + (rDrawWindow.right  - rDrawWindow.left - size.x)/2;
+	start.y = rDrawWindow.top  + (rDrawWindow.bottom - rDrawWindow.top  - size.y)/2;
+
 	DebugDialog = CreateWindowClient(0, "POPDebugDialog",
         _("Depurar"), WS_OVERLAPPED | WS_SYSMENU,
-        100, 100, 664, 590, MainWindow, NULL, Instance, NULL);
+        start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
 	SyncConfigToScreen();

@@ -158,6 +158,7 @@ bool ShowVarBitDialog(const char *title, const char *varname, string *name, int 
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(SetBitDialog);
+	SetFocus(MainWindow);
 
 	return changed;
 }

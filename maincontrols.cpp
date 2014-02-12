@@ -514,12 +514,12 @@ void MainWindowResized(void)
     if(IoListHeight < 30) {
         IoListHeight = 30;
     }
-    IoListTop = main.bottom - IoListHeight - statusHeight;
+	IoListTop = main.bottom - IoListHeight - statusHeight;
     // Make sure that we can't drag the top of the I/O list above the
     // bottom of the menu bar, because it then becomes inaccessible.
-    if(IoListTop < 5) {
-        IoListHeight = main.bottom - statusHeight - 5;
-        IoListTop = main.bottom - IoListHeight - statusHeight;
+    if(IoListTop < 5 + (int)RibbonHeight) {
+        IoListTop = 5 + RibbonHeight;
+        IoListHeight = main.bottom - IoListTop - statusHeight;
     }
 
 	if (UartSimulationWindow != NULL) {

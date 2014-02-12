@@ -185,6 +185,7 @@ bool ShowModbusDialog(int mode_write, string *name, int *elem, int *address,
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(SetBitDialog);
+	SetFocus(MainWindow);
 
 	return changed;
 }

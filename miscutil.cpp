@@ -1,8 +1,5 @@
 #include "poptools.h"
 
-// Allocate memory on a local heap
-HANDLE MainHeap;
-
 // Try to common a bit of stuff between the dialog boxes, since only one
 // can be open at any time.
 HWND OkButton;
@@ -57,50 +54,6 @@ void Warning(const char *title, const char *str, ...)
     vsprintf(buf, str, f);
 
 	ladder->ShowDialog(eDialogType_Message, false, title, buf);
-}
-
-//-----------------------------------------------------------------------------
-// Check the consistency of the heap on which all the PLC program stuff is
-// stored.
-//-----------------------------------------------------------------------------
-void CheckHeap(char *file, int line)
-{
-    static unsigned int SkippedCalls;
-    static SDWORD LastCallTime;
-    SDWORD now = GetTickCount();
-
-    // It slows us down too much to do the check every time we are called;
-    // but let's still do the check periodically; let's do it every 70
-    // calls or every 20 ms, whichever is sooner.
-    if(SkippedCalls < 70 && (now - LastCallTime) < 20) {
-        SkippedCalls++;
-        return;
-    }
-
-    SkippedCalls = 0;
-    LastCallTime = now;
-
-    if(!HeapValidate(MainHeap, 0, NULL)) {
-        dbp("file %s line %d", file, line);
-        Error("Noticed memory corruption at file '%s' line %d.", file, line);
-        oops();
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Like malloc/free, but memsets memory allocated to all zeros. Also TODO some
-// checking and something sensible if it fails.
-//-----------------------------------------------------------------------------
-void *CheckMalloc(size_t n)
-{
-    ok();
-    void *p = HeapAlloc(MainHeap, HEAP_ZERO_MEMORY, n);
-    return p;
-}
-void CheckFree(void *p)
-{
-    ok();
-    HeapFree(MainHeap, 0, p);
 }
 
 //-----------------------------------------------------------------------------

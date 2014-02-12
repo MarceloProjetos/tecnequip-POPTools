@@ -269,7 +269,9 @@ public:
 	void  addConnectionDot(POINT p, bool isPowered, bool isForced, eDirection direction = eDirection_None);
 
 	void        MouseClick(int x, int y, bool isDown, bool isDouble);
-	LadderElem *SearchElement(LadderElem *ref, eMoveCursor moveTo);
+
+	LadderElem *getNearestElem(LadderElem *ref);
+	LadderElem *SearchElement (LadderElem *ref, eMoveCursor moveTo);
 
 	RECT getElemArea(LadderElem *elem);
 

@@ -1278,5 +1278,6 @@ bool ShowConfDialog(eConfSection confSection)
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(ConfDialog);
+	SetFocus(MainWindow);
     return changed;
 }

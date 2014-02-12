@@ -659,16 +659,6 @@ int ShowTaskDialog(const char *pszMainInstruction, const char *pszContent, PCWST
 
 /*** End of ShowTaskDialog prototypes ***/
 
-// memory debugging, because I often get careless; ok() will check that the
-// heap used for all the program storage is not yet corrupt, and oops() if
-// it is
-void CheckHeap(char *file, int line);
-#ifdef _DEBUG
-#define ok() CheckHeap(__FILE__, __LINE__)
-#else
-#define ok()
-#endif
-
 // maincontrols.cpp
 void MakeMainWindowControls(void);
 void VscrollProc(WPARAM wParam);
@@ -863,9 +853,6 @@ void Error(const char *str, ...);
 void Error(const char *title, const char *str, va_list f);
 void Warning(const char *title, const char *str, ...);
 long long ElapsedTime(bool ShowDialog, void (*fnc)(void *), void *data);
-void *CheckMalloc(size_t n);
-void CheckFree(void *p);
-extern HANDLE MainHeap;
 HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,
     HMENU menu, HINSTANCE instance, void *param);
