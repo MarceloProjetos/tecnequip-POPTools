@@ -189,7 +189,7 @@ bool LadderElem::Save(FILE *f)
 
 bool LadderElem::Load(FILE *f, unsigned int version)
 {
-	updateIO(Diagram, true); // Descarta o I/O referenciado quando da criacao do objeto
+//	updateIO(Diagram, true); // Descarta o I/O referenciado quando da criacao do objeto
 	return internalLoad(f, version);
 }
 
@@ -11916,6 +11916,10 @@ void LadderDiagram::updateTypeIO(unsigned long id)
 
 bool LadderDiagram::getIO(LadderElem *elem, tRequestIO &infoIO, bool tryGeneralTypeFirst)
 {
+	if(context.isLoadingFile) {
+		return true;
+	}
+
 	bool ret = true;
 	pair<unsigned long, int> newpin;
 

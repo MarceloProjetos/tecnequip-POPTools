@@ -29,10 +29,13 @@ typedef struct {
 	bool  expanded;
 	bool  DontDraw;
 	bool  isFullRedraw;
+	bool  isHidden;
 
 	bool  hasBreakpoint;
 
 	LadderContext *context;
+
+	LadderRung    *rung;
 } tDataDrawGUI;
 
 // Estruturas que armazenam as cores do diagrama ladder

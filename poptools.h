@@ -674,6 +674,7 @@ void StatusBarSetText(int bar, const char * text);
 void RefreshDrawWindow();
 void ShowTabCtrl(bool visible);
 extern int TabHeight;
+extern int DialogHeight;
 extern int ScrollWidth;
 extern int ScrollHeight;
 extern BOOL NeedHoriz;

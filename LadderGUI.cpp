@@ -696,6 +696,8 @@ bool LadderGUI::DrawEnd(void)
 	// A seguir desenha a janela de dialogo, se ativa...
 	if(isDialogActive) {
 		DrawDialogBox();
+	} else if(DialogHeight > 0) {
+		DialogHeight = 0;
 	}
 
 #ifdef SHOW_DEBUG_INFO
@@ -1178,7 +1180,14 @@ void LadderGUI::DrawDialogBox(void)
 	rDialog.top    += offsetY;
 	rDialog.bottom += offsetY;
 
-	// Todos os calculos finalizados. Agora desenhamos a janela
+	// Todos os calculos finalizados.
+
+	// Primeiro precisamos verificar se o usuario vai conseguir visualizar a janela pois, caso a lista de I/O
+	// estiver muito para cima, podera nao haver espaco para a janela.
+	DialogHeight = rDialog.bottom - rDialog.top;
+	MainWindowResized();
+
+	// Agora desenhamos a janela
 	DrawRectangle(rDialog, colors.DialogBorder, true, dialogRadius);
 	RECT rTitle = rDialog;
 	rTitle.top    += borderSize;
@@ -7956,6 +7965,55 @@ bool LadderCircuit::DrawGUI(bool poweredBefore, void *data)
 
 	ElemDDG = *ddg;
 
+	if(ddg->isHidden && !ddg->context->inSimulationMode) {
+		ddg->size.y = 2;
+
+		if(ddg->DontDraw == false) {
+			tWire wire;
+			POINT start = { ddg->start.x - 1, ddg->start.y }, end;
+
+			// Desenha a linha horizontal representando o inicio da linha
+			end.x = start.x + 1;
+			end.y = start.y;
+			wire = gui.DrawWire(start, end, false);
+
+			// Desenha as linhas verticais inclinadas, representando a interrupcao do desenho da linha
+			start = wire.end;
+			end = start;
+			start.x -= 5;
+			start.y -= 10;
+			end.x   += 5;
+			end.y   += 10;
+			gui.DrawLine(start, end, gui.getLadderColors().Wire);
+
+			start.x += 5;
+			end.x   += 5;
+			gui.DrawLine(start, end, gui.getLadderColors().Wire);
+
+			// Desenha a linha horizontal representando o fim da linha
+			start.x = ddg->size.x - 1;
+			start.y = ddg->start.y;
+			end.x = start.x + 1;
+			end.y = start.y;
+			wire = gui.DrawWire(start, end, false);
+
+			// Desenha as linhas verticais inclinadas, representando a interrupcao do desenho da linha
+			start = wire.start;
+			end = start;
+			start.x -= 5;
+			start.y -= 10;
+			end.x   += 5;
+			end.y   += 10;
+			gui.DrawLine(start, end, gui.getLadderColors().Wire);
+
+			start.x -= 5;
+			end.x   -= 5;
+			gui.DrawLine(start, end, gui.getLadderColors().Wire);
+		}
+
+		return poweredAfter;
+	}
+
 	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
 		ElemDDG.size           = ddg->size;
 		ElemDDG.context        = ddg->context;
@@ -8082,6 +8140,19 @@ bool LadderCircuit::DrawGUI(bool poweredBefore, void *data)
 	return poweredAfter;
 }
 
+static int needHideRung = -1;
+
+bool cmdToggleHidden(tCommandSource source, void *data)
+{
+	if(data != nullptr) {
+		needHideRung = *(int *)data;
+		ladder->NeedRedraw(true);
+		InvalidateRect(DrawWindow, NULL, FALSE);
+	}
+
+	return true;
+}
+
 bool cmdToggleBreakpoint(tCommandSource source, void *data)
 {
 	if(data != nullptr) {
@@ -8125,7 +8196,7 @@ void LadderDiagram::DrawGUI(void)
 
 	vector<LadderCircuit>::size_type i;
 	tDataDrawGUI RungDDG;
-	tDataDrawGUI zeroRungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, true, false, &context };
+	tDataDrawGUI zeroRungDDG = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, true, true, true, false, false, &context, nullptr };
 
 	RECT rWindow;
 	GetClientRect(DrawWindow, &rWindow);
@@ -8133,9 +8204,12 @@ void LadderDiagram::DrawGUI(void)
 	bool isFullRedraw = gui.getNeedFullRedraw() || (lastDiagram != this);
 	lastDiagram = this;
 
+	vector<tDataDrawGUI> oldRungData;
+
 	if(isFullRedraw) {
 		bool isFirstStep = true, needAnotherStep = false;
 
+		oldRungData = DiagramData.rungData;
 		DiagramData.rungData.clear();
 		DiagramData.SizeMax.x = DiagramData.SizeMax.y = 0;
 
@@ -8146,6 +8220,18 @@ void LadderDiagram::DrawGUI(void)
 
 			for(i = 0; i < rungs.size(); i++) {
 				RungDDG.size.x = DiagramData.SizeMax.x;
+
+				vector<tDataDrawGUI>::iterator it;
+				for(it = oldRungData.begin(); it != oldRungData.end(); it++) {
+					if(it->rung == rungs[i]) {
+						RungDDG.isHidden = it->isHidden;
+						break;
+					}
+				}
+
+				if(needHideRung == i) {
+					RungDDG.isHidden = !RungDDG.isHidden;
+				}
 
 				// Se a linha tiver comentario e for a primeira passagem, nao executa.
 				// Os comentarios se ajustam na tela entao precisam da largura do diagrama,
@@ -8251,8 +8337,26 @@ void LadderDiagram::DrawGUI(void)
 
 		if(isFullRedraw || (rungs[i]->hasBreakpoint && context.inSimulationMode) ||
 			(DiagramData.rungData[i].region.bottom >= rDrawArea.top && DiagramData.rungData[i].region.top <= rDrawArea.bottom)) {
+				if(isFullRedraw) {
+					RungDDG.rung = rungs[i];
+					vector<tDataDrawGUI>::iterator it;
+					for(it = oldRungData.begin(); it != oldRungData.end(); it++) {
+						if(it->rung == rungs[i]) {
+							RungDDG.isHidden = it->isHidden;
+							break;
+						}
+					}
+				} else {
+					RungDDG.isHidden = DiagramData.rungData[i].isHidden;
+				}
+
+				if(needHideRung == i) {
+					RungDDG.isHidden = !RungDDG.isHidden;
+				}
+
 				RungDDG.size = DiagramData.SizeMax;
 				rungs[i]->rung->DrawGUI(rungs[i]->isPowered, &RungDDG);
+
 				if(isFullRedraw) {
 					RungDDG.region.left   = RungDDG.start.x * Grid1x1.x;
 					RungDDG.region.top    = RungDDG.start.y * Grid1x1.y;
@@ -8286,6 +8390,15 @@ void LadderDiagram::DrawGUI(void)
 		}
 		sprintf(num, "%3d", i + 1);
 		gui.DrawText(num, r, 0, colors.Foreground, eAlignMode_Center, eAlignMode_Center);
+
+		// Comando para Expandir / Ocultar a linha
+		rung = new int;
+		*rung = i;
+
+		RECT rHide = r;
+		rHide.left   = rHide.right - 10;
+		rHide.right += Grid1x1.x / 2;
+		gui.AddCommand(source, rHide, cmdToggleHidden, rung, true, false);
 
 		// Agora desenha o breakpoint, se ativo
 		if(rungs[i]->hasBreakpoint) {
@@ -8324,6 +8437,8 @@ void LadderDiagram::DrawGUI(void)
 	DiagramData.ScrollOffset.x = ScrollXOffset;
 	DiagramData.ScrollOffset.y = ScrollYOffset;
 	mapDiagramData[this] = DiagramData;
+
+	needHideRung = -1;
 }
 
 void LadderDiagram::NeedRedraw(bool isFullRedraw)

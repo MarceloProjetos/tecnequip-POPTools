@@ -1577,6 +1577,7 @@ cant_use_this_io:;
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(IoDialog);
+	SetFocus(IoList);
     return;
 }
 

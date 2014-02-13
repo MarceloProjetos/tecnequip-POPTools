@@ -33,6 +33,9 @@ BOOL         RealTimeSimulationRunning;
 // Altura das abas
 int TabHeight = 25;
 
+// Altura da caixa de dialogo. Se nao estiver sendo exibida, sera zero.
+int DialogHeight = 0;
+
 void StatusBarSetText(int bar, const char * text)
 {
 	SendMessage(StatusBar, SB_SETTEXT, bar, (LPARAM)text);
@@ -517,8 +520,8 @@ void MainWindowResized(void)
 	IoListTop = main.bottom - IoListHeight - statusHeight;
     // Make sure that we can't drag the top of the I/O list above the
     // bottom of the menu bar, because it then becomes inaccessible.
-    if(IoListTop < 5 + (int)RibbonHeight) {
-        IoListTop = 5 + RibbonHeight;
+    if(IoListTop < 5 + (int)RibbonHeight + TabHeight + DialogHeight) {
+        IoListTop = 5 + RibbonHeight + TabHeight + DialogHeight;
         IoListHeight = main.bottom - IoListTop - statusHeight;
     }
 
@@ -553,6 +556,7 @@ void ToggleSimulationMode(void)
 	col.mask = LVCF_TEXT;
 
 	ladder->setSimulationState(!ladder->getContext().inSimulationMode);
+	ladder->NeedRedraw(true);
 	ClearListWP();
 
 	SetApplicationMode();
