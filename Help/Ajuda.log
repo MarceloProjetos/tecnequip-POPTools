@@ -1,6 +1,6 @@
 Microsoft HTML Help Compiler 4.74.8702
 
-Compiling c:\Pessoal\SVN\Help\Ajuda.chm
+Compiling c:\Pessoal\poptools\Help\Ajuda.chm
 
 css\styles_standard.css
 img\About.png
@@ -174,6 +174,10 @@ topics\Default.htm
 topics\Topic1.htm
 Contents.hhc
 Index.hhk
+topics\TeclasAtalho.htm
+topics\Primeiroladder.htm
+topics\Exemplodeaplicacao.htm
+topics\License.htm
 topics\Diagramaladder.htm
 topics\FileNew.htm
 topics\FileOpen.htm
@@ -215,7 +219,6 @@ topics\CompileAndProgram.htm
 topics\Debug.htm
 topics\Simulation.htm
 topics\UserManual.htm
-topics\TeclasAtalho.htm
 topics\Example.htm
 topics\InstrContact.htm
 topics\InstrCoil.htm
@@ -276,9 +279,6 @@ topics\SimulationStop.htm
 topics\SimulationPause.htm
 topics\SimulationSingleCycle.htm
 topics\SimulationExit.htm
-topics\License.htm
-topics\Primeiroladder.htm
-topics\Exemplodeaplicacao.htm
 topics\Examples.htm
 topics\ConfigPosicionamento.htm
 topics\KeyboardManual.htm
@@ -298,5 +298,5 @@ Compile time: 0 minutes, 6 seconds
 8	Graphics
 
 
-Created c:\Pessoal\SVN\Help\Ajuda.chm, 1,756,433 bytes
-Compression decreased file by 384,472 bytes.
+Created c:\Pessoal\poptools\Help\Ajuda.chm, 1,864,385 bytes
+Compression decreased file by 395,509 bytes.

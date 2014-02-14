@@ -17,6 +17,22 @@
           <param name="Local" value="topics\default.htm">
         </OBJECT>
         <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Teclas de Atalho">
+          <param name="Local" value="topics\TeclasAtalho.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Primeiroladder">
+          <param name="Local" value="topics\Primeiroladder.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Exemplodeaplicacao">
+          <param name="Local" value="topics\Exemplodeaplicacao.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Licença">
+          <param name="Local" value="topics\License.htm">
+        </OBJECT>
+        <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Diagrama Ladder">
           <param name="Local" value="topics\Diagramaladder.htm">
         </OBJECT>
@@ -588,22 +604,6 @@
                 </OBJECT>
             </UL>
         </UL>
-        <LI><OBJECT type="text/sitemap">
-          <param name="Name" value="Teclas de Atalho">
-          <param name="Local" value="topics\TeclasAtalho.htm">
-        </OBJECT>
-        <LI><OBJECT type="text/sitemap">
-          <param name="Name" value="Licença">
-          <param name="Local" value="topics\License.htm">
-        </OBJECT>
-        <LI><OBJECT type="text/sitemap">
-          <param name="Name" value="Primeiroladder">
-          <param name="Local" value="topics\Primeiroladder.htm">
-        </OBJECT>
-        <LI><OBJECT type="text/sitemap">
-          <param name="Name" value="Exemplodeaplicacao">
-          <param name="Local" value="topics\Exemplodeaplicacao.htm">
-        </OBJECT>
     </UL>
 </BODY>
 </HTML>
