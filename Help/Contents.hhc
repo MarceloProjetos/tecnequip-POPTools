@@ -29,10 +29,6 @@
           <param name="Local" value="topics\Exemplodeaplicacao.htm">
         </OBJECT>
         <LI><OBJECT type="text/sitemap">
-          <param name="Name" value="Licença">
-          <param name="Local" value="topics\License.htm">
-        </OBJECT>
-        <LI><OBJECT type="text/sitemap">
           <param name="Name" value="Diagrama Ladder">
           <param name="Local" value="topics\Diagramaladder.htm">
         </OBJECT>
@@ -604,6 +600,10 @@
                 </OBJECT>
             </UL>
         </UL>
+        <LI><OBJECT type="text/sitemap">
+          <param name="Name" value="Licença">
+          <param name="Local" value="topics\License.htm">
+        </OBJECT>
     </UL>
 </BODY>
 </HTML>

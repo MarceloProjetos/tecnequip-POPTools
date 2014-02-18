@@ -177,7 +177,6 @@ Index.hhk
 topics\TeclasAtalho.htm
 topics\Primeiroladder.htm
 topics\Exemplodeaplicacao.htm
-topics\License.htm
 topics\Diagramaladder.htm
 topics\FileNew.htm
 topics\FileOpen.htm
@@ -279,9 +278,11 @@ topics\SimulationStop.htm
 topics\SimulationPause.htm
 topics\SimulationSingleCycle.htm
 topics\SimulationExit.htm
+topics\License.htm
 topics\Examples.htm
 topics\ConfigPosicionamento.htm
 topics\KeyboardManual.htm
+img\start-here-1.png
 img\LerString2.png
 img\EscreverString2.png
 img\LerCarcter2.png
@@ -291,12 +292,12 @@ img\EscreverUSS2.png
 img\LeituraNS6002.png
 img\EscritaNS6002.png
 
-Compile time: 0 minutes, 6 seconds
+Compile time: 0 minutes, 4 seconds
 113	Topics
 817	Local links
 1	Internet link
-8	Graphics
+9	Graphics
 
 
-Created c:\Pessoal\poptools\Help\Ajuda.chm, 1,864,385 bytes
-Compression decreased file by 395,509 bytes.
+Created c:\Pessoal\poptools\Help\Ajuda.chm, 1,878,331 bytes
+Compression decreased file by 397,096 bytes.
