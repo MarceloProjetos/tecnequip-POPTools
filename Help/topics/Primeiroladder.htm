@@ -2,61 +2,513 @@
 <html><head><title>Contato...</title>
 
 
-<meta http-equiv="Content-Script-Type" content="text/javascript">
-<meta http-equiv="Content-Style-Type" content="text/css">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link rel="stylesheet" type="text/css" href="../css/styles_standard.css"></head><body>
+  
 
-  <div id="topictop">&nbsp;</div>
-  <div id="topictitleleft">
-    <div id="topictitle">
+  
+  
+  <meta http-equiv="Content-Script-Type" content="text/javascript">
+
+  
+  <meta http-equiv="Content-Style-Type" content="text/css">
+
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  
+  <link rel="stylesheet" type="text/css" href="../css/styles_standard.css"></head><body>
+<div id="topictop">&nbsp;</div>
+
+<div id="topictitleleft">
+<div id="topictitle">
 <h3>Escrevendo primeiro programa com POPTools.</h3>
 </div>
-  </div>
-  
-  <div id="main">
-    
-    
-    <p>
-      </p>
+</div>
+
+<div id="main">
 <p> </p>
-
-    
-
-    
-<p class="MsoNormal">
-      <img style="width: 73px; height: 73px;" alt="começar aqui" src="../img/start-here-1.png" align="left"><b>Siga o passo a passo: </b>Com ele você vai poder criar seu primeiro programa. Esse conhecimento também é imprescindível para um programador conhecer o funcionamento da ferramenta onde se vai programar.
+<p> </p>
+<p class="MsoNormal"> <img style="width: 73px; height: 73px;" alt="começar aqui" src="../img/start-here-1.png" align="left"><b>Siga
+o passo a passo: </b>Com ele você vai poder criar seu primeiro
+programa. Esse conhecimento também é imprescindível para um programador
+conhecer o funcionamento da ferramenta onde se vai programar.
 Então vamos começar um passo a passo até que no final termos um CLP
-piscando uma saida Digital S1, e parando de piscar toda vez que receber
+piscando uma saída Digital S1, e parando de piscar toda vez que receber
 um sinal na porta de entrada 1 ou E1.<br>
 </p>
+<br>
 
-
-
-
-    <p style="font-weight: bold;"><br>
+<br>
+<p style="font-weight: bold; text-decoration: underline;">Criando um Diagrama Ladder equivalente de
+um circuito oscilante.</p>
+<p style="font-weight: bold;">Passo 1<br>
 </p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Abrir o programa <span style="font-weight: bold;">POPTools</span>;<br>
+    </span></li>
+  <li style="height: 12px;">No menu de comando, selecione a aba "<span style="font-weight: bold;">Controles Lógicos</span>" como na foto abaixo;</li>
+  </ul>
+<img style="width: 1350px; height: 319px;" alt="" src="../img/passoApasso01.png"><br>
+<br>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 2</p>
+
+<ul>
+<li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Na aba de <span style="font-weight: bold;">Controles Logicos</span> secione o comando <span style="font-weight: bold;">Contato</span>;<br>
+    </span></li>
+</ul>
+<br>
+
+<img style="width: 1350px; height: 306px;" alt="" src="../img/passoApasso02.png">
 <p style="font-weight: bold;"><br>
 </p>
-<p style="font-weight: bold;">Criando um Diagrama Ladder equivalente de um circuito oscilante.</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 3</p>
+
 <ul>
-  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele Interno;<br>
-</span></li>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Como na imagem abaixo deve aparecer um <span style="text-decoration: underline;">Contato</span> como esse;<br>
+    </span></li>
+  <li style="height: 12px;">Por enquanto basta pensar que cada bloco ou função dessas, é uma variável independente e binária. Seu valor é o resultado de
+uma operação lógica que se relacionam com outras variáveis. Um fluxo que vai da esquerda para direita.</li>
+</ul> <br>
+
+ 
+<ul>
+</ul>
+
+<img style="width: 1350px; height: 350px;" alt="" src="../img/passoApasso03.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 4</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Todo contato novo terá o mesmo nome "<span style="font-weight: bold;">entrada</span>" que é um nome reservado, e deve ser renomeado;<br>
+    </span></li>
+  <li style="height: 12px;">Para renomear o bloco clique 2 vezes sobre
+o nome dele ou pressione "ENTER" com o objeto selecionado, ira aparecer
+uma janela como abaixo;</li>
+  <li style="height: 12px;">Como esse é seu primeiro programa é recomendável manter os nomes sugeridos para não haver confusão no seu primeiro programa;</li>
+  <li style="height: 31px;">Após alterar o nome do bloco para "<span style="font-weight: bold;">entrada1</span>" clique em "<span style="font-weight: bold;">OK</span>" para confirmar;</li>
+</ul>
+<img style="width: 1350px; height: 480px;" alt="" src="../img/passoApasso04.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 5</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Quando o mouse passa por cima do objeto e clicamos no simbulo "<big><span style="font-weight: bold;">&gt;&gt;</span>"</big> ou com ele selecionado você </span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">pressionar</span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;"> "<span style="font-weight: bold;">TAB</span>" no teclado, o modo expandido do objeto aparece ;<br>
+    </span></li>
+  <li style="height: 12px;">Então selecione&nbsp; a opção negado, como na imagem abaixo, transformando o contato NA em NF;</li>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Pressione</span> <span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">"<span style="font-weight: bold;">TAB</span>" no teclado ou clique </span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">no simbulo "<big><span style="font-weight: bold;">&gt;&gt;</span>"<small> para o objeto voltar ao normal</small></big></span>;</li>
+  
+</ul>
+<img style="width: 1350px; height: 480px;" alt="" src="../img/passoApasso05.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 6</p>
+
+<ul>
+  <li style="height: 12px;">Adcione mais um contato na direção indicada pelo cursor, como na imagem abaixo<span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">;<br>
+    </span></li>
+  <li style="height: 12px;">Caso você queira desfazer um comando, <span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">pressione</span> "CTRL + Z";</li>
+  </ul>
+<img style="width: 1350px; height: 350px;" alt="" src="../img/passoApasso06.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 7</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Como na figura abaixo </span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">pressione</span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;"> "<span style="font-weight: bold;">ENTER</span>" ou duplo click no mouse e altere o nome do bloco para "<span style="font-weight: bold;">ReleInterno1</span>";<br>
+    </span></li>
+  <li style="height: 12px;">Em seguida clique no botão "<span style="font-weight: bold;">OK</span>";</li>
+  </ul>
+<img style="width: 1350px; height: 480px;" alt="" src="../img/passoApasso07.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 8</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Novamente altere as propriedades do bloco </span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">"Rele
+Interno"</span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">, </span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">no simbulo "<big><span style="font-weight: bold;">&gt;&gt;</span>"</big> ou com ele selecionado você </span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">pressionar</span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;"> "<span style="font-weight: bold;">TAB</span>" no teclado</span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">;<br>
+    </span></li>
+  <li style="height: 12px;">Então selecione&nbsp; a opção negado, como na imagem abaixo, transformando o contato NA em NFl;</li>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Pressione</span> <span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">"<span style="font-weight: bold;">TAB</span>" no teclado ou clique </span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">no simbulo "<big><span style="font-weight: bold;">&gt;&gt;</span>"<small> para o objeto voltar ao normal</small></big></span>;</li>
+  
+</ul>
+<img style="width: 1350px; height: 480px;" alt="" src="../img/passoApasso08.png"><br>
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 9<br>
+</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Na aba de <span style="font-weight: bold;">Controles Lógicos</span> secione o comando <span style="font-weight: bold;">"Atraso para Ligar"</span></span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">;<br>
+    </span></li>
+  <li style="height: 12px;">Novamente preste atenção, pois o triangulo vermelho no bloco selecionado, indica a direção onde um novo bloco ser adicionado;</li>
+  </ul>
+<img style="width: 1350px; height: 350px;" alt="" src="../img/passoApasso09.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 10</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Como na imagem abaixo altere o tempo do bloco atraso para 500ms;</span></li>
+  <li style="height: 12px;">Em seguida clique no botão "<span style="font-weight: bold;">OK</span>";</li>
+</ul>
+<img style="width: 1350px; height: 480px;" alt="" src="../img/passoApasso10.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 11</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Na aba de <span style="font-weight: bold;">Controles Lógicos</span> secione o comando <span style="font-weight: bold;">"Atraso para desligar"</span></span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">;</span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">;<br>
+    </span></li></ul>
+<img style="width: 1350px; height: 350px;" alt="" src="../img/passoApasso11.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 12</p>
+
+<ul>
+
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Como na imagem abaixo altere novamente o tempo do novo bloco atraso para 500ms;</span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;"></span></li>
+  <li style="height: 12px;">Em seguida clique no botão "<span style="font-weight: bold;">OK</span>";</li>
+</ul>
+
+<img style="width: 1350px; height: 400px;" alt="" src="../img/passoApasso12.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 13</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Como na imagem abaixo deixe o cursor pisco a direita do bloco;<br>
+    </span></li>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Na aba de <span style="font-weight: bold;">Controles Lógicos</span> secione o comando <span style="font-weight: bold;">"Bobina"</span></span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">;</span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;"></span></li>
+  </ul>
+<img style="width: 1350px; height: 350px;" alt="" src="../img/passoApasso13.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 14</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Como na imagem abaixo altere o nome do novo bloco Bobina para "<span style="font-weight: bold;">Rele1</span>"</span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">;<br>
+    </span></li>
+  <li style="height: 12px;">Em seguida clique no botão "<span style="font-weight: bold;">OK</span>";</li>
+  </ul>
+<img style="width: 1350px; height: 440px;" alt="" src="../img/passoApasso14.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 15</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Como na imagem abaixo deixe o cursor piscando para baixo</span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">;<br>
+    </span></li>
+  <li style="height: 12px;">Em seguida adicione um segundo bloco de bobina abaixo do primeiro;</li>
+  </ul>
+<img style="width: 1350px; height: 360px;" alt="" src="../img/passoApasso15.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 16</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Como na imagem abaixo altere o nome do novo bloco Bobina para <span style="font-weight: bold;">"Rele</span></span><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;"><span style="font-weight: bold;">Interno1"</span>;<br>
+    </span></li>
+  <li style="height: 12px;">Em seguida clique no botão "<span style="font-weight: bold;">OK</span>";</li>
+  </ul>
+<img style="width: 1350px; height: 492px;" alt="" src="../img/passoApasso16.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 17</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Quando </span>pressionar o botão "<span style="font-weight: bold;">OK</span>" aparecera uma janela, como abaixo<span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">;<br>
+    </span></li>
+  <li style="height: 12px;">Selecione <span style="font-weight: bold;">"SIM"</span> você quer alterar;</li>
+  </ul>
+<img style="width: 1350px; height: 550px;" alt="" src="../img/passoApasso17.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 18</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Você devera ver um programa como na imagem abaixo, para continuar;<br>
+    </span></li>
+  
+  </ul>
+<img style="width: 1350px; height: 480px;" alt="" src="../img/passoApasso18.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 19</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Agora vamos salvar o progresso que conseguimos até agora;<br>
+    </span></li>
+  <li style="height: 12px;">Como abaixo clique no icone salvar;</li>
+  </ul>
+<img style="width: 1350px; height: 400px;" alt="" src="../img/passoApasso19.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 20<br>
+</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Você vai ver um janela parecida com essa abaixo;<br>
+    </span></li><li style="height: 12px;">Escolha o lugar e vamos chamar esse projeto de <span style="font-weight: bold;">"PrimeiroPrograma.ld"</span>;</li>
+  
+  <li style="height: 31px;">Em seguida clique no botão "<span style="font-weight: bold;">Salvar</span>";</li>
+</ul>
+<img style="width: 720px; height: 480px;" alt="" src="../img/passoApasso20.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 21</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
   <li style="height: 12px;">Entrada Digital;</li>
   <li style="height: 12px;">Saida Digital;</li>
   <li style="height: 31px;">Flag Interna;</li>
-</ul><img src="../img/InstrContact2.png" class="sslength"><br>
-<br>
-<p class="big"><span id="result_box" class="short_text" lang="pt"><span class="hps">Veja mais intruções</span></span> ...
-    </p>
-    <ul>
-	    <li>Veja mais sobre <a href="InstrCoil.htm">Bobina</a></li>
-      <li>Veja mais sobre <a href="InstrOneShotRising.htm">Borda de Subida</a></li>
-      <li>Veja mais sobre <a href="InstrOneShotFalling.htm">Borda de Descida</a></li>
-    </ul>
-    </div>
+</ul>
+<img style="width: 1349px; height: 619px;" alt="" src="../img/passoApasso21.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 22</p>
 
-  <div id="foot">
-    
-  </div>
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna</li>
+</ul>
+<img style="width: 1440px; height: 900px;" alt="" src="../img/passoApasso22.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 23</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 598px;" alt="" src="../img/passoApasso23.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 24</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 900px;" alt="" src="../img/passoApasso24.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 25</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 575px;" alt="" src="../img/passoApasso25.png">
+<ul>
+  <br>
+</ul>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 26</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 900px;" alt="" src="../img/passoApasso26.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 27</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 564px;" alt="" src="../img/passoApasso27.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 28</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 595px;" alt="" src="../img/passoApasso28.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 29</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 581px;" alt="" src="../img/passoApasso29.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 30<br>
+</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 566px;" alt="" src="../img/passoApasso30.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 31<br>
+</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 587px;" alt="" src="../img/passoApasso31.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 32</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 623px;" alt="" src="../img/passoApasso32.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 33</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 563px;" alt="" src="../img/passoApasso33.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 34</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 566px;" alt="" src="../img/passoApasso34.png">
+<p style="font-weight: bold;"><br>
+</p>
+<hr style="width: 100%; height: 2px;">
+<p style="font-weight: bold;">Passo 35</p>
+
+<ul>
+  <li style="height: 12px;"><span style="font-size: 11pt; line-height: 115%; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;;">Rele
+Interno;<br>
+    </span></li>
+  <li style="height: 12px;">Entrada Digital;</li>
+  <li style="height: 12px;">Saida Digital;</li>
+  <li style="height: 31px;">Flag Interna;</li>
+</ul>
+<img style="width: 1440px; height: 582px;" alt="" src="../img/passoApasso35.png">
+<br>
+<p style="font-weight: bold;"><br>
+</p>
+<p style="font-weight: bold;"><br>
+</p>
+<p style="font-weight: bold;"><span style="font-weight: normal;">Agora
+você pode estudar outros comandos para criar logicas mais elaboradas. E
+conhecer funções mais avançadas do programa, pois ja como funciona a
+base de todo programa.</span><br>
+</p>
+
+<span style="font-weight: normal;"></span><ul>
+</ul>
+<p class="big"><span id="result_box" class="short_text" lang="pt"><span class="hps">Veja mais intruções</span></span> ... </p>
+<ul>
+  <li>Veja mais sobre <a href="InstrCoil.htm">Bobina</a></li>
+  <li>Veja mais sobre <a href="InstrOneShotRising.htm">Borda de Subida</a></li>
+  <li>Veja mais sobre <a href="InstrOneShotFalling.htm">Borda de
+Descida</a></li>
+</ul>
+</div>
+
+<div id="foot"> </div>
+
 </body></html>
