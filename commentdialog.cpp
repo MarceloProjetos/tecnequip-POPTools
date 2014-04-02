@@ -96,6 +96,7 @@ bool ShowCommentDialog(char *comment, POINT ElemStart, POINT ElemSize, POINT Gri
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(CommentDialog);
+	SetFocus(MainWindow);
 
 	return changed;
 }

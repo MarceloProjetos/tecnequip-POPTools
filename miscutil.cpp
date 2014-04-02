@@ -551,3 +551,24 @@ long long ElapsedTime(bool ShowDialog, void (*fnc)(void *), void *data)
 
 	return elapsed;
 }
+
+POINT getWindowStart(POINT size)
+{
+	RECT r;
+	POINT start;
+
+	GetWindowRect(MainWindow, &r);
+
+	start.x = r.left + (r.right  - r.left - size.x)/2;
+	start.y = r.top  + (r.bottom - r.top  - size.y)/2;
+
+	if(start.x < r.left) {
+		start.x = r.left;
+	}
+
+	if(start.y < r.top) {
+		start.y = r.top;
+	}
+
+	return start;
+}

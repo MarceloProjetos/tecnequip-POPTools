@@ -987,13 +987,8 @@ bool ShowConfDialog(eConfSection confSection)
 	bool changed = false;
 	unsigned int i;
 
-	RECT rDrawWindow;
-	POINT start, size = { 517, 237 };
-
-	GetWindowRect(DrawWindow, &rDrawWindow);
-
-	start.x = rDrawWindow.left + (rDrawWindow.right  - rDrawWindow.left - size.x)/2;
-	start.y = rDrawWindow.top  + (rDrawWindow.bottom - rDrawWindow.top  - size.y)/2;
+	POINT size = { 517, 237 };
+	POINT start = getWindowStart(size);
 
     // The window's height will be resized later, to fit the explanation text.
     ConfDialog = CreateWindowClient(0, "POPToolsDialog", _("Configuração PLC"),

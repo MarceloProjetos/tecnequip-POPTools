@@ -4533,6 +4533,14 @@ bool LadderElemReadEnc::internalLoad(FILE *f, unsigned int version)
 
 	if(ret == true) {
 		Diagram->updateTypeIO(prop.idName.first);
+
+		// As variaveis internas nao tem seus IDs salvos no arquivo
+		// Assim precisam ser carregadas a partir da lista de I/O
+		infoIO_AbsFatorCorr  .pin.first = Diagram->getIdIO(infoIO_AbsFatorCorr  .name);
+		infoIO_AbsPerimRoda  .pin.first = Diagram->getIdIO(infoIO_AbsPerimRoda  .name);
+		infoIO_IncFatorCorr  .pin.first = Diagram->getIdIO(infoIO_IncFatorCorr  .name);
+		infoIO_IncPerimRoda  .pin.first = Diagram->getIdIO(infoIO_IncPerimRoda  .name);
+		infoIO_IncPulsosVolta.pin.first = Diagram->getIdIO(infoIO_IncPulsosVolta.name);
 	}
 
 	return ret;
@@ -4788,6 +4796,14 @@ bool LadderElemResetEnc::internalLoad(FILE *f, unsigned int version)
 
 	if(ret == true) {
 		Diagram->updateTypeIO(prop.idName.first);
+
+		// As variaveis internas nao tem seus IDs salvos no arquivo
+		// Assim precisam ser carregadas a partir da lista de I/O
+		infoIO_AbsFatorCorr  .pin.first = Diagram->getIdIO(infoIO_AbsFatorCorr  .name);
+		infoIO_AbsPerimRoda  .pin.first = Diagram->getIdIO(infoIO_AbsPerimRoda  .name);
+		infoIO_IncFatorCorr  .pin.first = Diagram->getIdIO(infoIO_IncFatorCorr  .name);
+		infoIO_IncPerimRoda  .pin.first = Diagram->getIdIO(infoIO_IncPerimRoda  .name);
+		infoIO_IncPulsosVolta.pin.first = Diagram->getIdIO(infoIO_IncPulsosVolta.name);
 	}
 
 	return ret;
@@ -11916,6 +11932,7 @@ void LadderDiagram::updateTypeIO(unsigned long id)
 
 bool LadderDiagram::getIO(LadderElem *elem, tRequestIO &infoIO, bool tryGeneralTypeFirst)
 {
+	// Ao carregar um arquivo, os I/Os sao lidos do disco e nao precisam ser solicitados aqui.
 	if(context.isLoadingFile) {
 		return true;
 	}

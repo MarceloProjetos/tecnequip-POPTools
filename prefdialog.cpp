@@ -150,14 +150,8 @@ void ShowPrefDialog(void)
 		{  0, NULL         }
 	};
 
-	RECT rDrawWindow;
-	GetWindowRect(DrawWindow, &rDrawWindow);
-
 	POINT size = { 290, 320 };
-	POINT start = {
-		rDrawWindow.left + (rDrawWindow.right  - rDrawWindow.left - size.x)/2,
-		rDrawWindow.top  + (rDrawWindow.bottom - rDrawWindow.top  - size.y)/2,
-	};
+	POINT start = getWindowStart(size);
 
 	PrefDialog = CreateWindowClient(0, "POPToolsDialog",
         _("Preferências"), WS_OVERLAPPED | WS_SYSMENU,

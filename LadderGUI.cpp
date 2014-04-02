@@ -747,55 +747,7 @@ void LadderGUI::registerElementArea(LadderElem *elem, POINT start, POINT size)
 }
 
 RECT LadderGUI::DrawElementBar(LadderElem *elem, int SelectedState, int StartGridY, int GridHeight, int GridWidth)
-{/*
-	RECT r, rCursor;
-	POINT start, size = DiagramSize;
-
-	tLadderColors     colors     = getLadderColors();
-	tLadderColorGroup colorgroup = getLadderColorGroup(elem->getWhich(), elem->IsPoweredAfter());
-
-	start.x = 0;
-	start.y = StartGridY;
-
-	size.y = GridHeight;
-
-	r = getRECT(start, size);
-	r.left  -= Grid1x1.x/2;
-	r.right += Grid1x1.x/2;
-
-	// Desenha os cursores
-	if(SelectedState != SELECTED_NONE && isCursorVisible && !ladder->getContext().inSimulationMode) {
-		rCursor.left   = r.left + (r.right - r.left)/2 - 7;
-		rCursor.right  = r.left + (r.right - r.left)/2 + 7;
-
-		if(SelectedState == SELECTED_ABOVE) {
-			rCursor.top    = r.top - 7;
-			rCursor.bottom = r.top + 7;
-			DrawRectangle(rCursor, colors.Selection, true , 0, 0, 45);
-		}
-
-		if(SelectedState == SELECTED_BELOW) {
-			rCursor.top    = r.bottom - 7;
-			rCursor.bottom = r.bottom + 7;
-			DrawRectangle(rCursor, colors.Selection, true , 0, 0, 45);
-		}
-	}
-
-	// Desenha a barra
-	DrawRectangle(r, colorgroup.Background);
-
-	// Desenha as linhas de seleção superior / inferior
-	if(SelectedState != SELECTED_NONE && !ladder->getContext().inSimulationMode) {
-		POINT start = { r.left, r.top }, end = { r.right, r.top };
-		DrawLine(start, end, colors.Selection);
-
-		start.y = r.bottom;
-		end.y   = r.bottom;
-		DrawLine(start, end, colors.Selection);
-	}
-
-	return r;
-*/
+{
 	POINT start, size;
 
 	// Se a largura solicitada for zero, usamos a largura do diagrama
@@ -2128,14 +2080,20 @@ bool LadderElemComment::DrawGUI(bool poweredBefore, void *data)
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
-	RECT r = ddg->region = gui.DrawElementBar(this, SelectedState, ddg->start.y, ddg->size.y, 1 + (maxTextWidth + 5) / GridSize.x);
+
+	LONG sizeX  = 1 + (maxTextWidth + 5) / GridSize.x;
+	sizeX      += sizeX % 2; // Para que fique centralizado, o tamanho deve ser par. Se for impar, vai somar 1.
+	if(sizeX > ddg->size.x) {
+		sizeX = ddg->size.x;
+	}
+
+	RECT r = ddg->region = gui.DrawElementBar(this, SelectedState, ddg->start.y, ddg->size.y, sizeX);
 	tCommandSource source = { nullptr, nullptr, this };
 	gui.AddCommand(source, r, CmdSelectBelow, nullptr, false, false);
 
 	gui.AddCommand(source, r, CmdShowDialog, nullptr, true, false);
 
 	// Desenha os textos na tela
-	r.left += 5;
 	r.top  += (r.bottom - r.top - totalHeight) / 2;
 
 	unsigned int i;

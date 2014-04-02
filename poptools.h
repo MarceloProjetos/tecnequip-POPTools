@@ -866,6 +866,7 @@ void LoadIOListToComboBox(HWND ComboBox, vector<eType> allowedTypes);
 int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto);
 void ChangeFileExtension(char *name, char *ext);
 unsigned short int CRC16(unsigned char *puchMsg, unsigned int usDataLen);
+POINT getWindowStart(POINT size);
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
 extern HWND OkButton;
