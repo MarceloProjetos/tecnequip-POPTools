@@ -1885,6 +1885,11 @@ void SaveSettings(void)
 	delete buf;
 
 	filename += "\\POPTools\\";
+
+	// Cria a pasta onde os settings sao salvos para o caso de nao existir ainda...
+	// Nao precisa checar por erros pois, nesse caso, o arquivo nao conseguira ser criado
+	CreateDirectory(filename.c_str(), NULL);
+
 	filename += SETTINGS_FILE;
 
 	FILE *f = fopen(filename.c_str(), "wb+");
