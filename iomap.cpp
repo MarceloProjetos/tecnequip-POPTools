@@ -1197,6 +1197,19 @@ const LPCTSTR ComboboxBitItens[] = { "0",  "1",  "2",  "3",  "4",  "5",  "6",  "
 									"21", "22", "23", "24", "25", "26", "27", "28", "29", "30", 
 									"31"};
 
+// Funcao para adicionar um item para a lista de I/O da janela de atribuicao
+void mapIO::AddDialogItem(string name, int pin)
+{
+	// Ao adicionar um pino zerado, indica que estamos iniciando uma nova lista
+	// e assim devemos excluir os itens ja existentes.
+	if(!pin) {
+		vecDialogItemList.clear();
+	}
+
+	vecDialogItemList.push_back(pair<string, int>(name, pin));
+	SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)name.c_str());
+}
+
 //-----------------------------------------------------------------------------
 // Called in response to a notify for the listview. Handles click, text-edit
 // operations etc., but also gets called to find out what text to display
@@ -1430,7 +1443,6 @@ void mapIO::ShowIoMapDialog(int item)
 
     char buf[40];
 	int i = 0;
-	int PinListItemCount = 0;
 
 	for (i = 0; i < sizeof(ComboboxBitItens) / sizeof(ComboboxBitItens[0]); i++)
 		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
@@ -1453,8 +1465,7 @@ void mapIO::ShowIoMapDialog(int item)
 		SetWindowPos(PinList, NULL, 6, 18, r.right - r.left, r.bottom - r.top, SWP_NOZORDER);
 	}
 
-    SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)_("(sem pino)"));
-	PinListItemCount++;
+	AddDialogItem(_("(sem pino)"), 0);
 
 	tMapIO::iterator it;
 	for(i = 0; i < mcu->pinCount; i++) {
@@ -1486,12 +1497,11 @@ void mapIO::ShowIoMapDialog(int item)
 			{
 				if (j == 4) continue;
 				if (j == mcu->adcCount - 1)
-					sprintf(buf, "%3d TEMP", mcu->adcInfo[j].pin);
+					strcpy(buf, "TEMP");
 				else
-					sprintf(buf, "%3d ADC%d", mcu->adcInfo[j].pin, mcu->adcInfo[j].muxRegValue);
+					sprintf(buf, "ADC%d", mcu->adcInfo[j].muxRegValue);
 
-				SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
-				PinListItemCount++;
+				AddDialogItem(buf, mcu->adcInfo[j].pin);
             }
             if(j == mcu->adcCount) {
 				break;
@@ -1502,9 +1512,7 @@ void mapIO::ShowIoMapDialog(int item)
             for(j = 0; j < mcu->encCount; j++) 
 			{
 				const char *strEnc[] = { _("Enc. Inc."), _("Enc. Abs.") };
-					sprintf(buf, "%3d %s", mcu->encInfo[j].pin, strEnc[j]);
-					SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
-					PinListItemCount++;
+				AddDialogItem(strEnc[j], mcu->encInfo[j].pin);
             }
             if(j == mcu->encCount) {
 				break;
@@ -1515,12 +1523,8 @@ void mapIO::ShowIoMapDialog(int item)
 			(detailsIO.type == eType_DigOutput && i > 50) ||
 			(detailsIO.type == eType_General   && i > 66))
 		{
-			sprintf(buf, "%3d %c%d", mcu->pinInfo[i].pin,
-				mcu->pinInfo[i].port,
-				mcu->pinInfo[i].bit);
-
-			SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)buf);
-			PinListItemCount++;
+			sprintf(buf, "%c%d", mcu->pinInfo[i].port, mcu->pinInfo[i].bit);
+			AddDialogItem(buf, mcu->pinInfo[i].pin);
 		}
 cant_use_this_io:;
     }
@@ -1532,13 +1536,11 @@ cant_use_this_io:;
     SetFocus(PinList);
 
 	//SendMessage(PinList, LB_SETCURSEL, item, 0);
-	for (i = 0; i < PinListItemCount; i++)
+	unsigned int idx;
+	for (idx = 0; idx < vecDialogItemList.size(); idx++)
 	{
-		int sel = SendMessage(PinList, LB_GETSEL, i, 0);
-        char pin[16];
-        SendMessage(PinList, LB_GETTEXT, (WPARAM)i, (LPARAM)pin);
-		if (detailsIO.pin == atoi(pin))
-			SendMessage(PinList, LB_SETCURSEL, i, 0);
+		if (detailsIO.pin == vecDialogItemList[idx].second)
+			SendMessage(PinList, LB_SETCURSEL, idx, 0);
 	}
 
     MSG msg;
@@ -1564,13 +1566,22 @@ cant_use_this_io:;
 
     if(!DialogCancel) {
         int sel = SendMessage(PinList, LB_GETCURSEL, 0, 0);
-        char pin[16];
+		int  pin_number = 0;
+        char pin_name[16];
 		char buf[16];
 
-		SendMessage(PinList    , LB_GETTEXT, (WPARAM)sel        , (LPARAM)pin);
+		SendMessage(PinList    , LB_GETTEXT, (WPARAM)sel        , (LPARAM)pin_name);
 		SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
 
-		Assign(id, atoi(pin), atoi(buf));
+		for (idx = 0; idx < vecDialogItemList.size(); idx++)
+		{
+			if(!strcmp(pin_name, vecDialogItemList[idx].first.c_str())) {
+				pin_number = vecDialogItemList[idx].second;
+				break;
+			}
+		}
+
+		Assign(id, pin_number, atoi(buf));
 
 		updateGUI();
     }

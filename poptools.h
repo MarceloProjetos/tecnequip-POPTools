@@ -867,6 +867,7 @@ int LoadCOMPorts(HWND ComboBox, unsigned int iDefaultPort, bool bHasAuto);
 void ChangeFileExtension(char *name, char *ext);
 unsigned short int CRC16(unsigned char *puchMsg, unsigned int usDataLen);
 POINT getWindowStart(POINT size);
+POINT getWindowStart(POINT ElemStart, POINT ElemSize, POINT size, POINT GridSize);
 extern HFONT MyNiceFont;
 extern HFONT MyFixedFont;
 extern HWND OkButton;

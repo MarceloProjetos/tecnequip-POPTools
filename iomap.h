@@ -23,6 +23,10 @@ private:
 
 	map<unsigned long, pair<string, eType> > mapCachedIO;
 
+	// Lista de itens da janela de I/O e funcao para adicionar itens para a lista
+	vector< pair<string, int> > vecDialogItemList;
+	void AddDialogItem(string name, int pin);
+
 	unsigned int maxNameSize;
 
 	vector<string>                 vectorInternalFlag;

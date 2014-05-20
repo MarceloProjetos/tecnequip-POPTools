@@ -9878,7 +9878,7 @@ void LadderDiagram::MoveCursor(eMoveCursor moveTo)
 	default: elem = SearchElement(moveTo);
 	}
 
-	if(elem != nullptr) {
+	if(elem != nullptr && getSubcktForElement(elem) != nullptr) {
 		int state = elem->IsEOL() ? SELECTED_LEFT : SELECTED_RIGHT;
 
 		switch(moveTo) {

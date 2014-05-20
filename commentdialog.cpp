@@ -38,11 +38,16 @@ bool ShowCommentDialog(char *comment, POINT ElemStart, POINT ElemSize, POINT Gri
 
 		ElemStart.y += rWindow.top - ScrollYOffset * GridSize.y;
 
-		// A janela do comentario aparece centralizada verticalmente com o comentario
-		start.y = ElemStart.y + (ElemSize.y - size.y)/2;
+		// Se o elemento estiver fora da tela, devemos centralizar a janela
+		if(ElemStart.x < 0 || ElemStart.y < 0 || ElemStart.x > rWindow.right || ElemStart.y > rWindow.bottom) {
+			start = getWindowStart(size);
+		} else {
+			// A janela do comentario aparece centralizada verticalmente com o comentario
+			start.y = ElemStart.y + (ElemSize.y - size.y)/2;
 
-		// Sempre centraliza com a tela pois o comentario ocupa a tela inteira
-		start.x = rWindow.left + (rWindow.right - rWindow.left - size.x)/2;
+			// Sempre centraliza com a tela pois o comentario ocupa a tela inteira
+			start.x = rWindow.left + (rWindow.right - rWindow.left - size.x)/2;
+		}
 	}
 
     CommentDialog = CreateWindowClient(0, "POPToolsDialog",
