@@ -1027,6 +1027,10 @@ void ProcessMenu(int code)
 			CloseProgram(ladder);
 			break;
 
+		case MNU_CLOSE_OTHERS:
+			CloseOtherPrograms();
+			break;
+
         case MNU_RECENT_CLEAR:
 			memset(POPSettings.recent_list, 0, sizeof(POPSettings.recent_list));
 			break;
@@ -1667,7 +1671,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             InvalidateRect(MainWindow, NULL, FALSE);
             break;
         }
-        case WM_MOUSEMOVE: {
+
+		case WM_MOUSEMOVE: {
             int x = LOWORD(lParam);
             int y = HIWORD(lParam);
 
@@ -1699,6 +1704,17 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 IoMapListProc(h);
 			} else if(h->code == TCN_SELCHANGE) {
 				OnTabChange();
+			} else if(h->hwndFrom == TabCtrl && h->code == NM_RCLICK) {
+				HMENU hPopupMenu = CreatePopupMenu();
+				InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_CLOSE_OTHERS, _("Fechar As Outras Abas"));
+				InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_CLOSE       , _("Fechar Aba Atual"     ));
+				InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_NEW         , _("Nova Aba"             ));
+				SetForegroundWindow(MainWindow);
+
+				POINT p;
+				GetCursorPos(&p);
+				ScreenToClient(MainWindow, &p);
+				TrackPopupMenu(hPopupMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN, p.x, p.y + RibbonHeight, 0, MainWindow, NULL);
 			}
 
 			return 0;
@@ -1711,10 +1727,17 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             HscrollProc(wParam);
             break;
 
-        case WM_COMMAND:
-            ProcessMenu(LOWORD(wParam));
+        case WM_COMMAND: {
+            HWND h = (HWND)lParam;
+			if(wParam == BN_CLICKED && h == TabButton) {
+				ProcessMenu(MNU_CLOSE);
+				SetFocus(MainWindow);
+			} else {
+	            ProcessMenu(LOWORD(wParam));
+			}
             InvalidateRect(MainWindow, NULL, FALSE);
             break;
+		}
 
         case WM_CLOSE:
         case WM_DESTROY:

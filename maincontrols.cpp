@@ -16,6 +16,7 @@ int ScrollYOffsetMax;
 // Window where to draw schematic
 HWND                DrawWindow;
 HWND                TabCtrl;
+HWND                TabButton;
 static LONG_PTR     PrevDrawWindowProc;
 
 // status bar at the bottom of the screen, to display settings
@@ -100,6 +101,13 @@ void MakeMainWindowControls(void)
 		WS_CLIPSIBLINGS | WS_VISIBLE | WS_CHILD,
 		0, 0, 1, 1, MainWindow, NULL, Instance, NULL);// The tabCtrl size inside windows
 	NiceFont(TabCtrl);
+
+    TabButton = CreateWindowEx(0, WC_BUTTON, _(""),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | BS_BITMAP,
+        0, 0, 1, 1, MainWindow, NULL, Instance, NULL);
+
+	HBITMAP hBmp = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(IDB_TABCTRL_CLOSE),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
+	SendMessage(TabButton,BM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp);
 
 	DrawWindow = CreateWindowEx(0, WC_STATIC, "", WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
 		0, 0, 1, 1, MainWindow, NULL, Instance, NULL);
@@ -472,7 +480,10 @@ void RefreshDrawWindow()
     GetClientRect(MainWindow, &main);
 
 	// Move a janela de abas
-	MoveWindow(TabCtrl, 0, RibbonHeight, main.right, TabHeight, TRUE);
+	MoveWindow(TabCtrl, 0, RibbonHeight, main.right - TabHeight, TabHeight, TRUE);
+
+	// Move a janela de abas
+	MoveWindow(TabButton, main.right - TabHeight, RibbonHeight, TabHeight, TabHeight, TRUE);
 
 	// Move a janela de desenho
     MoveWindow(DrawWindow, 0, RibbonHeight + TabHeight, main.right, IoListTop - RibbonHeight - TabHeight, TRUE);

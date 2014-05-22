@@ -208,6 +208,7 @@ struct strSerialConfig {
 #define MNU_NEW                 0x01
 #define MNU_OPEN                0x02
 #define MNU_CLOSE               0x0d
+#define MNU_CLOSE_OTHERS        0x0e
 #define MNU_SAVE                0x03
 #define MNU_SAVE_AS             0x04
 #define MNU_SAVE_AS_C           0x08
@@ -681,6 +682,7 @@ extern BOOL NeedHoriz;
 extern HWND IoList;
 extern HWND DrawWindow;
 extern HWND TabCtrl;
+extern HWND TabButton;
 extern int IoListTop;
 extern int IoListHeight;
 extern HWND UartSimulationWindow;
@@ -766,6 +768,7 @@ bool NewProgram(void);
 void SwitchProgram(LadderDiagram *newladder);
 bool CloseProgram(LadderDiagram *diagram, bool isPOPToolsExiting = false);
 bool CloseAllPrograms(bool isPOPToolsExiting = false);
+void CloseOtherPrograms(void);
 void FreePurgedPrograms(void);
 
 // loadsave.cpp

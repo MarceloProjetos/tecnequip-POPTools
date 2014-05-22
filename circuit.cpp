@@ -659,6 +659,21 @@ bool CloseAllPrograms(bool isPOPToolsExiting)
 	return true;
 }
 
+void CloseOtherPrograms(void)
+{
+	LadderDiagram *current = ladder;
+
+	while(ladderList.size() > 1) {
+		unsigned int idx = (ladderList[0] == current) ? ladderList.size() - 1 : 0;
+		SwitchProgram(ladderList[idx]);
+		if(!CloseProgram(ladder)) {
+			// Ou ocorreu um erro ao fechar o diagrama ou o usuario cancelou.
+			// De qualquer forma, cancela a operacao.
+			break;
+		}
+	}
+}
+
 void FreePurgedPrograms(void)
 {
 	vector<LadderDiagram *>::size_type i;

@@ -1443,8 +1443,28 @@ tWire LadderGUI::DrawWire(POINT StartPoint, POINT EndPoint, bool isPowered)
 
 	tWire wire = { StartPoint, EndPoint, isPowered };
 
+	// Condicao especial: se for uma linha vertical que nao estiver energizada, devemos verificar se ja existe uma
+	// linha vertical energizada desenhada para a mesma coordenada. Sem essa verificacao, a linha nao energizada
+	// vai sobrepor a linha ja desenhada, resultando em um desenho incorreto. Para mais informacoes, verificar o
+	// ticket #1254 no bugtracker.
+	POINT drawStartPoint = StartPoint, drawEndPoint = EndPoint;
+	if(ladder->getContext().inSimulationMode && drawStartPoint.y != drawEndPoint.y && !isPowered) {
+		unsigned int i;
+		for(i = 0; i < vectorWires.size(); i++) {
+			if(vectorWires[i].isPowered && drawStartPoint.x == vectorWires[i].start.x) {
+				if(drawEndPoint.y <= vectorWires[i].end.y && drawEndPoint.y > vectorWires[i].start.y) {
+					// Existe sobreposicao! Altera a coordenada da linha para nao sobrepor...
+					drawEndPoint.y = max(drawStartPoint.y, vectorWires[i].start.y);
+				} else if(drawStartPoint.y >= vectorWires[i].start.y && drawStartPoint.y < vectorWires[i].end.y) {
+					// Existe sobreposicao! Altera a coordenada da linha para nao sobrepor...
+					drawStartPoint.y = min(drawEndPoint.y, vectorWires[i].end.y);
+				}
+			}
+		}
+	}
+
 	// Desenha a linha (Horizontal ou Vertical)
-	DrawLine(StartPoint, EndPoint, isPowered ? getLadderColors().Wire : getLadderColors().WireOff);
+	DrawLine(drawStartPoint, drawEndPoint, isPowered ? getLadderColors().Wire : getLadderColors().WireOff);
 
 	// Registra os pontos de conexao da linha
 	addConnectionDot(StartPoint, isPowered, false, directionStart);
@@ -5091,7 +5111,7 @@ bool LadderElemReadEnc::DrawGUI(bool poweredBefore, void *data)
 
 		alignY = eAlignMode_TopLeft;
 	} else {
-		ddg->size.x = 2;
+		ddg->size.x = 3;
 		ddg->size.y = 2;
 
 		alignY = eAlignMode_Center;
@@ -5114,8 +5134,117 @@ bool LadderElemReadEnc::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("LER ENCODER"), hasExpanded, poweredBefore);
 	ddg->region = r;
 
+	/*** Desenho de um encoder ***/
+
+	RECT rEnc = r;
+	POINT startLine, endLine;
+
+	rEnc.left += 20;
+	rEnc.top  += 10;
+	rEnc.right = rEnc.left + 30;
+	rEnc.bottom = rEnc.top + 30;
+	gui.DrawEllipse(rEnc, colorgroup.Foreground, false);
+
+	// Desenha o texto se houver atribuicao
+	RECT rText;
+	if(hasExpanded) {
+		int i;
+		char txt[] = { 0, 0 };
+		const char *fulltxt = isEncInc ? _("INC") : _("ABS");
+
+		rText.top    = r.top + 5;
+		rText.bottom = r.bottom;
+		rText.left   = rEnc.right + 5;
+		rText.right  = rText.left + FONT_WIDTH;
+
+		for(i = 0; fulltxt[i] != 0; i++) {
+			txt[0] = fulltxt[i];
+			gui.DrawText(txt, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+			rText.top += FONT_HEIGHT;
+		}
+	}
+
+	// Salva coordenadas para linhas de ligacao
+	startLine.x = rEnc.left + (rEnc.right - rEnc.left)/2;
+	startLine.y = rEnc.top;
+
+	// Circulo final (dianteira)
+	rEnc.left  -= 10;
+	rEnc.right -= 10;
+	gui.DrawEllipse(rEnc, colorgroup.Background); // Limpa as linhas da traseira que sobrepoem o circulo da dianteira
+	gui.DrawEllipse(rEnc, colorgroup.Foreground, false);
+
+	// Desenho das linhas de ligacao dos dois circulos
+	endLine.x = rEnc.left + (rEnc.right - rEnc.left)/2;
+	endLine.y = rEnc.top;
+
+	gui.DrawLine(startLine, endLine, colorgroup.Foreground);
+
+	startLine.y = rEnc.bottom;
+	endLine  .y = rEnc.bottom;
+
+	gui.DrawLine(startLine, endLine, colorgroup.Foreground);
+
+	// Desenho da seta indicando operacao de escrita
+	static float cos_sin_45 = cos(3.14159f * 45.0f / 180.0f); // Cosseno e Seno de 45 graus sao iguais. cos recebe em radianos
+	POINT startArrow, endArrow;
+	startArrow.x = rEnc.left;
+	startArrow.y = rEnc.top ;
+
+	endArrow = startArrow;
+	endArrow.x += int((1.0f - cos_sin_45) * ((rEnc.right  - rEnc.left) / 2));
+	endArrow.y += int((1.0f - cos_sin_45) * ((rEnc.bottom - rEnc.top ) / 2));
+
+	startArrow.x -= 5;
+	startArrow.y -= 5;
+	gui.DrawLine(startArrow, endArrow, colorgroup.Foreground);
+
+	endArrow.x = startArrow.x;
+	endArrow.y = startArrow.y + 7;
+	gui.DrawLine(startArrow, endArrow, colorgroup.Foreground);
+
+	endArrow.x = startArrow.x + 7;
+	endArrow.y = startArrow.y;
+	gui.DrawLine(startArrow, endArrow, colorgroup.Foreground);
+
+	// Desenho do eixo do encoder - circulo traseiro
+	rEnc.left   = endLine.x - 4;
+	rEnc.right  = endLine.x + 4;
+	rEnc.top    = rEnc.top + (rEnc.bottom - rEnc.top)/2 - 4;
+	rEnc.bottom = rEnc.top + 8;
+
+	gui.DrawEllipse(rEnc, colorgroup.Foreground, false);
+
+	// Salva coordenadas para linhas de ligacao
+	startLine.x = rEnc.left + (rEnc.right - rEnc.left)/2;
+	startLine.y = rEnc.top;
+
+	// Calculo da posicao do eixo - circulo dianteiro
+	rEnc.left  -= 15;
+	rEnc.right -= 15;
+
+	// Aqui calcula o ponto final da linha de ligacao e desenha um retangulo
+	// com a cor de fundo para limpar as linhas do circulo do corpo do encoder
+	endLine.x = rEnc.left + (rEnc.right - rEnc.left)/2;
+	endLine.y = rEnc.top;
+
+	RECT rAxis = rEnc;
+	rAxis.right = startLine.x;
+	gui.DrawRectangle(rAxis, colorgroup.Background);
+
+	gui.DrawLine(startLine, endLine, colorgroup.Foreground);
+
+	startLine.y = rEnc.bottom;
+	endLine  .y = rEnc.bottom;
+
+	gui.DrawLine(startLine, endLine, colorgroup.Foreground);
+
+	// Agora desenha o circulo dianteiro do eixo
+	gui.DrawEllipse(rEnc, colorgroup.Foreground, false);
+
 	// Escreve o nome do I/O
-	RECT rText = r;
+	rText = r;
+	rText.left += GridSize.x;
 	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
 
 	if(alignY == eAlignMode_TopLeft) {
@@ -5257,7 +5386,7 @@ bool LadderElemResetEnc::DrawGUI(bool poweredBefore, void *data)
 
 	size = ddg->size;
 
-	ddg->size.x = 2;
+	ddg->size.x = 3;
 	ddg->size.y = 2;
 
 	if(ddg->DontDraw) return poweredAfter;
@@ -5278,8 +5407,117 @@ bool LadderElemResetEnc::DrawGUI(bool poweredBefore, void *data)
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("ESCR. ENCODER"), false, poweredBefore);
 	ddg->region = r;
 
+	/*** Desenho de um encoder ***/
+
+	RECT rEnc = r;
+	POINT startLine, endLine;
+
+	rEnc.left += 20;
+	rEnc.top  += 10;
+	rEnc.right = rEnc.left + 30;
+	rEnc.bottom = rEnc.top + 30;
+	gui.DrawEllipse(rEnc, colorgroup.Foreground, false);
+
+	// Desenha o texto se houver atribuicao
+	RECT rText;
+	if(detailsIO.pin != 0) {
+		int i;
+		char txt[] = { 0, 0 };
+		const char *fulltxt = (detailsIO.pin == 1) ? _("INC") : _("ABS");
+
+		rText.top    = r.top + 5;
+		rText.bottom = r.bottom;
+		rText.left   = rEnc.right + 5;
+		rText.right  = rText.left + FONT_WIDTH;
+
+		for(i = 0; fulltxt[i] != 0; i++) {
+			txt[0] = fulltxt[i];
+			gui.DrawText(txt, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+			rText.top += FONT_HEIGHT;
+		}
+	}
+
+	// Salva coordenadas para linhas de ligacao
+	startLine.x = rEnc.left + (rEnc.right - rEnc.left)/2;
+	startLine.y = rEnc.top;
+
+	// Circulo final (dianteira)
+	rEnc.left  -= 10;
+	rEnc.right -= 10;
+	gui.DrawEllipse(rEnc, colorgroup.Background); // Limpa as linhas da traseira que sobrepoem o circulo da dianteira
+	gui.DrawEllipse(rEnc, colorgroup.Foreground, false);
+
+	// Desenho das linhas de ligacao dos dois circulos
+	endLine.x = rEnc.left + (rEnc.right - rEnc.left)/2;
+	endLine.y = rEnc.top;
+
+	gui.DrawLine(startLine, endLine, colorgroup.Foreground);
+
+	startLine.y = rEnc.bottom;
+	endLine  .y = rEnc.bottom;
+
+	gui.DrawLine(startLine, endLine, colorgroup.Foreground);
+
+	// Desenho da seta indicando operacao de escrita
+	static float cos_sin_45 = cos(3.14159f * 45.0f / 180.0f); // Cosseno e Seno de 45 graus sao iguais. cos recebe em radianos
+	POINT startArrow, endArrow;
+	startArrow.x = rEnc.left;
+	startArrow.y = rEnc.top ;
+
+	endArrow = startArrow;
+	endArrow.x += int((1.0f - cos_sin_45) * ((rEnc.right  - rEnc.left) / 2));
+	endArrow.y += int((1.0f - cos_sin_45) * ((rEnc.bottom - rEnc.top ) / 2));
+
+	startArrow.x -= 5;
+	startArrow.y -= 5;
+	gui.DrawLine(startArrow, endArrow, colorgroup.Foreground);
+
+	startArrow.x = endArrow.x;
+	startArrow.y = endArrow.y - 7;
+	gui.DrawLine(startArrow, endArrow, colorgroup.Foreground);
+
+	startArrow.x = endArrow.x - 7;
+	startArrow.y = endArrow.y;
+	gui.DrawLine(startArrow, endArrow, colorgroup.Foreground);
+
+	// Desenho do eixo do encoder - circulo traseiro
+	rEnc.left   = endLine.x - 4;
+	rEnc.right  = endLine.x + 4;
+	rEnc.top    = rEnc.top + (rEnc.bottom - rEnc.top)/2 - 4;
+	rEnc.bottom = rEnc.top + 8;
+
+	gui.DrawEllipse(rEnc, colorgroup.Foreground, false);
+
+	// Salva coordenadas para linhas de ligacao
+	startLine.x = rEnc.left + (rEnc.right - rEnc.left)/2;
+	startLine.y = rEnc.top;
+
+	// Calculo da posicao do eixo - circulo dianteiro
+	rEnc.left  -= 15;
+	rEnc.right -= 15;
+
+	// Aqui calcula o ponto final da linha de ligacao e desenha um retangulo
+	// com a cor de fundo para limpar as linhas do circulo do corpo do encoder
+	endLine.x = rEnc.left + (rEnc.right - rEnc.left)/2;
+	endLine.y = rEnc.top;
+
+	RECT rAxis = rEnc;
+	rAxis.right = startLine.x;
+	gui.DrawRectangle(rAxis, colorgroup.Background);
+
+	gui.DrawLine(startLine, endLine, colorgroup.Foreground);
+
+	startLine.y = rEnc.bottom;
+	endLine  .y = rEnc.bottom;
+
+	gui.DrawLine(startLine, endLine, colorgroup.Foreground);
+
+	// Agora desenha o circulo dianteiro do eixo
+	gui.DrawEllipse(rEnc, colorgroup.Foreground, false);
+
 	// Escreve o nome do I/O
-	RECT rText = r;
+	rText = r;
+	rText.left += GridSize.x;
 	rText.bottom = rText.top + 2*GridSize.y - FONT_HEIGHT/2;
 	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
 	gui.AddCommand(source, rText, ResetEncCmdChangeName, nullptr, true, false);
@@ -8426,7 +8664,14 @@ bool LadderDiagram::IsElementVisible(LadderElem *elem, bool isFullyVisible)
 		if(isFullyVisible) {
 			return PointInsideRegion(TopLeft, rWindow) && PointInsideRegion(BottomRight, rWindow);
 		} else {
-			return PointInsideRegion(TopLeft, rWindow) || PointInsideRegion(BottomRight, rWindow);
+			// O objeto nao precisa estar totalmente visivel na tela. Dessa forma nao devemos checar pelos pontos das extremidades!
+			// Para o objeto estar ao menos parcialmente visivel, as seguintes condicoes devem ser verdadeiras:
+			// 1) Linha superior do objeto deve estar acima      da borda inferior da tela
+			// 2) Linha inferior do objeto deve estar abaixo     da borda superior da tela
+			// 3) Linha esquerda do objeto deve estar a esquerda da borda direita  da tela
+			// 4) Linha direita  do objeto deve estar a direita  da borda esquerda da tela
+			return (TopLeft.y < rWindow.bottom) && (BottomRight.y > rWindow.top) &&
+				(TopLeft.x < rWindow.right) && (BottomRight.x > rWindow.left);
 		}
 	}
 
