@@ -1333,7 +1333,18 @@ LadderElemCounter::LadderElemCounter(LadderDiagram *diagram, int which) : Ladder
 
 	Diagram->getIO(this, infoIO_Name);
 
-	prop.max    = 0;
+	// Caracteristicas do I/O Max
+	infoIO_Max.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Max.name          = _("novo");
+	infoIO_Max.isBit         = false;
+	infoIO_Max.type          = eType_General;
+	infoIO_Max.access        = eRequestAccessType_Read;
+	infoIO_Max.isUniqueRead  = false;
+	infoIO_Max.isUniqueWrite = false;
+
+	Diagram->getIO(this, infoIO_Max);
+
+	prop.idMax  = infoIO_Max .pin;
 	prop.idName = infoIO_Name.pin;
 }
 
@@ -1344,7 +1355,7 @@ pair<string, string> LadderElemCounter::DrawTXT(void)
 	char op, buf[256];
 
 	if(which == ELEM_CTC) {
-		sprintf(buf, _("{\x01""CTC\x02 0:%d}"), prop.max);
+		sprintf(buf, _("{\x01""CTC\x02 0:%d}"), Diagram->getNameIO(prop.idMax));
 	} else {
 		if(which == ELEM_CTU) {
 			s = _("CTU");
@@ -1354,7 +1365,7 @@ pair<string, string> LadderElemCounter::DrawTXT(void)
 			op = '<';
 		} else oops();
 
-		sprintf(buf, "[\x01%s\x02 %c=%d]", s, op, prop.max);
+		sprintf(buf, "[\x01%s\x02 %c=%d]", s, op, Diagram->getNameIO(prop.idMax));
 	}
 
 	return pair<string, string>(Diagram->getNameIO(prop.idName.first), buf);
@@ -1364,6 +1375,9 @@ bool LadderElemCounter::internalGenerateIntCode(IntCode &ic)
 {
 	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
+
+	string smax = Diagram->getNameIO(prop.idMax);
+	const char *cmax = ic.VarFromExpr(smax.c_str(), "$scratch2");
 
 	const char *stateInOut = ic.getStateInOut();
     string storeName = ic.GenSymOneShot();
@@ -1377,7 +1391,7 @@ bool LadderElemCounter::internalGenerateIntCode(IntCode &ic)
             ic.Op(INT_END_IF);
 			ic.Op(INT_COPY_BIT_TO_BIT, storeName.c_str(), stateInOut);
 
-			ic.Op(INT_IF_VARIABLE_LES_LITERAL, name, prop.max);
+			ic.Op(INT_IF_VARIABLE_GRT_VARIABLE, cmax, name);
                 ic.Op(INT_CLEAR_BIT, stateInOut);
             ic.Op(INT_ELSE);
                 ic.Op(INT_SET_BIT, stateInOut);
@@ -1393,8 +1407,7 @@ bool LadderElemCounter::internalGenerateIntCode(IntCode &ic)
             ic.Op(INT_END_IF);
 			ic.Op(INT_COPY_BIT_TO_BIT, storeName.c_str(), stateInOut);
 
-	        ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch_int", prop.max);
-			ic.Op(INT_IF_VARIABLE_GRT_VARIABLE, name, "$scratch_int");
+			ic.Op(INT_IF_VARIABLE_GRT_VARIABLE, name, cmax);
                 ic.Op(INT_CLEAR_BIT, stateInOut);
             ic.Op(INT_ELSE);
                 ic.Op(INT_SET_BIT, stateInOut);
@@ -1405,8 +1418,9 @@ bool LadderElemCounter::internalGenerateIntCode(IntCode &ic)
             ic.Op(INT_IF_BIT_SET, stateInOut);
                 ic.Op(INT_IF_BIT_CLEAR, storeName.c_str());
                     ic.Op(INT_INCREMENT_VARIABLE, name);
-                    ic.Op(INT_IF_VARIABLE_LES_LITERAL, name, prop.max+1);
-                    ic.Op(INT_ELSE);
+//                    ic.Op(INT_IF_VARIABLE_LES_LITERAL, name, prop.max+1);
+//                    ic.Op(INT_ELSE);
+					ic.Op(INT_IF_VARIABLE_GRT_VARIABLE, name, cmax);
                         ic.Op(INT_SET_VARIABLE_TO_LITERAL, name, (SWORD)0);
                     ic.Op(INT_END_IF);
                 ic.Op(INT_END_IF);
@@ -1447,20 +1461,34 @@ void *LadderElemCounter::getProperties(void)
 bool LadderElemCounter::internalSave(FILE *f)
 {
 	return
-		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_ulong(f, prop.idName.first ) &&
 		fwrite_int  (f, prop.idName.second) &&
-		fwrite_int  (f, prop.max);
+		fwrite_ulong(f, prop.idMax .first ) &&
+		fwrite_int  (f, prop.idMax .second);
 }
 
 bool LadderElemCounter::internalLoad(FILE *f, unsigned int version)
 {
-	bool ret =
-		fread_ulong(f, &prop.idName.first) &&
-		fread_int  (f, &prop.idName.second) &&
-		fread_int  (f, &prop.max);
+	bool ret;
+
+	if(version < 1) {
+		ret =
+			fread_ulong(f, &prop.idName.first) &&
+			fread_int  (f, &prop.idName.second) &&
+			fread_int  (f, &prop.idMax .second);
+
+		prop.idMax.first = 0;
+	} else {
+		ret =
+			fread_ulong(f, &prop.idName.first ) &&
+			fread_int  (f, &prop.idName.second) &&
+			fread_ulong(f, &prop.idMax .first ) &&
+			fread_int  (f, &prop.idMax .second);
+	}
 
 	if(ret == true) {
 		Diagram->updateTypeIO(prop.idName.first);
+		Diagram->updateTypeIO(prop.idMax.first );
 	}
 
 	return ret;
@@ -1481,6 +1509,10 @@ bool LadderElemCounter::acceptIO(unsigned long id, eType type)
 		return false;
 	}
 
+	if(id == prop.idMax.first && !Diagram->IsGenericTypeIO(type)) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -1489,6 +1521,10 @@ void LadderElemCounter::updateIO(LadderDiagram *owner, bool isDiscard)
 	infoIO_Name.pin = prop.idName;
 	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
 	prop.idName = infoIO_Name.pin;
+
+	infoIO_Max.pin = prop.idMax;
+	Diagram->updateIO(owner, this, infoIO_Max, isDiscard);
+	prop.idMax = infoIO_Max.pin;
 }
 
 eType LadderElemCounter::getAllowedTypeIO(unsigned long id)
@@ -1497,11 +1533,17 @@ eType LadderElemCounter::getAllowedTypeIO(unsigned long id)
 		return eType_Counter;
 	}
 
+	if(prop.idMax.first == id) {
+		return eType_General;
+	}
+
 	return eType_Pending;
 }
 
 int LadderElemCounter::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
 {
+	unsigned int n = 0;
+
 	if(prop.idName.first == idSearch) {
 		if(isReplace) {
 			pair<unsigned long, int> pin = prop.idName;
@@ -1512,27 +1554,63 @@ int LadderElemCounter::SearchAndReplace(unsigned long idSearch, string sNewText,
 
 				setProperties(Diagram->getContext(), data);
 
-				return 1;
+				n++;
 			}
 		} else {
 			return 1;
 		}
 	}
 
-	return 0;
+	if(prop.idMax.first == idSearch) {
+		if(isReplace) {
+			pair<unsigned long, int> pin = prop.idMax;
+			if(Diagram->getIO(this, pin, sNewText, eType_General, infoIO_Max)) {
+				LadderElemCounterProp *data = (LadderElemCounterProp *)getProperties();
+
+				data->idMax  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				n++;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
 }
 
 bool LadderElemCounter::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
 {
-	pair<unsigned long, int> pin = prop.idName;
+	bool isValid, tryGeneralTypeFirst;
+	pair<unsigned long, int> pin = (index == 0) ? prop.idName : prop.idMax;
 
-	type = eType_Counter;
+	if(index == 0) {
+		type = eType_Counter;
+		tryGeneralTypeFirst = false;
 
-	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome" ), VALIDATE_IS_VAR, 0, 0)) {
-		if(Diagram->getIO(this, pin, name, type, infoIO_Name)) {
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Nome"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+	} else {
+		// Se variavel sem tipo, usa tipo geral.
+		type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+		if(type == eType_Reserved) {
+			type = eType_General;
+		}
+		tryGeneralTypeFirst = true;
+
+		isValid = Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Valor"), VALIDATE_IS_VAR_OR_NUMBER, 0, 0);
+	}
+
+	if(isValid) {
+		if(Diagram->getIO(this, pin, name, type, (index == 0) ? infoIO_Name : infoIO_Max, tryGeneralTypeFirst)) {
 			LadderElemCounterProp *data = (LadderElemCounterProp *)getProperties();
 
-			data->idName  = pin;
+			if(index == 0) {
+				data->idName = pin;
+			} else {
+				data->idMax  = pin;
+			}
 
 			setProperties(Diagram->getContext(), data);
 
@@ -10840,7 +10918,7 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 // yy.0 = 0 for old binfmt. 1 for v2 and others.
 // yy.1 - yy.15: reserved for future use.
 // zz   = format version
-static const unsigned long int LADDER_BINFMT_MAGIC      = 0x0f5a0100;
+static const unsigned long int LADDER_BINFMT_MAGIC      = 0x0f5a0101;
 static const unsigned long int LADDER_BINFMT_MAGIC_MASK = 0xffff0000;
 #define LADDER_BINFMT_GET_VERSION(m)  (m & 0x00ff)
 #define LADDER_BINFMT_GET_FLAGS(m)   ((m & 0xff00) >> 8)

@@ -931,7 +931,7 @@ public:
 /// Estrutura que define as propriedades de um elemento LadderElemCounter
 struct LadderElemCounterProp {
 	pair<unsigned long, int> idName; ///< Referencia do I/O associado ao contador
-    int                      max;    ///< Limite do contador
+	pair<unsigned long, int> idMax;  ///< Referencia do I/O associado ao limite do contador
 };
 
 /// Classe derivada de LadderElem que representa o elemento Counter
@@ -941,6 +941,8 @@ private:
 	LadderElemCounterProp prop;
 	/// Variavel com os dados para fazer Request do I/O do Counter
 	tRequestIO            infoIO_Name;
+	/// Variavel com os dados para fazer Request do I/O do Limite do Counter
+	tRequestIO            infoIO_Max;
 
 	bool internalSetProperties(void *data, bool isUndoRedo = false);
 

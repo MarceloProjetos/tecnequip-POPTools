@@ -2017,7 +2017,7 @@ bool LadderElemPlaceHolder::DrawGUI(bool poweredBefore, void *data)
         rCursor.bottom = WireCoords.start.y + 20;
 
 		gui.AddCommand(source, rCursor, CmdSelectRight, nullptr, false, false);
-	} else if(isCursorVisible && !ladder->getContext().inSimulationMode) {
+	} else if(isCursorVisible && !Diagram->getContext().inSimulationMode) {
 		isCursorShown = true;
 		gui.DrawConnectionDot(WireCoords.start, 0, 12.0f);
 	}
@@ -2627,7 +2627,7 @@ bool LadderElemCoil::DrawGUI(bool poweredBefore, void *data)
 	tLadderColors     colors     = gui.getLadderColors    ();
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
-	string sname = ladder->getNameIO(prop.idName.first);
+	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
 
 	DoEOL(ddg->start, size, ddg->size, poweredBefore);
@@ -2675,7 +2675,7 @@ bool LadderElemCoil::DrawGUI(bool poweredBefore, void *data)
 	// Exibe o texto que identifica o tipo de contato: Entrada, Saida, Rele Interno ou Flag interna
 	char ch[] = { 0, 0 };
 	unsigned int selected;
-	mapDetails detailsIO = ladder->getDetailsIO(prop.idName.first);
+	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
 
 	const char *typeLetters = _("ESRF");
 	switch(detailsIO.type) {
@@ -2898,9 +2898,9 @@ bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
 	tLadderColors     colors     = gui.getLadderColors    ();
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
-	string sname = ladder->getNameIO(prop.idName.first);
+	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
-	mapDetails detailsIO = ladder->getDetailsIO(prop.idName.first);
+	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
 
 	const char *title = _("ATRASO");
 	if(ddg->expanded) {
@@ -2945,8 +2945,8 @@ bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
 	end.x   = rClock.right + 10;
 	gui.DrawLine(start, end, colorWire);
 
-	if(which != ELEM_RTO || ladder->getContext().inSimulationMode) {
-		if(ladder->getContext().inSimulationMode) {
+	if(which != ELEM_RTO || Diagram->getContext().inSimulationMode) {
+		if(Diagram->getContext().inSimulationMode) {
 			// Primeiro limpa o circulo do relogio com a cor de simulacao Ligado
 			gui.DrawEllipse(rClock, colors.Wire);
 
@@ -3031,7 +3031,7 @@ bool LadderElemTimer::DrawGUI(bool poweredBefore, void *data)
 	RECT rText = r;
 	char buf[1024];
 
-	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+	LadderSettingsGeneral settings = Diagram->getSettingsGeneral();
 	DescribeForIoList(prop.delay / settings.cycleTime, getTimerTypeIO(getWhich()), buf);
 
 	rText.top = (doHighStart ? end.y - 5 : start.y + 5);
@@ -3220,7 +3220,6 @@ bool CounterCmdChangeName(tCommandSource source, void *data)
 
 bool CounterCmdChangeValue(tCommandSource source, void *data)
 {
-	bool               ret = false;
 	int                which = source.elem->getWhich();
 	tCmdChangeNameData *dataChangeName = (tCmdChangeNameData *)(data);
 	LadderElemCounter *counter = dynamic_cast<LadderElemCounter *>(source.elem);
@@ -3238,38 +3237,16 @@ bool CounterCmdChangeValue(tCommandSource source, void *data)
 	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
 	LadderElemCounterProp *prop = (LadderElemCounterProp *)counter->getProperties();
 
-	char cname[100];
-	sprintf(cname, "%d", prop->max);
-	string name = cname;
+	string name = ladder->getNameIO(prop->idMax);
+	mapDetails detailsIO = ladder->getDetailsIO(prop->idMax.first);
 
-	vector<eType> types;
-	types.push_back(eType_Counter);
-
-	// Passa a posicao do objeto para a janela para que seja exibida centralizada ao elemento
-	POINT start, size, GridSize = gui.getGridSize();
-	RECT rArea = gui.getElemArea(source.elem);
-
-	RECT rWindow;
-	GetWindowRect(DrawWindow, &rWindow);
-
-	start.x = rArea.left   ;
-	start.y = rArea.top    ;
-	size .x = rArea.right  - rArea.left;
-	size .y = rArea.bottom - rArea.top;
-
-	if(ShowVarDialog(title, desc, &name, start, size, GridSize, types) &&
-		ladder->IsValidNameAndType(0, name.c_str(), eType_Pending, _("Valor"), VALIDATE_IS_NUMBER, 0, 0)) {
-			prop->max = atoi(name.c_str());
-
-			source.elem->setProperties(ladder->getContext(), prop);
-
-			if(dataChangeName != nullptr) {
-				dataChangeName->reply = true;
-			}
-	} else {
-		// Se foi cancelada a alteracao, devemos desalocar as propriedades
-		delete prop;
+	bool ret = cmdChangeName(source.elem, 1, prop->idMax, detailsIO.type, ladder->getGeneralTypes(), title, desc);
+	if(dataChangeName != nullptr) {
+		dataChangeName->reply = ret;
 	}
+
+	// Aqui desalocamos as propriedades
+	delete prop;
 
 	return ret;
 }
@@ -3319,6 +3296,7 @@ bool LadderElemCounter::DrawGUI(bool poweredBefore, void *data)
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
 	string name = Diagram->getNameIO(prop.idName);
+	string cmax = Diagram->getNameIO(prop.idMax );
 
 	int which = getWhich();
 
@@ -3416,7 +3394,7 @@ bool LadderElemCounter::DrawGUI(bool poweredBefore, void *data)
 
 	// Desenha o limite do contador
 	char val[1024];
-	sprintf(val, "%s %d", txt, prop.max);
+	sprintf(val, "%s %s", txt, cmax.c_str());
 
 	r.top += FONT_HEIGHT + 5;
 	gui.DrawText(val, r, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
@@ -4593,9 +4571,9 @@ bool LadderElemSetBit::DrawGUI(bool poweredBefore, void *data)
 	tLadderColors     colors     = gui.getLadderColors    ();
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
-	string sname = ladder->getNameIO(prop.idName.first);
+	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
-	mapDetails detailsIO = ladder->getDetailsIO(prop.idName.first);
+	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("ESCREVER BIT"), true, poweredBefore);
@@ -4722,9 +4700,9 @@ bool LadderElemCheckBit::DrawGUI(bool poweredBefore, void *data)
 	tLadderColors     colors     = gui.getLadderColors    ();
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
-	string sname = ladder->getNameIO(prop.idName.first);
+	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
-	mapDetails detailsIO = ladder->getDetailsIO(prop.idName.first);
+	mapDetails detailsIO = Diagram->getDetailsIO(prop.idName.first);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("CHECAR BIT"), true, poweredBefore);
@@ -5602,9 +5580,9 @@ bool LadderElemMultisetDA::DrawGUI(bool poweredBefore, void *data)
 	tLadderColors     colors     = gui.getLadderColors    ();
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
-	string sdesl = ladder->getNameIO(prop.idDesl.first);
+	string sdesl = Diagram->getNameIO(prop.idDesl.first);
 	const char *name = sdesl.c_str();
-	mapDetails detailsIO = ladder->getDetailsIO(prop.idTime.first);
+	mapDetails detailsIO = Diagram->getDetailsIO(prop.idTime.first);
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
 	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("RAMPA D/A"), true, poweredBefore);
@@ -6063,7 +6041,7 @@ bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 	tLadderColors     colors     = gui.getLadderColors    ();
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
-	string sname = ladder->getNameIO(prop.idName.first);
+	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
@@ -6321,7 +6299,7 @@ bool LadderElemUART::DrawGUI(bool poweredBefore, void *data)
 	tLadderColors     colors     = gui.getLadderColors    ();
 	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
 
-	string sname = ladder->getNameIO(prop.idName.first);
+	string sname = Diagram->getNameIO(prop.idName.first);
 	const char *name = sname.c_str();
 
 	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
@@ -8619,10 +8597,10 @@ void LadderDiagram::DrawGUI(void)
 		gui.NeedRedraw(true);
 	}
 
-	if(ladder->getBreakPointActiveAtRung() > 0) {
+	if(getBreakPointActiveAtRung() > 0) {
 		if(DiagramData.needSelectRung) {
 			DiagramData.needSelectRung = false;
-			SelectElement(rungs[ladder->getBreakPointActiveAtRung() - 1]->rung->getFirstElement(), SELECTED_RIGHT);
+			SelectElement(rungs[getBreakPointActiveAtRung() - 1]->rung->getFirstElement(), SELECTED_RIGHT);
 			InvalidateRect(DrawWindow, NULL, FALSE);
 		}
 	} else {
@@ -8829,7 +8807,7 @@ void mapIO::updateGUI(void)
 	// Sincroniza o mapa com o vetor ordenado
 	SyncVectorIO();
 
-	int i, iocount = ladder->getCountIO();
+	int i, iocount = diagram->getCountIO();
 
     ListView_DeleteAllItems(IoList);
     for(i = 0; i < iocount; i++) {
