@@ -856,6 +856,7 @@ void dbp(char *str, ...);
 void Error(const char *str, ...);
 void Error(const char *title, const char *str, va_list f);
 void Warning(const char *title, const char *str, ...);
+void csvSaveField(FILE *f, string name);
 long long ElapsedTime(bool ShowDialog, void (*fnc)(void *), void *data);
 HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,

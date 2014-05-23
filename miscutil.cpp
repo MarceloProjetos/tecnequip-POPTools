@@ -614,3 +614,9 @@ POINT getWindowStart(POINT ElemStart, POINT ElemSize, POINT size, POINT GridSize
 
 	return start;
 }
+
+void csvSaveField(FILE *f, string name)
+{
+	fwrite(name.c_str(), name.size(), 1, f);
+	fwrite(";", 1, 1, f);
+}

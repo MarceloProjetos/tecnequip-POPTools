@@ -493,12 +493,6 @@ int RTC_OutputState(struct tm start, struct tm end, struct tm now, int mode, int
 
 /*** End of functions related to RTC Simulation ***/
 
-void csvSaveField(FILE *f, string name)
-{
-	fwrite(name.c_str(), name.size(), 1, f);
-	fwrite(";", 1, 1, f);
-}
-
 void csvSaveIO(FILE *f, vector<tLogRefIO>::iterator io, int val)
 {
 	char buf[1024] = "?";

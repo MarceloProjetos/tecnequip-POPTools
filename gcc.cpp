@@ -1,4 +1,5 @@
 #include "poptools.h"
+#include <intreg.h>
 
 #include <vector>
 
@@ -824,6 +825,107 @@ void DumpInvokeCmd(char * szCmd, char * szArgs)
 	fclose(f);
 }
 
+static void ExportVarsAsCSV(string filename)
+{
+    char exportFile[MAX_PATH];
+
+	strcpy(exportFile, filename.c_str());
+	ChangeFileExtension(exportFile, "csv");
+
+	if(!strlen(exportFile))
+		return;
+
+    FILE *f = fopen(exportFile, "w");
+    if(!f) {
+        return;
+    }
+
+	// Exporta o mapa de registradores
+	char buf[100];
+
+	csvSaveField(f, _("Registradores de Data/Hora"));
+	fwrite("\n", 1, 1, f);
+
+	csvSaveField(f, _("Dia"));
+	sprintf(buf, "%d", INTREG_DATETIME_START + 0);
+	csvSaveField(f, buf);
+	fwrite("\n", 1, 1, f);
+
+	csvSaveField(f, _("Mês"));
+	sprintf(buf, "%d", INTREG_DATETIME_START + 1);
+	csvSaveField(f, buf);
+	fwrite("\n", 1, 1, f);
+
+	csvSaveField(f, _("Ano"));
+	sprintf(buf, "%d", INTREG_DATETIME_START + 2);
+	csvSaveField(f, buf);
+	fwrite("\n", 1, 1, f);
+
+	csvSaveField(f, _("Hora"));
+	sprintf(buf, "%d", INTREG_DATETIME_START + 4);
+	csvSaveField(f, buf);
+	fwrite("\n", 1, 1, f);
+
+	csvSaveField(f, _("Minuto"));
+	sprintf(buf, "%d", INTREG_DATETIME_START + 5);
+	csvSaveField(f, buf);
+	fwrite("\n", 1, 1, f);
+
+	csvSaveField(f, _("Segundo"));
+	sprintf(buf, "%d", INTREG_DATETIME_START + 6);
+	csvSaveField(f, buf);
+	fwrite("\n", 1, 1, f);
+
+	csvSaveField(f, _("Dia da Semana"));
+	sprintf(buf, "%d", INTREG_DATETIME_START + 7);
+	csvSaveField(f, buf);
+	fwrite("\n", 1, 1, f);
+
+	csvSaveField(f, _("Dia do Ano"));
+	sprintf(buf, "%d", INTREG_DATETIME_START + 8);
+	csvSaveField(f, buf);
+	fwrite("\n", 1, 1, f);
+
+	csvSaveField(f, _("Obs.: A hora somente é atualizada quando é realizada a leitura do registrador Dia"));
+	fwrite("\n", 1, 1, f);
+
+	// Salva o cabecalho do arquivo
+	csvSaveField(f, _("Nome"));
+	csvSaveField(f, _("Registrador"));
+	csvSaveField(f, _("Bit"));
+	fwrite("\n", 1, 1, f);
+
+	// A seguir fazemos o loop entre todas as variaveis cadastradas, salvando no CSV...
+	int list, i;
+	char reg[MAX_NAME_LEN], bit[MAX_NAME_LEN];
+
+	for(list = 0; list < SEENVAR_LISTS; list++) {
+		// Apenas sao acessiveis as variaveis de usuario
+		if(list != SEENVAR_MODE_USERBIT && list != SEENVAR_MODE_USERINT) continue;
+
+		for(i = 0; i < SeenVariablesCount[list]; i++) {
+			switch(list) {
+				case SEENVAR_MODE_USERBIT:
+					sprintf(reg, "%d", INTREG_USERBIT_START + (i/32));
+					sprintf(bit, "%d", i%32);
+					break;
+
+				case SEENVAR_MODE_USERINT:
+					sprintf(reg, "%d", INTREG_USERINT_START + i);
+					strcpy (bit, "-");
+					break;
+			}
+
+			csvSaveField(f, (char *)(SeenVariables[list][i]) + 2);
+			csvSaveField(f, reg);
+			csvSaveField(f, bit);
+			fwrite("\n", 1, 1, f);
+		}
+	}
+
+	fclose(f);
+}
+
 DWORD InvokeGCC(char* dest)
 {
 	STARTUPINFO StartupInfo;
@@ -902,6 +1004,8 @@ DWORD InvokeGCC(char* dest)
 
 	strcpy(szAppDestPath, dest);
 	fileName = SplitPathFileNameAndExt(szAppDestPath);
+
+	ExportVarsAsCSV(dest);
 
 	strcpy(szCmd, "");
 	strcpy(szArgs, "");
