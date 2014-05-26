@@ -115,6 +115,7 @@ public:
 
 	string          getPortName           (int index);
 	string          getPinName            (int index);
+	int             getPinFromDialogList  (string name);
 	vector<string>  getVectorInternalFlags(void);
 
 	// Funcao para ordenar a lista de I/O conforme o campo especificado

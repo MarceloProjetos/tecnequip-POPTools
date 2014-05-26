@@ -824,6 +824,19 @@ string mapIO::getPinName(int index)
 	return string(buf);
 }
 
+int mapIO::getPinFromDialogList(string name)
+{
+	unsigned int idx;
+
+	for (idx = 0; idx < vecDialogItemList.size(); idx++) {
+		if(name == vecDialogItemList[idx].first) {
+			return vecDialogItemList[idx].second;
+		}
+	}
+
+	return 0;
+}
+
 vector<string> mapIO::getVectorInternalFlags(void)
 {
 	return vectorInternalFlag;
@@ -1206,8 +1219,19 @@ void mapIO::AddDialogItem(string name, int pin)
 		vecDialogItemList.clear();
 	}
 
-	vecDialogItemList.push_back(pair<string, int>(name, pin));
-	SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)name.c_str());
+	const unsigned int centeredTextLength = 12;
+	char centeredText[centeredTextLength + 1];
+	memset(centeredText, ' ', centeredTextLength);
+	centeredText[centeredTextLength] = 0;
+
+	if(name.size() > centeredTextLength) {
+		name.resize(centeredTextLength);
+	}
+
+	strncpy(centeredText + (centeredTextLength - name.size())/2, name.c_str(), name.size());
+
+	vecDialogItemList.push_back(pair<string, int>(centeredText, pin));
+	SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)centeredText);
 }
 
 //-----------------------------------------------------------------------------
@@ -1285,14 +1309,15 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam,
             } else if(h == PinList && HIWORD(wParam) == LBN_DBLCLK) {
                 DialogDone = TRUE;
 			} else if (h == PinList && HIWORD(wParam) == LBN_SELCHANGE) {
+				int pin;
 				bool sem_bit;
-				char pin[16], name[MAX_NAME_LEN];
+				char pin_name[MAX_NAME_LEN], name[MAX_NAME_LEN];
 				SendMessage(textLabelName, WM_GETTEXT, (WPARAM)MAX_NAME_LEN, (LPARAM)(name));
 
 				SendMessage(PinList, LB_GETTEXT,
-					(WPARAM)SendMessage(PinList, LB_GETCURSEL, 0, 0), (LPARAM)pin);
+					(WPARAM)SendMessage(PinList, LB_GETCURSEL, 0, 0), (LPARAM)pin_name);
 
-				sem_bit = atoi(pin)<20;
+				sem_bit = ladder->getPinFromDialogListIO(pin_name) < 20;
 				if(sem_bit)
 					SendMessage(BitCombobox, CB_SETCURSEL, 0, 0);
 				EnableWindow(BitCombobox, sem_bit ? FALSE : TRUE);

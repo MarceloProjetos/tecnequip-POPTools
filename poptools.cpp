@@ -539,6 +539,11 @@ int UpdateProgressWindow(ProgressStatus *ps)
 
 						while(fgets(linebuf, sizeof(linebuf), f)) {
 							char *inbuf = strstr(linebuf, "poptools.c");
+							if(inbuf == NULL) {
+								// Se nao achou poptools.c, procura por ld.exe para tentar identificar erros de linkagem
+								inbuf = strstr(linebuf, "ld.exe");
+							}
+
 							if(inbuf != NULL) {
 								if(first) {
 									first = 0;

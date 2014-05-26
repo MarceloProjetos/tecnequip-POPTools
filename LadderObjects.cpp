@@ -12650,6 +12650,11 @@ string LadderDiagram::getPinNameIO(int index)
 	return IO->getPinName(index);
 }
 
+int LadderDiagram::getPinFromDialogListIO(string name)
+{
+	return IO->getPinFromDialogList(name);
+}
+
 vector<string> LadderDiagram::getVectorInternalFlagsIO(void)
 {
 	return IO->getVectorInternalFlags();

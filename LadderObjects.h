@@ -3739,6 +3739,11 @@ public:
 	 *  @return          Nome do pino do I/O solicitado ou string vazia se inexistente
 	 */
 	string          getPinNameIO            (int index);
+	/** Funcao que retorna o numero do pino associado ao I/O com a descricao passada como parametro
+	 *  @param[in] name Nome do pino associado ao I/O conforme exibido na tela de atribuicao de I/O
+	 *  @return         Numero do I/O referente a descricao passada como parametro
+	 */
+	int             getPinFromDialogListIO  (string name);
 	/** Funcao que retorna o nome no firmware da variavel interna passada como parametro
 	 *  @param[in] name Nome de usuario da variavel interna
 	 *  @return         Nome da variavel interna no firmware
