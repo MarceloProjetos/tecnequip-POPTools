@@ -1228,6 +1228,15 @@ bool ShowConfDialog(eConfSection confSection)
 		settingsEncInc.pulses = min(max(0, atoi(buf)), 5000);
 
         SendMessage(FactorTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+
+		i = strlen(buf);
+		while(i > 0) {
+			i--;
+			if(buf[i] == ',') {
+				buf[i] = '.';
+			}
+		}
+
 		settingsEncInc.factor = (float)atof(buf);
 		if(settingsEncInc.factor < 0.0)
 			settingsEncInc.factor = 1.0;
@@ -1248,6 +1257,15 @@ bool ShowConfDialog(eConfSection confSection)
 		settingsEncSSI.perimeter = max(0, atoi(buf));
 
         SendMessage(SSIFactorTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+
+		i = strlen(buf);
+		while(i > 0) {
+			i--;
+			if(buf[i] == ',') {
+				buf[i] = '.';
+			}
+		}
+
 		settingsEncSSI.factor = (float)atof(buf);
 		if(settingsEncSSI.factor < 0.0)
 			settingsEncSSI.factor = 1.0;

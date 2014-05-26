@@ -829,6 +829,10 @@ static void ExportVarsAsCSV(string filename)
 {
     char exportFile[MAX_PATH];
 
+	if(filename.size() == 0) { // Nome nao definido, retorna...
+		return;
+	}
+
 	strcpy(exportFile, filename.c_str());
 	ChangeFileExtension(exportFile, "csv");
 
@@ -1004,8 +1008,6 @@ DWORD InvokeGCC(char* dest)
 
 	strcpy(szAppDestPath, dest);
 	fileName = SplitPathFileNameAndExt(szAppDestPath);
-
-	ExportVarsAsCSV(dest);
 
 	strcpy(szCmd, "");
 	strcpy(szArgs, "");
@@ -1311,6 +1313,10 @@ DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 
 	if(!GenerateCFile(szAppSourceFile))
 		return 1;
+
+	if(POPSettings.GenerateMemoryMap == true) {
+		ExportVarsAsCSV(ladder->getCurrentFilename());
+	}
 
 	DWORD err = 0;
 

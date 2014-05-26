@@ -503,6 +503,8 @@ typedef struct SettingsTag {
 	int idLanguage;
 	// Simulation settings
 	bool ShowSimulationWarnings;
+	// Compile settings
+	bool GenerateMemoryMap;
 	// Find And Replace settings
 	char last_search_text[MAX_NAME_LEN];
 	char last_new_text[MAX_NAME_LEN];

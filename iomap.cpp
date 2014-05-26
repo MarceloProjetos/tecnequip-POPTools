@@ -1309,7 +1309,6 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam,
             } else if(h == PinList && HIWORD(wParam) == LBN_DBLCLK) {
                 DialogDone = TRUE;
 			} else if (h == PinList && HIWORD(wParam) == LBN_SELCHANGE) {
-				int pin;
 				bool sem_bit;
 				char pin_name[MAX_NAME_LEN], name[MAX_NAME_LEN];
 				SendMessage(textLabelName, WM_GETTEXT, (WPARAM)MAX_NAME_LEN, (LPARAM)(name));

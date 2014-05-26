@@ -4,6 +4,8 @@ static HWND PrefDialog;
 
 static HWND ShowWarningsYes;
 static HWND ShowWarningsNo;
+static HWND GenMemoryMapYes;
+static HWND GenMemoryMapNo;
 static HWND ClearRecentList;
 static HWND LanguageCombobox;
 static HWND ComPortFlashCombobox;
@@ -58,7 +60,7 @@ static void MakeControls(void)
     NiceFont(textlabel);
 
     ShowWarningsYes = CreateWindowEx(0, WC_BUTTON, _("Sim"),
-        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE | WS_GROUP,
         145, 75, 40, 20, PrefDialog, NULL, Instance, NULL);
     NiceFont(ShowWarningsYes);
 
@@ -72,64 +74,84 @@ static void MakeControls(void)
         10, 55, 270, 50, PrefDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
-    HWND textlabel4 = CreateWindowEx(0, WC_STATIC, _("Intervalo:"),
+    textlabel = CreateWindowEx(0, WC_STATIC, _("Gerar mapa:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         10, 125, 110, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(textlabel);
+
+    GenMemoryMapYes = CreateWindowEx(0, WC_BUTTON, _("Sim"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE | WS_GROUP,
+        145, 125, 40, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(GenMemoryMapYes);
+
+    GenMemoryMapNo = CreateWindowEx(0, WC_BUTTON, _("Não"),
+        WS_CHILD | BS_AUTORADIOBUTTON | WS_TABSTOP | WS_VISIBLE,
+        210, 125, 40, 20, PrefDialog, NULL, Instance, NULL);
+    NiceFont(GenMemoryMapNo);
+
+    grouper = CreateWindowEx(0, WC_BUTTON, _("Mapa de Memória"),
+        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
+        10, 105, 270, 50, PrefDialog, NULL, Instance, NULL);
+    NiceFont(grouper);
+
+    HWND textlabel4 = CreateWindowEx(0, WC_STATIC, _("Intervalo:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 175, 110, 20, PrefDialog, NULL, Instance, NULL);
     NiceFont(textlabel4);
 
 	AutoSaveIntervalCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        135, 123, 135, 100, PrefDialog, NULL, Instance, NULL);
+        135, 173, 135, 100, PrefDialog, NULL, Instance, NULL);
     NiceFont(AutoSaveIntervalCombobox);
 
     HWND grouper2 = CreateWindowEx(0, WC_BUTTON, _("Cópia de Segurança"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        10, 105, 270, 50, PrefDialog, NULL, Instance, NULL);
+        10, 155, 270, 50, PrefDialog, NULL, Instance, NULL);
     NiceFont(grouper2);
 
     HWND textLabel1 = CreateWindowEx(0, WC_STATIC, _("Porta de Gravação:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 175, 120, 21, PrefDialog, NULL, Instance, NULL);
+        10, 225, 120, 21, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel1);
 
 	ComPortFlashCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        135, 173, 135, 100, PrefDialog, NULL, Instance, NULL);
+        135, 223, 135, 100, PrefDialog, NULL, Instance, NULL);
     NiceFont(ComPortFlashCombobox);
 
     HWND textLabel2 = CreateWindowEx(0, WC_STATIC, _("Porta de Depuração:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 205, 120, 21, PrefDialog, NULL, Instance, NULL);
+        10, 255, 120, 21, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel2);
 
 	ComPortDebugCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        135, 203, 135, 100, PrefDialog, NULL, Instance, NULL);
+        135, 253, 135, 100, PrefDialog, NULL, Instance, NULL);
     NiceFont(ComPortDebugCombobox);
 
     grouper = CreateWindowEx(0, WC_BUTTON, _("Portas Seriais"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        10, 155, 270, 80, PrefDialog, NULL, Instance, NULL);
+        10, 205, 270, 80, PrefDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
     HWND textLabel3 = CreateWindowEx(0, WC_STATIC, _("Projetos Recentes:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 245, 120, 20, PrefDialog, NULL, Instance, NULL);
+        10, 295, 120, 20, PrefDialog, NULL, Instance, NULL);
     NiceFont(textLabel3);
 
 	ClearRecentList = CreateWindowEx(0, WC_BUTTON, _("Limpar!"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_PUSHBUTTON,
-        135, 240, 145, 30, PrefDialog, NULL, Instance, NULL); 
+        135, 290, 145, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(ClearRecentList);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        135, 280, 70, 30, PrefDialog, NULL, Instance, NULL); 
+        135, 330, 70, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     CancelButton = CreateWindowEx(0, WC_BUTTON, _("Cancelar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        210, 280, 70, 30, PrefDialog, NULL, Instance, NULL); 
+        210, 330, 70, 30, PrefDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
 }
 
@@ -150,7 +172,7 @@ void ShowPrefDialog(void)
 		{  0, NULL         }
 	};
 
-	POINT size = { 290, 320 };
+	POINT size = { 290, 370 };
 	POINT start = getWindowStart(size);
 
 	PrefDialog = CreateWindowClient(0, "POPToolsDialog",
@@ -194,6 +216,12 @@ void ShowPrefDialog(void)
         SendMessage(ShowWarningsNo , BM_SETCHECK, BST_CHECKED, 0);
 	}
 
+	if(POPSettings.GenerateMemoryMap) {
+		SendMessage(GenMemoryMapYes, BM_SETCHECK, BST_CHECKED, 0);
+    } else {
+        SendMessage(GenMemoryMapNo , BM_SETCHECK, BST_CHECKED, 0);
+	}
+
     EnableWindow(MainWindow, FALSE);
     ShowWindow(PrefDialog, TRUE);
 	SetFocus(OkButton);
@@ -235,6 +263,12 @@ void ShowPrefDialog(void)
 			POPSettings.ShowSimulationWarnings = TRUE;
 		} else {
 			POPSettings.ShowSimulationWarnings = FALSE;
+	    }
+
+		if(SendMessage(GenMemoryMapYes, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+			POPSettings.GenerateMemoryMap = TRUE;
+		} else {
+			POPSettings.GenerateMemoryMap = FALSE;
 	    }
 
 		// Configura o idioma e avisa para reiniciar o programa

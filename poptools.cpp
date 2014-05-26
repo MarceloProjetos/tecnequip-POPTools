@@ -1865,6 +1865,7 @@ void LoadSettings(void)
 
 					if(fread_int(f, &POPSettings.idLanguage              ) &&
 						fread_bool(f, &POPSettings.ShowSimulationWarnings) &&
+						fread_bool(f, &POPSettings.GenerateMemoryMap     ) &&
 						fread_int(f, &POPSettings.AutoSaveInterval       ) &&
 						fread_int(f, &POPSettings.COMPortFlash           ) &&
 						fread_int(f, &POPSettings.COMPortDebug           )
@@ -1893,9 +1894,9 @@ void LoadSettings(void)
 	if(failed) {
 		ShowTaskDialog(_("Erro ao carregar as preferências"), _("Será utilizada a configuração padrão"), TD_ERROR_ICON, TDCBF_OK_BUTTON);
 
-		POPSettings.idLanguage = 0;
-		POPSettings.AutoSaveInterval = 0;
-		POPSettings.ShowSimulationWarnings = TRUE;
+		memset(&POPSettings, 0, sizeof(POPSettings));
+
+		POPSettings.ShowSimulationWarnings = true;
 
 		return;
 	}
@@ -1932,6 +1933,7 @@ void SaveSettings(void)
 	if(ret == true &&
 		fwrite_int   (f, POPSettings.idLanguage            ) &&
 		fwrite_bool  (f, POPSettings.ShowSimulationWarnings) &&
+		fwrite_bool  (f, POPSettings.GenerateMemoryMap     ) &&
 		fwrite_int   (f, POPSettings.AutoSaveInterval      ) &&
 		fwrite_int   (f, POPSettings.COMPortFlash          ) &&
 		fwrite_int   (f, POPSettings.COMPortDebug          )
