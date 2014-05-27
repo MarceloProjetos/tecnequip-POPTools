@@ -581,13 +581,15 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
             case INT_EEPROM_WRITE:
 				fprintf(f, "E2P_Write((void *)&%s, %d, 2);\n", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ), vectorIntCode[i].literal);
 				break;
-            case INT_READ_ADC:
+            case INT_READ_ADC: {
 				HasADC = 1;
+				unsigned int ad_channel = ladder->getDetailsIO(vectorIntCode[i].name1).pin;
 
-				ad_mask |= 1 << (atoi(MapSym(vectorIntCode[i].name1)+1) - 1);
-				sprintf(buf2, "ADC_Read(%d)", atoi(MapSym(vectorIntCode[i].name1) + 1));
+				ad_mask |= 1 << ad_channel;
+				sprintf(buf2, "ADC_Read(%d)", ad_channel);
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name1), buf2, GENVARCODE_MODE_WRITE));
 				break;
+			}
             case INT_SET_DA:
 				HasDAC = 1;
 
@@ -834,7 +836,7 @@ static void ExportVarsAsCSV(string filename)
 	}
 
 	strcpy(exportFile, filename.c_str());
-	ChangeFileExtension(exportFile, "csv");
+	ChangeFileExtension(exportFile, "var.csv");
 
 	if(!strlen(exportFile))
 		return;

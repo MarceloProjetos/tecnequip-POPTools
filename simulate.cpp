@@ -522,7 +522,7 @@ static void ExportLogAsCSV(void)
 	string currentFilename = ladder->getCurrentFilename();
 	if(currentFilename.size() > 0) {
 		strcpy(exportFile, currentFilename.c_str());
-		ChangeFileExtension(exportFile, "csv");
+		ChangeFileExtension(exportFile, "sim.csv");
 	} else {
 	    exportFile[0] = '\0';
 	}
