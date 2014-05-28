@@ -1,7 +1,6 @@
 #include "poptools.h"
 
-static int nSortColumn = 0;
-static BOOL bSortAscending = TRUE;
+static bool gSortAscending = true;
 
 // Funcoes para ordenacao
 template<class T>
@@ -9,7 +8,7 @@ template<class T>
 	{
 		inline bool operator ()(const T& _left, const T& _right)
 		{
-			return bSortAscending ?
+			return gSortAscending ?
 				_stricmp(_left .first.c_str(), _right.first.c_str()) < 0 :
 				_stricmp(_right.first.c_str(), _left .first.c_str()) < 0;
 		}
@@ -20,7 +19,7 @@ template<class T>
 	{
 		inline bool operator ()(const T& _left, const T& _right)
 		{
-			return bSortAscending ?
+			return gSortAscending ?
 				_left .second.second.type < _right.second.second.type :
 				_right.second.second.type < _left .second.second.type;
 		}
@@ -35,7 +34,7 @@ template<class T>
 			if(!_left .second.second.pin &&  _right.second.second.pin) return false;
 			if( _left .second.second.pin && !_right.second.second.pin) return true;
 
-			return bSortAscending ?
+			return gSortAscending ?
 				_left .second.second.pin < _right.second.second.pin :
 				_right.second.second.pin < _left .second.second.pin;
 		}
@@ -75,7 +74,7 @@ template<class T>
 			}
 			iRight = (int(type)*10000) + (_right.second.second.pin*100) + bit;
 
-			return bSortAscending ?
+			return gSortAscending ?
 				iLeft  < iRight :
 				iRight < iLeft;
 		}
@@ -95,7 +94,8 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 	countIO    = 0;
 	selectedIO = 0;
 
-	currentSortBy = eSortBy_Name;
+	currentSortBy        = eSortBy_Name;
+	currentSortAscending = true;
 
 	maxNameSize = 16;
 
@@ -211,7 +211,7 @@ void mapIO::SyncVectorIO(void)
 {
 	vectorIO.clear();
 	vectorIO = vector<tVectorIO>(IO.begin(), IO.end());
-	Sort(currentSortBy);
+	Sort(eSortBy_Current);
 }
 
 string mapIO::getValidName(string name)
@@ -559,28 +559,15 @@ void mapIO::Discard(tRequestIO infoIO)
 	}
 }
 
-unsigned long mapIO::getIndex(unsigned long id, bool isTotal)
+unsigned long mapIO::getIndex(unsigned long id)
 {
-	unsigned long idxBit = 1, idxInt = 1;
-	tMapIO::iterator it;
+	unsigned long idx;
+	vector<tVectorIO>::iterator it;
 
-	for(it = IO.begin(); it != IO.end(); it++) {
+	for(idx = 1, it = vectorIO.begin(); it != vectorIO.end(); it++, idx++) {
 		// Se encontrou, retorna o indice conforme modo do IO
 		if(it->second.first == id) {
-			if(isTotal) {
-				return idxBit + idxInt - 1;
-			} else if (it->second.second.countRequestInt == 0) {
-				return idxBit;
-			} else {
-				return idxInt;
-			}
-		}
-
-		// Incrementa o indice referente ao modo do IO atual
-		if(it->second.second.countRequestInt == 0) {
-			idxBit++;
-		} else {
-			idxInt++;
+			return idx;
 		}
 	}
 
@@ -844,9 +831,19 @@ vector<string> mapIO::getVectorInternalFlags(void)
 
 void mapIO::Sort(eSortBy sortby)
 {
-	currentSortBy = sortby;
+	if(sortby != eSortBy_Current) {
+		// get new sort parameters. If NewSortColumn < 0, use previous settings
+		if (currentSortBy == sortby) {
+			currentSortAscending = !currentSortAscending;
+		} else {
+			currentSortBy        = sortby;
+			currentSortAscending = true;
+		}
+	}
 
-	switch(sortby) {
+	gSortAscending = currentSortAscending;
+
+	switch(currentSortBy) {
 		case eSortBy_Name: sort(vectorIO.begin(), vectorIO.end(), CompareIoName<tVectorIO>()); break;
 		case eSortBy_Type: sort(vectorIO.begin(), vectorIO.end(), CompareIoType<tVectorIO>()); break;
 		case eSortBy_Pin : sort(vectorIO.begin(), vectorIO.end(), CompareIoPin <tVectorIO>()); break;
@@ -1234,52 +1231,41 @@ void mapIO::AddDialogItem(string name, int pin)
 	SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)centeredText);
 }
 
-//-----------------------------------------------------------------------------
-// Called in response to a notify for the listview. Handles click, text-edit
-// operations etc., but also gets called to find out what text to display
-// where (LPSTR_TEXTCALLBACK); that way we don't have two parallel copies of
-// the I/O list to keep in sync.
-//-----------------------------------------------------------------------------
-int CALLBACK CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+// Funcao para carregar no combobox de bits da janela de atribuicao apenas os bits nao utilizados,
+// impedindo que sejam usado por mais de um I/O ao mesmo tempo.
+unsigned int mapIO::LoadUnusedBits(string name, int pin)
 {
-	int nColumn = lParamSort;
+	unsigned int idx = 0, i = 0, mask = 0, posList = 0;
+	mapDetails detailsIO = getDetails(getID(name));
 
-	char lpszItem1[MAX_NAME_LEN];
-	char lpszItem2[MAX_NAME_LEN];
+	ComboBox_ResetContent(BitCombobox);
 
-	LVITEM itm;
-	itm.mask = LVIF_TEXT;
-	itm.iSubItem = nColumn;
+	for(i = 0; i < vectorIO.size(); i++) {
+		if(vectorIO[i].second.second.pin == pin && vectorIO[i].second.second.type != eType_General &&
+			(vectorIO[i].second.second.pin != detailsIO.pin || vectorIO[i].second.second.bit != detailsIO.bit)) {
+			mask |= 1UL << vectorIO[i].second.second.bit;
+		}
+	}
 
-	itm.iItem = lParam1;
-	itm.pszText = lpszItem1;
-	itm.cchTextMax = sizeof(lpszItem1);
+	for(i = 0; i < sizeof(ComboboxBitItens) / sizeof(ComboboxBitItens[0]); i++) {
+		if(!((mask >> i) & 1)) {
+			SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
+			if(i == detailsIO.bit) {
+				posList = idx;
+			}
+			idx++;
+		}
+	}
 
-	ListView_GetItem(IoList, &itm);
-
-	itm.iItem = lParam2;
-	itm.pszText = lpszItem2;
-	itm.cchTextMax = sizeof(lpszItem2);
-
-	ListView_GetItem(IoList, &itm);
-
-	return bSortAscending ? _stricmp(lpszItem1, lpszItem2) : _stricmp(lpszItem2, lpszItem1);
+	return posList;
 }
 
 void SortList(int NewSortColumn)
 {
-	// get new sort parameters. If NewSortColumn < 0, use previous settings
-	if (NewSortColumn == nSortColumn) {
-		bSortAscending = !bSortAscending;
-	} else if(NewSortColumn >= 0) {
-		nSortColumn = NewSortColumn;
-		bSortAscending = TRUE;
-	}
-
 	// sort list
 	eSortBy sortby = eSortBy_Nothing;
 
-	switch(nSortColumn) {
+	switch(NewSortColumn) {
 		case 0: sortby = eSortBy_Name; break;
 		case 1: sortby = eSortBy_Type; break;
 		case 3: sortby = eSortBy_Pin ; break;
@@ -1316,9 +1302,10 @@ static LRESULT CALLBACK IoDialogProc(HWND hwnd, UINT msg, WPARAM wParam,
 				SendMessage(PinList, LB_GETTEXT,
 					(WPARAM)SendMessage(PinList, LB_GETCURSEL, 0, 0), (LPARAM)pin_name);
 
-				sem_bit = ladder->getPinFromDialogListIO(pin_name) < 20;
-				if(sem_bit)
-					SendMessage(BitCombobox, CB_SETCURSEL, 0, 0);
+				int pin = ladder->getPinFromDialogListIO(pin_name);
+				unsigned int bit = ladder->LoadUnusedBitsIO(name, pin);
+				sem_bit = (pin < 20) || (ComboBox_GetCount(BitCombobox) == 0);
+				SendMessage(BitCombobox, CB_SETCURSEL, sem_bit ? 0 : bit, 0);
 				EnableWindow(BitCombobox, sem_bit ? FALSE : TRUE);
 			}
             break;
@@ -1468,11 +1455,8 @@ void mapIO::ShowIoMapDialog(int item)
     char buf[40];
 	int i = 0;
 
-	for (i = 0; i < sizeof(ComboboxBitItens) / sizeof(ComboboxBitItens[0]); i++)
-		SendMessage(BitCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBitItens[i]));
-
-	SendMessage(BitCombobox, CB_SETCURSEL, detailsIO.bit, 0);
-	if(detailsIO.pin >= 20) {
+	SendMessage(BitCombobox, CB_SETCURSEL, LoadUnusedBits(name, detailsIO.pin), 0);
+	if(detailsIO.pin >= 20 && ComboBox_GetCount(BitCombobox) > 0) {
 		EnableWindow(BitCombobox, TRUE);
 	}
 
@@ -1605,15 +1589,25 @@ cant_use_this_io:;
 			}
 		}
 
-		Assign(id, pin_number, atoi(buf));
+		tMapIO::iterator it = IO.end();
+		for(it = IO.begin(); it != IO.end(); it++) {
+			if(it->second.second.pin == pin_number && it->second.second.bit == atoi(buf)) {
+				break;
+			}
+		}
 
-		updateGUI();
+		if(it == IO.end()) {
+			Assign(id, pin_number, atoi(buf));
+
+			updateGUI();
+		} else {
+			Error(_("I/O já utilizado"));
+		}
     }
 
     EnableWindow(MainWindow, TRUE);
     DestroyWindow(IoDialog);
 	SetFocus(IoList);
-    return;
 }
 
 // ShowWatchPoint Dialog functions

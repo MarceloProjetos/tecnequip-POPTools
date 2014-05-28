@@ -12655,6 +12655,11 @@ int LadderDiagram::getPinFromDialogListIO(string name)
 	return IO->getPinFromDialogList(name);
 }
 
+unsigned int LadderDiagram::LoadUnusedBitsIO(string name, int pin)
+{
+	return IO->LoadUnusedBits(name, pin);
+}
+
 vector<string> LadderDiagram::getVectorInternalFlagsIO(void)
 {
 	return IO->getVectorInternalFlags();

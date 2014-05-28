@@ -1025,6 +1025,7 @@ static void SimulateIntCode(void)
                         v = 0;
                         Error(_("Divisão por zero na variavel: '%s', a simulação será interrompida."), a->name3);
                         StopSimulation();
+						break;
                     }
                     goto math;
 math:

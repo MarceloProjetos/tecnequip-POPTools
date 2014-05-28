@@ -1809,7 +1809,7 @@ static BOOL MakeDebugWindowClass()
 }
 
 #define SETTINGS_FILE            "settings.dat"
-#define LADDER_SETTINGS_MAGIC    0xbeef0f5a
+#define LADDER_SETTINGS_MAGIC    0xbeef0f5b
 #define LADDER_SETTINGS_MAX_SIZE 20480 // 20 KB
 
 void LoadSettings(void)

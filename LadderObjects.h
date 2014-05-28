@@ -156,6 +156,7 @@ enum eRequestAccessType {
 /// Enumeracao para informar o tipo de ordenacao que deve ser realizada na lista de I/O
 enum eSortBy {
 	eSortBy_Nothing = 0, ///< Nenhum. Sem uma ordenacao especifica
+	eSortBy_Current,     ///< Atual. Utilizado apenas como um parametro para a funcao de ordenacao, apra que seja realizada uma ordenacao conforme dados atuais
 	eSortBy_Name,        ///< Nome. Ordena a lista de I/Os por nome do I/O
 	eSortBy_Type,        ///< Tipo. Ordena a lista de I/Os pelo tipo do I/O, em ordem alfabetica conforme a descricao do tipo
 	eSortBy_Pin,         ///< Pino. Ordena a lista de I/Os pelo numero do pino do I/O
@@ -3753,6 +3754,12 @@ public:
 	 *  @param[in] item Indice com a posicao no vetor de I/Os
 	 */
 	void            ShowIoMapDialog         (int item);
+	/** Funcao que carrega o combobox de bits que podem ser atribuidos a um determinado I/O e retorna a posicao do bit atual na lista carregada
+	 *  @param[in] name Nome do pino associado ao I/O conforme exibido na tela de atribuicao de I/O
+	 *  @param[in] pin  Pino a ser usado para identificar os bits que devem ser carregados
+	 *  @return         Posicao do bit atualmente atribuido ao I/O na lista de bits carregada
+	 */
+	unsigned int    LoadUnusedBitsIO(string name, int pin);
 	/** Funcao que retorna o vetor com os nomes de todas as flags internas existentes
 	 *  @return Vetor com os nomes de todas as flags internas existentes
 	 */

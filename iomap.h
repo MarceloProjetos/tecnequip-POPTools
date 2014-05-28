@@ -14,6 +14,7 @@ private:
 	unsigned long selectedIO;
 
 	eSortBy currentSortBy;
+	bool    currentSortAscending;
 
 	typedef map <string, pair<unsigned long, mapDetails> > tMapIO;
 	tMapIO IO;
@@ -79,7 +80,7 @@ public:
 
 	void Clear(void); // Descarrega a lista de I/Os
 
-	unsigned long   getIndex          (unsigned long id, bool isTotal = true);
+	unsigned long   getIndex          (unsigned long id);
 	string          getName           (unsigned long id);
 	string          getInternalVarName(string name);
 	string          getReservedName   (eType type);
@@ -117,6 +118,7 @@ public:
 	string          getPinName            (int index);
 	int             getPinFromDialogList  (string name);
 	vector<string>  getVectorInternalFlags(void);
+	unsigned int    LoadUnusedBits        (string name, int pin);
 
 	// Funcao para ordenar a lista de I/O conforme o campo especificado
 	void            Sort                  (eSortBy sortby);

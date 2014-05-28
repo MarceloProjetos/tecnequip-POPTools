@@ -8827,7 +8827,7 @@ void mapIO::updateGUI(void)
 	}
 
 	if(selectedIO) {
-		ListView_SetItemState (IoList, getIndex(selectedIO, true) - 1, LVIS_SELECTED, LVIS_SELECTED);
-		ListView_EnsureVisible(IoList, getIndex(selectedIO, true) - 1, FALSE);
+		ListView_SetItemState (IoList, getIndex(selectedIO) - 1, LVIS_SELECTED, LVIS_SELECTED);
+		ListView_EnsureVisible(IoList, getIndex(selectedIO) - 1, FALSE);
 	}
 }
