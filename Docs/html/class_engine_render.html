@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
-<meta name="generator" content="Doxygen 1.8.5"/>
+<meta name="generator" content="Doxygen 1.8.7"/>
 <title>POPTools: Referência da Classe EngineRender</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
@@ -33,7 +33,7 @@
 </table>
 </div>
 <!-- end header part -->
-<!-- Gerado por Doxygen 1.8.5 -->
+<!-- Gerado por Doxygen 1.8.7 -->
 <script type="text/javascript">
 var searchBox = new SearchBox("searchBox", "search",false,'Busca');
 </script>
@@ -105,8 +105,6 @@ Diagrama de Hierarquia para EngineRender:</div>
 Diagrama de colaboração para EngineRender:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_engine_render__coll__graph.png" border="0" usemap="#_engine_render_coll__map" alt="Collaboration graph"/></div>
-<map name="_engine_render_coll__map" id="_engine_render_coll__map">
-</map>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -119,8 +117,10 @@ Métodos Públicos</h2></td></tr>
 <tr class="separator:abfb244fa8d5b2122d2b25b1dbef01020"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d381cafbf7934b4ffda51fdab4f0948"><td class="memItemLeft" align="right" valign="top">virtual HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a6d381cafbf7934b4ffda51fdab4f0948">CreateBrush</a> (unsigned int &amp;index, unsigned int rgb, float alpha=1.0f)=0</td></tr>
 <tr class="separator:a6d381cafbf7934b4ffda51fdab4f0948"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a55603101b883df3bfac84c54bd28bee4"><td class="memItemLeft" align="right" valign="top">virtual HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a55603101b883df3bfac84c54bd28bee4">CreateGradient</a> (unsigned int &amp;index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle=0)=0</td></tr>
-<tr class="separator:a55603101b883df3bfac84c54bd28bee4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24b9b75d914119104357f3569ed26422"><td class="memItemLeft" align="right" valign="top">virtual HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a24b9b75d914119104357f3569ed26422">CreateLinearGradient</a> (unsigned int &amp;index, unsigned int brushStart, unsigned int brushEnd, unsigned int angle=0)=0</td></tr>
+<tr class="separator:a24b9b75d914119104357f3569ed26422"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a193630aa895fb233843ae59904bfc24f"><td class="memItemLeft" align="right" valign="top">virtual HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a193630aa895fb233843ae59904bfc24f">CreateRadialGradient</a> (unsigned int &amp;index, unsigned int brushStart, unsigned int brushEnd, POINT offset, <a class="el" href="_engine_render_8h.html#ae6eb679acefe49c0b5ca9077a3d3557d">eOffsetMode</a> mode=<a class="el" href="_engine_render_8h.html#ae6eb679acefe49c0b5ca9077a3d3557da1ff7e80b9b8ffd36ab54224cc5f7cb82">eOffsetMode_Units</a>)=0</td></tr>
+<tr class="separator:a193630aa895fb233843ae59904bfc24f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d602eef3f305a65226fdbbda35d3a7d"><td class="memItemLeft" align="right" valign="top">virtual POINT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a3d602eef3f305a65226fdbbda35d3a7d">getTextSize</a> (const char *txt, POINT maxSize, unsigned int format)=0</td></tr>
 <tr class="separator:a3d602eef3f305a65226fdbbda35d3a7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a071a2b1f8ba2bc150c4e343d4c692b22"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_render.html#a071a2b1f8ba2bc150c4e343d4c692b22">StartDraw</a> (void)=0</td></tr>
@@ -251,7 +251,7 @@ Métodos Privados</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a55603101b883df3bfac84c54bd28bee4"></a>
+<a class="anchor" id="a24b9b75d914119104357f3569ed26422"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -259,7 +259,7 @@ Métodos Privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual HRESULT EngineRender::CreateGradient </td>
+          <td class="memname">virtual HRESULT EngineRender::CreateLinearGradient </td>
           <td>(</td>
           <td class="paramtype">unsigned int &amp;&#160;</td>
           <td class="paramname"><em>index</em>, </td>
@@ -295,7 +295,61 @@ Métodos Privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implementado por <a class="el" href="class_engine_render_d2_d.html#adf5dbefc823835b11a825514ea0049d3">EngineRenderD2D</a>.</p>
+<p>Implementado por <a class="el" href="class_engine_render_d2_d.html#aaba88553d657506743c7129f867b0709">EngineRenderD2D</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a193630aa895fb233843ae59904bfc24f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual HRESULT EngineRender::CreateRadialGradient </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int &amp;&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>brushStart</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>brushEnd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">POINT&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_engine_render_8h.html#ae6eb679acefe49c0b5ca9077a3d3557d">eOffsetMode</a>&#160;</td>
+          <td class="paramname"><em>mode</em> = <code><a class="el" href="_engine_render_8h.html#ae6eb679acefe49c0b5ca9077a3d3557da1ff7e80b9b8ffd36ab54224cc5f7cb82">eOffsetMode_Units</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implementado por <a class="el" href="class_engine_render_d2_d.html#a8d3ae914916d91650f86696633640f87">EngineRenderD2D</a>.</p>
 
 </div>
 </div>
@@ -1064,14 +1118,14 @@ Métodos Privados</h2></td></tr>
 </div>
 </div>
 <hr/>A documentação para esta classe foi gerada a partir do seguinte arquivo:<ul>
-<li>F:/SVN/POPTools/<a class="el" href="_engine_render_8h_source.html">EngineRender.h</a></li>
+<li>C:/Users/windows7 base/Pessoal/POP/<a class="el" href="_engine_render_8h_source.html">EngineRender.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Terça, 7 de Janeiro de 2014 10:51:31 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Quarta, 28 de Maio de 2014 15:51:55 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.5
+</a> 1.8.7
 </small></address>
 </body>
 </html>

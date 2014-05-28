@@ -3,8 +3,8 @@
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
-<meta name="generator" content="Doxygen 1.8.5"/>
-<title>POPTools: Código-Fonte de F:/SVN/POPTools/freeze.h</title>
+<meta name="generator" content="Doxygen 1.8.7"/>
+<title>POPTools: Código-Fonte de C:/Users/windows7 base/Pessoal/POP/freeze.h</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -33,7 +33,7 @@
 </table>
 </div>
 <!-- end header part -->
-<!-- Gerado por Doxygen 1.8.5 -->
+<!-- Gerado por Doxygen 1.8.7 -->
 <script type="text/javascript">
 var searchBox = new SearchBox("searchBox", "search",false,'Busca');
 </script>
@@ -83,51 +83,51 @@ var searchBox = new SearchBox("searchBox", "search",false,'Busca');
 
 <div class="header">
   <div class="headertitle">
-<div class="title">F:/SVN/POPTools/freeze.h</div>  </div>
+<div class="title">C:/Users/windows7 base/Pessoal/POP/freeze.h</div>  </div>
 </div><!--header-->
 <div class="contents">
 <a href="freeze_8h.html">Vá para a documentação deste arquivo.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#ifndef __FREEZE_H</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define __FREEZE_H</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#define __FREEZE_H</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;</div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#ifndef FREEZE_SUBKEY</span></div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#error must define FREEZE_SUBKEY to a string uniquely identifying the app</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#error must define FREEZE_SUBKEY to a string uniquely identifying the app</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;</div>
 <div class="line"><a name="l00008"></a><span class="lineno"><a class="line" href="freeze_8h.html#a41b9a4a86e0d3ce2e0f79832e902962d">    8</a></span>&#160;<span class="preprocessor">#define FreezeWindowPos(hwnd) FreezeWindowPosF(hwnd, FREEZE_SUBKEY, #hwnd)</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor"></span><span class="keywordtype">void</span> <a class="code" href="freeze_8cpp.html#a10b32560ca73a5e40a8666b61c2dace0">FreezeWindowPosF</a>(<a class="code" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a> hWnd, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="keywordtype">void</span> <a class="code" href="freeze_8h.html#ae0bac31006f38d5d54ba373d6d6ae261">FreezeWindowPosF</a>(<a class="code" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a> hWnd, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;</div>
 <div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="freeze_8h.html#ac05efca40ee7101a4349c88159548ef7">   11</a></span>&#160;<span class="preprocessor">#define ThawWindowPos(hwnd) ThawWindowPosF(hwnd, FREEZE_SUBKEY, #hwnd)</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor"></span><span class="keywordtype">void</span> <a class="code" href="freeze_8cpp.html#a2e54957de1d9bffab6da6bf1b3a396c3">ThawWindowPosF</a>(<a class="code" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a> hWnd, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="keywordtype">void</span> <a class="code" href="freeze_8h.html#abce158fa74a62becb95c0014284f298b">ThawWindowPosF</a>(<a class="code" href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a> hWnd, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;</div>
 <div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="freeze_8h.html#af7fa6be4289f128cebe4175c3687add3">   14</a></span>&#160;<span class="preprocessor">#define FreezeDWORD(val) FreezeDWORDF(val, FREEZE_SUBKEY, #val)</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor"></span><span class="keywordtype">void</span> <a class="code" href="freeze_8cpp.html#acfeb0b77e8bb899da5e4331415a1de21">FreezeDWORDF</a>(<a class="code" href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a> val, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keywordtype">void</span> <a class="code" href="freeze_8h.html#acfeb0b77e8bb899da5e4331415a1de21">FreezeDWORDF</a>(<a class="code" href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a> val, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;</div>
 <div class="line"><a name="l00017"></a><span class="lineno"><a class="line" href="freeze_8h.html#aa85adb3322f315b01fd742aa979257ea">   17</a></span>&#160;<span class="preprocessor">#define ThawDWORD(val) val = ThawDWORDF(val, FREEZE_SUBKEY, #val)</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor"></span><a class="code" href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a> <a class="code" href="freeze_8cpp.html#a2aa6ef3453f610eee076f722c2fc1326">ThawDWORDF</a>(<a class="code" href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a> val, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<a class="code" href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a> <a class="code" href="freeze_8h.html#a2aa6ef3453f610eee076f722c2fc1326">ThawDWORDF</a>(<a class="code" href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a> val, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;</div>
 <div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="freeze_8h.html#adbd66866972cdc9feccca5c9c58bfd0c">   20</a></span>&#160;<span class="preprocessor">#define FreezeString(val) FreezeStringF(val, FREEZE_SUBKEY, #val)</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor"></span><span class="keywordtype">void</span> <a class="code" href="freeze_8cpp.html#a9982da5b8eb8c99aa5713208181658a1">FreezeStringF</a>(<span class="keywordtype">char</span> *val, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keywordtype">void</span> <a class="code" href="freeze_8h.html#a9982da5b8eb8c99aa5713208181658a1">FreezeStringF</a>(<span class="keywordtype">char</span> *val, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
 <div class="line"><a name="l00023"></a><span class="lineno"><a class="line" href="freeze_8h.html#a21835cd570526325f35262ab40496469">   23</a></span>&#160;<span class="preprocessor">#define ThawString(val, max) ThawStringF(val, max, FREEZE_SUBKEY, #val)</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor"></span><span class="keywordtype">void</span> <a class="code" href="freeze_8cpp.html#a328c50cffa702cff6b9a44a074038710">ThawStringF</a>(<span class="keywordtype">char</span> *val, <span class="keywordtype">int</span> max, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keywordtype">void</span> <a class="code" href="freeze_8h.html#a328c50cffa702cff6b9a44a074038710">ThawStringF</a>(<span class="keywordtype">char</span> *val, <span class="keywordtype">int</span> max, <span class="keywordtype">char</span> *subKey, <span class="keywordtype">char</span> *<a class="code" href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a>);</div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;</div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="miscutil_8cpp_html_a758c793b5b8fff207c1dfa3b56f796f0"><div class="ttname"><a href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a></div><div class="ttdeci">typedef HWND</div><div class="ttdef"><b>Definition:</b> miscutil.cpp:280</div></div>
+<div class="ttc" id="freeze_8h_html_a328c50cffa702cff6b9a44a074038710"><div class="ttname"><a href="freeze_8h.html#a328c50cffa702cff6b9a44a074038710">ThawStringF</a></div><div class="ttdeci">void ThawStringF(char *val, int max, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:183</div></div>
+<div class="ttc" id="freeze_8h_html_a9982da5b8eb8c99aa5713208181658a1"><div class="ttname"><a href="freeze_8h.html#a9982da5b8eb8c99aa5713208181658a1">FreezeStringF</a></div><div class="ttdeci">void FreezeStringF(char *val, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:166</div></div>
+<div class="ttc" id="miscutil_8cpp_html_a758c793b5b8fff207c1dfa3b56f796f0"><div class="ttname"><a href="miscutil_8cpp.html#a758c793b5b8fff207c1dfa3b56f796f0">HWND</a></div><div class="ttdeci">typedef HWND</div><div class="ttdef"><b>Definition:</b> miscutil.cpp:233</div></div>
 <div class="ttc" id="inputlist_8cpp_html_af869a309a32425813b56b839f9659b24"><div class="ttname"><a href="inputlist_8cpp.html#af869a309a32425813b56b839f9659b24">name</a></div><div class="ttdeci">char name[MAX_NAME_LEN]</div><div class="ttdef"><b>Definition:</b> inputlist.cpp:39</div></div>
-<div class="ttc" id="freeze_8cpp_html_a9982da5b8eb8c99aa5713208181658a1"><div class="ttname"><a href="freeze_8cpp.html#a9982da5b8eb8c99aa5713208181658a1">FreezeStringF</a></div><div class="ttdeci">void FreezeStringF(char *val, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:166</div></div>
-<div class="ttc" id="freeze_8cpp_html_a10b32560ca73a5e40a8666b61c2dace0"><div class="ttname"><a href="freeze_8cpp.html#a10b32560ca73a5e40a8666b61c2dace0">FreezeWindowPosF</a></div><div class="ttdeci">void FreezeWindowPosF(HWND hwnd, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:6</div></div>
-<div class="ttc" id="freeze_8cpp_html_a2e54957de1d9bffab6da6bf1b3a396c3"><div class="ttname"><a href="freeze_8cpp.html#a2e54957de1d9bffab6da6bf1b3a396c3">ThawWindowPosF</a></div><div class="ttdeci">void ThawWindowPosF(HWND hwnd, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:56</div></div>
-<div class="ttc" id="freeze_8cpp_html_acfeb0b77e8bb899da5e4331415a1de21"><div class="ttname"><a href="freeze_8cpp.html#acfeb0b77e8bb899da5e4331415a1de21">FreezeDWORDF</a></div><div class="ttdeci">void FreezeDWORDF(DWORD val, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:128</div></div>
-<div class="ttc" id="freeze_8cpp_html_a328c50cffa702cff6b9a44a074038710"><div class="ttname"><a href="freeze_8cpp.html#a328c50cffa702cff6b9a44a074038710">ThawStringF</a></div><div class="ttdeci">void ThawStringF(char *val, int max, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:183</div></div>
-<div class="ttc" id="miscutil_8cpp_html_a50e15ae51c87ae06ab29c8148cb5f36c"><div class="ttname"><a href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a></div><div class="ttdeci">typedef DWORD</div><div class="ttdef"><b>Definition:</b> miscutil.cpp:276</div></div>
-<div class="ttc" id="freeze_8cpp_html_a2aa6ef3453f610eee076f722c2fc1326"><div class="ttname"><a href="freeze_8cpp.html#a2aa6ef3453f610eee076f722c2fc1326">ThawDWORDF</a></div><div class="ttdeci">DWORD ThawDWORDF(DWORD val, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:145</div></div>
+<div class="ttc" id="freeze_8h_html_ae0bac31006f38d5d54ba373d6d6ae261"><div class="ttname"><a href="freeze_8h.html#ae0bac31006f38d5d54ba373d6d6ae261">FreezeWindowPosF</a></div><div class="ttdeci">void FreezeWindowPosF(HWND hWnd, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:6</div></div>
+<div class="ttc" id="freeze_8h_html_abce158fa74a62becb95c0014284f298b"><div class="ttname"><a href="freeze_8h.html#abce158fa74a62becb95c0014284f298b">ThawWindowPosF</a></div><div class="ttdeci">void ThawWindowPosF(HWND hWnd, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:56</div></div>
+<div class="ttc" id="freeze_8h_html_acfeb0b77e8bb899da5e4331415a1de21"><div class="ttname"><a href="freeze_8h.html#acfeb0b77e8bb899da5e4331415a1de21">FreezeDWORDF</a></div><div class="ttdeci">void FreezeDWORDF(DWORD val, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:128</div></div>
+<div class="ttc" id="freeze_8h_html_a2aa6ef3453f610eee076f722c2fc1326"><div class="ttname"><a href="freeze_8h.html#a2aa6ef3453f610eee076f722c2fc1326">ThawDWORDF</a></div><div class="ttdeci">DWORD ThawDWORDF(DWORD val, char *subKey, char *name)</div><div class="ttdef"><b>Definition:</b> freeze.cpp:145</div></div>
+<div class="ttc" id="miscutil_8cpp_html_a50e15ae51c87ae06ab29c8148cb5f36c"><div class="ttname"><a href="miscutil_8cpp.html#a50e15ae51c87ae06ab29c8148cb5f36c">DWORD</a></div><div class="ttdeci">typedef DWORD</div><div class="ttdef"><b>Definition:</b> miscutil.cpp:229</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Terça, 7 de Janeiro de 2014 10:51:30 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Quarta, 28 de Maio de 2014 15:51:51 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.5
+</a> 1.8.7
 </small></address>
 </body>
 </html>

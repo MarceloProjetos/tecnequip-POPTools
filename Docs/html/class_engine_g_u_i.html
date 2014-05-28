@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
-<meta name="generator" content="Doxygen 1.8.5"/>
+<meta name="generator" content="Doxygen 1.8.7"/>
 <title>POPTools: Referência da Classe EngineGUI</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
@@ -33,7 +33,7 @@
 </table>
 </div>
 <!-- end header part -->
-<!-- Gerado por Doxygen 1.8.5 -->
+<!-- Gerado por Doxygen 1.8.7 -->
 <script type="text/javascript">
 var searchBox = new SearchBox("searchBox", "search",false,'Busca');
 </script>
@@ -134,10 +134,14 @@ Métodos Públicos</h2></td></tr>
 <tr class="separator:a0a50472d2e0852021f43cc3e7f323eab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a568e73147bf0d0028862a5f5e322194b"><td class="memItemLeft" align="right" valign="top">HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#a568e73147bf0d0028862a5f5e322194b">SetBackgroundColor</a> (COLORREF rgb)</td></tr>
 <tr class="separator:a568e73147bf0d0028862a5f5e322194b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7de927b3ece88812bba0ad18eaea4f9"><td class="memItemLeft" align="right" valign="top">HRESULT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#ae7de927b3ece88812bba0ad18eaea4f9">SetBackgroundBrush</a> (COLORREF brush)</td></tr>
+<tr class="separator:ae7de927b3ece88812bba0ad18eaea4f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91068b676bd6a30f309a8a57b1331efa"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#a91068b676bd6a30f309a8a57b1331efa">CreateBrush</a> (COLORREF rgb, float alpha=1.0f)</td></tr>
 <tr class="separator:a91068b676bd6a30f309a8a57b1331efa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a02a0f511e625781b9a9d647f2edcdb"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#a3a02a0f511e625781b9a9d647f2edcdb">CreateGradient</a> (unsigned int brushStart, unsigned int brushEnd, unsigned int angle=0)</td></tr>
-<tr class="separator:a3a02a0f511e625781b9a9d647f2edcdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04a384ea6cac0417f93ce4234b80d281"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#a04a384ea6cac0417f93ce4234b80d281">CreateLinearGradient</a> (unsigned int brushStart, unsigned int brushEnd, unsigned int angle=0)</td></tr>
+<tr class="separator:a04a384ea6cac0417f93ce4234b80d281"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a336f2ddd6cf1541dce0652c4a5cf6c04"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#a336f2ddd6cf1541dce0652c4a5cf6c04">CreateRadialGradient</a> (unsigned int brushStart, unsigned int brushEnd, POINT offset, <a class="el" href="_engine_render_8h.html#ae6eb679acefe49c0b5ca9077a3d3557d">eOffsetMode</a> mode=<a class="el" href="_engine_render_8h.html#ae6eb679acefe49c0b5ca9077a3d3557da1ff7e80b9b8ffd36ab54224cc5f7cb82">eOffsetMode_Units</a>)</td></tr>
+<tr class="separator:a336f2ddd6cf1541dce0652c4a5cf6c04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a98e705c23362e954755a7a9fb12d3b86"><td class="memItemLeft" align="right" valign="top">POINT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#a98e705c23362e954755a7a9fb12d3b86">getTextSize</a> (const char *txt, POINT maxSize, unsigned int format)</td></tr>
 <tr class="separator:a98e705c23362e954755a7a9fb12d3b86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a71abc09dfd4373f53a016b81d319b92b"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_engine_g_u_i.html#a71abc09dfd4373f53a016b81d319b92b">getBrushWidth</a> (void)</td></tr>
@@ -331,12 +335,12 @@ Atributos Privados</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a3a02a0f511e625781b9a9d647f2edcdb"></a>
+<a class="anchor" id="a04a384ea6cac0417f93ce4234b80d281"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int EngineGUI::CreateGradient </td>
+          <td class="memname">unsigned int EngineGUI::CreateLinearGradient </td>
           <td>(</td>
           <td class="paramtype">unsigned int&#160;</td>
           <td class="paramname"><em>brushStart</em>, </td>
@@ -352,6 +356,44 @@ Atributos Privados</h2></td></tr>
           <td></td>
           <td class="paramtype">unsigned int&#160;</td>
           <td class="paramname"><em>angle</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a336f2ddd6cf1541dce0652c4a5cf6c04"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int EngineGUI::CreateRadialGradient </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>brushStart</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>brushEnd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">POINT&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_engine_render_8h.html#ae6eb679acefe49c0b5ca9077a3d3557d">eOffsetMode</a>&#160;</td>
+          <td class="paramname"><em>mode</em> = <code><a class="el" href="_engine_render_8h.html#ae6eb679acefe49c0b5ca9077a3d3557da1ff7e80b9b8ffd36ab54224cc5f7cb82">eOffsetMode_Units</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1023,6 +1065,22 @@ Atributos Privados</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ae7de927b3ece88812bba0ad18eaea4f9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">HRESULT EngineGUI::SetBackgroundBrush </td>
+          <td>(</td>
+          <td class="paramtype">COLORREF&#160;</td>
+          <td class="paramname"><em>brush</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a568e73147bf0d0028862a5f5e322194b"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1289,15 +1347,15 @@ Atributos Privados</h2></td></tr>
 </div>
 </div>
 <hr/>A documentação para esta classe foi gerada a partir dos seguintes arquivos:<ul>
-<li>F:/SVN/POPTools/<a class="el" href="_engine_g_u_i_8h_source.html">EngineGUI.h</a></li>
-<li>F:/SVN/POPTools/<a class="el" href="_engine_g_u_i_8cpp.html">EngineGUI.cpp</a></li>
+<li>C:/Users/windows7 base/Pessoal/POP/<a class="el" href="_engine_g_u_i_8h_source.html">EngineGUI.h</a></li>
+<li>C:/Users/windows7 base/Pessoal/POP/<a class="el" href="_engine_g_u_i_8cpp.html">EngineGUI.cpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Gerado em Terça, 7 de Janeiro de 2014 10:51:31 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
+Gerado em Quarta, 28 de Maio de 2014 15:51:54 para POPTools por &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.5
+</a> 1.8.7
 </small></address>
 </body>
 </html>
