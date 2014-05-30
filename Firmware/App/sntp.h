@@ -79,7 +79,7 @@
 
 /** SNTP update delay - in milliseconds */
 #ifndef SNTP_UPDATE_DELAY
-#define SNTP_UPDATE_DELAY           216000000
+#define SNTP_UPDATE_DELAY           3600000
 #endif
 
 /** SNTP macro to change system time and/or the update the RTC clock */
