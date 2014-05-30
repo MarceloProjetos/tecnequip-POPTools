@@ -9,6 +9,8 @@ extern volatile int ArrayBitUser[];
 extern volatile int ArrayIntUser_Count;
 extern volatile int ArrayIntUser[];
 
+extern unsigned char mac_addr[6];
+
 // Checa se a faixa de registradores eh valida
 int IntReg_CheckBounds(int start, int quant)
 {
@@ -46,6 +48,10 @@ int IntReg_Read(int reg)
 		} else {
 			return ArrayIntUser_Count;
 		}
+	} else if(reg < (INTREG_MACADDRESS_START + INTREG_MACADDRESS_SIZE)) {
+		reg -= INTREG_MACADDRESS_START;
+		reg *= 2;
+		return (int)(((unsigned int)(mac_addr[reg + 1]) << 8) | ((unsigned int)mac_addr[reg]));
 	} else if(reg < (INTREG_USERBIT_START + INTREG_USERBIT_SIZE)) {
 		reg -= INTREG_USERBIT_START;
 		if(reg < ArrayBitUser_Count) return ArrayBitUser[reg];
