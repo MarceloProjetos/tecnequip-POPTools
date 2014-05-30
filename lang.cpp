@@ -482,7 +482,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Replace", "Substituir");
 		addTextToLangTable(l, "Substituir por", "Replace by");
 		addTextToLangTable(l, "Substituir por:", "Replace by:");
-		addTextToLangTable(l, "Substituir Todos", "Reaplce All");
+		addTextToLangTable(l, "Substituir Todos", "Replace All");
 		addTextToLangTable(l, "Sucesso", "Success");
 		addTextToLangTable(l, "Tamanho da Rampa", "Ramp Size");
 		addTextToLangTable(l, "Tempo", "Time");
@@ -862,6 +862,33 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Diagrama Válido", "Diagram is Valid");
 		addTextToLangTable(l, "Validação finalizada. Diagrama válido!", "Validation finished. Diagram is valid!");
 		addTextToLangTable(l, "D/A", "D/A");
+		addTextToLangTable(l, "I/O já utilizado", "I/O already in use");
+		addTextToLangTable(l, "INC", "INC");
+		addTextToLangTable(l, "ABS", "ABS");
+		addTextToLangTable(l, "Mapa de Memória", "Memory Map");
+		addTextToLangTable(l, "Gerar mapa:", "Generate map:");
+		addTextToLangTable(l, "Fechar As Outras Abas", "Close Other Tabs");
+		addTextToLangTable(l, "Fechar Aba Atual", "Close Current Tab");
+		addTextToLangTable(l, "Nova Aba", "New Tab");
+		addTextToLangTable(l, "Compilado com sucesso!", "Compiled successfully!");
+		addTextToLangTable(l, "Registradores de Data/Hora", "Date/Time Registers");
+		addTextToLangTable(l, "Dia", "Day");
+		addTextToLangTable(l, "Mês", "Month");
+		addTextToLangTable(l, "Ano", "Year");
+		addTextToLangTable(l, "Hora", "Hour");
+		addTextToLangTable(l, "Minuto", "Minute");
+		addTextToLangTable(l, "Segundo", "Second");
+		addTextToLangTable(l, "Dia do Ano", "Day of the Year");
+		addTextToLangTable(l, "Obs.: A hora somente é atualizada quando é realizada a leitura do registrador Dia", "PS.: The date/time register are updated only when Day Register is Read");
+		addTextToLangTable(l, "Bit", "Bit");
+		addTextToLangTable(l, "Preparando :", "Preparing :");
+		addTextToLangTable(l, "Gravando :", "Writing :");
+		addTextToLangTable(l, "Verificando :", "Verifying :");
+		addTextToLangTable(l, "Verificação concluída com sucesso !", "Verification completed successfully !");
+		addTextToLangTable(l, "Conectando ao CLP...", "Connecting to PLC...");
+		addTextToLangTable(l, "Endereço MAC:", "MAC Address:");
+		addTextToLangTable(l, "Saídas Digitais", "Digital Output");
+		addTextToLangTable(l, "Entradas Digitais", "Digital Input");
 	} else if(id == 2) { // Idioma Espanhol
 		l = newLangTableChar();
 
@@ -1656,6 +1683,33 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Diagrama Válido", "Diagram is Valid");
 		addTextToLangTable(l, "Validação finalizada. Diagrama válido!", "Validation finished. Diagram is valid!");
 		addTextToLangTable(l, "D/A", "D/A");
+		addTextToLangTable(l, "I/O já utilizado", "I/O already in use");
+		addTextToLangTable(l, "INC", "INC");
+		addTextToLangTable(l, "ABS", "ABS");
+		addTextToLangTable(l, "Mapa de Memória", "Memory Map");
+		addTextToLangTable(l, "Gerar mapa:", "Generate map:");
+		addTextToLangTable(l, "Fechar As Outras Abas", "Close Other Tabs");
+		addTextToLangTable(l, "Fechar Aba Atual", "Close Current Tab");
+		addTextToLangTable(l, "Nova Aba", "New Tab");
+		addTextToLangTable(l, "Compilado com sucesso!", "Compiled successfully!");
+		addTextToLangTable(l, "Registradores de Data/Hora", "Date/Time Registers");
+		addTextToLangTable(l, "Dia", "Day");
+		addTextToLangTable(l, "Mês", "Month");
+		addTextToLangTable(l, "Ano", "Year");
+		addTextToLangTable(l, "Hora", "Hour");
+		addTextToLangTable(l, "Minuto", "Minute");
+		addTextToLangTable(l, "Segundo", "Second");
+		addTextToLangTable(l, "Dia do Ano", "Day of the Year");
+		addTextToLangTable(l, "Obs.: A hora somente é atualizada quando é realizada a leitura do registrador Dia", "PS.: The date/time register are updated only when Day Register is Read");
+		addTextToLangTable(l, "Bit", "Bit");
+		addTextToLangTable(l, "Preparando :", "Preparing :");
+		addTextToLangTable(l, "Gravando :", "Writing :");
+		addTextToLangTable(l, "Verificando :", "Verifying :");
+		addTextToLangTable(l, "Verificação concluída com sucesso !", "Verification completed successfully !");
+		addTextToLangTable(l, "Conectando ao CLP...", "Connecting to PLC...");
+		addTextToLangTable(l, "Endereço MAC:", "MAC Address:");
+		addTextToLangTable(l, "Saídas Digitais", "Digital Output");
+		addTextToLangTable(l, "Entradas Digitais", "Digital Input");
 	} else {
 		l = nullptr;
 	}

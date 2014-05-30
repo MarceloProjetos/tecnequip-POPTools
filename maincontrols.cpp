@@ -102,7 +102,7 @@ void MakeMainWindowControls(void)
 		0, 0, 1, 1, MainWindow, NULL, Instance, NULL);// The tabCtrl size inside windows
 	NiceFont(TabCtrl);
 
-    TabButton = CreateWindowEx(0, WC_BUTTON, _(""),
+    TabButton = CreateWindowEx(0, WC_BUTTON, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | BS_BITMAP,
         0, 0, 1, 1, MainWindow, NULL, Instance, NULL);
 

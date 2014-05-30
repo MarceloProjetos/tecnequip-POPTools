@@ -1017,7 +1017,8 @@ void SimulationServer_Stop   (void);
 void SimulationServer_Message(WPARAM wParam, LPARAM lParam);
 
 // modbus_usb.cpp
-struct MODBUS_Reply USB_Send(unsigned short fc, MODBUS_FCD_Data *mbdata);
+void                USB_Close      (void);
+struct MODBUS_Reply USB_Send       (unsigned short fc, MODBUS_FCD_Data *mbdata);
 bool                USB_SetDateTime(struct tm *t);
 bool                USB_GetDateTime(struct tm *t);
 bool                USB_SetRegister(int iReg, int iVal);

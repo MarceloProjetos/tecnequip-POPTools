@@ -1,4 +1,5 @@
 #include "poptools.h"
+#include "intreg.h"
 
 static HWND DebugDialog;
 
@@ -21,6 +22,7 @@ static HWND ConfigButton;
 static HWND ClearButton;
 static HWND OkButton;
 static HWND CommList;
+static HWND txtInfoMAC;
 static HWND txtInfoDate;
 static HWND txtInfoTime;
 static HWND txtInfoVendor;
@@ -345,6 +347,8 @@ static void SyncConfigToScreen(void)
 	SendMessage(txtCOM, WM_SETTEXT, 0, (LPARAM)buf);
 }
 
+static bool ReadMAC = false;
+
 void CALLBACK DebugUpdateInfo(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 {
 	struct tm t;
@@ -371,6 +375,24 @@ void CALLBACK DebugUpdateInfo(HWND hwnd, UINT msg, UINT_PTR id, DWORD time)
 		io_state = USB_GetOutput();
 		for(index = ARRAY_SIZE(CheckOutput) - 1; index >= 0; index--)
 			SendMessage(CheckOutput[index], BM_SETCHECK, ((io_state >> index) & 1) ? BST_CHECKED : BST_UNCHECKED,  0);
+
+		if(!ReadMAC) {
+			int hwaddr[3] = { 0, 0, 0 };
+
+//			ReadMAC = true;
+
+			USB_GetRegister(INTREG_MACADDRESS_START    , hwaddr[0]);
+			USB_GetRegister(INTREG_MACADDRESS_START + 1, hwaddr[1]);
+			USB_GetRegister(INTREG_MACADDRESS_START + 2, hwaddr[2]);
+
+			sprintf(buf, "%02x:%02x:%02x:%02x:%02x:%02x",
+				hwaddr[0] & 0xFF, ((unsigned int)(hwaddr[0]) >> 8) & 0xFF,
+				hwaddr[1] & 0xFF, ((unsigned int)(hwaddr[1]) >> 8) & 0xFF,
+				hwaddr[2] & 0xFF, ((unsigned int)(hwaddr[2]) >> 8) & 0xFF);
+			SendMessage(txtInfoMAC, WM_SETTEXT, 0, (LPARAM)buf);
+		}
+	} else {
+		ReadMAC = false;
 	}
 
 }
@@ -518,7 +540,7 @@ static void MakeControls(void)
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("Sair"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        589, 555, 70, 30, DebugDialog, NULL, Instance, NULL); 
+        589, 575, 70, 30, DebugDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
 
     ClearButton = CreateWindowEx(0, WC_BUTTON, _("Limpar Registro"),
@@ -528,7 +550,7 @@ static void MakeControls(void)
 
     ConfigButton = CreateWindowEx(0, WC_BUTTON, _("Configurações"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        7, 555, 120, 30, DebugDialog, NULL, Instance, NULL); 
+        7, 575, 120, 30, DebugDialog, NULL, Instance, NULL); 
     NiceFont(ConfigButton);
 
     SendButton = CreateWindowEx(0, WC_BUTTON, _("Executar"),
@@ -622,42 +644,52 @@ static void MakeControls(void)
 
     SetDateTimeButton = CreateWindowEx(0, WC_BUTTON, _("Atualizar Data/Hora"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        17, 470, 150, 30, DebugDialog, NULL, Instance, NULL); 
+        17, 490, 150, 30, DebugDialog, NULL, Instance, NULL); 
     NiceFont(SetDateTimeButton);
 
     grouper = CreateWindowEx(0, WC_BUTTON, _("Informações da POP-7 (Lido a partir da interface USB)"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        7, 410, 650, 138, DebugDialog, NULL, Instance, NULL);
+        7, 410, 650, 158, DebugDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Data:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        10, 20, 50, 18, grouper, NULL, Instance, NULL);
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Endereço MAC:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        10, 20, 100, 18, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    txtInfoDate = CreateWindowEx(0, WC_STATIC, _("--/--/----"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        70, 20, 100, 18, grouper, NULL, Instance, NULL);
-    NiceFont(txtInfoDate);
+    txtInfoMAC = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        110, 20, 115, 18, grouper, NULL, Instance, NULL);
+    NiceFont(txtInfoMAC);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Hora:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Data:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         10, 40, 50, 18, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    txtInfoTime = CreateWindowEx(0, WC_STATIC, _("--:--:--"),
+    txtInfoDate = CreateWindowEx(0, WC_STATIC, _("--/--/----"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         70, 40, 100, 18, grouper, NULL, Instance, NULL);
+    NiceFont(txtInfoDate);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Hora:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        10, 60, 50, 18, grouper, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    txtInfoTime = CreateWindowEx(0, WC_STATIC, _("--:--:--"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        70, 60, 100, 18, grouper, NULL, Instance, NULL);
     NiceFont(txtInfoTime);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Entradas:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        200, 40, 60, 18, grouper, NULL, Instance, NULL);
+        200, 50, 60, 18, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Saídas:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        200, 60, 60, 18, grouper, NULL, Instance, NULL);
+        200, 70, 60, 18, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
 	for(index = ARRAY_SIZE(CheckInput) - 1; index >= 0; index--) {
@@ -665,60 +697,60 @@ static void MakeControls(void)
 		sprintf(buf, "%d", index+1);
 		textLabel = CreateWindowEx(0, WC_STATIC, buf,
 			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-			270 + index*20, 20, 15, 18, grouper, NULL, Instance, NULL);
+			270 + index*20, 30, 15, 18, grouper, NULL, Instance, NULL);
 		NiceFont(textLabel);
 
 		CheckInput[index] = CreateWindowEx(0, WC_BUTTON, "",
 			WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-			270 + index*20, 40, 15, 18, grouper, NULL, Instance, NULL);
+			270 + index*20, 50, 15, 18, grouper, NULL, Instance, NULL);
 		NiceFont(CheckInput[index]);
 
 		if(index < ARRAY_SIZE(CheckOutput)) {
 			CheckOutput[index] = CreateWindowEx(0, WC_BUTTON, "",
 				WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-				270 + index*20, 60, 15, 18, grouper, NULL, Instance, NULL);
+				270 + index*20, 70, 15, 18, grouper, NULL, Instance, NULL);
 			NiceFont(CheckOutput[index]);
 		}
 	}
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("Fabricante:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        10, 95, 70, 18, grouper, NULL, Instance, NULL);
+        10, 115, 140, 18, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     txtInfoVendor = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        10, 113, 150, 18, grouper, NULL, Instance, NULL);
+        10, 133, 150, 18, grouper, NULL, Instance, NULL);
     NiceFont(txtInfoVendor);
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("Produto:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        160, 95, 70, 18, grouper, NULL, Instance, NULL);
+        160, 115, 140, 18, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     txtInfoProduct = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        160, 113, 150, 18, grouper, NULL, Instance, NULL);
+        160, 133, 150, 18, grouper, NULL, Instance, NULL);
     NiceFont(txtInfoProduct);
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("Versão:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        320, 95, 70, 18, grouper, NULL, Instance, NULL);
+        320, 115, 140, 18, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     txtInfoVersion = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        320, 113, 150, 18, grouper, NULL, Instance, NULL);
+        320, 133, 150, 18, grouper, NULL, Instance, NULL);
     NiceFont(txtInfoVersion);
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("Projeto:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        480, 95, 70, 18, grouper, NULL, Instance, NULL);
+        480, 115, 140, 18, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     txtInfoProject = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        480, 113, 150, 18, grouper, NULL, Instance, NULL);
+        480, 133, 150, 18, grouper, NULL, Instance, NULL);
     NiceFont(txtInfoProject);
 
 	PrevIdProc = SetWindowLongPtr(IDTextbox, GWLP_WNDPROC, 
@@ -735,7 +767,7 @@ void ShowDebugDialog(void)
 
 	RotateList_Init(&RotateLog);
 
-	POINT size = { 664, 590 };
+	POINT size = { 664, 610 };
 	POINT start = getWindowStart(size);
 
 	DebugDialog = CreateWindowClient(0, "POPDebugDialog",
@@ -762,6 +794,8 @@ void ShowDebugDialog(void)
 	SendMessage(txtInfoVersion, WM_SETTEXT, 0, (LPARAM)InfoVersion);
 	SendMessage(txtInfoProject, WM_SETTEXT, 0, (LPARAM)InfoProject);
 
+	ReadMAC = false;
+
 	MSG msg;
     DWORD ret;
     DebugDone = FALSE;
@@ -776,6 +810,8 @@ void ShowDebugDialog(void)
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+	USB_Close();
 
 	EnableWindow(MainWindow, TRUE);
     DestroyWindow(DebugDialog);

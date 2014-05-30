@@ -1,6 +1,14 @@
 #include "poptools.h"
 #include "intreg.h"
 
+static bool isPortOpened = false;
+
+void USB_Close(void)
+{
+	isPortOpened = false;
+	CloseCOMPort();
+}
+
 struct MODBUS_Reply USB_Send(unsigned short fc, MODBUS_FCD_Data *mbdata)
 {
 	struct MODBUS_Reply reply;
@@ -10,9 +18,15 @@ struct MODBUS_Reply USB_Send(unsigned short fc, MODBUS_FCD_Data *mbdata)
 
 	MBDev_Serial.identification.Id = 1;
 
-	if(OpenCOMPort(POPSettings.COMPortFlash, 115200, 8, NOPARITY, ONESTOPBIT)) {
-		reply = Modbus_RTU_Send(&MBDev_Serial, 0, fc, mbdata);
-		CloseCOMPort();
+	if(!isPortOpened) {
+		isPortOpened = true;
+		OpenCOMPort(POPSettings.COMPortFlash, 115200, 8, NOPARITY, ONESTOPBIT);
+	}
+
+	reply = Modbus_RTU_Send(&MBDev_Serial, 0, fc, mbdata);
+
+	if(reply.ExceptionCode == MODBUS_EXCEPTION_SLAVE_DEVICE_FAILURE) {
+		USB_Close();
 	}
 
 	return reply;
@@ -125,6 +139,8 @@ bool USB_GetRegister(int iReg, int &iVal)
 	if(reply.ExceptionCode == MODBUS_EXCEPTION_NONE) {
 		iVal = (int)(reply.reply.read_holding_registers.data[1])<<8 | reply.reply.read_holding_registers.data[0];
 		ret = true;
+	} else {
+//		Sleep(1);
 	}
 
 	return ret;

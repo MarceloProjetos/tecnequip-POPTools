@@ -848,6 +848,8 @@ static void ExportVarsAsCSV(string filename)
 
 	// Exporta o mapa de registradores
 	char buf[100];
+	unsigned int list, i;
+	char reg[MAX_NAME_LEN], bit[MAX_NAME_LEN];
 
 	csvSaveField(f, _("Registradores de Data/Hora"));
 	fwrite("\n", 1, 1, f);
@@ -895,21 +897,63 @@ static void ExportVarsAsCSV(string filename)
 	csvSaveField(f, _("Obs.: A hora somente é atualizada quando é realizada a leitura do registrador Dia"));
 	fwrite("\n", 1, 1, f);
 
-	// Salva o cabecalho do arquivo
+	// Quebra de linha para separar as secoes
+	csvSaveField(f, _(""));
+	fwrite("\n", 1, 1, f);
+
+	// Salva as entradas
+	csvSaveField(f, _("Entradas Digitais"));
+	fwrite("\n", 1, 1, f);
+
+	vector<string> listIO = ladder->getListIO();
+	for(i = 0; i < listIO.size(); i++) {
+		mapDetails detailsIO = ladder->getDetailsIO(listIO[i]);
+		if(detailsIO.type == eType_DigInput && !IoMap_IsModBUS(detailsIO)) {
+			sprintf(buf, "%d", detailsIO.pin);
+			csvSaveField(f, listIO[i]);
+			csvSaveField(f, buf);
+			fwrite("\n", 1, 1, f);
+		}
+	}
+
+	// Quebra de linha para separar as secoes
+	csvSaveField(f, _(""));
+	fwrite("\n", 1, 1, f);
+
+	// Salva as entradas
+	csvSaveField(f, _("Saídas Digitais"));
+	fwrite("\n", 1, 1, f);
+
+	listIO = ladder->getListIO();
+	for(i = 0; i < listIO.size(); i++) {
+		mapDetails detailsIO = ladder->getDetailsIO(listIO[i]);
+		if(detailsIO.type == eType_DigOutput && !IoMap_IsModBUS(detailsIO)) {
+			sprintf(buf, "%d", detailsIO.pin);
+			csvSaveField(f, listIO[i]);
+			csvSaveField(f, buf);
+			fwrite("\n", 1, 1, f);
+		}
+	}
+
+	// Quebra de linha para separar as secoes
+	csvSaveField(f, _(""));
+	fwrite("\n", 1, 1, f);
+
+	// Salva os registradores
+	csvSaveField(f, _("Registradores"));
+	fwrite("\n", 1, 1, f);
+
 	csvSaveField(f, _("Nome"));
 	csvSaveField(f, _("Registrador"));
 	csvSaveField(f, _("Bit"));
 	fwrite("\n", 1, 1, f);
 
 	// A seguir fazemos o loop entre todas as variaveis cadastradas, salvando no CSV...
-	int list, i;
-	char reg[MAX_NAME_LEN], bit[MAX_NAME_LEN];
-
 	for(list = 0; list < SEENVAR_LISTS; list++) {
 		// Apenas sao acessiveis as variaveis de usuario
 		if(list != SEENVAR_MODE_USERBIT && list != SEENVAR_MODE_USERINT) continue;
 
-		for(i = 0; i < SeenVariablesCount[list]; i++) {
+		for(i = 0; i < (unsigned int)SeenVariablesCount[list]; i++) {
 			switch(list) {
 				case SEENVAR_MODE_USERBIT:
 					sprintf(reg, "%d", INTREG_USERBIT_START + (i/32));
