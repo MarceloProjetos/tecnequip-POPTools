@@ -663,7 +663,7 @@ static void MakeControls(void)
     NiceFont(txtInfoMAC);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Data:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         10, 40, 50, 18, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
@@ -673,7 +673,7 @@ static void MakeControls(void)
     NiceFont(txtInfoDate);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Hora:"),
-        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         10, 60, 50, 18, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
