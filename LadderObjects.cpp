@@ -6210,7 +6210,7 @@ void LadderElemShiftRegister::createRegs(void)
 	pair<unsigned long, int> pin;
 	for(i = 0; i < prop.stages; i++) {
 		pin = pair<unsigned long, int>(0, 0);
-		strcpy(cname, _(prop.nameReg.c_str()));
+		strcpy(cname, prop.nameReg.c_str());
 		if(i < 10 && prop.stages > 10) {
 			strcat(cname, "0");
 		}
@@ -7290,7 +7290,7 @@ LadderElemYaskawa::LadderElemYaskawa(LadderDiagram *diagram, int which) : Ladder
 	Diagram->getIO(this, infoIO_Var);
 
 	prop.id    = 0;
-	prop.txt   = _("0ZSET%d");
+	prop.txt   = "ZSET%d";
 	prop.idVar = infoIO_Var.pin;
 }
 
@@ -7322,23 +7322,26 @@ bool LadderElemYaskawa::internalGenerateIntCode(IntCode &ic)
 	string byPass  = ic.GenSymOneShot();
 
 	// OneShot 
-	ic.Op(INT_IF_BIT_SET, stateInOut);
-		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
-			ic.Op(INT_IF_BIT_SET, "$SerialReady");
-				if (getWhich() == ELEM_READ_SERVO_YASKAWA)
-					ic.Op(INT_READ_SERVO_YASKAWA , var, prop.txt.c_str(), idtxt, "$scratchInt", 0, 0);
-				else
-					ic.Op(INT_WRITE_SERVO_YASKAWA, var, prop.txt.c_str(), idtxt, "$scratchInt", 0, 0);
-				ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratchZero", (SWORD)0);
-				ic.Op(INT_IF_VARIABLE_GRT_VARIABLE, "$scratchInt", "$scratchZero");
-					ic.Op(INT_SET_BIT, oneShot.c_str());
-				ic.Op(INT_END_IF);
-			ic.Op(INT_END_IF);
-		ic.Op(INT_END_IF);
-		ic.Op(INT_COPY_BIT_TO_BIT, stateInOut, oneShot.c_str());
-	ic.Op(INT_ELSE);
+    ic.Op(INT_IF_BIT_SET, stateInOut);
+        ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
+            ic.Op(INT_IF_BIT_SET, "$SerialReady");
+				ic.Op((getWhich() == ELEM_READ_SERVO_YASKAWA) ? INT_READ_SERVO_YASKAWA : INT_WRITE_SERVO_YASKAWA,
+					var, prop.txt.c_str(), idtxt, 0, 0);
+                ic.Op(INT_COPY_BIT_TO_BIT, oneShot.c_str(), stateInOut);
+            ic.Op(INT_END_IF);
+            ic.Op(INT_CLEAR_BIT, stateInOut);
+            ic.Op(INT_COPY_BIT_TO_BIT, byPass.c_str(), stateInOut);
+        ic.Op(INT_END_IF);
+        ic.Op(INT_IF_BIT_CLEAR, byPass.c_str());
+            ic.Op(INT_IF_BIT_SET, "$SerialReady");
+                ic.Op(INT_SET_BIT, byPass.c_str());
+            ic.Op(INT_ELSE);
+                ic.Op(INT_CLEAR_BIT, stateInOut);
+            ic.Op(INT_END_IF);
+        ic.Op(INT_END_IF);
+    ic.Op(INT_ELSE);
 		ic.Op(INT_CLEAR_BIT, oneShot.c_str());
-	ic.Op(INT_END_IF);
+    ic.Op(INT_END_IF);
 
 	return true;
 }

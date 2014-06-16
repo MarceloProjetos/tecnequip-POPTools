@@ -1513,56 +1513,72 @@ void LadderGUI::addConnectionDot(POINT p, bool isPowered, bool isForced, eDirect
 	vectorConnectionDots.push_back(dot);
 }
 
-void LadderGUI::MouseClick(int x, int y, bool isDown, bool isDouble)
+void LadderGUI::MouseClick(eMouseButton button, int x, int y, bool isDown, bool isDouble)
 {
-	static bool isMouseDown = false;
-	static POINT pMouseDown = { 0, 0 };
+	unsigned int idx;
+	static bool isMouseDown[] = { false   , false    };
+	static POINT pMouseDown[] = { { 0, 0 }, { 0, 0 } };
 	POINT p = { x + ScrollXOffset, y + ScrollYOffset*Grid1x1.y };
 	tCommandsList::iterator it;
+
+	switch(button) {
+		case eMouseButton_Left : idx = 0; break;
+		case eMouseButton_Right: idx = 1; break;
+
+		default: return; // Botao nao suportado...
+	}
 
 	if(isDouble || !isDown) {
 		tCommandsList *Commands;
 		Commands = isDouble ? &CommandsDoubleClick : &CommandsSingleClick;
 
-#ifdef SHOW_DEBUG_INFO
-		if(isDouble) {
-			mouse_last_doubleclick.x = x;
-			mouse_last_doubleclick.y = y;
-		} else {
-			mouse_last_click.x = x;
-			mouse_last_click.y = y;
-		}
-#endif
-
-		if(Commands->size() <= 0) return; // Lista de comandos vazia! retorna...
-
 		// Checamos se o mouse se deslocou muito desde o click down
-		if(!isDouble && isMouseDown) {
+		if(!isDouble && isMouseDown[idx]) {
 			RECT rMouseRegion;
-			rMouseRegion.left   = pMouseDown.x - 5;
-			rMouseRegion.right  = pMouseDown.x + 5;
-			rMouseRegion.top    = pMouseDown.y - 5;
-			rMouseRegion.bottom = pMouseDown.y + 5;
+			rMouseRegion.left   = pMouseDown[idx].x - 5;
+			rMouseRegion.right  = pMouseDown[idx].x + 5;
+			rMouseRegion.top    = pMouseDown[idx].y - 5;
+			rMouseRegion.bottom = pMouseDown[idx].y + 5;
 
 			if(!PointInsideRegion(MousePosition, rMouseRegion)) {
 				return;
 			}
 		}
 
-		isMouseDown = false;
+		isMouseDown[idx] = false;
 
-		it = Commands->end();
-		do {
-			it--;
-			if(it->second.fnc != nullptr && ladder->getContext().inSimulationMode == it->second.isSimMode &&
-				PointInsideRegion(p, it->second.r)) {
-					it->second.fnc(it->first, it->second.data);
-					break;
+		if(button == eMouseButton_Left) {
+#ifdef SHOW_DEBUG_INFO
+			if(isDouble) {
+				mouse_last_doubleclick.x = x;
+				mouse_last_doubleclick.y = y;
+			} else {
+				mouse_last_click.x = x;
+				mouse_last_click.y = y;
 			}
-		} while(it != Commands->begin());
+#endif
+
+			if(Commands->size() <= 0) return; // Lista de comandos vazia! retorna...
+
+			it = Commands->end();
+			do {
+				it--;
+				if(it->second.fnc != nullptr && ladder->getContext().inSimulationMode == it->second.isSimMode &&
+					PointInsideRegion(p, it->second.r)) {
+						it->second.fnc(it->first, it->second.data);
+						break;
+				}
+			} while(it != Commands->begin());
+		} else if(!isDouble) {
+			if(MouseOverElement != nullptr && ladder->getContext().SelectedElem != MouseOverElement) {
+				ladder->SelectElement(MouseOverElement, SELECTED_RIGHT);
+			}
+
+			ladder->ShowContextMenu();
+		}
 	} else {
-		isMouseDown = true;
-		pMouseDown = MousePosition;
+		isMouseDown[idx] = true;
+		pMouseDown [idx] = MousePosition;
 	}
 }
 
@@ -8662,9 +8678,9 @@ void LadderDiagram::MouseMove(int x, int y)
 	gui.setMousePosition(xy);
 }
 
-void LadderDiagram::MouseClick(int x, int y, bool isDown, bool isDouble)
+void LadderDiagram::MouseClick(eMouseButton button, int x, int y, bool isDown, bool isDouble)
 {
-	gui.MouseClick(x, y, isDown, isDouble);
+	gui.MouseClick(button, x, y, isDown, isDouble);
 }
 
 LadderElem *LadderDiagram::SearchElement(eMoveCursor moveTo)
@@ -8707,6 +8723,79 @@ eReply LadderDiagram::ShowDialog(eDialogType type, bool hasCancel, const char *t
 	}
 
 	return reply;
+}
+
+void LadderDiagram::ShowContextMenu(void)
+{
+	if(context.SelectedElem == nullptr) return; // Se nao existe elemento selecionado, o menu nao deve ser exibido...
+
+	HMENU hPopupMenu = CreatePopupMenu();
+
+	if(context.inSimulationMode) {
+		if(isLogActive) {
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_STOP_LOG_SIMULATION , _("Parar Registro de Dados"  ));
+		} else {
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_START_LOG_SIMULATION, _("Iniciar Registro de Dados"));
+		}
+		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_SEPARATOR, 0                    , NULL                   );
+
+		if(RealTimeSimulationRunning) {
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_STOP_SIMULATION , _("Parar"));
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_PAUSE_SIMULATION, _("Pausar"));
+		} else {
+			if(RealTimeSimulationPaused) {
+				InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_STOP_SIMULATION, _("Parar"));
+			}
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_SINGLE_CYCLE    , _("Simples Ciclo"));
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_START_SIMULATION, _("Iniciar"));
+		}
+	} else {
+		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_PASTE_RUNG_AFTER , _("Colar Linha Depois"));
+		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_PASTE_RUNG_BEFORE, _("Colar Linha Antes" ));
+		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_DELETE_RUNG      , _("Remover Linha"     ));
+		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_COPY_RUNG        , _("Copiar Linha"      ));
+
+		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_SEPARATOR, 0                 , NULL                   );
+
+		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_PASTE_ELEMENT    , _("Colar Elemento"    ));
+
+		if(context.canDelete) {
+		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_DELETE_ELEMENT   , _("Remover Elemento"  ));
+		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_CUT_ELEMENT      , _("Recortar Elemento" ));
+		}
+
+		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, MNU_COPY_ELEMENT     , _("Copiar Elemento"   ));
+
+		// Agora adiciona as opcoes especificas para cada elemento
+		vector< pair<int, const char *> > vecPopUpMenuItems;
+
+		switch(context.SelectedElem->getWhich()) {
+			case ELEM_COIL:
+				vecPopUpMenuItems.push_back(pair<int, const char *>(MNU_MAKE_RESET_ONLY, _("(R) Desativar")));
+				vecPopUpMenuItems.push_back(pair<int, const char *>(MNU_MAKE_SET_ONLY  , _("(S) Ativar"   )));
+
+			case ELEM_CONTACTS:
+				vecPopUpMenuItems.push_back(pair<int, const char *>(MNU_NEGATE         , _("(/) Negado"   )));
+				vecPopUpMenuItems.push_back(pair<int, const char *>(MNU_MAKE_NORMAL    , _("( ) Normal"   )));
+				break;
+		}
+
+		if(vecPopUpMenuItems.size() > 0) {
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+
+			vector< pair<int, const char *> >::iterator it;
+			for(it = vecPopUpMenuItems.begin(); it != vecPopUpMenuItems.end(); it++) {
+				InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, it->first, it->second);
+			}
+		}
+	}
+
+	SetForegroundWindow(MainWindow);
+
+	POINT p;
+	GetCursorPos(&p);
+	ScreenToClient(MainWindow, &p);
+	TrackPopupMenu(hPopupMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN, p.x, p.y + RibbonHeight, 0, MainWindow, NULL);
 }
 
 HRESULT UpdateRibbonHeight(void);

@@ -898,7 +898,7 @@ static void ExportVarsAsCSV(string filename)
 	fwrite("\n", 1, 1, f);
 
 	// Quebra de linha para separar as secoes
-	csvSaveField(f, _(""));
+	csvSaveField(f, "");
 	fwrite("\n", 1, 1, f);
 
 	// Salva as entradas
@@ -917,7 +917,7 @@ static void ExportVarsAsCSV(string filename)
 	}
 
 	// Quebra de linha para separar as secoes
-	csvSaveField(f, _(""));
+	csvSaveField(f, "");
 	fwrite("\n", 1, 1, f);
 
 	// Salva as entradas
@@ -936,11 +936,11 @@ static void ExportVarsAsCSV(string filename)
 	}
 
 	// Quebra de linha para separar as secoes
-	csvSaveField(f, _(""));
+	csvSaveField(f, "");
 	fwrite("\n", 1, 1, f);
 
 	// Salva os registradores
-	csvSaveField(f, _("Registradores"));
+	csvSaveField(f, _("Registradores:"));
 	fwrite("\n", 1, 1, f);
 
 	csvSaveField(f, _("Nome"));

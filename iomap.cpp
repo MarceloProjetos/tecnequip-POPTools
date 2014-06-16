@@ -1433,13 +1433,8 @@ void mapIO::ShowIoMapDialog(int item)
 
     MakeWindowClass();
 
-	RECT rDrawWindow;
-	POINT start, size = { 127, 430 };
-
-	GetWindowRect(DrawWindow, &rDrawWindow);
-
-	start.x = rDrawWindow.left + (rDrawWindow.right  - rDrawWindow.left - size.x)/2;
-	start.y = rDrawWindow.top  + (rDrawWindow.bottom - rDrawWindow.top  - size.y)/2;
+	POINT size  = { 127, 430 };
+	POINT start = getWindowStart(size);
 
     // We need the TOOLWINDOW style, or else the window will be forced to
     // a minimum width greater than our current width. And without the

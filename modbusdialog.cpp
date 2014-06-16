@@ -19,7 +19,7 @@ void PopulateModBUSMasterCombobox(HWND h, bool has_new)
 	SendMessage(h, CB_RESETCONTENT, 0, 0);
 
 	if(has_new) {
-		SendMessage(h, CB_INSERTSTRING, i++, (LPARAM)((LPCTSTR)"< NOVO >"));
+		SendMessage(h, CB_INSERTSTRING, i++, (LPARAM)(_("< NOVO >")));
 	}
 
 	while(node.name.size() > 0) {

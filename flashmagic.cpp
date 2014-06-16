@@ -5,39 +5,6 @@ static unsigned long totalWrite = 0;
 
 ProgressStatus ps;
 
-void ShowError(LPTSTR lpszFunction) 
-{ 
-    // Retrieve the system error message for the last-error code
-
-    LPVOID lpMsgBuf;
-    LPVOID lpDisplayBuf;
-    DWORD dw = GetLastError(); 
-
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-        FORMAT_MESSAGE_FROM_SYSTEM |
-        FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL,
-        dw,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR) &lpMsgBuf,
-        0, NULL );
-
-    // Display the error message and exit the process
-
-    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, 
-        (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR)); 
-    StringCchPrintf((LPTSTR)lpDisplayBuf, 
-        LocalSize(lpDisplayBuf) / sizeof(TCHAR),
-        TEXT("%s failed with error %d: %s"), 
-        lpszFunction, dw, lpMsgBuf); 
-    Error((char *)lpDisplayBuf); 
-
-    LocalFree(lpMsgBuf);
-    LocalFree(lpDisplayBuf);
-    //ExitProcess(dw); 
-}
-
 // erase progress function
 // return 1 to continue erase
 int EraseProgress(int status, unsigned long value, unsigned long value2, void *callbackparam)
@@ -165,9 +132,9 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 		goto FlashProgramError;
 	}
 
-	ps.szMsg = "Preparando...";
+	ps.szMsg = _("Preparando...");
 	if(UpdateProgressWindow(&ps) == PROGRESS_STATUS_CANCEL) {
-		strcpy(text, "Operação cancelada!");
+		strcpy(text, _("Operação cancelada!"));
 		goto FlashProgramError;
 	}
 
@@ -205,9 +172,9 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 
 	ps.iCurrentStage = PROGRESS_STAGE_WRITING;
 	ps.iStagePercent = 0;
-	ps.szMsg = "Gravando...";
+	ps.szMsg = _("Gravando...");
 	if(UpdateProgressWindow(&ps) == PROGRESS_STATUS_CANCEL) {
-		strcpy(text, "Operação cancelada!");
+		strcpy(text, _("Operação cancelada!"));
 		goto FlashProgramError;
 	}
 
@@ -263,9 +230,9 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 
 	ps.iCurrentStage = PROGRESS_STAGE_VERIFYING;
 	ps.iStagePercent = 0;
-	ps.szMsg = "Verificando...";
+	ps.szMsg = _("Verificando...");
 	if(UpdateProgressWindow(&ps) == PROGRESS_STATUS_CANCEL) {
-		strcpy(text, "Operação cancelada!");
+		strcpy(text, _("Operação cancelada!"));
 		goto FlashProgramError;
 	}
 
@@ -306,9 +273,9 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 
 	ps.iCurrentStage = PROGRESS_STAGE_FINISHING;
 	ps.iStagePercent = 0;
-	ps.szMsg = "Desconectando...";
+	ps.szMsg = _("Desconectando...");
 	if(UpdateProgressWindow(&ps) == PROGRESS_STATUS_CANCEL) {
-		strcpy(text, "Operação cancelada!");
+		strcpy(text, _("Operação cancelada!"));
 		goto FlashProgramError;
 	}
 

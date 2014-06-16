@@ -271,7 +271,7 @@ public:
 	tWire DrawWire(POINT StartPoint, POINT EndPoint, bool poweredBefore);
 	void  addConnectionDot(POINT p, bool isPowered, bool isForced, eDirection direction = eDirection_None);
 
-	void        MouseClick(int x, int y, bool isDown, bool isDouble);
+	void        MouseClick(eMouseButton button, int x, int y, bool isDown, bool isDouble);
 
 	LadderElem *getNearestElem(LadderElem *ref);
 	LadderElem *SearchElement (LadderElem *ref, eMoveCursor moveTo);

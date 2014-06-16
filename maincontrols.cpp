@@ -29,7 +29,8 @@ int                 IoListHeight;
 int                 IoListTop;
 
 // whether the simulation is running in real time
-BOOL         RealTimeSimulationRunning;
+bool         RealTimeSimulationRunning;
+bool         RealTimeSimulationPaused;
 
 // Altura das abas
 int TabHeight = 25;
@@ -605,7 +606,8 @@ void ToggleSimulationMode(void)
 		if(ladder->getContext().inSimulationMode)
 			SimulationServer_Start();
 	} else {
-        RealTimeSimulationRunning = FALSE;
+        RealTimeSimulationRunning = false;
+		RealTimeSimulationPaused  = false;
         KillTimer(MainWindow, TIMER_SIMULATE);
 
 		LogSimulation(false);
@@ -637,7 +639,8 @@ void ToggleSimulationMode(void)
 //-----------------------------------------------------------------------------
 void StartSimulation(void)
 {
-    RealTimeSimulationRunning = TRUE;
+    RealTimeSimulationRunning = true;
+	RealTimeSimulationPaused  = false;
 
 	RibbonSetCmdState(cmdSimulationPause      , TRUE );
 	RibbonSetCmdState(cmdSimulationStop       , TRUE );
@@ -655,7 +658,8 @@ void StartSimulation(void)
 //-----------------------------------------------------------------------------
 void StopSimulation(void)
 {
-	RealTimeSimulationRunning = FALSE;
+	RealTimeSimulationRunning = false;
+	RealTimeSimulationPaused  = false;
 	KillTimer(MainWindow, TIMER_SIMULATE);
 
 	LogSimulation(false);
@@ -676,7 +680,8 @@ void StopSimulation(void)
 //-----------------------------------------------------------------------------
 void PauseSimulation(void)
 {
-    RealTimeSimulationRunning = FALSE;
+    RealTimeSimulationRunning = false;
+	RealTimeSimulationPaused  = true;
 
 	RibbonSetCmdState(cmdSimulationPause      , FALSE);
 	RibbonSetCmdState(cmdSimulationStart      , TRUE );

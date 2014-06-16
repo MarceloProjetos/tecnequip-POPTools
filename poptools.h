@@ -689,7 +689,9 @@ extern int IoListTop;
 extern int IoListHeight;
 extern HWND UartSimulationWindow;
 extern HWND UartSimulationTextControl;
-extern BOOL RealTimeSimulationRunning;
+extern bool RealTimeSimulationRunning;
+extern bool RealTimeSimulationPaused;
+extern bool isLogActive;
 
 // draw.cpp
 extern int ColsAvailable;

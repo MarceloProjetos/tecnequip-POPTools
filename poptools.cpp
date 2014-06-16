@@ -1637,7 +1637,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int x = LOWORD(lParam);
             int y = HIWORD(lParam) - RibbonHeight - TabHeight;
 
-			ladder->MouseClick(x, y, false, false);
+			ladder->MouseClick(eMouseButton_Left, x, y, false, false);
 
 			break;
 		}
@@ -1646,7 +1646,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int x = LOWORD(lParam);
             int y = HIWORD(lParam) - RibbonHeight - TabHeight;
 
-			ladder->MouseClick(x, y, false, true);
+			ladder->MouseClick(eMouseButton_Left, x, y, false, true);
 
 			InvalidateRect(MainWindow, NULL, FALSE);
 
@@ -1669,11 +1669,37 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 				isDraggingSplitter = true;
             } else {
-				ladder->MouseClick(x, y - RibbonHeight - TabHeight, true, false);
+				ladder->MouseClick(eMouseButton_Left, x, y - RibbonHeight - TabHeight, true, false);
 			}
 
             SetFocus(MainWindow);
             InvalidateRect(MainWindow, NULL, FALSE);
+            break;
+        }
+
+		case WM_RBUTTONUP: {
+            int x = LOWORD(lParam);
+            int y = HIWORD(lParam) - RibbonHeight - TabHeight;
+
+			ladder->MouseClick(eMouseButton_Right, x, y, false, false);
+
+			break;
+		}
+
+		case WM_RBUTTONDBLCLK: {
+            int x = LOWORD(lParam);
+            int y = HIWORD(lParam) - RibbonHeight - TabHeight;
+
+			ladder->MouseClick(eMouseButton_Right, x, y, false, true);
+
+			break;
+        }
+
+        case WM_RBUTTONDOWN: {
+            int x = LOWORD(lParam);
+            int y = HIWORD(lParam);
+			ladder->MouseClick(eMouseButton_Right, x, y - RibbonHeight - TabHeight, true, false);
+
             break;
         }
 

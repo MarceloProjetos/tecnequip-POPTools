@@ -199,6 +199,12 @@ enum eMoveCursor  {
 	eMoveCursor_Right,       ///< Movimenta o cursor para a direita. Altera a selecao do objeto atual para a lateral direita e, caso ja selecionado, busca o objeto mais proximo.
 };
 
+/// Enumeracao que define os botoes suportados do mouse
+enum eMouseButton  {
+	eMouseButton_Left = 0, ///< Botao esquerdo do mouse
+	eMouseButton_Right,    ///< Botao direito  do mouse
+};
+
 /// Enumeracao que define o retorno das caixas de dialogo
 enum eReply {
 	eReply_Pending = 0, ///< Este estado indica que a caixa de dialogo ainda esta aguardando uma resposta do usuario
@@ -3404,12 +3410,13 @@ public:
 	 */
 	void        MouseMove    (int x, int y);
 	/** Funcao que informa ao diagrama que houve clique do mouse
+	 *  @param[in] button   Botao do mouse que gerou o evento
 	 *  @param[in] x        Posicao onde ocorreu o clique do mouse no eixo X
 	 *  @param[in] y        Posicao onde ocorreu o clique do mouse no eixo Y
 	 *  @param[in] isDown   Flag que indica se o botao do mouse foi pressionado (true) ou solto (false)
 	 *  @param[in] isDouble Flag que indica se ocorreu um duplo-clique (true) ou clique simples (false)
 	 */
-	void        MouseClick   (int x, int y, bool isDown, bool isDouble);
+	void        MouseClick   (eMouseButton button, int x, int y, bool isDown, bool isDouble);
 	/** Funcao que move o cursor de selecao conforme o comando passado como parametro
 	 *  @param[in] moveTo Indica o tipo de movimento do cursor como: cima, baixo, inicio da linha, etc.
 	 */
@@ -3754,6 +3761,8 @@ public:
 	 *  @param[in] item Indice com a posicao no vetor de I/Os
 	 */
 	void            ShowIoMapDialog         (int item);
+	/// Funcao que exibe o menu com opcoes relacionadas ao contexto atual
+	void            ShowContextMenu         (void);
 	/** Funcao que carrega o combobox de bits que podem ser atribuidos a um determinado I/O e retorna a posicao do bit atual na lista carregada
 	 *  @param[in] name Nome do pino associado ao I/O conforme exibido na tela de atribuicao de I/O
 	 *  @param[in] pin  Pino a ser usado para identificar os bits que devem ser carregados

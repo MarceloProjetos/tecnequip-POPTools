@@ -250,7 +250,6 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "{ESCR MB ETH}", "{WRITE MB ETH}");
 		addTextToLangTable(l, "{ESCR USS}", "{WRITE USS}");
 		addTextToLangTable(l, "Índice", "Index");
-		addTextToLangTable(l, "0ZSET%d", "0ZSET%d");
 		addTextToLangTable(l, "16 bits", "16 bits");
 		addTextToLangTable(l, "32 bits", "32 bits");
 		addTextToLangTable(l, "7-Par-1", "7-Even-1");
@@ -879,7 +878,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Minuto", "Minute");
 		addTextToLangTable(l, "Segundo", "Second");
 		addTextToLangTable(l, "Dia do Ano", "Day of the Year");
-		addTextToLangTable(l, "Obs.: A hora somente é atualizada quando é realizada a leitura do registrador Dia", "PS.: The date/time register are updated only when Day Register is Read");
+		addTextToLangTable(l, "Obs.: A hora somente é atualizada quando é realizada a leitura do registrador Dia", "PS.: The date/time registers are updated only when Day Register is Read");
 		addTextToLangTable(l, "Bit", "Bit");
 		addTextToLangTable(l, "Preparando :", "Preparing :");
 		addTextToLangTable(l, "Gravando :", "Writing :");
@@ -889,6 +888,27 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Endereço MAC:", "MAC Address:");
 		addTextToLangTable(l, "Saídas Digitais", "Digital Output");
 		addTextToLangTable(l, "Entradas Digitais", "Digital Input");
+		addTextToLangTable(l, "Primeiro Parâmetro", "First Parameter");
+		addTextToLangTable(l, "Segundo Parâmetro", "Second Parameter");
+		addTextToLangTable(l, "Erro ao criar elemento!", "Error while creating element!");
+		addTextToLangTable(l, "Elemento alterado com sucesso!", "Element updated successfully!");
+		addTextToLangTable(l, "Elemento adicionado com sucesso!", "Element added successfully!");
+		addTextToLangTable(l, "Alterar", "Update");
+		addTextToLangTable(l, "< NOVO >", "< NEW >");
+		addTextToLangTable(l, "Operação cancelada!", "Operation canceled!");
+		addTextToLangTable(l, "Preparando...", "Preparing...");
+		addTextToLangTable(l, "Gravando...", "Writing...");
+		addTextToLangTable(l, "Verificando...", "Verifying...");
+		addTextToLangTable(l, "Desconectando...", "Disconnecting...");
+		addTextToLangTable(l, "Recortar Elemento", "Cut Element");
+		addTextToLangTable(l, "Copiar Linha", "Copy Rung");
+		addTextToLangTable(l, "Colar Linha Antes", "Paste Rung Before");
+		addTextToLangTable(l, "Colar Linha Depois", "Paste Rung After");
+		addTextToLangTable(l, "Iniciar", "Start");
+		addTextToLangTable(l, "Pausar", "Pause");
+		addTextToLangTable(l, "Simples Ciclo", "Single Cycle");
+		addTextToLangTable(l, "Iniciar Registro de Dados", "Start Data Log");
+		addTextToLangTable(l, "Parar Registro de Dados", "Stop Data Log");
 	} else if(id == 2) { // Idioma Espanhol
 		l = newLangTableChar();
 
@@ -1071,7 +1091,6 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "{ESCR MB ETH}", "{WRITE MB ETH}");
 		addTextToLangTable(l, "{ESCR USS}", "{WRITE USS}");
 		addTextToLangTable(l, "Índice", "Index");
-		addTextToLangTable(l, "0ZSET%d", "0ZSET%d");
 		addTextToLangTable(l, "16 bits", "16 bits");
 		addTextToLangTable(l, "32 bits", "32 bits");
 		addTextToLangTable(l, "7-Par-1", "7-Even-1");
@@ -1710,6 +1729,27 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Endereço MAC:", "MAC Address:");
 		addTextToLangTable(l, "Saídas Digitais", "Digital Output");
 		addTextToLangTable(l, "Entradas Digitais", "Digital Input");
+		addTextToLangTable(l, "Primeiro Parâmetro", "First Parameter");
+		addTextToLangTable(l, "Segundo Parâmetro", "Second Parameter");
+		addTextToLangTable(l, "Erro ao criar elemento!", "Error while creating element!");
+		addTextToLangTable(l, "Elemento alterado com sucesso!", "Element updated successfully!");
+		addTextToLangTable(l, "Elemento adicionado com sucesso!", "Element added successfully!");
+		addTextToLangTable(l, "Alterar", "Update");
+		addTextToLangTable(l, "< NOVO >", "< NUEVO >");
+		addTextToLangTable(l, "Operação cancelada!", "Operation canceled!");
+		addTextToLangTable(l, "Preparando...", "Preparing...");
+		addTextToLangTable(l, "Gravando...", "Writing...");
+		addTextToLangTable(l, "Verificando...", "Verifying...");
+		addTextToLangTable(l, "Desconectando...", "Disconnecting...");
+		addTextToLangTable(l, "Recortar Elemento", "Cut Element");
+		addTextToLangTable(l, "Copiar Linha", "Copy Rung");
+		addTextToLangTable(l, "Colar Linha Antes", "Paste Rung Before");
+		addTextToLangTable(l, "Colar Linha Depois", "Paste Rung After");
+		addTextToLangTable(l, "Iniciar", "Start");
+		addTextToLangTable(l, "Pausar", "Pause");
+		addTextToLangTable(l, "Simples Ciclo", "Single Cycle");
+		addTextToLangTable(l, "Iniciar Registro de Dados", "Start Data Log");
+		addTextToLangTable(l, "Parar Registro de Dados", "Stop Data Log");
 	} else {
 		l = nullptr;
 	}
@@ -1751,7 +1791,7 @@ PCWSTR getRibbonLocalizedLabel(UINT nCmdID)
 		SET_LANGUAGE_STRINGS(cmdTabInstrAutom            , L"Controles Automação"              , L"Automation Controls"           , L"Controles de Automacion"            );
 		SET_LANGUAGE_STRINGS(cmdTabSimulation            , L"Simulação"                        , L"Simulation"                    , L"Simulacion"                         );
 		SET_LANGUAGE_STRINGS(cmdGroupInstr               , L"Instrução"                        , L"Instruction"                   , L"Instruccion"                        );
-		SET_LANGUAGE_STRINGS(cmdGroupLine                , L"Linhas"                           , L"Lines"                         , L"Lineas"                             );
+		SET_LANGUAGE_STRINGS(cmdGroupLine                , L"Linhas"                           , L"Rungs"                         , L"Lineas"                             );
 		SET_LANGUAGE_STRINGS(cmdGroupFind                , L"Busca"                            , L"Find"                          , L"Busqueda"                           );
 		SET_LANGUAGE_STRINGS(cmdGroupConfig              , L"Configurações"                    , L"Configuration"                 , L"Configuraciones"                    );
 		SET_LANGUAGE_STRINGS(cmdGroupHelp                , L"Ajuda"                            , L"Help"                          , L"Ayuda"                              );
@@ -1793,7 +1833,7 @@ PCWSTR getRibbonLocalizedLabel(UINT nCmdID)
 		SET_LANGUAGE_STRINGS(cmdRedo                     , L"Refazer"                          , L"Redo"                          , L"Rehacer"                            );
 		SET_LANGUAGE_STRINGS(cmdMoveLineUp               , L"Mover Acima"                      , L"Move Up"                       , L"Mover hacia arriba"                 );
 		SET_LANGUAGE_STRINGS(cmdMoveLineDown             , L"Mover Abaixo"                     , L"Move Down"                     , L"Mover hacia abajo"                  );
-		SET_LANGUAGE_STRINGS(cmdCopyLine                 , L"Copiar Linha"                     , L"Copy Line"                     , L"Copiar Linea"                       );
+		SET_LANGUAGE_STRINGS(cmdCopyLine                 , L"Copiar Linha"                     , L"Copy Rung"                     , L"Copiar Linea"                       );
 		SET_LANGUAGE_STRINGS(cmdPasteLineBefore          , L"Colar Antes"                      , L"Paste Before"                  , L"Pegar antes"                        );
 		SET_LANGUAGE_STRINGS(cmdPasteLineAfter           , L"Colar Depois"                     , L"Paste After"                   , L"Pegar despues"                      );
 		SET_LANGUAGE_STRINGS(cmdInsertLineAfter          , L"Inserir Após"                     , L"Insert After"                  , L"Inserir despues"                    );
