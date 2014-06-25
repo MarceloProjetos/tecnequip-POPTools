@@ -6378,6 +6378,7 @@ void LadderElemShiftRegister::updateIO(LadderDiagram *owner, bool isDiscard)
 		InfoIO_Regs.pin  = prop.vectorIdRegs[i];
 
 		Diagram->updateIO(owner, this, InfoIO_Regs, isDiscard);
+		prop.vectorIdRegs[i] = InfoIO_Regs.pin;
 	}
 
 	InfoIO_Regs.name = previous_name;
@@ -10193,11 +10194,12 @@ bool LadderDiagram::NewRung(bool isAfter)
 	UndoRedoAction action;
 	UndoRedoData *data = new UndoRedoData;
 
-	data->NewRung.rung                = new LadderRung;
+	data->NewRung.rung                 = new LadderRung;
 
-	data->NewRung.rung->hasBreakpoint = false;
-	data->NewRung.rung->isPowered     = false;
-	data->NewRung.rung->rung          = new LadderCircuit(true);
+	data->NewRung.rung->hasBreakpoint  = false;
+	data->NewRung.rung->isPowered      = false;
+	data->NewRung.rung->isBeingDeleted = false;
+	data->NewRung.rung->rung           = new LadderCircuit(true);
 
 	if(position < 0) { // Se posicao menor que zero, insere no final
 		it = rungs.end();
@@ -10345,6 +10347,7 @@ bool LadderDiagram::DeleteRung(int rung, bool isFreeDiagram)
 		context.ParallelStart = nullptr;
 	}
 
+	(*it)->isBeingDeleted = true;
 	(*it)->rung->doPostRemove();
 	(*it)->rung->updateIO(this, true);
 	rungs.erase(it);
@@ -10383,12 +10386,13 @@ bool LadderDiagram::CopyRung(LadderClipboard *clipboard, LadderElem *elem)
 	}
 
 	// Copia a linha
-	clipboard->rungCopy                = new LadderRung;
-	clipboard->rungOwner               = this;
+	clipboard->rungCopy                 = new LadderRung;
+	clipboard->rungOwner                = this;
 
-	clipboard->rungCopy->hasBreakpoint = false;
-	clipboard->rungCopy->isPowered     = false;
-	clipboard->rungCopy->rung          = rungs[pos]->rung->Clone(this);
+	clipboard->rungCopy->hasBreakpoint  = false;
+	clipboard->rungCopy->isPowered      = false;
+	clipboard->rungCopy->isBeingDeleted = false;
+	clipboard->rungCopy->rung           = rungs[pos]->rung->Clone(this);
 
 	// Retorna com sucesso!
 	return true;
@@ -10415,11 +10419,12 @@ bool LadderDiagram::PasteRung(LadderClipboard clipboard, bool isAfter)
 		}
 
 		// Cria uma copia de si mesma para que seja possivel inserir uma nova copia
-		LadderRung *copiedRung    = new LadderRung;
+		LadderRung *copiedRung     = new LadderRung;
 
-		copiedRung->hasBreakpoint = false;
-		copiedRung->isPowered     = false;
-		copiedRung->rung          = clipboard.rungCopy->rung->Clone(this);
+		copiedRung->hasBreakpoint  = false;
+		copiedRung->isPowered      = false;
+		copiedRung->isBeingDeleted = false;
+		copiedRung->rung           = clipboard.rungCopy->rung->Clone(this);
 
 		rungs.insert(rungs.begin() + pos, copiedRung);
 		copiedRung->rung->doPostInsert();
@@ -11295,7 +11300,8 @@ bool LadderDiagram::Load(string filename)
 								unsigned int i;
 								for(i = 0; i < num_rungs; i++) {
 									LadderRung *rung = new LadderRung;
-									rung->isPowered = false;
+									rung->isPowered      = false;
+									rung->isBeingDeleted = false;
 									if(fread_bool(f, &rung->hasBreakpoint)) {
 										rung->rung = new LadderCircuit;
 										if(!rung->rung->Load(this, f, fileVersion)) {
@@ -11858,6 +11864,9 @@ void LadderDiagram::updateIO(LadderDiagram *owner, LadderElem *elem, tRequestIO 
 
 			// Inicialmente montamos a lista com os tipos permitidos para o I/O
 			for(i = 0; i < rungs.size(); i++) {
+				// Se a linha estiver sendo excluida, nao considera os tipos retornados por ela.
+				if(rungs[i]->isBeingDeleted) continue;
+
 				rungs[i]->rung->getAllowedTypes(elem, id, &allowedTypes);
 			}
 
@@ -11872,6 +11881,9 @@ void LadderDiagram::updateIO(LadderDiagram *owner, LadderElem *elem, tRequestIO 
 				// Nao existe mais o tipo atual. Devemos buscar 1 a 1 ate chegar no tipo aceito por todos
 				for(it = allowedTypes.begin(); it != allowedTypes.end(); it++) {
 					for(i = 0; i < rungs.size(); i++) {
+						// Se a linha estiver sendo excluida, nao verifica se o tipo eh aceito por ela.
+						if(rungs[i]->isBeingDeleted) continue;
+
 						if(!rungs[i]->rung->acceptIO(elem, id, *it)) {
 							break;
 						}

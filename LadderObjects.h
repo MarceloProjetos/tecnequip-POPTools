@@ -330,9 +330,10 @@ typedef struct {
 /// Estrutura que define uma linha do ladder.
 /// Basicamente um LadderCircuit com algumas informacoes adicionais
 struct LadderRung {
-	LadderCircuit *rung;          ///< Ponteiro para o circuito que representa a linha
-	bool           hasBreakpoint; ///< Flag que indica se existe um breakpoint para esta linha
-	bool           isPowered;     ///< Flag que indica se a linha esta energizada
+	LadderCircuit *rung;           ///< Ponteiro para o circuito que representa a linha
+	bool           hasBreakpoint;  ///< Flag que indica se existe um breakpoint para esta linha
+	bool           isPowered;      ///< Flag que indica se a linha esta energizada
+	bool           isBeingDeleted; ///< Flag que indica que a linha esta sendo excluida e portanto os tipos retornados por getAllowedTypes nao devem ser considerados
 };
 
 /// Estrutura que armazena informacoes sobre objetos copiados (Linhas / Elementos)
