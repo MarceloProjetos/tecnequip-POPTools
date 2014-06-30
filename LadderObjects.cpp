@@ -12231,6 +12231,11 @@ string LadderDiagram::getInternalVarNameIO(string name)
 	return IO->getInternalVarName(name);
 }
 
+vector< pair<string, string> > LadderDiagram::getInternalVarVectorIO(void)
+{
+	return IO->getInternalVarVector();
+}
+
 bool LadderDiagram::equalsNameIO(string name1, string name2)
 {
 	return name1 == name2;

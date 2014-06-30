@@ -909,6 +909,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Simples Ciclo", "Single Cycle");
 		addTextToLangTable(l, "Iniciar Registro de Dados", "Start Data Log");
 		addTextToLangTable(l, "Parar Registro de Dados", "Stop Data Log");
+		addTextToLangTable(l, "Breakpoint", "Breakpoint");
+		addTextToLangTable(l, "Simulacao interrompida na linha %d", "Simulation stopped at line %d");
 	} else if(id == 2) { // Idioma Espanhol
 		l = newLangTableChar();
 
@@ -1750,6 +1752,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Simples Ciclo", "Single Cycle");
 		addTextToLangTable(l, "Iniciar Registro de Dados", "Start Data Log");
 		addTextToLangTable(l, "Parar Registro de Dados", "Stop Data Log");
+		addTextToLangTable(l, "Breakpoint", "Breakpoint");
+		addTextToLangTable(l, "Simulacao interrompida na linha %d", "Simulation stopped at line %d");
 	} else {
 		l = nullptr;
 	}

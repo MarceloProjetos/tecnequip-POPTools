@@ -3758,6 +3758,10 @@ public:
 	 *  @return         Nome da variavel interna no firmware
 	 */
 	string          getInternalVarNameIO    (string name);
+	/** Funcao que retorna o vetor de variaveis internas
+	 *  @return Vetor de variaveis internas
+	 */
+	vector< pair<string, string> > getInternalVarVectorIO(void);
 	/** Funcao que exibe a janela de dialogo para o I/O na posicao do vetor de I/Os indicada pelo parametro
 	 *  @param[in] item Indice com a posicao no vetor de I/Os
 	 */

@@ -110,6 +110,9 @@ public:
 	bool IsInternalFlag(string name);
 	bool IsInternalVar (string name);
 
+	// Funcao que retorna o vetor de variaveis internas
+	vector< pair<string, string> > getInternalVarVector(void);
+
 	// Funcoes que indicam se existe algum I/O que use a UART e o PWM, respectivamente
 	bool UartFunctionUsed(void);
 	bool PwmFunctionUsed (void);

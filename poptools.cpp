@@ -1744,8 +1744,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 				POINT p;
 				GetCursorPos(&p);
-				ScreenToClient(MainWindow, &p);
-				TrackPopupMenu(hPopupMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN, p.x, p.y + RibbonHeight, 0, MainWindow, NULL);
+				TrackPopupMenu(hPopupMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN, p.x, p.y, 0, MainWindow, NULL);
 			}
 
 			return 0;

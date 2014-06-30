@@ -1490,6 +1490,29 @@ void ClearSimulationData(void)
 	HardwareRegisters_Init(&hwreg);
 
 	SimulateOneCycle(TRUE);
+
+	// A seguir inicializamos as variaveis internas. Pode ser que a logica ja carregou algum valor no primeiro ciclo!
+	// Assim devemos verificar primeiro se a variavel ja existe. Se nao existir, criamos e inicializamos.
+	vector< pair<string, string> >::iterator it;
+	vector< pair<string, string> > intvar = ladder->getInternalVarVectorIO();
+
+	map<string, SWORD> mapDefaultValue;
+
+	LadderSettingsEncoderSSI         settingsEncoderSSI         = ladder->getSettingsEncoderSSI        ();
+	LadderSettingsEncoderIncremental settingsEncoderIncremental = ladder->getSettingsEncoderIncremental();
+
+	mapDefaultValue["IncPerimRoda"  ] = settingsEncoderIncremental.perimeter;
+	mapDefaultValue["IncPulsosVolta"] = settingsEncoderIncremental.pulses;
+	mapDefaultValue["IncFatorCorr"  ] = SWORD(settingsEncoderIncremental.factor * 10000);
+	mapDefaultValue["AbsPerimRoda"  ] = settingsEncoderSSI.perimeter;
+	mapDefaultValue["AbsFatorCorr"  ] = SWORD(settingsEncoderSSI.factor * 10000);
+
+	for(it = intvar.begin(); it != intvar.end(); it++) {
+		// Se variavel inexistente mas com valor definido, deve ser criada com este valor.
+		if(currentSimState.Variables.count(it->first) == 0 && mapDefaultValue.count(it->first)) {
+			SetSimulationVariable(it->first.c_str(), mapDefaultValue[it->first]);
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

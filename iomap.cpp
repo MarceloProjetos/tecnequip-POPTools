@@ -599,6 +599,11 @@ string mapIO::getInternalVarName(string name)
 	return "";
 }
 
+vector< pair<string, string> > mapIO::getInternalVarVector(void)
+{
+	return vectorInternalVar;
+}
+
 string mapIO::getReservedName(eType type)
 {
 	switch(type) {
@@ -1998,7 +2003,8 @@ SWORD ShowSliderPopup(const char *name, SWORD currentVal, SWORD minVal, SWORD ma
 
     EnableWindow(MainWindow, FALSE);
     ShowWindow(SliderMain, TRUE);
-    SetFocus(SliderTrackbar);
+    SetFocus(ValTextbox);
+    SendMessage(ValTextbox, EM_SETSEL, 0, -1);
 
     DWORD ret;
     MSG msg;
@@ -2012,6 +2018,7 @@ SWORD ShowSliderPopup(const char *name, SWORD currentVal, SWORD minVal, SWORD ma
 			isFirst = false;
 			sprintf(buf, "%d", newVal);
 			SendMessage(ValTextbox, WM_SETTEXT, 0, (LPARAM)buf);
+		    SendMessage(ValTextbox, EM_SETSEL , 0, -1);
 			previousVal = newVal;
 		}
 
