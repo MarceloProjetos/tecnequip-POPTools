@@ -1849,7 +1849,7 @@ void IoMapListProc(NMHDR *h)
         }
         case LVN_ITEMACTIVATE: {
 			NMITEMACTIVATE *i = (NMITEMACTIVATE *)h;
-			if(ladder->getContext().inSimulationMode) {
+			if(ladder->getContext().inSimulationMode && i->iSubItem != LV_IO_NAME) {
 				char name[1024];
 				strcpy(name, ladder->getNameIObyIndex(i->iItem).c_str());
 				mapDetails detailsIO = ladder->getDetailsIO(name);
