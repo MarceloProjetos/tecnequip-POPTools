@@ -255,6 +255,7 @@ typedef struct {
 
 	bool inSimulationMode;          ///< Flag que indica se estamos no modo de simulacao
 	bool isLoadingFile;             ///< Flag que indica se um arquivo esta sendo carregado
+	bool isDrawBlocked;             ///< Flag que indica que nao devemos desenhar a tela. Necessario durante algumas operacoes como carregamento de arquivo
 
 	bool   programChangedNotSaved;  ///< Flag que indica se houve alteracao no diagrama desde o ultimo salvamento
 

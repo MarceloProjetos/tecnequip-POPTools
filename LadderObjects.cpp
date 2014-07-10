@@ -24,6 +24,7 @@ LadderContext getEmptyContext(void)
 
 	context.inSimulationMode       = false;
 	context.isLoadingFile          = false;
+	context.isDrawBlocked          = false;
 
 	context.Diagram                = nullptr;
 	context.ParallelStart          = nullptr;
@@ -9632,6 +9633,7 @@ void LadderDiagram::Init(void)
 
 	context.inSimulationMode       = false;
 	context.isLoadingFile          = false;
+	context.isDrawBlocked          = false;
 
 	context.programChangedNotSaved = false;
 
@@ -10267,9 +10269,8 @@ bool LadderDiagram::PushRung(int rung, bool up)
 	rungs[rung]          = rungs[rung + offset];
 	rungs[rung + offset] = tmp;
 
-	if(!IsSelectedVisible()) {
-		NeedScrollSelectedIntoView = true;
-	}
+	// Sempre forca redesenhar a tela pois nesse momento ainda nao sabemos se isso sera necessario ou nao...
+	NeedScrollSelectedIntoView = true;
 
 	// Registro da acao para desfazer / refazer
 	UndoRedoAction action;
@@ -10377,6 +10378,9 @@ bool LadderDiagram::CopyRung(LadderClipboard *clipboard, LadderElem *elem)
 		if(elem == nullptr) return false; // Sem linha para copiar
 	}
 
+	// Durante esta operacao, nao devemos desenhar a tela para evitar a lista de I/Os sendo recarregada
+	context.isDrawBlocked = true;
+
 	pos = RungContainingElement(elem);
 
 	// Primeiro descarta uma linha previamente copiada
@@ -10394,6 +10398,9 @@ bool LadderDiagram::CopyRung(LadderClipboard *clipboard, LadderElem *elem)
 	clipboard->rungCopy->isBeingDeleted = false;
 	clipboard->rungCopy->rung           = rungs[pos]->rung->Clone(this);
 
+	// Operacao finalizada, a tela ja pode ser desbloqueada
+	context.isDrawBlocked = false;
+
 	// Retorna com sucesso!
 	return true;
 }
@@ -10408,6 +10415,9 @@ bool LadderDiagram::PasteRung(LadderClipboard clipboard, bool isAfter)
 
 	// Nao existe linha copiada ou nao existe ponto de insercao definido
 	if(clipboard.rungCopy == nullptr || context.SelectedElem == nullptr) return false;
+
+	// Durante esta operacao, nao devemos desenhar a tela para evitar a lista de I/Os sendo recarregada
+	context.isDrawBlocked = true;
 
 	CheckpointBegin(_("Colar Linha"));
 
@@ -10458,6 +10468,9 @@ bool LadderDiagram::PasteRung(LadderClipboard clipboard, bool isAfter)
 	CheckpointEnd();
 
 	updateContext();
+
+	// Operacao finalizada, a tela ja pode ser desbloqueada
+	context.isDrawBlocked = false;
 
 	return ret;
 }
@@ -10622,6 +10635,9 @@ bool LadderDiagram::CopyElement(LadderClipboard *clipboard, LadderElem *elem)
 
 	if(elem->getWhich() == ELEM_PLACEHOLDER) return false; // Nao pode copiar PlaceHolder...
 
+	// Durante esta operacao, nao devemos desenhar a tela para evitar a lista de I/Os sendo recarregada
+	context.isDrawBlocked = true;
+
 	// As acoes de copia do objeto nao devem ser registradas pois o CTRL+Z nao desfaz a copia.
 	// Assim precisamos criar um checkpoint para que possamos descartar as acoes inscritas
 	CheckpointBegin(_("Copiar Elemento"));
@@ -10640,6 +10656,9 @@ bool LadderDiagram::CopyElement(LadderClipboard *clipboard, LadderElem *elem)
 	CheckpointRollback();
 	CheckpointEnd();
 
+	// Operacao finalizada, a tela ja pode ser desbloqueada
+	context.isDrawBlocked = false;
+
 	// Retorna com sucesso!
 	return true;
 }
@@ -10652,6 +10671,9 @@ bool LadderDiagram::PasteElement(LadderClipboard clipboard)
 	if(IsLocked()) return false;
 
 	if(clipboard.elemCopy == nullptr) return false; // Nao existe elemento copiado
+
+	// Durante esta operacao, nao devemos desenhar a tela para evitar a lista de I/Os sendo recarregada
+	context.isDrawBlocked = true;
 
 	CheckpointBegin(_("Colar Elemento"));
 
@@ -10671,6 +10693,9 @@ bool LadderDiagram::PasteElement(LadderClipboard clipboard)
 	CheckpointEnd();
 
 	updateContext();
+
+	// Operacao finalizada, a tela ja pode ser desbloqueada
+	context.isDrawBlocked = false;
 
 	return ret;
 }
@@ -11202,6 +11227,9 @@ bool LadderDiagram::Load(string filename)
 				// Marca o contexto indicando que um arquivo esta sendo carregado
 				context.isLoadingFile = true;
 
+				// A tela tambem deve ser bloqueada
+				context.isDrawBlocked = true;
+
 				/*** A seguir iniciamos o carregamento dos dados em si ***/
 
 				// Carregando as configuracoes
@@ -11345,6 +11373,7 @@ bool LadderDiagram::Load(string filename)
 	NeedRedraw(true);
 
 	context.isLoadingFile = false;
+	context.isDrawBlocked = false;
 
 	if(failed) {
 		// Erro durante o carregamento
@@ -12726,6 +12755,10 @@ pair<string, eType> LadderDiagram::getCachedIO(unsigned long id)
 // Funcoes relacionadas aos comandos de Desfazer / Refazer
 void LadderDiagram::RegisterAction(UndoRedoAction Action, bool isUndo)
 {
+	// Nunca registra uma acao com o contexto marcado como tela bloqueada ou ao desfazer pode ser que a tela fique travada
+	Action.contextBefore.isDrawBlocked = false;
+	Action.contextAfter .isDrawBlocked = false;
+
 	if(isUndo) {
 		if(Action.action != eCheckpoint) {
 			isCheckpointEmpty = false;
@@ -12871,6 +12904,9 @@ void LadderDiagram::UndoRedo(bool isUndo)
 	bool ignoreFirstCheckpoint;
 	deque<UndoRedoAction> *List;
 
+	// Durante esta operacao, nao devemos desenhar a tela para evitar a lista de I/Os sendo recarregada
+	context.isDrawBlocked = true;
+
 	// Se houver checkpoint em aberto, fecha agora
 	while(CheckpointBeginCount > 0) {
 		CheckpointEnd();
@@ -12941,6 +12977,9 @@ void LadderDiagram::UndoRedo(bool isUndo)
 	// registro, de forma que CheckpointEnd nao remova o checkpoint por pensar que ele esta vazio.
 	// Porem isso nao vale para Undo/Redo entao limpamos a flag agora.
 	isCheckpointEmpty = true;
+
+	// Operacao finalizada, a tela ja pode ser desbloqueada
+	context.isDrawBlocked = false;
 }
 
 bool LadderDiagram::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)

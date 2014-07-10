@@ -8356,7 +8356,9 @@ bool cmdToggleBreakpoint(tCommandSource source, void *data)
 void LadderDiagram::DrawGUI(void)
 {
 	static LadderDiagram *lastDiagram = nullptr;
-	if(context.isLoadingFile) return; // Durante o carregamento de um arquivo nao devemos desenhar a tela...
+
+	// Durante operacoes como carregamento de um arquivo ou copia de linha, nao devemos desenhar a tela...
+	if(context.isDrawBlocked) return;
 
 	// Aqui criamos um novo mapa (no caso de um novo diagrama)
 	if(mapDiagramData.count(this) == 0) {
@@ -8889,8 +8891,8 @@ void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
 // Classe mapIO
 void mapIO::updateGUI(void)
 {
-	// Nao atualiza a lista de I/Os enquanto carregando o arquivo
-	if(diagram->getContext().isLoadingFile == true) return;
+	// Nao atualiza a lista de I/Os enquanto a tela estiver bloqueada
+	if(diagram->getContext().isDrawBlocked) return;
 
 	// Sincroniza o mapa com o vetor ordenado
 	SyncVectorIO();
