@@ -294,7 +294,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	ps.szMsg = text;
 
 	if(UpdateProgressWindow(&ps) == PROGRESS_STATUS_CANCEL) {
-		strcpy(text, "Operação cancelada!");
+		strcpy(text, _("Operação cancelada!"));
 		goto FlashProgramError;
 	}
 	StatusBarSetText(0, text);
@@ -302,7 +302,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	for(i=0; i < 200; i++) {
 		Sleep(25);
 		if(UpdateProgressWindow(NULL) == PROGRESS_STATUS_CANCEL) {
-			strcpy(text, "Operação cancelada!");
+			strcpy(text, _("Operação cancelada!"));
 			goto FlashProgramError;
 		}
 	}

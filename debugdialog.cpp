@@ -174,12 +174,12 @@ unsigned int LogPut(eTransferMode mode, unsigned int Id, unsigned int FunctionCo
 		case eTransferMode_USB   : iface = _("USB"     ); break;
 	}
 
-	strcpy (item.txt[COMMLIST_COLUMN_IFACE],           iface);
-	strcpy (item.txt[COMMLIST_COLUMN_REPLY],           ExceptionCode == MODBUS_EXCEPTION_NONE ? _("OK") : _("ERRO"));
-	sprintf(item.txt[COMMLIST_COLUMN_ID   ], "%d"    , Id);
-	strcpy (item.txt[COMMLIST_COLUMN_FC   ],           FunctionCode == MODBUS_FC_READ_HOLDING_REGISTERS ? _("Ler") : _("Escrever"));
-	sprintf(item.txt[COMMLIST_COLUMN_REG  ], "%d"    , Reg);
-	sprintf(item.txt[COMMLIST_COLUMN_VALUE], "0x%04X", Val);
+	strcpy (item.txt[COMMLIST_COLUMN_IFACE],                iface);
+	strcpy (item.txt[COMMLIST_COLUMN_REPLY],                ExceptionCode == MODBUS_EXCEPTION_NONE ? _("OK") : _("ERRO"));
+	sprintf(item.txt[COMMLIST_COLUMN_ID   ], "%d"         , Id);
+	strcpy (item.txt[COMMLIST_COLUMN_FC   ],                FunctionCode == MODBUS_FC_READ_HOLDING_REGISTERS ? _("Ler") : _("Escrever"));
+	sprintf(item.txt[COMMLIST_COLUMN_REG  ], "%d"         , Reg);
+	sprintf(item.txt[COMMLIST_COLUMN_VALUE], "%d (0x%04X)", Val, Val);
 
 	return RotateList_InsertItem(&RotateLog, &item);
 }
@@ -633,10 +633,10 @@ static void MakeControls(void)
 
     LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_IFACE, 100, _("Interface"));
     LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_REPLY, 100, _("Resposta"));
-    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_ID   , 100, _("ID"));
+    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_ID   ,  50, _("ID"));
     LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_FC   , 100, _("Função"));
     LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_REG  , 100, _("Registrador"));
-    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_VALUE, 100, _("Valor"));
+    LV_ADD_COLUMN(CommList, COMMLIST_COLUMN_VALUE, 150, _("Valor"));
 
 	ListView_SetBkColor     (CommList, RGB(0x00,0x00,0x00));
 	ListView_SetTextBkColor (CommList, RGB(0x00,0x00,0x00));

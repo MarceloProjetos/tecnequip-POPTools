@@ -402,7 +402,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Não foi possível alocar memória durante a gravação do programa !", "Couldn't to allocate memory while writing program");
 		addTextToLangTable(l, "Não foi possível conectar com baudrate %i !", "Couldn't to connect with baudrate %i !");
 		addTextToLangTable(l, "Não foi possível conectar para apagar a memória flash !", "Couldn't to connect for erase flash memory !");
-		addTextToLangTable(l, "Couldn't to connect for write flash memory", "Não foi possível conectar para gravar o programa !");
+		addTextToLangTable(l, "Não foi possível conectar para gravar o programa !", "Couldn't to connect for write flash memory");
 		addTextToLangTable(l, "Não suporta gravação do programa !", "Program write not supported !");
 		addTextToLangTable(l, "Não suporta verificação !", "Verification not supported !");
 		addTextToLangTable(l, "Novembro", "November");
@@ -911,6 +911,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Parar Registro de Dados", "Stop Data Log");
 		addTextToLangTable(l, "Breakpoint", "Breakpoint");
 		addTextToLangTable(l, "Simulacao interrompida na linha %d", "Simulation stopped at line %d");
+		addTextToLangTable(l, "Nao foi possivel conectar ao servidor!", "Unable to connect to server!");
+		addTextToLangTable(l, "Conexao encerrada", "Connection closed");
 	} else if(id == 2) { // Idioma Espanhol
 		l = newLangTableChar();
 
@@ -1245,7 +1247,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Não foi possível alocar memória durante a gravação do programa !", "Couldn't to allocate memory while writing program");
 		addTextToLangTable(l, "Não foi possível conectar com baudrate %i !", "Couldn't to connect with baudrate %i !");
 		addTextToLangTable(l, "Não foi possível conectar para apagar a memória flash !", "Couldn't to connect for erase flash memory !");
-		addTextToLangTable(l, "Couldn't to connect for write flash memory", "Não foi possível conectar para gravar o programa !");
+		addTextToLangTable(l, "Não foi possível conectar para gravar o programa !", "Couldn't to connect for write flash memory");
 		addTextToLangTable(l, "Não suporta gravação do programa !", "Program write not supported !");
 		addTextToLangTable(l, "Não suporta verificação !", "Verification not supported !");
 		addTextToLangTable(l, "Novembro", "November");
@@ -1754,6 +1756,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Parar Registro de Dados", "Stop Data Log");
 		addTextToLangTable(l, "Breakpoint", "Breakpoint");
 		addTextToLangTable(l, "Simulacao interrompida na linha %d", "Simulation stopped at line %d");
+		addTextToLangTable(l, "Nao foi possivel conectar ao servidor!", "Unable to connect to server!");
+		addTextToLangTable(l, "Conexao encerrada", "Connection closed");
 	} else {
 		l = nullptr;
 	}
