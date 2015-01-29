@@ -12,7 +12,7 @@ int ENC_Read(unsigned int device)
 	int mult = 1, div = 1;
 	int mode, perimeter, ppr;
 	float factor;
-	int val, offset;
+	int val;
 
 	switch(device) {
 		default:
@@ -21,7 +21,6 @@ int ENC_Read(unsigned int device)
 			perimeter = INC_Perimeter;
 			factor    = (float)(INC_Factor10k)/10000;
 			ppr       = INC_PPR;
-			offset    = INC_Offset;
 			val = QEI_GetPosition(QEI) + INC_Offset;
 			break;
 
@@ -57,21 +56,18 @@ void ENC_Reset(unsigned int device, int offset)
 {
 	int mult = 1, div = 1;
 	int mode, perimeter, ppr;
-	float factor;
 
 	switch(device) {
 		default:
 		case ENC_DEVICE_INC:
 			mode      = INC_Mode;
 			perimeter = INC_Perimeter;
-			factor    = (float)(INC_Factor10k)/10000;
 			ppr       = INC_PPR;
 			break;
 
 		case ENC_DEVICE_ABS:
 			mode      = ABS_Mode;
 			perimeter = ABS_Perimeter;
-			factor    = (float)(ABS_Factor10k)/10000;
 			ppr       = ABS_PPR;
 	}
 

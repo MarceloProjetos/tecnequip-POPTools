@@ -4,6 +4,8 @@
 
 extern volatile unsigned int GPIO_OUTPUT;
 extern volatile unsigned int GPIO_INPUT;
+extern unsigned int OUTPUT_FORCED_MASK;
+extern unsigned int OUTPUT_FORCED_STATE;
 
 extern volatile unsigned int I_TcpReady;
 extern volatile unsigned int I_SerialReady;
@@ -107,26 +109,13 @@ unsigned int Modbus_ReadInputRegisters(struct MODBUS_Device *dev, union MODBUS_F
 
 unsigned int Modbus_WriteSingleCoil(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
 {
-  if(data->write_single_coil.val)
-    GPIO_OUTPUT |= 1 << data->write_single_coil.output;
-  else
-	  GPIO_OUTPUT &= ~(1 << data->write_single_coil.output);
-
-  /*switch(data->write_single_coil.output)
-  {
-  case 1:
-    if(data->write_single_coil.val)
-      I_C1 |= 1 << data->write_single_coil.output;
-    else
-      I_C1 &= ~(1 << data->write_single_coil.output);
-  case 2:
-    if(data->write_single_coil.val)
-      I_C1 |= 1 << data->write_single_coil.output;
-    else
-      I_C1 &= ~(1 << data->write_single_coil.output);
-  default:
-    return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
-  }*/
+	unsigned int mask = (1UL << data->write_single_coil.output);
+	OUTPUT_FORCED_MASK &= ~mask;
+	if(data->write_single_coil.val) {
+		OUTPUT_FORCED_STATE |= mask;
+	} else {
+		OUTPUT_FORCED_STATE &= ~mask;
+	}
 
   reply->reply.write_single_coil = data->write_single_coil;
 
@@ -147,9 +136,28 @@ unsigned int Modbus_WriteSingleRegister(struct MODBUS_Device *dev, union MODBUS_
 
 unsigned int Modbus_WriteMultipleCoils(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
 {
-  reply->reply.write_multiple_coils  = data->write_multiple_coils;
+	unsigned int i, mask = 0;
 
-  return MODBUS_EXCEPTION_NONE;
+	if(data->write_multiple_coils.start + data->write_multiple_coils.quant > 16) {
+		return MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS;
+	}
+
+	for(i = 0; i < data->write_multiple_coils.quant; i++) {
+		mask <<= 1;
+		mask  |= 1;
+
+		if(data->write_multiple_coils.val[i/8] & (1UL << (i % 8))) {
+			OUTPUT_FORCED_STATE |=   1UL << (i + data->write_multiple_coils.start);
+		} else {
+			OUTPUT_FORCED_STATE &= ~(1UL << (i + data->write_multiple_coils.start));
+		}
+	}
+
+	OUTPUT_FORCED_MASK &= ~(mask << data->write_multiple_coils.start);
+
+	reply->reply.write_multiple_coils  = data->write_multiple_coils;
+
+	return MODBUS_EXCEPTION_NONE;
 }
 
 unsigned int Modbus_WriteMultipleRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)
@@ -265,7 +273,6 @@ void Modbus_Send(unsigned char id,
 
   union MODBUS_FCD_Data data;
   struct MODBUS_Device *dev;
-  struct MODBUS_Reply rp;
 
   if(ip) {
 	  dev = &modbus_tcp;
@@ -337,12 +344,10 @@ void Modbus_Send(unsigned char id,
     data.read_device_identification.object_id = 0x00;
     break;
   default:
-    rp.FunctionCode = fc;
-    rp.ExceptionCode = MODBUS_EXCEPTION_ILLEGAL_FUNCTION;
 	return;
   }
 
-  rp = Modbus_RTU_Send(dev, 0, fc, &data);
+  Modbus_RTU_Send(dev, 0, fc, &data);
 
 }
 

@@ -8,6 +8,9 @@
 volatile unsigned int GPIO_OUTPUT = 0;
 volatile unsigned int GPIO_INPUT = 0;
 
+unsigned int OUTPUT_FORCED_MASK  = ~0UL; // Saidas forcadas ficam em zero na mascara
+unsigned int OUTPUT_FORCED_STATE =  0UL;
+
 volatile char GPIO_INPUT_PORT1 __attribute__((weak)) = 0;
 volatile char GPIO_INPUT_PORT2 __attribute__((weak)) = 0;
 volatile char GPIO_INPUT_PORT3 __attribute__((weak)) = 0;
@@ -112,24 +115,10 @@ unsigned int GPIO_Output(void)
   i |= ((unsigned int)GPIO_OUTPUT_PORT15) << 14;
   i |= ((unsigned int)GPIO_OUTPUT_PORT16) << 15;
 
-  GPIO_OUTPUT = i;
+  // Aqui ligamos ou desligamos as saidas forcadas pelo ModBUS
+  i = (i & OUTPUT_FORCED_MASK) | OUTPUT_FORCED_STATE;
 
-  /*i |= OUTPUT & 0x1;
-  i |= OUTPUT & (1 << 1);
-  i |= OUTPUT & (1 << 2);
-  i |= OUTPUT & (1 << 3);
-  i |= OUTPUT & (1 << 4);
-  i |= OUTPUT & (1 << 5);
-  i |= OUTPUT & (1 << 6);
-  i |= OUTPUT & (1 << 7);
-  i |= OUTPUT & (1 << 8);
-  i |= OUTPUT & (1 << 9);
-  i |= OUTPUT & (1 << 10);
-  i |= OUTPUT & (1 << 11);
-  i |= OUTPUT & (1 << 12);
-  i |= OUTPUT & (1 << 13);
-  i |= OUTPUT & (1 << 14);
-  i |= OUTPUT & (1 << 15);*/
+  GPIO_OUTPUT = i;
 
   i = HTONS(i);
 
