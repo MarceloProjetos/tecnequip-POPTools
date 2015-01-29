@@ -56,11 +56,12 @@ void ExportDrawingAsText(char *file)
 	McuIoInfo *mcu = ladder->getMCU();
 	LadderSettingsGeneral settings = ladder->getSettingsGeneral();
 
-	LadderSettingsInformation info = ladder->getSettingsInformation();
-	fprintf(f, _("Name........: %s\n"), info.Name.c_str());
-	fprintf(f, _("Description.: %s\n"), info.Description.c_str());
-	fprintf(f, _("Developer...: %s\n"), info.Developer.c_str());
-	fprintf(f, _("Build Number: %ld\n\n"), info.BuildNumber);
+	LadderSettingsInformation info    = ladder->getSettingsInformation();
+	LadderSettingsDetails     details = ladder->getSettingsDetails    ();
+	fprintf(f, _("Nome...........: %s\n"), info.Name.c_str());
+	fprintf(f, _("Descricao......: %s\n"), info.Description.c_str());
+	fprintf(f, _("Desenvolvedor..: %s\n"), info.Developer.c_str());
+	fprintf(f, _("Num. Compilacao: %ld\n\n"), details.BuildNumber);
 
     fprintf(f, _("\nDiagrama Ladder:\n\n"));
 

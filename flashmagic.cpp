@@ -75,7 +75,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	char text[100];
 	fm_results *presults;
 	fm_connectoptions_com options;
-	LadderSettingsInformation settings = ladder->getSettingsInformation();
+	LadderSettingsDetails settings = ladder->getSettingsDetails();
 
 	// use standard timeouts
 	fm_set_default_timeouts();
@@ -336,7 +336,7 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	ps.szMsg = _("Gravação concluída com sucesso");
 
 	settings.ProgramDate = time(NULL);
-	ladder->setSettingsInformation(settings);
+	ladder->setSettingsDetails(settings);
 
 	UpdateProgressWindow(&ps);
 	StatusBarSetText(0, ps.szMsg);

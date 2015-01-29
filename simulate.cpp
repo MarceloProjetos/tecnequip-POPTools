@@ -531,10 +531,16 @@ static void ExportLogAsCSV(void)
 	if(!strlen(exportFile))
 		return;
 
-    FILE *f = fopen(exportFile, "w");
-    if(!f) {
-        Error(_("Não pode abrir o arquivo '%s'\n"), f);
-        return;
+    FILE *f = NULL;
+    while(!f) {
+		f = fopen(exportFile, "w");
+		if(!f) {
+			if(ladder->ShowDialog(eDialogType_Question, false, _("ERRO"), _("Não pode abrir o arquivo '%s'\nTentar Novamente?"), exportFile) == eReply_No) {
+			    return;
+			}
+		} else {
+			break;
+		}
     }
 
 	vector< vector<int> >::iterator itData;
@@ -575,7 +581,7 @@ static void ExportLogAsCSV(void)
 
 	fclose(f);
 
-	ladder->ShowDialog(eDialogType_Message, false, _("Sucesso"), _("Arquivo exportado com sucesso!!!"));
+	ladder->ShowDialog(eDialogType_Message, false, _("Sucesso"), _("Arquivo gerado com sucesso!"));
 }
 
 //-----------------------------------------------------------------------------

@@ -1590,9 +1590,11 @@ cant_use_this_io:;
 		}
 
 		tMapIO::iterator it = IO.end();
-		for(it = IO.begin(); it != IO.end(); it++) {
-			if(it->second.second.pin == pin_number && it->second.second.bit == atoi(buf)) {
-				break;
+		if(pin_number != 0) {
+			for(it = IO.begin(); it != IO.end(); it++) {
+				if(it->second.second.pin == pin_number && it->second.second.bit == atoi(buf)) {
+					break;
+				}
 			}
 		}
 

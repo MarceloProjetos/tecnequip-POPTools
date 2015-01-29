@@ -88,11 +88,16 @@ typedef struct {
 	string Name       ; ///< Nome do projeto
 	string Developer  ; ///< Nome do desenvolvedor
 	string Description; ///< Descricao do projeto
+} LadderSettingsInformation;
+
+/// Detalhes do diagrama. Alterados apenas internamente, somente-leitura para o usuario
+typedef struct {
+	// Project Information
 	string FWVersion  ; ///< Versao atual do firmware no POPTools
 	long   BuildNumber; ///< Numero da compilacao do projeto
 	time_t CompileDate; ///< Data/Hora da ultima compilacao
 	time_t ProgramDate; ///< Dat/Hora da ultima gravacao do diagrama em um CLP
-} LadderSettingsInformation;
+} LadderSettingsDetails;
 
 typedef void (*tFncDrawChars)(int, int, const char *);
 
@@ -3125,6 +3130,7 @@ private:
 		LadderSettingsDAC                Dac;
 		LadderSettingsModbusSlave        MbSlave;
 		LadderSettingsInformation        Info;
+		LadderSettingsDetails            Details;
 	} tLadderSettings;
 
 	/// Variavel que representa as configuracoes do diagrama
@@ -3511,10 +3517,14 @@ public:
 	 *  @return Estrutura com as configuracoes de ModBUS escravo do diagrama
 	 */
 	LadderSettingsModbusSlave        getSettingsModbusSlave       (void) { return LadderSettings.MbSlave; }
-	/** Funcao que retorna as informacoes do diagrama (nome do diagrama e autor, ultima compilacao, gravacao, etc.
+	/** Funcao que retorna as informacoes do diagrama (nome do diagrama e autor, etc.
 	 *  @return Estrutura com as informacoes do diagrama
 	 */
 	LadderSettingsInformation        getSettingsInformation       (void) { return LadderSettings.Info   ; }
+	/** Funcao que retorna os detalhes do diagrama (versao de firmware, ultima compilacao, gravacao, etc.
+	 *  @return Estrutura com os detalhes do diagrama
+	 */
+	LadderSettingsDetails            getSettingsDetails           (void) { return LadderSettings.Details; }
 
 	/** Funcao que atualiza as configuracoes gerais do diagrama
 	 *  @param[in] setGeneral Estrutura com as novas configuracoes gerais do diagrama
@@ -3552,10 +3562,15 @@ public:
 	 *  @param[in] setMbSlave Estrutura com as novas configuracoes de ModBUS escravo do diagrama
 	 */
 	void                             setSettingsModbusSlave       (LadderSettingsModbusSlave        setMbSlave);
-	/** Funcao que atualiza as informacoes do diagrama (nome do diagrama e autor, ultima compilacao, gravacao, etc.
+	/** Funcao que atualiza as informacoes do diagrama (nome do diagrama e autor, etc.
 	 *  @param[in] setInfo Estrutura com as novas informacoes do diagrama
 	 */
 	void                             setSettingsInformation       (LadderSettingsInformation        setInfo   );
+
+	/** Funcao que atualiza os detalhes do diagrama (versao de firtmware, ultima compilacao, gravacao, etc.
+	 *  @param[in] setDetails Estrutura com os novos detalhes do diagrama
+	 */
+	void                             setSettingsDetails           (LadderSettingsDetails            setDetails);
 
 	/** Funcao que configura o modo de simulacao
 	 *  @param[in] state Flag indicando se o modo de simulacao esta ativado (true) ou desativado (false)

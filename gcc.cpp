@@ -585,7 +585,7 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				HasADC = 1;
 				unsigned int ad_channel = ladder->getDetailsIO(vectorIntCode[i].name1).pin;
 
-				ad_mask |= 1 << ad_channel;
+				ad_mask |= 1 << (ad_channel - 1); // Canal do A/D comeca em zero, devemos descontar 1
 				sprintf(buf2, "ADC_Read(%d)", ad_channel);
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name1), buf2, GENVARCODE_MODE_WRITE));
 				break;
@@ -1367,10 +1367,10 @@ DWORD CompileAnsiCToGCC(BOOL ShowSuccessMessage)
 	DWORD err = 0;
 
 	if (!(err = InvokeGCC(CurrentCompileFile))) {
-		LadderSettingsInformation settings = ladder->getSettingsInformation();
+		LadderSettingsDetails settings = ladder->getSettingsDetails();
 		settings.BuildNumber++;
 		settings.CompileDate = time(NULL);
-		ladder->setSettingsInformation(settings);
+		ladder->setSettingsDetails(settings);
 	}
 
 	return err;

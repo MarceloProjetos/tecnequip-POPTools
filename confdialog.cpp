@@ -1031,17 +1031,18 @@ bool ShowConfDialog(eConfSection confSection)
 	LadderSettingsDAC                settingsDac     = ladder->getSettingsDAC               ();
 	LadderSettingsModbusSlave        settingsMbSlave = ladder->getSettingsModbusSlave       ();
 	LadderSettingsInformation        settingsInfo    = ladder->getSettingsInformation       ();
+	LadderSettingsDetails            settingDetails  = ladder->getSettingsDetails           ();
 
-	SendMessage(InfoProjectTextbox    , WM_SETTEXT, 0, (LPARAM)settingsInfo.Name       .c_str());
-	SendMessage(InfoDeveloperTextbox  , WM_SETTEXT, 0, (LPARAM)settingsInfo.Developer  .c_str());
-	SendMessage(InfoDescriptionTextbox, WM_SETTEXT, 0, (LPARAM)settingsInfo.Description.c_str());
-	SendMessage(InfoFWVersionLabel    , WM_SETTEXT, 0, (LPARAM)settingsInfo.FWVersion  .c_str());
+	SendMessage(InfoProjectTextbox    , WM_SETTEXT, 0, (LPARAM)settingsInfo  .Name       .c_str());
+	SendMessage(InfoDeveloperTextbox  , WM_SETTEXT, 0, (LPARAM)settingsInfo  .Developer  .c_str());
+	SendMessage(InfoDescriptionTextbox, WM_SETTEXT, 0, (LPARAM)settingsInfo  .Description.c_str());
+	SendMessage(InfoFWVersionLabel    , WM_SETTEXT, 0, (LPARAM)settingDetails.FWVersion  .c_str());
 
-	sprintf(buf, "%d", settingsInfo.BuildNumber);
+	sprintf(buf, "%d", settingDetails.BuildNumber);
 	SendMessage(InfoBuildNumberLabel, WM_SETTEXT, 0, (LPARAM)buf);
 
-	if(settingsInfo.CompileDate) {
-		rawtime = settingsInfo.CompileDate;
+	if(settingDetails.CompileDate) {
+		rawtime = settingDetails.CompileDate;
 		timeinfo = localtime(&rawtime);
 		strftime(buf, sizeof(buf), "%H:%M:%S %d/%m/%Y", timeinfo);
 	} else {
@@ -1049,8 +1050,8 @@ bool ShowConfDialog(eConfSection confSection)
 	}
 	SendMessage(InfoCompileDateLabel, WM_SETTEXT, 0, (LPARAM)buf);
 
-	if(settingsInfo.ProgramDate) {
-		rawtime = settingsInfo.ProgramDate;
+	if(settingDetails.ProgramDate) {
+		rawtime = settingDetails.ProgramDate;
 		timeinfo = localtime(&rawtime);
 		strftime(buf, sizeof(buf), "%H:%M:%S %d/%m/%Y", timeinfo);
 	} else {

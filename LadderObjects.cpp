@@ -1356,7 +1356,7 @@ pair<string, string> LadderElemCounter::DrawTXT(void)
 	char op, buf[256];
 
 	if(which == ELEM_CTC) {
-		sprintf(buf, _("{\x01""CTC\x02 0:%d}"), Diagram->getNameIO(prop.idMax));
+		sprintf(buf, _("{\x01""CTC\x02 0:%s}"), Diagram->getNameIO(prop.idMax).c_str());
 	} else {
 		if(which == ELEM_CTU) {
 			s = _("CTU");
@@ -1366,7 +1366,7 @@ pair<string, string> LadderElemCounter::DrawTXT(void)
 			op = '<';
 		} else oops();
 
-		sprintf(buf, "[\x01%s\x02 %c=%d]", s, op, Diagram->getNameIO(prop.idMax));
+		sprintf(buf, "[\x01%s\x02 %c=%s]", s, op, Diagram->getNameIO(prop.idMax).c_str());
 	}
 
 	return pair<string, string>(Diagram->getNameIO(prop.idName.first), buf);
@@ -1927,7 +1927,7 @@ pair<string, string> LadderElemCmp::DrawTXT(void)
 		default: oops();
 	}
 
-	char s1[POS_WIDTH+10], s2[POS_WIDTH+10];
+	char s1[POS_WIDTH+20], s2[POS_WIDTH+20];
 	int l1, l2, lmax;
 
 	l1 = 2 + 1 + strlen(s) + sop1.size();
@@ -4110,7 +4110,7 @@ pair<string, string> LadderElemReadAdc::DrawTXT(void)
 {
 	char txt[50];
 
-	sprintf(txt, _("{READ ADC %s }"), GetNameADC());
+	sprintf(txt, _("{READ ADC %s }"), GetNameADC().c_str());
 
 	return pair<string, string>(Diagram->getNameIO(prop.idName), txt);
 }
@@ -5074,17 +5074,8 @@ bool LadderElemMultisetDA::internalGenerateIntCode(IntCode &ic)
 	_itoa(prop.gainr, cgainr, 10);
 	_itoa(prop.type , ctype , 10);
 
+	// Apenas carrega o valor, nao precisa converter pois o firmware ja faz isso
 	strcpy(str_initval, desl);
-	if(IsNumber(str_initval)) {
-		int initval = atoi(str_initval);
-
-		if (prop.type == 1)  // (mV)
-			initval = static_cast<int>(DA_RESOLUTION * (initval / DA_VOLTAGE));
-		else if (prop.type == 2) // (%)
-			initval = static_cast<int>(DA_RESOLUTION * (initval / 100.0f));
-
-		_itoa(initval, str_initval, 10);
-	}
 
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
@@ -9687,10 +9678,11 @@ void LadderDiagram::Init(void)
 	LadderSettings.Info.Name           = "POPTools"; // Nome do Programa
 	LadderSettings.Info.Developer      = ""; // Nome do Desenvolvedor
 	LadderSettings.Info.Description    = ""; // Descricao do programa
-	LadderSettings.Info.FWVersion      = "1.5"; // Versao do Firmware atual do POPTools
-	LadderSettings.Info.BuildNumber    =  0; // Numero de compilacao atual
-	LadderSettings.Info.CompileDate    =  0; // Data da ultima compilacao. Zero: nunca
-	LadderSettings.Info.ProgramDate    =  0; // Data da ultima gravacao. Zero: nunca
+
+	LadderSettings.Details.FWVersion      = "1.5"; // Versao do Firmware atual do POPTools
+	LadderSettings.Details.BuildNumber    =  0; // Numero de compilacao atual
+	LadderSettings.Details.CompileDate    =  0; // Data da ultima compilacao. Zero: nunca
+	LadderSettings.Details.ProgramDate    =  0; // Data da ultima gravacao. Zero: nunca
 
 	updateContext();
 }
@@ -11049,10 +11041,11 @@ bool LadderDiagram::Save(string filename, bool isBackup)
 		fwrite_string(f, LadderSettings.Info.Name          ) &&
 		fwrite_string(f, LadderSettings.Info.Developer     ) &&
 		fwrite_string(f, LadderSettings.Info.Description   ) &&
-		fwrite_string(f, LadderSettings.Info.FWVersion     ) &&
-		fwrite_long  (f, LadderSettings.Info.BuildNumber   ) &&
-		fwrite_time_t(f, LadderSettings.Info.CompileDate   ) &&
-		fwrite_time_t(f, LadderSettings.Info.ProgramDate   )
+
+		fwrite_string(f, LadderSettings.Details.FWVersion  ) &&
+		fwrite_long  (f, LadderSettings.Details.BuildNumber) &&
+		fwrite_time_t(f, LadderSettings.Details.CompileDate) &&
+		fwrite_time_t(f, LadderSettings.Details.ProgramDate)
 		) {
 			// Configuracoes OK, agora devemos gravar o mapa de I/O
 			ret = IO->Save(f);
@@ -11273,10 +11266,11 @@ bool LadderDiagram::Load(string filename)
 					fread_string(f, &LadderSettings.Info.Name          ) &&
 					fread_string(f, &LadderSettings.Info.Developer     ) &&
 					fread_string(f, &LadderSettings.Info.Description   ) &&
-					fread_string(f, &LadderSettings.Info.FWVersion     ) &&
-					fread_long  (f, &LadderSettings.Info.BuildNumber   ) &&
-					fread_time_t(f, &LadderSettings.Info.CompileDate   ) &&
-					fread_time_t(f, &LadderSettings.Info.ProgramDate   )
+
+					fread_string(f, &LadderSettings.Details.FWVersion  ) &&
+					fread_long  (f, &LadderSettings.Details.BuildNumber) &&
+					fread_time_t(f, &LadderSettings.Details.CompileDate) &&
+					fread_time_t(f, &LadderSettings.Details.ProgramDate)
 					) {
 						// Configuracoes OK, agora devemos ler o mapa de I/O
 						bool ret = IO->Load(f, fileVersion);
@@ -11521,6 +11515,12 @@ void LadderDiagram::setSettingsInformation(LadderSettingsInformation setInfo)
 {
 	RegisterSettingsChanged();
 	LadderSettings.Info = setInfo;
+}
+
+void LadderDiagram::setSettingsDetails(LadderSettingsDetails setDetails)
+{
+	// Aqui nao registramos as alteracoes pois elas nao devem ser desfeitas
+	LadderSettings.Details = setDetails;
 }
 
 // Funcao para configurar o modo de simulacao

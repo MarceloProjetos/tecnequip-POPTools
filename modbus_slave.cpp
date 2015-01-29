@@ -9,7 +9,7 @@ SOCKET AcceptSocket = INVALID_SOCKET;
 
 MODBUS_HANDLER_FC(MBSlave_ReadCoils)
 {
-	unsigned int i, temp = ((hwreg.DigitalOutput >> 8) & 0xFF) | ((hwreg.DigitalOutput << 8) & 0xFF00);
+	unsigned int i;
   unsigned char *buf = reply->reply.read_coils.data; // Retorna no maximo 8 bytes ou 256 bits (saidas).
 
   reply->reply.read_coils.size = data->read_coils.quant / 8 + (data->read_coils.quant % 8 != 0);
@@ -17,7 +17,7 @@ MODBUS_HANDLER_FC(MBSlave_ReadCoils)
   memset(buf, 0, reply->reply.read_coils.size);
 
   for(i = 0; i < data->read_coils.quant; i++)
-    buf[i / 8] |= ((temp >> (data->read_coils.start + i)) & 1) << (i % 8);
+    buf[i / 8] |= ((hwreg.DigitalOutput >> (data->read_coils.start + i)) & 1) << (i % 8);
 
   return MODBUS_EXCEPTION_NONE;
 
