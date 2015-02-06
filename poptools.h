@@ -187,7 +187,8 @@ typedef SDWORD SWORD;
 #define RAMP_ABORT_STOP    2
 #define RAMP_ABORT_DESACEL 3
 
-#define EEPROM_SIZE 0x7E
+// Tamanho da EEPROM  para LPC4078: 0xFC0 / LPC1768: 0x80
+#define EEPROM_SIZE 0x80
 
 // Identifier for the message sent to MainWindow when SimSocket receives something
 #define WM_SOCKET 104

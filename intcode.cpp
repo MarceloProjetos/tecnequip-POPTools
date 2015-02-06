@@ -21,10 +21,15 @@ void IntCode::ClearParallelCount(void)
 
 int IntCode::getEepromAddr(void)
 {
-	if(EepromAddrFree > EEPROM_SIZE) return -1;
+	const int addrInc = 4;
+	EepromAddrFree += addrInc;
 
-	EepromAddrFree += 2;
-	return EepromAddrFree - 2;
+	if(EepromAddrFree > EEPROM_SIZE) {
+		EepromAddrFree -= addrInc;
+		return -1;
+	}
+
+	return EepromAddrFree - addrInc;
 }
 
 void IntCode::Clear(void)

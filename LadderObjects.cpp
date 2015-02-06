@@ -7501,6 +7501,7 @@ pair<string, string> LadderElemPersist::DrawTXT(void)
 
 bool LadderElemPersist::internalGenerateIntCode(IntCode &ic)
 {
+	const char *savedE2P = "$S_SavedE2P";
 	string svar = Diagram->getNameIO(prop.idVar);
 	const char *var  = svar.c_str();
 
@@ -7515,22 +7516,24 @@ bool LadderElemPersist::internalGenerateIntCode(IntCode &ic)
 	// At startup, get the persistent variable from flash.
 	string isInit = ic.GenSymOneShot();
 
+	ic.Op(INT_CREATE_STATIC_VARIABLE, savedE2P);
+
 	ic.Op(INT_IF_BIT_CLEAR, isInit.c_str());
 		ic.Op(INT_CLEAR_BIT, "$scratch");
 		ic.Op(INT_EEPROM_BUSY_CHECK, "$scratch");
 		ic.Op(INT_IF_BIT_CLEAR, "$scratch");
 			ic.Op(INT_EEPROM_READ, var, isInit.c_str(), EepromAddrFree);
+			ic.Op(INT_SET_VARIABLE_TO_VARIABLE, savedE2P, var, 0);
 		ic.Op(INT_END_IF);
 	ic.Op(INT_ELSE);
 		// While running, continuously compare the EEPROM copy of
 		// the variable against the RAM one; if they are different,
 		// write the RAM one to EEPROM. 
-		ic.Op(INT_CLEAR_BIT, "$scratch");
-		ic.Op(INT_EEPROM_BUSY_CHECK, "$scratch");
-		ic.Op(INT_IF_BIT_CLEAR, "$scratch");
-			ic.Op(INT_EEPROM_READ, "$scratch2", "$scratch", EepromAddrFree);
-			ic.Op(INT_IF_VARIABLE_EQUALS_VARIABLE, "$scratch2", var);
-			ic.Op(INT_ELSE);
+		ic.Op(INT_IF_VARIABLE_EQUALS_VARIABLE, savedE2P, var);
+		ic.Op(INT_ELSE);
+			ic.Op(INT_CLEAR_BIT, "$scratch");
+			ic.Op(INT_EEPROM_BUSY_CHECK, "$scratch");
+			ic.Op(INT_IF_BIT_CLEAR, "$scratch");
 				ic.Op(INT_EEPROM_WRITE, var, EepromAddrFree);
 			ic.Op(INT_END_IF);
 		ic.Op(INT_END_IF);

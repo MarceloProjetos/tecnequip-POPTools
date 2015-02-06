@@ -575,11 +575,11 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name1), "E2P_Busy()", GENVARCODE_MODE_WRITE));
 				break;
             case INT_EEPROM_READ:
-				sprintf(buf2, "E2P_Read((void *)&%s, %d, 2)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ), vectorIntCode[i].literal*2);
+				sprintf(buf2, "E2P_Read((void *)&%s, %d, 4)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ), vectorIntCode[i].literal);
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
 				break;
             case INT_EEPROM_WRITE:
-				fprintf(f, "E2P_Write((void *)&%s, %d, 2);\n", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ), vectorIntCode[i].literal);
+				fprintf(f, "E2P_Write((void *)&%s, %d, 4);\n", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ), vectorIntCode[i].literal);
 				break;
             case INT_READ_ADC: {
 				HasADC = 1;
