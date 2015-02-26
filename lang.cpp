@@ -1936,6 +1936,7 @@ PCWSTR getRibbonLocalizedLabel(UINT nCmdID)
 		SET_LANGUAGE_STRINGS(cmdInstrWriteModBUS         , L"Escrever Registrador ModBUS"      , L"Write ModBUS Register"         , L"Escribir Registrador ModBUS"        );
 
 		SET_LANGUAGE_STRINGS(cmdConfig                   , L"Projeto"                          , L"Project"                       , L"Proyecto"                           );
+		SET_LANGUAGE_STRINGS(cmdExpansion                , L"Expansão"                         , L"Expansion"                     , L"Expansión"                          );
 		SET_LANGUAGE_STRINGS(cmdSettings                 , L"Preferências"                     , L"Settings"                      , L"Preferencias"                       );
 
 		SET_LANGUAGE_STRINGS(cmdSimulation               , L"Modo de Simulação"                , L"Simulation mode"               , L"Modo de Simulacion"                 );
@@ -2561,6 +2562,10 @@ PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID)
 				L"Abrir a janela de configurações do projeto atual.",
 				L"Open configuration window of current project",
 				L"Abrir ventana de configuraciones del proyecto actual");
+			SET_LANGUAGE_STRINGS(cmdExpansion                   ,
+				L"Abrir a janela para configurar dispositivos adicionais conectados ao CLP pela Porta de Expansão.",
+				L"Open configuration window of additional devices conected to PLC through Expansion Port.",
+				L"Open configuration window of additional devices conected to PLC through Expansion Port");
 			SET_LANGUAGE_STRINGS(cmdSettings                 ,
 				L"Abrir a janela para configuração do programa POPTools como porta serial para gravação, desativar avisos, etc.",
 				L"Open configuration window from POPTools program like serial port for write, disable warnings, etc.",
