@@ -570,6 +570,20 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name         = "Expansion"
+               Symbol     = "cmdExpansion"
+               Id         = "30402"
+               LabelTitle = "Expansão">
+      <Command.TooltipTitle      >Expansão</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir a janela para configurar dispositivos adicionais conectados ao CLP pela Porta de Expansão.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/ExpansionHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/ConfigHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
     <Command Name         = "Settings"
                Symbol     = "cmdSettings"
                Id         = "30401"
@@ -2426,8 +2440,9 @@
             <Button CommandName="MoveLineUp"/>
             <Button CommandName="MoveLineDown"/>
           </Group>
-          <Group CommandName="GroupConfig" SizeDefinition="TwoButtons">
+          <Group CommandName="GroupConfig" SizeDefinition="ThreeButtons">
             <Button CommandName="Config"/>
+            <Button CommandName="Expansion"/>
             <Button CommandName="Settings"/>
           </Group>
           <Group CommandName="GroupActions" SizeDefinition="FourButtons">
