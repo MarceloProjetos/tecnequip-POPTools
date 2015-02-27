@@ -8710,7 +8710,7 @@ eReply LadderDiagram::ShowDialog(eDialogType type, bool hasCancel, const char *t
 
 	vsprintf(buf, message, f);
 	eReply reply;
-	if(context.isLoadingFile) {
+	if(context.isLoadingFile || IsDialogShown()) {
 		if(hasCancel) {
 			reply = eReply_Cancel;
 		} else if(type == eDialogType_Question) {
@@ -8720,7 +8720,9 @@ eReply LadderDiagram::ShowDialog(eDialogType type, bool hasCancel, const char *t
 		}
 	} else {
 		SetLock(true);
+		SetDialogShown(true);
 		reply = gui.ShowDialog(type, hasCancel, title, buf);
+		SetDialogShown(false);
 		SetLock(false);
 	}
 

@@ -9617,6 +9617,7 @@ bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 void LadderDiagram::Init(void)
 {
 	isLocked                       = false;
+	isDialogShown                  = false;
 
 	context.Diagram                = this;
 	context.ParallelStart          = nullptr;
@@ -10124,6 +10125,11 @@ void LadderDiagram::SetLock(bool state)
 {
 	isLocked = state;
 	updateContext();
+}
+
+void LadderDiagram::SetDialogShown(bool state)
+{
+	isDialogShown = state;
 }
 
 int LadderDiagram::getWidthTXT(void)

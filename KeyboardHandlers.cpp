@@ -159,7 +159,7 @@ int KBH_Simulation_Right(void *user_data)
 // Default for Portuguese: ESC
 int KBH_Simulation_Exit(void *user_data)
 {
-	if(!ladder->getContext().inSimulationMode) return 0;
+	if(!ladder->getContext().inSimulationMode || ladder->IsDialogShown()) return 0;
 
 	if(!POPSettings.ShowSimulationWarnings || ShowTaskDialog(_("Tem certeza que deseja sair da simulação?"), _("O processo será interrompido"), TD_WARNING_ICON, TDCBF_YES_BUTTON | TDCBF_NO_BUTTON, _("Sempre mostrar avisos da simulação"), &POPSettings.ShowSimulationWarnings) == IDYES) {
 		ProcessMenu(MNU_SIMULATION_MODE);

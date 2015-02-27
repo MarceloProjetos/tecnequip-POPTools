@@ -3209,6 +3209,9 @@ private:
 	/// Flag que informa se o diagrama esta travado (true) ou nao (false), ou seja, se nao aceita alteracoes ou se aceita, respectivamente.
 	bool          isLocked;
 
+	/// Flag que indica que existe uma caixa de dialogo sendo exibida. Impede a exibicao de uma segunda caixa de dialogo.
+	bool isDialogShown;
+
 	/// Ponteiro para o mapa de I/Os, objeto que representa todos os I/Os utilizados no diagrama
 	mapIO *IO;
 
@@ -3290,6 +3293,15 @@ public:
 	 *  @return Flag indicando se o diagrama esta travado (true) ou nao (false).
 	 */
 	bool IsLocked              (void) { return isLocked; }
+
+	/** Funcao que configura a flag que indica se uma caixa de dialogo esta sendo exibida.
+	 *  @param[in] state Flag que configura o estado para exibindo (true) ou nao (false).
+	 */
+	void SetDialogShown        (bool state);
+	/** Funcao que retorna se uma caixa de dialogo esta sendo exibida.
+	 *  @return Flag indicando se uma caixa de dialogo esta sendo exibida (true) ou nao (false).
+	 */
+	bool IsDialogShown         (void) { return isDialogShown; }
 
 	/// Funcao que libera todas as variaveis do diagrama, desalocando toda a memoria previamente alocada
 	void FreeDiagram (void);

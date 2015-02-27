@@ -1850,6 +1850,8 @@ void IoMapListProc(NMHDR *h)
             break;
         }
         case LVN_ITEMACTIVATE: {
+			if(ladder->IsDialogShown()) break;
+
 			NMITEMACTIVATE *i = (NMITEMACTIVATE *)h;
 			if(ladder->getContext().inSimulationMode && i->iSubItem != LV_IO_NAME) {
 				char name[1024];
