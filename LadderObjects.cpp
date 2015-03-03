@@ -114,6 +114,148 @@ void UnallocElem(LadderElem *elem)
 	}
 }
 
+// Classe LadderExpansion
+LadderExpansion::LadderExpansion(void)
+{
+	currentId = 0;
+}
+
+void LadderExpansion::Clear(void)
+{
+	vecExpansionBoardList.clear();
+}
+
+bool LadderExpansion::Add(string name, eExpansionBoard type)
+{
+	vector<sExpansionBoardItem>::iterator it;
+	for(it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); it++) {
+		if(it->name == name) {
+			return false; // Placa ja existe!
+		}
+	}
+
+	sExpansionBoardItem item;
+	item.id   = currentId++;
+	item.name = name;
+	item.type = type;
+
+	vecExpansionBoardList.push_back(item);
+
+	return true; // Placa adicionada com sucesso!
+}
+
+bool LadderExpansion::Remove(string name)
+{
+	vector<sExpansionBoardItem>::iterator it;
+	for(it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); it++) {
+		if(it->name == name) {
+			vecExpansionBoardList.erase(it);
+			return false; // Placa removida!
+		}
+	}
+
+	return false; // Placa nao encontrada!
+}
+
+sExpansionBoardItem LadderExpansion::getById(unsigned int id)
+{
+	sExpansionBoardItem item = { 0, "", eExpansionBoard_None };
+
+	vector<sExpansionBoardItem>::iterator it;
+	for(it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); it++) {
+		if(it->id == id) {
+			item = *it;
+			break;
+		}
+	}
+
+	return item; // Se placa nao encontrada, retorna valores iniciais
+}
+
+unsigned int LadderExpansion::getQuantityIO(eExpansionBoard typeBoard, eType typeIO)
+{
+	switch(typeBoard) {
+	case eExpansionBoard_DigitalInput:
+		if(typeIO == eType_DigInput) return 16; // Possui 16 entradas digitais
+	case eExpansionBoard_DigitalOutput:
+		if(typeIO == eType_DigOutput) return 8; // Possui 8 saidas digitais
+	case eExpansionBoard_AnalogInput:
+		if(typeIO == eType_ReadADC) return 2; // Possui 2 entradas analogicas
+	}
+
+	return 0; // Se chegou aqui, a placa nao possui este tipo de I/O.
+}
+
+bool LadderExpansion::Save(FILE *f)
+{
+	// Primeiro grava a quantidade de placas na lista e o id atual
+	if(fwrite_uint(f, vecExpansionBoardList.size()) && fwrite_ulong(f, currentId)) {
+		vector<sExpansionBoardItem>::iterator it;
+
+		for(it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); it++) {
+			if(
+				!fwrite_ulong (f, it->id) ||
+				!fwrite_string(f, it->name) || 
+				!fwrite_uint  (f, it->type)) {
+					break; // Erro na gravacao!
+			}
+		}
+
+		if(it == vecExpansionBoardList.end()) {
+			return true; // alcancou final, significa que gravou com sucesso!
+		}
+	}
+
+	return false;
+}
+
+bool LadderExpansion::Load(FILE *f, unsigned int version)
+{
+	unsigned int size;
+	const unsigned int FirstLoadVersion = 2;
+
+	Clear();
+
+	// Se for versao antiga, simplesmente retorna
+	if(version < FirstLoadVersion) {
+		return true;
+	}
+
+	// Primeiro carrega a quantidade de placas na lista e o id atual
+	if(fread_uint(f, &size) && fread_ulong(f, &currentId)) {
+		unsigned int  i, iType;
+		sExpansionBoardItem item;
+
+		for(i = 0; i < size; i++) {
+			if(
+				!fread_ulong (f, &item.id) ||
+				!fread_string(f, &(item.name)) || 
+				!fread_uint  (f, &(iType))) {
+					break; // Erro na leitura!
+			} else {
+				switch(iType) {
+					default:
+					case eExpansionBoard_None         : item.type = eExpansionBoard_None         ; break;
+					case eExpansionBoard_DigitalInput : item.type = eExpansionBoard_DigitalInput ; break;
+					case eExpansionBoard_DigitalOutput: item.type = eExpansionBoard_DigitalOutput; break;
+					case eExpansionBoard_AnalogInput  : item.type = eExpansionBoard_AnalogInput  ; break;
+				}
+
+				vecExpansionBoardList.push_back(item);
+			}
+		}
+
+		if(i == size) {
+			return true; // alcancou final, significa que gravou com sucesso!
+		}
+	}
+
+	// Ocorreu erro! Limpa a lista que estava sendo carregada
+	Clear();
+
+	return false;
+}
+
 //Classe LadderElem
 void LadderElem::Init(void)
 {
@@ -10952,7 +11094,7 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 // yy.0 = 0 for old binfmt. 1 for v2 and others.
 // yy.1 - yy.15: reserved for future use.
 // zz   = format version
-static const unsigned long int LADDER_BINFMT_MAGIC      = 0x0f5a0101;
+static const unsigned long int LADDER_BINFMT_MAGIC      = 0x0f5a0102;
 static const unsigned long int LADDER_BINFMT_MAGIC_MASK = 0xffff0000;
 #define LADDER_BINFMT_GET_VERSION(m)  (m & 0x00ff)
 #define LADDER_BINFMT_GET_FLAGS(m)   ((m & 0xff00) >> 8)
@@ -11056,8 +11198,13 @@ bool LadderDiagram::Save(string filename, bool isBackup)
 		fwrite_time_t(f, LadderSettings.Details.CompileDate) &&
 		fwrite_time_t(f, LadderSettings.Details.ProgramDate)
 		) {
-			// Configuracoes OK, agora devemos gravar o mapa de I/O
-			ret = IO->Save(f);
+			// Configuracoes OK, agora devemos gravar a lista de placas de expansao
+			ret = expansionBoards.Save(f) && IO->Save(f);
+
+			// Se OK, agora devemos gravar o mapa de I/O
+			if(ret == true) {
+				ret = IO->Save(f);
+			}
 
 			// Se OK, agora gravamos a lista de nodes do ModBUS.
 			if(ret == true) {
@@ -11281,8 +11428,13 @@ bool LadderDiagram::Load(string filename)
 					fread_time_t(f, &LadderSettings.Details.CompileDate) &&
 					fread_time_t(f, &LadderSettings.Details.ProgramDate)
 					) {
+						// Configuracoes OK, agora devemos ler a lista de placas de expansao
+						bool ret = expansionBoards.Load(f, fileVersion);
+
 						// Configuracoes OK, agora devemos ler o mapa de I/O
-						bool ret = IO->Load(f, fileVersion);
+						if(ret == true) {
+							ret = IO->Load(f, fileVersion);
+						}
 
 						// Se OK, agora carregamos a lista de nodes do ModBUS.
 						if(ret == true) {
@@ -11812,6 +11964,13 @@ void LadderDiagram::mbDelRef(int NodeID)
 		// Remove a referencia
 		vectorMbNodeList[index]->NodeCount--;
 	}
+}
+
+/*** Funcoes relacionadas com Placas de Expansao ***/
+
+vector<sExpansionBoardItem> LadderDiagram::getExpansionBoardList(void)
+{
+	return expansionBoards.getExpansionBoardList();
 }
 
 /*** Funcoes relacionadas com I/O ***/

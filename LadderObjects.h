@@ -361,6 +361,82 @@ typedef struct {
  */
 void UnallocElem(LadderElem *elem);
 
+/*** Classes / Estruturas representando as placas de expansao da POP ***/
+
+/// Enumeracao com a lista das placas de expansao existentes
+enum eExpansionBoard {
+	eExpansionBoard_None = 0,      ///< Placa com entradas digitais
+	eExpansionBoard_DigitalInput,  ///< Placa com entradas digitais
+	eExpansionBoard_DigitalOutput, ///< Placa com saidas digitais
+	eExpansionBoard_AnalogInput    ///< Placa com entradas analogicas
+};
+
+/// Definicao de tipo que representa uma placa adicionada ao projeto
+struct sExpansionBoardItem {
+	unsigned long   id  ; ///< Identificador da placa. Numero crescente sempre!
+	string          name; ///< Nome da placa para o usuario
+	eExpansionBoard type; ///< Tipo da placa
+};
+
+/// Classe que contem informacoes das placas de expansao adicionadas ao projeto
+class LadderExpansion {
+private:
+	/// Indice atual para usar como Id da proxima placa que for adicionada
+	unsigned long currentId;
+
+	/// Lista de placas de expansao adicionadas
+	vector<sExpansionBoardItem> vecExpansionBoardList;
+
+public:
+	/// Construtor
+	LadderExpansion(void);
+
+	/*** Funcoes para ler / gravar lista de placas de expansao para o disco ***/
+	/** Funcao que salva a lista de placas de expansao em disco
+	 *  @param[in] f Ponteiro para o handler do arquivo sendo salvo
+	 *  @return      Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool Save(FILE *f);
+	/** Funcao que carrega a lista de placas de expansao do disco
+	 *  @param[in] f       Ponteiro para o handler do arquivo sendo carregado
+	 *  @param[in] version Variavel indicando a versao do arquivo sendo carregado, possibilitando conversoes de formato
+	 *  @return            Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool Load(FILE *f, unsigned int version);
+
+	/// Funcao para limpar a lista de placas de expansao adicionadas ao projeto
+	void Clear(void);
+
+	/** Funcao para adicionar uma placa de expansao
+	 *  @param[in] name Nome da placa sendo adicionada
+	 *  @param[in] type Tipo de placa de expansao sendo adicionada
+	 *  @return         Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool Add(string name, eExpansionBoard type);
+
+	/** Funcao para remover uma placa da lista
+	 *  @param[in] name Nome da placa a ser removida
+	 *  @return         Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool Remove(string name);
+
+	/** Funcao para ler a lista de placas adicionadas ao projeto
+	 *  @return Retorna a lista de placas adicionadas ao projeto
+	 */
+	vector< sExpansionBoardItem > getExpansionBoardList(void) { return vecExpansionBoardList; }
+
+	/** Funcao para receber uma placa a partir de seu Id
+	 *  @param[in] id Identificador da placa requisitada
+	 *  @return       Retorna a placa solicitada ou nome em branco se nao for encontrada
+	 */
+	sExpansionBoardItem getById(unsigned int id);
+
+	/** Funcao que retorna o numero de I/Os de uma placa, conforme tipo especificado
+	 *  @return Quantidade de I/Os do tipo especificado para a placa fornecida.
+	 */
+	unsigned int getQuantityIO(eExpansionBoard typeBoard, eType typeIO);
+};
+
 /*** Classes representando os elementos do Ladder ***/
 
 /// Classe base de elementos - Abstrata, todos os elementos derivam dessa classe base
@@ -3095,6 +3171,9 @@ private:
 	/// Indica se existem acoes registradas ao fechar um checkpoint 
 	bool isCheckpointEmpty;
 
+	/// Classe que gerencia as placas de expansao adicionadas ao projeto
+	LadderExpansion expansionBoards;
+
 	/// Vetor que contem as linhas (circuitos) existentes no diagrama
 	vector<LadderRung *> rungs;
 
@@ -3656,6 +3735,13 @@ public:
 	 *  @param[in] NodeID ID do node do ModBUS
 	 */
 	void         mbDelRef          (int NodeID );
+
+	/*** Funcoes relacionadas com Placas de Expansao ***/
+
+	/** Funcao que retorna a lista de placas de expansao adicionadas ao projeto
+	 *  @return Lista de placas de expansao
+	 */
+	vector<sExpansionBoardItem> getExpansionBoardList(void);
 
 	/*** Funcoes relacionadas com I/O ***/
 

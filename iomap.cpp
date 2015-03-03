@@ -920,6 +920,11 @@ void mapIO::updateType(unsigned long id)
 	}
 }
 
+void mapIO::updateAssignments(void)
+{
+	vector<sExpansionBoardItem> listExpansionBoards = diagram->getExpansionBoardList();
+}
+
 bool mapIO::Save(FILE *f)
 {
 	// Primeiro grava a variavel que controla os IDs dos I/Os

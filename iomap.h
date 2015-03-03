@@ -133,6 +133,9 @@ public:
 	// Funcao que atualiza o tipo do I/O, corrigindo falhas como uma variavel reservada mas marcada com algum tipo especifico
 	void            updateType            (unsigned long id);
 
+	// Funcao que atualiza as associacoes de pinos I/O das placas de expansao. Deve ser executado ao alterar as placas de expansao
+	void            updateAssignments     (void);
+
 	// Funcoes para gravar / carregar o mapa de I/O do disco
 	bool Load(FILE *f, unsigned int version);
 	bool Save(FILE *f);
