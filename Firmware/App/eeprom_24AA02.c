@@ -11,7 +11,7 @@ void E2P_24AA02_Init(void)
 
 }
 
-int timeout = 0;
+static int timeout = 0;
 
 int E2P_24AA02_Busy(void)
 {

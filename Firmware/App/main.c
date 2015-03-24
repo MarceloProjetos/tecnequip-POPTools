@@ -113,6 +113,8 @@ int main()
 
 	PLC_Init();
 
+	XP_lcd_Init();
+
 	Modbus_Init();
 
 	Net_Init();

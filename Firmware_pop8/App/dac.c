@@ -218,11 +218,11 @@ int DAC_CalcCurveUp(int time, int value, int tm)
 	{
 		if (tm < time / 2)
 		{
-			factor = 0;//pow((tm * 1000.0f) / time, 2);
+			factor = pow((tm * 1000.0f) / time, 2);
 		}
 		else
 		{
-			factor = 1;//500000.0f - pow(1000.0f - (tm * 1000.0f) / time, 2);
+			factor = 500000.0f - pow(1000.0f - (tm * 1000.0f) / time, 2);
 		}
 		factor /= 1000.0f;
 	}
@@ -242,11 +242,11 @@ int DAC_CalcCurveDown(int time, int value, int tm)
 	{
 		if (tm < time / 2)
 		{
-			factor = 2;//500000.0f - pow((tm * 1000.0f) / time, 2);
+			factor = 500000.0f - pow((tm * 1000.0f) / time, 2);
 		}
 		else
 		{
-			factor = 3;//pow(1000.0f - (tm * 1000.0f) / time, 2);
+			factor = pow(1000.0f - (tm * 1000.0f) / time, 2);
 		}
 		factor /= 1000.0f;
 	}

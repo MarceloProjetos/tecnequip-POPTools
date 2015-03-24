@@ -72,6 +72,8 @@ unsigned int DAC_Conv(int val, unsigned int mode)
 
 void DAC_Write(unsigned int val)
 {
+//	XP_SetAddress(0x20);
+//	XP_Write(val);
 	// Checa estouro do D/A
 	DAC_Value = val >= (1 << 12) ? (1 << 12) - 1 : val;
 
