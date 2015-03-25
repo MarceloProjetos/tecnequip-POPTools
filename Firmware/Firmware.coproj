@@ -117,9 +117,9 @@
     <File name="lwip/port/CoOS/arch/perf.h" path="lwip/port/CoOS/arch/perf.h" type="1"/>
     <File name="App/main.c" path="App/main.c" type="1"/>
     <File name="lwip/src/netif/ppp/auth.h" path="lwip/src/netif/ppp/auth.h" type="1"/>
+    <File name="lwip/src/core/snmp/asn1_dec.c" path="lwip/src/core/snmp/asn1_dec.c" type="1"/>
     <File name="App/pwm.h" path="App/pwm.h" type="1"/>
     <File name="App/ld.h" path="App/ld.h" type="1"/>
-    <File name="lwip/src/core/snmp/asn1_dec.c" path="lwip/src/core/snmp/asn1_dec.c" type="1"/>
     <File name="App/rs485.c" path="App/rs485.c" type="1"/>
     <File name="lwip/src/core/snmp/mib_structs.c" path="lwip/src/core/snmp/mib_structs.c" type="1"/>
     <File name="lwip/src/core/snmp/msg_in.c" path="lwip/src/core/snmp/msg_in.c" type="1"/>
@@ -138,10 +138,10 @@
     <File name="App/POPTools/PLC_SCADA.h" path="App/POPTools/PLC_SCADA.h" type="1"/>
     <File name="lwip/src/include/netif/slipif.h" path="lwip/src/include/netif/slipif.h" type="1"/>
     <File name="CoOS/kernel/kernelHeap.c" path="CoOS/kernel/kernelHeap.c" type="1"/>
-    <File name="lwip/src/core/pbuf.c" path="lwip/src/core/pbuf.c" type="1"/>
-    <File name="App/net.c" path="App/net.c" type="1"/>
-    <File name="lwip/src/core/ipv4/ip_addr.c" path="lwip/src/core/ipv4/ip_addr.c" type="1"/>
     <File name="App/modbus_tcp.h" path="App/modbus_tcp.h" type="1"/>
+    <File name="App/net.c" path="App/net.c" type="1"/>
+    <File name="lwip/src/core/pbuf.c" path="lwip/src/core/pbuf.c" type="1"/>
+    <File name="lwip/src/core/ipv4/ip_addr.c" path="lwip/src/core/ipv4/ip_addr.c" type="1"/>
     <File name="lwip/src/netif/ppp/auth.c" path="lwip/src/netif/ppp/auth.c" type="1"/>
     <File name="lwip/src/core/ipv4/ip_frag.c" path="lwip/src/core/ipv4/ip_frag.c" type="1"/>
     <File name="App/POPTools/PLC_RS485.h" path="App/POPTools/PLC_RS485.h" type="1"/>
@@ -196,9 +196,9 @@
     <File name="CoOS/portable/arch.c" path="CoOS/portable/arch.c" type="1"/>
     <File name="lpc17xx_lib/include/lpc17xx_uart.h" path="lpc17xx_lib/include/lpc17xx_uart.h" type="1"/>
     <File name="lwip/src/api/netdb.c" path="lwip/src/api/netdb.c" type="1"/>
+    <File name="lpc17xx_lib/source/lpc17xx_clkpwr.c" path="lpc17xx_lib/source/lpc17xx_clkpwr.c" type="1"/>
     <File name="CoOS/kernel/event.c" path="CoOS/kernel/event.c" type="1"/>
     <File name="App/POPTools/PLC_LED_BLINK.h" path="App/POPTools/PLC_LED_BLINK.h" type="1"/>
-    <File name="lpc17xx_lib/source/lpc17xx_clkpwr.c" path="lpc17xx_lib/source/lpc17xx_clkpwr.c" type="1"/>
     <File name="lwip/src/core/dns.c" path="lwip/src/core/dns.c" type="1"/>
     <File name="lwip/src/core/dhcp.c" path="lwip/src/core/dhcp.c" type="1"/>
     <File name="lpc17xx_lib/include/lpc17xx_gpio.h" path="lpc17xx_lib/include/lpc17xx_gpio.h" type="1"/>
@@ -288,9 +288,9 @@
     <File name="cmsis_boot/LPC17xx.h" path="cmsis_boot/LPC17xx.h" type="1"/>
     <File name="App/encoder.c" path="App/encoder.c" type="1"/>
     <File name="App/POPTools/PLC_USS.h" path="App/POPTools/PLC_USS.h" type="1"/>
+    <File name="cmsis" path="" type="2"/>
     <File name="App/sntp.c" path="App/sntp.c" type="1"/>
     <File name="App/POPTools/PLC_DAC_RAMPA_VALIDACAO.h" path="App/POPTools/PLC_DAC_RAMPA_VALIDACAO.h" type="1"/>
-    <File name="cmsis" path="" type="2"/>
     <File name="App/qei.h" path="App/qei.h" type="1"/>
     <File name="App/uss.h" path="App/uss.h" type="1"/>
     <File name="lwip/src/core/snmp/msg_out.c" path="lwip/src/core/snmp/msg_out.c" type="1"/>
@@ -331,9 +331,9 @@
     <File name="lwip/src/netif/ppp/pppdebug.h" path="lwip/src/netif/ppp/pppdebug.h" type="1"/>
     <File name="lwip/src/core/tcp.c" path="lwip/src/core/tcp.c" type="1"/>
     <File name="App/POPTools/PLC_CONTACT.h" path="App/POPTools/PLC_CONTACT.h" type="1"/>
+    <File name="App/POPTools/PLC_ERR_LED.h" path="App/POPTools/PLC_ERR_LED.h" type="1"/>
     <File name="lwip/src/netif/ppp/ppp.c" path="lwip/src/netif/ppp/ppp.c" type="1"/>
     <File name="App/math.c" path="App/math.c" type="1"/>
-    <File name="App/POPTools/PLC_ERR_LED.h" path="App/POPTools/PLC_ERR_LED.h" type="1"/>
     <File name="lwip/port/CoOS/ethernetif/LPC17xx/EMAC.h" path="lwip/port/CoOS/ethernetif/LPC17xx/EMAC.h" type="1"/>
     <File name="lwip/src/netif/ppp/randm.h" path="lwip/src/netif/ppp/randm.h" type="1"/>
     <File name="cmsis/core_cm3.h" path="cmsis/core_cm3.h" type="1"/>

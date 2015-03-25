@@ -9,6 +9,7 @@
 #include "i2c.h"
 #include "ssp.h"
 #include "gpio.h"
+#include "XP_lcd.h"
 
 #include <time.h>
 #include <stdlib.h>
@@ -113,7 +114,7 @@ int main()
 
 	PLC_Init();
 
-	XP_lcd_Init();
+	XP_lcd_Init(XP_LCD_TYPE_SC2004A);
 
 	Modbus_Init();
 
