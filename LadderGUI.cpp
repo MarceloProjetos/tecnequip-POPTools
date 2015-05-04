@@ -8352,6 +8352,61 @@ bool cmdToggleBreakpoint(tCommandSource source, void *data)
 	return true;
 }
 
+// Classe LadderExpansion
+bool LadderExpansion::PopulateListGUI(void *data)
+{
+	char buf[100];
+	unsigned int i = 0;
+	HWND hListModels = ((HWND *)data)[0];
+	HWND hListAdded  = ((HWND *)data)[1];
+
+    LVITEM lvi;
+    lvi.mask     = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
+    lvi.iSubItem = 0;
+
+	// Essa funcao pode ser chamada para atualizar as listas entao primeiro devemos
+	// limpar os itens atuais
+	ListView_DeleteAllItems(hListAdded);
+
+	// A lista de placas disponiveis deve ser carregada apenas na primeira vez pois ela nao muda
+	if(!isBoardModelsListViewReady) {
+		isBoardModelsListViewReady = true;
+
+		ListView_DeleteAllItems(hListModels);
+
+		// Loop para criar a lista de placas disponíveis
+		for(i = eExpansionBoard_DigitalInput; i != eExpansionBoard_End; i++) {
+			strcpy(buf, getBoardName(static_cast<eExpansionBoard>(i)).c_str());
+			lvi.pszText = buf;
+			lvi.lParam  = i;
+			lvi.iItem   = i;
+			lvi.iImage  = i;
+			if(ListView_InsertItem(hListModels, &lvi) < 0) oops();
+		}
+	}
+
+	// Loop para criar a lista de placas adicionadas
+	vector<tExpansionBoardItem>::iterator it;
+	for(i = 0, it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); i++, it++) {
+		lvi.lParam  = it->id;
+		lvi.iItem   = i;
+
+		// Coluna 1 - Nome
+		lvi.pszText  = (char *)it->name.c_str();
+		if(ListView_InsertItem(hListAdded, &lvi) < 0) oops();
+
+		// Coluna 2 - Tipo
+		strcpy(buf, getBoardName(it->type).c_str());
+		ListView_SetItemText(hListAdded, i, 1, buf);
+
+		// Coluna 3 - Endereco
+		sprintf(buf, "%x", it->address);
+		ListView_SetItemText(hListAdded, i, 2, buf);
+	}
+
+	return true;
+}
+
 // Classe LadderDiagram
 void LadderDiagram::DrawGUI(void)
 {
@@ -8801,6 +8856,11 @@ void LadderDiagram::ShowContextMenu(void)
 	TrackPopupMenu(hPopupMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN, p.x, p.y, 0, MainWindow, NULL);
 }
 
+bool LadderDiagram::boardPopulateListGUI(void *data)
+{
+	return expansionBoards->PopulateListGUI(data);
+}
+
 HRESULT UpdateRibbonHeight(void);
 
 //-----------------------------------------------------------------------------
@@ -8891,10 +8951,16 @@ void SetUpScrollbars(BOOL *horizShown, SCROLLINFO *horiz, SCROLLINFO *vert)
 }
 
 // Classe mapIO
-void mapIO::updateGUI(void)
+void mapIO::updateGUI(bool doRedraw)
 {
-	// Nao atualiza a lista de I/Os enquanto a tela estiver bloqueada
-	if(diagram->getContext().isDrawBlocked) return;
+	static bool isRedrawNeeded = false;
+
+	if(doRedraw) {
+		isRedrawNeeded = true;
+	}
+
+	// Nao atualiza a lista de I/Os enquanto a tela estiver bloqueada ou se nao for necessario
+	if(diagram->getContext().isDrawBlocked || !isRedrawNeeded) return;
 
 	// Sincroniza o mapa com o vetor ordenado
 	SyncVectorIO();
@@ -8922,4 +8988,6 @@ void mapIO::updateGUI(void)
 		ListView_SetItemState (IoList, getIndex(selectedIO) - 1, LVIS_SELECTED, LVIS_SELECTED);
 		ListView_EnsureVisible(IoList, getIndex(selectedIO) - 1, FALSE);
 	}
+
+	isRedrawNeeded = false;
 }

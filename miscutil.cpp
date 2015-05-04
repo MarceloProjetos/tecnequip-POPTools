@@ -620,3 +620,11 @@ void csvSaveField(FILE *f, string name)
 	fwrite(name.c_str(), name.size(), 1, f);
 	fwrite(";", 1, 1, f);
 }
+
+// Funcao auxiliar que retorna um char* de uma string passada como parametro, alocando a memoria necessaria
+char *AllocCharFromString(string s)
+{
+	char *buf = new char[s.size() + 1];
+	strcpy(buf, s.c_str());
+	return buf;
+}

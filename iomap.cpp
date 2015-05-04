@@ -1,5 +1,7 @@
 #include "poptools.h"
 
+static LONG_PTR PrevBoardProc;
+
 static bool gSortAscending = true;
 
 // Funcoes para ordenacao
@@ -80,19 +82,15 @@ template<class T>
 		}
 	};
 
-// Funcao auxiliar que retorna um char* de uma string passada como parametro, alocando a memoria necessaria
-char *AllocCharFromString(string s)
-{
-	char *buf = new char[s.size() + 1];
-	strcpy(buf, s.c_str());
-	return buf;
-}
-
 mapIO::mapIO(LadderDiagram *pDiagram)
 {
 	seqNo      = 0;
 	countIO    = 0;
 	selectedIO = 0;
+
+	// Cada placa de expansao inicia 100 pinos depois da anterior.
+	// Assim, E2 da placa 3 sera o pino 302 para o diagrama
+	pinOffset  = 100;
 
 	currentSortBy        = eSortBy_Name;
 	currentSortAscending = true;
@@ -777,23 +775,41 @@ string mapIO::getPortName(int index)
 		}
 	}
 
-	if((detailsIO.type == eType_DigOutput || detailsIO.type == eType_DigInput) && detailsIO.pin > 19)
-		sprintf(buf, "M%d.%d", detailsIO.pin - 20, detailsIO.bit);
-	else if (detailsIO.type == eType_DigOutput)
-		sprintf(buf, "S%d", detailsIO.pin);
-	else if (detailsIO.type == eType_General)
-		sprintf(buf, "M%d", detailsIO.pin - 20);
-	else if (detailsIO.type == eType_DigInput)
-		sprintf(buf, "E%d", detailsIO.pin);
-	else if (detailsIO.type == eType_ReadADC)
-		if (detailsIO.pin == 6)
-			strcpy(buf, "TEMP");
+	if(detailsIO.pin < pinOffset) {
+		if((detailsIO.type == eType_DigOutput || detailsIO.type == eType_DigInput) && detailsIO.pin > 19)
+			sprintf(buf, "M%d.%d", detailsIO.pin - 20, detailsIO.bit);
+		else if (detailsIO.type == eType_DigOutput)
+			sprintf(buf, "S%d", detailsIO.pin);
+		else if (detailsIO.type == eType_General)
+			sprintf(buf, "M%d", detailsIO.pin - 20);
+		else if (detailsIO.type == eType_DigInput)
+			sprintf(buf, "E%d", detailsIO.pin);
+		else if (detailsIO.type == eType_ReadADC)
+			if (detailsIO.pin == 6)
+				strcpy(buf, "TEMP");
+			else
+				sprintf(buf, "AD%d", detailsIO.pin);
+		else if (detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc)
+			strcpy(buf, detailsIO.pin == 1 ? _("Enc. Inc.") : _("Enc. Abs."));
 		else
-			sprintf(buf, "AD%d", detailsIO.pin);
-	else if (detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc)
-		strcpy(buf, detailsIO.pin == 1 ? _("Enc. Inc.") : _("Enc. Abs."));
-	else
-		strcpy(buf, _("<Não é uma E/S!>"));
+			strcpy(buf, _("<Não é uma E/S!>"));
+	} else {
+		unsigned int boardId = detailsIO.pin / pinOffset;
+		string boardName = diagram->getBoardById(boardId).name;
+
+		detailsIO.pin -= (boardId * pinOffset);
+
+		if(detailsIO.type == eType_DigOutput)
+			sprintf(buf, "%s.S%d", boardName.c_str(), detailsIO.pin);
+		else if (detailsIO.type == eType_DigInput)
+			sprintf(buf, "%s.E%d", boardName.c_str(), detailsIO.pin);
+		else if (detailsIO.type == eType_ReadADC)
+			sprintf(buf, "%s.AD%d", boardName.c_str(), detailsIO.pin);
+		else if (detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc)
+			sprintf(buf, "%s.ENC%d", boardName.c_str(), detailsIO.pin);
+		else
+			strcpy(buf, _("<Não é uma E/S!>"));
+	}
 
 	return string(buf);
 }
@@ -922,7 +938,23 @@ void mapIO::updateType(unsigned long id)
 
 void mapIO::updateAssignments(void)
 {
-	vector<sExpansionBoardItem> listExpansionBoards = diagram->getExpansionBoardList();
+	tMapIO::iterator it;
+
+	diagram->CheckpointBegin(_("Atualizar atribuições"));
+
+	for(it = IO.begin(); it != IO.end(); it++) {
+		unsigned long id = it->second.second.pin / 100;
+		if(id > 0) {
+			// id associado a placa de expansao, devemos checar se ela existe
+			tExpansionBoardItem board = diagram->getBoardById(id);
+			if(!board.id) {
+				// A placa nao existe, id retornado foi zero!
+				Assign(it->second.first, 0, 0); // Remove a associacao
+			}
+		}
+	}
+
+	diagram->CheckpointEnd();
 }
 
 bool mapIO::Save(FILE *f)
@@ -1206,6 +1238,7 @@ static HWND lblBit;
 static HWND OkButton;
 static HWND CancelButton;
 static HWND BitCombobox;
+static HWND BoardCombobox;
 static HWND textLabelName;
 
 // stuff for the popup that lets you set the simulated value of an analog in
@@ -1224,6 +1257,7 @@ void mapIO::AddDialogItem(string name, int pin)
 	// e assim devemos excluir os itens ja existentes.
 	if(!pin) {
 		vecDialogItemList.clear();
+		SendMessage(PinList, LB_RESETCONTENT, 0, 0);
 	}
 
 	const unsigned int centeredTextLength = 12;
@@ -1239,6 +1273,156 @@ void mapIO::AddDialogItem(string name, int pin)
 
 	vecDialogItemList.push_back(pair<string, int>(centeredText, pin));
 	SendMessage(PinList, LB_ADDSTRING, 0, (LPARAM)centeredText);
+}
+
+void mapIO::LoadPinList(void)
+{
+	LoadPinList(0);
+}
+
+// Funcao que carrega uma lista de I/Os conforme placa selecionada
+void mapIO::LoadPinList(unsigned long id)
+{
+	static unsigned long lastId = 0;
+	if(id == 0) {
+		id = lastId;
+	} else {
+		lastId = id;
+	}
+
+	unsigned int currentBoard;
+	McuIoInfo *mcu = diagram->getMCU();
+	mapDetails detailsIO = getDetails(id);
+	string name = getName(id);
+
+	if(mcu == nullptr) {
+		ladder->ShowDialog(eDialogType_Error, false, _("Atribuição de Pinos de E/S"), _("Nenhum dispositivo selecionado!"));
+        return;
+    }
+
+    char buf[40];
+	int i = 0;
+	bool canUseIO;
+
+	AddDialogItem(_("(sem pino)"), 0);
+	currentBoard = SendMessage(BoardCombobox, CB_GETCURSEL, 0, 0);
+
+	// Carrega bits disponiveis no combobox de bits.
+	SendMessage(BitCombobox, CB_SETCURSEL, LoadUnusedBits(name, detailsIO.pin), 0);
+
+	if(currentBoard == 0) { // CLP
+		if(detailsIO.pin >= 20 && ComboBox_GetCount(BitCombobox) > 0) {
+			EnableWindow(BitCombobox, TRUE);
+		}
+
+		// Apenas verificamos se os pinos de entrada / saida ja sao utilizados
+		// A/D, Encoder, etc. podem ser atribuidos a mais de 1 objeto
+		if(detailsIO.type == eType_ReadADC) {
+			for(i = 0; i < mcu->adcCount; i++) 
+			{
+				if (i == 4) continue;
+				if (i == mcu->adcCount - 1)
+					strcpy(buf, "TEMP");
+				else
+					sprintf(buf, "ADC%d", mcu->adcInfo[i].muxRegValue);
+
+				AddDialogItem(buf, mcu->adcInfo[i].pin);
+			}
+		} else if(detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) {
+			for(i = 0; i < mcu->encCount; i++) {
+				const char *strEnc[] = { _("Enc. Inc."), _("Enc. Abs.") };
+				AddDialogItem(strEnc[i], mcu->encInfo[i].pin);
+			}
+		} else if (detailsIO.type  == eType_DigInput  ||
+					detailsIO.type == eType_DigOutput ||
+					detailsIO.type == eType_General) {
+
+			tMapIO::iterator it;
+			for(i = 0; i < mcu->pinCount; i++) {
+				canUseIO = true;
+
+				// Primeiro identificamos se o pino ja esta sendo utilizado
+				for(it = IO.begin(); it != IO.end(); it++) 
+				{
+					if(it->second.first == id) continue;
+					if(it->second.second.pin == mcu->pinInfo[i].pin && it->second.second.type == detailsIO.type && 
+						!((it->second.second.type == eType_DigInput && i > 18) || (it->second.second.type == eType_DigOutput && i > 66)) )
+					{
+						canUseIO = false;
+						break;
+					}
+				}
+
+				if(canUseIO && (detailsIO.type == eType_DigInput  && i < 51) ||
+								(detailsIO.type == eType_DigOutput && i > 50) ||
+								(detailsIO.type == eType_General   && i > 66)) {
+					sprintf(buf, "%c%d", mcu->pinInfo[i].port, mcu->pinInfo[i].bit);
+					AddDialogItem(buf, mcu->pinInfo[i].pin);
+				}
+			}
+		}
+	} else {
+		vector<tExpansionBoardItem>::iterator itBoard;
+		vector<tExpansionBoardItem> boardList = diagram->getBoardList();
+
+		char nameBoard[1024];
+        SendMessage(BoardCombobox, WM_GETTEXT, (WPARAM)sizeof(nameBoard), (LPARAM)(nameBoard));
+		string sNameBoard = string(nameBoard);
+
+		for(itBoard = boardList.begin(); itBoard != boardList.end(); itBoard++) {
+			if(itBoard->name == sNameBoard) break; // Placa encontrada!
+		}
+
+		if(itBoard != boardList.end()) {
+			unsigned int i, qtdIO = diagram->getBoardQtyIO(itBoard->type, detailsIO.type);
+			unsigned int pinStart = itBoard->id * pinOffset;
+			unsigned int pin;
+
+			tMapIO::iterator it;
+			for(i = 0; i < qtdIO; i++) {
+				canUseIO = true;
+
+				// Calculo do numero do pino conforme a placa de expansao
+				pin = pinStart + i + 1;
+
+				if (detailsIO.type == eType_DigInput || detailsIO.type == eType_DigOutput) {
+					for(it = IO.begin(); it != IO.end(); it++) 
+					{
+						if(it->second.first == id) continue;
+						if(it->second.second.pin == pin && it->second.second.type == detailsIO.type) {
+							canUseIO = false;
+						}
+					}
+
+					// Se chegou aqui, pino atual nao utilizado
+					char expPort = (detailsIO.type == eType_DigInput) ? 'E' : 'S';
+					if(canUseIO) {
+						sprintf(buf, "%c%d", expPort, i+1);
+						AddDialogItem(buf, pin);
+					}
+				}
+			}
+		}
+	}
+
+	SetFocus(PinList);
+
+	unsigned int idx;
+	for (idx = 0; idx < vecDialogItemList.size(); idx++)
+	{
+		if (detailsIO.pin == vecDialogItemList[idx].second)
+			SendMessage(PinList, LB_SETCURSEL, idx, 0);
+	}
+
+	if(idx == 1) { // Lista de pinos vazia. Sempre tera pelo menos 1, o item (Sem Pino)
+		if(detailsIO.type == eType_ReadADC) {
+			Error(_("O dispositivo selecionado não possui ADC ou não suporta."));
+		} else if(detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) {
+			Error(_("No Encoder or Encoder not supported for selected micro."));
+		} else {
+			Error(_("Não existem pinos disponíveis"));
+		}
+	}
 }
 
 // Funcao para carregar no combobox de bits da janela de atribuicao apenas os bits nao utilizados,
@@ -1370,20 +1554,30 @@ static void MakeControls(void)
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         57, 1, 64, 17, IoDialog, NULL, Instance, NULL);
     NiceFont(textLabelName);
+	
+    lblBit = CreateWindowEx(0, WC_STATIC, _("Placa:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        6, 25, 50, 21, IoDialog, NULL, Instance, NULL);
+    NiceFont(lblBit);
+
+	BoardCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST | WS_DISABLED,
+        55, 23, 66, 140, IoDialog, NULL, Instance, NULL);
+    NiceFont(BoardCombobox);
 
     PinList = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, "",
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | WS_VSCROLL |
-        LBS_NOTIFY, 6, 18, 115, 320, IoDialog, NULL, Instance, NULL);
+        LBS_NOTIFY, 6, 53, 115, 280, IoDialog, NULL, Instance, NULL);
     FixedFont(PinList);
 	
     lblBit = CreateWindowEx(0, WC_STATIC, _("Bit:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        6, 327, 35, 21, IoDialog, NULL, Instance, NULL);
+        6, 332, 35, 21, IoDialog, NULL, Instance, NULL);
     NiceFont(lblBit);
 
 	BitCombobox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST | WS_DISABLED,
-        55, 325, 66, 140, IoDialog, NULL, Instance, NULL);
+        55, 330, 66, 140, IoDialog, NULL, Instance, NULL);
     NiceFont(BitCombobox);
 
     OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
@@ -1395,6 +1589,20 @@ static void MakeControls(void)
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         10, 396, 107, 23, IoDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
+}
+
+static LRESULT CALLBACK BoardProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) 
+	{
+		case WM_COMMAND:
+			if ( HIWORD(wParam) == CBN_SELCHANGE) {
+				ladder->LoadIoPinList();
+			}
+			break;
+	}
+
+	return CallWindowProc((WNDPROC)PrevBoardProc, hwnd, msg, wParam, lParam);
 }
 
 void mapIO::ShowIoMapDialog(int item)
@@ -1431,16 +1639,6 @@ void mapIO::ShowIoMapDialog(int item)
         return;
     }
 
-    if(detailsIO.type == eType_ReadADC && mcu->adcCount == 0) {
-        Error(_("O dispositivo selecionado não possui ADC ou não suporta."));
-        return;
-    }
-
-	if((detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) && mcu->encCount == 0) {
-        Error(_("No Encoder or Encoder not supported for selected micro."));
-        return;
-    }
-
     MakeWindowClass();
 
 	POINT size  = { 127, 430 };
@@ -1456,9 +1654,6 @@ void mapIO::ShowIoMapDialog(int item)
         start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL);
 
     MakeControls();
-
-    char buf[40];
-	int i = 0;
 
 	SendMessage(BitCombobox, CB_SETCURSEL, LoadUnusedBits(name, detailsIO.pin), 0);
 	if(detailsIO.pin >= 20 && ComboBox_GetCount(BitCombobox) > 0) {
@@ -1478,85 +1673,42 @@ void mapIO::ShowIoMapDialog(int item)
 		SetWindowPos(PinList, NULL, 6, 18, r.right - r.left, r.bottom - r.top, SWP_NOZORDER);
 	}
 
-	AddDialogItem(_("(sem pino)"), 0);
-
-	tMapIO::iterator it;
-	for(i = 0; i < mcu->pinCount; i++) {
-        int j;
-		for(it = IO.begin(); it != IO.end(); it++) 
-		{
-			if(it->second.first == id) continue;
-			if(it->second.second.pin == mcu->pinInfo[i].pin && it->second.second.type == detailsIO.type && 
-				!((it->second.second.type == eType_DigInput && i > 18) || (it->second.second.type == eType_DigOutput && i > 66)) )
-			{
-                goto cant_use_this_io;
-            }
-		}
-
-		if(UartFunctionUsed() &&
-                ((mcu->pinInfo[i].pin == mcu->uartNeeds.rxPin) ||
-                 (mcu->pinInfo[i].pin == mcu->uartNeeds.txPin)))
-        {
-            goto cant_use_this_io;
-        }
-
-        if(PwmFunctionUsed() && mcu->pinInfo[i].pin == mcu->pwmNeedsPin)
-        {
-            goto cant_use_this_io;
-        }
-
-		if(detailsIO.type == eType_ReadADC) {
-            for(j = 0; j < mcu->adcCount; j++) 
-			{
-				if (j == 4) continue;
-				if (j == mcu->adcCount - 1)
-					strcpy(buf, "TEMP");
-				else
-					sprintf(buf, "ADC%d", mcu->adcInfo[j].muxRegValue);
-
-				AddDialogItem(buf, mcu->adcInfo[j].pin);
-            }
-            if(j == mcu->adcCount) {
-				break;
-            }
-        }
-
-		if(detailsIO.type == eType_ReadEnc || detailsIO.type == eType_ResetEnc) {
-            for(j = 0; j < mcu->encCount; j++) 
-			{
-				const char *strEnc[] = { _("Enc. Inc."), _("Enc. Abs.") };
-				AddDialogItem(strEnc[j], mcu->encInfo[j].pin);
-            }
-            if(j == mcu->encCount) {
-				break;
-            }
-        }
-
-		if ((detailsIO.type == eType_DigInput  && i < 51) ||
-			(detailsIO.type == eType_DigOutput && i > 50) ||
-			(detailsIO.type == eType_General   && i > 66))
-		{
-			sprintf(buf, "%c%d", mcu->pinInfo[i].port, mcu->pinInfo[i].bit);
-			AddDialogItem(buf, mcu->pinInfo[i].pin);
-		}
-cant_use_this_io:;
-    }
-
 	SendMessage(textLabelName, WM_SETTEXT, 0, (LPARAM)(getName(id).c_str()));
+
+	unsigned int i = 0, idx = 0, currentId = detailsIO.pin / pinOffset;
+	vector<tExpansionBoardItem>::iterator itBoard;
+	vector<tExpansionBoardItem> boardList = diagram->getBoardList();
+
+	SendMessage(BoardCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)"POP-7"));
+	for(itBoard = boardList.begin(); itBoard != boardList.end(); itBoard++) {
+		unsigned int qtyIO = diagram->getBoardQtyIO(itBoard->type, detailsIO.type);
+		if(qtyIO > 0) {
+			i++;
+			SendMessage(BoardCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)itBoard->name.c_str()));
+			if(itBoard->id == currentId) {
+				idx = i;
+			}
+		}
+	}
+	SendMessage (BoardCombobox, CB_SETCURSEL, idx, 0);
+	EnableWindow(BoardCombobox, TRUE);
+
+	LoadPinList(id);
 
 	EnableWindow(MainWindow, FALSE);
     ShowWindow(IoDialog, TRUE);
     SetFocus(PinList);
 
 	//SendMessage(PinList, LB_SETCURSEL, item, 0);
-	unsigned int idx;
 	for (idx = 0; idx < vecDialogItemList.size(); idx++)
 	{
 		if (detailsIO.pin == vecDialogItemList[idx].second)
 			SendMessage(PinList, LB_SETCURSEL, idx, 0);
 	}
 
-    MSG msg;
+	PrevBoardProc = SetWindowLongPtr(BoardCombobox, GWLP_WNDPROC, (LONG_PTR)BoardProc);
+
+	MSG msg;
     DWORD ret;
     DialogDone = FALSE;
     DialogCancel = FALSE;
@@ -1570,7 +1722,11 @@ cant_use_this_io:;
                 DialogCancel = TRUE;
                 break;
             }
-        }
+        } else if(msg.message == WM_COMMAND) {
+			if (HIWORD(msg.wParam) == CBN_SELCHANGE) {
+				LoadPinList(id);
+			}
+		}
 
         if(IsDialogMessage(IoDialog, &msg)) continue;
         TranslateMessage(&msg);
@@ -1578,6 +1734,7 @@ cant_use_this_io:;
     }
 
     if(!DialogCancel) {
+		int currentBoard;
         int sel = SendMessage(PinList, LB_GETCURSEL, 0, 0);
 		int  pin_number = 0;
         char pin_name[16];
@@ -1585,6 +1742,7 @@ cant_use_this_io:;
 
 		SendMessage(PinList    , LB_GETTEXT, (WPARAM)sel        , (LPARAM)pin_name);
 		SendMessage(BitCombobox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
+		currentBoard = SendMessage(BoardCombobox, CB_GETCURSEL, 0, 0);
 
 		for (idx = 0; idx < vecDialogItemList.size(); idx++)
 		{

@@ -14,6 +14,18 @@
 // remains consistent on all systems.
 //4000                  ICON                    "favicon.ico"
 4000                    ICON                    "poptools32.ico"
+
+// Icones da lista de imagens de placas de expansao
+IDI_BOARD_DI			ICON		            "imgs/expansion_DI.ico"
+IDI_BOARD_DO			ICON		            "imgs/expansion_DO.ico"
+IDI_BOARD_AI			ICON		            "imgs/expansion_AI.ico"
+IDI_BOARD_LCD			ICON		            "imgs/expansion_LCD.ico"
+
+IDB_BOARD_DI			BITMAP		            "imgs/expansion_DI.bmp"
+IDB_BOARD_DO			BITMAP		            "imgs/expansion_DO.bmp"
+IDB_BOARD_AI			BITMAP		            "imgs/expansion_AI.bmp"
+IDB_BOARD_LCD			BITMAP		            "imgs/expansion_LCD.bmp"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap

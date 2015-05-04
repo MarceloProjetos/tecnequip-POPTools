@@ -3,6 +3,16 @@
 #define IDB_SPLASH                      101
 #define IDI_ICON1                       102
 
+#define IDI_BOARD_DI					4001
+#define IDI_BOARD_DO					4002
+#define IDI_BOARD_AI					4003
+#define IDI_BOARD_LCD					4004
+
+#define IDB_BOARD_DI					4011
+#define IDB_BOARD_DO					4012
+#define IDB_BOARD_AI					4013
+#define IDB_BOARD_LCD					4014
+
 #define IDB_FONT_POPTOOLS               200
 #define IDB_FONT_LUCON                  206
 

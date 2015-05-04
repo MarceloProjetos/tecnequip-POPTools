@@ -157,6 +157,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Fazer Permanente", "Make Persistent");
 		addTextToLangTable(l, "Erro", "Error");
 		addTextToLangTable(l, "Deve associar pinos a todas E/S.\r\n\r\n'%s' não está associado.", "Must assign pins for all I/O.\r\n\r\n'%s' is not assigned.");
+		addTextToLangTable(l, "Não pode abrir o arquivo '%s'\n", "Couldn't open file '%s'\n");
 		addTextToLangTable(l, "Não pode abrir o arquivo '%s'\nTentar Novamente?", "Couldn't open file '%s'\nTry again?");
 		addTextToLangTable(l, "Período de Tempo muito curto (necessita de um tempo de ciclo menor).", "Timer period too short (needs faster cycle time).");
 		addTextToLangTable(l, "Tempo do Temporizador muito grande(max. 2147483647 tempo de ciclo); use um tempo de ciclo maior.", "Timer period too long (max 2147483647 times cycle time); use a slower cycle time.");
@@ -388,7 +389,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "ModBUS ID:", "ModBUS ID:");
 		addTextToLangTable(l, "MODBUS: id=%d, address=%d, name=%s\r\n", "MODBUS: id=%d, address=%d, name=%s\r\n");
 		addTextToLangTable(l, "MODBUS_ETH: id=%d, address=%d, name=%s\r\n", "MODBUS_ETH: id=%d, address=%d, name=%s\r\n");
-		addTextToLangTable(l, "Modelo do CLP:", "CLP Model:");
+		addTextToLangTable(l, "Modelo do CLP:", "PLC Model:");
 		addTextToLangTable(l, "Write Mode", "Modo de Escrita");
 		addTextToLangTable(l, "MUL\x02", "MUL\x02");
 		addTextToLangTable(l, "Número '%s' inválido!", "Number '%s' invalid!");
@@ -919,6 +920,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Desenvolvedor..: %s\n", "Developer...: %s\n");
 		addTextToLangTable(l, "Num. Compilacao: %ld\n\n", "Build Number: %ld\n\n");
 		addTextToLangTable(l, "POPTools - Diagrama Ladder exportado\n\n", "POPTools - Exported Ladder Diagram\n\n");
+		addTextToLangTable(l, "Converter para POP-8", "Convert to POP-8");
+		addTextToLangTable(l, "Placa:", "Board:");
 	} else if(id == 2) { // Idioma Espanhol
 		l = newLangTableChar();
 
@@ -1009,6 +1012,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Erro", "Error");
 		addTextToLangTable(l, "Deve associar pinos a todas E/S.\r\n\r\n'%s' não está associado.", "Debe asignar pines a todas las E/S.\r\n\r\n'%s' no esta asignada.");
 		addTextToLangTable(l, "Não pode abrir o arquivo '%s'\nTentar Novamente?", "No puedo abrir el archivo '%s'\nInténtalo de nuevo?");
+		addTextToLangTable(l, "Não pode abrir o arquivo '%s'\n", "No puedo abrir el archivo '%s'\n");
 		addTextToLangTable(l, "Período de Tempo muito curto (necessita de um tempo de ciclo menor).", "Periodo de Tiempo demasiado corto (se necesita un tiempo de ciclo menor).");
 		addTextToLangTable(l, "Tempo do Temporizador muito grande(max. 2147483647 tempo de ciclo); use um tempo de ciclo maior.", "Periodo del temporizador demasiado largo (max. 32767 veces el tiempo de ciclo); use un tiempo de ciclo mayor.");
 		addTextToLangTable(l, "Constante %d fora do range: -2147483648 a 2147483647 inclusive.", "Constante %d fuera de rango: -32768 a 32767 inclusive.");
@@ -1239,7 +1243,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "ModBUS ID:", "ModBUS ID:");
 		addTextToLangTable(l, "MODBUS: id=%d, address=%d, name=%s\r\n", "MODBUS: id=%d, address=%d, name=%s\r\n");
 		addTextToLangTable(l, "MODBUS_ETH: id=%d, address=%d, name=%s\r\n", "MODBUS_ETH: id=%d, address=%d, name=%s\r\n");
-		addTextToLangTable(l, "Modelo do CLP:", "CLP Model:");
+		addTextToLangTable(l, "Modelo do CLP:", "PLC Model:");
 		addTextToLangTable(l, "Write Mode", "Modo de Escrita");
 		addTextToLangTable(l, "MUL\x02", "MUL\x02");
 		addTextToLangTable(l, "Número '%s' inválido!", "Number '%s' invalid!");
@@ -1770,6 +1774,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Desenvolvedor..: %s\n", "Developer...: %s\n");
 		addTextToLangTable(l, "Num. Compilacao: %ld\n\n", "Build Number: %ld\n\n");
 		addTextToLangTable(l, "POPTools - Diagrama Ladder exportado\n\n", "POPTools - Exported Ladder Diagram\n\n");
+		addTextToLangTable(l, "Converter para POP-8", "Convert to POP-8");
+		addTextToLangTable(l, "Placa:", "Board:");
 	} else {
 		l = nullptr;
 	}
@@ -1839,6 +1845,8 @@ PCWSTR getRibbonLocalizedLabel(UINT nCmdID)
 
 		SET_LANGUAGE_STRINGS(cmdRecentList               , L"Projetos Recentes"                , L"Recent Projects"               , L"Proyectos Recientes"                );
 		SET_LANGUAGE_STRINGS(cmdFileNew                  , L"Novo"                             , L"New"                           , L"Nuevo"                              );
+		SET_LANGUAGE_STRINGS(cmdFileNewPOP7              , L"Novo diagrama para POP-7"         , L"New diagram for POP-7"         , L"Novo diagrama para POP-7"           );
+		SET_LANGUAGE_STRINGS(cmdFileNewPOP8              , L"Novo diagrama para POP-8"         , L"New diagram for POP-8"         , L"Novo diagrama para POP-8"           );
 		SET_LANGUAGE_STRINGS(cmdFileOpen                 , L"Abrir"                            , L"Open"                          , L"Abrir"                              );
 		SET_LANGUAGE_STRINGS(cmdFileClose                , L"Fechar"                           , L"Close"                         , L"Cerrar"                             );
 		SET_LANGUAGE_STRINGS(cmdFileSave                 , L"Salvar"                           , L"Save"                          , L"Salvar"                             );

@@ -5,18 +5,27 @@
 #define FM_PROGOPT_NONE     0
 #define FM_PROGOPT_RESERVED 1
 
-#include <windows.h>
-
 #ifdef __cplusplus
   #define CSRC "C"
 #else
   #define CSRC
 #endif
 
-#ifdef _BUILD_DLL_
-  #define DLL_FUNC extern CSRC __declspec(dllexport)
+#ifdef __GNUC__
+  #define DLL_FUNC
 #else
-  #define DLL_FUNC extern CSRC __declspec(dllimport)
+  #ifdef _BUILD_DLL_
+    #define DLL_FUNC extern CSRC __declspec(dllexport)
+  #else
+    #define DLL_FUNC extern CSRC __declspec(dllimport)
+  #endif
+#endif
+
+#ifdef __GNUC__
+  #define CDECL __attribute__((cdecl))
+#else
+  #undef CDECL
+  #define CDECL _cdecl
 #endif
 
 #define FM_OK          1
@@ -74,6 +83,7 @@
 #define FM_HWBOOTEXECRTS 2
 #define FM_HWASSERT      3
 #define FM_HWKEILMCB900  4
+#define FM_HWDISABLE     5
 
 // programming finishing options
 #define FM_NORMAL     0
@@ -83,8 +93,11 @@
 #define FM_RESET   0
 #define FM_EXECUTE 1
 // reset options
-#define FM_ARM   0
-#define FM_THUMB 1
+// bit 0
+#define FM_ARM     0x00000000
+#define FM_THUMB   0x00000001
+// bit 1
+#define FM_VECTORS 0x00000002
 
 // raw connect hardware configuration selections
 #define FM_HWDEASSERTDTRDEASSERTRTS 1
@@ -92,7 +105,7 @@
 #define FM_HWASSERTDTRDEASSERTRTS   3
 #define FM_HWASSERTDTRASSERTRTS     4
 
-// icp interfaces supported
+// icp/swd interfaces supported
 #define FM_INTERFACETYPE_NONE              0     // none
 #define FM_INTERFACETYPE_NXPBRIDGEICP      1     // NXP ISP to ICP bridge
 #define FM_INTERFACETYPE_FDIUSBICPLPC9XX   2     // FDI USB-ICP-LPC9XX
@@ -100,16 +113,27 @@
 #define FM_INTERFACETYPE_FDIUSBICP80C51ISP 4     // FDI USB-ICP-80C51ISP
 #define FM_INTERFACETYPE_FDIUSBICPLPC2K    5     // FDI USB-ICP-LPC2K
 #define FM_INTERFACETYPE_NXPBRIDGEPP       6     // NXP ISP to PP bridge
+#define FM_INTERFACETYPE_SWDLPC18004300DFU 7     // USB to SWD LPC1800/4300 DFU
+#define FM_INTERFACETYPE_SWDLPC11U30       8     // USB to SWD LPC11U30
+
+// maximum length of a com port name
+#define FM_MAXCOMPORTNAMELEN 50
 
 // maximum results data sizes
-#define FM_MAXDATALEN    60
+#define FM_MAXDATALEN    128
 #define FM_MAXDETAILSLEN 400
 
-#define FM_MAX_BLOCKS              32      // max number of flash blocks
-#define FM_MAX_PAGES               1024    // max number of flash pages
+// maximum length of direct entry production task data
+#define FM_MAXPTDATALEN 128
+
+#define FM_MAX_BLOCKS              128     // max number of flash blocks
+#define FM_MAX_PAGES               2048    // max number of flash pages
 #define FM_MAX_SECURITYBITS        96      // max security bits for any device
 #define FM_MAX_EEPROM_PAGES        128     // max number of eeprom pages
 #define FM_MAX_EEPROM_SECURITYBITS 96      // max eeprom security bits for any device
+
+// maximum length of a file path and name
+#define FM_MAXPATH 1024
 
 // program options
 #define FM_PROGOPT_NONE     0
@@ -119,6 +143,21 @@
 #define FM_CAN_PEAKUSB      2
 #define FM_CAN_PEAKPCI      3
 #define FM_CAN_PEAKPCCARD   4
+
+// production task types
+#define FM_PRODUCTIONTASK_DISABLED     0
+#define FM_PRODUCTIONTASK_DIRECTENTRY  1
+#define FM_PRODUCTIONTASK_HEXFILE      2
+#define FM_PRODUCTIONTASK_BINARYFILE   3
+#define FM_PRODUCTIONTASK_HEXGENERATOR 4
+
+// COM protocol options
+#define FM_PROTOCOLCOM_NONE     0x00000000
+#define FM_PROTOCOLCOM_DONTTXLF 0x00000001
+#define FM_PROTOCOLCOM_DONTRXLF 0x00000002
+#define FM_PROTOCOLCOM_AUTOLF   0x00000004
+
+#define FM_INVALID_HANDLE_VALUE -1
 
 #pragma pack(push)
 #pragma pack(1)
@@ -134,44 +173,62 @@ typedef struct
 #pragma pack(1)
 typedef struct
 {
-  double osc;                   // oscillator frequency
-  int port;                     // com port
-  long baudrate;                // baudrate to connect at
-  int selecteddevice;           // device connecting to
-  int highspeed;                // 1 = use high speed comms, 0 = don't use
-  int clocks;                   // 6 or 12 (or 0 if not required)
-  int halfduplex;               // 1 = use half duplex, 0 = don't use
-  int hwconfig;                 // specifies DTR and RTS configuration
-  int hwt1;                     // DTR and RTS timing parameter 1
-  int hwt2;                     // DTR and RTS timing parameter 2
-  unsigned char i2caddr;        // I2C address for devices on I2C bus (depreciated)
-  long maxbaudrate;             // maximum baudrate to use for high speed communications
-  int usinginterface;           // set to 1 if using an interface
-  int interfacetype;            // interface type being used (FM_INTERFACETYPE_xxx)
+  unsigned long startaddr;
+  unsigned long type;
+  unsigned long datalen;
+  unsigned char data[FM_MAXPTDATALEN];
+  char path[FM_MAXPATH];
+} fm_productiontask;
+#pragma pack(pop)
+
+#pragma pack(push)
+#pragma pack(1)
+typedef struct
+{
+  double osc;                                        // oscillator frequency
+  char comportname[FM_MAXCOMPORTNAMELEN];            // com port name
+  long baudrate;                                     // baudrate to connect at
+  int selecteddevice;                                // device connecting to
+  int highspeed;                                     // 1 = use high speed comms, 0 = don't use
+  int clocks;                                        // 6 or 12 (or 0 if not required)
+  int halfduplex;                                    // 1 = use half duplex, 0 = don't use
+  int hwconfig;                                      // specifies DTR and RTS configuration
+  int hwt1;                                          // DTR and RTS timing parameter 1
+  int hwt2;                                          // DTR and RTS timing parameter 2
+  unsigned char i2caddr;                             // I2C address for devices on I2C bus (depreciated)
+  long maxbaudrate;                                  // maximum baudrate to use for high speed communications
+  int usinginterface;                                // set to 1 if using an interface
+  int interfacetype;                                 // interface type being used (FM_INTERFACETYPE_xxx)
+  char bootloaderpath[FM_MAXPATH];                   // path and name of intermediate bootloader file (e.g. external flash bootloader)
+  unsigned long flashbank;                           // flash bank to use (0-indexed)
+  unsigned long protocoloptions;                     // protocol options (FM_PROTOCOLCOM_xxx)
 } fm_connectoptions_com;
 
 typedef struct
 {
-  int adapterindex;             // ethernet adapter index as returned from GetAdaptersInfo
-  int selecteddevice;           // device connecting to
-  unsigned long ipaddr;         // ip address to use for bootloader
-  unsigned char macaddr[6];     // MAC address of bootloader
+  int adapterindex;                                  // ethernet adapter index as returned from GetAdaptersInfo
+  int selecteddevice;                                // device connecting to
+  unsigned long ipaddr;                              // ip address to use for bootloader
+  unsigned char macaddr[6];                          // MAC address of bootloader
+  unsigned long flashbank;                           // flash bank to use (0-indexed)
+  int udptxdelay;                                    // delay after UDP transmit in ms
 } fm_connectoptions_ethernet;
 
 typedef struct
 {
-  double osc;                   // oscillator frequency
-  int selecteddevice;           // device connecting to
-  int highspeed;                // 1 = use high speed comms, 0 = don't use
-  int interfacetype;            // can interface type (FM_CAN_xxx)
-  long baudrate;                // baudrate in kbps
-  unsigned long hwconfig[2];    // can hardware configuration (depends on interface type)
-  unsigned char nodeid;         // id of node to connect to
-  long sdotimeout;              // sdo response timeout in milliseconds
+  double osc;                                        // oscillator frequency
+  int selecteddevice;                                // device connecting to
+  int highspeed;                                     // 1 = use high speed comms, 0 = don't use
+  int interfacetype;                                 // can interface type (FM_CAN_xxx)
+  long baudrate;                                     // baudrate in kbps
+  unsigned long hwconfig[2];                         // can hardware configuration (depends on interface type)
+  unsigned char nodeid;                              // id of node to connect to
+  long sdotimeout;                                   // sdo response timeout in milliseconds
+  unsigned long flashbank;                           // flash bank to use (0-indexed)
 } fm_connectoptions_can;
 #pragma pack(pop)
 
-typedef int (_cdecl *progressfunc)(int status, unsigned long value, unsigned long value2, void *callbackparam);
+typedef int (CDECL *progressfunc)(int status, unsigned long value, unsigned long value2, void *callbackparam);
 
 // #define kludge. If we are being compiled with MSVC, then just tack on a
 // leading underscore because Borland C++ will export Foo and Bar as _Foo
@@ -185,6 +242,7 @@ typedef int (_cdecl *progressfunc)(int status, unsigned long value, unsigned lon
 #define fm_read_signature                 _fm_read_signature
 #define fm_erase                          _fm_erase
 #define fm_program                        _fm_program
+#define fm_program2                       _fm_program2
 #define fm_verify                         _fm_verify
 #define fm_read_security_bits             _fm_read_security_bits
 #define fm_program_security_bits          _fm_program_security_bits
@@ -197,7 +255,6 @@ typedef int (_cdecl *progressfunc)(int status, unsigned long value, unsigned lon
 #define fm_read_data_to_buffer            _fm_read_data_to_buffer
 #define fm_reset                          _fm_reset
 #define fm_select_debug_mode              _fm_select_debug_mode
-#define fm_start_bootrom                  _fm_start_bootrom
 #define fm_start_bootloader               _fm_start_bootloader
 #define fm_read_clocks_bit                _fm_read_clocks_bit
 #define fm_program_clocks_bit             _fm_program_clocks_bit
@@ -231,64 +288,112 @@ typedef int (_cdecl *progressfunc)(int status, unsigned long value, unsigned lon
 #define fm_erase_eeprom_pages             _fm_erase_eeprom_pages
 #define fm_read_eeprom_crc                _fm_read_eeprom_crc
 #define fm_program_eeprom                 _fm_program_eeprom
+#define fm_activate_flash_bank            _fm_activate_flash_bank
+#define fm_program_eeprom_from_buffer     _fm_program_eeprom_from_buffer
+#define fm_read_eeprom_to_buffer          _fm_read_eeprom_to_buffer
 #endif
 
-DLL_FUNC fm_results * _cdecl fm_version(void);
-DLL_FUNC fm_results * _cdecl fm_longversion(void);
-DLL_FUNC fm_results * _cdecl fm_connect(void *options, int optionssize);
-DLL_FUNC fm_results * _cdecl fm_disconnect(void);
-DLL_FUNC fm_results * _cdecl fm_select_device(int new_device);
-DLL_FUNC fm_results * _cdecl fm_read_signature(void);
-DLL_FUNC fm_results * _cdecl fm_erase(int mode, unsigned long blocks, int protectisp, progressfunc progress, void *callbackparam, char *path);
-DLL_FUNC fm_results * _cdecl fm_program(char *path, int checksums, int fill, unsigned char fillbyte, int protectisp, char *jitcmd, char *jitoptions, int jittimeout, int finishopt, unsigned long options, progressfunc progress, void *callbackparam);
-DLL_FUNC fm_results * _cdecl fm_verify(char *path, int ignorechecksumlocs, progressfunc progress, void *callbackparam);
-DLL_FUNC fm_results * _cdecl fm_read_security_bits(void);
-DLL_FUNC fm_results * _cdecl fm_program_security_bits(int bits[]);
-DLL_FUNC fm_results * _cdecl fm_blank_check(unsigned long start, unsigned long end);
-DLL_FUNC fm_results * _cdecl fm_read_data(unsigned long start, unsigned long end, char *path, progressfunc progress, void *callbackparam);
-DLL_FUNC fm_results * _cdecl fm_read_boot_vector_status_byte(void);
-DLL_FUNC fm_results * _cdecl fm_erase_boot_vector_status_byte(void);
-DLL_FUNC fm_results * _cdecl fm_program_boot_vector(unsigned int value);
-DLL_FUNC fm_results * _cdecl fm_program_status_byte(unsigned char value);
-DLL_FUNC fm_results * _cdecl fm_read_data_to_buffer(unsigned long start, unsigned long end, unsigned char *buffer, progressfunc progress, void *callbackparam);
-DLL_FUNC fm_results * _cdecl fm_reset(int type, unsigned long address, unsigned long options);
-DLL_FUNC fm_results * _cdecl fm_select_debug_mode(int mode, char *path);
-DLL_FUNC fm_results * _cdecl fm_start_bootrom(int port, long baudrate, char *command, int halfduplex, int brk);
-DLL_FUNC fm_results * _cdecl fm_start_bootloader(int port, long baudrate, char *command, int halfduplex, int brk);
-DLL_FUNC fm_results * _cdecl fm_read_clocks_bit(void);
-DLL_FUNC fm_results * _cdecl fm_program_clocks_bit(void);
-DLL_FUNC fm_results * _cdecl fm_program_i2c_address(unsigned char value);
-DLL_FUNC fm_results * _cdecl fm_read_configuration(void);
-DLL_FUNC fm_results * _cdecl fm_program_configuration(unsigned long value);
-DLL_FUNC fm_results * _cdecl fm_clear_configuration_protection(void);
-DLL_FUNC fm_results * _cdecl fm_erase_pages(int pages[], int protectisp, progressfunc progress, void *callbackparam);
-DLL_FUNC fm_results * _cdecl fm_read_crc(unsigned long block);
-DLL_FUNC fm_results * _cdecl fm_read_misr(unsigned long block);
-DLL_FUNC fm_results * _cdecl fm_cancelautobaud(void);
-DLL_FUNC fm_results * _cdecl fm_set_password(unsigned char *password, int passwordlength);
-DLL_FUNC fm_results * _cdecl fm_reset_password(void);
-DLL_FUNC fm_results * _cdecl fm_verify_password(unsigned char *password, int passwordlength);
-DLL_FUNC void _cdecl         fm_set_timeouts(unsigned long shorttimeout, unsigned long longtimeout);
-DLL_FUNC void _cdecl         fm_set_default_timeouts(void);
-DLL_FUNC fm_results * _cdecl fm_enable_softice(void);
-DLL_FUNC fm_results * _cdecl fm_program_addl_security_bits(int bits[]);
-DLL_FUNC fm_results * _cdecl fm_erase_addl_security_bits(void);
-DLL_FUNC fm_results * _cdecl fm_read_addl_security_bits(void);
-DLL_FUNC fm_results * _cdecl fm_update_bootloader(char *path, progressfunc progress, void *callbackparam);
-DLL_FUNC fm_results * _cdecl fm_raw_connect(int port, long baudrate, int hwconfig);
-DLL_FUNC fm_results * _cdecl fm_raw_disconnect(void);
-DLL_FUNC fm_results * _cdecl fm_raw_transmit(unsigned char *buffer, unsigned int bytestowrite);
-DLL_FUNC fm_results * _cdecl fm_raw_receive(unsigned char *buffer, unsigned int bytestoread, unsigned int *bytesread);
-DLL_FUNC fm_results * _cdecl fm_raw_cancelreceive(void);
-DLL_FUNC fm_results * _cdecl fm_bootloader_version(void);
-DLL_FUNC fm_results * _cdecl fm_serial_number(void);
-DLL_FUNC fm_results * _cdecl fm_read_eeprom_security_bits(void);
-DLL_FUNC fm_results * _cdecl fm_program_eeprom_security_bits(int bits[]);
-DLL_FUNC fm_results * _cdecl fm_erase_eeprom_pages(int pages[], progressfunc progress, void *callbackparam);
-DLL_FUNC fm_results * _cdecl fm_read_eeprom_crc(unsigned long page);
-DLL_FUNC fm_results * _cdecl fm_program_eeprom(char *path, int checksums, int fill, unsigned char fillbyte, char *jitcmd, char *jitoptions, int jittimeout, progressfunc progress, void *callbackparam);
+#define DEFINE_FUNC0(retval, name) \
+  DLL_FUNC retval CDECL name(void); \
+  typedef retval (CDECL * TYPE_##name)(void);
+
+#define DEFINE_FUNC1(retval, name, param1) \
+  DLL_FUNC retval CDECL name(param1); \
+  typedef retval (CDECL * TYPE_##name)(param1);
+
+#define DEFINE_FUNC2(retval, name, param1, param2) \
+  DLL_FUNC retval CDECL name(param1, param2); \
+  typedef retval (CDECL * TYPE_##name)(param1, param2);
+
+#define DEFINE_FUNC3(retval, name, param1, param2, param3) \
+  DLL_FUNC retval CDECL name(param1, param2, param3); \
+  typedef retval (CDECL * TYPE_##name)(param1, param2, param3);
+
+#define DEFINE_FUNC4(retval, name, param1, param2, param3, param4) \
+  DLL_FUNC retval CDECL name(param1, param2, param3, param4); \
+  typedef retval (CDECL * TYPE_##name)(param1, param2, param3, param4);
+
+#define DEFINE_FUNC5(retval, name, param1, param2, param3, param4, param5) \
+  DLL_FUNC retval CDECL name(param1, param2, param3, param4, param5); \
+  typedef retval (CDECL * TYPE_##name)(param1, param2, param3, param4, param5);
+
+#define DEFINE_FUNC6(retval, name, param1, param2, param3, param4, param5, param6) \
+  DLL_FUNC retval CDECL name(param1, param2, param3, param4, param5, param6); \
+  typedef retval (CDECL * TYPE_##name)(param1, param2, param3, param4, param5, param6);
+
+#define DEFINE_FUNC9(retval, name, param1, param2, param3, param4, param5, param6, param7, param8, param9) \
+  DLL_FUNC retval CDECL name(param1, param2, param3, param4, param5, param6, param7, param8, param9); \
+  typedef retval (CDECL * TYPE_##name)(param1, param2, param3, param4, param5, param6, param7, param8, param9);
+
+#define DEFINE_FUNC11(retval, name, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11) \
+  DLL_FUNC retval CDECL name(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11); \
+  typedef retval (CDECL * TYPE_##name)(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11);
+
+#define DEFINE_FUNC12(retval, name, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12) \
+  DLL_FUNC retval CDECL name(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12); \
+  typedef retval (CDECL * TYPE_##name)(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12);
+
+DEFINE_FUNC0 (fm_results *, fm_version);
+DEFINE_FUNC0 (fm_results *, fm_longversion);
+DEFINE_FUNC2 (fm_results *, fm_connect,                      void *options, int optionssize);
+DEFINE_FUNC0 (fm_results *, fm_disconnect);
+DEFINE_FUNC2 (fm_results *, fm_select_device,                int new_device, unsigned long new_flashbank);
+DEFINE_FUNC0 (fm_results *, fm_read_signature);
+DEFINE_FUNC6 (fm_results *, fm_erase,                        int mode, int blocks[], int protectisp, progressfunc progress, void *callbackparam, char *path);
+DEFINE_FUNC12(fm_results *, fm_program,                      char *path, int checksums, int fill, unsigned char fillbyte, int protectisp, char *jitcmd, char *jitoptions, int jittimeout, int finishopt, unsigned long options, progressfunc progress, void *callbackparam);
+DEFINE_FUNC11(fm_results *, fm_program2,                     char *path, int checksums, int fill, unsigned char fillbyte, int protectisp, int productiontasknum, fm_productiontask *tasks, int finishopt, unsigned long options, progressfunc progress, void *callbackparam);
+DEFINE_FUNC4 (fm_results *, fm_verify,                       char *path, int ignorechecksumlocs, progressfunc progress, void *callbackparam);
+DEFINE_FUNC0 (fm_results *, fm_read_security_bits);
+DEFINE_FUNC1 (fm_results *, fm_program_security_bits,        int bits[]);
+DEFINE_FUNC2 (fm_results *, fm_blank_check,                  unsigned long start, unsigned long end);
+DEFINE_FUNC5 (fm_results *, fm_read_data,                    unsigned long start, unsigned long end, char *path, progressfunc progress, void *callbackparam);
+DEFINE_FUNC0 (fm_results *, fm_read_boot_vector_status_byte);
+DEFINE_FUNC0 (fm_results *, fm_erase_boot_vector_status_byte);
+DEFINE_FUNC1 (fm_results *, fm_program_boot_vector,          unsigned int value);
+DEFINE_FUNC1 (fm_results *, fm_program_status_byte,          unsigned char value);
+DEFINE_FUNC5 (fm_results *, fm_read_data_to_buffer,          unsigned long start, unsigned long end, unsigned char *buffer, progressfunc progress, void *callbackparam);
+DEFINE_FUNC3 (fm_results *, fm_reset,                        int type, unsigned long address, unsigned long options);
+DEFINE_FUNC2 (fm_results *, fm_select_debug_mode,            int mode, char *path);
+DEFINE_FUNC6 (fm_results *, fm_start_bootloader,             char *comportname, long baudrate, char *command, int halfduplex, int brk, int interfacetype);
+DEFINE_FUNC0 (fm_results *, fm_read_clocks_bit);
+DEFINE_FUNC0 (fm_results *, fm_program_clocks_bit);
+DEFINE_FUNC1 (fm_results *, fm_program_i2c_address,          unsigned char value);
+DEFINE_FUNC0 (fm_results *, fm_read_configuration);
+DEFINE_FUNC1 (fm_results *, fm_program_configuration,        unsigned long value);
+DEFINE_FUNC0 (fm_results *, fm_clear_configuration_protection);
+DEFINE_FUNC4 (fm_results *, fm_erase_pages,                  int pages[], int protectisp, progressfunc progress, void *callbackparam);
+DEFINE_FUNC1 (fm_results *, fm_read_crc,                     unsigned long block);
+DEFINE_FUNC1 (fm_results *, fm_read_misr,                    unsigned long block);
+DEFINE_FUNC0 (fm_results *, fm_cancelautobaud);
+DEFINE_FUNC2 (fm_results *, fm_set_password,                 unsigned char *password, int passwordlength);
+DEFINE_FUNC0 (fm_results *, fm_reset_password);
+DEFINE_FUNC2 (fm_results *, fm_verify_password,              unsigned char *password, int passwordlength);
+DEFINE_FUNC2 (void,         fm_set_timeouts,                 unsigned long shorttimeout, unsigned long longtimeout);
+DEFINE_FUNC0 (void,         fm_set_default_timeouts);
+DEFINE_FUNC0 (fm_results *, fm_enable_softice);
+DEFINE_FUNC1 (fm_results *, fm_program_addl_security_bits,   int bits[]);
+DEFINE_FUNC0 (fm_results *, fm_erase_addl_security_bits);
+DEFINE_FUNC0 (fm_results *, fm_read_addl_security_bits);
+DEFINE_FUNC3 (fm_results *, fm_update_bootloader,            char *path, progressfunc progress, void *callbackparam);
+DEFINE_FUNC4 (fm_results *, fm_raw_connect,                  char *comportname, long baudrate, int hwconfig, int interfacetype);
+DEFINE_FUNC0 (fm_results *, fm_raw_disconnect);
+DEFINE_FUNC2 (fm_results *, fm_raw_transmit,                 unsigned char *buffer, unsigned int bytestowrite);
+DEFINE_FUNC3 (fm_results *, fm_raw_receive,                  unsigned char *buffer, unsigned int bytestoread, unsigned int *bytesread);
+DEFINE_FUNC0 (fm_results *, fm_raw_cancelreceive);
+DEFINE_FUNC0 (fm_results *, fm_bootloader_version);
+DEFINE_FUNC0 (fm_results *, fm_serial_number);
+DEFINE_FUNC0 (fm_results *, fm_read_eeprom_security_bits);
+DEFINE_FUNC1 (fm_results *, fm_program_eeprom_security_bits, int bits[]);
+DEFINE_FUNC3 (fm_results *, fm_erase_eeprom_pages,           int pages[], progressfunc progress, void *callbackparam);
+DEFINE_FUNC1 (fm_results *, fm_read_eeprom_crc,              unsigned long page);
+DEFINE_FUNC9 (fm_results *, fm_program_eeprom,               char *path, int checksums, int fill, unsigned char fillbyte, char *jitcmd, char *jitoptions, int jittimeout, progressfunc progress, void *callbackparam);
+DEFINE_FUNC3 (void,         fm_set_autobaud_configuration,   unsigned long readtimeout, unsigned long writetimeout, int retries);
+DEFINE_FUNC1 (fm_results *, fm_activate_flash_bank,          int flashbank);
+DEFINE_FUNC3 (fm_results *, fm_program_eeprom_from_buffer,   unsigned char *buffer, unsigned long eepromaddress, unsigned long length);
+DEFINE_FUNC3 (fm_results *, fm_read_eeprom_to_buffer,        unsigned char *buffer, unsigned long eepromaddress, unsigned long length);
 
 #undef DLL_FUNC
 #undef CSRC
 
 #endif // _FMCOMMONH_
+

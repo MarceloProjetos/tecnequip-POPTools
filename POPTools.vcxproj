@@ -310,6 +310,7 @@
     <ClCompile Include="confdialog.cpp" />
     <ClCompile Include="EngineGUI.cpp" />
     <ClCompile Include="EngineRenderD2D.cpp" />
+    <ClCompile Include="expansiondialog.cpp" />
     <ClCompile Include="Firmware\App\modbus_rtu.c" />
     <ClCompile Include="KeyboardHandlers.cpp" />
     <ClCompile Include="KeyboardMap.cpp" />

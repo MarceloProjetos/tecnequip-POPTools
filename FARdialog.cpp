@@ -197,6 +197,11 @@ void ShowFARWindow(void)
         DispatchMessage(&msg);
     }
 
+	// Recebeu WM_QUIT! Mensagem foi removida entao precisamos gerar novamente para ser recebida por DoEvents()
+	if(ret == 0) {
+		PostQuitMessage(msg.wParam);
+	}
+
 	FARWindowDone = TRUE;
     DestroyWindow(FARWindow);
     return;

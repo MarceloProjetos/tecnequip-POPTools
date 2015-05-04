@@ -1,5 +1,7 @@
 #include "poptools.h"
 
+static HWND ConvertButton;
+
 static HWND ConfDialog;
 static HWND ConfigTreeView;
 static HWND GroupInfoProject;
@@ -17,6 +19,7 @@ static HWND GroupModBUSMaster;
 static HWND InfoProjectTextbox;
 static HWND InfoDeveloperTextbox;
 static HWND InfoDescriptionTextbox;
+static HWND InfoModelLabel;
 static HWND InfoFWVersionLabel;
 static HWND InfoBuildNumberLabel;
 static HWND InfoCompileDateLabel;
@@ -215,6 +218,15 @@ static LRESULT CALLBACK ConfDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
             HWND h = (HWND)lParam;
             if(h == OkButton && wParam == BN_CLICKED) {
                 DialogDone = TRUE;
+            } else if(h == ConvertButton && wParam == BN_CLICKED) {
+				// Atualiza a configuracao para a POP-8
+				LadderSettingsGeneral settings = ladder->getSettingsGeneral();
+				settings.model = eModelPLC_POP8;
+				ladder->setSettingsGeneral(settings);
+
+				// Desliga o botao e carrega novo nome do CLP selecionado
+				ShowWindow(ConvertButton, FALSE);
+				SendMessage(InfoModelLabel, WM_SETTEXT, 0, (LPARAM)"POP-8");
             } else if(h == CancelButton && wParam == BN_CLICKED) {
                 DialogDone = TRUE;
                 DialogCancel = TRUE;
@@ -520,24 +532,34 @@ static void MakeControls(void)
         5, 5, 285, 54, GroupInfoDetails, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Versão do Firmware:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Modelo do CLP:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
         5, 67, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    InfoFWVersionLabel = CreateWindowEx(0, WC_STATIC, "",
+    InfoModelLabel = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         155, 67, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(InfoModelLabel);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Versão do Firmware:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 87, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    InfoFWVersionLabel = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        155, 87, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
     NiceFont(InfoFWVersionLabel);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Número da Compilação:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 97, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+        5, 107, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     InfoBuildNumberLabel = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 97, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+        155, 107, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
     NiceFont(InfoBuildNumberLabel);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Data de Compilação:"),
@@ -552,13 +574,18 @@ static void MakeControls(void)
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Data de Gravação:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 157, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+        5, 147, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
     NiceFont(textLabel);
 
     InfoProgramDateLabel = CreateWindowEx(0, WC_STATIC, "",
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        155, 157, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
+        155, 147, 140, 21, GroupInfoDetails, NULL, Instance, NULL);
     NiceFont(InfoProgramDateLabel);
+
+    ConvertButton = CreateWindowEx(0, WC_BUTTON, _("Converter para POP-8"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        216, 207, 144, 23, ConfDialog, NULL, Instance, NULL); 
+    NiceFont(ConvertButton);
 
 	// Group - Network Communication
 	GroupCommNetwork = CreateWindowEx(0, WC_STATIC, "",
@@ -1037,6 +1064,16 @@ bool ShowConfDialog(eConfSection confSection)
 	SendMessage(InfoDeveloperTextbox  , WM_SETTEXT, 0, (LPARAM)settingsInfo  .Developer  .c_str());
 	SendMessage(InfoDescriptionTextbox, WM_SETTEXT, 0, (LPARAM)settingsInfo  .Description.c_str());
 	SendMessage(InfoFWVersionLabel    , WM_SETTEXT, 0, (LPARAM)settingDetails.FWVersion  .c_str());
+
+	string plcModel;
+	bool   showConvert;
+	switch(settingsGeneral.model) {
+	default:
+	case eModelPLC_POP7: plcModel = "POP-7"; showConvert =  TRUE; break;
+	case eModelPLC_POP8: plcModel = "POP-8"; showConvert = FALSE; break;
+	}
+	SendMessage(InfoModelLabel        , WM_SETTEXT, 0, (LPARAM)plcModel.c_str());
+	ShowWindow(ConvertButton, showConvert);
 
 	sprintf(buf, "%d", settingDetails.BuildNumber);
 	SendMessage(InfoBuildNumberLabel, WM_SETTEXT, 0, (LPARAM)buf);

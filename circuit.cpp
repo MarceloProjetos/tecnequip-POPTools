@@ -572,14 +572,14 @@ void SwitchProgram(LadderDiagram *newladder)
 // Start a new project. Give them one rung, with a coil (that they can
 // never delete) and nothing else.
 //-----------------------------------------------------------------------------
-bool NewProgram(void)
+bool NewProgram(eModelPLC model)
 {
 	if(ladderList.size() > 15) {
 		Error(_("Muitos diagramas abertos!"));
 		return false;
 	}
 
-	LadderDiagram *newladder = new LadderDiagram;
+	LadderDiagram *newladder = new LadderDiagram(model);
 	ladderList.push_back(newladder);
 
 	TCITEM container_tabs;

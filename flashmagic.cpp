@@ -76,6 +76,12 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	fm_results *presults;
 	fm_connectoptions_com options;
 	LadderSettingsDetails settings = ladder->getSettingsDetails();
+	eModelPLC plcModel             = ladder->getSettingsGeneral().model;
+
+	if(plcModel != eModelPLC_POP7) {
+		BaudRate = 115200;
+		hexFile = "c:\\lpc4078.hex";
+	}
 
 	// use standard timeouts
 	fm_set_default_timeouts();
@@ -84,15 +90,15 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	//fm_select_debug_mode(FM_DEBUG_MODE_ON, "fmtest.fmd");
 
 	options.osc            = 12.000;
-	options.port           = ComPort;
+	sprintf_s(options.comportname, FM_MAXCOMPORTNAMELEN, "COM%d", ComPort);
 	options.baudrate       = BaudRate;
-	options.selecteddevice = FM_LPC1768;
+	options.selecteddevice = (plcModel == eModelPLC_POP7) ? FM_LPC1768 : FM_LPC4078;
 	options.highspeed      = 0;
 	options.clocks         = 0;
 	options.halfduplex     = 0;
-	options.hwconfig       = FM_HWBOOTEXEC;
-	options.hwt1           = 200;
-	options.hwt2           = 200;
+	options.hwconfig       = FM_HWBOOTEXECRTS;
+	options.hwt1           = 50;
+	options.hwt2           = 100;
 	options.i2caddr        = 0;
 	options.maxbaudrate    = 230400;
 	options.usinginterface = 0;
@@ -139,7 +145,9 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 	}
 
 	// erase whole device except bootloader
-	presults = fm_erase(FM_BLOCKS, 0x3FFFFFFF, 1, EraseProgress, 0, NULL);
+	int blocks[FM_MAX_BLOCKS];
+	memset(blocks, 0, sizeof(int) * FM_MAX_BLOCKS);
+	presults = fm_erase(FM_DEVICE, blocks, 1, EraseProgress, 0, NULL);
 	if (presults->result != FM_OK)
 	{
 		switch (presults->result)

@@ -207,6 +207,9 @@ struct strSerialConfig {
 // Menu IDs
 
 #define MNU_NEW                 0x01
+#define MNU_NEW_POP7            0x01
+#define MNU_NEW_POP8            0x0f
+#define MNU_NEW                 0x01
 #define MNU_OPEN                0x02
 #define MNU_CLOSE               0x0d
 #define MNU_CLOSE_OTHERS        0x0e
@@ -301,6 +304,7 @@ struct strSerialConfig {
 #define MNU_INSERT_PARALLEL     0x5b
 
 #define MNU_MCU_SETTINGS        0x59
+#define MNU_MCU_EXPANSION       0x62
 #define MNU_MCU_PREFERENCES     0x5a
 #define MNU_PROCESSOR_0         0xa0
 
@@ -769,7 +773,7 @@ bool DeleteSelectedFromProgram(void);
 bool DeleteSelectedRung(void);
 bool InsertRung(bool afterCursor);
 bool PushRung(bool up);
-bool NewProgram(void);
+bool NewProgram(eModelPLC model = eModelPLC_POP7);
 void SwitchProgram(LadderDiagram *newladder);
 bool CloseProgram(LadderDiagram *diagram, bool isPOPToolsExiting = false);
 bool CloseAllPrograms(bool isPOPToolsExiting = false);
@@ -833,6 +837,8 @@ extern const char *SerialParityString[];
 bool ShowConfDialog(eConfSection confSection);
 extern const char *EncAbsConfig[];
 extern const char *EncoderConvModes[];
+// expansiondialog.cpp
+bool ShowExpansionDialog(void);
 // modbusdialog.cpp
 void PopulateModBUSMasterCombobox(HWND h, bool has_new);
 // helpdialog.cpp
@@ -846,6 +852,8 @@ void ShowFARWindow(void);
 void MoveFARWindow(RECT r);
 // prefdialog.cpp
 void ShowPrefDialog(void);
+// expansiondialog.cpp
+extern bool isBoardModelsListViewReady;
 
 // iomap.cpp
 unsigned int IoMap_GetIndex(mapDetails detailsIO);
@@ -862,6 +870,7 @@ void Error(const char *str, ...);
 void Error(const char *title, const char *str, va_list f);
 void Warning(const char *title, const char *str, ...);
 void csvSaveField(FILE *f, string name);
+char *AllocCharFromString(string s);
 long long ElapsedTime(bool ShowDialog, void (*fnc)(void *), void *data);
 HWND CreateWindowClient(DWORD exStyle, const char *className, const char *windowName,
     DWORD style, int x, int y, int width, int height, HWND parent,

@@ -1017,8 +1017,15 @@ void ProcessMenu(int code)
 	if((ladder->IsLocked() && !ladder->getContext().inSimulationMode) && code != MNU_EXIT) return;
 
     switch(code) {
-        case MNU_NEW:
-            NewProgram();
+        case MNU_NEW_POP7:
+			NewProgram(eModelPLC_POP7);
+            strcpy(CurrentCompileFile, "");
+            RefreshScrollbars();
+			RefreshControlsToSettings();
+            break;
+
+        case MNU_NEW_POP8:
+            NewProgram(eModelPLC_POP8);
             strcpy(CurrentCompileFile, "");
             RefreshScrollbars();
 			RefreshControlsToSettings();
@@ -1384,6 +1391,11 @@ cmp:
 
         case MNU_MCU_SETTINGS:
             ShowConfDialog(eConfSection_Default);
+	        RefreshControlsToSettings();
+            break;
+
+        case MNU_MCU_EXPANSION:
+            ShowExpansionDialog();
 	        RefreshControlsToSettings();
             break;
 
@@ -2187,9 +2199,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	WSACleanup();
 
 	DestroyRibbon();
+#ifdef _DEBUG
 	if(vectorNoMatchFound.size() > 0) {
 		Sleep(1);
 	}
+#endif
 	freeLangTables();
 
 	return 0;

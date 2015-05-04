@@ -15,14 +15,22 @@ class mapIO;
 class LadderElem;
 class LadderCircuit;
 class LadderDiagram;
+class LadderExpansion;
 
 /*** Estruturas para gravar / ler as configuracoes do ladder ***/
+
+/// Enumeracao com a lista de modelos de CLP
+enum eModelPLC {
+	eModelPLC_POP7 = 0, ///< Placa com entradas digitais
+	eModelPLC_POP8,     ///< Placa com entradas digitais
+};
 
 /// Configuracoes gerais do diagrama
 typedef struct {
 	bool			canSave;   ///< Flag que indica se o diagrama atual pode ser salvo
 	int				cycleTime; ///< Tempo de ciclo do CLP em milissegundos
 	int				mcuClock;  ///< Frequencia do processador do CLP
+	eModelPLC       model;     ///< Modelo do CLP deste projeto
 } LadderSettingsGeneral;
 
 /// Configuracoes da Interface Serial do CLP
@@ -293,9 +301,10 @@ typedef struct {
 	string         Description;
 
 	// Objeto responsavel por executar a acao. Se todos os ponteiros forem nulos, indica acao de desfazer do diagrama
-	mapIO         *io;     ///< Quando nao nulo, indica acao de desfazer do mapa de I/O
-	LadderElem    *elem;   ///< Quando nao nulo, indica acao de desfazer do elemento
-	LadderCircuit *subckt; ///< Quando nao nulo, indica acao de desfazer do circuito
+	mapIO           *io;     ///< Quando nao nulo, indica acao de desfazer do mapa de I/O
+	LadderElem      *elem;   ///< Quando nao nulo, indica acao de desfazer do elemento
+	LadderCircuit   *subckt; ///< Quando nao nulo, indica acao de desfazer do circuito
+	LadderExpansion *boards; ///< Quando nao nulo, indica acao de desfazer de placas de expansao
 
 	// Contexto Antes e Depois de executar a acao
 	LadderContext  contextAfter;  ///< Contexto do diagrama depois de executar esta acao
@@ -365,18 +374,21 @@ void UnallocElem(LadderElem *elem);
 
 /// Enumeracao com a lista das placas de expansao existentes
 enum eExpansionBoard {
-	eExpansionBoard_None = 0,      ///< Placa com entradas digitais
-	eExpansionBoard_DigitalInput,  ///< Placa com entradas digitais
-	eExpansionBoard_DigitalOutput, ///< Placa com saidas digitais
-	eExpansionBoard_AnalogInput    ///< Placa com entradas analogicas
+	eExpansionBoard_DigitalInput = 0, ///< Placa com entradas digitais
+	eExpansionBoard_DigitalOutput,    ///< Placa com saidas digitais
+	eExpansionBoard_AnalogInput,      ///< Placa com entradas analogicas
+	eExpansionBoard_LCD,              ///< Display de Cristal Liquido
+	eExpansionBoard_End               ///< Marcador de final de lista
 };
 
 /// Definicao de tipo que representa uma placa adicionada ao projeto
-struct sExpansionBoardItem {
-	unsigned long   id  ; ///< Identificador da placa. Numero crescente sempre!
-	string          name; ///< Nome da placa para o usuario
-	eExpansionBoard type; ///< Tipo da placa
-};
+typedef struct {
+	unsigned long   id     ; ///< Identificador da placa. Numero crescente sempre!
+	unsigned long   address; ///< Endereco da placa, permitindo que se tenham varias placas do mesmo tipo
+	string          name   ; ///< Nome da placa para o usuario
+	eExpansionBoard type   ; ///< Tipo da placa
+	bool            useIRQ ; ///< Flag que indica se essa placa usa interrupcao
+} tExpansionBoardItem;
 
 /// Classe que contem informacoes das placas de expansao adicionadas ao projeto
 class LadderExpansion {
@@ -385,11 +397,45 @@ private:
 	unsigned long currentId;
 
 	/// Lista de placas de expansao adicionadas
-	vector<sExpansionBoardItem> vecExpansionBoardList;
+	vector<tExpansionBoardItem> vecExpansionBoardList;
+
+	/// Ponteiro para o diagrama ao qual esta lista de placas de expansao esta associada
+	LadderDiagram *diagram;
+
+	/** Funcao para verificar se ja existe na lista de placas, uma placa com as caracteristicas fornecidas
+	 *  @param[in] id      Id de placa a ser ignorada ou zero para nao ignorar nenhuma
+	 *  @param[in] name    Nome da placa sendo pesquisada
+	 *  @param[in] type    Tipo de placa de expansao sendo pesquisada
+	 *  @param[in] address Endereco da placa, permitindo mais de uma do mesmo tipo
+	 *  @return            Indica se a placa existe (true) ou se nao existe (false)
+	 */
+	bool checkIfBoardExists(unsigned int id, string name, eExpansionBoard type, unsigned long address);
+
+	/// Enumeracao com os tipos de eventos de Undo/Redo suportados pelo diagrama
+	enum UndoRedoActionsEnum {
+		eCheckpoint = 0, ///< Marcador de Checkpoint
+		eBoardAdded,     ///< Acao de inclusao de placa de expansao
+		eBoardUpdated,   ///< Acao de alteracao de placa de expansao
+		eBoardRemoved    ///< Acao de remocao de placa de expansao
+	};
+
+	/// Estrutura de dados para acoes de Desfazer / Refazer
+	union UndoRedoData {
+		/// Estrutura com dados para registro de acao desfazer/refazer alteracao de configuracao de placas de expansao
+		struct {
+			unsigned long    id;      ///< Id da placa
+			char            *name;    ///< Ponteiro para string com o nome da placa
+			eExpansionBoard  type;    ///< Tipo da placa
+			unsigned long    address; ///< Endereco da placa
+			bool             useIRQ;  ///< Flag que indica se essa placa usa interrupcao
+		} BoardListChanged;
+	};
 
 public:
-	/// Construtor
-	LadderExpansion(void);
+	/** Construtor
+	 *  @param[in] diagram Diagrama para o qual esta lista de placas de expansao esta associada
+	 */
+	LadderExpansion(LadderDiagram *diagram);
 
 	/*** Funcoes para ler / gravar lista de placas de expansao para o disco ***/
 	/** Funcao que salva a lista de placas de expansao em disco
@@ -408,33 +454,73 @@ public:
 	void Clear(void);
 
 	/** Funcao para adicionar uma placa de expansao
-	 *  @param[in] name Nome da placa sendo adicionada
-	 *  @param[in] type Tipo de placa de expansao sendo adicionada
-	 *  @return         Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 *  @param[in] name    Nome da placa sendo adicionada
+	 *  @param[in] type    Tipo de placa de expansao sendo adicionada
+	 *  @param[in] address Endereco da placa, permitindo mais de uma do mesmo tipo
+	 *  @param[in] useIRQ  Flag que indica se a placa deve usar interrupcao
+	 *  @return            Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool Add(string name, eExpansionBoard type);
+	bool Add(string name, eExpansionBoard type, unsigned long address, bool useIRQ);
 
 	/** Funcao para remover uma placa da lista
-	 *  @param[in] name Nome da placa a ser removida
-	 *  @return         Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 *  @param[in] name       Nome da placa a ser removida
+	 *  @param[in] isUndoRedo Flag que indica se esta funcao foi chamada durante uma operacao de desfazer/refazer
+	 *  @return               Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool Remove(string name);
+	bool Remove(unsigned long id, bool isUndoRedo = false);
+
+	/** Funcao para alterar uma placa da lista
+	 *  @param[in] id         Identificador da placa
+	 *  @param[in] name       Novo nome da placa de expansao
+	 *  @param[in] type       Novo tipo de placa de expansao
+	 *  @param[in] address    Endereco da placa, permitindo mais de uma do mesmo tipo
+	 *  @param[in] useIRQ     Flag que indica se a placa deve usar interrupcao
+	 *  @param[in] isUndoRedo Flag que indica se esta funcao foi chamada durante uma operacao de desfazer/refazer
+	 *  @return               Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool Update(unsigned long id, string name, eExpansionBoard type, unsigned long address, bool useIRQ, bool isUndoRedo = false);
 
 	/** Funcao para ler a lista de placas adicionadas ao projeto
 	 *  @return Retorna a lista de placas adicionadas ao projeto
 	 */
-	vector< sExpansionBoardItem > getExpansionBoardList(void) { return vecExpansionBoardList; }
+	vector< tExpansionBoardItem > getBoardList(void) { return vecExpansionBoardList; }
+
+	/** Funcao que retorna o nome da placa especificada
+	 *  @param[in] type Tipo de placa que se deseja obter o nome
+	 *  @return         Retorna o nome da placa especificada
+	 */
+	string                        getBoardName(eExpansionBoard type);
 
 	/** Funcao para receber uma placa a partir de seu Id
 	 *  @param[in] id Identificador da placa requisitada
 	 *  @return       Retorna a placa solicitada ou nome em branco se nao for encontrada
 	 */
-	sExpansionBoardItem getById(unsigned int id);
+	tExpansionBoardItem getById(unsigned long id);
 
 	/** Funcao que retorna o numero de I/Os de uma placa, conforme tipo especificado
 	 *  @return Quantidade de I/Os do tipo especificado para a placa fornecida.
 	 */
 	unsigned int getQuantityIO(eExpansionBoard typeBoard, eType typeIO);
+
+	/** Funcao que retorna a descricao da placa de expansao
+	 *  @param[in] type Tipo da placa que se deseja obter a descricao
+	 *  @return         String contendo a descricao da placa
+	 */
+	string getDescription(eExpansionBoard type);
+
+	/** Funcao que carrega a lista de placas de expansao em uma lista da interface de usuario
+	 *  @param[in,out] data Variavel utilizada para transmitir / retornar dados da funcao
+	 *  @return             Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool PopulateListGUI(void *data);
+
+	/** Funcao que executa uma acao de desfazer / refazer registrada para o diagrama
+	 *  @param[in]     IsUndo    Indice se a acao se refere a operacao de Desfazer (true) ou Refazer (false)
+	 *  @param[in]     isDiscard Indica se devemos descartar a acao (true) ou executa-la (false)
+	 *  @param[in,out] action    Variavel contendo os dados para Desfazer/Refazer a operacao
+	 *  @return                  Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
 /*** Classes representando os elementos do Ladder ***/
@@ -3171,8 +3257,8 @@ private:
 	/// Indica se existem acoes registradas ao fechar um checkpoint 
 	bool isCheckpointEmpty;
 
-	/// Classe que gerencia as placas de expansao adicionadas ao projeto
-	LadderExpansion expansionBoards;
+	/// Ponteiro para objeto que gerencia as placas de expansao adicionadas ao projeto
+	LadderExpansion *expansionBoards;
 
 	/// Vetor que contem as linhas (circuitos) existentes no diagrama
 	vector<LadderRung *> rungs;
@@ -3307,8 +3393,10 @@ private:
 	/// Nome do arquivo atualmente carregado, permitindo o salvamento sem perguntar o nome ao usuario
 	string currentFilename;
 
-	/// Funcao que inicializa todas as variaveis do diagrama, garantindo que esteja com valores validos e possa ser utilizado
-	void Init(void);
+	/** Funcao que inicializa todas as variaveis do diagrama, garantindo que esteja com valores validos e possa ser utilizado
+	 *  @param[in] model Modelo do CLP para o qual este diagrama sera desenvolvido
+	 */
+	void Init(eModelPLC model);
 
 	/** Funcao que retorna o circuito ao qual o elemento pertence
 	 *  @param[in] elem Ponteiro para o elemento sendo buscado
@@ -3334,9 +3422,18 @@ private:
 	 */
 	bool InsertParallel(LadderElem *elem);
 
+	/** Funcao que inicializa o objeto. Utilizada pelos construtores apenas
+	 *  @param[in] model Modelo do CLP para o qual este diagrama sera desenvolvido
+	 */
+	void InitObject(eModelPLC model);
+
 public:
-	/// Construtor
+	/// Construtor sem definicao de modelo de CLP, utiliza o default
 	LadderDiagram(void);
+	/** Construtor que recebe definicao de modelo de CLP
+	 *  @param[in] model Modelo do CLP para o qual este diagrama sera desenvolvido
+	 */
+	LadderDiagram(eModelPLC model);
 	/// Destrutor
 	~LadderDiagram(void);
 
@@ -3741,7 +3838,50 @@ public:
 	/** Funcao que retorna a lista de placas de expansao adicionadas ao projeto
 	 *  @return Lista de placas de expansao
 	 */
-	vector<sExpansionBoardItem> getExpansionBoardList(void);
+	vector<tExpansionBoardItem> getBoardList(void);
+
+	/** Funcao que retorna uma placa de expansao adicionada ao projeto pelo seu Id
+	 *  @param[in] id ID para a placa de expansao desejada
+	 *  @return       Placa de expansao com id passado como parametro
+	 */
+	tExpansionBoardItem getBoardById(unsigned long id);
+
+	/** Funcao que retorna a descricao da placa de expansao
+	 *  @param[in] typeBoard Tipo da placa que se deseja obter a descricao
+	 *  @return              String contendo a descricao da placa
+	 */
+	string getBoardDescription(eExpansionBoard typeBoard);
+
+	/** Funcao que retorna uma placa de expansao adicionada ao projeto pelo seu Id
+	 *  @param[in] id ID para a placa de expansao desejada
+	 *  @return       Placa de expansao com id passado como parametro
+	 */
+	unsigned int getBoardQtyIO(eExpansionBoard typeBoard, eType typeIO);
+
+	/** Funcao que adiciona uma placa de expansao ao projeto
+	 *  @param[in] board Dados da placa a inserir
+	 *  @return          Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool         boardAdd(tExpansionBoardItem board);
+
+	/** Funcao que remove uma placa de expansao do projeto
+	 *  @param[in] id Id da placa a remover
+	 *  @return       Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool         boardDel(unsigned int id);
+
+	/** Funcao que atualiza os dados de placa de expansao existente no projeto
+	 *  @param[in] id    Id da placa a atualizar
+	 *  @param[in] board Novos dados para a placa indicada
+	 *  @return          Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool         boardUpdate(unsigned int id, tExpansionBoardItem board);
+
+	/** Funcao que retorna uma placa de expansao adicionada ao projeto pelo seu Id
+	 *  @param[in] data Variavel utilizada para transmitir / retornar dados da funcao
+	 *  @return         Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
+	 */
+	bool         boardPopulateListGUI(void *data);
 
 	/*** Funcoes relacionadas com I/O ***/
 
@@ -3880,6 +4020,9 @@ public:
 	 *  @param[in] item Indice com a posicao no vetor de I/Os
 	 */
 	void            ShowIoMapDialog         (int item);
+	/** Funcao que pede para recarregar a lista de I/Os da caixa de dialogo de atribuicao. Chamada quando o combobox de placa de expansao eh selecionado
+	 */
+	void            LoadIoPinList           (void);
 	/// Funcao que exibe o menu com opcoes relacionadas ao contexto atual
 	void            ShowContextMenu         (void);
 	/** Funcao que carrega o combobox de bits que podem ser atribuidos a um determinado I/O e retorna a posicao do bit atual na lista carregada
@@ -3924,6 +4067,9 @@ public:
 	 *  @param[in] sortby Campo que deve ser usado para ordenar a lista de I/Os
 	 */
 	void            sortIO                  (eSortBy sortby);
+
+	/// Funcao para informar que a lista de I/O deve ser 
+	void            updateGuiIO              (void);
 
 	/*** Funcoes que indicam se existe algum I/O que use a UART e o PWM, respectivamente ***/
 

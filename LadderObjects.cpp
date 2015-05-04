@@ -115,9 +115,31 @@ void UnallocElem(LadderElem *elem)
 }
 
 // Classe LadderExpansion
-LadderExpansion::LadderExpansion(void)
+LadderExpansion::LadderExpansion(LadderDiagram *pDiagram)
 {
-	currentId = 0;
+	currentId = 1; // Inicia em 1 para que id = 0 indique placa invalida
+
+	// Associa a lista de placas de expansao ao diagrama fornecido
+	diagram = pDiagram;
+}
+
+bool LadderExpansion::checkIfBoardExists(unsigned int id, string name, eExpansionBoard type, unsigned long address)
+{
+	vector<tExpansionBoardItem>::iterator it;
+	for(it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); it++) {
+		if(it->id == id) {
+			continue; // Se for id para ignorar, cotinua no loop
+		}
+		if(it->name == name) {
+			return true; // Ja existe outra placa com o mesmo nome!
+		}
+		if(it->type == type && it->address == address) {
+			return true; // Ja existe esta mesma placa
+		}
+	}
+
+	// Se chegou aqui entao a placa nao existe
+	return false;
 }
 
 void LadderExpansion::Clear(void)
@@ -125,43 +147,174 @@ void LadderExpansion::Clear(void)
 	vecExpansionBoardList.clear();
 }
 
-bool LadderExpansion::Add(string name, eExpansionBoard type)
+bool LadderExpansion::Add(string name, eExpansionBoard type, unsigned long address, bool useIRQ)
 {
-	vector<sExpansionBoardItem>::iterator it;
-	for(it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); it++) {
-		if(it->name == name) {
-			return false; // Placa ja existe!
-		}
+	if(checkIfBoardExists(0, name, type, address)) {
+		return false; // Placa ja existe!
 	}
 
-	sExpansionBoardItem item;
-	item.id   = currentId++;
-	item.name = name;
-	item.type = type;
+	// Adiciona a placa conforme dados fornecidos
+	tExpansionBoardItem board;
 
-	vecExpansionBoardList.push_back(item);
+	board.id      = currentId++;
+	board.name    = name;
+	board.type    = type;
+	board.address = address;
+	board.useIRQ  = useIRQ;
+
+	vecExpansionBoardList.push_back(board);
+
+	diagram->CheckpointBegin(_("Inserir Placa de Expansão"));
+
+	// Registro da acao para desfazer / refazer
+	UndoRedoAction action;
+	UndoRedoData *data = new UndoRedoData;
+
+	action.action        = eBoardAdded;
+	action.contextAfter  = getEmptyContext();
+	action.contextBefore = diagram->getContext();
+	action.data          = data;
+	action.io            = nullptr;
+	action.elem          = nullptr;
+	action.subckt        = nullptr;
+	action.boards        = this;
+
+	data->BoardListChanged.id      = board.id;
+	data->BoardListChanged.name    = AllocCharFromString(board.name);;
+	data->BoardListChanged.type    = board.type;
+	data->BoardListChanged.address = board.address;
+	data->BoardListChanged.useIRQ = board.useIRQ;
+
+	diagram->RegisterAction(action);
+
+	diagram->CheckpointEnd();
+
+	diagram->ProgramChanged();
 
 	return true; // Placa adicionada com sucesso!
 }
 
-bool LadderExpansion::Remove(string name)
+bool LadderExpansion::Remove(unsigned long id, bool isUndoRedo)
 {
-	vector<sExpansionBoardItem>::iterator it;
+	vector<tExpansionBoardItem>::iterator it;
 	for(it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); it++) {
-		if(it->name == name) {
+		if(it->id == id) {
+			if(!isUndoRedo) {
+				diagram->CheckpointBegin(_("Remover Placa de Expansão"));
+
+				// Registro da acao para desfazer / refazer
+				UndoRedoAction action;
+				UndoRedoData *data = new UndoRedoData;
+
+				action.action        = eBoardRemoved;
+				action.contextAfter  = getEmptyContext();
+				action.contextBefore = diagram->getContext();
+				action.data          = data;
+				action.io            = nullptr;
+				action.elem          = nullptr;
+				action.subckt        = nullptr;
+				action.boards        = this;
+
+				data->BoardListChanged.id      = it->id;
+				data->BoardListChanged.name    = AllocCharFromString(it->name);;
+				data->BoardListChanged.type    = it->type;
+				data->BoardListChanged.address = it->address;
+				data->BoardListChanged.useIRQ  = it->useIRQ;
+
+				diagram->RegisterAction(action);
+
+				diagram->CheckpointEnd();
+			}
+
+			// Remove a placa indicada
 			vecExpansionBoardList.erase(it);
-			return false; // Placa removida!
+
+			diagram->ProgramChanged();
+
+			return true; // Placa removida!
 		}
 	}
 
 	return false; // Placa nao encontrada!
 }
 
-sExpansionBoardItem LadderExpansion::getById(unsigned int id)
+bool LadderExpansion::Update(unsigned long id, string name, eExpansionBoard type, unsigned long address, bool useIRQ, bool isUndoRedo)
 {
-	sExpansionBoardItem item = { 0, "", eExpansionBoard_None };
+	// Primeiro verifica se ja existe uma placa com este nome ou endereco
+	if(checkIfBoardExists(id, name, type, address)) {
+		return false; // Placa ja existe!
+	}
 
-	vector<sExpansionBoardItem>::iterator it;
+	// Agora busca o ponteiro para a placa na lista de placas
+	vector<tExpansionBoardItem>::iterator it;
+	for(it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); it++) {
+		if(it->id == id) {
+			break; // Placa encontrada, interrompe a busca
+		}
+	}
+
+	// Se a placa foi encontrada, atualiza os dados e retorna true, indicando sucesso
+	if(it != vecExpansionBoardList.end()) {
+		if(!isUndoRedo) {
+			diagram->CheckpointBegin(_("Alterar Placa de Expansão"));
+
+			// Registro da acao para desfazer / refazer
+			UndoRedoAction action;
+			UndoRedoData *data = new UndoRedoData;
+
+			action.action        = eBoardUpdated;
+			action.contextAfter  = getEmptyContext();
+			action.contextBefore = diagram->getContext();
+			action.data          = data;
+			action.io            = nullptr;
+			action.elem          = nullptr;
+			action.subckt        = nullptr;
+			action.boards        = this;
+
+			// Atualiza a placa conforme dados fornecidos
+			data->BoardListChanged.id      = it->id;
+			data->BoardListChanged.name    = AllocCharFromString(it->name);
+			data->BoardListChanged.type    = it->type;
+			data->BoardListChanged.address = it->address;
+			data->BoardListChanged.useIRQ  = it->useIRQ;
+
+			diagram->RegisterAction(action);
+
+			diagram->CheckpointEnd();
+
+			diagram->ProgramChanged();
+		}
+
+		it->name    = name;
+		it->type    = type;
+		it->address = address;
+		it->useIRQ  = useIRQ;
+
+		return true;
+	}
+
+	return false; // Placa nao encontrada!
+}
+
+string LadderExpansion::getBoardName(eExpansionBoard type)
+{
+	string name = "???";
+
+	switch(type) {
+		case eExpansionBoard_DigitalInput : name = "DI" ; break;
+		case eExpansionBoard_DigitalOutput: name = "DO" ; break;
+		case eExpansionBoard_AnalogInput  : name = "AI" ; break;
+		case eExpansionBoard_LCD          : name = "LCD"; break;
+	}
+
+	return name;
+}
+
+tExpansionBoardItem LadderExpansion::getById(unsigned long id)
+{
+	tExpansionBoardItem item = { 0, 0, "", eExpansionBoard_DigitalInput };
+
+	vector<tExpansionBoardItem>::iterator it;
 	for(it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); it++) {
 		if(it->id == id) {
 			item = *it;
@@ -177,24 +330,53 @@ unsigned int LadderExpansion::getQuantityIO(eExpansionBoard typeBoard, eType typ
 	switch(typeBoard) {
 	case eExpansionBoard_DigitalInput:
 		if(typeIO == eType_DigInput) return 16; // Possui 16 entradas digitais
+		break;
+
 	case eExpansionBoard_DigitalOutput:
 		if(typeIO == eType_DigOutput) return 8; // Possui 8 saidas digitais
+		break;
+
 	case eExpansionBoard_AnalogInput:
 		if(typeIO == eType_ReadADC) return 2; // Possui 2 entradas analogicas
+		break;
 	}
 
 	return 0; // Se chegou aqui, a placa nao possui este tipo de I/O.
+}
+
+string LadderExpansion::getDescription(eExpansionBoard type)
+{
+	string description = _("Placa inexistente");
+	switch(type) {
+	case eExpansionBoard_DigitalInput: description =
+		_("Placa de Entradas Digitais");
+		break;
+	case eExpansionBoard_DigitalOutput: description =
+		_("Placa de Saídas Digitais");
+		break;
+	case eExpansionBoard_AnalogInput: description =
+		_("Placa de Entradas Analógicas");
+		break;
+	case eExpansionBoard_LCD: description =
+		_("Display LCD");
+		break;
+	}
+
+	return description;
 }
 
 bool LadderExpansion::Save(FILE *f)
 {
 	// Primeiro grava a quantidade de placas na lista e o id atual
 	if(fwrite_uint(f, vecExpansionBoardList.size()) && fwrite_ulong(f, currentId)) {
-		vector<sExpansionBoardItem>::iterator it;
+		vector<tExpansionBoardItem>::iterator it;
 
+		// Agora percorre a lista, gravando os dados de cada placa
 		for(it = vecExpansionBoardList.begin(); it != vecExpansionBoardList.end(); it++) {
 			if(
 				!fwrite_ulong (f, it->id) ||
+				!fwrite_ulong (f, it->address) ||
+				!fwrite_bool  (f, it->useIRQ) ||
 				!fwrite_string(f, it->name) || 
 				!fwrite_uint  (f, it->type)) {
 					break; // Erro na gravacao!
@@ -224,21 +406,24 @@ bool LadderExpansion::Load(FILE *f, unsigned int version)
 	// Primeiro carrega a quantidade de placas na lista e o id atual
 	if(fread_uint(f, &size) && fread_ulong(f, &currentId)) {
 		unsigned int  i, iType;
-		sExpansionBoardItem item;
+		tExpansionBoardItem item;
 
+		// Agora carrega cada placa, adicionando-a a lista
 		for(i = 0; i < size; i++) {
 			if(
 				!fread_ulong (f, &item.id) ||
+				!fread_ulong (f, &item.address) ||
+				!fread_bool  (f, &item.useIRQ) ||
 				!fread_string(f, &(item.name)) || 
 				!fread_uint  (f, &(iType))) {
 					break; // Erro na leitura!
 			} else {
 				switch(iType) {
 					default:
-					case eExpansionBoard_None         : item.type = eExpansionBoard_None         ; break;
 					case eExpansionBoard_DigitalInput : item.type = eExpansionBoard_DigitalInput ; break;
 					case eExpansionBoard_DigitalOutput: item.type = eExpansionBoard_DigitalOutput; break;
 					case eExpansionBoard_AnalogInput  : item.type = eExpansionBoard_AnalogInput  ; break;
+					case eExpansionBoard_LCD          : item.type = eExpansionBoard_LCD          ; break;
 				}
 
 				vecExpansionBoardList.push_back(item);
@@ -254,6 +439,73 @@ bool LadderExpansion::Load(FILE *f, unsigned int version)
 	Clear();
 
 	return false;
+}
+
+bool LadderExpansion::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
+{
+	UndoRedoData        *data  = (UndoRedoData *)action.data;
+	tExpansionBoardItem  board;
+
+	board.id      = data->BoardListChanged.id;
+	board.name    = data->BoardListChanged.name;
+	board.type    = data->BoardListChanged.type;
+	board.address = data->BoardListChanged.address;
+
+	switch(action.action) {
+	case eBoardAdded:
+		if(isDiscard) {
+			// Nada a fazer...
+		} else if(IsUndo) {
+			// Se ocorreu uma insercao, a placa eh o ultimo elemento da lista
+			vecExpansionBoardList.pop_back();
+		} else {
+			vecExpansionBoardList.push_back(board);
+		}
+		break;
+
+	case eBoardUpdated:
+		if(isDiscard) {
+			// Nada a fazer...
+		} else {
+			tExpansionBoardItem tmp = getById(board.id);
+			Update(board.id, board.name, board.type, board.address, board.useIRQ, true);
+
+			delete [] data->BoardListChanged.name;
+
+			data->BoardListChanged.name    = AllocCharFromString(tmp.name);
+			data->BoardListChanged.type    = tmp.type;
+			data->BoardListChanged.address = tmp.address;
+			data->BoardListChanged.useIRQ  = tmp.useIRQ;
+
+			// Atualiza a tela para que se exiba corretamente a lista de I/Os
+			diagram->updateGuiIO();
+		}
+
+		break;
+
+	case eBoardRemoved:
+		if(isDiscard) {
+			// Nada a fazer...
+		} else if(IsUndo) {
+			vecExpansionBoardList.push_back(board);
+		} else {
+			Remove(board.id, true);
+
+			// Atualiza a tela para que se exiba corretamente a lista de I/Os
+			diagram->updateGuiIO();
+		}
+		break;
+
+	default: return false;
+	}
+
+	// Se estamos descartando, desaloca a estrutura que representa a acao
+	if(isDiscard) {
+		delete [] data->BoardListChanged.name;
+		delete data;
+	}
+
+	return true; // Nada mais a fazer
 }
 
 //Classe LadderElem
@@ -299,6 +551,7 @@ void LadderElem::setProperties(LadderContext context, void *propData)
 	action.io            = nullptr;
 	action.elem          = this;
 	action.subckt        = nullptr;
+	action.boards        = nullptr;
 
 	context.Diagram->CheckpointBegin(_("Alterado Elemento"));
 	context.Diagram->RegisterAction(action);
@@ -1520,7 +1773,7 @@ bool LadderElemCounter::internalGenerateIntCode(IntCode &ic)
 	const char *name = sname.c_str();
 
 	string smax = Diagram->getNameIO(prop.idMax);
-	const char *cmax = ic.VarFromExpr(smax.c_str(), "$scratch2");
+	const char *cmax = ic.VarFromExpr(smax.c_str(), "$scratch2_int");
 
 	const char *stateInOut = ic.getStateInOut();
     string storeName = ic.GenSymOneShot();
@@ -1544,8 +1797,8 @@ bool LadderElemCounter::internalGenerateIntCode(IntCode &ic)
         case ELEM_CTD: {
             ic.Op(INT_IF_BIT_SET, stateInOut);
 				ic.Op(INT_IF_BIT_CLEAR, storeName.c_str());
-                    ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 1);
-					ic.Op(INT_SET_VARIABLE_SUBTRACT, name, name, "$scratch", 0, 0);
+                    ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch_int", 1);
+					ic.Op(INT_SET_VARIABLE_SUBTRACT, name, name, "$scratch_int", 0, 0);
                 ic.Op(INT_END_IF);
             ic.Op(INT_END_IF);
 			ic.Op(INT_COPY_BIT_TO_BIT, storeName.c_str(), stateInOut);
@@ -2096,8 +2349,8 @@ bool LadderElemCmp::internalGenerateIntCode(IntCode &ic)
 	const char *op1 = sop1.c_str();
 	const char *op2 = sop2.c_str();
 
-	const char *cop1 = ic.VarFromExpr(op1, "$scratch");
-	const char *cop2 = ic.VarFromExpr(op2, "$scratch2");
+	const char *cop1 = ic.VarFromExpr(op1, "$scratch_int");
+	const char *cop2 = ic.VarFromExpr(op2, "$scratch2_int");
 
 	switch(getWhich()) {
 	case ELEM_GRT:
@@ -2417,8 +2670,8 @@ bool LadderElemMath::internalGenerateIntCode(IntCode &ic)
 	}
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 
-	const char *cop1 = ic.VarFromExpr(op1, "$scratch");
-	const char *cop2 = ic.VarFromExpr(op2, "$scratch2");
+	const char *cop1 = ic.VarFromExpr(op1, "$scratch_int");
+	const char *cop2 = ic.VarFromExpr(op2, "$scratch2_int");
 
 	int intOp;
 	switch(getWhich()) {
@@ -4266,14 +4519,14 @@ bool LadderElemReadAdc::internalGenerateIntCode(IntCode &ic)
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 		ic.Op(INT_READ_ADC, name);
 		if(!settings.isCelsius) {
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 9);
-			ic.Op(INT_SET_VARIABLE_MULTIPLY, name, name, "$scratch", 0, 0);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch_int", 9);
+			ic.Op(INT_SET_VARIABLE_MULTIPLY, name, name, "$scratch_int", 0, 0);
 
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 5);
-			ic.Op(INT_SET_VARIABLE_DIVIDE, name, name, "$scratch", 0, 0);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch_int", 5);
+			ic.Op(INT_SET_VARIABLE_DIVIDE, name, name, "$scratch_int", 0, 0);
 
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", 32);
-			ic.Op(INT_SET_VARIABLE_ADD, name, name, "$scratch", 0, 0);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch_int", 32);
+			ic.Op(INT_SET_VARIABLE_ADD, name, name, "$scratch_int", 0, 0);
 		}
 	ic.Op(INT_END_IF);
 
@@ -6628,8 +6881,8 @@ bool LadderElemLUT::internalGenerateIntCode(IntCode &ic)
 	ic.Op(INT_IF_BIT_SET, ic.getStateInOut());
 
 	for(i = 0; i < prop.count; i++) {
-		ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch", i);
-		ic.Op(INT_IF_VARIABLE_EQUALS_VARIABLE, index, "$scratch");
+		ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch_int", i);
+		ic.Op(INT_IF_VARIABLE_EQUALS_VARIABLE, index, "$scratch_int");
 			ic.Op(INT_SET_VARIABLE_TO_LITERAL, dest, prop.vals[i]);
 		ic.Op(INT_END_IF);
 	}
@@ -6961,15 +7214,15 @@ bool LadderElemPiecewise::internalGenerateIntCode(IntCode &ic)
 
 		ic.Op(INT_IF_VARIABLE_LES_LITERAL, index, prop.vals[i*2]+1);
 
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch" , prop.vals[(i-1)*2]);
-			ic.Op(INT_SET_VARIABLE_SUBTRACT  , "$scratch" , index     , "$scratch" , 0, 0);
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2", thisDx);
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch3", thisDy);
-			ic.Op(INT_SET_VARIABLE_MULTIPLY  , dest       , "$scratch", "$scratch3", 0, 0);
-			ic.Op(INT_SET_VARIABLE_DIVIDE    , dest       , dest      , "$scratch2", 0, 0);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch_int" , prop.vals[(i-1)*2]);
+			ic.Op(INT_SET_VARIABLE_SUBTRACT  , "$scratch_int" , index     , "$scratch_int" , 0, 0);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch2_int", thisDx);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch3_int", thisDy);
+			ic.Op(INT_SET_VARIABLE_MULTIPLY  , dest           , "$scratch_int", "$scratch3_int", 0, 0);
+			ic.Op(INT_SET_VARIABLE_DIVIDE    , dest           , dest          , "$scratch2_int", 0, 0);
 
-			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch" , prop.vals[(i-1)*2 + 1]);
-			ic.Op(INT_SET_VARIABLE_ADD       , dest       , dest      , "$scratch" , 0, 0);
+			ic.Op(INT_SET_VARIABLE_TO_LITERAL, "$scratch_int" , prop.vals[(i-1)*2 + 1]);
+			ic.Op(INT_SET_VARIABLE_ADD       , dest           , dest          , "$scratch_int" , 0, 0);
 
 		ic.Op(INT_END_IF);
 	}
@@ -9008,6 +9261,7 @@ bool LadderCircuit::InsertSubckt(LadderContext context, unsigned int pos, Subckt
 		action.io            = nullptr;
 		action.elem          = nullptr;
 		action.subckt        = this;
+		action.boards        = nullptr;
 
 		context.Diagram->RegisterAction(action);
 	}
@@ -9038,6 +9292,7 @@ bool LadderCircuit::DeleteSubckt(LadderContext context, unsigned int pos,
 			action.io            = nullptr;
 			action.elem          = nullptr;
 			action.subckt        = this;
+			action.boards        = nullptr;
 
 			context.Diagram->RegisterAction(action);
 		}
@@ -9077,6 +9332,7 @@ bool LadderCircuit::MoveSubckt(LadderContext context, unsigned int pos, LadderCi
 			action.io            = nullptr;
 			action.elem          = nullptr;
 			action.subckt        = this;
+			action.boards        = nullptr;
 
 			context.Diagram->RegisterAction(action);
 		}
@@ -9756,7 +10012,7 @@ bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 }
 
 // Classe LadderDiagram
-void LadderDiagram::Init(void)
+void LadderDiagram::Init(eModelPLC model)
 {
 	isLocked                       = false;
 	isDialogShown                  = false;
@@ -9788,6 +10044,7 @@ void LadderDiagram::Init(void)
 	LadderSettings.General.canSave     = true; // Permite salvar o arquivo (sobreescrita)
 	LadderSettings.General.cycleTime   = 10000; // Ciclo de 10 ms
 	LadderSettings.General.mcuClock    = 100000000; // Frequencia da cpu: 100 MHz
+	LadderSettings.General.model       = model; // Modelo do CLP, recebido como parametro
 
 	LadderSettings.Uart.UART           = 0; // Modo da UART: 8 bits de dados, sem paridade, 1 bit de parada
 	LadderSettings.Uart.baudRate       = 9600; // Velocidade da UART: 9600 bps
@@ -9835,9 +10092,20 @@ void LadderDiagram::Init(void)
 
 LadderDiagram::LadderDiagram(void)
 {
+	InitObject(eModelPLC_POP7);
+}
+
+LadderDiagram::LadderDiagram(eModelPLC model)
+{
+	InitObject(model);
+}
+
+void LadderDiagram::InitObject(eModelPLC model)
+{
 	int i;
 
-	IO = new mapIO(this);
+	IO              = new mapIO          (this);
+	expansionBoards = new LadderExpansion(this);
 
 	mcu = nullptr;
 	for(i = 0; i < NUM_SUPPORTED_MCUS; i++) 
@@ -9853,7 +10121,7 @@ LadderDiagram::LadderDiagram(void)
 	// pois a propria funcao DrawTXT se encarregara de limpa-la ao terminar
 	fncDrawChars = nullptr;
 
-	Init();
+	Init(model);
 
 	NewDiagram();
 }
@@ -9863,12 +10131,13 @@ LadderDiagram::~LadderDiagram(void)
 	FreeDiagram();
 
 	delete IO;
+	delete expansionBoards;
 }
 
 void LadderDiagram::ClearDiagram(void)
 {
 	FreeDiagram();
-	Init();
+	Init(LadderSettings.General.model);
 }
 
 void LadderDiagram::FreeDiagram(void)
@@ -10361,6 +10630,7 @@ bool LadderDiagram::NewRung(bool isAfter)
 	action.io            = nullptr;
 	action.elem          = nullptr;
 	action.subckt        = nullptr;
+	action.boards        = nullptr;
 
 	RegisterAction(action);
 
@@ -10371,12 +10641,12 @@ bool LadderDiagram::NewRung(bool isAfter)
 	LadderElem *elem = new LadderElemPlaceHolder(this);
 	(*it)->rung->AddElement(elem, context);
 
+	// Indica que houve alteracao no programa
+	ProgramChanged();
+
 	SelectElement(elem, SELECTED_RIGHT);
 
 	CheckpointEnd();
-
-	// Indica que houve alteracao no programa
-	ProgramChanged();
 
 	return true;
 }
@@ -10429,6 +10699,7 @@ bool LadderDiagram::PushRung(int rung, bool up)
 	action.io            = nullptr;
 	action.elem          = nullptr;
 	action.subckt        = nullptr;
+	action.boards        = nullptr;
 
 	CheckpointBegin(_("Mover Linha"));
 	RegisterAction(action);
@@ -10472,6 +10743,7 @@ bool LadderDiagram::DeleteRung(int rung, bool isFreeDiagram)
 	action.io            = nullptr;
 	action.elem          = nullptr;
 	action.subckt        = nullptr;
+	action.boards        = nullptr;
 
 	RegisterAction(action);
 
@@ -10597,6 +10869,7 @@ bool LadderDiagram::PasteRung(LadderClipboard clipboard, bool isAfter)
 		action.io            = nullptr;
 		action.elem          = nullptr;
 		action.subckt        = nullptr;
+		action.boards        = nullptr;
 
 		RegisterAction(action);
 
@@ -10731,6 +11004,9 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 			// Especificamente para o caso do ModBUS, que precisa referenciar o node que ele usa.
 			elem->doPostRemove();
 
+			// Indica que houve alteracao no programa
+			ProgramChanged();
+
 			elem->updateIO(this, true);
 			rungs[rung]->rung->RemoveUnnecessarySubckts(context);
 			rungs[rung]->rung->AddPlaceHolderIfNoEOL(context, nullptr);
@@ -10750,9 +11026,6 @@ bool LadderDiagram::DelElement(LadderElem *elem)
 			}
 
 			CheckpointEnd();
-
-			// Indica que houve alteracao no programa
-			ProgramChanged();
 
 			updateContext();
 
@@ -11196,10 +11469,12 @@ bool LadderDiagram::Save(string filename, bool isBackup)
 		fwrite_string(f, LadderSettings.Details.FWVersion  ) &&
 		fwrite_long  (f, LadderSettings.Details.BuildNumber) &&
 		fwrite_time_t(f, LadderSettings.Details.CompileDate) &&
-		fwrite_time_t(f, LadderSettings.Details.ProgramDate)
+		fwrite_time_t(f, LadderSettings.Details.ProgramDate) &&
+
+		fwrite_uint  (f, LadderSettings.General.model      )
 		) {
 			// Configuracoes OK, agora devemos gravar a lista de placas de expansao
-			ret = expansionBoards.Save(f) && IO->Save(f);
+			ret = expansionBoards->Save(f);
 
 			// Se OK, agora devemos gravar o mapa de I/O
 			if(ret == true) {
@@ -11428,8 +11703,22 @@ bool LadderDiagram::Load(string filename)
 					fread_time_t(f, &LadderSettings.Details.CompileDate) &&
 					fread_time_t(f, &LadderSettings.Details.ProgramDate)
 					) {
-						// Configuracoes OK, agora devemos ler a lista de placas de expansao
-						bool ret = expansionBoards.Load(f, fileVersion);
+						// Configuracoes OK, agora devemos ler a lista de placas de expansao e modelo do CLP
+						bool ret = true;
+						if(fileVersion >= 2) { // A partir da versao 2 existem os dois CLPs e placas de expansao
+							unsigned int model;
+							ret = fread_uint(f, &model) &&
+									expansionBoards->Load(f, fileVersion);
+							if(ret == true) {
+								switch(model) {
+								default:
+								case eModelPLC_POP7: LadderSettings.General.model = eModelPLC_POP7; break;
+								case eModelPLC_POP8: LadderSettings.General.model = eModelPLC_POP8; break;
+								}
+							}
+						} else {
+							LadderSettings.General.model = eModelPLC_POP7;
+						}
 
 						// Configuracoes OK, agora devemos ler o mapa de I/O
 						if(ret == true) {
@@ -11608,6 +11897,7 @@ void LadderDiagram::RegisterSettingsChanged(void)
 	action.io            = nullptr;
 	action.elem          = nullptr;
 	action.subckt        = nullptr;
+	action.boards        = nullptr;
 
 	RegisterAction(action);
 
@@ -11747,6 +12037,7 @@ int LadderDiagram::mbCreateNode(LadderMbNode node)
 		action.io            = nullptr;
 		action.elem          = nullptr;
 		action.subckt        = nullptr;
+		action.boards        = nullptr;
 
 		RegisterAction(action);
 
@@ -11784,6 +12075,7 @@ int LadderDiagram::mbUpdateNode(int NodeID, LadderMbNode node)
 			action.io            = nullptr;
 			action.elem          = nullptr;
 			action.subckt        = nullptr;
+			action.boards        = nullptr;
 
 			RegisterAction(action);
 
@@ -11821,6 +12113,7 @@ void LadderDiagram::mbDeleteNode(int NodeID)
 		action.io            = nullptr;
 		action.elem          = nullptr;
 		action.subckt        = nullptr;
+		action.boards        = nullptr;
 
 		RegisterAction(action);
 
@@ -11930,6 +12223,7 @@ void LadderDiagram::mbAddRef(int NodeID)
 		action.io            = nullptr;
 		action.elem          = nullptr;
 		action.subckt        = nullptr;
+		action.boards        = nullptr;
 
 		RegisterAction(action);
 
@@ -11958,6 +12252,7 @@ void LadderDiagram::mbDelRef(int NodeID)
 		action.io            = nullptr;
 		action.elem          = nullptr;
 		action.subckt        = nullptr;
+		action.boards        = nullptr;
 
 		RegisterAction(action);
 
@@ -11968,9 +12263,54 @@ void LadderDiagram::mbDelRef(int NodeID)
 
 /*** Funcoes relacionadas com Placas de Expansao ***/
 
-vector<sExpansionBoardItem> LadderDiagram::getExpansionBoardList(void)
+vector<tExpansionBoardItem> LadderDiagram::getBoardList(void)
 {
-	return expansionBoards.getExpansionBoardList();
+	return expansionBoards->getBoardList();
+}
+
+tExpansionBoardItem LadderDiagram::getBoardById(unsigned long id)
+{
+	return expansionBoards->getById(id);
+}
+
+unsigned int LadderDiagram::getBoardQtyIO(eExpansionBoard typeBoard, eType typeIO)
+{
+	return expansionBoards->getQuantityIO(typeBoard, typeIO);
+}
+
+string LadderDiagram::getBoardDescription(eExpansionBoard typeBoard)
+{
+	return expansionBoards->getDescription(typeBoard);
+}
+
+bool LadderDiagram::boardAdd(tExpansionBoardItem board)
+{
+	return expansionBoards->Add(board.name, board.type, board.address, board.useIRQ);
+}
+
+bool LadderDiagram::boardDel(unsigned int id)
+{
+	bool ret;
+
+	CheckpointBegin(_("Remover Placa de Expansão"));
+
+	ret = expansionBoards->Remove(id);
+
+	// Se houve falha, desfaz modificacoes. Se nao houve falha, atualiza atribuicoes
+	if(ret == false) {
+		CheckpointRollback();
+	} else {
+		IO->updateAssignments();
+		IO->updateGUI();
+	}
+	CheckpointEnd();
+
+	return ret;
+}
+
+bool LadderDiagram::boardUpdate(unsigned int id, tExpansionBoardItem board)
+{
+	return expansionBoards->Update(id, board.name, board.type, board.address, board.useIRQ);
 }
 
 /*** Funcoes relacionadas com I/O ***/
@@ -12438,6 +12778,11 @@ bool LadderDiagram::equalsNameIO(string name1, string name2)
 	return name1 == name2;
 }
 
+void LadderDiagram::LoadIoPinList(void)
+{
+	IO->LoadPinList();
+}
+
 bool LadderDiagram::IsValidNumber(string varnumber)
 {
 	const char *number = varnumber.c_str();
@@ -12459,6 +12804,11 @@ bool LadderDiagram::IsValidNumber(string varnumber)
 void LadderDiagram::sortIO(eSortBy sortby)
 {
 	IO->Sort(sortby);
+	IO->updateGUI();
+}
+
+void LadderDiagram::updateGuiIO(void)
+{
 	IO->updateGUI();
 }
 
@@ -12949,6 +13299,8 @@ bool LadderDiagram::ExecuteAction(bool isUndo, bool isDiscard, UndoRedoAction Ac
 		return Action.elem->DoUndoRedo(isUndo, isDiscard, Action);
 	} else if(Action.subckt != nullptr) {
 		return Action.subckt->DoUndoRedo(isUndo, isDiscard, Action);
+	} else if(Action.boards != nullptr) {
+		return Action.boards->DoUndoRedo(isUndo, isDiscard, Action);
 	} else {
 		return DoUndoRedo(isUndo, isDiscard, Action);
 	}
@@ -12971,6 +13323,7 @@ void LadderDiagram::CheckpointBegin(string description)
 	cp.io      = nullptr;
 	cp.elem    = nullptr;
 	cp.subckt  = nullptr;
+	cp.boards  = nullptr;
 
 	cp.contextBefore = cp.contextAfter = context;
 
@@ -13148,6 +13501,9 @@ void LadderDiagram::UndoRedo(bool isUndo)
 
 	// Operacao finalizada, a tela ja pode ser desbloqueada
 	context.isDrawBlocked = false;
+
+	// Quando a tela esta bloqueada, a lista nao eh atualizada. Agora verifica se precisa redesenhar
+	IO->updateGUI(false);
 }
 
 bool LadderDiagram::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)

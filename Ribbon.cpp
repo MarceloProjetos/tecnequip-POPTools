@@ -387,6 +387,8 @@ public:
 
 #define EXEC_OPCODE(cmd,op) case cmd: opcode = op; break;
 
+			EXEC_OPCODE(cmdFileNewPOP7            , MNU_NEW_POP7               );
+			EXEC_OPCODE(cmdFileNewPOP8            , MNU_NEW_POP8               );
 			EXEC_OPCODE(cmdFileNew                , MNU_NEW                    );
 			EXEC_OPCODE(cmdFileOpen               , MNU_OPEN                   );
 			EXEC_OPCODE(cmdFileClose              , MNU_CLOSE                  );
@@ -485,6 +487,7 @@ public:
 			EXEC_OPCODE(cmdInstrWriteModBUS       , MNU_INSERT_WRITE_MODBUS    );
 
 			EXEC_OPCODE(cmdConfig                 , MNU_MCU_SETTINGS           );
+			EXEC_OPCODE(cmdExpansion              , MNU_MCU_EXPANSION          );
 			EXEC_OPCODE(cmdSettings               , MNU_MCU_PREFERENCES        );
 
 			EXEC_OPCODE(cmdSimulation             , MNU_SIMULATION_MODE        );

@@ -92,9 +92,28 @@
     <Command Name       = "FileNew"
              Symbol     = "cmdFileNew"
              Id         = "30100"
-             LabelTitle = "Novo">
-      <Command.TooltipTitle      >Novo (Ctrl+N)</Command.TooltipTitle>
-      <Command.TooltipDescription>Criar um novo Diagrama Ladder.</Command.TooltipDescription>
+             LabelTitle = "Novo...">
+      <Command.TooltipTitle      >Novo...</Command.TooltipTitle>
+      <Command.TooltipDescription>Novo diagrama para POP-7 (Ctrl+N)</Command.TooltipDescription>
+    </Command>
+
+    <Command Name       = "FileNewPOP7"
+             Symbol     = "cmdFileNewPOP7"
+             Id         = "30112"
+             LabelTitle = "Novo diagrama para POP-7">
+      <Command.TooltipTitle      >Novo diagrama para POP-7 (Ctrl+N)</Command.TooltipTitle>
+      <Command.TooltipDescription>Criar um novo Diagrama Ladder para POP-7.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/FileNewHH.bmp"/>
+      </Command.LargeImages>
+    </Command>
+
+    <Command Name       = "FileNewPOP8"
+             Symbol     = "cmdFileNewPOP8"
+             Id         = "30110"
+             LabelTitle = "Novo diagrama para POP-8">
+      <Command.TooltipTitle      >Novo diagrama para POP-8</Command.TooltipTitle>
+      <Command.TooltipDescription>Criar um novo Diagrama Ladder para POP-8.</Command.TooltipDescription>
       <Command.LargeImages>
         <Image Source="imgs/FileNewHH.bmp"/>
       </Command.LargeImages>
@@ -2633,7 +2652,14 @@
             <RecentItems CommandName="RecentList" EnablePinning="false" />
           </ApplicationMenu.RecentItems>
           <MenuGroup>
-            <Button CommandName="FileNew"  />
+            <SplitButton CommandName="FileNew" >
+              <SplitButton.MenuGroups>
+                <MenuGroup Class="MajorItems">
+                  <Button CommandName="FileNewPOP7"/>
+                  <Button CommandName="FileNewPOP8"/>
+                </MenuGroup>
+              </SplitButton.MenuGroups>
+            </SplitButton>
             <Button CommandName="FileOpen" />
             <Button CommandName="FileSave" />
             <Button CommandName="FileSaveAsLadder" />

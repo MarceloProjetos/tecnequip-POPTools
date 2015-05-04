@@ -9,6 +9,8 @@ class mapIO {
 private:
 	LadderDiagram *diagram;
 
+	unsigned int  pinOffset; // Offset dos pinos entre placas de expansao
+
 	unsigned int  seqNo;
 	unsigned long countIO;
 	unsigned long selectedIO;
@@ -27,6 +29,9 @@ private:
 	// Lista de itens da janela de I/O e funcao para adicionar itens para a lista
 	vector< pair<string, int> > vecDialogItemList;
 	void AddDialogItem(string name, int pin);
+
+	// Funcao que carrega uma lista de I/Os conforme placa selecionada
+	void LoadPinList  (unsigned long id);
 
 	unsigned int maxNameSize;
 
@@ -141,8 +146,11 @@ public:
 	bool Save(FILE *f);
 
 	// Funcoes relacionadas com a interface grafica
-	void updateGUI      (void);
+	void updateGUI      (bool doRedraw = true); // Se nao especificado, forcar redesenhar a lista
 	void ShowIoMapDialog(int item);
+
+	// Funcao que carrega uma lista de I/Os conforme placa selecionada. Chamada pelo diagrama.
+	void LoadPinList    (void);
 
 	// Funcao que executa uma acao de desfazer / refazer
 	bool DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
