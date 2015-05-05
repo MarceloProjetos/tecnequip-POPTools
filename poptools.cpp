@@ -1716,8 +1716,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
 		case WM_MOUSEMOVE: {
-            int x = LOWORD(lParam);
-            int y = HIWORD(lParam);
+            int x = GET_X_LPARAM(lParam);
+            int y = GET_Y_LPARAM(lParam);
 
             if((y > (IoListTop - 9)) && (y < (IoListTop + 3))) {
                 SetCursor(LoadCursor(NULL, IDC_SIZENS));

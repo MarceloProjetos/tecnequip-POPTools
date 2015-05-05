@@ -84,7 +84,8 @@ HRESULT EngineRenderD2D::CreateRenderTarget(HWND hwnd)
 			D2D1::PixelFormat(
 				DXGI_FORMAT_UNKNOWN,
 				D2D1_ALPHA_MODE_PREMULTIPLIED
-			)
+			),
+			96.0, 96.0
 		),
 		D2D1::HwndRenderTargetProperties(
 			hwnd,
