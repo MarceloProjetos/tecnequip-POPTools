@@ -1400,6 +1400,9 @@ void mapIO::LoadPinList(unsigned long id)
 						sprintf(buf, "%c%d", expPort, i+1);
 						AddDialogItem(buf, pin);
 					}
+				} else if(detailsIO.type == eType_ReadADC) {
+					sprintf(buf, "ADC%d", i+1);
+					AddDialogItem(buf, pin);
 				}
 			}
 		}
@@ -1670,7 +1673,7 @@ void mapIO::ShowIoMapDialog(int item)
 
 		r.bottom = rOK.top - 6;
 
-		SetWindowPos(PinList, NULL, 6, 18, r.right - r.left, r.bottom - r.top, SWP_NOZORDER);
+		SetWindowPos(PinList, NULL, 6, 53, r.right - r.left, r.bottom - r.top, SWP_NOZORDER);
 	}
 
 	SendMessage(textLabelName, WM_SETTEXT, 0, (LPARAM)(getName(id).c_str()));

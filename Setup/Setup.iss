@@ -23,6 +23,7 @@ OutputBaseFilename=POPTools_Setup_v2.1
 Compression=lzma
 SolidCompression=yes
 ChangesAssociations=yes
+MinVersion="6.1"
 
 [Languages]
 Name: "ptbr"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"; LicenseFile: "..\Setup\EULA_PTBR.txt"

@@ -10,7 +10,7 @@ static HWND BoardUseInterruptCheckbox;
 static HWND BoardUpdateButton;
 static HWND BoardCancelButton;
 static HWND BoardNameTextBox;
-static HWND BoardAddressTextBox;
+static HWND BoardAddressComboBox;
 static HWND BoardImageLabel;
 static HWND BoardInfoLabel;
 
@@ -115,7 +115,7 @@ static void MakeControls(void)
         10, 17, 140, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Modelos Compatíveis:"),
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Placas Compatíveis:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         360, 17, 140, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
@@ -125,10 +125,10 @@ static void MakeControls(void)
         70, 290, 175, 21, ExpansionDialog, NULL, Instance, NULL);
     NiceFont(BoardNameTextBox);
 
-    BoardAddressTextBox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
-        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,   
-        135, 317, 110, 21, ExpansionDialog, NULL, Instance, NULL);
-    NiceFont(BoardAddressTextBox);
+    BoardAddressComboBox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        120, 317, 125, 121, ExpansionDialog, NULL, Instance, NULL);
+    NiceFont(BoardAddressComboBox);
 
 	BoardUpdateButton = CreateWindowEx(0, WC_BUTTON, _("Confirmar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
@@ -140,7 +140,7 @@ static void MakeControls(void)
         250, 315, 75, 23, ExpansionDialog, NULL, Instance, NULL); 
     NiceFont(BoardCancelButton);
 
-	BoardUseInterruptCheckbox = CreateWindowEx(0, WC_BUTTON, "Usar Interrupção?",
+	BoardUseInterruptCheckbox = CreateWindowEx(0, WC_BUTTON, _("Usar Interrupção?"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
         375, 290, 150, 21, ExpansionDialog, NULL, Instance, NULL);
     NiceFont(BoardUseInterruptCheckbox);
@@ -160,17 +160,12 @@ static void MakeControls(void)
         8, 47, 100, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("0x"),
-		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        110, 47, 15, 21, grouper, NULL, Instance, NULL);
-    NiceFont(textLabel);
-
 	// Imagem da placa de expansao
 	BoardImageLabel = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
         SS_BITMAP | SS_BLACKRECT | SS_GRAYFRAME | SS_LEFT | SS_LEFTNOWORDWRAP | SS_RIGHT | SS_WHITERECT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
         8, 85, 64, 64, grouper, NULL, Instance, NULL);
 
-    BoardInfoLabel = CreateWindowEx(0, WC_STATIC, _("Endereço (hex):  0xEndereço (hex):  0xEndereço (hex):  0xEndereço (hex):  0xEndereço (hex):  0xEndereço (hex):  0xEndereço (hex):  0xEndereço (hex):  0xEndereço (hex):  0xEndereço (hex):  0x\nEndereço (hex):  0x\nEndereço (hex):  0x\nEndereço (hex):  0x\nEndereço (hex):  0x\nEndereço (hex):  0x\nEndereço (hex):  0x"),
+    BoardInfoLabel = CreateWindowEx(0, WC_STATIC, "",
 		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         80, 70, 483, 93, grouper, NULL, Instance, NULL);
     NiceFont(BoardInfoLabel);
@@ -184,6 +179,23 @@ static void MakeControls(void)
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
         505, 445, 70, 23, ExpansionDialog, NULL, Instance, NULL); 
     NiceFont(CancelButton);
+}
+
+void LoadAddressCombobox(eExpansionBoard type, unsigned int address = 0)
+{
+	ComboBox_ResetContent(BoardAddressComboBox);
+
+	unsigned int i;
+	vector<unsigned int> addresses = ladder->getBoardAddresses(type);
+
+	for(i = 0; i < addresses.size(); i++) {
+		char buf[10];
+		sprintf(buf, "0x%X", addresses[i]);
+		ComboBox_AddString(BoardAddressComboBox, buf);
+		if(addresses[i] == address || (!address && !i)) {
+			ComboBox_SetCurSel(BoardAddressComboBox, i);
+		}
+	}
 }
 
 void UpdateControls(HWND lv, unsigned int id)
@@ -208,16 +220,13 @@ void UpdateControls(HWND lv, unsigned int id)
 		currentItem = item.id;
 		type        = item.type;
 
-		sprintf(buf, "%x", item.address);
-
 		Edit_SetText(BoardNameTextBox   , item.name.c_str());
-		Edit_SetText(BoardAddressTextBox, buf);
+		LoadAddressCombobox(type, item.address);
 		Static_SetText(BoardInfoLabel, ladder->getBoardDescription(item.type).c_str());
 		Button_SetCheck(BoardUseInterruptCheckbox, item.useIRQ ? TRUE : FALSE);
 	} else {
 		currentItem = -1; // Nenhum item atual
 		Edit_SetText(BoardNameTextBox   , "");
-		Edit_SetText(BoardAddressTextBox, "");
 		Button_SetCheck(BoardUseInterruptCheckbox, FALSE);
 
 		// Carrega descricao da placa selecionada (se houver)
@@ -226,6 +235,10 @@ void UpdateControls(HWND lv, unsigned int id)
 			type = static_cast<eExpansionBoard>(index);
 			strcpy(buf, ladder->getBoardDescription(type).c_str());
 			Static_SetText(BoardInfoLabel, buf);
+			LoadAddressCombobox(type);
+		} else {
+			// Nada selecionado, envia placa invalida para limpar a lista
+			LoadAddressCombobox(eExpansionBoard_End);
 		}
 	}
 
@@ -327,7 +340,7 @@ static LRESULT CALLBACK ExpansionDialogProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						item.name = buf;
 
 						// Carregamos o novo endereco
-						Edit_GetText(BoardAddressTextBox, buf, MAX_NAME_LEN);
+						ComboBox_GetText(BoardAddressComboBox, buf, sizeof(buf));
 						item.address = strtol(buf, NULL, 16);
 
 						// Carregamos a flag de interrupcao
@@ -361,7 +374,7 @@ static LRESULT CALLBACK ExpansionDialogProc(HWND hwnd, UINT msg, WPARAM wParam, 
 							item.type = static_cast<eExpansionBoard>(index);
 
 							// Carregamos o novo endereco
-							Edit_GetText(BoardAddressTextBox, buf, MAX_NAME_LEN);
+							ComboBox_GetText(BoardAddressComboBox, buf, sizeof(buf));
 							item.address = strtol(buf, NULL, 16);
 
 							// Carregamos a flag de interrupcao
@@ -431,7 +444,7 @@ bool ShowExpansionDialog(void)
 	// Seleciona o primeiro item das placas disponiveis
 	ListView_SetItemState(BoardModelsListView, 0, LVIS_SELECTED, LVIS_SELECTED);
 
-	ladder->CheckpointBegin(_("Alterar Placas de Expansão"));
+	ladder->CheckpointBegin(_("Alterar Placa de Expansão"));
 
 	MSG msg;
     DWORD ret;

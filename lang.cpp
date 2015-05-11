@@ -922,6 +922,26 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "POPTools - Diagrama Ladder exportado\n\n", "POPTools - Exported Ladder Diagram\n\n");
 		addTextToLangTable(l, "Converter para POP-8", "Convert to POP-8");
 		addTextToLangTable(l, "Placa:", "Board:");
+		addTextToLangTable(l, "Placas de Expansão", "Expansion Boards");
+		addTextToLangTable(l, "Modelo", "Model");
+		addTextToLangTable(l, "Endereço", "Address");
+		addTextToLangTable(l, "Lista de Placas", "Boards List");
+		addTextToLangTable(l, "Placas Adicionadas:", "Added Boards:");
+		addTextToLangTable(l, "Placas Compatíveis:", "Compatible Boards:");
+		addTextToLangTable(l, "Confirmar", "Confirm");
+		addTextToLangTable(l, "Desfazer", "Discard");
+		addTextToLangTable(l, "Endereço (hex):", "Board");
+		addTextToLangTable(l, "Placa de Entradas Digitais", "Digital Inputs Board");
+		addTextToLangTable(l, "Placa de Saídas Digitais", "Digital Outputs Board");
+		addTextToLangTable(l, "Display LCD", "LCD Display");
+		addTextToLangTable(l, "Placa de Entradas Analógicas", "Analog Inputs Board");
+		addTextToLangTable(l, "Adicionar Placa de Expansão", "Add Expansion Board");
+		addTextToLangTable(l, "Alterar Placa de Expansão", "Update Expansion Board");
+		addTextToLangTable(l, "Tem certeza que deseja remover a placa '%s' ?", "Are you sure do you want to remove '%s' board?");
+		addTextToLangTable(l, "Remover Placa de Expansão", "Remove Expansion Board");
+		addTextToLangTable(l, "Atualizar atribuições", "Update assignments");
+		addTextToLangTable(l, "Ocorreu um erro durante a operação. Verifique os dados e tente novamente!", "There was an error during operation. Please check values and try again!");
+		addTextToLangTable(l, "Usar Interrupção?", "Use Interrupt?");
 	} else if(id == 2) { // Idioma Espanhol
 		l = newLangTableChar();
 
@@ -1776,6 +1796,26 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "POPTools - Diagrama Ladder exportado\n\n", "POPTools - Exported Ladder Diagram\n\n");
 		addTextToLangTable(l, "Converter para POP-8", "Convert to POP-8");
 		addTextToLangTable(l, "Placa:", "Board:");
+		addTextToLangTable(l, "Placas de Expansão", "Expansion Boards");
+		addTextToLangTable(l, "Modelo", "Model");
+		addTextToLangTable(l, "Endereço", "Address");
+		addTextToLangTable(l, "Lista de Placas", "Boards List");
+		addTextToLangTable(l, "Placas Adicionadas:", "Added Boards:");
+		addTextToLangTable(l, "Placas Compatíveis:", "Compatible Boards:");
+		addTextToLangTable(l, "Confirmar", "Confirm");
+		addTextToLangTable(l, "Desfazer", "Discard");
+		addTextToLangTable(l, "Endereço (hex):", "Board");
+		addTextToLangTable(l, "Placa de Entradas Digitais", "Digital Inputs Board");
+		addTextToLangTable(l, "Placa de Saídas Digitais", "Digital Outputs Board");
+		addTextToLangTable(l, "Display LCD", "LCD Display");
+		addTextToLangTable(l, "Placa de Entradas Analógicas", "Analog Inputs Board");
+		addTextToLangTable(l, "Adicionar Placa de Expansão", "Add Expansion Board");
+		addTextToLangTable(l, "Alterar Placa de Expansão", "Update Expansion Board");
+		addTextToLangTable(l, "Tem certeza que deseja remover a placa '%s' ?", "Are you sure do you want to remove '%s' board?");
+		addTextToLangTable(l, "Remover Placa de Expansão", "Remove Expansion Board");
+		addTextToLangTable(l, "Atualizar atribuições", "Update assignments");
+		addTextToLangTable(l, "Ocorreu um erro durante a operação. Verifique os dados e tente novamente!", "There was an error during operation. Please check values and try again!");
+		addTextToLangTable(l, "Usar Interrupção?", "Use Interrupt?");
 	} else {
 		l = nullptr;
 	}

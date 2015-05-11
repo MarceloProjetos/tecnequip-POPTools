@@ -8400,7 +8400,7 @@ bool LadderExpansion::PopulateListGUI(void *data)
 		ListView_SetItemText(hListAdded, i, 1, buf);
 
 		// Coluna 3 - Endereco
-		sprintf(buf, "%x", it->address);
+		sprintf(buf, "0x%X", it->address);
 		ListView_SetItemText(hListAdded, i, 2, buf);
 	}
 

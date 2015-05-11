@@ -613,7 +613,7 @@ static void MakeControls(void)
     ip = CreateWindowEx(0, WC_IPADDRESS, _("IP"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         155, 67, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
-//    NiceFont(ip);
+    NiceFont(ip);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Máscara:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -623,7 +623,7 @@ static void MakeControls(void)
     mask = CreateWindowEx(0, WC_IPADDRESS, _("MASK"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         155, 97, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
-//    NiceFont(mask);
+    NiceFont(mask);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("Gateway:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -633,7 +633,7 @@ static void MakeControls(void)
     gw = CreateWindowEx(0, WC_IPADDRESS, _("GW"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         155, 127, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
-//    NiceFont(gw);
+    NiceFont(gw);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("DNS:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -643,7 +643,7 @@ static void MakeControls(void)
     dns = CreateWindowEx(0, WC_IPADDRESS, _("DNS"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         155, 157, 140, 21, GroupCommNetwork, NULL, Instance, NULL);
-//    NiceFont(dns);
+    NiceFont(dns);
 
 	// Group - Time Zone
     GroupCommTimeZone = CreateWindowEx(0, WC_STATIC, "",
@@ -949,7 +949,7 @@ static void MakeControls(void)
     MBip = CreateWindowEx(0, WC_IPADDRESS, _("IP"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         145, 105, 140, 21, GroupModBUSMaster, NULL, Instance, NULL);
-//    NiceFont(MBip);
+    NiceFont(MBip);
 
     textLabel = CreateWindowEx(0, WC_STATIC, _("ID do ModBUS:"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
@@ -1011,21 +1011,36 @@ static void MakeControls(void)
 
 bool ShowConfDialog(eConfSection confSection)
 {
+	static bool isFirstTime = true;
 	bool changed = false;
 	unsigned int i;
 
-	POINT size = { 517, 237 };
-	POINT start = getWindowStart(size);
+	// Devido ao bug com os objetos de endereco IP que nao podem ter a fonte selecionada ou a tela toda fica com
+	// a fonte errada na segunda vez que a janela eh aberta, criamos a janela apenas 1 vez. Ao inves de destrui-la
+	// no final, apenas ocultamos.
+	if(isFirstTime) {
+		POINT size = { 517, 237 };
+		POINT start = getWindowStart(size);
 
-    // The window's height will be resized later, to fit the explanation text.
-    ConfDialog = CreateWindowClient(0, "POPToolsDialog", _("Configuração PLC"),
-        WS_OVERLAPPED | WS_SYSMENU,
-        start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL); //The cofig windows size
+		// The window's height will be resized later, to fit the explanation text.
+		ConfDialog = CreateWindowClient(0, "POPToolsDialog", _("Configuração PLC"),
+			WS_OVERLAPPED | WS_SYSMENU,
+			start.x, start.y, size.x, size.y, MainWindow, NULL, Instance, NULL); //The cofig windows size
 
-	PrevConfDialogProc = SetWindowLongPtr(ConfDialog, GWLP_WNDPROC, 
-        (LONG_PTR)ConfDialogProc);
+		PrevConfDialogProc = SetWindowLongPtr(ConfDialog, GWLP_WNDPROC, 
+			(LONG_PTR)ConfDialogProc);
 
-    MakeControls();
+		MakeControls();
+
+		isFirstTime = false;
+	} else {
+		HTREEITEM tvItem = TreeView_GetRoot(ConfigTreeView);
+		do {
+			TreeView_Expand(ConfigTreeView, tvItem, TVE_COLLAPSE);
+			tvItem = TreeView_GetNextVisible(ConfigTreeView, tvItem);
+		} while(tvItem != NULL);
+	}
+
 	switch(confSection) {
 	case eConfSection_Network:
 		OnSelChanged(CONFTVI_ID_COMM);
@@ -1328,7 +1343,7 @@ bool ShowConfDialog(eConfSection confSection)
 	ladder->CheckpointEnd();
 
     EnableWindow(MainWindow, TRUE);
-    DestroyWindow(ConfDialog);
+	ShowWindow(ConfDialog, FALSE);
 	SetFocus(MainWindow);
     return changed;
 }

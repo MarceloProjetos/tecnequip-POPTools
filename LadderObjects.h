@@ -1,6 +1,7 @@
 #ifndef LADDEROBJECTS_H
 #define LADDEROBJECTS_H
 
+#include <map>
 #include <deque>
 #include <array>
 #include <vector>
@@ -411,6 +412,9 @@ private:
 	 */
 	bool checkIfBoardExists(unsigned int id, string name, eExpansionBoard type, unsigned long address);
 
+	/// Mapa com enderecos permitidos para cada tipo de placa
+	map<eExpansionBoard, vector<unsigned int> > boardAddresses;
+
 	/// Enumeracao com os tipos de eventos de Undo/Redo suportados pelo diagrama
 	enum UndoRedoActionsEnum {
 		eCheckpoint = 0, ///< Marcador de Checkpoint
@@ -501,6 +505,12 @@ public:
 	 *  @return Quantidade de I/Os do tipo especificado para a placa fornecida.
 	 */
 	unsigned int getQuantityIO(eExpansionBoard typeBoard, eType typeIO);
+
+	/** Funcao que retorna o mapa de enderecos permitidos para cada tipo de placa de expansao
+	 *  @param[in] type Tipo da placa que se deseja obter o mapa de enderecos permitidos
+	 *  @return         Vetor com a lista de enderecos permitidos
+	 */
+	vector<unsigned int> getBoardAddresses(eExpansionBoard type);
 
 	/** Funcao que retorna a descricao da placa de expansao
 	 *  @param[in] type Tipo da placa que se deseja obter a descricao
@@ -3857,6 +3867,12 @@ public:
 	 *  @return       Placa de expansao com id passado como parametro
 	 */
 	unsigned int getBoardQtyIO(eExpansionBoard typeBoard, eType typeIO);
+
+	/** Funcao que retorna o mapa de enderecos permitidos para cada tipo de placa de expansao
+	 *  @param[in] type Tipo da placa que se deseja obter o mapa de enderecos permitidos
+	 *  @return         Vetor com a lista de enderecos permitidos
+	 */
+	vector<unsigned int> getBoardAddresses(eExpansionBoard type);
 
 	/** Funcao que adiciona uma placa de expansao ao projeto
 	 *  @param[in] board Dados da placa a inserir

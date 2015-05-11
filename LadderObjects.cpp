@@ -117,10 +117,64 @@ void UnallocElem(LadderElem *elem)
 // Classe LadderExpansion
 LadderExpansion::LadderExpansion(LadderDiagram *pDiagram)
 {
+	vector<unsigned int> addresses;
+
 	currentId = 1; // Inicia em 1 para que id = 0 indique placa invalida
 
 	// Associa a lista de placas de expansao ao diagrama fornecido
 	diagram = pDiagram;
+
+	/*** Inicializacao dos mapas de endereco das placas de expansao ***/
+
+	// Mapa de endereco da placa de Entradas Digitais
+	addresses.push_back(0x41);
+	addresses.push_back(0x43);
+	addresses.push_back(0x45);
+	addresses.push_back(0x47);
+	addresses.push_back(0x49);
+	addresses.push_back(0x4b);
+	addresses.push_back(0x4d);
+	addresses.push_back(0x4f);
+	boardAddresses[eExpansionBoard_DigitalInput] = addresses;
+
+	addresses.clear();
+
+	// Mapa de endereco da placa de Saidas Digitais
+	addresses.push_back(0x40);
+	addresses.push_back(0x42);
+	addresses.push_back(0x44);
+	addresses.push_back(0x46);
+	addresses.push_back(0x48);
+	addresses.push_back(0x4a);
+	addresses.push_back(0x4c);
+	addresses.push_back(0x4e);
+	boardAddresses[eExpansionBoard_DigitalOutput] = addresses;
+
+	addresses.clear();
+
+	// Mapa de endereco da placa de Entradas Analogicas
+	addresses.push_back(0x41);
+	addresses.push_back(0x43);
+	addresses.push_back(0x45);
+	addresses.push_back(0x47);
+	addresses.push_back(0x49);
+	addresses.push_back(0x4b);
+	addresses.push_back(0x4d);
+	addresses.push_back(0x4f);
+	boardAddresses[eExpansionBoard_AnalogInput] = addresses;
+
+	addresses.clear();
+
+	// Mapa de endereco do LCD
+	addresses.push_back(0x40);
+	addresses.push_back(0x42);
+	addresses.push_back(0x44);
+	addresses.push_back(0x46);
+	addresses.push_back(0x48);
+	addresses.push_back(0x4a);
+	addresses.push_back(0x4c);
+	addresses.push_back(0x4e);
+	boardAddresses[eExpansionBoard_LCD] = addresses;
 }
 
 bool LadderExpansion::checkIfBoardExists(unsigned int id, string name, eExpansionBoard type, unsigned long address)
@@ -164,7 +218,7 @@ bool LadderExpansion::Add(string name, eExpansionBoard type, unsigned long addre
 
 	vecExpansionBoardList.push_back(board);
 
-	diagram->CheckpointBegin(_("Inserir Placa de Expansão"));
+	diagram->CheckpointBegin(_("Adicionar Placa de Expansão"));
 
 	// Registro da acao para desfazer / refazer
 	UndoRedoAction action;
@@ -346,7 +400,7 @@ unsigned int LadderExpansion::getQuantityIO(eExpansionBoard typeBoard, eType typ
 
 string LadderExpansion::getDescription(eExpansionBoard type)
 {
-	string description = _("Placa inexistente");
+	string description = "???";
 	switch(type) {
 	case eExpansionBoard_DigitalInput: description =
 		_("Placa de Entradas Digitais");
@@ -363,6 +417,11 @@ string LadderExpansion::getDescription(eExpansionBoard type)
 	}
 
 	return description;
+}
+
+vector<unsigned int> LadderExpansion::getBoardAddresses(eExpansionBoard type)
+{
+	return boardAddresses[type];
 }
 
 bool LadderExpansion::Save(FILE *f)
@@ -12281,6 +12340,11 @@ unsigned int LadderDiagram::getBoardQtyIO(eExpansionBoard typeBoard, eType typeI
 string LadderDiagram::getBoardDescription(eExpansionBoard typeBoard)
 {
 	return expansionBoards->getDescription(typeBoard);
+}
+
+vector<unsigned int> LadderDiagram::getBoardAddresses(eExpansionBoard type)
+{
+	return expansionBoards->getBoardAddresses(type);
 }
 
 bool LadderDiagram::boardAdd(tExpansionBoardItem board)
