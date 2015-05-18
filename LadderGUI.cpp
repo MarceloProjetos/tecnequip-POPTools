@@ -618,6 +618,14 @@ void LadderGUI::DrawInit(void)
 	setLadderColorGroup(ELEM_READ_SERVO_YASKAWA    , group);
 	setLadderColorGroup(ELEM_WRITE_SERVO_YASKAWA   , group);
 
+	// Vermelho: Expansao
+	group.Background = RGB(255, 180, 180);
+	group.Foreground = RGB(200,   0,   0);
+	group.Border     = RGB(200,   0,   0);
+	group.BorderText = RGB(255, 255, 255);
+
+	setLadderColorGroup(ELEM_LCD                   , group);
+
 	// Inicia e finaliza o desenho da tela para que todas as estruturas sejam criadas na inicializacao
 	StartDraw();
 	EndDraw  ();
@@ -8118,6 +8126,218 @@ bool LadderElemPID::DrawGUI(bool poweredBefore, void *data)
 
 			r.top = r.bottom + 5;
 		}
+	}
+
+	return poweredAfter;
+}
+
+// Classe LadderElemLCD
+bool LCDCmdChangeName(tCommandSource source, void *data)
+{
+	bool            ret = false;
+	int             nVar  = *(int *)data;
+	LadderElemLCD *lcd  = dynamic_cast<LadderElemLCD *>(source.elem);
+
+	// Le os dados do I/O para ter a referencia do I/O atual
+	// Para isso precisamos carregar as propriedades do elemento, precisamos descarregar depois do uso...
+	LadderElemLCDProp *prop = (LadderElemLCDProp *)lcd->getProperties();
+
+	if(nVar < 3) {
+		pair<unsigned long, int> pin;
+		switch(nVar) {
+		case 0: pin = prop->idX  ; break;
+		case 1: pin = prop->idY  ; break;
+		case 2: pin = prop->idVar; break;
+		}
+
+		mapDetails detailsIO = ladder->getDetailsIO(pin.first);
+
+		ret = cmdChangeName(source.elem, nVar, pin, detailsIO.type, ladder->getGeneralTypes(),
+			_("LCD"), nVar == 0 ? _("Eixo X:") : (nVar == 1 ? _("Eixo Y:") : _("Variável:")));
+
+		// Aqui desalocamos as propriedades
+		delete prop;
+	} else {
+		// Passa a posicao do objeto para a janela para que seja exibida centralizada ao elemento
+		POINT start, size, GridSize = gui.getGridSize();
+		RECT rArea = gui.getElemArea(source.elem);
+
+		RECT rWindow;
+		GetWindowRect(DrawWindow, &rWindow);
+
+		start.x = rArea.left   ;
+		start.y = rArea.top    ;
+		size .x = rArea.right  - rArea.left;
+		size .y = rArea.bottom - rArea.top;
+
+		vector<eType> types;
+		types.push_back(eType_Pending);
+
+		if(ShowVarDialog(_("LCD"),  _("String:"), &(prop->txt), start, size, GridSize, types, true)) {
+			source.elem->setProperties(ladder->getContext(), prop);
+			ret = true;
+		} else {
+			// Se foi cancelada a alteracao, devemos desalocar as propriedades
+			delete prop;
+		}
+	}
+
+	return ret;
+}
+
+bool LCDCmdMode(LadderElem *elem, unsigned int selected)
+{
+	bool ret = false;
+	eCommandLCD newCommand;
+
+	LadderElemLCD *lcd = dynamic_cast<LadderElemLCD *>(elem);
+	LadderElemLCDProp *prop = (LadderElemLCDProp *)lcd->getProperties();
+
+	switch(selected) {
+		default:
+		case eCommandLCD_Clear    : newCommand = eCommandLCD_Clear    ; break;
+		case eCommandLCD_Erase    : newCommand = eCommandLCD_Erase    ; break;
+		case eCommandLCD_Write    : newCommand = eCommandLCD_Write    ; break;
+		case eCommandLCD_BackLight: newCommand = eCommandLCD_BackLight; break;
+	}
+
+	if(prop->command != newCommand) {
+		ladder->CheckpointBegin(_("Alterar Comando LCD"));
+
+		prop->command = newCommand;
+
+		lcd->setProperties(ladder->getContext(), prop);
+
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
+	}
+
+	return ret;
+}
+
+bool LadderElemLCD::ShowDialog(LadderContext context)
+{
+	bool ret;
+
+	static LadderElemLCD *lastCmd = this;
+	static int index = 0;
+	tCommandSource source = { nullptr, nullptr, this };
+
+	if(lastCmd != this) {
+		index = 0;
+	}
+
+	ret = LCDCmdChangeName(source, &index);
+
+	lastCmd   = this;
+	if(++index > 3) {
+		index = 0;
+	}
+
+	return ret;
+}
+
+bool LadderElemLCD::DrawGUI(bool poweredBefore, void *data)
+{
+	POINT size, GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	size  = ddg->size;
+
+	if(ddg->expanded) {
+		ddg->size.x = 4;
+		ddg->size.y = 6;
+	} else {
+		ddg->size.x = 3;
+		ddg->size.y = 3;
+	}
+
+	if(ddg->DontDraw) return poweredAfter;
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, _("LCD"), true, poweredBefore);
+	ddg->region = r;
+
+	int *pInt;
+	char buf[1024];
+	tCommandSource source = { nullptr, nullptr, this };
+
+	// Soma 5 a cada medida para afastar o texto das bordas
+	RECT rText = r;
+	rText.top  += 5;
+	rText.left += 5;
+
+	// Desenha o Eixo X
+	sprintf(buf, _("Eixo X: %s"), Diagram->getNameIO(prop.idX).c_str());
+	gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+	pInt = new int;
+	*pInt = 0;
+	gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
+
+	// Desenha o Eixo Y
+	sprintf(buf, _("Eixo Y: %s"), Diagram->getNameIO(prop.idY).c_str());
+
+	rText.top += FONT_HEIGHT + 5;
+	gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+	pInt = new int;
+	*pInt = 1;
+	gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
+
+	// Desenha o nome da variavel
+	sprintf(buf, _("Variável: %s"), Diagram->getNameIO(prop.idVar).c_str());
+
+	rText.top += FONT_HEIGHT + 5;
+	gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+	pInt = new int;
+	*pInt = 2;
+	gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
+
+	// Desenha o texto de formato da string de envio
+	sprintf(buf, _("Texto: %s"), prop.txt.c_str());
+
+	rText.top += FONT_HEIGHT + 5;
+	gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+	pInt = new int;
+	*pInt = 3;
+	gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
+
+	// Se expandido, desenha os itens do modo expandido
+	if(ddg->expanded) {
+		vector<tExpandedItem> items;
+		items.push_back(tExpandedItem(_("Modo"), 2));
+
+		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 3, items);
+
+		// Caixas desenhadas. Agora criamos o conteudo
+		tControlList list;
+
+		list.items.push_back(_("Limpar"));
+		list.items.push_back(_("Apagar"));
+		list.items.push_back(_("Escrever"));
+		list.items.push_back(_("Luz Fundo"));
+		switch(prop.command) {
+			default:
+			case eCommandLCD_Clear    : list.selected = 0; break;
+			case eCommandLCD_Erase    : list.selected = 1; break;
+			case eCommandLCD_Write    : list.selected = 2; break;
+			case eCommandLCD_BackLight: list.selected = 3; break;
+		}
+
+		list.fnc      = LCDCmdMode;
+		gui.addControlList(this, rExp[0], list);
 	}
 
 	return poweredAfter;

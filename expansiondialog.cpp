@@ -11,6 +11,8 @@ static HWND BoardUpdateButton;
 static HWND BoardCancelButton;
 static HWND BoardNameTextBox;
 static HWND BoardAddressComboBox;
+static HWND BoardVersionComboBox;
+static HWND BoardVersionLabel;
 static HWND BoardImageLabel;
 static HWND BoardInfoLabel;
 
@@ -142,8 +144,13 @@ static void MakeControls(void)
 
 	BoardUseInterruptCheckbox = CreateWindowEx(0, WC_BUTTON, _("Usar Interrupção?"),
         WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        375, 290, 150, 21, ExpansionDialog, NULL, Instance, NULL);
+        342, 290, 183, 21, ExpansionDialog, NULL, Instance, NULL);
     NiceFont(BoardUseInterruptCheckbox);
+
+	BoardVersionComboBox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        425, 317, 140, 121, ExpansionDialog, NULL, Instance, NULL);
+    NiceFont(BoardVersionComboBox);
 
 	grouper = CreateWindowEx(0, WC_BUTTON, _("Detalhes"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
@@ -159,6 +166,11 @@ static void MakeControls(void)
 		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
         8, 47, 100, 21, grouper, NULL, Instance, NULL);
     NiceFont(textLabel);
+
+    BoardVersionLabel = CreateWindowEx(0, WC_STATIC, _("Versão:"),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        335, 47, 50, 21, grouper, NULL, Instance, NULL);
+    NiceFont(BoardVersionLabel);
 
 	// Imagem da placa de expansao
 	BoardImageLabel = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
@@ -186,7 +198,7 @@ void LoadAddressCombobox(eExpansionBoard type, unsigned int address = 0)
 	ComboBox_ResetContent(BoardAddressComboBox);
 
 	unsigned int i;
-	vector<unsigned int> addresses = ladder->getBoardAddresses(type);
+	vector<unsigned int> addresses = ladder->getAddresses(type);
 
 	for(i = 0; i < addresses.size(); i++) {
 		char buf[10];
@@ -201,7 +213,8 @@ void LoadAddressCombobox(eExpansionBoard type, unsigned int address = 0)
 void UpdateControls(HWND lv, unsigned int id)
 {
 	char buf[1024];
-	eExpansionBoard type = eExpansionBoard_End;
+	unsigned int    version = 0;
+	eExpansionBoard type    = eExpansionBoard_End;
 
 	// Se nao houve selecao, utilizamos a selecao anterior
 	if(lv == NULL) {
@@ -219,6 +232,7 @@ void UpdateControls(HWND lv, unsigned int id)
 
 		currentItem = item.id;
 		type        = item.type;
+		version     = item.version;
 
 		Edit_SetText(BoardNameTextBox   , item.name.c_str());
 		LoadAddressCombobox(type, item.address);
@@ -253,6 +267,19 @@ void UpdateControls(HWND lv, unsigned int id)
 
 	HBITMAP hBmp = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(res),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
 	SendMessage(BoardImageLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp);
+
+	// Carrega lista de versoes de placas.
+	unsigned int i;
+	vector<string> versions = ladder->getBoardVersions(type);
+
+	ComboBox_ResetContent(BoardVersionComboBox);
+
+	for(i = 0; i < versions.size(); i++) {
+		ComboBox_AddString(BoardVersionComboBox, versions[i].c_str());
+		if(i == version) {
+			ComboBox_SetCurSel(BoardVersionComboBox, i);
+		}
+	}
 }
 
 static LRESULT CALLBACK ExpansionDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -339,6 +366,9 @@ static LRESULT CALLBACK ExpansionDialogProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						Edit_GetText(BoardNameTextBox, buf, MAX_NAME_LEN);
 						item.name = buf;
 
+						// Carregamos a nova versao
+						item.version = ComboBox_GetCurSel(BoardVersionComboBox);
+
 						// Carregamos o novo endereco
 						ComboBox_GetText(BoardAddressComboBox, buf, sizeof(buf));
 						item.address = strtol(buf, NULL, 16);
@@ -372,6 +402,9 @@ static LRESULT CALLBACK ExpansionDialogProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						if(index >= 0 && item.name.size() > 0) {
 							// Identificamos o tipo de placa
 							item.type = static_cast<eExpansionBoard>(index);
+
+							// Carregamos a nova versao
+							item.version = ComboBox_GetCurSel(BoardVersionComboBox);
 
 							// Carregamos o novo endereco
 							ComboBox_GetText(BoardAddressComboBox, buf, sizeof(buf));

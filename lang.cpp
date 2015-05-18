@@ -930,7 +930,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Placas Compatíveis:", "Compatible Boards:");
 		addTextToLangTable(l, "Confirmar", "Confirm");
 		addTextToLangTable(l, "Desfazer", "Discard");
-		addTextToLangTable(l, "Endereço (hex):", "Board");
+		addTextToLangTable(l, "Endereço (hex):", "Address (hex):");
 		addTextToLangTable(l, "Placa de Entradas Digitais", "Digital Inputs Board");
 		addTextToLangTable(l, "Placa de Saídas Digitais", "Digital Outputs Board");
 		addTextToLangTable(l, "Display LCD", "LCD Display");
@@ -1804,7 +1804,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "Placas Compatíveis:", "Compatible Boards:");
 		addTextToLangTable(l, "Confirmar", "Confirm");
 		addTextToLangTable(l, "Desfazer", "Discard");
-		addTextToLangTable(l, "Endereço (hex):", "Board");
+		addTextToLangTable(l, "Endereço (hex):", "Address (hex):");
 		addTextToLangTable(l, "Placa de Entradas Digitais", "Digital Inputs Board");
 		addTextToLangTable(l, "Placa de Saídas Digitais", "Digital Outputs Board");
 		addTextToLangTable(l, "Display LCD", "LCD Display");
@@ -1874,6 +1874,7 @@ PCWSTR getRibbonLocalizedLabel(UINT nCmdID)
 		SET_LANGUAGE_STRINGS(cmdGroupCommText            , L"RS-485 - Texto"                   , L"RS-485 - Text"                 , L"RS-485 - Texto"                     );
 		SET_LANGUAGE_STRINGS(cmdGroupCommModBUS          , L"ModBUS"                           , L"ModBUS"                        , L"ModBUS"                             );
 		SET_LANGUAGE_STRINGS(cmdGroupCommOthers          , L"RS-485 - Outros"                  , L"RS-485 - Others"               , L"RS-485 - Otros"                     );
+		SET_LANGUAGE_STRINGS(cmdGroupExpansion           , L"Expansão"                         , L"Expansion"                     , L"Expansión"                          );
 		SET_LANGUAGE_STRINGS(cmdDropDownIO               , L"Mais I/O"                         , L"More I/O"                      , L"Mas I/O"                            );
 		SET_LANGUAGE_STRINGS(cmdDropDownMath             , L"Mais"                             , L"More"                          , L"Mas"                                );
 		SET_LANGUAGE_STRINGS(cmdGroupSimulation          , L"Simulação"                        , L"Simulation"                    , L"Simulacion"                         );
@@ -1982,6 +1983,8 @@ PCWSTR getRibbonLocalizedLabel(UINT nCmdID)
 
 		SET_LANGUAGE_STRINGS(cmdInstrReadModBUS          , L"Ler Registrador ModBUS"           , L"Read ModBUS Register"          , L"Leer Registrador ModBUS"            );
 		SET_LANGUAGE_STRINGS(cmdInstrWriteModBUS         , L"Escrever Registrador ModBUS"      , L"Write ModBUS Register"         , L"Escribir Registrador ModBUS"        );
+
+		SET_LANGUAGE_STRINGS(cmdInstrLCD                 , L"LCD"                              , L"LCD"                           , L"LCD"                                );
 
 		SET_LANGUAGE_STRINGS(cmdConfig                   , L"Projeto"                          , L"Project"                       , L"Proyecto"                           );
 		SET_LANGUAGE_STRINGS(cmdExpansion                , L"Expansão"                         , L"Expansion"                     , L"Expansión"                          );
@@ -2162,6 +2165,8 @@ PCWSTR getRibbonLocalizedTooltipTitle(UINT nCmdID)
 
 		SET_LANGUAGE_STRINGS(cmdInstrReadModBUS          , L"Ler Registrador ModBUS (Shift + X)"           , L"Read ModBUS Register (Shift + X)"          , L"Leer Registrador ModBUS (Shift + X)"            );
 		SET_LANGUAGE_STRINGS(cmdInstrWriteModBUS         , L"Escrever Registrador ModBUS (X)"              , L"Write ModBUS Register (X)"                 , L"Escribir Registrador ModBUS (X)"                );
+
+		SET_LANGUAGE_STRINGS(cmdInstrLCD                 , L"LCD"                                          , L"LCD"                                       , L"LCD"                                            );
 
 		SET_LANGUAGE_STRINGS(cmdConfig                   , L"Projeto (F2)"                                 , L"Project (F2)"                              , L"Proyecto (F2)"                                  );
 
@@ -2605,6 +2610,11 @@ PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID)
 				L"Inserir escrever registrador modbus na posição do cursor.",
 				L"Insert write modbus register read on cursor's position",
 				L"Inserir escribir registrador modbus en la posicion del curso");
+
+			SET_LANGUAGE_STRINGS(cmdInstrLCD                 ,
+				L"Inserir Comando do LCD na posição do cursor.",
+				L"Insert LCD Command on cursor's position",
+				L"Inserir Comando LCD en la posicion del curso");
 
 			SET_LANGUAGE_STRINGS(cmdConfig                   ,
 				L"Abrir a janela de configurações do projeto atual.",

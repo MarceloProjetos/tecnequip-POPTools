@@ -65,6 +65,7 @@
       </Command.SmallImages>
     </Command>
     <Command Name="GroupCommOthers" Symbol="cmdGroupCommOthers" Id="30018" LabelTitle="RS-485 - Outros" />
+    <Command Name="GroupExpansion"  Symbol="cmdGroupExpansion"  Id="30031" LabelTitle="Expansão"        />
     <Command Name="DropDownIO"      Symbol="cmdDropDownIO"      Id="30020" LabelTitle="Mais I/O"         >
       <Command.LargeImages>
         <Image Source="imgs/DropDownIOHH.bmp"/>
@@ -2174,6 +2175,33 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name       = "InstrLCD"
+             Symbol     = "cmdInstrLCD"
+             Id         = "30557"
+             LabelTitle = "LCD">
+      <Command.TooltipTitle>LCD</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir Comando do LCD na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrPIDHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrPIDHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name       = "ExampleLCD"
+             Symbol     = "cmdExampleLCD"
+             Id         = "31557"
+             LabelTitle = "LCD">
+      <Command.TooltipTitle      >LCD</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução Comando do LCD.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrPIDHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrPIDHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
     <Command Name         = "InstrPersist"
                Symbol     = "cmdInstrPersist"
                Id         = "30550"
@@ -2626,6 +2654,9 @@
             <Button CommandName="InstrWriteUSS"/>
             <Button CommandName="InstrReadNS600"/>
             <Button CommandName="InstrWriteNS600"/>
+          </Group>
+          <Group CommandName="GroupExpansion" SizeDefinition="OneButton">
+            <Button CommandName="InstrLCD"/>
           </Group>
         </Tab>
         <Tab CommandName="TabSimulation" ApplicationModes="1">

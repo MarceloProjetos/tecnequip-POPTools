@@ -40,6 +40,7 @@
 #define INT_SQRT								36
 #define INT_SET_RTC								37
 #define INT_RAND								38
+#define INT_LCD									41
 
 #define INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 #define INT_IF_BIT_SET                          50

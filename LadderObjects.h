@@ -389,6 +389,7 @@ typedef struct {
 	string          name   ; ///< Nome da placa para o usuario
 	eExpansionBoard type   ; ///< Tipo da placa
 	bool            useIRQ ; ///< Flag que indica se essa placa usa interrupcao
+	unsigned int    version; ///< Versao da placa
 } tExpansionBoardItem;
 
 /// Classe que contem informacoes das placas de expansao adicionadas ao projeto
@@ -432,6 +433,7 @@ private:
 			eExpansionBoard  type;    ///< Tipo da placa
 			unsigned long    address; ///< Endereco da placa
 			bool             useIRQ;  ///< Flag que indica se essa placa usa interrupcao
+			unsigned int     version; ///< Versao da placa
 		} BoardListChanged;
 	};
 
@@ -460,11 +462,12 @@ public:
 	/** Funcao para adicionar uma placa de expansao
 	 *  @param[in] name    Nome da placa sendo adicionada
 	 *  @param[in] type    Tipo de placa de expansao sendo adicionada
+	 *  @param[in] version Versao de placa de expansao sendo adicionada
 	 *  @param[in] address Endereco da placa, permitindo mais de uma do mesmo tipo
 	 *  @param[in] useIRQ  Flag que indica se a placa deve usar interrupcao
 	 *  @return            Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool Add(string name, eExpansionBoard type, unsigned long address, bool useIRQ);
+	bool Add(string name, eExpansionBoard type, unsigned int version, unsigned long address, bool useIRQ);
 
 	/** Funcao para remover uma placa da lista
 	 *  @param[in] name       Nome da placa a ser removida
@@ -477,12 +480,13 @@ public:
 	 *  @param[in] id         Identificador da placa
 	 *  @param[in] name       Novo nome da placa de expansao
 	 *  @param[in] type       Novo tipo de placa de expansao
+	 *  @param[in] version    Nova versao de placa de expansao
 	 *  @param[in] address    Endereco da placa, permitindo mais de uma do mesmo tipo
 	 *  @param[in] useIRQ     Flag que indica se a placa deve usar interrupcao
 	 *  @param[in] isUndoRedo Flag que indica se esta funcao foi chamada durante uma operacao de desfazer/refazer
 	 *  @return               Indica se a operacao foi realizada com sucesso (true) ou se falhou (false)
 	 */
-	bool Update(unsigned long id, string name, eExpansionBoard type, unsigned long address, bool useIRQ, bool isUndoRedo = false);
+	bool Update(unsigned long id, string name, eExpansionBoard type, unsigned int version, unsigned long address, bool useIRQ, bool isUndoRedo = false);
 
 	/** Funcao para ler a lista de placas adicionadas ao projeto
 	 *  @return Retorna a lista de placas adicionadas ao projeto
@@ -510,13 +514,19 @@ public:
 	 *  @param[in] type Tipo da placa que se deseja obter o mapa de enderecos permitidos
 	 *  @return         Vetor com a lista de enderecos permitidos
 	 */
-	vector<unsigned int> getBoardAddresses(eExpansionBoard type);
+	vector<unsigned int> getAddresses(eExpansionBoard type);
 
 	/** Funcao que retorna a descricao da placa de expansao
 	 *  @param[in] type Tipo da placa que se deseja obter a descricao
 	 *  @return         String contendo a descricao da placa
 	 */
 	string getDescription(eExpansionBoard type);
+
+	/** Funcao que retorna strings com os nomes das versoes das placas
+	 *  @param[in] typeBoard Tipo da placa que se deseja obter a lista de versoes
+	 *  @return              Vetor de strings contendo as versoes da placa especificada
+	 */
+	vector<string> getVersions(eExpansionBoard typeBoard);
 
 	/** Funcao que carrega a lista de placas de expansao em uma lista da interface de usuario
 	 *  @param[in,out] data Variavel utilizada para transmitir / retornar dados da funcao
@@ -2852,6 +2862,81 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
+/// Enumeracao com o comando a enviar para o LCD
+enum eCommandLCD {
+	eCommandLCD_Clear = 0,
+	eCommandLCD_Erase,
+	eCommandLCD_Write,
+	eCommandLCD_BackLight,
+};
+
+/// Estrutura que define as propriedades de um elemento LadderElemLCD
+struct LadderElemLCDProp {
+	pair<unsigned long, int> idX;     ///< Referencia do I/O associado ao elemento: Variavel
+	pair<unsigned long, int> idY;     ///< Referencia do I/O associado ao elemento: Variavel
+	pair<unsigned long, int> idVar;   ///< Referencia do I/O associado ao elemento: Variavel
+    string                   txt;     ///< Texto contendo o formato que sera utilizado para criar o texto a ser exibido
+	eCommandLCD              command; ///< Comando a ser enviado para o LCD
+};
+
+/// Classe derivada de LadderElem que representa o elemento LCD.
+class LadderElemLCD : public LadderElem {
+private:
+	/// Propriedades do elemento
+	LadderElemLCDProp prop;
+
+	/// Variavel com os dados para fazer Request do I/O do elemento: X
+	tRequestIO      infoIO_X;
+
+	/// Variavel com os dados para fazer Request do I/O do elemento: Y
+	tRequestIO      infoIO_Y;
+
+	/// Variavel com os dados para fazer Request do I/O do elemento: Var
+	tRequestIO      infoIO_Var;
+
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
+
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
+
+public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 */
+	LadderElemLCD(LadderDiagram *diagram);
+
+	pair<string, string> DrawTXT(void);
+	bool DrawGUI(bool poweredBefore, void *data);
+
+	bool ShowDialog(LadderContext context);
+
+	bool internalGenerateIntCode(IntCode &ic);
+
+	void *getProperties(void);
+
+	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void) { }
+	void doPostRemove(void) { }
+
+	inline int getWidthTXT(void) { return 1; }
+
+	LadderElem *Clone(LadderDiagram *diagram);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
+};
+
 /// Estrutura que define as propriedades de um elemento LadderElemX
 struct LadderElemXProp {
 };
@@ -3862,6 +3947,12 @@ public:
 	 */
 	string getBoardDescription(eExpansionBoard typeBoard);
 
+	/** Funcao que retorna strings com os nomes das versoes das placas
+	 *  @param[in] typeBoard Tipo da placa que se deseja obter a lista de versoes
+	 *  @return              Vetor de strings contendo as versoes da placa especificada
+	 */
+	vector<string> getBoardVersions(eExpansionBoard typeBoard);
+
 	/** Funcao que retorna uma placa de expansao adicionada ao projeto pelo seu Id
 	 *  @param[in] id ID para a placa de expansao desejada
 	 *  @return       Placa de expansao com id passado como parametro
@@ -3872,7 +3963,7 @@ public:
 	 *  @param[in] type Tipo da placa que se deseja obter o mapa de enderecos permitidos
 	 *  @return         Vetor com a lista de enderecos permitidos
 	 */
-	vector<unsigned int> getBoardAddresses(eExpansionBoard type);
+	vector<unsigned int> getAddresses(eExpansionBoard type);
 
 	/** Funcao que adiciona uma placa de expansao ao projeto
 	 *  @param[in] board Dados da placa a inserir

@@ -1256,6 +1256,10 @@ void ProcessMenu(int code)
             AddUart(ELEM_UART_RECV);
             break;
 
+        case MNU_INSERT_LCD:
+            AddLCD();
+            break;
+
         case MNU_INSERT_SQRT:
             AddSqrt();
             break;

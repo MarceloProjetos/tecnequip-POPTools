@@ -301,6 +301,7 @@ struct strSerialConfig {
 #define MNU_INSERT_RTC			0x57
 #define MNU_INSERT_MULTISET_DA  0x58
 #define MNU_INSERT_PID          0x5f
+#define MNU_INSERT_LCD          0x68
 #define MNU_INSERT_PARALLEL     0x5b
 
 #define MNU_MCU_SETTINGS        0x59
@@ -462,6 +463,7 @@ struct strSerialConfig {
 #define ELEM_RTC				0x41
 #define ELEM_MULTISET_DA		0x42
 #define ELEM_PID                0x46
+#define ELEM_LCD                0x47
 
 #define MAX_NAME_LEN                128
 #define MAX_COMMENT_LEN             384
@@ -760,6 +762,7 @@ bool AddSetPwm(void);
 bool AddUart(int which);
 bool AddPersist(void);
 bool AddPID(void);
+bool AddLCD(void);
 bool AddComment(void);
 bool AddSetBit(void);
 bool AddCheckBit(void);

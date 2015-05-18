@@ -110,6 +110,7 @@ void UnallocElem(LadderElem *elem)
 		case ELEM_WRITE_SERVO_YASKAWA   : delete dynamic_cast<LadderElemYaskawa       *>(elem); break;
 		case ELEM_PERSIST               : delete dynamic_cast<LadderElemPersist       *>(elem); break;
 		case ELEM_PID                   : delete dynamic_cast<LadderElemPID           *>(elem); break;
+		case ELEM_LCD                   : delete dynamic_cast<LadderElemLCD           *>(elem); break;
 		default                         : delete elem;
 	}
 }
@@ -201,7 +202,7 @@ void LadderExpansion::Clear(void)
 	vecExpansionBoardList.clear();
 }
 
-bool LadderExpansion::Add(string name, eExpansionBoard type, unsigned long address, bool useIRQ)
+bool LadderExpansion::Add(string name, eExpansionBoard type, unsigned int version, unsigned long address, bool useIRQ)
 {
 	if(checkIfBoardExists(0, name, type, address)) {
 		return false; // Placa ja existe!
@@ -213,6 +214,7 @@ bool LadderExpansion::Add(string name, eExpansionBoard type, unsigned long addre
 	board.id      = currentId++;
 	board.name    = name;
 	board.type    = type;
+	board.version = version;
 	board.address = address;
 	board.useIRQ  = useIRQ;
 
@@ -236,8 +238,9 @@ bool LadderExpansion::Add(string name, eExpansionBoard type, unsigned long addre
 	data->BoardListChanged.id      = board.id;
 	data->BoardListChanged.name    = AllocCharFromString(board.name);;
 	data->BoardListChanged.type    = board.type;
+	data->BoardListChanged.version = board.version;
 	data->BoardListChanged.address = board.address;
-	data->BoardListChanged.useIRQ = board.useIRQ;
+	data->BoardListChanged.useIRQ  = board.useIRQ;
 
 	diagram->RegisterAction(action);
 
@@ -272,6 +275,7 @@ bool LadderExpansion::Remove(unsigned long id, bool isUndoRedo)
 				data->BoardListChanged.id      = it->id;
 				data->BoardListChanged.name    = AllocCharFromString(it->name);;
 				data->BoardListChanged.type    = it->type;
+				data->BoardListChanged.version = it->version;
 				data->BoardListChanged.address = it->address;
 				data->BoardListChanged.useIRQ  = it->useIRQ;
 
@@ -292,7 +296,7 @@ bool LadderExpansion::Remove(unsigned long id, bool isUndoRedo)
 	return false; // Placa nao encontrada!
 }
 
-bool LadderExpansion::Update(unsigned long id, string name, eExpansionBoard type, unsigned long address, bool useIRQ, bool isUndoRedo)
+bool LadderExpansion::Update(unsigned long id, string name, eExpansionBoard type, unsigned int version, unsigned long address, bool useIRQ, bool isUndoRedo)
 {
 	// Primeiro verifica se ja existe uma placa com este nome ou endereco
 	if(checkIfBoardExists(id, name, type, address)) {
@@ -329,6 +333,7 @@ bool LadderExpansion::Update(unsigned long id, string name, eExpansionBoard type
 			data->BoardListChanged.id      = it->id;
 			data->BoardListChanged.name    = AllocCharFromString(it->name);
 			data->BoardListChanged.type    = it->type;
+			data->BoardListChanged.version = it->version;
 			data->BoardListChanged.address = it->address;
 			data->BoardListChanged.useIRQ  = it->useIRQ;
 
@@ -341,6 +346,7 @@ bool LadderExpansion::Update(unsigned long id, string name, eExpansionBoard type
 
 		it->name    = name;
 		it->type    = type;
+		it->version = version;
 		it->address = address;
 		it->useIRQ  = useIRQ;
 
@@ -419,7 +425,33 @@ string LadderExpansion::getDescription(eExpansionBoard type)
 	return description;
 }
 
-vector<unsigned int> LadderExpansion::getBoardAddresses(eExpansionBoard type)
+vector<string> LadderExpansion::getVersions(eExpansionBoard typeBoard)
+{
+	vector<string> boardVersions;
+
+	switch(typeBoard) {
+	case eExpansionBoard_DigitalInput:
+		boardVersions.push_back("16 Input");
+		break;
+
+	case eExpansionBoard_DigitalOutput:
+		boardVersions.push_back("16 Output");
+		break;
+
+	case eExpansionBoard_AnalogInput:
+		boardVersions.push_back("2 Analog Input");
+		break;
+
+	case eExpansionBoard_LCD:
+		boardVersions.push_back("Sunlike");
+		boardVersions.push_back("Funduino");
+		break;
+	}
+
+	return boardVersions;
+}
+
+vector<unsigned int> LadderExpansion::getAddresses(eExpansionBoard type)
 {
 	return boardAddresses[type];
 }
@@ -437,7 +469,8 @@ bool LadderExpansion::Save(FILE *f)
 				!fwrite_ulong (f, it->address) ||
 				!fwrite_bool  (f, it->useIRQ) ||
 				!fwrite_string(f, it->name) || 
-				!fwrite_uint  (f, it->type)) {
+				!fwrite_uint  (f, it->type) ||
+				!fwrite_uint  (f, it->version)) {
 					break; // Erro na gravacao!
 			}
 		}
@@ -474,7 +507,8 @@ bool LadderExpansion::Load(FILE *f, unsigned int version)
 				!fread_ulong (f, &item.address) ||
 				!fread_bool  (f, &item.useIRQ) ||
 				!fread_string(f, &(item.name)) || 
-				!fread_uint  (f, &(iType))) {
+				!fread_uint  (f, &(iType)) ||
+				!fread_uint  (f, &(item.version))) {
 					break; // Erro na leitura!
 			} else {
 				switch(iType) {
@@ -508,6 +542,7 @@ bool LadderExpansion::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &ac
 	board.id      = data->BoardListChanged.id;
 	board.name    = data->BoardListChanged.name;
 	board.type    = data->BoardListChanged.type;
+	board.version = data->BoardListChanged.version;
 	board.address = data->BoardListChanged.address;
 
 	switch(action.action) {
@@ -527,12 +562,13 @@ bool LadderExpansion::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &ac
 			// Nada a fazer...
 		} else {
 			tExpansionBoardItem tmp = getById(board.id);
-			Update(board.id, board.name, board.type, board.address, board.useIRQ, true);
+			Update(board.id, board.name, board.type, board.version, board.address, board.useIRQ, true);
 
 			delete [] data->BoardListChanged.name;
 
 			data->BoardListChanged.name    = AllocCharFromString(tmp.name);
 			data->BoardListChanged.type    = tmp.type;
+			data->BoardListChanged.version = tmp.version;
 			data->BoardListChanged.address = tmp.address;
 			data->BoardListChanged.useIRQ  = tmp.useIRQ;
 
@@ -8655,6 +8691,365 @@ bool LadderElemPID::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoActi
 	return true; // Sempre retorna sucesso...
 }
 
+// Classe LadderElemLCD
+LadderElemLCD::LadderElemLCD(LadderDiagram *diagram) : LadderElem(false, false, true, true, ELEM_LCD)
+{
+	Diagram  = diagram;
+
+	// Caracteristicas do I/O X
+	infoIO_X.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_X.name          = _("var");
+	infoIO_X.isBit         = false;
+	infoIO_X.type          = eType_General;
+	infoIO_X.access        = eRequestAccessType_Read;
+	infoIO_X.isUniqueRead  = false;
+	infoIO_X.isUniqueWrite = false;
+
+	// Caracteristicas do I/O Y
+	infoIO_Y.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Y.name          = _("var");
+	infoIO_Y.isBit         = false;
+	infoIO_Y.type          = eType_General;
+	infoIO_Y.access        = eRequestAccessType_Read;
+	infoIO_Y.isUniqueRead  = false;
+	infoIO_Y.isUniqueWrite = false;
+
+	// Caracteristicas do I/O Var
+	infoIO_Var.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Var.name          = _("var");
+	infoIO_Var.isBit         = false;
+	infoIO_Var.type          = eType_General;
+	infoIO_Var.access        = eRequestAccessType_Read;
+	infoIO_Var.isUniqueRead  = false;
+	infoIO_Var.isUniqueWrite = false;
+
+	Diagram->getIO(this, infoIO_X);
+	Diagram->getIO(this, infoIO_Y);
+	Diagram->getIO(this, infoIO_Var);
+
+	prop.txt     = _("valor: %d");
+	prop.idX     = infoIO_X.pin;
+	prop.idY     = infoIO_Y.pin;
+	prop.idVar   = infoIO_Var.pin;
+	prop.command = eCommandLCD_Clear;
+}
+
+pair<string, string> LadderElemLCD::DrawTXT(void)
+{
+	char top[100], bot[100];
+
+	string svar = Diagram->getNameIO(prop.idVar);
+	string sx   = Diagram->getNameIO(prop.idX  );
+	string sy   = Diagram->getNameIO(prop.idY  );
+	const char *var  = svar.c_str();
+	const char *x    = sx .c_str();
+	const char *y    = sy .c_str();
+
+	switch(prop.command) {
+		case eCommandLCD_Clear:
+			strcpy(top, "");
+			strcpy(bot, _("{ Limpar Tela }"));
+			break;
+		case eCommandLCD_Erase:
+			sprintf(top, _("Limpar %s posicoes"), var);
+			sprintf(bot, "{ (X,Y) (%s, %s) }", x, y);
+			break;
+		case eCommandLCD_Write:
+			sprintf(top, "%s: %s", _("WRITE"), var);
+			sprintf(bot, "{\"%s\"}", prop.txt.c_str());
+			break;
+		case eCommandLCD_BackLight:
+			strcpy (top, _("Luz Fundo"));
+			if(!IsNumber(var)) {
+				sprintf(bot, _("{ Variavel: %s }"), var);
+			} else {
+				sprintf(bot, _("{ %s }"), (atoi(var) != 0) ? _("Ligar") : _("Desligar"));
+			}
+
+			break;
+	}
+
+	return pair<string, string>(top, bot);
+}
+
+bool LadderElemLCD::internalGenerateIntCode(IntCode &ic)
+{
+	string sx   = Diagram->getNameIO(prop.idX  );
+	string sy   = Diagram->getNameIO(prop.idY  );
+	string svar = Diagram->getNameIO(prop.idVar);
+	const char *x    = sx  .c_str();
+	const char *y    = sy  .c_str();
+	const char *var  = svar.c_str();
+
+	const char *stateInOut = ic.getStateInOut();
+	// We want to respond to rising edges, so yes we need a one shot.
+	string oneShot = ic.GenSymOneShot();
+
+	// OneShot 
+	ic.Op(INT_IF_BIT_SET, stateInOut);
+		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
+			ic.Op(INT_IF_BIT_SET, "$LCDReady");
+				ic.Op(INT_LCD, x, y, var, prop.txt.c_str(), prop.command, 0);
+				ic.Op(INT_SET_BIT, oneShot.c_str());
+			ic.Op(INT_END_IF);
+		ic.Op(INT_END_IF);
+		ic.Op(INT_COPY_BIT_TO_BIT, stateInOut, oneShot.c_str());
+	ic.Op(INT_ELSE);
+		ic.Op(INT_CLEAR_BIT, oneShot.c_str());
+	ic.Op(INT_END_IF);
+
+	return true;
+}
+
+bool LadderElemLCD::CanInsert(LadderContext context)
+{
+	return context.canInsertOther;
+}
+
+bool LadderElemLCD::internalSetProperties(void *data, bool isUndoRedo)
+{
+	LadderElemLCDProp *newProp = (LadderElemLCDProp *)data;
+
+	prop = *newProp;
+	delete newProp;
+
+	return true;
+}
+
+void *LadderElemLCD::getProperties(void)
+{
+	LadderElemLCDProp *curProp = new LadderElemLCDProp;
+
+	*curProp = prop;
+
+	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemLCD::internalSave(FILE *f)
+{
+	return
+		fwrite_string(f, prop.txt) &&
+		fwrite_uint  (f, prop.command) &&
+		fwrite_ulong (f, prop.idX  .first) &&
+		fwrite_int   (f, prop.idX  .second) &&
+		fwrite_ulong (f, prop.idY  .first) &&
+		fwrite_int   (f, prop.idY  .second) &&
+		fwrite_ulong (f, prop.idVar.first) &&
+		fwrite_int   (f, prop.idVar.second);
+}
+
+bool LadderElemLCD::internalLoad(FILE *f, unsigned int version)
+{
+	unsigned int iCmdLCD;
+	bool ret =
+		fread_string(f, &prop.txt) &&
+		fread_uint  (f, &iCmdLCD) &&
+		fread_ulong (f, &prop.idX  .first) &&
+		fread_int   (f, &prop.idX  .second) &&
+		fread_ulong (f, &prop.idY  .first) &&
+		fread_int   (f, &prop.idY  .second) &&
+		fread_ulong (f, &prop.idVar.first) &&
+		fread_int   (f, &prop.idVar.second);
+
+	if(ret == true) {
+		switch(iCmdLCD) {
+			case eCommandLCD_Clear    : prop.command = eCommandLCD_Clear    ; break;
+			case eCommandLCD_Erase    : prop.command = eCommandLCD_Erase    ; break;
+			case eCommandLCD_Write    : prop.command = eCommandLCD_Write    ; break;
+			case eCommandLCD_BackLight: prop.command = eCommandLCD_BackLight; break;
+		}
+
+		Diagram->updateTypeIO(prop.idX  .first);
+		Diagram->updateTypeIO(prop.idY  .first);
+		Diagram->updateTypeIO(prop.idVar.first);
+	}
+
+	return ret;
+}
+
+LadderElem *LadderElemLCD::Clone(LadderDiagram *diagram)
+{
+	LadderElemLCD *clone = new LadderElemLCD(diagram);
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
+	clone->internalSetProperties(getProperties());
+
+	return clone;
+}
+
+bool LadderElemLCD::acceptIO(unsigned long id, eType type)
+{
+	if(id == prop.idX.first && !Diagram->IsGenericTypeIO(type)) {
+		return false;
+	}
+
+	if(id == prop.idY.first && !Diagram->IsGenericTypeIO(type)) {
+		return false;
+	}
+
+	if(id == prop.idVar.first && !Diagram->IsGenericTypeIO(type)) {
+		return false;
+	}
+
+	return true;
+}
+
+void LadderElemLCD::updateIO(LadderDiagram *owner, bool isDiscard)
+{
+	infoIO_X.pin = prop.idX;
+	Diagram->updateIO(owner, this, infoIO_X  , isDiscard);
+	prop.idX     = infoIO_X.pin;
+
+	infoIO_Y.pin = prop.idY;
+	Diagram->updateIO(owner, this, infoIO_Y  , isDiscard);
+	prop.idY     = infoIO_Y.pin;
+
+	infoIO_Var.pin = prop.idVar;
+	Diagram->updateIO(owner, this, infoIO_Var, isDiscard);
+	prop.idVar = infoIO_Var.pin;
+}
+
+eType LadderElemLCD::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idX.first == id || prop.idY.first == id || prop.idVar.first == id) {
+		return eType_General;
+	}
+
+	return eType_Pending;
+}
+
+int LadderElemLCD::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	unsigned int n = 0;
+
+	if(prop.idX.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idX;
+				if(Diagram->getIO(this, pin, sNewText, type, infoIO_X)) {
+					LadderElemLCDProp *data = (LadderElemLCDProp *)getProperties();
+
+					data->idX  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idY.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idY;
+				if(Diagram->getIO(this, pin, sNewText, type, infoIO_Y)) {
+					LadderElemLCDProp *data = (LadderElemLCDProp *)getProperties();
+
+					data->idY  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	if(prop.idVar.first == idSearch) {
+		if(isReplace) {
+			eType type = Diagram->getDetailsIO(sNewText).type;
+			if(type != eType_Reserved) {
+				if(type == eType_Pending) {
+					type = eType_General;
+				}
+				pair<unsigned long, int> pin = prop.idVar;
+				if(Diagram->getIO(this, pin, sNewText, type, infoIO_Var)) {
+					LadderElemLCDProp *data = (LadderElemLCDProp *)getProperties();
+
+					data->idVar  = pin;
+
+					setProperties(Diagram->getContext(), data);
+
+					n++;
+				}
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return n;
+}
+
+bool LadderElemLCD::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	const char *field;
+	tRequestIO request;
+	pair<unsigned long, int> pin;
+
+	if(index == 0) {
+		request = infoIO_X;
+		pin     = prop.idX;
+		field   = _("Eixo X");
+	} else if(index == 1) {
+		request = infoIO_Y;
+		pin     = prop.idY;
+		field   = _("Eixo Y");
+	} else {
+		request = infoIO_Var;
+		pin     = prop.idVar;
+		field   = _("Variável");
+	}
+
+	// Se variavel sem tipo, usa tipo geral.
+	type = Diagram->getTypeIO(Diagram->getNameIO(pin), name, eType_General, true);
+	if(type == eType_Reserved) {
+		type = eType_General;
+	}
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, field, VALIDATE_IS_VAR_OR_NUMBER, 0, 0)) {
+		if(Diagram->getIO(this, pin, name, type, request, true)) {
+			LadderElemLCDProp *data = (LadderElemLCDProp *)getProperties();
+
+			if(index == 0) {
+				data->idX   = pin;
+			} else if(index == 1) {
+				data->idY   = pin;
+			} else {
+				data->idVar = pin;
+			}
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool LadderElemLCD::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
+{
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemLCDProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
+}
+
 // Classe LadderElemX
 LadderElemX::LadderElemX(LadderDiagram *diagram) : LadderElem(false, false, false, false, ELEM_PADDING)
 {
@@ -9850,6 +10245,7 @@ bool LadderCircuit::Load(LadderDiagram *diagram, FILE *f, unsigned int version)
 						case ELEM_WRITE_SERVO_YASKAWA   : s.elem = new LadderElemYaskawa      (diagram, which); break;
 						case ELEM_PERSIST               : s.elem = new LadderElemPersist      (diagram);        break;
 						case ELEM_PID                   : s.elem = new LadderElemPID          (diagram);        break;
+						case ELEM_LCD                   : s.elem = new LadderElemLCD          (diagram);        break;
 						// Elemento nao suportado. Novo elemento nao cadastrado aqui???
 						default                         : s.elem = nullptr; break;
 						}
@@ -12342,14 +12738,19 @@ string LadderDiagram::getBoardDescription(eExpansionBoard typeBoard)
 	return expansionBoards->getDescription(typeBoard);
 }
 
-vector<unsigned int> LadderDiagram::getBoardAddresses(eExpansionBoard type)
+vector<string> LadderDiagram::getBoardVersions(eExpansionBoard typeBoard)
 {
-	return expansionBoards->getBoardAddresses(type);
+	return expansionBoards->getVersions(typeBoard);
+}
+
+vector<unsigned int> LadderDiagram::getAddresses(eExpansionBoard type)
+{
+	return expansionBoards->getAddresses(type);
 }
 
 bool LadderDiagram::boardAdd(tExpansionBoardItem board)
 {
-	return expansionBoards->Add(board.name, board.type, board.address, board.useIRQ);
+	return expansionBoards->Add(board.name, board.type, board.version, board.address, board.useIRQ);
 }
 
 bool LadderDiagram::boardDel(unsigned int id)
@@ -12374,7 +12775,7 @@ bool LadderDiagram::boardDel(unsigned int id)
 
 bool LadderDiagram::boardUpdate(unsigned int id, tExpansionBoardItem board)
 {
-	return expansionBoards->Update(id, board.name, board.type, board.address, board.useIRQ);
+	return expansionBoards->Update(id, board.name, board.type, board.version, board.address, board.useIRQ);
 }
 
 /*** Funcoes relacionadas com I/O ***/

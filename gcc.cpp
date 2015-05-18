@@ -309,6 +309,12 @@ static void GenerateDeclarations(FILE *f)
                 intVar3 = vectorIntCode[i].name3;
                 break;
 
+            case INT_LCD:
+                intVar1 = vectorIntCode[i].name1;
+                intVar2 = vectorIntCode[i].name2;
+                intVar3 = vectorIntCode[i].name3;
+                break;
+
 			case INT_SQRT:
             case INT_END_IF:
             case INT_ELSE_IF:
@@ -731,6 +737,11 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
 				break;
             case INT_UART_SEND:
+				sprintf(buf2, "RS485_Write((unsigned char *)&%s, 1)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
+                break;
+
+            case INT_LCD:
 				sprintf(buf2, "RS485_Write((unsigned char *)&%s, 1)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
                 break;

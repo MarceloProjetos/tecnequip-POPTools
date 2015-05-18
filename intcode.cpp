@@ -230,6 +230,9 @@ void IntCode::Op(int op, const char *name1, const char *name2, const char *name3
 	case INT_WRITE_USS:
 		strcpy(iop.desc, "WRITE_USS");
 		break;
+	case INT_LCD:
+		strcpy(iop.desc, "LCD");
+		break;
 	/*case INT_IF_GROUP(x) (((x) >= 50) && ((x) < 60))
 		strcpy(IntCode[IntCodeLen].desc, "???");
 		break;*/

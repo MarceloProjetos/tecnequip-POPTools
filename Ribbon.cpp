@@ -486,6 +486,8 @@ public:
 			EXEC_OPCODE(cmdInstrReadModBUS        , MNU_INSERT_READ_MODBUS     );
 			EXEC_OPCODE(cmdInstrWriteModBUS       , MNU_INSERT_WRITE_MODBUS    );
 
+			EXEC_OPCODE(cmdInstrLCD               , MNU_INSERT_LCD             );
+
 			EXEC_OPCODE(cmdConfig                 , MNU_MCU_SETTINGS           );
 			EXEC_OPCODE(cmdExpansion              , MNU_MCU_EXPANSION          );
 			EXEC_OPCODE(cmdSettings               , MNU_MCU_PREFERENCES        );
@@ -950,6 +952,8 @@ void EnableInterfaceItem(int item, BOOL enabled)
 
 			RIBBON_UPDATE_CMD_STATE(cmdInstrReadModBUS        , MNU_INSERT_READ_MODBUS     );
 			RIBBON_UPDATE_CMD_STATE(cmdInstrWriteModBUS       , MNU_INSERT_WRITE_MODBUS    );
+
+			RIBBON_UPDATE_CMD_STATE(cmdInstrLCD               , MNU_INSERT_LCD             );
 
 			RIBBON_UPDATE_CMD_STATE(cmdConfig                 , MNU_MCU_SETTINGS           );
 			RIBBON_UPDATE_CMD_STATE(cmdSettings               , MNU_MCU_PREFERENCES        );
