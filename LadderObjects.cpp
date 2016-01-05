@@ -11834,6 +11834,17 @@ bool LadderDiagram::Save(string filename, bool isBackup)
 	bool hasParallel = context.ParallelStart != nullptr;
 	bool failed = true; // Desmarca ao chegar no final da logica. Se nao chegou, ocorreu uma falha
 
+#ifdef _DEBUG
+	static bool isFirstDebugMessage = true;
+	if(isFirstDebugMessage) {
+		isFirstDebugMessage = false;
+		if(ShowDialog(eDialogType_Question, false, _("Você tem certeza?"),
+			_("Esta é uma Versão em Desenvolvimento. Salvar pode danificar o arquivo.\nDeseja salvar o arquivo mesmo assim?")) != eReply_Yes) {
+				return false;
+		}
+	}
+#endif
+
 	// Se a contagem de checkpoint nao for zero, indica que alguma alteracao esta ocorrendo no diagrama.
 	// Dessa forma nao podemos realizar o salvamento pois nesse momento estamos em um estado inconsistente!
 	if(CheckpointBeginCount > 0) {

@@ -1353,9 +1353,9 @@ void mapIO::LoadPinList(unsigned long id)
 					}
 				}
 
-				if(canUseIO && (detailsIO.type == eType_DigInput  && i < 51) ||
+				if(canUseIO && ((detailsIO.type == eType_DigInput  && i < 51) ||
 								(detailsIO.type == eType_DigOutput && i > 50) ||
-								(detailsIO.type == eType_General   && i > 66)) {
+								(detailsIO.type == eType_General   && i > 66))) {
 					sprintf(buf, "%c%d", mcu->pinInfo[i].port, mcu->pinInfo[i].bit);
 					AddDialogItem(buf, mcu->pinInfo[i].pin);
 				}

@@ -89,7 +89,9 @@ void ExportDrawingAsText(char *file)
 		detailsIO = ladder->getDetailsIO(name);
 
 		const char *type = ladder->getStringTypeIO(index);
-		const char *pin  = ladder->getPinNameIO(index).c_str();
+
+		string      spin = ladder->getPortNameIO(index);
+		const char *pin  = spin.c_str();
 
         sprintf(b, "                             |                    | %s\n", pin);
 

@@ -3791,19 +3791,20 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 	POINT size, GridSize = gui.getGridSize();
 	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
 
-	const char *s, *title;
+	bool isStandardDraw;
+	const char *title;
 	switch(which) {
-		case ELEM_ADD: s = "+"; title = _("SOMAR"      ); break;
-		case ELEM_SUB: s = "-"; title = _("SUBTRAIR"   ); break;
-		case ELEM_DIV: s = "" ; title = _("DIVIDIR"    ); break; // Sem sinal! Divisao tem um formato diferente
-		case ELEM_MUL: s = "*"; title = _("MULTIPLICAR"); break;
-		case ELEM_MOD: s = "" ; title = _("RESTO"      ); break; // Sem sinal! Divisao tem um formato diferente
+		case ELEM_ADD: isStandardDraw = true ; title = _("SOMAR"      ); break;
+		case ELEM_SUB: isStandardDraw = true ; title = _("SUBTRAIR"   ); break;
+		case ELEM_DIV: isStandardDraw = false; title = _("DIVIDIR"    ); break; // Sem sinal! Divisao tem um formato diferente
+		case ELEM_MUL: isStandardDraw = true ; title = _("MULTIPLICAR"); break;
+		case ELEM_MOD: isStandardDraw = false; title = _("RESTO"      ); break; // Sem sinal! Divisao tem um formato diferente
 		default: oops();
 	}
 
 	size  = ddg->size;
 
-	if(*s) {
+	if(isStandardDraw) {
 		if(ddg->expanded) {
 			ddg->size.x = 3;
 			ddg->size.y = 3;
@@ -3840,7 +3841,7 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 	*pIntOp2  = 1;
 	*pIntDest = 2;
 
-	if(*s) { // Existe sinal, desenha no modo padrao
+	if(isStandardDraw) { // Existe sinal, desenha no modo padrao
 		// Desenha o primeiro operador
 		r.right -= 5;
 		r.top   += (GridSize.y - FONT_HEIGHT)/2;
@@ -3864,9 +3865,32 @@ bool LadderElemMath::DrawGUI(bool poweredBefore, void *data)
 		gui.AddCommand(source, r, ElemSimCmdSetVariable, pULong, true, true);
 
 		// Desenha o sinal centralizado entre a parte de baixo do texto inferior e o topo do texto superior
-		rSinal.left   += 5;
-		rSinal.bottom  = r.top + FONT_HEIGHT;
-		gui.DrawText(s, rSinal, 0, colorgroup.Foreground, eAlignMode_TopLeft, eAlignMode_Center);
+		rSinal.left   +=               10;
+		rSinal.right   = rSinal.left + 10;
+		rSinal.top    += FONT_HEIGHT +  5;
+		rSinal.bottom  = rSinal.top  + 10;
+		POINT StartSinal = { rSinal.left, rSinal.top }, EndSinal = { rSinal.right, rSinal.bottom };
+
+		switch(which) {
+		case ELEM_ADD:
+			StartSinal.x += 5;
+			EndSinal  .x  = StartSinal.x;
+			gui.DrawLine(StartSinal, EndSinal, colorgroup.Foreground);
+			StartSinal.x = rSinal.left;
+			EndSinal  .x = rSinal.right;
+			// Sem break. Na sequencia desenha-se a linha horizontal do sinal de Mais
+		case ELEM_SUB:
+			StartSinal.y += 5;
+			EndSinal  .y  = StartSinal.y;
+			gui.DrawLine(StartSinal, EndSinal, colorgroup.Foreground);
+			break;
+		case ELEM_MUL:
+			gui.DrawLine(StartSinal, EndSinal, colorgroup.Foreground);
+			StartSinal.x = rSinal.right;
+			EndSinal  .x = rSinal.left;
+			gui.DrawLine(StartSinal, EndSinal, colorgroup.Foreground);
+			break;
+		}
 
 		// Desenha a linha inferior que separa os operadores do resultado
 		POINT StartPoint = { r.left + 10, r.top + FONT_HEIGHT + 5 }, EndPoint = { r.right, r.top + FONT_HEIGHT + 5 };
