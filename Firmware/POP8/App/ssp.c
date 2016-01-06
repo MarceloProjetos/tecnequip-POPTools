@@ -5,8 +5,8 @@
 ******************************************************************************/
 void SSP_Init()
 {
-	LPC_SSP_T *pSSP = LPC_SSP0;
-	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_SSP0);
+	LPC_SSP_T *pSSP = LPC_SSP1;
+	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_SSP1);
 
 	// Valor de configuracao dos GPIOs: com pull-up e histerese
 	uint32_t gpio_mode = IOCON_MODE_PULLUP | IOCON_HYS_EN;
@@ -16,25 +16,25 @@ void SSP_Init()
 	Chip_SSP_SetBitRate(pSSP, 100000);
 
 	// Configuracao dos I/Os
-	Chip_IOCON_PinMux(LPC_IOCON, 0, 15, gpio_mode, IOCON_FUNC2); // P0.15: SCK
-	Chip_IOCON_PinMux(LPC_IOCON, 0, 17, gpio_mode, IOCON_FUNC2); // P0.17: MISO
-	Chip_IOCON_PinMux(LPC_IOCON, 0, 18, gpio_mode, IOCON_FUNC2); // P0.18: MOSI
+	Chip_IOCON_PinMux(LPC_IOCON, 0, 7, gpio_mode, IOCON_FUNC2); // P0.7: SCK
+	Chip_IOCON_PinMux(LPC_IOCON, 0, 8, gpio_mode, IOCON_FUNC2); // P0.8: MISO
+	Chip_IOCON_PinMux(LPC_IOCON, 0, 9, gpio_mode, IOCON_FUNC2); // P0.9: MOSI
 
 	// P0.16: SSEL, gerado por software
-	Chip_IOCON_PinMux(LPC_IOCON, 0, 16, gpio_mode, IOCON_FUNC0);
-	Chip_GPIO_SetDir(LPC_GPIO, 0, 16, 1); // Define pino como Saida
+	Chip_IOCON_PinMux(LPC_IOCON, 0, 6, gpio_mode, IOCON_FUNC0);
+	Chip_GPIO_SetDir (LPC_GPIO , 0, 6, 1); // Define pino como Saida
 
 	Chip_SSP_Enable(pSSP);
 }
 
 void SSP_Enable()
 {
-	Chip_GPIO_SetPinState(LPC_GPIO, 0, 16, false);
+	Chip_GPIO_SetPinState(LPC_GPIO, 0, 6, false);
 }
 
 void SSP_Disable()
 {
-	Chip_GPIO_SetPinState(LPC_GPIO, 0, 16, true);
+	Chip_GPIO_SetPinState(LPC_GPIO, 0, 6, true);
 }
 
 unsigned char SSP_Write(unsigned char * buffer, unsigned int size)
@@ -43,10 +43,10 @@ unsigned char SSP_Write(unsigned char * buffer, unsigned int size)
 
   for (i = 0; i < size; i++ )
   {
-    while ( !(LPC_SSP0->SR & SSP_STAT_TNF) );
-    LPC_SSP0->DR = *buffer;
+    while ( !(LPC_SSP1->SR & SSP_STAT_TNF) );
+    LPC_SSP1->DR = *buffer;
     buffer++;
-    while ( LPC_SSP0->SR & SSP_STAT_BSY );
+    while ( LPC_SSP1->SR & SSP_STAT_BSY );
   }
   return i;
 }
@@ -57,8 +57,8 @@ unsigned char SSP_Read(uint8_t * buffer, unsigned int size)
 
   for (i = 0; i < size; i++ )
   {
-    while ( !(LPC_SSP0->SR & SSP_STAT_RNE) );
-    *buffer = LPC_SSP0->DR;
+    while ( !(LPC_SSP1->SR & SSP_STAT_RNE) );
+    *buffer = LPC_SSP1->DR;
     buffer++;
   }
   return i;

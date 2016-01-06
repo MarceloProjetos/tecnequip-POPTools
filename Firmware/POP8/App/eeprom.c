@@ -1,4 +1,5 @@
 #include "chip.h"
+#include <string.h>
 
 /* Read/write buffer (32-bit aligned) */
 uint32_t buffer[EEPROM_PAGE_SIZE / sizeof(uint32_t)];
