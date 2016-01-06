@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (C) 2009 Free Software Foundation, Inc.
+# Copyright (C) 2009-2015 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@ import gdb
 import os
 import os.path
 
-pythondir = '/opt/codesourcery/arm-none-eabi/share/gcc-4.5.2/python'
-libdir = '/opt/codesourcery/arm-none-eabi/lib/armv6-m'
+pythondir = '/home/build/work/GCC-5-0-build/install-native/share/gcc-arm-none-eabi'
+libdir = '/home/build/work/GCC-5-0-build/install-native/arm-none-eabi/lib/armv6-m'
 
 # This file might be loaded when there is no current objfile.  This
 # can happen if the user loads it manually.  In this case we don't
@@ -50,11 +50,12 @@ if gdb.current_objfile () is not None:
     dotdots = ('..' + os.sep) * len (libdir.split (os.sep))
 
     objfile = gdb.current_objfile ().filename
-    dir = os.path.join (os.path.dirname (objfile), dotdots, pythondir)
+    dir_ = os.path.join (os.path.dirname (objfile), dotdots, pythondir)
 
-    if not dir in sys.path:
-        sys.path.insert(0, dir)
+    if not dir_ in sys.path:
+        sys.path.insert(0, dir_)
 
-# Load the pretty-printers.
-from libstdcxx.v6.printers import register_libstdcxx_printers
-register_libstdcxx_printers (gdb.current_objfile ())
+# Call a function as a plain import would not execute body of the included file
+# on repeated reloads of this object file.
+from libstdcxx.v6 import register_libstdcxx_printers
+register_libstdcxx_printers(gdb.current_objfile())

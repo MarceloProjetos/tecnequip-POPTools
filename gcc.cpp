@@ -1,5 +1,5 @@
 #include "poptools.h"
-#include <intreg.h>
+#include "intreg.h"
 
 #include <vector>
 
@@ -1009,6 +1009,7 @@ DWORD InvokeGCC(char* dest)
 	char szAppDirectory[MAX_PATH] = "";
 	char szAppDestPath[MAX_PATH]  = "";
 	char szAppOutputDir[MAX_PATH] = "";
+	char szMakefile[MAX_PATH]      = "";
 	char * fileName;
 
 	if (!SUCCEEDED(SHGetSpecialFolderPath(0, szAppProgramFilesLong, CSIDL_PROGRAM_FILES, FALSE))) 
@@ -1076,11 +1077,19 @@ DWORD InvokeGCC(char* dest)
 	else
 		strcat(szCmd, pDefaultCMD);
 
+	eModelPLC plcModel = ladder->getSettingsGeneral().model;
+
+	if(plcModel == eModelPLC_POP7) {
+		strcpy(szMakefile, "/src/pop7/\"");
+	} else {
+		strcpy(szMakefile, "/src/pop8/\"");
+	}
+
 	strcat(szArgs, " /C \"\""); 
 	strcat(szArgs, szAppDirectory); // C:\Users\ADMINI~1\DOCUME~1\VISUAL~3\Projects\POPTools\bin
-	strcat(szArgs, "\\gcc\\bin\\cs-make.exe\" -f compile -C \"");
+	strcat(szArgs, "\\gcc\\bin\\cs-make.exe\" -f compile -C \""); 
 	strcat(szArgs, ConvertToUNIXPath(szAppDirectory));
-	strcat(szArgs, "/src/\"");
+	strcat(szArgs, ConvertToUNIXPath(szMakefile));
 	strcat(szArgs, " HEX_FILE=\""); 
 	strcat(szArgs, fileName);
 	strcat(szArgs, "\" ");

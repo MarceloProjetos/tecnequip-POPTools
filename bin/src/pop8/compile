@@ -28,7 +28,7 @@ TEMP_PATH = C:/Windows/Temp
 endif
 
 GNU_CC=arm-none-eabi
-GCC_VERSION = 5.2.1
+GCC_VERSION = 4.5.2
 
 #------------------------------------------------------------------------------
 # Diretorios de trabalho

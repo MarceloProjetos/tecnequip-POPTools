@@ -1,5 +1,5 @@
 #include "poptools.h"
-#include <modbus_rtu.h>
+#include "modbus_rtu.h"
 
 struct MODBUS_Device MBDev_TCP;
 struct MODBUS_Device MBDev_Serial;

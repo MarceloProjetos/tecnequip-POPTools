@@ -1,7 +1,7 @@
 #ifndef MODBUS_MASTER_H
 #define MODBUS_MASTER_H
 
-#include <modbus_rtu.h>
+#include "modbus_rtu.h"
 
 extern struct MODBUS_Device MBDev_TCP;
 extern struct MODBUS_Device MBDev_Serial;

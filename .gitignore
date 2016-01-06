@@ -1,2 +1,11 @@
 /Release
 /Debug
+/bin/*.pdb
+/ipch
+/Firmware/POP8/Lpc407x
+/MainRibbon.rc
+/MainRibbon.bml
+/MainRibbon.h
+/POPTools.sdf
+/POPTools.suo
+/POPTools.opensdf

@@ -18,6 +18,7 @@
 #ifndef _SYS_TYPES_H
 
 #include <_ansi.h>
+# include <sys/cdefs.h>
 
 #ifndef __INTTYPES_DEFINED__
 #define __INTTYPES_DEFINED__
@@ -59,6 +60,7 @@ typedef	quad_t *	qaddr_t;
 
 #define _SYS_TYPES_H
 #include <sys/_types.h>
+#include <sys/_stdint.h>
 
 #ifdef __i386__
 #if defined (GO32) || defined (__MSDOS__)
@@ -82,23 +84,38 @@ typedef	quad_t *	qaddr_t;
 #define _ST_INT32
 #endif
 
-# ifndef	_POSIX_SOURCE
+# if	__BSD_VISIBLE
+
+#include <sys/select.h>
 
 #  define	physadr		physadr_t
 #  define	quad		quad_t
 
 #ifndef _BSDTYPES_DEFINED
 /* also defined in mingw/gmon.h and in w32api/winsock[2].h */
+#ifndef __u_char_defined
 typedef	unsigned char	u_char;
+#define __u_char_defined
+#endif
+#ifndef __u_short_defined
 typedef	unsigned short	u_short;
+#define __u_short_defined
+#endif
+#ifndef __u_int_defined
 typedef	unsigned int	u_int;
+#define __u_int_defined
+#endif
+#ifndef __u_long_defined
 typedef	unsigned long	u_long;
+#define __u_long_defined
+#endif
 #define _BSDTYPES_DEFINED
 #endif
 
 typedef	unsigned short	ushort;		/* System V compatibility */
 typedef	unsigned int	uint;		/* System V compatibility */
-# endif	/*!_POSIX_SOURCE */
+typedef	unsigned long	ulong;		/* System V compatibility */
+# endif	/*__BSD_VISIBLE */
 
 #ifndef __clock_t_defined
 typedef _CLOCK_T_ clock_t;
@@ -108,22 +125,16 @@ typedef _CLOCK_T_ clock_t;
 #ifndef __time_t_defined
 typedef _TIME_T_ time_t;
 #define __time_t_defined
-
-/* Time Value Specification Structures, P1003.1b-1993, p. 261 */
-
-struct timespec {
-  time_t  tv_sec;   /* Seconds */
-  long    tv_nsec;  /* Nanoseconds */
-};
-
-struct itimerspec {
-  struct timespec  it_interval;  /* Timer period */
-  struct timespec  it_value;     /* Timer expiration */
-};
 #endif
 
+#ifndef __daddr_t_defined
 typedef	long	daddr_t;
+#define __daddr_t_defined
+#endif
+#ifndef __caddr_t_defined
 typedef	char *	caddr_t;
+#define __caddr_t_defined
+#endif
 
 #ifndef __CYGWIN__
 #if defined(__MS_types__) || defined(__rtems__) || \
@@ -171,12 +182,16 @@ typedef signed char pid_t;
 typedef int pid_t;
 #endif
 
+#if defined(__rtems__)
+typedef _mode_t mode_t;
+#endif
+
 #ifndef __CYGWIN__
 typedef	long key_t;
 #endif
 typedef _ssize_t ssize_t;
 
-#ifndef __CYGWIN__
+#if !defined(__CYGWIN__) && !defined(__rtems__)
 #ifdef __MS_types__
 typedef	char *	addr_t;
 typedef int mode_t;
@@ -195,52 +210,6 @@ typedef unsigned int mode_t _ST_INT32;
 
 typedef unsigned short nlink_t;
 
-/* We don't define fd_set and friends if we are compiling POSIX
-   source, or if we have included (or may include as indicated
-   by __USE_W32_SOCKETS) the W32api winsock[2].h header which
-   defines Windows versions of them.   Note that a program which
-   includes the W32api winsock[2].h header must know what it is doing;
-   it must not call the cygwin32 select function.
-*/
-# if !(defined (_POSIX_SOURCE) || defined (_WINSOCK_H) || defined (__USE_W32_SOCKETS)) 
-#  define _SYS_TYPES_FD_SET
-#  define	NBBY	8		/* number of bits in a byte */
-/*
- * Select uses bit masks of file descriptors in longs.
- * These macros manipulate such bit fields (the filesystem macros use chars).
- * FD_SETSIZE may be defined by the user, but the default here
- * should be >= NOFILE (param.h).
- */
-#  ifndef	FD_SETSIZE
-#	define	FD_SETSIZE	64
-#  endif
-
-typedef	long	fd_mask;
-#  define	NFDBITS	(sizeof (fd_mask) * NBBY)	/* bits per mask */
-#  ifndef	howmany
-#	define	howmany(x,y)	(((x)+((y)-1))/(y))
-#  endif
-
-/* We use a macro for fd_set so that including Sockets.h afterwards
-   can work.  */
-typedef	struct _types_fd_set {
-	fd_mask	fds_bits[howmany(FD_SETSIZE, NFDBITS)];
-} _types_fd_set;
-
-#define fd_set _types_fd_set
-
-#  define	FD_SET(n, p)	((p)->fds_bits[(n)/NFDBITS] |= (1L << ((n) % NFDBITS)))
-#  define	FD_CLR(n, p)	((p)->fds_bits[(n)/NFDBITS] &= ~(1L << ((n) % NFDBITS)))
-#  define	FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1L << ((n) % NFDBITS)))
-#  define	FD_ZERO(p)	(__extension__ (void)({ \
-     size_t __i; \
-     char *__tmp = (char *)p; \
-     for (__i = 0; __i < sizeof (*(p)); ++__i) \
-       *__tmp++ = 0; \
-}))
-
-# endif	/* !(defined (_POSIX_SOURCE) || defined (_WINSOCK_H) || defined (__USE_W32_SOCKETS)) */
-
 #undef __MS_types__
 #undef _ST_INT32
 
@@ -256,7 +225,13 @@ typedef _TIMER_T_ timer_t;
 #endif
 
 typedef unsigned long useconds_t;
-typedef long suseconds_t;
+
+#ifndef _SUSECONDS_T_DECLARED
+typedef	__suseconds_t	suseconds_t;
+#define	_SUSECONDS_T_DECLARED
+#endif
+
+typedef	__int64_t	sbintime_t;
 
 #include <sys/features.h>
 
@@ -296,38 +271,9 @@ typedef __uint32_t pthread_t;            /* identify a thread */
 #define PTHREAD_CREATE_DETACHED 0
 #define PTHREAD_CREATE_JOINABLE  1
 
-#if defined(__XMK__) || defined(__rtems__)
-/* The following defines are part of the X/Open System Interface (XSI). */
-
-/* This type of mutex does not detect deadlock. A thread attempting to relock this mutex without first unlocking 
- * it shall deadlock. Attempting to unlock a mutex locked by a different thread results in undefined behavior. 
- * Attempting to unlock an unlocked mutex results in undefined behavior. 
- */
-#define PTHREAD_MUTEX_NORMAL  1
-
-/* 
- * This type of mutex provides error checking. A thread attempting to relock this mutex without first unlocking 
- * it shall return with an error. A thread attempting to unlock a mutex which another thread has locked shall return 
- * with an error. A thread attempting to unlock an unlocked mutex shall return with an error. 
- */
-#define PTHREAD_MUTEX_ERRORCHECK  2 
-
-/* A thread attempting to relock this mutex without first unlocking it shall succeed in locking the mutex. 
- * The relocking deadlock which can occur with mutexes of type PTHREAD_MUTEX_NORMAL cannot occur with this type of mutex. 
- * Multiple locks of this mutex shall require the same number of unlocks to release the mutex before another thread can 
- * acquire the mutex. A thread attempting to unlock a mutex which another thread has locked shall return with an error. 
- * A thread attempting to unlock an unlocked mutex shall return with an error. 
- */
-#define PTHREAD_MUTEX_RECURSIVE  3
-
-/* Attempting to recursively lock a mutex of this type results in undefined behavior. Attempting to unlock a 
- * mutex of this type which was not locked by the calling thread results in undefined behavior. Attempting to 
- * unlock a mutex of this type which is not locked results in undefined behavior. An implementation may map this 
- * mutex to one of the other mutex types.
- */
-#define PTHREAD_MUTEX_DEFAULT  4 
-
-#endif /* defined(__XMK__) || defined(__rtems__) */
+#if defined(__rtems__)
+  #include <sys/cpuset.h>
+#endif
 
 #if defined(__XMK__)
 typedef struct pthread_attr_s {
@@ -349,13 +295,20 @@ typedef struct {
   int inheritsched;
   int schedpolicy;
   struct sched_param schedparam;
+#if defined(__rtems__)
+  size_t guardsize;
+#endif
 
   /* P1003.4b/D8, p. 54 adds cputime_clock_allowed attribute.  */
 #if defined(_POSIX_THREAD_CPUTIME)
   int  cputime_clock_allowed;  /* see time.h */
 #endif
   int  detachstate;
-
+#if defined(__rtems__)
+  size_t affinitysetsize;
+  cpu_set_t *affinityset;
+  cpu_set_t affinitysetpreallocated;
+#endif
 } pthread_attr_t;
 
 #endif /* !defined(__XMK__) */
@@ -383,12 +336,49 @@ typedef struct {
 
 /* Values for mutex type */
 
+/* The following defines are part of the X/Open System Interface (XSI). */
+
+/*
+ * This type of mutex does not detect deadlock. A thread attempting to
+ * relock this mutex without first unlocking it shall deadlock. Attempting
+ * to unlock a mutex locked by a different thread results in undefined
+ * behavior.  Attempting to unlock an unlocked mutex results in undefined
+ * behavior.
+ */
 #define PTHREAD_MUTEX_NORMAL     0
+
+/*
+ * A thread attempting to relock this mutex without first unlocking
+ * it shall succeed in locking the mutex.  The relocking deadlock which
+ * can occur with mutexes of type PTHREAD_MUTEX_NORMAL cannot occur with
+ * this type of mutex.  Multiple locks of this mutex shall require the
+ * same number of unlocks to release the mutex before another thread can
+ * acquire the mutex. A thread attempting to unlock a mutex which another
+ * thread has locked shall return with an error.  A thread attempting to
+ * unlock an unlocked mutex shall return with an error.
+ */
 #define PTHREAD_MUTEX_RECURSIVE  1
+
+/* 
+ * This type of mutex provides error checking. A thread attempting
+ * to relock this mutex without first unlocking it shall return with an
+ * error. A thread attempting to unlock a mutex which another thread has
+ * locked shall return with an error. A thread attempting to unlock an
+ * unlocked mutex shall return with an error.
+ */
 #define PTHREAD_MUTEX_ERRORCHECK 2
+
+/*
+ * Attempting to recursively lock a mutex of this type results
+ * in undefined behavior. Attempting to unlock a mutex of this type
+ * which was not locked by the calling thread results in undefined
+ * behavior. Attempting to unlock a mutex of this type which is not locked
+ * results in undefined behavior. An implementation may map this mutex to
+ * one of the other mutex types.
+ */
 #define PTHREAD_MUTEX_DEFAULT    3
 
-#endif
+#endif /* !defined(_UNIX98_THREAD_MUTEX_ATTRIBUTES) */
 
 #if defined(__XMK__)
 typedef unsigned int pthread_mutex_t;    /* identify a mutex */
@@ -455,13 +445,13 @@ typedef struct {
 
 /* POSIX Spin Lock Types */
 
+#if !defined (__CYGWIN__)
 #if defined(_POSIX_SPIN_LOCKS)
 typedef __uint32_t pthread_spinlock_t;        /* POSIX Spin Lock Object */
 #endif /* defined(_POSIX_SPIN_LOCKS) */
 
 /* POSIX Reader/Writer Lock Types */
 
-#if !defined (__CYGWIN__)
 #if defined(_POSIX_READER_WRITER_LOCKS)
 typedef __uint32_t pthread_rwlock_t;         /* POSIX RWLock Object */
 typedef struct {
