@@ -1,0 +1,144 @@
+#------------------------------------------------------------------------------
+# Definições POP-8
+#------------------------------------------------------------------------------
+
+# Define project name here
+ifdef HEX_FILE
+PROJECT = $(HEX_FILE)
+else
+PROJECT = pop
+endif
+
+ifdef HEX_PATH
+TARGET_PATH = $(HEX_PATH)
+else
+TARGET_PATH = ./
+endif
+
+ifdef TOOLS_PATH
+TOOLS_PATH = $(TOOLS_PATH)
+else
+TOOLS_PATH = gcc
+endif
+
+ifdef TEMP_PATH
+TEMP_PATH = $(TEMP_PATH)
+else
+TEMP_PATH = C:/Windows/Temp
+endif
+
+GNU_CC=arm-none-eabi
+GCC_VERSION = 5.2.1
+
+#------------------------------------------------------------------------------
+# Diretorios de trabalho
+#------------------------------------------------------------------------------
+
+GCC_DIR = $(TOOLS_PATH)/../../gcc
+GCC_INC = $(GCC_DIR)/arm-none-eabi/include
+
+HOME_DIR=.
+
+SRC_DIR=$(HOME_DIR)
+APP_DIR=$(HOME_DIR)
+LIB_DIR=$(HOME_DIR)
+
+#------------------------------------------------------------------------------
+# Ferramentas ARM ELF
+#------------------------------------------------------------------------------
+
+CC=$(GCC_DIR)/bin/$(GNU_CC)-gcc
+AS=$(GCC_DIR)/bin/$(GNU_CC)-as
+LD=$(GCC_DIR)/bin/$(GNU_CC)-ld
+AR=$(GCC_DIR)/bin/$(GNU_CC)-ar
+OBJSIZE=$(GCC_DIR)/bin/$(GNU_CC)-size
+OBJCOPY=$(GCC_DIR)/bin/$(GNU_CC)-objcopy
+
+#---------------------------------------------------------------------------
+# Bibliotecas e includes
+#------------------------------------------------------------------------------
+
+LIB_GCC = $(GCC_DIR)/lib/gcc/$(GNU_CC)/$(GCC_VERSION)/thumb2/libgcc.a
+LIB_C   = $(GCC_DIR)/$(GNU_CC)/lib/thumb2/libc.a
+LIB_M   = $(GCC_DIR)/$(GNU_CC)/lib/thumb2/libm.a
+
+LIB_POP  = ./libpop.a
+
+#------------------------------------------------------------------------------
+# Flags de compilação
+#------------------------------------------------------------------------------
+#  -Wall
+#  -fpack-struct=1  Alinha as estruturas em 1 byte. 
+#  -nodefaultlibs -nostdlib -nostartfiles 
+#  -fomit-frame-pointer 
+#  -Wstrict-prototypes 
+# -Wno-trigraphs 
+# -fno-strict-aliasing 
+# -fno-common 
+# -fstack-protector "no memory region specified for loadable section `__libc_freeres_fn'"
+# -fomit-frame-pointer -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Wdeclaration-after-statement -Wno-pointer-sign
+# -static
+GCC_FLAGS_OPT=-nostartfiles -nodefaultlibs -nostdlib -Wall -ffunction-sections -fdata-sections -Wl,--gc-sections -mcpu=cortex-m3 -mthumb -static -O0 -I. -T./link.ld -L $(TEMP_PATH) -I . ./startup_LPC17xx.o $(TEMP_PATH)/poptools.c -lpop -lc -lgcc ./syscalls.o
+CFLAGS0=$(GCC_FLAGS_OPT)
+CFLAGS1=$(CFLAGS0)
+
+#------------------------------------------------------------------------------
+# Diretorio de destino
+#------------------------------------------------------------------------------
+
+DIR_OBJ		= $(TEMP_PATH)
+DIR_LST		= $(TEMP_PATH)
+PROG_NAME	= pop
+
+#------------------------------------------------------------------------------
+# Libraries to link to. LIB_GCC must be the last
+#------------------------------------------------------------------------------
+
+LIB_LIST		=  $(LIB_POP) $(LIB_M) $(LIB_C) $(LIB_GCC)
+
+#------------------------------------------------------------------------------
+# Implicit rule to compile all C files in the directory
+#------------------------------------------------------------------------------
+
+$(BIN)/poptools.o : $(BIN)/poptools.c
+	$(CC) $(CFLAGS1) -c $< -o $@
+
+#------------------------------------------------------------------------------
+# Implicit rule to assemble all ASM files in the directory
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# default target: Generates application WITHOUT optimization
+#------------------------------------------------------------------------------
+$(DIR_OBJ)/$(PROG_NAME).elf:
+	"$(CC)" $(CFLAGS0) $(LIB_LIST) -o $(DIR_LST)/$(PROG_NAME).elf
+	"$(OBJSIZE)" $(DIR_LST)/$(PROG_NAME).elf
+	"$(OBJCOPY)" -O binary $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).bin"
+	"$(OBJCOPY)" -O ihex $(DIR_LST)/$(PROG_NAME).elf "$(TARGET_PATH)/$(PROJECT).hex"
+#	cs-rm --force $(TEMP_PATH)/pop.elf
+#	cs-rm --force $(TEMP_PATH)/poptools.o
+#	cs-rm --force $(TEMP_PATH)/poptools.c
+
+#------------------------------------------------------------------------------
+# release target: Generates application with optimization
+#------------------------------------------------------------------------------
+
+release: CFLAGS1 = -Os $(CFLAGS0)
+release: $(DIR_OBJ)/$(PROG_NAME).elf
+
+#------------------------------------------------------------------------------
+# debug target: Generates application WITHOUT optimization
+#------------------------------------------------------------------------------
+
+debug: CFLAGS1 = -O0 --save-temps -ggdb $(CFLAGS0) -Wl,-Map=$(TEMP_PATH)/$(HEX_FILE).map 
+debug: $(DIR_OBJ)/$(PROG_NAME).elf
+		
+#------------------------------------------------------------------------------
+# clean target: Removes all generated files
+#------------------------------------------------------------------------------
+
+clean:
+	cs-rm --force $(DIR_OBJ)/pop.elf
+	cs-rm --force $(DIR_OBJ)/poptools.o
+

@@ -16,8 +16,8 @@
 <attrib name="registered" value="true"/>
 <attrib name="path" value="/Lpc407x/cmsisboot/startup/startup_Cortex_M4.c"/>
 <attrib name="org.eclipse.cdt.debug.core.sourceHandle" value="F:\SVN\POPToolsFirmware_v2\cmsisboot\startup\startup_Cortex_M4.c"/>
-<attrib name="org.eclipse.debug.core.enabled" value="true"/>
 <attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
+<attrib name="org.eclipse.debug.core.enabled" value="true"/>
 </marker>
 </breakpoint>
 <breakpoint enabled="true" persistant="true" registered="true">
@@ -36,8 +36,8 @@
 <attrib name="registered" value="true"/>
 <attrib name="path" value="/Lpc407x/App/sntp.c"/>
 <attrib name="org.eclipse.cdt.debug.core.sourceHandle" value="F:\SVN\POPToolsFirmware_v2\App\sntp.c"/>
-<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 <attrib name="org.eclipse.debug.core.enabled" value="true"/>
+<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 </marker>
 </breakpoint>
 </breakpoints>
