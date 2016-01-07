@@ -130,7 +130,7 @@ int main()
 
 	Modbus_Init();
 
-//	Net_Init();
+	Net_Init();
 
 	CoCreateTask(PLC_Cycle, 0,
 			  PLC_CYCLE_THREAD_PRIO,

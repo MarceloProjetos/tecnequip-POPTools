@@ -117,6 +117,9 @@ void GPIO_Init()
 		SSP_Write((unsigned char*)&mask, 2);
 		SSP_Disable();
 	}
+
+	// U17 - ERRO. Inicia desligado, ou seja, sinal alto!
+	Chip_GPIO_SetPinState(LPC_GPIO, 1, 21, 1);
 }
 
 unsigned int GPIO_Output(void)

@@ -37,8 +37,12 @@
 
 /*---------------------------- Include ---------------------------------------*/
 #include <coocox.h>
-U64     OSTickCnt = 0;                  /*!< Current system tick counter      */ 																			 
+#include "chip.h"
 
+U64     OSTickCnt  = 0;                  /*!< Current system tick counter      */
+U64     OSTimerCnt = 0;                  /*!< Current system timer counter     */
+U32 	OSTimerCPULed = 0;
+U64		ErrorLedCount = 0;               /*!< Error LED blink counter          */
 /**
  ******************************************************************************
  * @brief      Initial task context	  
@@ -92,6 +96,17 @@ void SysTick_Handler(void)
 {
     OSSchedLock++;                  /* Lock scheduler.                        */
     OSTickCnt++;                    /* Increment systerm time.                */
+
+    // Trecho de codigo que atualiza o led de atividade de CPU
+    OSTimerCnt++;
+
+    if (OSTimerCnt >= CFG_SYSTICK_FREQ) {
+    	OSTimerCPULed = !OSTimerCPULed;
+    	OSTimerCnt = 0;
+
+    	Chip_GPIO_SetPinState(LPC_GPIO, 1, 22, OSTimerCPULed);
+    }
+
 #if CFG_TASK_WAITTING_EN >0    
     if(DlyList != Co_NULL)             /* Have task in delay list?               */
     {

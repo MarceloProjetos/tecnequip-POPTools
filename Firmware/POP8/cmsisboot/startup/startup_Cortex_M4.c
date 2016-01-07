@@ -16,6 +16,7 @@
  */
 
 #include <fpu_init.h>
+#include "chip.h"
 
 /*----------Stack Configuration-----------------------------------------------*/  
 #define STACK_SIZE       0x00000100      /*!< Stack size (in Words)           */
@@ -274,6 +275,9 @@ void Default_Reset_Handler(void)
   */
 static void Default_Handler(void) 
 {
+	// U17 - ERRO. Ocorreu alguma excecao, devemos ligar o LED!
+	Chip_GPIO_SetPinState(LPC_GPIO, 1, 21, 0);
+
 	/* Go into an infinite loop. */
 	while (1) 
 	{
