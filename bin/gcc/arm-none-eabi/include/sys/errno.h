@@ -8,21 +8,11 @@ extern "C" {
 #endif
 #define _SYS_ERRNO_H_
 
-  /* Indicate that we honor AEABI portability if requested.  */
-#if defined _AEABI_PORTABILITY_LEVEL && _AEABI_PORTABILITY_LEVEL != 0 && !defined _AEABI_PORTABLE
-# define _AEABI_PORTABLE
-#endif
-
 #include <sys/reent.h>
 
-#ifdef _AEABI_PORTABLE
-extern volatile int *__aeabi_errno_addr _PARAMS ((void));
-# define errno (*__aeabi_errno_addr())
-#else
-# ifndef _REENT_ONLY
-# define errno (*__errno())
+#ifndef _REENT_ONLY
+#define errno (*__errno())
 extern int *__errno _PARAMS ((void));
-# endif
 #endif
 
 /* Please don't use these variables directly.
@@ -32,11 +22,13 @@ extern __IMPORT int _sys_nerr;
 #ifdef __CYGWIN__
 extern __IMPORT const char * const sys_errlist[];
 extern __IMPORT int sys_nerr;
+extern __IMPORT char *program_invocation_name;
+extern __IMPORT char *program_invocation_short_name;
 #endif
 
 #define __errno_r(ptr) ((ptr)->_errno)
 
-#define	EPERM 1		/* Not super-user */
+#define	EPERM 1		/* Not owner */
 #define	ENOENT 2	/* No such file or directory */
 #define	ESRCH 3		/* No such process */
 #define	EINTR 4		/* Interrupted system call */
@@ -47,13 +39,13 @@ extern __IMPORT int sys_nerr;
 #define	EBADF 9		/* Bad file number */
 #define	ECHILD 10	/* No children */
 #define	EAGAIN 11	/* No more processes */
-#define	ENOMEM 12	/* Not enough core */
+#define	ENOMEM 12	/* Not enough space */
 #define	EACCES 13	/* Permission denied */
 #define	EFAULT 14	/* Bad address */
 #ifdef __LINUX_ERRNO_EXTENSIONS__
 #define	ENOTBLK 15	/* Block device required */
 #endif
-#define	EBUSY 16	/* Mount device busy */
+#define	EBUSY 16	/* Device or resource busy */
 #define	EEXIST 17	/* File exists */
 #define	EXDEV 18	/* Cross-device link */
 #define	ENODEV 19	/* No such device */
@@ -61,28 +53,17 @@ extern __IMPORT int sys_nerr;
 #define	EISDIR 21	/* Is a directory */
 #define	EINVAL 22	/* Invalid argument */
 #define	ENFILE 23	/* Too many open files in system */
-#define	EMFILE 24	/* Too many open files */
-#define	ENOTTY 25	/* Not a typewriter */
+#define	EMFILE 24	/* File descriptor value too large */
+#define	ENOTTY 25	/* Not a character device */
 #define	ETXTBSY 26	/* Text file busy */
 #define	EFBIG 27	/* File too large */
 #define	ENOSPC 28	/* No space left on device */
 #define	ESPIPE 29	/* Illegal seek */
-#define	EROFS 30	/* Read only file system */
+#define	EROFS 30	/* Read-only file system */
 #define	EMLINK 31	/* Too many links */
 #define	EPIPE 32	/* Broken pipe */
-#ifdef _AEABI_PORTABLE
-  extern _CONST int __aeabi_EDOM;
-# define EDOM (__aeabi_EDOM)
-#else
-#define	EDOM 33		/* Math arg out of domain of func */
-#endif
-#ifdef _AEABI_PORTABLE
-  extern _CONST int __aeabi_ERANGE;
-# define ERANGE (__aeabi_ERANGE);
-#else
-#define	ERANGE 34	/* Math result not representable */
-#endif
-#ifndef _AEABI_PORTABLE
+#define	EDOM 33		/* Mathematics argument out of domain of function */
+#define	ERANGE 34	/* Result too large */
 #define	ENOMSG 35	/* No message of desired type */
 #define	EIDRM 36	/* Identifier removed */
 #ifdef __LINUX_ERRNO_EXTENSIONS__
@@ -95,8 +76,8 @@ extern __IMPORT int sys_nerr;
 #define	ENOCSI 43	/* No CSI structure available */
 #define	EL2HLT 44	/* Level 2 halted */
 #endif
-#define	EDEADLK 45	/* Deadlock condition */
-#define	ENOLCK 46	/* No record locks available */
+#define	EDEADLK 45	/* Deadlock */
+#define	ENOLCK 46	/* No lock */
 #ifdef __LINUX_ERRNO_EXTENSIONS__
 #define EBADE 50	/* Invalid exchange */
 #define EBADR 51	/* Invalid request descriptor */
@@ -107,16 +88,16 @@ extern __IMPORT int sys_nerr;
 #define EDEADLOCK 56	/* File locking deadlock error */
 #define EBFONT 57	/* Bad font file fmt */
 #endif
-#define ENOSTR 60	/* Device not a stream */
+#define ENOSTR 60	/* Not a stream */
 #define ENODATA 61	/* No data (for no delay io) */
-#define ETIME 62	/* Timer expired */
-#define ENOSR 63	/* Out of streams resources */
+#define ETIME 62	/* Stream ioctl timeout */
+#define ENOSR 63	/* No stream resources */
 #ifdef __LINUX_ERRNO_EXTENSIONS__
 #define ENONET 64	/* Machine is not on the network */
 #define ENOPKG 65	/* Package not installed */
 #define EREMOTE 66	/* The object is remote */
 #endif
-#define ENOLINK 67	/* The link has been severed */
+#define ENOLINK 67	/* Virtual circuit is gone */
 #ifdef __LINUX_ERRNO_EXTENSIONS__
 #define EADV 68		/* Advertise error */
 #define ESRMNT 69	/* Srmount error */
@@ -128,7 +109,7 @@ extern __IMPORT int sys_nerr;
 #define	ELBIN 75	/* Inode is remote (not really error) */
 #define	EDOTDOT 76	/* Cross mount point (not really error) */
 #endif
-#define EBADMSG 77	/* Trying to read unreadable message */
+#define EBADMSG 77	/* Bad message */
 #define EFTYPE 79	/* Inappropriate file type or format */
 #ifdef __LINUX_ERRNO_EXTENSIONS__
 #define ENOTUNIQ 80	/* Given log. name not unique */
@@ -147,7 +128,7 @@ extern __IMPORT int sys_nerr;
 #define ENOTEMPTY 90	/* Directory not empty */
 #define ENAMETOOLONG 91	/* File or path name too long */
 #define ELOOP 92	/* Too many symbolic links */
-#define EOPNOTSUPP 95	/* Operation not supported on transport endpoint */
+#define EOPNOTSUPP 95	/* Operation not supported on socket */
 #define EPFNOSUPPORT 96 /* Protocol family not supported */
 #define ECONNRESET 104  /* Connection reset by peer */
 #define ENOBUFS 105	/* No buffer space available */
@@ -160,7 +141,7 @@ extern __IMPORT int sys_nerr;
 #endif
 #define ECONNREFUSED 111	/* Connection refused */
 #define EADDRINUSE 112		/* Address already in use */
-#define ECONNABORTED 113	/* Connection aborted */
+#define ECONNABORTED 113	/* Software caused connection abort */
 #define ENETUNREACH 114		/* Network is unreachable */
 #define ENETDOWN 115		/* Network interface is not configured */
 #define ETIMEDOUT 116		/* Connection timed out */
@@ -175,7 +156,7 @@ extern __IMPORT int sys_nerr;
 #define ESOCKTNOSUPPORT 124	/* Socket type not supported */
 #endif
 #define EADDRNOTAVAIL 125	/* Address not available */
-#define ENETRESET 126
+#define ENETRESET 126		/* Connection aborted by network */
 #define EISCONN 127		/* Socket is already connected */
 #define ENOTCONN 128		/* Socket is not connected */
 #define ETOOMANYREFS 129
@@ -193,14 +174,7 @@ extern __IMPORT int sys_nerr;
 #define ENOSHARE 136    /* No such host or network path */
 #define ECASECLASH 137  /* Filename exists with different case */
 #endif
-#endif /* !_AEABI_PORTABLE */
-#ifdef _AEABI_PORTABLE
-  extern _CONST int __aeabi_EILSEQ;
-# define EILSEQ (__aeabi_EILSEQ)
-#else
-#define EILSEQ 138
-#endif
-#ifndef _AEABI_PORTABLE
+#define EILSEQ 138		/* Illegal byte sequence */
 #define EOVERFLOW 139	/* Value too large for defined data type */
 #define ECANCELED 140	/* Operation canceled */
 #define ENOTRECOVERABLE 141	/* State not recoverable */
@@ -211,8 +185,6 @@ extern __IMPORT int sys_nerr;
 #define EWOULDBLOCK EAGAIN	/* Operation would block */
 
 #define __ELASTERROR 2000	/* Users can add values starting here */
-
-#endif /* !_AEABI_PORTABLE */
 
 #ifdef __cplusplus
 }

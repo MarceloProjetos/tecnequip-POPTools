@@ -1,5 +1,5 @@
 #include "poptools.h"
-#include <modbus_rtu.h>
+#include "modbus_rtu.h"
 
 struct MODBUS_Device MBDev_Slave;
 SOCKET SimSocket    = INVALID_SOCKET;

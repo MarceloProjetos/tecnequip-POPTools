@@ -22,9 +22,6 @@
     <Filter Include="Source Files\Diagrama Ladder">
       <UniqueIdentifier>{124b686b-40ce-48ff-8465-de843dbb3c91}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\POP-7">
-      <UniqueIdentifier>{1d80a9d2-9960-41de-ad93-4b833ef5a1e9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Utils">
       <UniqueIdentifier>{2533b9e8-7abc-4ff8-802a-048156f5ece2}</UniqueIdentifier>
     </Filter>
@@ -42,6 +39,9 @@
     </Filter>
     <Filter Include="Source Files\GUI">
       <UniqueIdentifier>{f83a0bd3-d4fe-4cad-a0c8-ab85950e8886}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Firmware">
+      <UniqueIdentifier>{1d80a9d2-9960-41de-ad93-4b833ef5a1e9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -118,16 +118,16 @@
       <Filter>Source Files\Diagrama Ladder</Filter>
     </ClCompile>
     <ClCompile Include="gcc.cpp">
-      <Filter>Source Files\POP-7</Filter>
+      <Filter>Source Files\Firmware</Filter>
     </ClCompile>
     <ClCompile Include="flashmagic.cpp">
-      <Filter>Source Files\POP-7</Filter>
+      <Filter>Source Files\Firmware</Filter>
     </ClCompile>
     <ClCompile Include="modbus_master.cpp">
-      <Filter>Source Files\POP-7</Filter>
+      <Filter>Source Files\Firmware</Filter>
     </ClCompile>
     <ClCompile Include="modbus_slave.cpp">
-      <Filter>Source Files\POP-7</Filter>
+      <Filter>Source Files\Firmware</Filter>
     </ClCompile>
     <ClCompile Include="lang.cpp">
       <Filter>Source Files\Interface</Filter>
@@ -141,9 +141,6 @@
     <ClCompile Include="miscutil.cpp">
       <Filter>Source Files\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Firmware\App\modbus_rtu.c">
-      <Filter>Source Files\POP-7</Filter>
-    </ClCompile>
     <ClCompile Include="KeyboardMap.cpp">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
@@ -151,7 +148,7 @@
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
     <ClCompile Include="modbus_usb.cpp">
-      <Filter>Source Files\POP-7</Filter>
+      <Filter>Source Files\Firmware</Filter>
     </ClCompile>
     <ClCompile Include="CommonFileDialog.cpp">
       <Filter>Source Files\Interface</Filter>
@@ -186,6 +183,9 @@
     <ClCompile Include="expansiondialog.cpp">
       <Filter>Source Files\Diagrama Ladder</Filter>
     </ClCompile>
+    <ClCompile Include="modbus_rtu.c">
+      <Filter>Source Files\Firmware</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">
@@ -212,9 +212,6 @@
     <ClInclude Include="VersionInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Firmware\App\modbus_rtu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="modbus_master.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -228,9 +225,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardHandlers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Firmware\App\intreg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LadderObjects.h">
@@ -271,6 +265,18 @@
     </ClInclude>
     <ClInclude Include="LadderGUI.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="modbus_rtu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="modbus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lpc_types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="intreg.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

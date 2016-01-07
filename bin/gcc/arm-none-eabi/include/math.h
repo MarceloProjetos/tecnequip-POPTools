@@ -2,11 +2,6 @@
 
 #define  _MATH_H_
 
-  /* Indicate that we honor AEABI portability if requested.  */
-#if defined _AEABI_PORTABILITY_LEVEL && _AEABI_PORTABILITY_LEVEL != 0 && !defined _AEABI_PORTABLE
-# define _AEABI_PORTABLE
-#endif
-
 #include <sys/reent.h>
 #include <machine/ieeefp.h>
 #include "_ansi.h"
@@ -37,12 +32,9 @@ union __ldmath
 #endif
 
 /* Natural log of 2 */
-#define _M_LOG2_E        0.693147180559945309417
+#define _M_LN2        0.693147180559945309417
 
-#if defined(__GNUC__) && \
-  ( (__GNUC__ >= 4) || \
-    ( (__GNUC__ >= 3) && defined(__GNUC_MINOR__) && (__GNUC_MINOR__ >= 3) ) )
-
+#if __GNUC_PREREQ (3, 3)
  /* gcc >= 3.3 implicitly defines builtins for HUGE_VALx values.  */
 
 # ifndef HUGE_VAL
@@ -144,15 +136,42 @@ extern double fmod _PARAMS((double, double));
 #endif /* ! defined (__math_68881) */
 #endif /* ! defined (_REENT_ONLY) */
 
-#if !defined(__STRICT_ANSI__) || defined(__cplusplus) || __STDC_VERSION__ >= 199901L
+#if !defined(__STRICT_ANSI__) || defined(__cplusplus) || \
+  (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L)
 
 /* ISO C99 types and macros. */
 
-#ifndef FLT_EVAL_METHOD
-#define FLT_EVAL_METHOD 0
-typedef float float_t;
-typedef double double_t;
+/* FIXME:  FLT_EVAL_METHOD should somehow be gotten from float.h (which is hard,
+ * considering that the standard says the includes it defines should not
+ * include other includes that it defines) and that value used.  (This can be
+ * solved, but autoconf has a bug which makes the solution more difficult, so
+ * it has been skipped for now.)  */
+#if !defined(FLT_EVAL_METHOD) && defined(__FLT_EVAL_METHOD__)
+  #define FLT_EVAL_METHOD __FLT_EVAL_METHOD__
+  #define __TMP_FLT_EVAL_METHOD
 #endif /* FLT_EVAL_METHOD */
+#if defined FLT_EVAL_METHOD
+  #if FLT_EVAL_METHOD == 0
+    typedef float  float_t;
+    typedef double double_t;
+   #elif FLT_EVAL_METHOD == 1
+    typedef double float_t;
+    typedef double double_t;
+   #elif FLT_EVAL_METHOD == 2
+    typedef long double float_t;
+    typedef long double double_t;
+   #else
+    /* Implementation-defined.  Assume float_t and double_t have been
+     * defined previously for this configuration (e.g. config.h). */
+  #endif
+#else
+    /* Assume basic definitions.  */
+    typedef float  float_t;
+    typedef double double_t;
+#endif
+#if defined(__TMP_FLT_EVAL_METHOD)
+  #undef FLT_EVAL_METHOD
+#endif
 
 #define FP_NAN         0
 #define FP_INFINITE    1
@@ -235,6 +254,10 @@ extern int __signbitd (double x);
           (__extension__ ({__typeof__(a) __a = (a); __typeof__(b) __b = (b); \
                            fpclassify(__a) == FP_NAN || fpclassify(__b) == FP_NAN;}))
 
+/* Non ANSI long double precision functions.  */
+
+extern int finitel _PARAMS((long double));
+
 /* Non ANSI double precision functions.  */
 
 extern double infinity _PARAMS((void));
@@ -255,7 +278,7 @@ extern double scalbln _PARAMS((double, long int));
 extern double tgamma _PARAMS((double));
 extern double nearbyint _PARAMS((double));
 extern long int lrint _PARAMS((double));
-extern _LONG_LONG_TYPE int llrint _PARAMS((double));
+extern long long int llrint _PARAMS((double));
 extern double round _PARAMS((double));
 extern long int lround _PARAMS((double));
 extern long long int llround _PARAMS((double));
@@ -281,7 +304,7 @@ extern double erf _PARAMS((double));
 extern double erfc _PARAMS((double));
 extern double log2 _PARAMS((double));
 #if !defined(__cplusplus)
-#define log2(x) (log (x) / _M_LOG2_E)
+#define log2(x) (log (x) / _M_LN2)
 #endif
 
 #ifndef __math_68881
@@ -325,7 +348,7 @@ extern float scalblnf _PARAMS((float, long int));
 extern float tgammaf _PARAMS((float));
 extern float nearbyintf _PARAMS((float));
 extern long int lrintf _PARAMS((float));
-extern _LONG_LONG_TYPE llrintf _PARAMS((float));
+extern long long int llrintf _PARAMS((float));
 extern float roundf _PARAMS((float));
 extern long int lroundf _PARAMS((float));
 extern long long int llroundf _PARAMS((float));
@@ -360,9 +383,6 @@ extern float lgammaf _PARAMS((float));
 extern float erff _PARAMS((float));
 extern float erfcf _PARAMS((float));
 extern float log2f _PARAMS((float));
-#if !defined(__cplusplus)
-#define log2f(x) (logf (x) / (float) _M_LOG2_E)
-#endif
 extern float hypotf _PARAMS((float, float));
 #endif /* ! defined (_REENT_ONLY) */
 
@@ -407,6 +427,11 @@ extern int ilogbl _PARAMS((long double));
 extern long double asinhl _PARAMS((long double));
 extern long double cbrtl _PARAMS((long double));
 extern long double nextafterl _PARAMS((long double, long double));
+extern float nexttowardf _PARAMS((float, long double));
+extern double nexttoward _PARAMS((double, long double));
+extern long double nexttowardl _PARAMS((long double, long double));
+extern long double logbl _PARAMS((long double));
+extern long double log2l _PARAMS((long double));
 extern long double rintl _PARAMS((long double));
 extern long double scalbnl _PARAMS((long double, int));
 extern long double exp2l _PARAMS((long double));
@@ -417,7 +442,7 @@ extern long int lrintl _PARAMS((long double));
 extern long long int llrintl _PARAMS((long double));
 extern long double roundl _PARAMS((long double));
 extern long lroundl _PARAMS((long double));
-extern _LONG_LONG_TYPE int llroundl _PARAMS((long double));
+extern long long int llroundl _PARAMS((long double));
 extern long double truncl _PARAMS((long double));
 extern long double remquol _PARAMS((long double, long double, int *));
 extern long double fdiml _PARAMS((long double, long double));
@@ -433,19 +458,20 @@ extern long double erfl _PARAMS((long double));
 extern long double erfcl _PARAMS((long double));
 #endif /* ! defined (_REENT_ONLY) */
 #else /* !_LDBL_EQ_DBL */
+extern long double hypotl _PARAMS((long double, long double));
+extern long double sqrtl _PARAMS((long double));
 #ifdef __i386__
 /* Other long double precision functions.  */
 extern _LONG_DOUBLE rintl _PARAMS((_LONG_DOUBLE));
 extern long int lrintl _PARAMS((_LONG_DOUBLE));
-extern _LONG_LONG_TYPE llrintl _PARAMS((_LONG_DOUBLE));
+extern long long int llrintl _PARAMS((_LONG_DOUBLE));
 #endif /* __i386__ */
 #endif /* !_LDBL_EQ_DBL */
 
-#endif /* !defined (__STRICT_ANSI__) || defined(__cplusplus) || __STDC_VERSION__ >= 199901L */
+#endif /* !defined (__STRICT_ANSI__) || defined(__cplusplus) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) */
 
 #if !defined (__STRICT_ANSI__) || defined(__cplusplus)
 
-extern double cabs();
 extern double drem _PARAMS((double, double));
 extern void sincos _PARAMS((double, double *, double *));
 extern double gamma_r _PARAMS((double, int *));
@@ -458,7 +484,6 @@ extern double j0 _PARAMS((double));
 extern double j1 _PARAMS((double));
 extern double jn _PARAMS((int, double));
 
-extern float cabsf();
 extern float dremf _PARAMS((float, float));
 extern void sincosf _PARAMS((float, float *, float *));
 extern float gammaf_r _PARAMS((float, int *));
@@ -529,31 +554,40 @@ extern int matherr _PARAMS((struct exception *e));
 #define TLOSS 5
 #define PLOSS 6
 
+#endif /* ! defined (__STRICT_ANSI__) */
+
 /* Useful constants.  */
+
+#if !defined(__STRICT_ANSI__) || ((_XOPEN_SOURCE - 0) >= 500)
 
 #define MAXFLOAT	3.40282347e+38F
 
 #define M_E		2.7182818284590452354
 #define M_LOG2E		1.4426950408889634074
 #define M_LOG10E	0.43429448190325182765
-#define M_LN2		0.69314718055994530942
+#define M_LN2		_M_LN2
 #define M_LN10		2.30258509299404568402
 #define M_PI		3.14159265358979323846
-#define M_TWOPI         (M_PI * 2.0)
 #define M_PI_2		1.57079632679489661923
 #define M_PI_4		0.78539816339744830962
-#define M_3PI_4		2.3561944901923448370E0
-#define M_SQRTPI        1.77245385090551602792981
 #define M_1_PI		0.31830988618379067154
 #define M_2_PI		0.63661977236758134308
 #define M_2_SQRTPI	1.12837916709551257390
 #define M_SQRT2		1.41421356237309504880
 #define M_SQRT1_2	0.70710678118654752440
+
+#endif
+
+#ifndef __STRICT_ANSI__
+
+#define M_TWOPI         (M_PI * 2.0)
+#define M_3PI_4		2.3561944901923448370E0
+#define M_SQRTPI        1.77245385090551602792981
 #define M_LN2LO         1.9082149292705877000E-10
 #define M_LN2HI         6.9314718036912381649E-1
 #define M_SQRT3	1.73205080756887719000
 #define M_IVLN10        0.43429448190325182765 /* 1 / log(10) */
-#define M_LOG2_E        _M_LOG2_E
+#define M_LOG2_E        _M_LN2
 #define M_INVLN2        1.4426950408889633870E0  /* 1 / log(2) */
 
 /* Global control over fdlibm error handling.  */
