@@ -80,7 +80,6 @@ BOOL FlashProgram(char *hexFile, int ComPort, long BaudRate)
 
 	if(plcModel != eModelPLC_POP7) {
 		BaudRate = 115200;
-		//hexFile = "c:\\lpc4078.hex";
 	}
 
 	// use standard timeouts
