@@ -34,16 +34,16 @@ unsigned int I2C_Init()
 {
 	uint32_t freq = 100000;
 
-	Chip_I2C_Init(0);
+	Chip_I2C_Init(I2C0);
 
 	// Valor de configuracao dos GPIOs: com pull-up e histerese
-	uint32_t gpio_mode = IOCON_MODE_PULLUP | IOCON_HYS_EN;
+	uint32_t gpio_mode = 0; // Os pinos P0.27, P0.28, P5.3 e P5.4 sao especializados para I2C e nao possuem os bits de pull-up e histerese.
 
 	// Configuracao dos I/Os
 	Chip_IOCON_PinMux(LPC_IOCON, 0, 27, gpio_mode, IOCON_FUNC1); // P0.27: SDA
 	Chip_IOCON_PinMux(LPC_IOCON, 0, 28, gpio_mode, IOCON_FUNC1); // P0.28: SCL
 
-	Chip_I2C_SetClockRate(0, freq); // 100 kHz
+	Chip_I2C_SetClockRate(I2C0, freq); // 100 kHz
 
 	return( TRUE );
 }

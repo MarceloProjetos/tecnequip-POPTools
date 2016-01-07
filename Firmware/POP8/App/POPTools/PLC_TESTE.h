@@ -103,9 +103,9 @@ void PLC_Init(void)
 
 	RS485_Config(9600, 8, 0, 1);
 
-	IP4_ADDR(&IP_ADDRESS, 192,168,1,125);
+	IP4_ADDR(&IP_ADDRESS, 192,168,0,240);
 	IP4_ADDR(&IP_NETMASK, 255,255,255,0);
-	IP4_ADDR(&IP_GATEWAY, 192,168,1,1);
+	IP4_ADDR(&IP_GATEWAY, 192,168,0,3);
 	IP4_ADDR(&IP_DNS, 192,168,0,11);
 
     memset((void*)ArrayBitSystem, 0, sizeof(ArrayBitSystem));
