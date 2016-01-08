@@ -32,8 +32,8 @@ typedef struct {				/*!< PWM Structure            */
 
 #define LPC_PWM_MR(pPWM, n) ((n < 4) ? pPWM->MR0[n] : pPWM->MR1[n - 3])
 
-void inline LPC_PWM_MR_SET(LPC_PWM_T *pPWM, uint32_t n, uint32_t val) {
-	if(n < 3) {
+void LPC_PWM_MR_SET(LPC_PWM_T *pPWM, uint32_t n, uint32_t val) {
+	if(n < 4) {
 		pPWM->MR0[n] = val;
 	} else {
 		pPWM->MR1[n - 3] = val;
@@ -63,9 +63,9 @@ static void PWM_Enable(int enable)
 		LPC_PWM1->TCR |= tcr_mask;
 		LPC_PWM1->PCR |= pcr_mask;
 
-		mcr = *(uint32_t *)(0x40018014);
-		tcr = *(uint32_t *)(0x40018004);
-		pcr = *(uint32_t *)(0x4001804c);
+		mcr = LPC_PWM1->MCR;
+		tcr = LPC_PWM1->TCR;
+		pcr = LPC_PWM1->PCR;
 	}
 }
 
@@ -76,10 +76,11 @@ void PWM_Set(int duty_cycle, int frequency)
 {
 	static int PreviousDC = -1, PreviousFreq = -1;
 
-	if(duty_cycle <= 0) {
-		duty_cycle = 100; // Se no limite inferior, duty cycle deve ser 100 para que MR0 = MR1
-	} else if(duty_cycle >= 100) {
-		duty_cycle =   0; // Se no limit superior, duty cycle deve ser 0 para que MR1 = 0
+	// Controla limites
+	if(duty_cycle < 0) {
+		duty_cycle = 0;
+	} else if(duty_cycle > 100) {
+		duty_cycle = 100;
 	}
 
 	if(PreviousDC != duty_cycle || PreviousFreq != frequency) {

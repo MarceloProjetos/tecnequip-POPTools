@@ -33,8 +33,6 @@ void Devices_Init(void)
 	I2C_Init();
 
 	E2P_Init();
-
-	GPIO_Init();
 }
 
 void Hardware_Init(void)
@@ -127,6 +125,10 @@ int main()
 	Devices_Init();
 
 	PLC_Init();
+
+	// GPIO deve ser inicializado apenas depois de PLC_Init pois ao utilizar o PWM precisamos inicializa-lo primeiro
+	// Inicializacao do PWM eh feita em PLC_Init
+	GPIO_Init();
 
 	Modbus_Init();
 

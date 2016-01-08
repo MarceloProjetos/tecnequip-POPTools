@@ -111,9 +111,9 @@ void GPIO_Init()
 	if(GPIO_PWM_ENABLED) {
 		unsigned int mask = HTONS(0x8000);
 
-		cmd = 0x4 << 2;
+		cmd = OUTPUT_PWM_ENABLE;
 		SSP_Enable();
-		SSP_Write((unsigned char*)&cmd, 1);
+		SSP_Write((unsigned char*)&cmd , 1);
 		SSP_Write((unsigned char*)&mask, 2);
 		SSP_Disable();
 	}
@@ -127,16 +127,16 @@ unsigned int GPIO_Output(void)
   unsigned int i = 0;
   unsigned char cmd = OUTPUT_CMD_CONTROL;
 
-  i |= ((unsigned int)GPIO_OUTPUT_PORT1);
-  i |= ((unsigned int)GPIO_OUTPUT_PORT2) << 1;
-  i |= ((unsigned int)GPIO_OUTPUT_PORT3) << 2;
-  i |= ((unsigned int)GPIO_OUTPUT_PORT4) << 3;
-  i |= ((unsigned int)GPIO_OUTPUT_PORT5) << 4;
-  i |= ((unsigned int)GPIO_OUTPUT_PORT6) << 5;
-  i |= ((unsigned int)GPIO_OUTPUT_PORT7) << 6;
-  i |= ((unsigned int)GPIO_OUTPUT_PORT8) << 7;
-  i |= ((unsigned int)GPIO_OUTPUT_PORT9) << 8;
-  i |= ((unsigned int)GPIO_OUTPUT_PORT10) << 9;
+  i |= ((unsigned int)GPIO_OUTPUT_PORT1 );
+  i |= ((unsigned int)GPIO_OUTPUT_PORT2 ) <<  1;
+  i |= ((unsigned int)GPIO_OUTPUT_PORT3 ) <<  2;
+  i |= ((unsigned int)GPIO_OUTPUT_PORT4 ) <<  3;
+  i |= ((unsigned int)GPIO_OUTPUT_PORT5 ) <<  4;
+  i |= ((unsigned int)GPIO_OUTPUT_PORT6 ) <<  5;
+  i |= ((unsigned int)GPIO_OUTPUT_PORT7 ) <<  6;
+  i |= ((unsigned int)GPIO_OUTPUT_PORT8 ) <<  7;
+  i |= ((unsigned int)GPIO_OUTPUT_PORT9 ) <<  8;
+  i |= ((unsigned int)GPIO_OUTPUT_PORT10) <<  9;
   i |= ((unsigned int)GPIO_OUTPUT_PORT11) << 10;
   i |= ((unsigned int)GPIO_OUTPUT_PORT12) << 11;
   i |= ((unsigned int)GPIO_OUTPUT_PORT13) << 12;
@@ -158,13 +158,6 @@ unsigned int GPIO_Output(void)
   SSP_Write((unsigned char*)&i, 2);
   SSP_Disable();
 
-//  SSP_Read((unsigned char*)&status, 3);
-
-  // U17 - ERRO
-  // U18 - CPU
-  //GPIO1->FIOPIN |= 0x3 << 21;
-  //GPIO1->FIOPIN &= ~(((GPIO_OUTPUT_PORT17 & 0x1) << 21) | ((GPIO_OUTPUT_PORT18 & 0x1) << 22));
-
   return i;
 }
 
@@ -176,7 +169,7 @@ unsigned int GPIO_Input(void)
   port0 = Chip_GPIO_GetPortValue(LPC_GPIO, 0);
   port2 = Chip_GPIO_GetPortValue(LPC_GPIO, 2);
 
-  i |=  0x000003FF & port2;        // P2.0 ~ P2.9    [00..10]
+  i |=  0x000003FF & port2;        // P2.0 ~ P2.9    [01..10]
   i |= (0x00003800 & port2) >>  1; // P2.11 ~ P2.13  [11..13]
   i |= (0x00000030 & port0) <<  9; // P0.4 ~ P0.5    [14..15]
   i |= (0x00080000 & port0) >>  4; // P0.19 ~ P0.19  [16..16]
@@ -185,16 +178,16 @@ unsigned int GPIO_Input(void)
 
   i = ~i;
 
-  GPIO_INPUT_PORT1 = i & 0x1;
-  GPIO_INPUT_PORT2 = (i & (1 << 1)) >> 1;
-  GPIO_INPUT_PORT3 = (i & (1 << 2)) >> 2;
-  GPIO_INPUT_PORT4 = (i & (1 << 3)) >> 3;
-  GPIO_INPUT_PORT5 = (i & (1 << 4)) >> 4;
-  GPIO_INPUT_PORT6 = (i & (1 << 5)) >> 5;
-  GPIO_INPUT_PORT7 = (i & (1 << 6)) >> 6;
-  GPIO_INPUT_PORT8 = (i & (1 << 7)) >> 7;
-  GPIO_INPUT_PORT9 = (i & (1 << 8)) >> 8;
-  GPIO_INPUT_PORT10 = (i & (1 << 9)) >> 9;
+  GPIO_INPUT_PORT1  =  i & 0x1;
+  GPIO_INPUT_PORT2  = (i & (1 <<  1)) >>  1;
+  GPIO_INPUT_PORT3  = (i & (1 <<  2)) >>  2;
+  GPIO_INPUT_PORT4  = (i & (1 <<  3)) >>  3;
+  GPIO_INPUT_PORT5  = (i & (1 <<  4)) >>  4;
+  GPIO_INPUT_PORT6  = (i & (1 <<  5)) >>  5;
+  GPIO_INPUT_PORT7  = (i & (1 <<  6)) >>  6;
+  GPIO_INPUT_PORT8  = (i & (1 <<  7)) >>  7;
+  GPIO_INPUT_PORT9  = (i & (1 <<  8)) >>  8;
+  GPIO_INPUT_PORT10 = (i & (1 <<  9)) >>  9;
   GPIO_INPUT_PORT11 = (i & (1 << 10)) >> 10;
   GPIO_INPUT_PORT12 = (i & (1 << 11)) >> 11;
   GPIO_INPUT_PORT13 = (i & (1 << 12)) >> 12;

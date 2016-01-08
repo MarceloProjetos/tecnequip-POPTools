@@ -31,18 +31,17 @@ extern struct ip_addr 			IP_NETMASK;
 extern struct ip_addr 			IP_GATEWAY;
 extern struct ip_addr			IP_DNS;
 
-char 							SNTP_SERVER_ADDRESS[] = "192.168.0.11";
+char 							SNTP_SERVER_ADDRESS[] = "br.pool.ntp.org";
 int								SNTP_GMT = -3;
 int								SNTP_DAILY_SAVE = 0;
 
 // Variaveis PLC
-volatile unsigned char GPIO_OUTPUT_PORT1 = 0;
 volatile int ArrayBitUser_Count = 0;
 volatile int ArrayBitUser[1];
 volatile int ArrayBitSystem_Count = 1;
 volatile int ArrayBitSystem[1];
-volatile int ArrayIntUser_Count = 2;
-volatile int ArrayIntUser[2];
+volatile int ArrayIntUser_Count = 1;
+volatile int ArrayIntUser[1];
 
 // Funcao que executa um ciclo de processamento da logica criada pelo usuario
 void PLC_Run(void)
@@ -55,33 +54,23 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (GPIO_OUTPUT_PORT1) {  // x
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (ArrayIntUser[0] < 9) {
-            ArrayIntUser[0]++;
-            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-        }
-    } else {
-        ArrayIntUser[0] = 0; // seq0
+        ArrayIntUser[0] = MODBUS_REGISTER[0]; // duty_cycle = MbDutyCycle
     }
 
-    if (!((ArrayBitSystem[0] >> 2) & 1)) {  // $seq1_antiglitch
-        ArrayIntUser[1] = 9; // seq1
-    }
-    ArrayBitSystem[0] |= 1UL << 2; // $seq1_antiglitch = 1
-    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (ArrayIntUser[1] < 9) {
-            ArrayIntUser[1]++;
-            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
-        }
-    } else {
-        ArrayIntUser[1] = 0; // seq1
-    }
+    /* terminando serie [ */
 
-    GPIO_OUTPUT_PORT1 = ((ArrayBitSystem[0] >> 1) & 1); // x = $rung_top
+    /* iniciando linha 2 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        ArrayBitSystem[0] |= 1UL << 2; // $oneShot_0 = 1
+        PWM_Set(ArrayIntUser[0], 1000);
+    } else if (((ArrayBitSystem[0] >> 2) & 1)) {  // $oneShot_0
+        ArrayBitSystem[0] &= ~(1UL << 2); // $oneShot_0 = 0
+        PWM_Set(0, 0);
+    }
 
     /* terminando serie [ */
 }
@@ -90,7 +79,6 @@ void PLC_Run(void)
 // Ex.: Configuracao de servidores utilizados para sincronismo de data/hora via SNTP (Quando em uso)
 void PLC_Net_Init(void)
 {
-    SNTP_Init();
 }
 
 // Funcao que inicializa o controlador, executado apenas ao ligar o equipamento
@@ -105,8 +93,10 @@ void PLC_Init(void)
 
 	IP4_ADDR(&IP_ADDRESS, 192,168,0,240);
 	IP4_ADDR(&IP_NETMASK, 255,255,255,0);
-	IP4_ADDR(&IP_GATEWAY, 192,168,0,3);
-	IP4_ADDR(&IP_DNS, 192,168,0,11);
+	IP4_ADDR(&IP_GATEWAY, 192,168,0,1);
+	IP4_ADDR(&IP_DNS, 192,168,0,1);
+
+    PWM_Init();
 
     memset((void*)ArrayBitSystem, 0, sizeof(ArrayBitSystem));
     memset((void*)ArrayIntUser, 0, sizeof(ArrayIntUser));

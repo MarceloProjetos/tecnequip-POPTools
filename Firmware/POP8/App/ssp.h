@@ -3,7 +3,8 @@
 
 #include "chip.h"
 
-#define OUTPUT_CMD_CONTROL  (0 << 2)
+#define OUTPUT_CMD_CONTROL  (0x00 << 2)
+#define OUTPUT_PWM_ENABLE   (0x04 << 2)
 
 void SSP_Init();
 void SSP_Enable();
