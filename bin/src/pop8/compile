@@ -28,7 +28,7 @@ TEMP_PATH = C:/Windows/Temp
 endif
 
 GNU_CC=arm-none-eabi
-GCC_VERSION = 4.5.2
+GCC_VERSION = 5.2.1
 
 #------------------------------------------------------------------------------
 # Diretorios de trabalho
@@ -58,9 +58,9 @@ OBJCOPY=$(GCC_DIR)/bin/$(GNU_CC)-objcopy
 # Bibliotecas e includes
 #------------------------------------------------------------------------------
 
-LIB_GCC = $(GCC_DIR)/lib/gcc/$(GNU_CC)/$(GCC_VERSION)/thumb2/libgcc.a
-LIB_C   = $(GCC_DIR)/$(GNU_CC)/lib/thumb2/libc.a
-LIB_M   = $(GCC_DIR)/$(GNU_CC)/lib/thumb2/libm.a
+LIB_GCC = $(GCC_DIR)/lib/gcc/$(GNU_CC)/$(GCC_VERSION)/thumb/libgcc.a
+LIB_C   = $(GCC_DIR)/$(GNU_CC)/lib/libc.a
+#LIB_M   = $(GCC_DIR)/$(GNU_CC)/lib/thumb/libm.a
 
 LIB_POP  = ./libpop.a
 
@@ -78,7 +78,7 @@ LIB_POP  = ./libpop.a
 # -fstack-protector "no memory region specified for loadable section `__libc_freeres_fn'"
 # -fomit-frame-pointer -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Wdeclaration-after-statement -Wno-pointer-sign
 # -static
-GCC_FLAGS_OPT=-nostartfiles -nodefaultlibs -nostdlib -Wall -ffunction-sections -fdata-sections -Wl,--gc-sections -mcpu=cortex-m3 -mthumb -static -O0 -I. -T./link.ld -L $(TEMP_PATH) -I . ./startup_LPC17xx.o $(TEMP_PATH)/poptools.c -lpop -lc -lgcc ./syscalls.o
+GCC_FLAGS_OPT=-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -g2 -nostartfiles -Wl,-Map=POP8.map -O0 -Wl,--gc-sections -I. -T./link.ld -L $(TEMP_PATH) -I . ./startup_Cortex_M4.o ./sysctl_17xx_40xx.o ./fpu_init.o ./sysinit_17xx_40xx.o ./libPOP8.a $(TEMP_PATH)/poptools.c -lc -lgcc ./syscalls.o
 CFLAGS0=$(GCC_FLAGS_OPT)
 CFLAGS1=$(CFLAGS0)
 
@@ -94,7 +94,7 @@ PROG_NAME	= pop
 # Libraries to link to. LIB_GCC must be the last
 #------------------------------------------------------------------------------
 
-LIB_LIST		=  $(LIB_POP) $(LIB_M) $(LIB_C) $(LIB_GCC)
+#LIB_LIST		=  $(LIB_POP) $(LIB_C) $(LIB_GCC)
 
 #------------------------------------------------------------------------------
 # Implicit rule to compile all C files in the directory
