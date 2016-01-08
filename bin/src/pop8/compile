@@ -78,7 +78,7 @@ LIB_POP  = ./libpop.a
 # -fstack-protector "no memory region specified for loadable section `__libc_freeres_fn'"
 # -fomit-frame-pointer -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Wdeclaration-after-statement -Wno-pointer-sign
 # -static
-GCC_FLAGS_OPT=-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -g2 -nostartfiles -Wl,-Map=POP8.map -O0 -Wl,--gc-sections -I. -T./link.ld -L $(TEMP_PATH) -I . ./startup_Cortex_M4.o ./sysctl_17xx_40xx.o ./fpu_init.o ./sysinit_17xx_40xx.o ./libPOP8.a $(TEMP_PATH)/poptools.c -lc -lgcc ./syscalls.o
+GCC_FLAGS_OPT=-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -g2 -nostartfiles -Wl,-Map=POP8.map -O0 -Wl,--gc-sections -I. -T./link.ld -L $(TEMP_PATH) -I . $(TEMP_PATH)/poptools.c ./startup_Cortex_M4.o ./sysctl_17xx_40xx.o ./fpu_init.o ./sysinit_17xx_40xx.o ./libPOP8.a -lc -lm -lgcc ./syscalls.o
 CFLAGS0=$(GCC_FLAGS_OPT)
 CFLAGS1=$(CFLAGS0)
 

@@ -36,12 +36,13 @@ int								SNTP_GMT = -3;
 int								SNTP_DAILY_SAVE = 0;
 
 // Variaveis PLC
+volatile unsigned char GPIO_OUTPUT_PORT2 = 0;
 volatile int ArrayBitUser_Count = 0;
 volatile int ArrayBitUser[1];
 volatile int ArrayBitSystem_Count = 1;
 volatile int ArrayBitSystem[1];
-volatile int ArrayIntUser_Count = 1;
-volatile int ArrayIntUser[1];
+volatile int ArrayIntUser_Count = 3;
+volatile int ArrayIntUser[3];
 
 // Funcao que executa um ciclo de processamento da logica criada pelo usuario
 void PLC_Run(void)
@@ -54,9 +55,33 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[0] = MODBUS_REGISTER[0]; // duty_cycle = MbDutyCycle
+    if (GPIO_OUTPUT_PORT2) {  // x
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[0] < 9) {
+            ArrayIntUser[0]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[0] = 0; // seq0
+    }
+
+    if (!((ArrayBitSystem[0] >> 2) & 1)) {  // $seq1_antiglitch
+        ArrayIntUser[1] = 49; // seq1
+    }
+    ArrayBitSystem[0] |= 1UL << 2; // $seq1_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[1] < 49) {
+            ArrayIntUser[1]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayIntUser[1] = 0; // seq1
+    }
+
+    GPIO_OUTPUT_PORT2 = ((ArrayBitSystem[0] >> 1) & 1); // x = $rung_top
 
     /* terminando serie [ */
 
@@ -65,11 +90,17 @@ void PLC_Run(void)
 
     /* iniciando serie [ */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitSystem[0] |= 1UL << 2; // $oneShot_0 = 1
-        PWM_Set(ArrayIntUser[0], 1000);
-    } else if (((ArrayBitSystem[0] >> 2) & 1)) {  // $oneShot_0
-        ArrayBitSystem[0] &= ~(1UL << 2); // $oneShot_0 = 0
-        PWM_Set(0, 0);
+        ArrayIntUser[2] = MODBUS_REGISTER[0]; // da = MbDA
+    }
+
+    /* terminando serie [ */
+
+    /* iniciando linha 3 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        DAC_Write(DAC_Conv(ArrayIntUser[2], 0));
     }
 
     /* terminando serie [ */
@@ -91,12 +122,12 @@ void PLC_Init(void)
 
 	RS485_Config(9600, 8, 0, 1);
 
-	IP4_ADDR(&IP_ADDRESS, 192,168,0,240);
+	IP4_ADDR(&IP_ADDRESS, 192,168,0,254);
 	IP4_ADDR(&IP_NETMASK, 255,255,255,0);
 	IP4_ADDR(&IP_GATEWAY, 192,168,0,1);
 	IP4_ADDR(&IP_DNS, 192,168,0,1);
 
-    PWM_Init();
+    DAC_Init();
 
     memset((void*)ArrayBitSystem, 0, sizeof(ArrayBitSystem));
     memset((void*)ArrayIntUser, 0, sizeof(ArrayIntUser));
