@@ -8025,6 +8025,7 @@ bool LadderElemPersist::internalGenerateIntCode(IntCode &ic)
 			ic.Op(INT_EEPROM_BUSY_CHECK, "$scratch");
 			ic.Op(INT_IF_BIT_CLEAR, "$scratch");
 				ic.Op(INT_EEPROM_WRITE, var, EepromAddrFree);
+				ic.Op(INT_SET_VARIABLE_TO_VARIABLE, savedE2P, var, 0);
 			ic.Op(INT_END_IF);
 		ic.Op(INT_END_IF);
 	ic.Op(INT_END_IF);

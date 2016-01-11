@@ -36,7 +36,8 @@ int								SNTP_GMT = -3;
 int								SNTP_DAILY_SAVE = 0;
 
 // Variaveis PLC
-volatile unsigned char GPIO_OUTPUT_PORT2 = 0;
+volatile unsigned char GPIO_OUTPUT_PORT1 = 0;
+volatile int SavedE2P = 0;
 volatile int ArrayBitUser_Count = 0;
 volatile int ArrayBitUser[1];
 volatile int ArrayBitSystem_Count = 1;
@@ -51,16 +52,16 @@ void PLC_Run(void)
 
     ArrayBitSystem[0] |= 1UL << 0; // $mcr = 1
 
-    /* iniciando linha 1 */
+    /* iniciando linha 2 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (GPIO_OUTPUT_PORT2) {  // x
+    if (GPIO_OUTPUT_PORT1) {  // pisca
         ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (ArrayIntUser[0] < 9) {
+        if (ArrayIntUser[0] < 49) {
             ArrayIntUser[0]++;
             ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
         }
@@ -81,26 +82,79 @@ void PLC_Run(void)
         ArrayIntUser[1] = 0; // seq1
     }
 
-    GPIO_OUTPUT_PORT2 = ((ArrayBitSystem[0] >> 1) & 1); // x = $rung_top
+    GPIO_OUTPUT_PORT1 = ((ArrayBitSystem[0] >> 1) & 1); // pisca = $rung_top
 
     /* terminando serie [ */
 
-    /* iniciando linha 2 */
+    /* iniciando linha 4 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayIntUser[2] = MODBUS_REGISTER[0]; // da = MbDA
+    if (!(MODBUS_REGISTER[0] & (1 << 0))) {  // Gravar
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
     }
 
+    /* iniciando paralelo [ */
+    ArrayBitSystem[0] &= ~(1UL << 3); // $parOut_0 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0
+        MODBUS_REGISTER[0] &= ~(1 << 0);  // Gravar = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0
+        ArrayIntUser[2] = MODBUS_REGISTER[2]; // DadoSalvo = MbNovoDado
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0
+        MODBUS_REGISTER[2] = 0; // MbNovoDado
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 4; else ArrayBitSystem[0] &= ~(1UL << 4); // $parThis_0 = $rung_top
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0
+        static int SavedE2P = 0;
+        if (!((ArrayBitSystem[0] >> 5) & 1)) {  // $oneShot_0
+            ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = 0
+            if(E2P_Busy()) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6);
+            if (!((ArrayBitSystem[0] >> 6) & 1)) {  // $scratch
+                if(E2P_Read((void *)&ArrayIntUser[2], 0, 4)) ArrayBitSystem[0] |= 1UL << 5; else ArrayBitSystem[0] &= ~(1UL << 5);
+                SavedE2P = ArrayIntUser[2]; // $S_SavedE2P = DadoSalvo
+            }
+        } else {
+            if (SavedE2P == ArrayIntUser[2]) {
+            } else {
+                ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = 0
+                if(E2P_Busy()) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6);
+                if (!((ArrayBitSystem[0] >> 6) & 1)) {  // $scratch
+                    E2P_Write((void *)&ArrayIntUser[2], 0, 4);
+                }
+            }
+        }
+    }
+
+    if (((ArrayBitSystem[0] >> 4) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 3; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0
+    /* terminando paralelo [ */
     /* terminando serie [ */
 
-    /* iniciando linha 3 */
+    /* iniciando linha 6 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        DAC_Write(DAC_Conv(ArrayIntUser[2], 0));
+        MODBUS_REGISTER[1] = ArrayIntUser[2]; // MbDado = DadoSalvo
     }
 
     /* terminando serie [ */
@@ -122,12 +176,10 @@ void PLC_Init(void)
 
 	RS485_Config(9600, 8, 0, 1);
 
-	IP4_ADDR(&IP_ADDRESS, 192,168,0,254);
+	IP4_ADDR(&IP_ADDRESS, 192,168,0,240);
 	IP4_ADDR(&IP_NETMASK, 255,255,255,0);
 	IP4_ADDR(&IP_GATEWAY, 192,168,0,1);
 	IP4_ADDR(&IP_DNS, 192,168,0,1);
-
-    DAC_Init();
 
     memset((void*)ArrayBitSystem, 0, sizeof(ArrayBitSystem));
     memset((void*)ArrayIntUser, 0, sizeof(ArrayIntUser));
