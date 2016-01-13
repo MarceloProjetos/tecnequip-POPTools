@@ -62,7 +62,7 @@ void UnallocElem(LadderElem *elem)
 		case ELEM_TOF                   :
 		case ELEM_TON                   :
 		case ELEM_RTO                   : delete dynamic_cast<LadderElemTimer         *>(elem); break;
-		case ELEM_RTC                   : delete dynamic_cast<LadderElemRTC           *>(elem);        break;
+		case ELEM_RTC                   : delete dynamic_cast<LadderElemRTC           *>(elem); break;
 		case ELEM_CTU                   :
 		case ELEM_CTD                   :
 		case ELEM_CTC                   : delete dynamic_cast<LadderElemCounter       *>(elem); break;
@@ -97,6 +97,8 @@ void UnallocElem(LadderElem *elem)
 		case ELEM_WRITE_USS             : delete dynamic_cast<LadderElemUSS           *>(elem); break;
 		case ELEM_READ_MODBUS           :
 		case ELEM_WRITE_MODBUS          : delete dynamic_cast<LadderElemModBUS        *>(elem); break;
+		case ELEM_READ_CAN              :
+		case ELEM_WRITE_CAN             : delete dynamic_cast<LadderElemCAN           *>(elem); break;
 		case ELEM_SET_PWM               : delete dynamic_cast<LadderElemSetPWM        *>(elem); break;
 		case ELEM_UART_RECV             :
 		case ELEM_UART_SEND             : delete dynamic_cast<LadderElemUART          *>(elem); break;
@@ -6023,9 +6025,9 @@ pair<string, string> LadderElemModBUS::DrawTXT(void)
 	sprintf(buf, "%s:%d", node.name.c_str(), prop.address);
 
 	if(getWhich() == ELEM_READ_MODBUS) {
-		bot = (node.iface == eMbTypeNode_RS485) ? _("{READ MB 485}")  : _("{READ MB ETH}");
+		bot = _("{READ CAN}");
 	} else {
-		bot = (node.iface == eMbTypeNode_RS485) ? _("{WRITE MB 485}") : _("{WRITE MB ETH}");
+		bot = _("{WRITE CAN}");
 	}
 
 	return pair<string, string>(buf, bot);
@@ -6234,6 +6236,259 @@ bool LadderElemModBUS::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoA
 {
 	if(isDiscard && action.action == eSetProp) {
 		delete (LadderElemModBUSProp *)(((UndoRedoData *)action.data)->SetProp.data);
+	}
+
+	return true; // Sempre retorna sucesso...
+}
+
+// Classe LadderElemCAN
+LadderElemCAN::LadderElemCAN(LadderDiagram *diagram, int which) : LadderElem(false, false, false, true, which)
+{
+	Diagram           = diagram;
+
+	int NodeID = Diagram->mbGetNodeIDByIndex(0);
+	if(NodeID < 0) {
+		NodeID = Diagram->mbCreateNode("Default");
+	}
+
+	// Caracteristicas do I/O Name
+	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
+	infoIO_Name.name          = _("novo");
+	infoIO_Name.isBit         = false;
+	infoIO_Name.type          = (getWhich() == ELEM_READ_CAN) ? eType_ReadCAN : eType_WriteCAN;
+	infoIO_Name.access        = (getWhich() == ELEM_READ_CAN) ? eRequestAccessType_Write : eRequestAccessType_Read;
+	infoIO_Name.isUniqueRead  = false;
+	infoIO_Name.isUniqueWrite = false;
+
+	Diagram->getIO(this, infoIO_Name);
+
+	prop.address      = 0;
+	prop.retransmitir = true;
+	prop.int32        = false;
+	prop.elem         = NodeID;
+	prop.idName       = infoIO_Name.pin;
+}
+
+pair<string, string> LadderElemCAN::DrawTXT(void)
+{
+	const char *bot;
+	char buf[100];
+	LadderMbNode node = Diagram->mbGetNodeByNodeID(prop.elem);
+
+	sprintf(buf, "%s:%d", node.name.c_str(), prop.address);
+
+	if(getWhich() == ELEM_READ_CAN) {
+		bot = (node.iface == eMbTypeNode_RS485) ? _("{READ MB 485}")  : _("{READ MB ETH}");
+	} else {
+		bot = (node.iface == eMbTypeNode_RS485) ? _("{WRITE MB 485}") : _("{WRITE MB ETH}");
+	}
+
+	return pair<string, string>(buf, bot);
+}
+
+bool LadderElemCAN::internalGenerateIntCode(IntCode &ic)
+{
+	string sname = Diagram->getNameIO(prop.idName);
+	const char *name = sname.c_str();
+
+	char id[10];
+	char addr[10];
+	char *MbReady, *MbTimeout;
+	const char *stateInOut = ic.getStateInOut();
+	int intcode;
+	LadderMbNode node;
+
+	node    = Diagram->mbGetNodeByNodeID(prop.elem);
+	intcode = getWhich() == ELEM_READ_CAN ? INT_READ_CAN : INT_WRITE_CAN;
+	sprintf(id  , "%d", node.id);
+	sprintf(addr, "%d", prop.address);
+
+	if(node.iface == eMbTypeNode_RS485) {
+		MbReady   = "$SerialReady";
+		MbTimeout = "$SerialTimeout";
+	} else {
+		MbReady   = "$TcpReady";
+		MbTimeout = "$TcpTimeout";
+	}
+
+	// We want to respond to rising edges, so yes we need a one shot.
+	string MessageSent   = ic.GenSymOneShot();
+	string ReplyReceived = ic.GenSymOneShot();
+
+	// OneShot 
+	ic.Op(INT_IF_BIT_SET, stateInOut);
+		ic.Op(INT_IF_BIT_CLEAR, MessageSent.c_str());
+			ic.Op(INT_IF_BIT_SET, MbReady);
+				ic.Op(intcode, name, id, addr, node.ip, (unsigned char)prop.int32);
+				ic.Op(INT_SET_BIT, MessageSent.c_str());
+			ic.Op(INT_END_IF);
+			ic.Op(INT_CLEAR_BIT, stateInOut);
+			ic.Op(INT_CLEAR_BIT, ReplyReceived.c_str());
+		ic.Op(INT_END_IF);
+		ic.Op(INT_IF_BIT_CLEAR, ReplyReceived.c_str());
+			ic.Op(INT_CLEAR_BIT, stateInOut);
+			ic.Op(INT_IF_BIT_SET, MbReady);
+				ic.Op(INT_SET_BIT, ReplyReceived.c_str());
+		if(prop.retransmitir) { // Retransmitir?
+			ic.Op(INT_ELSE_IF); ic.Op(INT_IF_BIT_SET, MbTimeout);
+				ic.Op(INT_CLEAR_BIT, MbTimeout);
+				ic.Op(intcode, name, id, addr, node.ip, (unsigned char)prop.int32);
+		}
+			ic.Op(INT_END_IF);
+		ic.Op(INT_END_IF);
+	ic.Op(INT_ELSE);
+		ic.Op(INT_CLEAR_BIT, MessageSent.c_str());
+		ic.Op(INT_CLEAR_BIT, ReplyReceived.c_str());
+	ic.Op(INT_END_IF);
+
+	return true;
+}
+
+bool LadderElemCAN::CanInsert(LadderContext context)
+{
+	return context.canInsertOther;
+}
+
+void LadderElemCAN::doPostInsert(void)
+{
+	Diagram->mbAddRef(prop.elem);
+}
+
+void LadderElemCAN::doPostRemove(void)
+{
+	Diagram->mbDelRef(prop.elem);
+}
+
+bool LadderElemCAN::internalSetProperties(void *data, bool isUndoRedo)
+{
+	LadderElemCANProp *newProp = (LadderElemCANProp *)data;
+
+	prop = *newProp;
+	delete newProp;
+
+	return true;
+}
+
+void *LadderElemCAN::getProperties(void)
+{
+	LadderElemCANProp *curProp = new LadderElemCANProp;
+
+	*curProp = prop;
+
+	return curProp;
+}
+
+// Funcoes para ler / gravar dados especificos do elemento no disco
+bool LadderElemCAN::internalSave(FILE *f)
+{
+	return
+		fwrite_int  (f, prop.address) &&
+		fwrite_int  (f, prop.elem) &&
+		fwrite_bool (f, prop.int32) &&
+		fwrite_bool (f, prop.retransmitir) &&
+		fwrite_ulong(f, prop.idName.first) &&
+		fwrite_int  (f, prop.idName.second);
+}
+
+bool LadderElemCAN::internalLoad(FILE *f, unsigned int version)
+{
+	bool ret =
+		fread_int  (f, &prop.address) &&
+		fread_int  (f, &prop.elem) &&
+		fread_bool (f, &prop.int32) &&
+		fread_bool (f, &prop.retransmitir) &&
+		fread_ulong(f, &prop.idName.first) &&
+		fread_int  (f, &prop.idName.second);
+
+	if(ret == true) {
+		Diagram->updateTypeIO(prop.idName.first);
+	}
+
+	return ret;
+}
+
+LadderElem *LadderElemCAN::Clone(LadderDiagram *diagram)
+{
+	LadderElemCAN *clone = new LadderElemCAN(diagram, getWhich());
+	clone->updateIO(diagram, true); // Descarta os I/Os registrados
+	clone->internalSetProperties(getProperties());
+
+	return clone;
+}
+
+bool LadderElemCAN::acceptIO(unsigned long id, eType type)
+{
+	if(id == prop.idName.first && type != eType_ReadCAN && type != eType_WriteCAN && type != eType_Reserved) {
+		return false;
+	}
+
+	return true;
+}
+
+void LadderElemCAN::updateIO(LadderDiagram *owner, bool isDiscard)
+{
+	infoIO_Name.pin = prop.idName;
+	Diagram->updateIO(owner, this, infoIO_Name, isDiscard);
+	prop.idName = infoIO_Name.pin;
+}
+
+eType LadderElemCAN::getAllowedTypeIO(unsigned long id)
+{
+	if(prop.idName.first == id) {
+		return (getWhich() == ELEM_READ_CAN) ? eType_ReadCAN : eType_WriteCAN;
+	}
+
+	return eType_Pending;
+}
+
+int LadderElemCAN::SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace)
+{
+	if(prop.idName.first == idSearch) {
+		if(isReplace) {
+			eType type = (getWhich() == ELEM_READ_CAN) ? eType_ReadCAN : eType_WriteCAN;
+			pair<unsigned long, int> pin = prop.idName;
+			if(Diagram->getIO(this, pin, sNewText, type, infoIO_Name)) {
+				LadderElemCANProp *data = (LadderElemCANProp *)getProperties();
+
+				data->idName  = pin;
+
+				setProperties(Diagram->getContext(), data);
+
+				return 1;
+			}
+		} else {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+bool LadderElemCAN::internalUpdateNameTypeIO(unsigned int index, string name, eType type)
+{
+	pair<unsigned long, int> pin = prop.idName;
+
+	type = (getWhich() == ELEM_WRITE_CAN) ? eType_WriteCAN : eType_ReadCAN;
+
+	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Variável"), VALIDATE_IS_VAR, 0, 0)) {
+		if(Diagram->getIO(this, pin, name, type, infoIO_Name)) {
+			LadderElemCANProp *data = (LadderElemCANProp *)getProperties();
+
+			data->idName  = pin;
+
+			setProperties(Diagram->getContext(), data);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool LadderElemCAN::internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action)
+{
+	if(isDiscard && action.action == eSetProp) {
+		delete (LadderElemCANProp *)(((UndoRedoData *)action.data)->SetProp.data);
 	}
 
 	return true; // Sempre retorna sucesso...
@@ -10233,6 +10488,8 @@ bool LadderCircuit::Load(LadderDiagram *diagram, FILE *f, unsigned int version)
 						case ELEM_WRITE_USS             : s.elem = new LadderElemUSS          (diagram, which); break;
 						case ELEM_READ_MODBUS           :
 						case ELEM_WRITE_MODBUS          : s.elem = new LadderElemModBUS       (diagram, which); break;
+						case ELEM_READ_CAN              :
+						case ELEM_WRITE_CAN             : s.elem = new LadderElemCAN          (diagram, which); break;
 						case ELEM_SET_PWM               : s.elem = new LadderElemSetPWM       (diagram);        break;
 						case ELEM_UART_RECV             :
 						case ELEM_UART_SEND             : s.elem = new LadderElemUART         (diagram, which); break;
@@ -10248,7 +10505,7 @@ bool LadderCircuit::Load(LadderDiagram *diagram, FILE *f, unsigned int version)
 						case ELEM_PID                   : s.elem = new LadderElemPID          (diagram);        break;
 						case ELEM_LCD                   : s.elem = new LadderElemLCD          (diagram);        break;
 						// Elemento nao suportado. Novo elemento nao cadastrado aqui???
-						default                         : s.elem = nullptr; break;
+						default                         : s.elem = nullptr; break; 
 						}
 
 						if(s.elem == nullptr) { // Erro carregando elemento! Sai do loop...

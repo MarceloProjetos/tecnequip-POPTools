@@ -304,6 +304,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="candialog.cpp" />
     <ClCompile Include="circuit.cpp" />
     <ClCompile Include="commentdialog.cpp" />
     <ClCompile Include="CommonFileDialog.cpp" />

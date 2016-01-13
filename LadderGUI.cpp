@@ -897,9 +897,12 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 	MidPoint.y = StartPoint.y;
 	DrawLine(StartPoint, MidPoint, poweredBefore ? colors.Wire : colors.WireOff);
 
-	MidPoint.x = r3D.right + SizeZ/2;
+	MidPoint.x = r3D.right; 
+	if (POPSettings.Show3DLadder) {
+		MidPoint.x += SizeZ/2;
+	}
 	MidPoint.y = EndPoint.y;
-	DrawLine(MidPoint  , EndPoint, elem->IsPoweredAfter() ? colors.Wire : colors.WireOff);
+	DrawLine(MidPoint, EndPoint, elem->IsPoweredAfter() ? colors.Wire : colors.WireOff);
 
 	addConnectionDot(StartPoint, poweredBefore, false, eDirection_Left);
 	addConnectionDot(EndPoint, elem->IsPoweredAfter(), false, eDirection_Right);
@@ -6129,6 +6132,172 @@ bool LadderElemModBUS::DrawGUI(bool poweredBefore, void *data)
 		list.items.push_back(_("Sim"));
 
 		list.fnc      = ModBUSCmdExpandedResend;
+		list.selected = prop.retransmitir ? 1 : 0;
+
+		gui.addControlList(this, rExp[1], list);
+	}
+
+	return poweredAfter;
+}
+
+// Classe LadderElemCAN
+bool CANCmdExpandedMode(LadderElem *elem, unsigned int selected)
+{
+	bool ret = false;
+	bool int32 = selected ? true : false;
+
+	LadderElemCAN *mb = dynamic_cast<LadderElemCAN *>(elem);
+	LadderElemCANProp *prop = (LadderElemCANProp *)mb->getProperties();
+
+	if(prop->int32 != int32) {
+		ladder->CheckpointBegin(_("Alterar CAN"));
+
+		prop->int32 = int32;
+
+		mb->setProperties(ladder->getContext(), prop);
+
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
+	}
+
+	return ret;
+}
+
+bool CANCmdExpandedResend(LadderElem *elem, unsigned int selected)
+{
+	bool ret = false;
+	bool retransmitir = selected ? true : false;
+
+	LadderElemCAN *mb = dynamic_cast<LadderElemCAN *>(elem);
+	LadderElemCANProp *prop = (LadderElemCANProp *)mb->getProperties();
+
+	if(prop->retransmitir != retransmitir) {
+		ladder->CheckpointBegin(_("Alterar CAN"));
+
+		prop->retransmitir = retransmitir;
+
+		mb->setProperties(ladder->getContext(), prop);
+
+		ladder->CheckpointEnd();
+		ladder->updateContext();
+		ladder->ProgramChanged();
+		UpdateMainWindowTitleBar();
+
+		ret = true;
+	} else {
+		delete prop;
+	}
+
+	return ret;
+}
+
+bool LadderElemCAN::ShowDialog(LadderContext context)
+{
+	int  NewElem         = prop.elem;
+	int  NewAddress      = prop.address;
+	string NewName       = Diagram->getNameIO(prop.idName);
+
+	POINT start, size, GridSize = gui.getGridSize();
+	RECT rArea = gui.getElemArea(this);
+
+	start.x = rArea.left   ;
+	start.y = rArea.top    ;
+	size .x = rArea.right  - rArea.left;
+	size .y = rArea.bottom - rArea.top;
+
+	bool changed = false;
+
+	if(ShowCANDialog(getWhich() == ELEM_WRITE_CAN ? 1 : 0, &NewName, &NewElem, &NewAddress, start, size, GridSize)) {
+		eType type;
+		if(getWhich() == ELEM_READ_CAN) {
+			type = eType_ReadCAN;
+		} else {
+			type = eType_WriteCAN;
+		}
+
+		Diagram->CheckpointBegin(_("Alterar CAN"));
+		if(updateNameTypeIO(0, NewName, type)) {
+			LadderElemCANProp *data = (LadderElemCANProp *)getProperties();
+
+			data->elem         = NewElem;
+			data->address      = NewAddress;
+
+			setProperties(context, data);
+
+			changed = true;
+		}
+		Diagram->CheckpointEnd();
+	}
+
+	return changed;
+}
+
+bool LadderElemCAN::DrawGUI(bool poweredBefore, void *data)
+{
+	POINT GridSize = gui.getGridSize();
+	tDataDrawGUI *ddg = (tDataDrawGUI*)data;
+
+	if(ddg->expanded) {
+		ddg->size.x = 4;
+		ddg->size.y = 5;
+	} else {
+		ddg->size.x = 3;
+		ddg->size.y = 2;
+	}
+
+	if(ddg->DontDraw) return poweredAfter;
+
+	tCommandSource source = { nullptr, nullptr, this };
+
+	tLadderColors     colors     = gui.getLadderColors    ();
+	tLadderColorGroup colorgroup = gui.getLadderColorGroup(getWhich(), poweredAfter);
+
+	string sname = Diagram->getNameIO(prop.idName.first);
+	const char *name = sname.c_str();
+
+	int SelectedState = ddg->context->SelectedElem == this ? ddg->context->SelectedState : SELECTED_NONE;
+	RECT r = gui.DrawElementBox(this, SelectedState, ddg->start, ddg->size, (getWhich() == ELEM_READ_CAN) ? _("LER MB") : _("ESCREVER MB"), true, poweredBefore);
+	ddg->region = r;
+
+	// Desenha a seta indicando o sentido (Enviar / Receber)
+	DrawArrowAndText(r, _("CAN"), colors.Black, (getWhich() == ELEM_READ_MODBUS));
+
+	// Escreve o nome do I/O
+	RECT rText   = r;
+	rText.top    = rText.top + GridSize.y + (ddg->expanded ? 10 : 0);
+	rText.bottom = rText.top + FONT_HEIGHT;
+	gui.DrawText(name, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_Center);
+
+	// Se expandido, desenha os itens do modo expandido
+	if(ddg->expanded) {
+		vector<tExpandedItem> items;
+		items.push_back(tExpandedItem(_("Modo" ), 1));
+		items.push_back(tExpandedItem(_("Reenviar"), 1));
+
+		vector<RECT> rExp = gui.DrawExpandedItems(colorgroup, r, ddg->size, 2, items);
+
+		// Caixas desenhadas. Agora criamos o conteudo
+		tControlList list;
+
+		list.items.push_back(_("16 bits"));
+		list.items.push_back(_("32 bits"));
+
+		list.selected = prop.int32 ? 1 : 0;
+		list.fnc      = CANCmdExpandedMode;
+
+		gui.addControlList(this, rExp[0], list);
+
+		list.items.clear();
+		list.items.push_back(_("Não" ));
+		list.items.push_back(_("Sim"));
+
+		list.fnc      = CANCmdExpandedResend;
 		list.selected = prop.retransmitir ? 1 : 0;
 
 		gui.addControlList(this, rExp[1], list);

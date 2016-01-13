@@ -1,5 +1,8 @@
 #include "EngineRenderD2D.h"
 #include "EngineUtils.h"
+#include "poptools.h"
+
+extern Settings POPSettings;
 
 EngineRenderD2D::EngineRenderD2D(void)
 {
@@ -512,7 +515,8 @@ HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ,
 		r.left   += (long)radiusX;
 		r.right  += (long)radiusX;
 
-		float sizeX = (float)(r.right - r.left) - 2*radiusX, sizeY = (float)(r.bottom - r.top) - 2*radiusY;
+		float sizeX = (float)(r.right - r.left) - 2*radiusX, 
+			  sizeY = (float)(r.bottom - r.top) - 2*radiusY;
 
 		hr = pGeometry->Open(&pSink);
 		if (SUCCEEDED(hr)) {
@@ -536,109 +540,130 @@ HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ,
 			// Arco ligando a borda inferior a lateral direita
 			point.x += (radiusX *         sin30);
 			point.y -= (radiusY * sin15 * sin30) / sin75;
-			pSink->AddArc(
-				D2D1::ArcSegment(
-					point,
-					D2D1::SizeF(radiusX, radiusY),
-					0.0f,
-					D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
-					D2D1_ARC_SIZE_SMALL
-				)
-			);
+			if (POPSettings.Show3DLadder) {
+				pSink->AddArc(
+					D2D1::ArcSegment(
+						point,
+						D2D1::SizeF(radiusX, radiusY),
+						0.0f,
+						D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
+						D2D1_ARC_SIZE_SMALL
+					)
+				);
+			}
 
 			// Lateral direita inferior
 			point.x += sizeZ * cos30;
 			point.y -= sizeZ * sin30;
-			pSink->AddLine(point);
+			if (POPSettings.Show3DLadder) {
+				pSink->AddLine(point);
+			}
 
 			// Arco ligando a lateral direita inferior a lateral direita
 			point.x += radiusX * cos60;
 			point.y -= radiusY * sin60;
-			pSink->AddArc(
-				D2D1::ArcSegment(
-					point,
-					D2D1::SizeF(radiusX, radiusY),
-					0.0f,
-					D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
-					D2D1_ARC_SIZE_SMALL
-				)
-			);
+			if (POPSettings.Show3DLadder) {
+				pSink->AddArc(
+					D2D1::ArcSegment(
+						point,
+						D2D1::SizeF(radiusX, radiusY),
+						0.0f,
+						D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
+						D2D1_ARC_SIZE_SMALL
+					)
+				);
+			}
 
 			// Lateral direita
 			point.y -= sizeY;
-			pSink->AddLine(point);
+			if (POPSettings.Show3DLadder) {
+				pSink->AddLine(point);
+			}
 
 			pointLines[3] = point; // Ponto final da segunda linha
 
 			//Arco ligando a lateral direita a borda superior
 			point.x -= radiusX;
 			point.y -= radiusY;
-			pSink->AddArc(
-				D2D1::ArcSegment(
-					point,
-					D2D1::SizeF(radiusX, radiusY),
-					0.0f,
-					D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
-					D2D1_ARC_SIZE_SMALL
-				)
-			);
-
+			if (POPSettings.Show3DLadder) {
+				pSink->AddArc(
+					D2D1::ArcSegment(
+						point,
+						D2D1::SizeF(radiusX, radiusY),
+						0.0f,
+						D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
+						D2D1_ARC_SIZE_SMALL
+					)
+				);
+			}
 			pointLines[1] = point; // Ponto final da primeira linha
 
 			// Borda superior
 			point.x -= sizeX;
-			pSink->AddLine(point);
+			if (POPSettings.Show3DLadder) {
+				pSink->AddLine(point);
+			}
 
 			// Arco ligando a borda superior a borda superior esquerda
 			point.x -= (radiusX *         sin30);
 			point.y += (radiusY * sin15 * sin30) / sin75;
-			pSink->AddArc(
-				D2D1::ArcSegment(
-					point,
-					D2D1::SizeF(radiusX, radiusY),
-					0.0f,
-					D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
-					D2D1_ARC_SIZE_SMALL
-				)
-			);
+			if (POPSettings.Show3DLadder) {
+				pSink->AddArc(
+					D2D1::ArcSegment(
+						point,
+						D2D1::SizeF(radiusX, radiusY),
+						0.0f,
+						D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
+						D2D1_ARC_SIZE_SMALL
+					)
+				);
+			}
 
 			// Borda superior esquerda
 			point.x -= sizeZ * cos30;
 			point.y += sizeZ * sin30;
-			pSink->AddLine(point);
+			if (POPSettings.Show3DLadder) {
+				pSink->AddLine(point);
+			}
 
 			// Arco ligando a borda superior esquerda a lateral esquerda
 			point.x -= radiusX * cos60;
 			point.y += radiusY * sin60;
-			pSink->AddArc(
-				D2D1::ArcSegment(
-					point,
-					D2D1::SizeF(radiusX, radiusY),
-					0.0f,
-					D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
-					D2D1_ARC_SIZE_SMALL
-				)
-			);
+			if (POPSettings.Show3DLadder) {
+				pSink->AddArc(
+					D2D1::ArcSegment(
+						point,
+						D2D1::SizeF(radiusX, radiusY),
+						0.0f,
+						D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
+						D2D1_ARC_SIZE_SMALL
+					)
+				);
+			}
 
 			rectRoundedRect.left = point.x; // Neste ponto temos a lateral esquerda
 			rectRoundedRect.top  = point.y - radiusY; // Ao removermos o raio, temos o topo do retangulo
 
 			// Lateral esquerda
 			point.y += sizeY;
-			pSink->AddLine(point);
+			if (POPSettings.Show3DLadder) {
+				pSink->AddLine(point);
+			}
 
 			// Arco ligando a lateral esquerda a borda inferior
 			point.x += radiusX;
 			point.y += radiusY;
-			pSink->AddArc(
-				D2D1::ArcSegment(
-					point,
-					D2D1::SizeF(radiusX, radiusY),
-					0.0f,
-					D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
-					D2D1_ARC_SIZE_SMALL
-				)
-			);
+			if (POPSettings.Show3DLadder) {
+				pSink->AddArc(
+					D2D1::ArcSegment(
+						point,
+						D2D1::SizeF(radiusX, radiusY),
+						0.0f,
+						D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
+						D2D1_ARC_SIZE_SMALL
+					)
+				);
+			}
 
 			// Figura finalizada. Fecha em modo CLOSED para que seja feita a linha da borda inferior
 			pSink->EndFigure(D2D1_FIGURE_END_CLOSED);
@@ -646,7 +671,6 @@ HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ,
 			hr = pSink->Close();
 
 			SafeRelease(&pSink);
-
 			// Calcula o ponto de rotacao (Se usado)
 			D2D1_POINT_2F xy;
 			if(angle) {
@@ -676,10 +700,12 @@ HRESULT EngineRenderD2D::DrawRectangle3D(RECT r, float sizeZ,
 				pointLines[2].x = rectRoundedRect.right; // Ponto inicial da segunda linha
 				pointLines[2].y = rectRoundedRect.top + radiusY; // Ponto inicial da segunda linha
 
-				// Desenha as duas linhas superiores
-				pBrush = getBrush(brushExtBorder, rectRoundedRect);
-				pRT->DrawLine(pointLines[0], pointLines[1], pBrush, borderWidth);
-				pRT->DrawLine(pointLines[2], pointLines[3], pBrush, borderWidth);
+				if (POPSettings.Show3DLadder) {
+					// Desenha as duas linhas superiores
+					pBrush = getBrush(brushExtBorder, rectRoundedRect);
+					pRT->DrawLine(pointLines[0], pointLines[1], pBrush, borderWidth);
+					pRT->DrawLine(pointLines[2], pointLines[3], pBrush, borderWidth);
+				}
 			}
 
 			// Desenha a borda externa
