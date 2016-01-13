@@ -2188,7 +2188,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// Descarrega a Area de Transferencia
 	if(clipboard.elemCopy != nullptr) {
-		UnallocElem(clipboard.elemCopy);
+		//UnallocElem(clipboard.elemCopy);
+		delete clipboard.elemCopy;
 	}
 	if(clipboard.rungCopy != nullptr) {
 		delete clipboard.rungCopy->rung;

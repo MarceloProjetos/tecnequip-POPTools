@@ -9105,7 +9105,8 @@ LadderCircuit::~LadderCircuit(void)
 	vector<Subckt>::iterator it;
 	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
 		if(it->elem != nullptr) {
-			UnallocElem(it->elem);
+			//UnallocElem(it->elem);
+			delete it->elem;
 		} else {
 			delete it->subckt;
 		}
@@ -10402,7 +10403,8 @@ bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 			// no circuito e portanto nao deve ser desalocado.
 			if(!IsUndo) {
 				if(data->DeleteSubckt.subckt.elem != nullptr) {
-					UnallocElem(data->DeleteSubckt.subckt.elem);
+					//UnallocElem(data->DeleteSubckt.subckt.elem);
+					delete data->DeleteSubckt.subckt.elem;
 				} else if(data->DeleteSubckt.subckt.subckt != nullptr) { // Nunca subckt deveria ser nulo aqui!
 					delete data->DeleteSubckt.subckt.subckt;
 				}
@@ -10427,7 +10429,8 @@ bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 			// nao deve ser desalocado.
 			if(IsUndo) {
 				if(data->DeleteSubckt.subckt.elem != nullptr) {
-					UnallocElem(data->DeleteSubckt.subckt.elem);
+					//UnallocElem(data->DeleteSubckt.subckt.elem);
+					delete data->DeleteSubckt.subckt.elem;
 				} else if(data->DeleteSubckt.subckt.subckt != nullptr) { // Nunca subckt deveria ser nulo aqui!
 					delete data->DeleteSubckt.subckt.subckt;
 				}
@@ -11361,7 +11364,8 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 		// Apos o recebimento de elem, a classe LadderDiagram passa a ser responsavel por ele.
 		// Se por qualquer motivo houver uma falha ao inserir, a classe tem a responsabilidade
 		// de desalocar este elemento.
-		UnallocElem(elem);
+		//UnallocElem(elem);
+		delete elem;
 
 		return false;
 	}
@@ -11412,7 +11416,8 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 		// Apos o recebimento de elem, a classe LadderDiagram passa a ser responsavel por ele.
 		// Se por qualquer motivo houver uma falha ao inserir, a classe tem a responsabilidade
 		// de desalocar este elemento.
-		UnallocElem(elem);
+		//UnallocElem(elem);
+		delete elem;
 	}
 
 	CheckpointEnd();
@@ -11515,7 +11520,8 @@ bool LadderDiagram::CopyElement(LadderClipboard *clipboard, LadderElem *elem)
 
 	// Primeiro descarta um elemento previamente copiado
 	if(clipboard->elemCopy != nullptr) {
-		UnallocElem(clipboard->elemCopy);
+		//UnallocElem(clipboard->elemCopy);
+		delete clipboard->elemCopy;
 	}
 
 	// Copia o elemento

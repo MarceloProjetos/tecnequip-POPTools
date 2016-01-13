@@ -637,7 +637,7 @@ public:
 	LadderElem(bool EOL, bool Comment, bool Formatted, bool UART, int elemWhich);
 
 	/// Destrutor padrao, nada a fazer...
-	~LadderElem(void) { }
+	virtual ~LadderElem(void) { }
 
 	/** Funcao que gera o texto utilizado para impressao e exportacao em modo texto
 	 *  @return Par de strings (Linha superior e linha inferior) que representam o elemento em modo texto
