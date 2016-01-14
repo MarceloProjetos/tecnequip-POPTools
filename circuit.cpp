@@ -440,6 +440,24 @@ bool AddWriteModbus(void)
 	return ret;
 }
 
+bool AddReadCAN(void)
+{
+	ladder->CheckpointBegin(_("Adicionar Ler Registrador CAN"));
+	bool ret = ladder->AddElement(new LadderElemCAN(ladder, ELEM_READ_CAN));
+	ladder->CheckpointEnd();
+
+	return ret;
+}
+
+bool AddWriteCAN(void)
+{
+	ladder->CheckpointBegin(_("Adicionar Escrever Registrador CAN"));
+	bool ret = ladder->AddElement(new LadderElemCAN(ladder, ELEM_WRITE_CAN));
+	ladder->CheckpointEnd();
+
+	return ret;
+}
+
 bool AddSetPwm(void)
 {
 	ladder->CheckpointBegin(_("Adicionar Saída PWM"));

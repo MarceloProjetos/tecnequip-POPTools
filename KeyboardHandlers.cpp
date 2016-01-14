@@ -674,6 +674,26 @@ int KBH_Element_Add_ModBUS_Write(void *user_data)
 	return 1;
 }
 
+// Default for Portuguese: SHIFT + X
+int KBH_Element_Add_CAN_Read(void *user_data)
+{
+	if(ladder->getContext().inSimulationMode) return 0;
+
+	ProcessMenu(MNU_INSERT_READ_CAN);
+
+	return 1;
+}
+
+// Default for Portuguese: X
+int KBH_Element_Add_CAN_Write(void *user_data)
+{
+	if(ladder->getContext().inSimulationMode) return 0;
+
+	ProcessMenu(MNU_INSERT_WRITE_CAN);
+
+	return 1;
+}
+
 // Default for Portuguese: M
 int KBH_Element_Add_Move(void *user_data)
 {

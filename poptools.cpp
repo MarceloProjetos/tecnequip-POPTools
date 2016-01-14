@@ -1248,7 +1248,15 @@ void ProcessMenu(int code)
             AddWriteModbus();
             break;
 
-        case MNU_INSERT_UART_SEND:
+        case MNU_INSERT_READ_CAN:
+            AddReadCAN();
+            break;
+
+        case MNU_INSERT_WRITE_CAN:
+            AddWriteCAN();
+            break;
+
+		case MNU_INSERT_UART_SEND:
             AddUart(ELEM_UART_SEND);
             break;
 
@@ -1907,9 +1915,10 @@ void LoadSettings(void)
 					if(fread_int(f, &POPSettings.idLanguage              ) &&
 						fread_bool(f, &POPSettings.ShowSimulationWarnings) &&
 						fread_bool(f, &POPSettings.GenerateMemoryMap     ) &&
+						fread_bool(f, &POPSettings.Show3DLadder          ) &&
 						fread_int(f, &POPSettings.AutoSaveInterval       ) &&
 						fread_int(f, &POPSettings.COMPortFlash           ) &&
-						fread_int(f, &POPSettings.COMPortDebug           )
+						fread_int(f, &POPSettings.COMPortDebug           ) 						
 						) {
 							string name;
 							unsigned int i;
@@ -1975,6 +1984,7 @@ void SaveSettings(void)
 		fwrite_int   (f, POPSettings.idLanguage            ) &&
 		fwrite_bool  (f, POPSettings.ShowSimulationWarnings) &&
 		fwrite_bool  (f, POPSettings.GenerateMemoryMap     ) &&
+		fwrite_bool  (f, POPSettings.Show3DLadder		   ) &&
 		fwrite_int   (f, POPSettings.AutoSaveInterval      ) &&
 		fwrite_int   (f, POPSettings.COMPortFlash          ) &&
 		fwrite_int   (f, POPSettings.COMPortDebug          )
@@ -2188,7 +2198,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// Descarrega a Area de Transferencia
 	if(clipboard.elemCopy != nullptr) {
-		UnallocElem(clipboard.elemCopy);
+		//UnallocElem(clipboard.elemCopy);
+		delete clipboard.elemCopy;
 	}
 	if(clipboard.rungCopy != nullptr) {
 		delete clipboard.rungCopy->rung;

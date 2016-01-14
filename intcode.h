@@ -59,6 +59,9 @@
 
 #define INT_SIMULATE_NODE_STATE                 80
 
+#define INT_READ_CAN							90
+#define INT_WRITE_CAN							91
+
 #define INT_COMMENT                            100
 
 // Only used for the interpretable code.

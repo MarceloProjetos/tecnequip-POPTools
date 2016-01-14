@@ -56,6 +56,14 @@
     </Command>
     <Command Name="GroupSSIEnc"     Symbol="cmdGroupSSIEnc"     Id="30033" LabelTitle="Encoder SSI"     />
     <Command Name="GroupCommText"   Symbol="cmdGroupCommText"   Id="30016" LabelTitle="RS-485 - Texto"  />
+    <Command Name="GroupCommCAN"    Symbol="cmdGroupCommCAN"     Id="30034" LabelTitle="CAN"            >
+      <Command.LargeImages>
+        <Image Source="imgs/GroupCommModBUSHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/GroupCommModBUSHS.bmp"/>
+      </Command.SmallImages>
+    </Command>   
     <Command Name="GroupCommModBUS" Symbol="cmdGroupCommModBUS" Id="30017" LabelTitle="ModBUS"           >
       <Command.LargeImages>
         <Image Source="imgs/GroupCommModBUSHH.bmp"/>
@@ -2178,6 +2186,60 @@
       </Command.SmallImages>
     </Command>
 
+    <Command Name         = "InstrReadCAN"
+              Symbol     = "cmdInstrReadCAN"
+              Id         = "30560"
+              LabelTitle = "Ler Registrador CAN">
+      <Command.TooltipTitle      >Ler Registrador CAN (Shift+X)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir ler registrador CAN na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadCANHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadCANHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleReadCAN"
+               Symbol     = "cmdExampleReadCAN"
+               Id         = "30561"
+               LabelTitle = "Ler Registrador CAN">
+      <Command.TooltipTitle      >Ler Registrador CAN (Shift+X)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução ler registrador CAN.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrReadCANHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrReadCANHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+
+    <Command Name         = "InstrWriteCAN"
+               Symbol     = "cmdInstrWriteCAN"
+               Id         = "30562"
+               LabelTitle = "Escrever Registrador CAN">
+      <Command.TooltipTitle      >Escrever Registrador CAN (X)</Command.TooltipTitle>
+      <Command.TooltipDescription>Inserir escrever registrador CAN na posição do cursor.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteCANHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteCANHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    <Command Name         = "ExampleWriteCAN"
+               Symbol     = "cmdExampleWriteCAN"
+               Id         = "30563"
+               LabelTitle = "Escrever Registrador CAN">
+      <Command.TooltipTitle      >Escrever Registrador CAN (X)</Command.TooltipTitle>
+      <Command.TooltipDescription>Abrir exemplo de instrução escrever registrador CAN.</Command.TooltipDescription>
+      <Command.LargeImages>
+        <Image Source="imgs/InstrWriteCANHH.bmp"/>
+      </Command.LargeImages>
+      <Command.SmallImages>
+        <Image Source="imgs/InstrWriteCANHS.bmp"/>
+      </Command.SmallImages>
+    </Command>
+    
     <Command Name       = "InstrLCD"
              Symbol     = "cmdInstrLCD"
              Id         = "30557"
@@ -2615,16 +2677,19 @@
                 <Scale Group ="GroupAnalog"     Size="Large"  />
                 <Scale Group ="GroupMotors"     Size="Large"  />
                 <Scale Group ="GroupEnc"        Size="Large"  />
-                <Scale Group ="GroupCommText"   Size="Large"  />
                 <Scale Group ="GroupCommModBUS" Size="Large"  />
+                <Scale Group ="GroupCommCAN"   Size="Large"  />
+                <Scale Group ="GroupCommText"   Size="Large"  />
                 <Scale Group ="GroupCommOthers" Size="Large"  />
               </ScalingPolicy.IdealSizes>
-              <Scale Group ="GroupCommOthers" Size="Medium" />
+              <Scale Group ="GroupCommCAN"   Size="Medium" />
               <Scale Group ="GroupCommText"   Size="Medium" />
-              <Scale Group ="GroupCommModBUS" Size="Popup"  />
+              <Scale Group ="GroupCommOthers" Size="Medium" />
+              <Scale Group ="GroupMotors"     Size="Medium" />
               <Scale Group ="GroupCommOthers" Size="Small"  />
               <Scale Group ="GroupCommText"   Size="Small"  />
-              <Scale Group ="GroupMotors"     Size="Medium" />
+              <Scale Group ="GroupCommModBUS" Size="Popup"  />
+              <Scale Group ="GroupCommCAN"   Size="Popup"  />
               <Scale Group ="GroupEnc"        Size="Popup"  />
               <Scale Group ="GroupCommOthers" Size="Popup"  />
             </ScalingPolicy>
@@ -2646,6 +2711,10 @@
             <Button CommandName="InstrReadModBUS"/>
             <Button CommandName="InstrWriteModBUS"/>
           </Group>
+          <Group CommandName="GroupCommCAN" SizeDefinition="TwoButtons">
+            <Button CommandName="InstrReadCAN"/>
+            <Button CommandName="InstrWriteCAN"/>
+          </Group>          
           <Group CommandName="GroupCommText" SizeDefinition="FourButtons">
             <Button CommandName="InstrReadFormatString"/>
             <Button CommandName="InstrWriteFormatString"/>

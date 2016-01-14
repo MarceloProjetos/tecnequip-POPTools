@@ -186,6 +186,9 @@
     <ClCompile Include="modbus_rtu.c">
       <Filter>Source Files\Firmware</Filter>
     </ClCompile>
+    <ClCompile Include="candialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="freeze.h">

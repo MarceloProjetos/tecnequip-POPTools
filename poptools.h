@@ -304,6 +304,9 @@ struct strSerialConfig {
 #define MNU_INSERT_LCD          0x68
 #define MNU_INSERT_PARALLEL     0x5b
 
+#define MNU_INSERT_READ_CAN		0x90
+#define MNU_INSERT_WRITE_CAN	0x91
+
 #define MNU_MCU_SETTINGS        0x59
 #define MNU_MCU_EXPANSION       0x62
 #define MNU_MCU_PREFERENCES     0x5a
@@ -464,6 +467,8 @@ struct strSerialConfig {
 #define ELEM_MULTISET_DA		0x42
 #define ELEM_PID                0x46
 #define ELEM_LCD                0x47
+#define ELEM_READ_CAN			0x48
+#define ELEM_WRITE_CAN		 	0x49
 
 #define MAX_NAME_LEN                128
 #define MAX_COMMENT_LEN             384
@@ -512,6 +517,8 @@ typedef struct SettingsTag {
 	bool ShowSimulationWarnings;
 	// Compile settings
 	bool GenerateMemoryMap;
+	// Ladder appearance
+	bool Show3DLadder;
 	// Find And Replace settings
 	char last_search_text[MAX_NAME_LEN];
 	char last_new_text[MAX_NAME_LEN];
@@ -756,6 +763,8 @@ bool AddReadUSS(void);
 bool AddWriteUSS(void);
 bool AddReadModbus(void);
 bool AddWriteModbus(void);
+bool AddReadCAN(void);
+bool AddWriteCAN(void);
 bool AddReadModbusEth(void);
 bool AddWriteModbusEth(void);
 bool AddSetPwm(void);
@@ -831,6 +840,7 @@ bool ShowVarDialog(const char *title, const char *varname, string *name, POINT s
 bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end, POINT ElemStart, POINT ElemSize, POINT GridSize);
 bool ShowVarBitDialog(const char *title, const char *varname, string *name, int * bit, POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types);
 bool ShowModbusDialog(int mode_write, string *name, int *id, int *address, POINT ElemStart, POINT ElemSize, POINT GridSize);
+bool ShowCANDialog(int mode_write, string *name, int *id, int *address, POINT ElemStart, POINT ElemSize, POINT GridSize);
 void ShowSimulationVarSetDialog(const char *name, char *val);
 bool ShowLookUpTableDialog(LadderElemLUTProp *t, POINT ElemStart, POINT ElemSize, POINT GridSize);
 bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, POINT ElemStart, POINT ElemSize, POINT GridSize);

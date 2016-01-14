@@ -133,6 +133,8 @@ enum eType  {
 	eType_WriteUSS,      ///< Escrita USS. I/O associado a um elemento de escrita atraves de protocolo USS (Siemens)
 	eType_ReadModbus,    ///< Leitura ModBUS. I/O associado a um elemento de leitura atraves de protocolo ModBUS
 	eType_WriteModbus,   ///< Escrita ModBUS. I/O associado a um elemento de escrita atraves de protocolo ModBUS
+	eType_ReadCAN,       ///< Leitura CAN. I/O associado a um elemento de leitura atraves de protocolo CAN
+	eType_WriteCAN,      ///< Escrita CAN. I/O associado a um elemento de escrita atraves de protocolo CAN
 	eType_PWM,           ///< PWM. Tipo de I/Os que sao associados a uma saida digital do CLP e cuja saida opera como PWM
 	eType_RxUART,        ///< Leitura UART. I/O associado a um elemento de leitura de string da interface serial (RS-485)
 	eType_TxUART,        ///< Escrita UART. I/O associado a um elemento de escrita de string da interface serial (RS-485)
@@ -637,7 +639,7 @@ public:
 	LadderElem(bool EOL, bool Comment, bool Formatted, bool UART, int elemWhich);
 
 	/// Destrutor padrao, nada a fazer...
-	~LadderElem(void) { }
+	virtual ~LadderElem(void) { }
 
 	/** Funcao que gera o texto utilizado para impressao e exportacao em modo texto
 	 *  @return Par de strings (Linha superior e linha inferior) que representam o elemento em modo texto
@@ -2269,6 +2271,67 @@ public:
 	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
 };
 
+/// Estrutura que define as propriedades de um elemento LadderElemModBUS
+struct LadderElemCANProp {
+	pair<unsigned long, int> idName;       ///< Referencia do I/O associado ao elemento
+	int                      elem;         ///< ID de referencia ao no do ModBUS associado a este elemento
+	int                      address;      ///< Numero do registrador a ser acessado
+	bool                     int32;        ///< Indica se esta operacao trabalhara com um registrador de 32 bits (true) ou 16 bits (false).
+	bool                     retransmitir; ///< Se true, o pacote sera reenviado em caso de falha na transmissao
+};
+
+/// Classe derivada de LadderElem que representa o elemento CAN
+class LadderElemCAN : public LadderElem {
+private:
+	/// Propriedades do elemento
+	LadderElemCANProp prop;
+	/// Variavel com os dados para fazer Request do I/O do elemento
+	tRequestIO           infoIO_Name;
+
+	bool internalSetProperties(void *data, bool isUndoRedo = false);
+
+	// Funcoes para ler / gravar dados especificos do elemento no disco
+	bool internalSave(FILE *f);
+	bool internalLoad(FILE *f, unsigned int version);
+
+	// Funcao que atualiza o I/O indicado por index para o novo nome/tipo (se possivel)
+	bool internalUpdateNameTypeIO(unsigned int index, string name, eType type);
+
+public:
+	/** Construtor
+	 *  @param[in] diagram Ponteiro para o diagrama ao qual o novo elemento deve ser associado
+	 *  @param[in] which   Codigo do elemento sendo criado: READ_MODBUS, WRITE_MODBUS
+	 */
+	LadderElemCAN(LadderDiagram *diagram, int which);
+
+	pair<string, string> DrawTXT(void);
+	bool DrawGUI(bool poweredBefore, void *data);
+
+	bool ShowDialog(LadderContext context);
+
+	bool internalGenerateIntCode(IntCode &ic);
+
+	void *getProperties(void);
+
+	bool CanInsert(LadderContext context);
+
+	void doPostInsert(void);
+	void doPostRemove(void);
+
+	inline int getWidthTXT(void) { return 1; }
+
+	LadderElem *Clone(LadderDiagram *diagram);
+
+	// Funcao que indica se pode alterar o I/O para o tipo especificado
+	bool  acceptIO        (unsigned long id, eType type);
+	void  updateIO        (LadderDiagram *owner, bool isDiscard);
+	eType getAllowedTypeIO(unsigned long id);
+	int   SearchAndReplace(unsigned long idSearch, string sNewText, bool isReplace);
+
+	// Funcao que executa uma acao de desfazer / refazer
+	bool internalDoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &action);
+};
+
 /// Estrutura que define as propriedades de um elemento LadderElemSetPWM
 struct LadderElemSetPWMProp {
 	pair<unsigned long, int> idName;     ///< Referencia do I/O associado ao elemento
@@ -3393,9 +3456,6 @@ private:
 		LadderSettingsDetails            Details;
 	} tLadderSettings;
 
-	/// Variavel que representa as configuracoes do diagrama
-	tLadderSettings LadderSettings;
-
 	/// Funcao que registra uma acao no Undo/Redo com a configuracao atual, permitindo que uma alteracao possa ser desfeita
 	void RegisterSettingsChanged(void);
 
@@ -3531,6 +3591,9 @@ public:
 	LadderDiagram(eModelPLC model);
 	/// Destrutor
 	~LadderDiagram(void);
+
+	/// Variavel que representa as configuracoes do diagrama
+	tLadderSettings LadderSettings;
 
 	/** Funcao que retorna o vetor com o codigo intermediario do diagrama, previamente gerado pela funcao LadderDiagram::GenerateIntCode
 	 *  @return Vetor com o codigo intermediario do diagrama

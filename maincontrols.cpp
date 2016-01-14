@@ -304,6 +304,8 @@ void SetMenusEnabled(LadderContext *context)
 	EnableInterfaceItem(MNU_INSERT_SET_BIT, t);
 	EnableInterfaceItem(MNU_INSERT_READ_MODBUS, t);
 	EnableInterfaceItem(MNU_INSERT_WRITE_MODBUS, t);
+	EnableInterfaceItem(MNU_INSERT_READ_CAN, t);
+	EnableInterfaceItem(MNU_INSERT_WRITE_CAN, t);
 	EnableInterfaceItem(MNU_INSERT_READ_USS, t);
 	EnableInterfaceItem(MNU_INSERT_WRITE_USS, t);
 	EnableInterfaceItem(MNU_READ_SERVO_YASKAWA, t);

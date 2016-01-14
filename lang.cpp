@@ -240,6 +240,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "{LER A/D %s }", "{READ ADC %s }");
 		addTextToLangTable(l, "{LER ENC}", "{READ ENC}");
 		addTextToLangTable(l, "{LER MB 485}", "{READ MB 485}");
+		addTextToLangTable(l, "{RECEBE CAN}", "{READ CAN}");
 		addTextToLangTable(l, "{LER MB ETH}", "{READ MB ETH}");
 		addTextToLangTable(l, "{LER USS}", "{READ USS}");
 		addTextToLangTable(l, "{RES}", "{RES}");
@@ -248,6 +249,7 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "{UART RECEBE}", "{UART RECV}");
 		addTextToLangTable(l, "{UART ENVIA}", "{UART SEND}");
 		addTextToLangTable(l, "{ESCR MB 485}", "{WRITE MB 485}");
+		addTextToLangTable(l, "{ENVIA CAN}", "{WRITE CAN}");
 		addTextToLangTable(l, "{ESCR MB ETH}", "{WRITE MB ETH}");
 		addTextToLangTable(l, "{ESCR USS}", "{WRITE USS}");
 		addTextToLangTable(l, "Índice", "Index");
@@ -867,6 +869,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "ABS", "ABS");
 		addTextToLangTable(l, "Mapa de Memória", "Memory Map");
 		addTextToLangTable(l, "Gerar mapa:", "Generate map:");
+		addTextToLangTable(l, "Aparência do Ladder", "Ladder appearance");
+		addTextToLangTable(l, "Exibir Ladder 3D:", "Show 3D Ladder:");
 		addTextToLangTable(l, "Fechar As Outras Abas", "Close Other Tabs");
 		addTextToLangTable(l, "Fechar Aba Atual", "Close Current Tab");
 		addTextToLangTable(l, "Nova Aba", "New Tab");
@@ -1741,6 +1745,8 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "ABS", "ABS");
 		addTextToLangTable(l, "Mapa de Memória", "Memory Map");
 		addTextToLangTable(l, "Gerar mapa:", "Generate map:");
+		addTextToLangTable(l, "Aparência do Ladder", "Ladder appearance");
+		addTextToLangTable(l, "Exibir Ladder 3D:", "Show 3D Ladder:");
 		addTextToLangTable(l, "Fechar As Outras Abas", "Close Other Tabs");
 		addTextToLangTable(l, "Fechar Aba Atual", "Close Current Tab");
 		addTextToLangTable(l, "Nova Aba", "New Tab");
@@ -1984,6 +1990,9 @@ PCWSTR getRibbonLocalizedLabel(UINT nCmdID)
 		SET_LANGUAGE_STRINGS(cmdInstrReadModBUS          , L"Ler Registrador ModBUS"           , L"Read ModBUS Register"          , L"Leer Registrador ModBUS"            );
 		SET_LANGUAGE_STRINGS(cmdInstrWriteModBUS         , L"Escrever Registrador ModBUS"      , L"Write ModBUS Register"         , L"Escribir Registrador ModBUS"        );
 
+		SET_LANGUAGE_STRINGS(cmdInstrReadCAN			, L"Ler Registrador CAN"			   , L"Read CAN Register"			  , L"Leer Registrador CAN"            );
+		SET_LANGUAGE_STRINGS(cmdInstrWriteCAN			, L"Escrever Registrador CAN"		   , L"Write CAN Register"			  , L"Escribir Registrador CAN"        );
+
 		SET_LANGUAGE_STRINGS(cmdInstrLCD                 , L"LCD"                              , L"LCD"                           , L"LCD"                                );
 
 		SET_LANGUAGE_STRINGS(cmdConfig                   , L"Projeto"                          , L"Project"                       , L"Proyecto"                           );
@@ -2165,6 +2174,9 @@ PCWSTR getRibbonLocalizedTooltipTitle(UINT nCmdID)
 
 		SET_LANGUAGE_STRINGS(cmdInstrReadModBUS          , L"Ler Registrador ModBUS (Shift + X)"           , L"Read ModBUS Register (Shift + X)"          , L"Leer Registrador ModBUS (Shift + X)"            );
 		SET_LANGUAGE_STRINGS(cmdInstrWriteModBUS         , L"Escrever Registrador ModBUS (X)"              , L"Write ModBUS Register (X)"                 , L"Escribir Registrador ModBUS (X)"                );
+
+		SET_LANGUAGE_STRINGS(cmdInstrReadCAN             , L"Ler Registrador CAN (Shift + X)"              , L"Read CAN Register (Shift + X)"             , L"Leer Registrador CAN (Shift + X)"               );
+		SET_LANGUAGE_STRINGS(cmdInstrWriteCAN            , L"Escrever Registrador CAN (X)"                 , L"Write CAN Register (X)"                    , L"Escribir Registrador CAN (X)"                   );
 
 		SET_LANGUAGE_STRINGS(cmdInstrLCD                 , L"LCD"                                          , L"LCD"                                       , L"LCD"                                            );
 
@@ -2610,6 +2622,15 @@ PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID)
 				L"Inserir escrever registrador modbus na posição do cursor.",
 				L"Insert write modbus register read on cursor's position",
 				L"Inserir escribir registrador modbus en la posicion del curso");
+
+			SET_LANGUAGE_STRINGS(cmdInstrReadCAN          ,
+				L"Inserir ler registrador CAN na posição do cursor.",
+				L"Insert read CAN register read on cursor's position",
+				L"Inserir leer registrador CAN en la posicion del cursor");
+			SET_LANGUAGE_STRINGS(cmdInstrWriteCAN         ,
+				L"Inserir escrever registrador CAN na posição do cursor.",
+				L"Insert write CAN register read on cursor's position",
+				L"Inserir escribir registrador CAN en la posicion del curso");
 
 			SET_LANGUAGE_STRINGS(cmdInstrLCD                 ,
 				L"Inserir Comando do LCD na posição do cursor.",
