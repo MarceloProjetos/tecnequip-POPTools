@@ -1032,6 +1032,32 @@ bool ShowConfDialog(eConfSection confSection)
 
 		MakeControls();
 
+		PopulateAbortModeCombobox(AbortModeCombobox, false);
+
+		for (i = 0; i < sizeof(ModBUSInterfaces) / sizeof(ModBUSInterfaces[0]); i++)
+			SendMessage(MBiface, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(ModBUSInterfaces[i])));
+
+		for (i = 0; i < sizeof(EncoderConvModes) / sizeof(EncoderConvModes[0]); i++) {
+			SendMessage(IncConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(EncoderConvModes[i])));
+			SendMessage(SSIConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(EncoderConvModes[i])));
+		}
+
+		for (i = 0; i < sizeof(SerialConfig) / sizeof(SerialConfig[0]); i++)
+			SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(SerialConfig[i].ConfigName)));
+
+		for (i = 0; i < sizeof(ComboboxBaudRateItens) / sizeof(ComboboxBaudRateItens[0]); i++) {
+			SendMessage(BaudRateCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBaudRateItens[i]));
+		}
+
+		for (i = 0; i < sizeof(ComboboxSNTPItens) / sizeof(ComboboxSNTPItens[0]); i++)
+			SendMessage(SNTPCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxSNTPItens[i]));
+
+		for (i = 0; i < sizeof(ComboboxGMTItens) / sizeof(ComboboxGMTItens[0]); i++)
+			SendMessage(GMTCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(ComboboxGMTItens[i])));
+
+		for (i = 0; i < sizeof(EncAbsConfig) / sizeof(EncAbsConfig[0]); i++)
+			SendMessage(SSIModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(EncAbsConfig[i])));
+
 		isFirstTime = false;
 	} else {
 		HTREEITEM tvItem = TreeView_GetRoot(ConfigTreeView);
@@ -1121,24 +1147,13 @@ bool ShowConfDialog(eConfSection confSection)
 	else
 		SendMessage(AdScaleFahrenheit, BM_SETCHECK, BST_CHECKED, 0);
 
-	PopulateAbortModeCombobox(AbortModeCombobox, false);
 	SendMessage(AbortModeCombobox, CB_SETCURSEL, settingsDac.ramp_abort_mode-1, 0);
 
-	for (i = 0; i < sizeof(ModBUSInterfaces) / sizeof(ModBUSInterfaces[0]); i++)
-		SendMessage(MBiface, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(ModBUSInterfaces[i])));
-
-	for (i = 0; i < sizeof(EncoderConvModes) / sizeof(EncoderConvModes[0]); i++) {
-		SendMessage(IncConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(EncoderConvModes[i])));
-		SendMessage(SSIConvModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(EncoderConvModes[i])));
-	}
 	SendMessage(IncConvModeCombobox, CB_SETCURSEL, settingsEncInc.conv_mode, 0);
 	SendMessage(SSIConvModeCombobox, CB_SETCURSEL, settingsEncSSI.conv_mode, 0);
 
 	PopulateModBUSMasterCombobox(MBelem, true);
 	LoadMBMasterControls(0);
-
-	for (i = 0; i < sizeof(SerialConfig) / sizeof(SerialConfig[0]); i++)
-		SendMessage(ParityCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(SerialConfig[i].ConfigName)));
 
 	SendMessage(ParityCombobox, CB_SETCURSEL, settingsUart.UART, 0);
 	SendMessage(ParityCombobox, CB_SETDROPPEDWIDTH, 100, 0);
@@ -1146,7 +1161,6 @@ bool ShowConfDialog(eConfSection confSection)
 	sprintf(buf, "%d", settingsUart.baudRate);
 	for (i = 0; i < sizeof(ComboboxBaudRateItens) / sizeof(ComboboxBaudRateItens[0]); i++)
 	{
-		SendMessage(BaudRateCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBaudRateItens[i]));
 		if (_stricmp(ComboboxBaudRateItens[i], buf) == 0)
 			SendMessage(BaudRateCombobox, CB_SETCURSEL, i, 0);
 	}
@@ -1154,17 +1168,11 @@ bool ShowConfDialog(eConfSection confSection)
 	sprintf(buf, "%d",settingsMbSlave.ModBUSID);
 	SendMessage(ModBUSIDTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
-	for (i = 0; i < sizeof(ComboboxSNTPItens) / sizeof(ComboboxSNTPItens[0]); i++)
-		SendMessage(SNTPCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxSNTPItens[i]));
 	SendMessage(SNTPCombobox, WM_SETTEXT, 0, (LPARAM)settingsSntp.sntp_server.c_str());
 
-	for (i = 0; i < sizeof(ComboboxGMTItens) / sizeof(ComboboxGMTItens[0]); i++)
-		SendMessage(GMTCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(ComboboxGMTItens[i])));
 	SendMessage(GMTCombobox, CB_SETCURSEL, settingsSntp.gmt, 0);
 	SendMessage(GMTCombobox, CB_SETDROPPEDWIDTH, 400, 0);
 
-	for (i = 0; i < sizeof(EncAbsConfig) / sizeof(EncAbsConfig[0]); i++)
-		SendMessage(SSIModeCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)_(EncAbsConfig[i])));
 	SendMessage(SSIModeCombobox, CB_SETCURSEL, settingsEncSSI.mode, 0);
 
 	if (settingsSntp.dailysave)

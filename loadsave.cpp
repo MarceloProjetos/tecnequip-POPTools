@@ -115,6 +115,8 @@ bool fread_string(FILE *f, string *var)
 
 				return true;
 			}
+
+			delete [] buffer;
 		} else {
 			*var = "";
 			return true;
