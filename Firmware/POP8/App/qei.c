@@ -132,14 +132,19 @@ void QEI_Initialize(LPC_QEI_T *QEIx, QEI_CFG_Type *QEI_ConfigStruct)
 	/* Set up power for QEI module */
 	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_QEI);
 
-	  // P1.20 - PHA
-	  Chip_IOCON_PinMux    (LPC_IOCON, 1, 20, gpio_mode, IOCON_FUNC3);
+	// P1.20 - PHA
+	Chip_IOCON_PinMux    (LPC_IOCON, 1, 20, gpio_mode, IOCON_FUNC3);
 
-	  // P1.23 - PHB
-	  Chip_IOCON_PinMux    (LPC_IOCON, 1, 23, gpio_mode, IOCON_FUNC3);
+	// P1.23 - PHB
+	Chip_IOCON_PinMux    (LPC_IOCON, 1, 23, gpio_mode, IOCON_FUNC3);
 
-	  // P1.24 - IDX
-	  Chip_IOCON_PinMux    (LPC_IOCON, 1, 24, gpio_mode, IOCON_FUNC3);
+	// P1.24 - IDX
+	Chip_IOCON_PinMux    (LPC_IOCON, 1, 24, gpio_mode, IOCON_FUNC3);
+
+	// P1.26 - Encoder Type Select (With or Without /A and /B)
+	Chip_IOCON_PinMux    (LPC_IOCON, 1, 26, gpio_mode, IOCON_FUNC0);
+	Chip_GPIO_SetDir     (LPC_GPIO , 1, 26, 1);
+	Chip_GPIO_SetPinState(LPC_GPIO , 1, 26, 1);
 
 	// Reset all remaining value in QEI peripheral
 	QEIx->CON       = QEI_CON_RESP | QEI_CON_RESV | QEI_CON_RESI;

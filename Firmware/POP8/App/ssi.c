@@ -49,7 +49,7 @@ static void SSI_ChangeCLK(unsigned int level)
 	volatile unsigned int wait = 0;
 
 	// Configurar sinal para o nível solicitado
-	Chip_GPIO_SetPinState(LPC_GPIO , 4, 28, (level == SSP_CLK_HIGH) ? true : false);
+	Chip_GPIO_SetPinState(LPC_GPIO , 4, 28, (level == SSP_CLK_LOW) ? true : false);
 
 	// Aguarda o tempo necessário para o sinal
 	while(wait++ < 10);
