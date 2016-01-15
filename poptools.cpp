@@ -1912,13 +1912,13 @@ void LoadSettings(void)
 					// volta para o comeco, depois do numero magico
 					fseek(f, sizeof(LADDER_SETTINGS_MAGIC), SEEK_SET);
 
-					if(fread_int(f, &POPSettings.idLanguage              ) &&
+					if( fread_int (f, &POPSettings.idLanguage            ) &&
 						fread_bool(f, &POPSettings.ShowSimulationWarnings) &&
 						fread_bool(f, &POPSettings.GenerateMemoryMap     ) &&
 						fread_bool(f, &POPSettings.Show3DLadder          ) &&
-						fread_int(f, &POPSettings.AutoSaveInterval       ) &&
-						fread_int(f, &POPSettings.COMPortFlash           ) &&
-						fread_int(f, &POPSettings.COMPortDebug           ) 						
+						fread_int (f, &POPSettings.AutoSaveInterval      ) &&
+						fread_int (f, &POPSettings.COMPortFlash          ) &&
+						fread_int (f, &POPSettings.COMPortDebug          ) 						
 						) {
 							string name;
 							unsigned int i;
@@ -1932,6 +1932,15 @@ void LoadSettings(void)
 
 							if(i == MAX_RECENT_ITEMS) {
 								failed = false;
+
+								// Aqui carregamos os parametros adicionais.
+								// Para manter a compatibilidade com arquivos de preferencia de versoes anteriores,
+								// nao sera gerado erro se houver falha ao carregar esses parametros, apenas assumiremos o valor default.
+								size += sizeof(LADDER_SETTINGS_MAGIC); // Soma o tamanho da assinatura do arquivo para encontrar a posicao do final dos dados
+
+								if(ftell(f) >= size || !fread_bool(f, &POPSettings.ShowCompileWarnings)) {
+									POPSettings.ShowCompileWarnings = true;
+								}
 							}
 					}
 				}
@@ -1996,27 +2005,28 @@ void SaveSettings(void)
 				if(!fwrite_string(f, POPSettings.recent_list[i])) break;
 			}
 
-			if(i == MAX_RECENT_ITEMS) {
-				unsigned short int crc = 0;
-				long size;
-
-				fseek(f, 0, SEEK_END);
-				size = ftell(f) - sizeof(LADDER_SETTINGS_MAGIC);
-				if(size <= LADDER_SETTINGS_MAX_SIZE) {
-					unsigned char *buffer = new unsigned char[size];
-
-					fseek(f, sizeof(LADDER_SETTINGS_MAGIC), SEEK_SET);
-					fread(buffer, size, 1, f);
-
-					crc = CRC16((unsigned char *)buffer, size);
+			if(i == MAX_RECENT_ITEMS &&
+				fwrite_bool(f, POPSettings.ShowCompileWarnings)) {
+					unsigned short int crc = 0;
+					long size;
 
 					fseek(f, 0, SEEK_END);
-					fwrite(&crc, sizeof(crc), 1, f);
+					size = ftell(f) - sizeof(LADDER_SETTINGS_MAGIC);
+					if(size <= LADDER_SETTINGS_MAX_SIZE) {
+						unsigned char *buffer = new unsigned char[size];
 
-					delete [] buffer;
+						fseek(f, sizeof(LADDER_SETTINGS_MAGIC), SEEK_SET);
+						fread(buffer, size, 1, f);
 
-					failed = false;
-				}
+						crc = CRC16((unsigned char *)buffer, size);
+
+						fseek(f, 0, SEEK_END);
+						fwrite(&crc, sizeof(crc), 1, f);
+
+						delete [] buffer;
+
+						failed = false;
+					}
 			}
 	}
 

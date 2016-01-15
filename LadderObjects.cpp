@@ -13846,6 +13846,8 @@ eReply LadderDiagram::ShowValidateDialog(bool isError, const char *msg)
 	eReply reply;
 	if(isError) {
 		reply = ShowDialog(eDialogType_Message, false, _("Erro ao validar diagrama!"), msg);
+	} else if(!POPSettings.ShowCompileWarnings) {
+		reply = eReply_Ok;
 	} else {
 		reply = ShowDialog(eDialogType_Message, true , _("Atenção"                  ), msg);
 	}

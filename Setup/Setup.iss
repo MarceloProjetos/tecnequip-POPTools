@@ -61,16 +61,16 @@ Source: "..\Setup\EULA_PTBR.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Setup\EULA_EN.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\Setup\EULA_ES.TXT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\flashmagicarmcortex.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin\src\POP7\*.h"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\src\POP7\*.a"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\src\POP7\*.ld"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\src\POP7\*.o"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\src\POP7\compile"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\src\POP8\*.h"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\src\POP8\*.a"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\src\POP8\*.ld"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\src\POP8\*.o"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\src\POP8\compile"; DestDir: "{app}\src"; Permissions: users-modify; Flags: ignoreversion
+Source: "..\bin\src\POP7\*.h"; DestDir: "{app}\src\POP7"; Permissions: users-modify; Flags: ignoreversion
+Source: "..\bin\src\POP7\*.a"; DestDir: "{app}\src\POP7"; Permissions: users-modify; Flags: ignoreversion
+Source: "..\bin\src\POP7\*.ld"; DestDir: "{app}\src\POP7"; Permissions: users-modify; Flags: ignoreversion
+Source: "..\bin\src\POP7\*.o"; DestDir: "{app}\src\POP7"; Permissions: users-modify; Flags: ignoreversion
+Source: "..\bin\src\POP7\compile"; DestDir: "{app}\src\POP7"; Permissions: users-modify; Flags: ignoreversion
+Source: "..\bin\src\POP8\*.h"; DestDir: "{app}\src\POP8"; Permissions: users-modify; Flags: ignoreversion
+Source: "..\bin\src\POP8\*.a"; DestDir: "{app}\src\POP8"; Permissions: users-modify; Flags: ignoreversion
+Source: "..\bin\src\POP8\*.ld"; DestDir: "{app}\src\POP8"; Permissions: users-modify; Flags: ignoreversion
+Source: "..\bin\src\POP8\*.o"; DestDir: "{app}\src\POP8"; Permissions: users-modify; Flags: ignoreversion
+Source: "..\bin\src\POP8\compile"; DestDir: "{app}\src\POP8"; Permissions: users-modify; Flags: ignoreversion
 Source: "..\bin\gcc\*.h"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\bin\gcc\*.a"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\bin\gcc\*.o"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs

@@ -867,8 +867,9 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "I/O já utilizado", "I/O already in use");
 		addTextToLangTable(l, "INC", "INC");
 		addTextToLangTable(l, "ABS", "ABS");
-		addTextToLangTable(l, "Mapa de Memória", "Memory Map");
-		addTextToLangTable(l, "Gerar mapa:", "Generate map:");
+		addTextToLangTable(l, "Compilação", "Compilation");
+		addTextToLangTable(l, "Exibir avisos:", "Show warnings:");
+		addTextToLangTable(l, "Gerar mapa de memória:", "Generate memory map:");
 		addTextToLangTable(l, "Aparência do Ladder", "Ladder appearance");
 		addTextToLangTable(l, "Exibir Ladder 3D:", "Show 3D Ladder:");
 		addTextToLangTable(l, "Fechar As Outras Abas", "Close Other Tabs");
@@ -1743,8 +1744,9 @@ void setLanguage(unsigned int id)
 		addTextToLangTable(l, "I/O já utilizado", "I/O already in use");
 		addTextToLangTable(l, "INC", "INC");
 		addTextToLangTable(l, "ABS", "ABS");
-		addTextToLangTable(l, "Mapa de Memória", "Memory Map");
-		addTextToLangTable(l, "Gerar mapa:", "Generate map:");
+		addTextToLangTable(l, "Compilação", "Compilation");
+		addTextToLangTable(l, "Exibir avisos:", "Show warnings:");
+		addTextToLangTable(l, "Gerar mapa de memória::", "Generate memory map:");
 		addTextToLangTable(l, "Aparência do Ladder", "Ladder appearance");
 		addTextToLangTable(l, "Exibir Ladder 3D:", "Show 3D Ladder:");
 		addTextToLangTable(l, "Fechar As Outras Abas", "Close Other Tabs");

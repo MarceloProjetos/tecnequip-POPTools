@@ -517,6 +517,7 @@ typedef struct SettingsTag {
 	bool ShowSimulationWarnings;
 	// Compile settings
 	bool GenerateMemoryMap;
+	bool ShowCompileWarnings;
 	// Ladder appearance
 	bool Show3DLadder;
 	// Find And Replace settings
