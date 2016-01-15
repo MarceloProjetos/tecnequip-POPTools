@@ -76,7 +76,7 @@ void GPIO_Init()
 			{ 2,  4, 0 }, // E5
 			{ 2,  5, 0 }, // E6
 			{ 2,  6, 0 }, // E7
-			{ 2,  7, 0 }, // E8
+			{ 0, 30, 0 }, // E8
 			{ 2,  8, 0 }, // E9
 			{ 2,  9, 0 }, // E10
 			{ 2, 11, 0 }, // E11
@@ -164,16 +164,19 @@ unsigned int GPIO_Output(void)
 unsigned int GPIO_Input(void)
 {
   unsigned int i = 0;
-  uint32_t port0, port2;
+  uint32_t port0, port2, port1;
 
   port0 = Chip_GPIO_GetPortValue(LPC_GPIO, 0);
+  port1 = Chip_GPIO_GetPortValue(LPC_GPIO, 1);
   port2 = Chip_GPIO_GetPortValue(LPC_GPIO, 2);
 
-  i |=  0x000003FF & port2;        // P2.0 ~ P2.9    [01..10]
+  i |=  0x0000037F & port2;        // P2.0 ~ P2.9    [01..10] (exceto E8, P2.7)
+  i |= (0x40000000 & port0) >> 23; // P0.30          [08]
   i |= (0x00003800 & port2) >>  1; // P2.11 ~ P2.13  [11..13]
   i |= (0x00000030 & port0) <<  9; // P0.4 ~ P0.5    [14..15]
-  i |= (0x00080000 & port0) >>  4; // P0.19 ~ P0.19  [16..16]
-  i |= (0x00600000 & port0) >>  5; // P0.21 ~ P0.22  [17..18]
+  i |= (0x00080000 & port0) >>  4; // P0.19          [16]
+  i |= (0x00200000 & port0) >>  5; // P0.21          [17]
+  i |= (0x00080000 & port1) >>  2; // P1.19          [18]
   i |= (0x20000000 & port0) >> 11; // P0.29          [19]
 
   i = ~i;
