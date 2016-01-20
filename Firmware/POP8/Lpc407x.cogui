@@ -14,25 +14,40 @@
 <part id="1"/>
 <part id="2"/>
 <part id="3"/>
+<part id="4"/>
+<part id="5"/>
+<part id="6"/>
 </presentation>
 </folder>
 </info>
 </editorArea>
-<editor id="org.eclipse.cdt.ui.editor.CEditor" name="PLC_TESTE.h" partName="PLC_TESTE.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/POPTools/PLC_TESTE.h" title="PLC_TESTE.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/POPTools/PLC_TESTE.h" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/POPTools/PLC_TESTE.h"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="6037" selectionTopPixel="1620"/>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="spifilib_dev_common.c" partName="spifilib_dev_common.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/spifi/src/spifilib_dev_common.c" title="spifilib_dev_common.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/spifi/src/spifilib_dev_common.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/spifi/src/spifilib_dev_common.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="15517" selectionTopPixel="7185"/>
 </editor>
-<editor id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" title="main.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" workbook="DefaultEditorWorkbook">
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="spifilib_dev.h" partName="spifilib_dev.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/spifi/inc/spifilib_dev.h" title="spifilib_dev.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/spifi/inc/spifilib_dev.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/spifi/inc/spifilib_dev.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="14" selectionOffset="14998" selectionTopPixel="4950"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="spifilib_fam_standard_cmd.c" partName="spifilib_fam_standard_cmd.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/spifi/src/spifilib_fam_standard_cmd.c" title="spifilib_fam_standard_cmd.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/spifi/src/spifilib_fam_standard_cmd.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/spifi/src/spifilib_fam_standard_cmd.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="24976" selectionTopPixel="9780"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="spifi.c" partName="spifi.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/spifi.c" title="spifi.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/spifi.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/spifi.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1279" selectionTopPixel="199"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="spifilib_api.h" partName="spifilib_api.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/spifi/inc/spifilib_api.h" title="spifilib_api.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/spifi/inc/spifilib_api.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/spifi/inc/spifilib_api.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="20" selectionOffset="8621" selectionTopPixel="2955"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="spifilib_chiphw.h" partName="spifilib_chiphw.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/spifi/inc/private/spifilib_chiphw.h" title="spifilib_chiphw.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/spifi/inc/private/spifilib_chiphw.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/spifi/inc/private/spifilib_chiphw.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2628" selectionTopPixel="795"/>
+</editor>
+<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" title="main.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/main.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2816" selectionTopPixel="1590"/>
-</editor>
-<editor id="org.eclipse.cdt.ui.editor.CEditor" name="rs485.c" partName="rs485.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/rs485.c" title="rs485.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/rs485.c" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/rs485.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="3267" selectionTopPixel="1580"/>
-</editor>
-<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="gpio.c" partName="gpio.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/gpio.c" title="gpio.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/gpio.c" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/gpio.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="6525" selectionTopPixel="2510"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2411" selectionTopPixel="1410"/>
 </editor>
 </editors>
 <views>
@@ -40,23 +55,17 @@
 <viewState/>
 </view>
 <view id="org.coocox.builder.ui.views.ProjectView" partName="Project">
-<viewState CommonNavigator.LINKING_ENABLED="0" horizontalPosition="0" org.eclipse.ui.navigator.resources.workingSets.showTopLevelWorkingSets="0" verticalPosition="1">
+<viewState CommonNavigator.LINKING_ENABLED="0" horizontalPosition="0" org.eclipse.ui.navigator.resources.workingSets.showTopLevelWorkingSets="0" verticalPosition="0">
 <expanded>
 <element path="/Lpc407x"/>
 <element path="/Lpc407x/App"/>
-<element path="/Lpc407x/cmsis"/>
-<element path="/Lpc407x/cmsisboot"/>
-<element path="/Lpc407x/cmsisboot/startup"/>
-<element path="/Lpc407x/CoOS"/>
-<element path="/Lpc407x/CoOS/portable"/>
-<element path="/Lpc407x/CoOS/portable/GCC"/>
-<element path="/Lpc407x/LPCOpen"/>
-<element path="/Lpc407x/LPCOpen/lpc_chip_407x"/>
-<element path="/Lpc407x/LPCOpen/lpc_chip_407x/src"/>
+<element path="/Lpc407x/spifi"/>
+<element path="/Lpc407x/spifi/inc"/>
+<element path="/Lpc407x/spifi/src"/>
 <element path="/Lpc407x/syscalls"/>
 </expanded>
 <selection>
-<element path="/Lpc407x/App/eeprom_24AA02.h"/>
+<element path="/Lpc407x/spifi/inc/spifilib_dev.h"/>
 </selection>
 </viewState>
 </view>
@@ -65,6 +74,8 @@
 </view>
 <view id="org.eclipse.search.ui.views.SearchView" partName="Search">
 <viewState isPinned="false">
+<view IMemento.internal.id="org.eclipse.search.text.FileSearchResultPage" org.eclipse.search.lastActivation="2" org.eclipse.search.resultpage.layout="2" org.eclipse.search.resultpage.limit="1000" org.eclipse.search.resultpage.sorting="2"/>
+<view IMemento.internal.id="org.eclipse.cdt.ui.pdomSearchViewPage" definitionColumnWidth="150" locationColumnWidth="300" matchColumnWidth="300" org.eclipse.search.lastActivation="1" org.eclipse.search.resultpage.layout="2" showEnclosingDefinitions="true"/>
 <view IMemento.internal.id="" org.eclipse.search.lastActivation="0"/>
 </viewState>
 </view>
@@ -81,7 +92,7 @@
 <viewState/>
 </view>
 </views>
-<perspectives activePart="org.eclipse.cdt.ui.editor.CEditor" activePerspective="org.coocox.builder.perspective.CoBuilder">
+<perspectives activePart="org.eclipse.ui.console.ConsoleView" activePerspective="org.coocox.builder.perspective.CoBuilder">
 <perspective editorAreaTrimState="2" editorAreaVisible="1" fixed="0" version="0.016">
 <descriptor class="org.coocox.builder.ui.PerspectiveCoBuilder" id="org.coocox.builder.perspective.CoBuilder" label="CooCox CoBuilder"/>
 <alwaysOnActionSet id="org.eclipse.search.searchActionSet"/>
@@ -103,8 +114,8 @@
 <hide_menu_item_id id="org.coocox.codebugger.configuration.showMemoryBrowserAction"/>
 <hide_menu_item_id id="org.coocox.codebugger.configuration.showVariablesAction"/>
 <hide_menu_item_id id="org.coocox.builder.ui.openProjectExplorerAction"/>
-<hide_menu_item_id id="org.eclipse.debug.ui.commands.TerminateAndRelaunch"/>
 <hide_menu_item_id id="org.coocox.codebugger.trace.actions.ShowTraceControlAction"/>
+<hide_menu_item_id id="org.eclipse.debug.ui.commands.TerminateAndRelaunch"/>
 <hide_menu_item_id id="org.coocox.codebugger.configuration.showRegistersAction"/>
 <hide_toolbar_item_id id="org.eclipse.cdt.debug.internal.ui.actions.ToggleInstructionStepModeAction"/>
 <hide_toolbar_item_id id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly"/>
@@ -129,7 +140,7 @@
 <page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@19c832a" ratio="0.7296997" ratioLeft="656" ratioRight="243" relationship="4" relative="org.eclipse.ui.internal.ViewStack@1f59ac1">
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@19c832a" ratio="0.7474972" ratioLeft="672" ratioRight="227" relationship="4" relative="org.eclipse.ui.internal.ViewStack@1f59ac1">
 <folder activePageID="org.eclipse.ui.console.ConsoleView" appearance="2" expanded="2">
 <page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
 <page content="org.eclipse.search.ui.views.SearchView" label="Search"/>
@@ -141,7 +152,7 @@
 </presentation>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@1f50da0" ratio="0.15243582" ratioLeft="291" ratioRight="1618" relationship="2" relative="org.eclipse.ui.internal.ViewStack@1f59ac1">
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@1f50da0" ratio="0.15086433" ratioLeft="288" ratioRight="1621" relationship="2" relative="org.eclipse.ui.internal.ViewStack@1f59ac1">
 <folder appearance="2" expanded="2">
 <page content="org.coocox.builder.ui.exampleView" label="LabelNotFound"/>
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory"/>
@@ -232,7 +243,7 @@
 <page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@ac7212" ratio="0.6988131" ratioLeft="471" ratioRight="203" relationship="4" relative="org.eclipse.ui.internal.ViewStack@1243f31">&#x0A;<folder activePageID="org.eclipse.ui.console.ConsoleView" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@ac7212" ratio="0.6988131" ratioLeft="471" ratioRight="203" relationship="4" relative="org.eclipse.ui.internal.ViewStack@1243f31">&#x0A;<folder activePageID="org.eclipse.debug.ui.DebugView" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
 <page content="org.eclipse.debug.ui.DebugView" label="Debug"/>
 <page content="org.eclipse.debug.ui.BreakpointView" label="LabelNotFound"/>
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
@@ -269,167 +280,21 @@
 <navigationHistory>
 <editors>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/POPTools/PLC_TESTE.h"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/adc.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/intreg.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/encoder.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/qei.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/gpio.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/gpio.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/ssi.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/gpio.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/POPTools/PLC_TESTE.h"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/rs485.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/gpio.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/spifi/src/spifilib_dev_common.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/main.c"/>
 </editors>
 <item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4365" y="0"/>
+<position info="not_deleted" x="3190" y="0"/>
 </item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4423" y="0"/>
+<item historyLabel="rs485.c" index="1">
+<position info="not_deleted" x="1347" y="157"/>
 </item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4487" y="0"/>
+<item historyLabel="spifilib_dev_common.c" index="2">
+<position info="not_deleted" x="15517" y="0"/>
 </item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4623" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4681" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4737" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4795" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4859" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4995" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5087" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5150" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5213" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5311" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5376" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5508" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="6039" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="6097" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4283" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4365" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4423" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4487" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4623" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4681" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4737" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4795" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4859" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="4995" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5087" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5613" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5683" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5750" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5852" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="5921" y="0"/>
-</item>
-<item historyLabel="adc.c" index="1">
-<position info="not_deleted" x="683" y="0"/>
-</item>
-<item historyLabel="intreg.c" index="2">
-<position info="not_deleted" x="1549" y="0"/>
-</item>
-<item historyLabel="adc.c" index="1">
-<position info="not_deleted" x="683" y="0"/>
-</item>
-<item historyLabel="encoder.c" index="3">
-<position info="not_deleted" x="804" y="0"/>
-</item>
-<item historyLabel="adc.c" index="1">
-<position info="not_deleted" x="683" y="0"/>
-</item>
-<item historyLabel="adc.c" index="1">
-<position info="not_deleted" x="404" y="0"/>
-</item>
-<item historyLabel="adc.c" index="1">
-<position info="not_deleted" x="404" y="0"/>
-</item>
-<item historyLabel="adc.c" index="1">
-<position info="not_deleted" x="404" y="0"/>
-</item>
-<item historyLabel="qei.c" index="4">
-<position info="not_deleted" x="0" y="0"/>
-</item>
-<item historyLabel="gpio.c" index="5">
-<position info="not_deleted" x="3901" y="76"/>
-</item>
-<item historyLabel="qei.c" index="4">
-<position info="not_deleted" x="9603" y="0"/>
-</item>
-<item historyLabel="gpio.c" index="6">
-<position info="not_deleted" x="3901" y="76"/>
-</item>
-<item historyLabel="ssi.c" index="7">
-<position info="not_deleted" x="1897" y="0"/>
-</item>
-<item historyLabel="gpio.c" index="8">
-<position info="not_deleted" x="4033" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="9">
-<position info="not_deleted" x="6037" y="0"/>
-</item>
-<item historyLabel="rs485.c" index="10">
-<position info="not_deleted" x="3267" y="0"/>
-</item>
-<item active="true" historyLabel="gpio.c" index="11">
-<position info="not_deleted" x="0" y="0"/>
+<item active="true" historyLabel="main.c" index="3">
+<position info="not_deleted" x="2854" y="0"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
@@ -438,50 +303,47 @@
 <actionBarAdvisor/>
 </window>
 <mruList>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="gpio.c" tooltip="Lpc407x/App/gpio.c">
-<persistable path="/Lpc407x/App/gpio.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="startup_Cortex_M4.c" tooltip="Lpc407x/cmsisboot/startup/startup_Cortex_M4.c">
+<persistable path="/Lpc407x/cmsisboot/startup/startup_Cortex_M4.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="rs485.c" tooltip="Lpc407x/App/rs485.c">
-<persistable path="/Lpc407x/App/rs485.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="ssi.c" tooltip="Lpc407x/App/ssi.c">
-<persistable path="/Lpc407x/App/ssi.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="qei.c" tooltip="Lpc407x/App/qei.c">
-<persistable path="/Lpc407x/App/qei.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="encoder.c" tooltip="Lpc407x/App/encoder.c">
-<persistable path="/Lpc407x/App/encoder.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="intreg.c" tooltip="Lpc407x/App/intreg.c">
-<persistable path="/Lpc407x/App/intreg.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="adc.c" tooltip="Lpc407x/App/adc.c">
-<persistable path="/Lpc407x/App/adc.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="dac.c" tooltip="Lpc407x/App/dac.c">
-<persistable path="/Lpc407x/App/dac.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="i2c_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
 </file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="Lpc407x/App/main.c">
 <persistable path="/Lpc407x/App/main.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="ssp.h" tooltip="Lpc407x/App/ssp.h">
-<persistable path="/Lpc407x/App/ssp.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="hook.c" tooltip="Lpc407x/CoOS/kernel/hook.c">
+<persistable path="/Lpc407x/CoOS/kernel/hook.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="ssp.c" tooltip="Lpc407x/App/ssp.c">
-<persistable path="/Lpc407x/App/ssp.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="spifilib_chiphw.h" tooltip="Lpc407x/spifi/inc/private/spifilib_chiphw.h">
+<persistable path="/Lpc407x/spifi/inc/private/spifilib_chiphw.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="chip_lpc407x_8x.h" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/inc/chip_lpc407x_8x.h">
-<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/inc/chip_lpc407x_8x.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="clock_17xx_40xx.h" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/inc/clock_17xx_40xx.h">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/inc/clock_17xx_40xx.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="pwm.c" tooltip="Lpc407x/App/pwm.c">
-<persistable path="/Lpc407x/App/pwm.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="clock_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/clock_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/clock_17xx_40xx.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="PLC_TESTE.h" tooltip="Lpc407x/App/POPTools/PLC_TESTE.h">
-<persistable path="/Lpc407x/App/POPTools/PLC_TESTE.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="port.c" tooltip="Lpc407x/CoOS/portable/GCC/port.c">
+<persistable path="/Lpc407x/CoOS/portable/GCC/port.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="math.c" tooltip="Lpc407x/App/math.c">
-<persistable path="/Lpc407x/App/math.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="spifilib_api.h" tooltip="Lpc407x/spifi/inc/spifilib_api.h">
+<persistable path="/Lpc407x/spifi/inc/spifilib_api.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="spifi_17xx_40xx.h" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/inc/spifi_17xx_40xx.h">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/inc/spifi_17xx_40xx.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="spifi.c" tooltip="Lpc407x/App/spifi.c">
+<persistable path="/Lpc407x/App/spifi.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="hook.c" tooltip="Lpc407x/CoOS/kernel/hook.c">
+<persistable path="/Lpc407x/CoOS/kernel/hook.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="startup_Cortex_M4.c" tooltip="Lpc407x/cmsisboot/startup/startup_Cortex_M4.c">
+<persistable path="/Lpc407x/cmsisboot/startup/startup_Cortex_M4.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="i2c_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
 </file>
 </mruList>
 </workbench>

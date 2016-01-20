@@ -10,6 +10,7 @@
 #include "gpio.h"
 #include "eeprom.h"
 #include "modbus.h"
+#include "spifi.h"
 
 #include <stdlib.h>
 
@@ -39,6 +40,8 @@ void Hardware_Init(void)
 {
 	Chip_SystemInit();
 	SystemCoreClockUpdate();
+
+	SPIFI_Init();
 
 	RS232_Init();
 	RS485_Init();
