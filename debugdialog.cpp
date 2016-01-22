@@ -781,8 +781,8 @@ void ShowDebugDialog(void)
     ShowWindow(DebugDialog, TRUE);
     SetFocus(NameTextbox);
 
-	SendMessage(SendRadio         , BM_SETCHECK, BST_CHECKED,  0);
-	SendMessage(ModeTCPRadio      , BM_SETCHECK, BST_CHECKED,  0);
+	SendMessage(ReceiveRadio         , BM_SETCHECK, BST_CHECKED,  0);
+	SendMessage(ModeUSBRadio      , BM_SETCHECK, BST_CHECKED,  0);
 
 	USB_GetInfo(MODBUS_DEVID_VENDORNAME, InfoVendor);
 	USB_GetInfo(MODBUS_DEVID_PRODUCTCODE, InfoProduct);
