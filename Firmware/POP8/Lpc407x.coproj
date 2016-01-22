@@ -41,7 +41,7 @@
         <LocateLinkFile path="../../../../../users/windows7 base/appdata/roaming/coocox/coide/configuration/programdata/lpc407x/arm-gcc-link.ld" type="0"/>
       </Link>
       <Output>
-        <Option name="OutputFileType" value="1"/>
+        <Option name="OutputFileType" value="0"/>
         <Option name="Path" value="./"/>
         <Option name="Name" value="POP8"/>
         <Option name="HEX" value="0"/>
@@ -272,6 +272,7 @@
     <File name="App/yaskawa.c" path="App/yaskawa.c" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/inc/ring_buffer.h" path="lpcopen/lpc_chip_40xx/inc/ring_buffer.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/src/sysctl_17xx_40xx.c" path="lpcopen/lpc_chip_40xx/src/sysctl_17xx_40xx.c" type="1"/>
+    <File name="App/XP_lcd.c" path="App/XP_lcd.c" type="1"/>
     <File name="lwip/port/CoOS/arch/init.h" path="lwip/port/CoOS/arch/init.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/inc/sys_config.h" path="lpcopen/lpc_chip_40xx/inc/sys_config.h" type="1"/>
     <File name="App/i2c.c" path="App/i2c.c" type="1"/>
@@ -285,6 +286,7 @@
     <File name="lwip/src/include/lwip/tcpip.h" path="lwip/src/include/lwip/tcpip.h" type="1"/>
     <File name="lwip/port/CoOS/arch/lib.h" path="lwip/port/CoOS/arch/lib.h" type="1"/>
     <File name="lwip/src/core" path="" type="2"/>
+    <File name="App/XP_lcd.h" path="App/XP_lcd.h" type="1"/>
     <File name="App/modbus_tcp.c" path="App/modbus_tcp.c" type="1"/>
     <File name="CoOS/portable/OsArch.h" path="CoOS/portable/OsArch.h" type="1"/>
     <File name="CoOS/kernel/OsCore.h" path="CoOS/kernel/OsCore.h" type="1"/>
@@ -349,6 +351,7 @@
     <File name="lwip/src/api/netifapi.c" path="lwip/src/api/netifapi.c" type="1"/>
     <File name="lwip/port/CoOS/arch/sys_arch.h" path="lwip/port/CoOS/arch/sys_arch.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/inc/core_cm4_simd.h" path="lpcopen/lpc_chip_40xx/inc/core_cm4_simd.h" type="1"/>
+    <File name="App/expansionPort.h" path="App/expansionPort.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/src/stopwatch_17xx_40xx.c" path="lpcopen/lpc_chip_40xx/src/stopwatch_17xx_40xx.c" type="1"/>
     <File name="CoOS/portable/arch.c" path="CoOS/portable/arch.c" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/inc/cmsis_40xx.h" path="lpcopen/lpc_chip_40xx/inc/cmsis_40xx.h" type="1"/>
@@ -365,6 +368,7 @@
     <File name="lwip/src/include/lwip/dns.h" path="lwip/src/include/lwip/dns.h" type="1"/>
     <File name="lwip/src/core/ipv4" path="" type="2"/>
     <File name="CoOS/kernel/mbox.c" path="CoOS/kernel/mbox.c" type="1"/>
+    <File name="App/expansionPort.c" path="App/expansionPort.c" type="1"/>
     <File name="lwip/src/include/ipv4/lwip/inet_chksum.h" path="lwip/src/include/ipv4/lwip/inet_chksum.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/inc/i2s_17xx_40xx.h" path="lpcopen/lpc_chip_40xx/inc/i2s_17xx_40xx.h" type="1"/>
     <File name="lwip/port/CoOS/arch" path="" type="2"/>
@@ -456,11 +460,11 @@
     <File name="lwip/src/netif/ppp/ppp.h" path="lwip/src/netif/ppp/ppp.h" type="1"/>
     <File name="spifi" path="" type="2"/>
     <File name="CoOS/kernel/hook.c" path="CoOS/kernel/hook.c" type="1"/>
-    <File name="App/ssi.c" path="App/ssi.c" type="1"/>
     <File name="App/eeprom.h" path="App/eeprom.h" type="1"/>
+    <File name="App/ssi.c" path="App/ssi.c" type="1"/>
     <File name="App/POPTools/PLC_DAC_RAMPA_LINEAR_RECUAR.h" path="App/POPTools/PLC_DAC_RAMPA_LINEAR_RECUAR.h" type="1"/>
-    <File name="App/i2c.h" path="App/i2c.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/src/crc_17xx_40xx.c" path="lpcopen/lpc_chip_40xx/src/crc_17xx_40xx.c" type="1"/>
+    <File name="App/i2c.h" path="App/i2c.h" type="1"/>
     <File name="App/modbus_rtu.h" path="App/modbus_rtu.h" type="1"/>
   </Files>
   <Bookmarks/>

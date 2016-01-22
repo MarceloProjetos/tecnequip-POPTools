@@ -11,6 +11,7 @@
 #include "eeprom.h"
 #include "modbus.h"
 #include "spifi.h"
+#include "XP_lcd.h"
 
 #include <stdlib.h>
 
@@ -34,6 +35,9 @@ void Devices_Init(void)
 	I2C_Init();
 
 	E2P_Init();
+
+	XP_Init();
+	XP_lcd_Init(XP_LCD_TYPE_GENERIC);
 }
 
 void Hardware_Init(void)

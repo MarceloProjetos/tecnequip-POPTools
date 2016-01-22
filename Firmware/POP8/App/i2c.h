@@ -18,7 +18,7 @@
 #define E2PROM_CMD_WRITE	0x0
 
 extern unsigned int I2C_Init  ( void );
-extern unsigned int I2C_Engine( void );
+extern unsigned int I2C_Engine( int channel );
 
 #endif /* end __I2C_H */
 /****************************************************************************

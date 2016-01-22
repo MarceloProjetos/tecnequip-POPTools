@@ -68,7 +68,7 @@ struct i2c_slave_interface {
 static struct i2c_interface i2c[I2C_NUM_INTERFACE] = {
 	{LPC_I2C0, SYSCTL_CLOCK_I2C0, Chip_I2C_EventHandlerPolling, NULL, NULL, NULL, 0},
 	{LPC_I2C1, SYSCTL_CLOCK_I2C1, Chip_I2C_EventHandler, NULL, NULL, NULL, 0},
-	{LPC_I2C2, SYSCTL_CLOCK_I2C2, Chip_I2C_EventHandler, NULL, NULL, NULL, 0}
+	{LPC_I2C2, SYSCTL_CLOCK_I2C2, Chip_I2C_EventHandlerPolling, NULL, NULL, NULL, 0}
 };
 
 static struct i2c_slave_interface i2c_slave[I2C_NUM_INTERFACE][I2C_SLAVE_NUM_INTERFACE];

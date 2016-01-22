@@ -84,7 +84,7 @@ void DAC_Write(unsigned int val)
 	I2CMasterBuffer[0] = 0x98;
 	I2CMasterBuffer[1] = (DAC_Value>>8) & 0x0F;
 	I2CMasterBuffer[2] = (DAC_Value>>0) & 0xFF;
-	I2C_Engine();
+	I2C_Engine(0);
 
 	CoLeaveMutexSection(DAC_Mutex);
 }

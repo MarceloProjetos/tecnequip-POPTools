@@ -30,7 +30,7 @@ unsigned int E2P_24AA02_Write(void *data, unsigned char address, int size)
 
 	memcpy((void *)&I2CMasterBuffer[2], data, size);
 
-	return I2C_Engine();
+	return I2C_Engine(0);
 }
 
 unsigned int E2P_24AA02_Read(void *data, unsigned char address, int size)
@@ -43,13 +43,13 @@ unsigned int E2P_24AA02_Read(void *data, unsigned char address, int size)
 	I2CReadLength = 0;
 	I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_WRITE;
 	I2CMasterBuffer[1] = address;
-	ret = I2C_Engine();
+	ret = I2C_Engine(0);
 
 	if(ret) {
 		I2CWriteLength = 1;
 		I2CReadLength = size;
 		I2CMasterBuffer[0] = E2PROM_ADDR | E2PROM_CMD_READ;
-		ret = I2C_Engine();
+		ret = I2C_Engine(0);
 
 		memcpy(data, (void *)I2CMasterBuffer, size);
 	} else {
