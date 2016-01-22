@@ -4588,7 +4588,7 @@ string LadderElemReadAdc::GetNameADC(void)
 		return "AD4";
 		break;
 	case 5:
-		return "AD5";
+		return "FONTE";
 		break;
 	case 6:
 		return "TEMP";

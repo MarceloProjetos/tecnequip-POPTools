@@ -785,7 +785,9 @@ string mapIO::getPortName(int index)
 		else if (detailsIO.type == eType_DigInput)
 			sprintf(buf, "E%d", detailsIO.pin);
 		else if (detailsIO.type == eType_ReadADC)
-			if (detailsIO.pin == 6)
+			if (detailsIO.pin == 5)
+				strcpy(buf, "FONT");
+			else if (detailsIO.pin == 6)
 				strcpy(buf, "TEMP");
 			else
 				sprintf(buf, "AD%d", detailsIO.pin);
@@ -1320,9 +1322,11 @@ void mapIO::LoadPinList(unsigned long id)
 		if(detailsIO.type == eType_ReadADC) {
 			for(i = 0; i < mcu->adcCount; i++) 
 			{
-				if (i == 4) continue;
+				if (ladder->getSettingsGeneral().model == eModelPLC_POP7 && i == 4) continue;
 				if (i == mcu->adcCount - 1)
 					strcpy(buf, "TEMP");
+				else if (i == mcu->adcCount - 2)
+					strcpy(buf, "FONT");
 				else
 					sprintf(buf, "ADC%d", mcu->adcInfo[i].muxRegValue);
 
