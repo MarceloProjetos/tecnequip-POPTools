@@ -45,7 +45,7 @@ unsigned int I2C_Init()
 	Chip_IOCON_PinMux(LPC_IOCON, 0, 28, gpio_mode, IOCON_FUNC1); // P0.28: SCL
 
 	// Configuracao dos I/Os
-	gpio_mode = IOCON_OPENDRAIN_EN; // Os pinos P0.10 e P0.11 nao sao especializados para I2C. Portanto devemos configurar para open drain
+	gpio_mode = IOCON_MODE_PULLUP;// IOCON_OPENDRAIN_EN; // Os pinos P0.10 e P0.11 nao sao especializados para I2C. Portanto devemos configurar para open drain
 	Chip_IOCON_PinMux(LPC_IOCON, 0, 10, gpio_mode, IOCON_FUNC2); // P0.10: SDA
 	Chip_IOCON_PinMux(LPC_IOCON, 0, 11, gpio_mode, IOCON_FUNC2); // P0.11: SCL
 
