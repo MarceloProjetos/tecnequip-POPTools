@@ -1,6 +1,8 @@
 #include "poptools.h"
 
 static HWND ConvertButton;
+static HWND OkButton;
+static HWND CancelButton;
 
 static HWND ConfDialog;
 static HWND ConfigTreeView;
