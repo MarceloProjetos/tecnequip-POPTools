@@ -100,6 +100,7 @@ mapIO::mapIO(LadderDiagram *pDiagram)
 	diagram = pDiagram;
 
 	// Adicionando itens que sao flags internas
+	vectorInternalFlag.push_back("LCDReady"     );
 	vectorInternalFlag.push_back("SerialReady"  );
 	vectorInternalFlag.push_back("SerialTimeout");
 	vectorInternalFlag.push_back("SerialAborted");

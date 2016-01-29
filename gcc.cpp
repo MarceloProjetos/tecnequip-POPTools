@@ -741,10 +741,23 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
                 break;
 
-            case INT_LCD:
-				sprintf(buf2, "RS485_Write((unsigned char *)&%s, 1)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
-				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
+            case INT_LCD: {
+				switch(vectorIntCode[i].literal) {
+				case eCommandLCD_Clear:
+					fprintf(f, "XP_lcd_Clear();\n");
+					break;
+				case eCommandLCD_Write:
+					GenVarCode(buf2, MapSym(vectorIntCode[i].name2), NULL, GENVARCODE_MODE_READ);
+					GenVarCode(buf , MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ);
+					fprintf(f, "XP_lcd_MoveCursor(%s,%s); ", buf, buf2);
+					fprintf(f, "XP_lcd_WriteText(\"%s\");\n", vectorIntCode[i].name4);
+					break;
+				case eCommandLCD_BackLight:
+					fprintf(f, "XP_lcd_setBL(%s);\n", GenVarCode(buf, MapSym(vectorIntCode[i].name3), NULL, GENVARCODE_MODE_READ));
+					break;
+				}
                 break;
+			}
 
             default:
                 oops();
@@ -1317,6 +1330,15 @@ DWORD GenerateCFile(char *filename)
 
 	if(HasPWM) {
 		fprintf(f, "\n    PWM_Init();\n");
+	}
+
+	vector<tExpansionBoardItem> boards = ladder->getBoardList();
+	for(i=0; i < boards.size(); i++) {
+		switch(boards[i].type) {
+		case eExpansionBoard_LCD:
+			fprintf(f, "\n    XP_lcd_Init(%d);\n", boards[i].version);
+			break;
+		}
 	}
 
 	fprintf(f, "\n");

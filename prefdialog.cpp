@@ -187,7 +187,7 @@ static void MakeControls(void)
 
     grouper = CreateWindowEx(0, WC_BUTTON, _("Portas Seriais"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
-        GROUP_LEFT, (GROUP_HEIGHT * 5) + (PADDING_TOP * 6), GROUP_WIDTH, GROUP_HEIGHT * 1.5, PrefDialog, NULL, Instance, NULL);
+        GROUP_LEFT, (GROUP_HEIGHT * 5) + (PADDING_TOP * 6), GROUP_WIDTH, (int)(GROUP_HEIGHT * 1.5), PrefDialog, NULL, Instance, NULL);
     NiceFont(grouper);
 
 	// Projetos Recentes

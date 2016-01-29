@@ -47,76 +47,6 @@ eType getTimerTypeIO(int which)
 	return type;
 }
 
-// Funcao auxiliar que converte um ponteiro da classe base (LadderElem) para uma classe
-// derivada (LadderElemCoil, LadderElemContact, etc) e entao o desaloca da memoria
-void UnallocElem(LadderElem *elem)
-{
-	// Elemento nulo, apenas retorna.
-	if(elem == nullptr) return;
-
-	switch(elem->getWhich()) {
-		case ELEM_PLACEHOLDER           : delete dynamic_cast<LadderElemPlaceHolder   *>(elem); break;
-		case ELEM_COMMENT               : delete dynamic_cast<LadderElemComment       *>(elem); break;
-		case ELEM_CONTACTS              : delete dynamic_cast<LadderElemContact       *>(elem); break;
-		case ELEM_COIL                  : delete dynamic_cast<LadderElemCoil          *>(elem); break;
-		case ELEM_TOF                   :
-		case ELEM_TON                   :
-		case ELEM_RTO                   : delete dynamic_cast<LadderElemTimer         *>(elem); break;
-		case ELEM_RTC                   : delete dynamic_cast<LadderElemRTC           *>(elem); break;
-		case ELEM_CTU                   :
-		case ELEM_CTD                   :
-		case ELEM_CTC                   : delete dynamic_cast<LadderElemCounter       *>(elem); break;
-		case ELEM_RES                   : delete dynamic_cast<LadderElemReset         *>(elem); break;
-		case ELEM_ONE_SHOT_RISING       :
-		case ELEM_ONE_SHOT_FALLING      : delete dynamic_cast<LadderElemOneShot       *>(elem); break;
-		case ELEM_GRT                   :
-		case ELEM_GEQ                   :
-		case ELEM_LES                   :
-		case ELEM_LEQ                   :
-		case ELEM_NEQ                   :
-		case ELEM_EQU                   : delete dynamic_cast<LadderElemCmp           *>(elem); break;
-		case ELEM_MOD                   :
-		case ELEM_ADD                   :
-		case ELEM_SUB                   :
-		case ELEM_MUL                   :
-		case ELEM_DIV                   : delete dynamic_cast<LadderElemMath          *>(elem); break;
-		case ELEM_SQRT                  : delete dynamic_cast<LadderElemSqrt          *>(elem); break;
-		case ELEM_RAND                  : delete dynamic_cast<LadderElemRand          *>(elem); break;
-		case ELEM_ABS                   : delete dynamic_cast<LadderElemAbs           *>(elem); break;
-		case ELEM_MOVE                  : delete dynamic_cast<LadderElemMove          *>(elem); break;
-		case ELEM_OPEN                  :
-		case ELEM_SHORT                 : delete dynamic_cast<LadderElemOpenShort     *>(elem); break;
-		case ELEM_SET_BIT               : delete dynamic_cast<LadderElemSetBit        *>(elem); break;
-		case ELEM_CHECK_BIT             : delete dynamic_cast<LadderElemCheckBit      *>(elem); break;
-		case ELEM_READ_ADC              : delete dynamic_cast<LadderElemReadAdc       *>(elem); break;
-		case ELEM_SET_DA                : delete dynamic_cast<LadderElemSetDa         *>(elem); break;
-		case ELEM_READ_ENC              : delete dynamic_cast<LadderElemReadEnc       *>(elem); break;
-		case ELEM_RESET_ENC             : delete dynamic_cast<LadderElemResetEnc      *>(elem); break;
-		case ELEM_MULTISET_DA           : delete dynamic_cast<LadderElemMultisetDA    *>(elem); break;
-		case ELEM_READ_USS              :
-		case ELEM_WRITE_USS             : delete dynamic_cast<LadderElemUSS           *>(elem); break;
-		case ELEM_READ_MODBUS           :
-		case ELEM_WRITE_MODBUS          : delete dynamic_cast<LadderElemModBUS        *>(elem); break;
-		case ELEM_READ_CAN              :
-		case ELEM_WRITE_CAN             : delete dynamic_cast<LadderElemCAN           *>(elem); break;
-		case ELEM_SET_PWM               : delete dynamic_cast<LadderElemSetPWM        *>(elem); break;
-		case ELEM_UART_RECV             :
-		case ELEM_UART_SEND             : delete dynamic_cast<LadderElemUART          *>(elem); break;
-		case ELEM_MASTER_RELAY          : delete dynamic_cast<LadderElemMasterRelay   *>(elem); break;
-		case ELEM_SHIFT_REGISTER        : delete dynamic_cast<LadderElemShiftRegister *>(elem); break;
-		case ELEM_LOOK_UP_TABLE         : delete dynamic_cast<LadderElemLUT           *>(elem); break;
-		case ELEM_PIECEWISE_LINEAR      : delete dynamic_cast<LadderElemPiecewise     *>(elem); break;
-		case ELEM_READ_FORMATTED_STRING :
-		case ELEM_WRITE_FORMATTED_STRING: delete dynamic_cast<LadderElemFmtString     *>(elem); break;
-		case ELEM_READ_SERVO_YASKAWA    :
-		case ELEM_WRITE_SERVO_YASKAWA   : delete dynamic_cast<LadderElemYaskawa       *>(elem); break;
-		case ELEM_PERSIST               : delete dynamic_cast<LadderElemPersist       *>(elem); break;
-		case ELEM_PID                   : delete dynamic_cast<LadderElemPID           *>(elem); break;
-		case ELEM_LCD                   : delete dynamic_cast<LadderElemLCD           *>(elem); break;
-		default                         : delete elem;
-	}
-}
-
 // Classe LadderExpansion
 LadderExpansion::LadderExpansion(LadderDiagram *pDiagram)
 {
@@ -445,8 +375,8 @@ vector<string> LadderExpansion::getVersions(eExpansionBoard typeBoard)
 		break;
 
 	case eExpansionBoard_LCD:
-		boardVersions.push_back("Sunlike");
 		boardVersions.push_back("Funduino");
+		boardVersions.push_back("Sunlike");
 		break;
 	}
 
@@ -9037,6 +8967,9 @@ bool LadderElemLCD::internalGenerateIntCode(IntCode &ic)
 	const char *y    = sy  .c_str();
 	const char *var  = svar.c_str();
 
+	const char *cx = ic.VarFromExpr(x, "$scratch_int" );
+	const char *cy = ic.VarFromExpr(y, "$scratch2_int");
+
 	const char *stateInOut = ic.getStateInOut();
 	// We want to respond to rising edges, so yes we need a one shot.
 	string oneShot = ic.GenSymOneShot();
@@ -9045,7 +8978,7 @@ bool LadderElemLCD::internalGenerateIntCode(IntCode &ic)
 	ic.Op(INT_IF_BIT_SET, stateInOut);
 		ic.Op(INT_IF_BIT_CLEAR, oneShot.c_str());
 			ic.Op(INT_IF_BIT_SET, "$LCDReady");
-				ic.Op(INT_LCD, x, y, var, prop.txt.c_str(), prop.command, 0);
+				ic.Op(INT_LCD, cx, cy, var, prop.txt.c_str(), prop.command, 0);
 				ic.Op(INT_SET_BIT, oneShot.c_str());
 			ic.Op(INT_END_IF);
 		ic.Op(INT_END_IF);
@@ -9361,7 +9294,6 @@ LadderCircuit::~LadderCircuit(void)
 	vector<Subckt>::iterator it;
 	for(it = vectorSubckt.begin(); it != vectorSubckt.end(); it++) {
 		if(it->elem != nullptr) {
-			//UnallocElem(it->elem);
 			delete it->elem;
 		} else {
 			delete it->subckt;
@@ -10661,7 +10593,6 @@ bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 			// no circuito e portanto nao deve ser desalocado.
 			if(!IsUndo) {
 				if(data->DeleteSubckt.subckt.elem != nullptr) {
-					//UnallocElem(data->DeleteSubckt.subckt.elem);
 					delete data->DeleteSubckt.subckt.elem;
 				} else if(data->DeleteSubckt.subckt.subckt != nullptr) { // Nunca subckt deveria ser nulo aqui!
 					delete data->DeleteSubckt.subckt.subckt;
@@ -10687,7 +10618,6 @@ bool LadderCircuit::DoUndoRedo(bool IsUndo, bool isDiscard, UndoRedoAction &acti
 			// nao deve ser desalocado.
 			if(IsUndo) {
 				if(data->DeleteSubckt.subckt.elem != nullptr) {
-					//UnallocElem(data->DeleteSubckt.subckt.elem);
 					delete data->DeleteSubckt.subckt.elem;
 				} else if(data->DeleteSubckt.subckt.subckt != nullptr) { // Nunca subckt deveria ser nulo aqui!
 					delete data->DeleteSubckt.subckt.subckt;
@@ -11622,7 +11552,6 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 		// Apos o recebimento de elem, a classe LadderDiagram passa a ser responsavel por ele.
 		// Se por qualquer motivo houver uma falha ao inserir, a classe tem a responsabilidade
 		// de desalocar este elemento.
-		//UnallocElem(elem);
 		delete elem;
 
 		return false;
@@ -11674,7 +11603,6 @@ bool LadderDiagram::AddElement(LadderElem *elem)
 		// Apos o recebimento de elem, a classe LadderDiagram passa a ser responsavel por ele.
 		// Se por qualquer motivo houver uma falha ao inserir, a classe tem a responsabilidade
 		// de desalocar este elemento.
-		//UnallocElem(elem);
 		delete elem;
 	}
 
@@ -11778,7 +11706,6 @@ bool LadderDiagram::CopyElement(LadderClipboard *clipboard, LadderElem *elem)
 
 	// Primeiro descarta um elemento previamente copiado
 	if(clipboard->elemCopy != nullptr) {
-		//UnallocElem(clipboard->elemCopy);
 		delete clipboard->elemCopy;
 	}
 
