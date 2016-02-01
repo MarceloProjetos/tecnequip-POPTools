@@ -40,6 +40,10 @@ void RS485_Init()
 	Chip_GPIO_SetDir(LPC_GPIO, 0, 20, 1); // Define pino como Saida
 	Chip_GPIO_SetPinState(LPC_GPIO, 0, 20, 0); // Configura nivel baixo para ativar recepcao
 
+	// Pino que controla o RS485/CAN Select (RS485=0, CAN=1)
+	Chip_GPIO_SetDir(LPC_GPIO, 1, 25, 1); // Define pino como Saida
+	Chip_GPIO_SetPinState(LPC_GPIO, 1, 25, 0); // Configura nivel baixo para selecionar RS485
+
 	Chip_UART_Init(LPC_UART3);
 	Chip_UART_SetBaud(LPC_UART3, 9600);
 	Chip_UART_TXEnable(LPC_UART3);
