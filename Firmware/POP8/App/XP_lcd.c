@@ -1,5 +1,7 @@
 #include "XP_lcd.h"
 
+volatile unsigned int I_LCDReady = 0;
+
 extern volatile unsigned int I2CCount;
 extern volatile unsigned char I2CMasterBuffer[BUFSIZE];
 extern volatile unsigned int I2CCmd, I2CMasterState;
@@ -24,8 +26,6 @@ unsigned int XP_lcd_Init(unsigned int model)
 
 	lcd_model = model; // Primeiro configura o modelo assim as funcoes utilizam a configuracao correta
 
-	XP_lcd_setBL(1);
-
 	// Envia sequencia de inicializacao
 	// Devem ser enviadas 3 mensagens com os pinos D4 e D5 ligados, D6 e D7 desligados
 	for(i = 0; i < XP_lcd_config[lcd_model].initCount; i++) {
@@ -47,25 +47,22 @@ unsigned int XP_lcd_Init(unsigned int model)
 	// Limpa o display
 	XP_lcd_Clear();
 
-	// Envia Texto
-	XP_lcd_MoveCursor(0, 0);
-	XP_lcd_WriteText("Linha 0");
-	XP_lcd_MoveCursor(1, 0);
-	XP_lcd_WriteText("Linha 1");
-	XP_lcd_MoveCursor(2, 0);
-	XP_lcd_WriteText("Linha 2");
-	XP_lcd_MoveCursor(3, 0);
-	XP_lcd_WriteText("Linha 3");
+	I_LCDReady = 1;
 
 	return ret;
 }
 
 unsigned int XP_lcd_Clear(void)
 {
-	unsigned int ret = XP_lcd_WriteInstr(XP_LCD_INSTR_SCREEN_CLEAR);
+	unsigned int ret;
 	volatile unsigned int i;
 
+	I_LCDReady = 0;
+
+	ret = XP_lcd_WriteInstr(XP_LCD_INSTR_SCREEN_CLEAR);
 	for(i = 0; i < XP_lcd_config[lcd_model].delayScreenClear; i++);
+
+	I_LCDReady = 1;
 
 	return ret;
 }
@@ -73,7 +70,11 @@ unsigned int XP_lcd_Clear(void)
 unsigned int XP_lcd_MoveCursor(unsigned int lin, unsigned int col)
 {
 	volatile unsigned int count;
-	unsigned int i, ret = XP_lcd_WriteInstr(XP_LCD_INSTR_CURSOR_RETURN);
+	unsigned int i, ret;
+
+	I_LCDReady = 0;
+
+	ret = XP_lcd_WriteInstr(XP_LCD_INSTR_CURSOR_RETURN);
 
 	// Calcula o deslocamento necessario para chegar na coordenada desejada
 	if(lin == 1) {
@@ -90,6 +91,8 @@ unsigned int XP_lcd_MoveCursor(unsigned int lin, unsigned int col)
 		ret = XP_lcd_WriteInstr(XP_LCD_INSTR_CURSOR_SHIFT);
 	}
 
+	I_LCDReady = 1;
+
 	return ret;
 }
 
@@ -100,6 +103,10 @@ void XP_lcd_setBL(unsigned int enable)
 	} else {
 		maskBL = 0;
 	}
+
+	I_LCDReady = 0;
+	XP_lcd_Write(0, 0);
+	I_LCDReady = 1;
 }
 
 unsigned int XP_lcd_Write(unsigned char cmd, unsigned char data)
@@ -154,9 +161,13 @@ unsigned int XP_lcd_WriteText(char *data)
 {
 	unsigned int i = 0, ret;
 
+	I_LCDReady = 0;
+
 	do {
 		ret = XP_lcd_WriteData((unsigned char)data[i]);
 	} while(ret && data[++i]);
+
+	I_LCDReady = 1;
 
 	return ret;
 }

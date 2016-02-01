@@ -609,6 +609,8 @@ void LadderGUI::DrawInit(void)
 
 	setLadderColorGroup(ELEM_READ_MODBUS           , group);
 	setLadderColorGroup(ELEM_WRITE_MODBUS          , group);
+	setLadderColorGroup(ELEM_READ_CAN              , group);
+	setLadderColorGroup(ELEM_WRITE_CAN             , group);
 	setLadderColorGroup(ELEM_READ_FORMATTED_STRING , group);
 	setLadderColorGroup(ELEM_WRITE_FORMATTED_STRING, group);
 	setLadderColorGroup(ELEM_UART_RECV             , group);
@@ -890,7 +892,12 @@ RECT LadderGUI::DrawElementBox(LadderElem *elem, int SelectedState, POINT StartT
 
 	COLORREF bgcolor = (SelectedState != SELECTED_NONE && inSimulationMode == false) ? colors.Selection : colorgroup.Border;
 
-	DrawRectangle3D(r3D, (float)SizeZ, colorgroup.Background, colorgroup.BackgroundGradient, bgcolor, bgcolor, true, 10, 10);
+	if(POPSettings.Show3DLadder) {
+		DrawRectangle3D(r3D, (float)SizeZ, colorgroup.Background, colorgroup.BackgroundGradient, bgcolor, bgcolor, true, 10, 10);
+	} else {
+		DrawRectangle(r3D, colorgroup.Background, true , 10, 10, 0);
+		DrawRectangle(r3D, colorgroup.Border    , false, 10, 10, 0);
+	}
 
 	// Desenha a linha de barramento do elemento, ou seja, 1 para baixo no grid e 1/2 grid para cada lado
 	MidPoint.x = r3D.left - 1; // Desconta a borda
@@ -8469,43 +8476,84 @@ bool LadderElemLCD::DrawGUI(bool poweredBefore, void *data)
 	rText.top  += 5;
 	rText.left += 5;
 
-	// Desenha o Eixo X
-	sprintf(buf, _("Eixo X: %s"), Diagram->getNameIO(prop.idX).c_str());
-	gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	if(prop.command == eCommandLCD_Erase || prop.command == eCommandLCD_Write) {
+		// Desenha o Eixo X
+		sprintf(buf, _("Eixo X: %s"), Diagram->getNameIO(prop.idX).c_str());
+		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 
-	pInt = new int;
-	*pInt = 0;
-	gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
+		pInt = new int;
+		*pInt = 0;
+		gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
 
-	// Desenha o Eixo Y
-	sprintf(buf, _("Eixo Y: %s"), Diagram->getNameIO(prop.idY).c_str());
+		// Desenha o Eixo Y
+		sprintf(buf, _("Eixo Y: %s"), Diagram->getNameIO(prop.idY).c_str());
 
-	rText.top += FONT_HEIGHT + 5;
-	gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+		rText.top += FONT_HEIGHT + 5;
+		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 
-	pInt = new int;
-	*pInt = 1;
-	gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
+		pInt = new int;
+		*pInt = 1;
+		gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
 
-	// Desenha o nome da variavel
-	sprintf(buf, _("Variável: %s"), Diagram->getNameIO(prop.idVar).c_str());
+		// Adiciona o avanco aqui pois se os eixos nao foram exibidos, nao deve haver avanco
+		rText.top += FONT_HEIGHT + 5;
+	}
 
-	rText.top += FONT_HEIGHT + 5;
-	gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	if(prop.command != eCommandLCD_Clear) {
+		string textVar;
 
-	pInt = new int;
-	*pInt = 2;
-	gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
+		if(prop.command == eCommandLCD_Write) {
+			textVar = "Variável: %s";
+		} else if(prop.command == eCommandLCD_Erase) {
+			textVar = "Posições: %s";
+		} else {
+			RECT rBL;
 
-	// Desenha o texto de formato da string de envio
-	sprintf(buf, _("Texto: %s"), prop.txt.c_str());
+			// Avanca o texto da variavel para centralizar os textos na tela
+			rText.top += (FONT_HEIGHT + 5) / 2;
+			rBL = rText;
 
-	rText.top += FONT_HEIGHT + 5;
-	gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+			rBL.top   += FONT_HEIGHT + 5;
+			gui.DrawText(_("Valor 0: Desligado"    ), rBL, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
 
-	pInt = new int;
-	*pInt = 3;
-	gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
+			rBL.top   += FONT_HEIGHT + 5;
+			gui.DrawText(_("Outros valores: Ligado"), rBL, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+			textVar = "Estado: %s";
+		}
+
+		// Desenha o nome da variavel
+		sprintf(buf, _(textVar.c_str()), Diagram->getNameIO(prop.idVar).c_str());
+
+		gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+		pInt = new int;
+		*pInt = 2;
+		gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
+
+		if(prop.command == eCommandLCD_Write) {
+			// Desenha o texto de formato da string de envio
+			sprintf(buf, _("Texto: %s"), prop.txt.c_str());
+
+			rText.top += FONT_HEIGHT + 5;
+			gui.DrawText(buf, rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+			pInt = new int;
+			*pInt = 3;
+			gui.AddCommand(source, rText, LCDCmdChangeName, pInt, true, false);
+		}
+	} else {
+		// Avanca o texto da variavel para centralizar os textos na tela
+		rText.top += (FONT_HEIGHT + 5) / 2;
+
+		gui.DrawText(_("Limpar Tela"), rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+		rText.top += FONT_HEIGHT + 5;
+		gui.DrawText(_("Apaga completamente"), rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+
+		rText.top += FONT_HEIGHT + 5;
+		gui.DrawText(_("todo o conteúdo"), rText, 0, colorgroup.Foreground, eAlignMode_Center, eAlignMode_TopLeft);
+	}
 
 	// Se expandido, desenha os itens do modo expandido
 	if(ddg->expanded) {

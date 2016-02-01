@@ -37,7 +37,6 @@ void Devices_Init(void)
 	E2P_Init();
 
 	XP_Init();
-	XP_lcd_Init(XP_LCD_TYPE_GENERIC);
 }
 
 void Hardware_Init(void)
@@ -131,6 +130,20 @@ int main()
 
 	Devices_Init();
 
+	// Nesse momento o CLP esta operacional. Restam iniciar os dispositivos utilizados na logica ladder, conforme a funcao PLC_Init.
+	// Porem, como nem todos os dispositivos sao utilizados, a seguir vamos desativar todos eles para que apenas os utilizados fiquem ativos
+
+	// Primeiro desabilita o D/A
+	Chip_IOCON_PinMux    (LPC_IOCON, 3, 25, IOCON_MODE_PULLUP | IOCON_HYS_EN, IOCON_FUNC0);
+	Chip_GPIO_SetDir     (LPC_GPIO , 3, 25, 1); // Define pino como Saida
+	Chip_GPIO_SetPinState(LPC_GPIO , 3, 25, 0);
+
+	// Agora desabilita o Encoder Incremental
+	Chip_IOCON_PinMux    (LPC_IOCON, 1, 26, IOCON_MODE_PULLUP | IOCON_HYS_EN, IOCON_FUNC0);
+	Chip_GPIO_SetDir     (LPC_GPIO , 1, 26, 1);
+	Chip_GPIO_SetPinState(LPC_GPIO , 1, 26, 0);
+
+	// E entao inicializa os dispositivos utilizados pelo ladder
 	PLC_Init();
 
 	// GPIO deve ser inicializado apenas depois de PLC_Init pois ao utilizar o PWM precisamos inicializa-lo primeiro

@@ -365,14 +365,6 @@ typedef struct {
 	LadderDiagram *rungOwner; ///< Ponteiro para o diagrama de origem da linha copiada
 } LadderClipboard;
 
-/** @brief Funcao que desaloca um elemento da memoria
- *
- * Esta funcao auxiliar converte um ponteiro da classe base (LadderElem) para uma classe
- *  derivada (LadderElemCoil, LadderElemContact, etc) e entao o desaloca da memoria
- *  @param[in] elem Ponteiro para o elemento que deve ser desalocado
- */
-void UnallocElem(LadderElem *elem);
-
 /*** Classes / Estruturas representando as placas de expansao da POP ***/
 
 /// Enumeracao com a lista das placas de expansao existentes
