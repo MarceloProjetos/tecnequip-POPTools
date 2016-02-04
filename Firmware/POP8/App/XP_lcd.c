@@ -120,15 +120,15 @@ unsigned int XP_lcd_Write(unsigned char cmd, unsigned char data)
 
 	// Configura pinos
 	for(i = 0; i < XP_lcd_config[lcd_model].delayWrite; i++);
-	ret = XP_Write(val);
+	ret = XP_Write_Byte(val);
 
 	// Habilita
 	for(i = 0; i < XP_lcd_config[lcd_model].delayWrite; i++);
-	if(ret) ret = XP_Write(val | XP_LCD_CTRL_ENABLE);
+	if(ret) ret = XP_Write_Byte(val | XP_LCD_CTRL_ENABLE);
 
 	// Desabilita
 	for(i = 0; i < XP_lcd_config[lcd_model].delayWrite; i++);
-	if(ret) ret = XP_Write(val);
+	if(ret) ret = XP_Write_Byte(val);
 
 	return ret;
 }

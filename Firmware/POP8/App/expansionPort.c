@@ -27,35 +27,60 @@ void XP_SetAddress(unsigned int address)
 	xpAddress = address << 1UL;
 }
 
-unsigned int XP_Write(unsigned int data)
+/*** Funcoes de Escrita no barramento de expansao ***/
+
+unsigned int XP_Write(unsigned char *data, unsigned int size)
 {
+	unsigned int i;
 	timeout = 0;
 	memset((void *)I2CMasterBuffer, 0, BUFSIZE);
 
-	I2CWriteLength = 2;
+	I2CWriteLength = size + 1;
 	I2CReadLength = 0;
 	I2CMasterBuffer[0] = xpAddress | XP_CMD_WRITE;
-	I2CMasterBuffer[1] = data & 0xff;
+
+	for(i = 1; size > 0; i++, size--) {
+		I2CMasterBuffer[i] = data[i - 1];
+	}
 
 	return I2C_Engine(2);
 }
 
-unsigned int XP_Read(void)
+unsigned int XP_Write_Byte(unsigned char data)
+{
+	return XP_Write(&data, 1);
+}
+
+/*** Funcoes de Leitura no barramento de expansao ***/
+
+unsigned int XP_Read(char *data, unsigned int size)
 {
 	unsigned int ret;
 	timeout = 0;
 	memset((void *)I2CMasterBuffer, 0, BUFSIZE);
 
 	I2CWriteLength = 1;
-	I2CReadLength  = 2;
+	I2CReadLength  = size;
 	I2CMasterBuffer[0] = xpAddress | XP_CMD_READ;
 	ret = I2C_Engine(2);
 
 	if(ret) {
-		ret = atoi((char *)&I2CMasterBuffer[3]);
-	} else {
-		ret = 0;
+		memcpy(data, (char *)I2CMasterBuffer, size);
 	}
 
 	return ret;
 }
+
+unsigned int XP_Read_Int(void)
+{
+	char data[3];
+
+	if(!XP_Read(data, 2)) {
+		return 0;
+	}
+
+	data[2] = 0; // Finaliza como string para usar a funcao atoi
+	return atoi(data);
+}
+
+/*** Fim das funcoes ***/
