@@ -2,11 +2,6 @@
 
 volatile unsigned int I_LCDReady = 0;
 
-extern volatile unsigned int I2CCount;
-extern volatile unsigned char I2CMasterBuffer[BUFSIZE];
-extern volatile unsigned int I2CCmd, I2CMasterState;
-extern volatile unsigned int I2CReadLength, I2CWriteLength;
-
 static unsigned char maskBL    = XP_LCD_CTRL_BLIGHT;
 static unsigned int  lcd_model = XP_LCD_TYPE_GENERIC;
 

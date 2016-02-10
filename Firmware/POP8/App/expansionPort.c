@@ -8,6 +8,11 @@ extern volatile unsigned char I2CMasterBuffer[BUFSIZE];
 extern volatile unsigned int I2CCmd, I2CMasterState;
 extern volatile unsigned int I2CReadLength, I2CWriteLength;
 
+extern void XP_input_Update (struct strExpansionBoard *board);
+extern void XP_output_Update(struct strExpansionBoard *board);
+extern void XP_ad_Update    (struct strExpansionBoard *board);
+extern void XP_da_Update    (struct strExpansionBoard *board);
+
 static unsigned int xpAddress;
 
 void XP_Init(void)
@@ -84,3 +89,45 @@ unsigned int XP_Read_Int(void)
 }
 
 /*** Fim das funcoes ***/
+
+void XP_InputUpdate()
+{
+	struct strExpansionBoard *board = expansionBoards;
+
+	while(board->type != eBoardType_None) {
+		switch(board->type) {
+		case eBoardType_Input:
+			XP_input_Update(board);
+			break;
+
+		case eBoardType_AD:
+			XP_ad_Update(board);
+			break;
+
+		default: break;
+		}
+
+		board++;
+	}
+}
+
+void XP_OutputUpdate()
+{
+	struct strExpansionBoard *board = expansionBoards;
+
+	while(board->type != eBoardType_None) {
+		switch(board->type) {
+		case eBoardType_Output:
+			XP_output_Update(board);
+			break;
+
+		case eBoardType_DA:
+			XP_da_Update(board);
+			break;
+
+		default: break;
+		}
+
+		board++;
+	}
+}

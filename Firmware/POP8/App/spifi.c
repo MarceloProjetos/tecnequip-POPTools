@@ -52,5 +52,5 @@ void SPIFI_Init(void)
 	// e acessos posteriores a regiao de memoria mapeada vao gerar execao na cpu!
 	spifiDevSetMemMode(pSpifiHandle, true);
 
-	uint32_t data_R = *(uint32_t *)(SPIFLASH_BASE_ADDRESS);
+//	volatile uint32_t data_R = *(uint32_t *)(SPIFLASH_BASE_ADDRESS);
 }

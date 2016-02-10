@@ -13410,6 +13410,11 @@ const char *LadderDiagram::getStringTypeIO(unsigned int index)
 	return IO->getTypeString(IO->getDetails(IO->getID(index, true)).type);
 }
 
+unsigned int LadderDiagram::getPinOffsetIO(void)
+{
+	return IO->getPinOffset();
+}
+
 unsigned int LadderDiagram::getCountIO(void)
 {
 	return IO->getCount();

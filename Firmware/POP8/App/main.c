@@ -91,6 +91,7 @@ void PLC_Cycle(void *pdata)
 		// Etapa de Aquisicao
 		RTC_NowTM = RTC_GetTM();
 		GPIO_Input();
+		XP_InputUpdate();
 
 		// Etapa de Execucao
 
@@ -103,6 +104,7 @@ void PLC_Cycle(void *pdata)
 
 		// Etapa de Atualizacao
 		GPIO_Output();
+		XP_OutputUpdate();
 
 		do{
 			RS232_Console(cycle);

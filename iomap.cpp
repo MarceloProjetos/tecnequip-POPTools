@@ -2334,7 +2334,7 @@ void ShowEncoderSliderPopup(const char *name)
 // Returns if io is associated to a ModBUS register or not.
 bool IoMap_IsModBUS(mapDetails detailsIO)
 {
-	return detailsIO.pin >= 20;
+	return detailsIO.pin >= 20 && detailsIO.pin < ladder->getPinOffsetIO();
 }
 
 // Returns index of register associated to pin. Examples:

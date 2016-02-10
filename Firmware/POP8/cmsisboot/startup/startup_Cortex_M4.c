@@ -275,12 +275,19 @@ void Default_Reset_Handler(void)
   */
 static void Default_Handler(void) 
 {
+	unsigned int mmfar = *(unsigned int *)(0xE000ED34);
+	unsigned int bfar  = *(unsigned int *)(0xE000ED38);
+	unsigned int hfsr  = *(unsigned int *)(0xE000ED2C);
+	unsigned int shcsr = *(unsigned int *)(0xE000ED24);
+	unsigned int cfsr  = *(unsigned int *)(0xE000ED28);
+
 	// U17 - ERRO. Ocorreu alguma excecao, devemos ligar o LED!
 	Chip_GPIO_SetPinState(LPC_GPIO, 1, 21, 0);
 
 	/* Go into an infinite loop. */
 	while (1) 
 	{
+		if(!mmfar && !bfar && !hfsr && !shcsr && !cfsr) break;
 	}
 }
 

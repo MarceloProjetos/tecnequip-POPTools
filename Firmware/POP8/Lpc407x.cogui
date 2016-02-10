@@ -17,53 +17,79 @@
 <part id="4"/>
 <part id="5"/>
 <part id="6"/>
+<part id="7"/>
+<part id="8"/>
+<part id="9"/>
+<part id="10"/>
+<part id="11"/>
 </presentation>
 </folder>
 </info>
 </editorArea>
 <editor id="org.eclipse.cdt.ui.editor.CEditor" name="expansionPort.c" partName="expansionPort.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/expansionPort.c" title="expansionPort.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/expansionPort.c" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/expansionPort.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1451" selectionTopPixel="582"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1923" selectionTopPixel="945"/>
 </editor>
-<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="XP_lcd.c" partName="XP_lcd.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_lcd.c" title="XP_lcd.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_lcd.c" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/XP_lcd.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="645" selectionTopPixel="0"/>
-</editor>
-<editor id="org.eclipse.cdt.ui.editor.CEditor" name="XP_lcd.h" partName="XP_lcd.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_lcd.h" title="XP_lcd.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_lcd.h" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/XP_lcd.h"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1138" selectionTopPixel="0"/>
-</editor>
-<editor id="org.eclipse.cdt.ui.editor.CEditor" name="expansionPort.h" partName="expansionPort.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/expansionPort.h" title="expansionPort.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/expansionPort.h" workbook="DefaultEditorWorkbook">
+<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="expansionPort.h" partName="expansionPort.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/expansionPort.h" title="expansionPort.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/expansionPort.h" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/expansionPort.h"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="388" selectionTopPixel="0"/>
-</editor>
-<editor id="org.eclipse.cdt.ui.editor.CEditor" name="eeprom_24AA02.c" partName="eeprom_24AA02.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/eeprom_24AA02.c" title="eeprom_24AA02.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/eeprom_24AA02.c" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/eeprom_24AA02.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="510" selectionTopPixel="447"/>
-</editor>
-<editor id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" title="main.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/main.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2873" selectionTopPixel="1782"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1346" selectionTopPixel="495"/>
 </editor>
 <editor id="org.eclipse.cdt.ui.editor.CEditor" name="i2c.c" partName="i2c.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/i2c.c" title="i2c.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/i2c.c" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/i2c.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="10" selectionOffset="2653" selectionTopPixel="930"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1872" selectionTopPixel="270"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="XP_io.c" partName="XP_io.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_io.c" title="XP_io.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_io.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/XP_io.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="154" selectionTopPixel="0"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="XP_io.h" partName="XP_io.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_io.h" title="XP_io.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_io.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/XP_io.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="258" selectionTopPixel="0"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="PLC_TESTE.h" partName="PLC_TESTE.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/POPTools/PLC_TESTE.h" title="PLC_TESTE.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/POPTools/PLC_TESTE.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/POPTools/PLC_TESTE.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2466" selectionTopPixel="720"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" title="main.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/main.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="4309" selectionTopPixel="1482"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="i2c_17xx_40xx.c" partName="i2c_17xx_40xx.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/lpcopen/lpc_chip_40xx/src/i2c_17xx_40xx.c" title="i2c_17xx_40xx.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/lpcopen/lpc_chip_40xx/src/i2c_17xx_40xx.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="10952" selectionTopPixel="5505"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="spifi.c" partName="spifi.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/spifi.c" title="spifi.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/spifi.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/spifi.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1647" selectionTopPixel="440"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="ld.h" partName="ld.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/ld.h" title="ld.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/ld.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/ld.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="15194" selectionTopPixel="5835"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="XP_lcd.h" partName="XP_lcd.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_lcd.h" title="XP_lcd.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_lcd.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/XP_lcd.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="448" selectionOffset="30" selectionTopPixel="0"/>
 </editor>
 </editors>
 <views>
+<view id="org.eclipse.debug.ui.ExpressionView" partName="Expressions">
+<viewState>
+<ExpressionKeySet ExpKeys=""/>
+</viewState>
+</view>
 <view id="org.eclipse.team.ui.GenericHistoryView" partName="History">
 <viewState/>
 </view>
 <view id="org.coocox.builder.ui.views.ProjectView" partName="Project">
-<viewState CommonNavigator.LINKING_ENABLED="0" horizontalPosition="0" org.eclipse.ui.navigator.resources.workingSets.showTopLevelWorkingSets="0" verticalPosition="48">
+<viewState CommonNavigator.LINKING_ENABLED="0" horizontalPosition="0" org.eclipse.ui.navigator.resources.workingSets.showTopLevelWorkingSets="0" verticalPosition="54">
 <expanded>
 <element path="/Lpc407x"/>
 <element path="/Lpc407x/App"/>
-<element path="/Lpc407x/lwip"/>
-<element path="/Lpc407x/lwip/port"/>
-<element path="/Lpc407x/lwip/port/CoOS"/>
-<element path="/Lpc407x/lwip/port/CoOS/arch"/>
+<element path="/Lpc407x/App/POPTools"/>
 </expanded>
+<selection>
+<element path="/Lpc407x/App/XP_lcd.h"/>
+</selection>
 </viewState>
 </view>
 <view id="org.coocox.codebugger.trace.ui.traceview" partName="Semihosting">
@@ -72,6 +98,7 @@
 <view id="org.eclipse.search.ui.views.SearchView" partName="Search">
 <viewState isPinned="false">
 <view IMemento.internal.id="" org.eclipse.search.lastActivation="0"/>
+<view IMemento.internal.id="org.eclipse.search.text.FileSearchResultPage" org.eclipse.search.lastActivation="1" org.eclipse.search.resultpage.layout="2" org.eclipse.search.resultpage.limit="1000" org.eclipse.search.resultpage.sorting="2"/>
 </viewState>
 </view>
 <view id="org.eclipse.debug.ui.DebugView" partName="Debug">
@@ -87,7 +114,7 @@
 <viewState/>
 </view>
 </views>
-<perspectives activePart="org.coocox.builder.ui.views.ProjectView" activePerspective="org.coocox.builder.perspective.CoBuilder">
+<perspectives activePart="org.eclipse.cdt.ui.editor.CEditor" activePerspective="org.coocox.builder.perspective.CoBuilder">
 <perspective editorAreaTrimState="2" editorAreaVisible="1" fixed="0" version="0.016">
 <descriptor class="org.coocox.builder.ui.PerspectiveCoBuilder" id="org.coocox.builder.perspective.CoBuilder" label="CooCox CoBuilder"/>
 <alwaysOnActionSet id="org.eclipse.search.searchActionSet"/>
@@ -135,7 +162,7 @@
 <page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@19c832a" ratio="0.70522803" ratioLeft="634" ratioRight="265" relationship="4" relative="org.eclipse.ui.internal.ViewStack@1f59ac1">
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@19c832a" ratio="0.68854284" ratioLeft="619" ratioRight="280" relationship="4" relative="org.eclipse.ui.internal.ViewStack@1f59ac1">
 <folder activePageID="org.eclipse.ui.console.ConsoleView" appearance="2" expanded="2">
 <page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
 <page content="org.eclipse.search.ui.views.SearchView" label="Search"/>
@@ -225,6 +252,7 @@
 <view id="org.coocox.codebugger.trace.ui.traceview"/>
 <view id="org.eclipse.debug.ui.VariableView"/>
 <view id="org.eclipse.search.ui.views.SearchView"/>
+<view id="org.eclipse.debug.ui.ExpressionView"/>
 <view id="org.coocox.builder.ui.views.ProjectView"/>
 <view id="org.eclipse.ui.views.ContentOutline"/>
 <fastViewBars/>
@@ -257,17 +285,18 @@
 </folder>
 </info>
 <info folder="true" part="org.eclipse.ui.internal.ViewStack@14bb49e" ratio="0.5" ratioLeft="679" ratioRight="679" relationship="2" relative="org.eclipse.ui.internal.ViewStack@ac7212">
-<folder activePageID="org.eclipse.search.ui.views.SearchView" appearance="2" expanded="2">
+<folder activePageID="org.eclipse.debug.ui.ExpressionView" appearance="2" expanded="2">
 <page content="org.coocox.codebugger.trace.ui.traceview" label="Semihosting"/>
 <page content="org.eclipse.debug.ui.VariableView" label="Variables"/>
 <page content="org.eclipse.search.ui.views.SearchView" label="Search"/>
-<page content="org.eclipse.debug.ui.ExpressionView" label="LabelNotFound"/>
+<page content="org.eclipse.debug.ui.ExpressionView" label="Expressions"/>
 <page content="org.eclipse.debug.ui.MemoryView" label="LabelNotFound"/>
 <page content="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser" label="LabelNotFound"/>
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
 <part id="0"/>
 <part id="1"/>
 <part id="2"/>
+<part id="3"/>
 </presentation>
 </folder>
 </info>
@@ -290,172 +319,169 @@
 <workingSets/>
 <navigationHistory>
 <editors>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/eeprom_24AA02.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/main.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/XP_lcd.c"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/expansionPort.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/rs232.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/rs485.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/i2c.h"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/XP_lcd.h"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/i2c.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/cmsisboot/startup/startup_Cortex_M4.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/main.c"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/expansionPort.h"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/expansionPort.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/XP_lcd.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/eeprom.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/main.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/POPTools/PLC_TESTE.h"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/spifi.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/ld.h"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/XP_lcd.h"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/XP_IO.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/LPCOpen/lpc_chip_407x/src/can_17xx_40xx.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/XP_io.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/expansionPort.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/expansionPort.h"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/POPTools/PLC_TESTE.h"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/ld.h"/>
+<editor factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" uri="file:/C:/Projetos/GIT/tecnequip-POPTools/bin/src/pop8/poptools.h"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/main.c"/>
 </editors>
-<item historyLabel="main.c" index="1">
-<position/>
-</item>
-<item historyLabel="main.c" index="1">
-<position/>
-</item>
-<item historyLabel="main.c" index="1">
-<position info="not_deleted" x="1251" y="0"/>
-</item>
-<item historyLabel="main.c" index="1">
-<position/>
-</item>
-<item historyLabel="main.c" index="1">
-<position info="not_deleted" x="1005" y="0"/>
-</item>
-<item historyLabel="main.c" index="1">
-<position info="not_deleted" x="2293" y="0"/>
-</item>
-<item historyLabel="main.c" index="1">
-<position info="not_deleted" x="3136" y="0"/>
-</item>
-<item historyLabel="eeprom_24AA02.c" index="0">
-<position info="not_deleted" x="510" y="0"/>
-</item>
-<item historyLabel="rs232.c" index="4">
-<position info="not_deleted" x="973" y="0"/>
-</item>
-<item historyLabel="main.c" index="1">
-<position info="not_deleted" x="3136" y="0"/>
-</item>
-<item historyLabel="rs485.c" index="5">
-<position info="not_deleted" x="5102" y="0"/>
-</item>
-<item historyLabel="main.c" index="1">
-<position info="not_deleted" x="2890" y="0"/>
-</item>
-<item historyLabel="main.c" index="1">
-<position/>
-</item>
-<item historyLabel="main.c" index="1">
-<position/>
-</item>
-<item historyLabel="main.c" index="1">
-<position info="not_deleted" x="906" y="0"/>
-</item>
-<item historyLabel="rs232.c" index="4">
-<position info="not_deleted" x="973" y="0"/>
-</item>
-<item historyLabel="main.c" index="1">
-<position info="not_deleted" x="906" y="0"/>
-</item>
-<item historyLabel="i2c.h" index="6">
-<position info="not_deleted" x="474" y="0"/>
-</item>
-<item historyLabel="main.c" index="1">
-<position info="not_deleted" x="906" y="0"/>
-</item>
-<item historyLabel="XP_lcd.h" index="7">
-<position info="not_deleted" x="542" y="0"/>
-</item>
-<item historyLabel="expansionPort.c" index="3">
-<position info="not_deleted" x="617" y="8"/>
-</item>
-<item historyLabel="XP_lcd.c" index="2">
-<position info="not_deleted" x="3136" y="0"/>
-</item>
-<item historyLabel="expansionPort.c" index="3">
-<position info="not_deleted" x="435" y="0"/>
-</item>
-<item historyLabel="XP_lcd.c" index="2">
-<position info="not_deleted" x="3136" y="0"/>
-</item>
-<item historyLabel="expansionPort.c" index="3">
-<position info="not_deleted" x="435" y="0"/>
-</item>
-<item historyLabel="expansionPort.c" index="3">
-<position info="not_deleted" x="1355" y="0"/>
-</item>
-<item historyLabel="i2c.c" index="8">
-<position info="not_deleted" x="2653" y="10"/>
-</item>
-<item historyLabel="expansionPort.c" index="3">
-<position info="not_deleted" x="1046" y="0"/>
-</item>
-<item historyLabel="eeprom_24AA02.c" index="0">
-<position info="not_deleted" x="510" y="0"/>
-</item>
-<item historyLabel="expansionPort.c" index="3">
-<position info="not_deleted" x="1046" y="0"/>
-</item>
-<item historyLabel="expansionPort.c" index="3">
-<position info="not_deleted" x="1525" y="0"/>
-</item>
-<item historyLabel="expansionPort.c" index="3">
-<position info="not_deleted" x="1498" y="0"/>
-</item>
-<item historyLabel="expansionPort.c" index="3">
-<position info="not_deleted" x="1556" y="0"/>
-</item>
-<item historyLabel="expansionPort.h" index="9">
-<position info="not_deleted" x="375" y="0"/>
-</item>
-<item historyLabel="expansionPort.c" index="10">
-<position info="not_deleted" x="1451" y="0"/>
-</item>
-<item historyLabel="XP_lcd.c" index="11">
-<position info="not_deleted" x="3848" y="0"/>
-</item>
-<item historyLabel="eeprom.c" index="12">
-<position info="not_deleted" x="139" y="0"/>
-</item>
-<item historyLabel="XP_lcd.c" index="11">
-<position info="not_deleted" x="3583" y="0"/>
-</item>
-<item historyLabel="main.c" index="13">
-<position info="not_deleted" x="906" y="0"/>
-</item>
-<item historyLabel="main.c" index="13">
-<position info="not_deleted" x="2873" y="0"/>
-</item>
-<item historyLabel="XP_lcd.c" index="11">
-<position info="not_deleted" x="2518" y="0"/>
-</item>
-<item historyLabel="expansionPort.c" index="10">
-<position info="not_deleted" x="1451" y="0"/>
-</item>
-<item historyLabel="XP_lcd.c" index="11">
-<position info="not_deleted" x="2518" y="0"/>
-</item>
-<item historyLabel="XP_lcd.h" index="14">
-<position info="not_deleted" x="1138" y="0"/>
-</item>
-<item historyLabel="XP_IO.c" index="15">
-<position/>
-</item>
-<item historyLabel="XP_lcd.c" index="11">
-<position info="not_deleted" x="0" y="4071"/>
-</item>
-<item historyLabel="XP_IO.c" index="15">
-<position/>
-</item>
-<item historyLabel="XP_lcd.c" index="11">
-<position info="not_deleted" x="647" y="0"/>
-</item>
-<item historyLabel="XP_IO.c" index="15">
+<item historyLabel="ld.h" index="6">
 <position info="not_deleted" x="0" y="0"/>
 </item>
-<item active="true" historyLabel="XP_lcd.c" index="11">
-<position info="not_deleted" x="647" y="0"/>
+<item historyLabel="XP_lcd.h" index="7">
+<position info="not_deleted" x="30" y="448"/>
+</item>
+<item historyLabel="ld.h" index="6">
+<position info="not_deleted" x="15423" y="0"/>
+</item>
+<item historyLabel="startup_Cortex_M4.c" index="1">
+<position info="not_deleted" x="13419" y="54"/>
+</item>
+<item historyLabel="startup_Cortex_M4.c" index="1">
+<position info="not_deleted" x="10092" y="0"/>
+</item>
+<item historyLabel="startup_Cortex_M4.c" index="1">
+<position info="not_deleted" x="13473" y="0"/>
+</item>
+<item historyLabel="can_17xx_40xx.c" index="8">
+<position info="not_deleted" x="23295" y="0"/>
+</item>
+<item historyLabel="spifi.c" index="5">
+<position info="not_deleted" x="1647" y="0"/>
+</item>
+<item historyLabel="main.c" index="2">
+<position info="not_deleted" x="4091" y="0"/>
+</item>
+<item historyLabel="expansionPort.h" index="3">
+<position info="not_deleted" x="240" y="0"/>
+</item>
+<item historyLabel="expansionPort.c" index="0">
+<position info="not_deleted" x="30" y="0"/>
+</item>
+<item historyLabel="PLC_TESTE.h" index="4">
+<position info="not_deleted" x="2116" y="0"/>
+</item>
+<item historyLabel="expansionPort.c" index="0">
+<position info="not_deleted" x="30" y="0"/>
+</item>
+<item historyLabel="XP_io.c" index="9">
+<position info="not_deleted" x="195" y="12"/>
+</item>
+<item historyLabel="expansionPort.c" index="0">
+<position info="not_deleted" x="2424" y="0"/>
+</item>
+<item historyLabel="XP_io.c" index="9">
+<position info="not_deleted" x="195" y="12"/>
+</item>
+<item historyLabel="XP_io.c" index="9">
+<position info="not_deleted" x="215" y="0"/>
+</item>
+<item historyLabel="XP_io.c" index="9">
+<position info="not_deleted" x="248" y="0"/>
+</item>
+<item historyLabel="expansionPort.c" index="10">
+<position info="not_deleted" x="2424" y="0"/>
+</item>
+<item historyLabel="expansionPort.h" index="11">
+<position info="not_deleted" x="1346" y="0"/>
+</item>
+<item historyLabel="expansionPort.c" index="10">
+<position info="not_deleted" x="2246" y="0"/>
+</item>
+<item historyLabel="PLC_TESTE.h" index="12">
+<position info="not_deleted" x="1993" y="0"/>
+</item>
+<item historyLabel="expansionPort.c" index="10">
+<position info="not_deleted" x="2318" y="0"/>
+</item>
+<item historyLabel="PLC_TESTE.h" index="12">
+<position info="not_deleted" x="2020" y="15"/>
+</item>
+<item historyLabel="expansionPort.h" index="11">
+<position info="not_deleted" x="1346" y="0"/>
+</item>
+<item historyLabel="PLC_TESTE.h" index="12">
+<position info="not_deleted" x="2132" y="0"/>
+</item>
+<item historyLabel="expansionPort.c" index="10">
+<position info="not_deleted" x="2315" y="0"/>
+</item>
+<item historyLabel="expansionPort.h" index="11">
+<position info="not_deleted" x="1400" y="0"/>
+</item>
+<item historyLabel="XP_io.c" index="9">
+<position info="not_deleted" x="154" y="0"/>
+</item>
+<item historyLabel="expansionPort.c" index="10">
+<position info="not_deleted" x="1923" y="0"/>
+</item>
+<item historyLabel="PLC_TESTE.h" index="12">
+<position info="not_deleted" x="1995" y="0"/>
+</item>
+<item historyLabel="expansionPort.c" index="10">
+<position info="not_deleted" x="1923" y="0"/>
+</item>
+<item historyLabel="PLC_TESTE.h" index="12">
+<position info="not_deleted" x="2009" y="0"/>
+</item>
+<item historyLabel="expansionPort.h" index="11">
+<position info="not_deleted" x="249" y="17"/>
+</item>
+<item historyLabel="ld.h" index="13">
+<position info="not_deleted" x="15194" y="0"/>
+</item>
+<item historyLabel="poptools.h" index="14">
+<position/>
+</item>
+<item historyLabel="ld.h" index="13">
+<position/>
+</item>
+<item historyLabel="expansionPort.h" index="11">
+<position info="not_deleted" x="240" y="1106"/>
+</item>
+<item historyLabel="ld.h" index="13">
+<position info="not_deleted" x="15254" y="0"/>
+</item>
+<item historyLabel="PLC_TESTE.h" index="12">
+<position info="not_deleted" x="2009" y="0"/>
+</item>
+<item historyLabel="main.c" index="15">
+<position info="not_deleted" x="4309" y="0"/>
+</item>
+<item historyLabel="PLC_TESTE.h" index="12">
+<position info="not_deleted" x="2466" y="0"/>
+</item>
+<item historyLabel="ld.h" index="13">
+<position info="not_deleted" x="15254" y="0"/>
+</item>
+<item historyLabel="poptools.h" index="14">
+<position info="not_deleted" x="20180" y="0"/>
+</item>
+<item historyLabel="ld.h" index="13">
+<position info="not_deleted" x="15256" y="1104"/>
+</item>
+<item historyLabel="poptools.h" index="14">
+<position info="not_deleted" x="19200" y="0"/>
+</item>
+<item historyLabel="ld.h" index="13">
+<position info="not_deleted" x="15194" y="0"/>
+</item>
+<item historyLabel="expansionPort.c" index="10">
+<position info="not_deleted" x="1923" y="0"/>
+</item>
+<item active="true" historyLabel="expansionPort.h" index="11">
+<position info="not_deleted" x="240" y="1106"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
@@ -464,44 +490,44 @@
 <actionBarAdvisor/>
 </window>
 <mruList>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="XP_IO.c" tooltip="Lpc407x/App/XP_IO.c">
-<persistable path="/Lpc407x/App/XP_IO.c"/>
+<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="poptools.h" tooltip="C:\Projetos\GIT\tecnequip-POPTools\bin\src\pop8\poptools.h">
+<persistable uri="file:/C:/Projetos/GIT/tecnequip-POPTools/bin/src/pop8/poptools.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="eeprom.c" tooltip="Lpc407x/App/eeprom.c">
-<persistable path="/Lpc407x/App/eeprom.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="i2c.c" tooltip="Lpc407x/App/i2c.c">
-<persistable path="/Lpc407x/App/i2c.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="Lpc407x/App/main.c">
-<persistable path="/Lpc407x/App/main.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="rs232.c" tooltip="Lpc407x/App/rs232.c">
-<persistable path="/Lpc407x/App/rs232.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="lwipopts.h" tooltip="Lpc407x/lwip/port/CoOS/lwipopts.h">
-<persistable path="/Lpc407x/lwip/port/CoOS/lwipopts.h"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="adc.c" tooltip="Lpc407x/App/adc.c">
-<persistable path="/Lpc407x/App/adc.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="hook.c" tooltip="Lpc407x/CoOS/kernel/hook.c">
-<persistable path="/Lpc407x/CoOS/kernel/hook.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="i2c_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c">
-<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="can_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/can_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/can_17xx_40xx.c"/>
 </file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="startup_Cortex_M4.c" tooltip="Lpc407x/cmsisboot/startup/startup_Cortex_M4.c">
 <persistable path="/Lpc407x/cmsisboot/startup/startup_Cortex_M4.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="eeprom_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/eeprom_17xx_40xx.c">
-<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/eeprom_17xx_40xx.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="XP_lcd.h" tooltip="Lpc407x/App/XP_lcd.h">
+<persistable path="/Lpc407x/App/XP_lcd.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="eeprom_24AA02.c" tooltip="Lpc407x/App/eeprom_24AA02.c">
-<persistable path="/Lpc407x/App/eeprom_24AA02.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="ld.h" tooltip="Lpc407x/App/ld.h">
+<persistable path="/Lpc407x/App/ld.h"/>
 </file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="spifi.c" tooltip="Lpc407x/App/spifi.c">
 <persistable path="/Lpc407x/App/spifi.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="EMAC.c" tooltip="Lpc407x/lwip/port/CoOS/ethernetif/LPC407x/EMAC.c">
+<persistable path="/Lpc407x/lwip/port/CoOS/ethernetif/LPC407x/EMAC.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="i2c_17xx_40xx.h" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/inc/i2c_17xx_40xx.h">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/inc/i2c_17xx_40xx.h"/>
+</file>
+<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="startup_LPC17xx.c" tooltip="C:\Projetos\GIT\tecnequip-POPTools\Firmware\POP7\cmsis_boot\startup\startup_LPC17xx.c">
+<persistable uri="file:/C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP7/cmsis_boot/startup/startup_LPC17xx.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="i2c_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="clock_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/clock_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/clock_17xx_40xx.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="Lpc407x/App/main.c">
+<persistable path="/Lpc407x/App/main.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="PLC_TESTE.h" tooltip="Lpc407x/App/POPTools/PLC_TESTE.h">
+<persistable path="/Lpc407x/App/POPTools/PLC_TESTE.h"/>
 </file>
 </mruList>
 </workbench>

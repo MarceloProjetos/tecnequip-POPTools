@@ -4131,6 +4131,10 @@ public:
 	 *  @return          Nome do tipo do I/O solicitado ou string vazia se inexistente
 	 */
 	const char     *getStringTypeIO         (unsigned int   index);
+	/** Funcao que retorna o offset de pinos entre placas de expansao
+	 *  @return Offset entre pinos das placas de expansao
+	 */
+	unsigned int    getPinOffsetIO              (void);
 	/** Funcao que retorna o numero de I/Os registrados
 	 *  @return Numero de I/Os registrados
 	 */

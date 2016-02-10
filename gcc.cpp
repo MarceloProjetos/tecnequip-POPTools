@@ -85,6 +85,8 @@ static BOOL SeenVariable(char *name, int mode)
 //-----------------------------------------------------------------------------
 static char *MapSym(char *str)
 {
+	unsigned int offset = ladder->getPinOffsetIO();
+	vector<tExpansionBoardItem> boards;
     static char AllRets[4][MAX_NAME_LEN+30];
     static int RetCnt;
 
@@ -101,6 +103,8 @@ static char *MapSym(char *str)
 	}
 
 	mapDetails detailsIO = ladder->getDetailsIO(str);
+	boards = ladder->getBoardList();
+
 	if (detailsIO.type == eType_DigOutput) {
 		if(IoMap_IsModBUS(detailsIO)) {
 			sprintf(ret, "MODBUS_REGISTER[%d]", IoMap_GetIndex(detailsIO));
@@ -115,6 +119,9 @@ static char *MapSym(char *str)
 	} else if (detailsIO.type == eType_DigInput) {
 		if(IoMap_IsModBUS(detailsIO)) {
 			sprintf(ret, "MODBUS_REGISTER[%d]", IoMap_GetIndex(detailsIO));
+			return ret;
+		} else if(detailsIO.pin >= offset) {
+			sprintf(ret, "expansionBoards[%d].value.bits.bit%d", (detailsIO.pin / offset) - 1, detailsIO.pin % offset);
 			return ret;
 		} else {
 			sprintf(ret, "GPIO_INPUT_PORT%d", detailsIO.pin);
@@ -159,7 +166,7 @@ static void DeclareInt(FILE *f, char *rawstr)
 #else
 		if(intvar) {
 			fprintf(f, "extern volatile int %s;\n", str);
-		} else {
+		} else if(strstr(str, "expansionBoards[") == NULL) {
 			fprintf(f, "volatile int %s = 0;\n", str);
 		}
 #endif
@@ -190,7 +197,9 @@ static void DeclareBit(FILE *f, char *rawStr)
 #ifdef INT_UNSIGNED
 		fprintf(f, "volatile unsigned int %s = 0;\n", str);
 #else
-		fprintf(f, "volatile unsigned char %s = 0;\n", str);
+		if(strstr(str, "expansionBoards[") == NULL) {
+			fprintf(f, "volatile unsigned char %s = 0;\n", str);
+		}
 #endif
 	}
 }
@@ -1253,6 +1262,29 @@ DWORD GenerateCFile(char *filename)
 
 	fprintf(f, "\n");
 
+	// then generate the expansion boards list
+	char *boardName;
+	vector<tExpansionBoardItem> boards = ladder->getBoardList();
+
+	fprintf(f, "struct strExpansionBoard expansionBoards[] = {\n");
+
+	for(i=0; i < boards.size(); i++) {
+		switch(boards[i].type) {
+			case eExpansionBoard_DigitalInput : boardName = "eBoardType_Input" ; break;
+			case eExpansionBoard_DigitalOutput: boardName = "eBoardType_Output"; break;
+			case eExpansionBoard_AnalogInput  : boardName = "eBoardType_AD"    ; break;
+			default: boardName = NULL;
+		}
+
+		if(boardName != NULL) {
+			fprintf(f, "    { %s, %d, { { 0 } }, %d, %d },\n", boardName, boards[i].address, 0 /* Canal !?? */, boards[i].useIRQ);
+		}
+	}
+
+	fprintf(f, "    { eBoardType_None, 0, { { 0 } }, 0, 0 }\n};\n");
+
+	fprintf(f, "\n");
+
 	fprintf(f, "// Funcao que executa um ciclo de processamento da logica criada pelo usuario\n");
     fprintf(f,"void PLC_Run(void)\n{\n");
 
@@ -1332,7 +1364,6 @@ DWORD GenerateCFile(char *filename)
 		fprintf(f, "\n    PWM_Init();\n");
 	}
 
-	vector<tExpansionBoardItem> boards = ladder->getBoardList();
 	for(i=0; i < boards.size(); i++) {
 		switch(boards[i].type) {
 		case eExpansionBoard_LCD:

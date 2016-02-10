@@ -97,6 +97,9 @@ public:
 	vector<string>  getList           (void);
 	void            Select            (unsigned int index);
 
+	// Funcao que retorna o offset de pinos entre placas de expansao
+	unsigned int getPinOffset(void) { return pinOffset; }
+
 	// Funcao que retorna um I/O do cache
 	pair<string, eType> getCachedIO   (unsigned long id);
 	 
