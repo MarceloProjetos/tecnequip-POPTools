@@ -36,15 +36,19 @@ char 							SNTP_SERVER_ADDRESS[] = "br.pool.ntp.org";
 int								SNTP_GMT = -3;
 int								SNTP_DAILY_SAVE = 0;
 
+struct strExpansionBoard expansionBoards[] = {
+    { eBoardType_Output, 33, { { 0 } }, 0, 0 },
+    { eBoardType_None, 0, { { 0 } }, 0, 0 }
+};
+
 // Variaveis PLC
+volatile unsigned char GPIO_OUTPUT_PORT1 = 0;
 volatile int ArrayBitUser_Count = 1;
 volatile int ArrayBitUser[1];
 volatile int ArrayBitSystem_Count = 1;
 volatile int ArrayBitSystem[1];
-volatile int ArrayIntUser_Count = 8;
-volatile int ArrayIntUser[8];
-
-struct strExpansionBoard expansionBoards[] = { { eBoardType_Output, 0x20, { { 0 } }, 0, 0 }, { eBoardType_None, 0, { { 0 } }, 0, 0 } };
+volatile int ArrayIntUser_Count = 10;
+volatile int ArrayIntUser[10];
 
 // Funcao que executa um ciclo de processamento da logica criada pelo usuario
 void PLC_Run(void)
@@ -53,7 +57,7 @@ void PLC_Run(void)
 
     ArrayBitSystem[0] |= 1UL << 0; // $mcr = 1
 
-    /* iniciando linha 1 */
+    /* iniciando linha 2 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
@@ -93,7 +97,7 @@ void PLC_Run(void)
 
     /* terminando serie [ */
 
-    /* iniciando linha 2 */
+    /* iniciando linha 3 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
@@ -107,27 +111,27 @@ void PLC_Run(void)
             ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
         }
     } else {
-        ArrayIntUser[3] = 0; // seq0
+        ArrayIntUser[3] = 0; // seq2
     }
 
-    if (!((ArrayBitSystem[0] >> 6) & 1)) {  // $seq1_antiglitch
-        ArrayIntUser[4] = 99; // seq1
+    if (!((ArrayBitSystem[0] >> 6) & 1)) {  // $seq3_antiglitch
+        ArrayIntUser[4] = 99; // seq3
     }
-    ArrayBitSystem[0] |= 1UL << 6; // $seq1_antiglitch = 1
+    ArrayBitSystem[0] |= 1UL << 6; // $seq3_antiglitch = 1
     if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
         if (ArrayIntUser[4] < 99) {
             ArrayIntUser[4]++;
             ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
         }
     } else {
-        ArrayIntUser[4] = 0; // seq1
+        ArrayIntUser[4] = 0; // seq3
     }
 
     if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 0; else ArrayBitUser[0] &= ~(1UL << 0); // piscaBL = $rung_top
 
     /* terminando serie [ */
 
-    /* iniciando linha 3 */
+    /* iniciando linha 4 */
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
@@ -204,6 +208,96 @@ void PLC_Run(void)
         ArrayBitSystem[0] |= 1UL << 11; // $parOut_1 = 1
     }
     if(((ArrayBitSystem[0] >> 11) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_1
+    /* terminando paralelo [ */
+    /* terminando serie [ */
+
+    /* iniciando linha 6 */
+    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
+
+    /* iniciando serie [ */
+    if (expansionBoards[0].value.bits.bit0) {  // XP_S1
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[8] < 49) {
+            ArrayIntUser[8]++;
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+        }
+    } else {
+        ArrayIntUser[8] = 0; // seq0
+    }
+
+    if (!((ArrayBitSystem[0] >> 14) & 1)) {  // $seq1_antiglitch
+        ArrayIntUser[9] = 49; // seq1
+    }
+    ArrayBitSystem[0] |= 1UL << 14; // $seq1_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[9] < 49) {
+            ArrayIntUser[9]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
+        }
+    } else {
+        ArrayIntUser[9] = 0; // seq1
+    }
+
+    /* iniciando paralelo [ */
+    ArrayBitSystem[0] &= ~(1UL << 7); // $parOut_0 = 0
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $parThis_0 = $rung_top
+    expansionBoards[0].value.bits.bit0 = ((ArrayBitSystem[0] >> 8) & 1); // XP_S1 = $parThis_0
+
+    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 7; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $parThis_0 = $rung_top
+    expansionBoards[0].value.bits.bit1 = ((ArrayBitSystem[0] >> 8) & 1); // XP_S2 = $parThis_0
+
+    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 7; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $parThis_0 = $rung_top
+    expansionBoards[0].value.bits.bit2 = ((ArrayBitSystem[0] >> 8) & 1); // XP_S3 = $parThis_0
+
+    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 7; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $parThis_0 = $rung_top
+    expansionBoards[0].value.bits.bit3 = ((ArrayBitSystem[0] >> 8) & 1); // XP_S4 = $parThis_0
+
+    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 7; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $parThis_0 = $rung_top
+    expansionBoards[0].value.bits.bit4 = ((ArrayBitSystem[0] >> 8) & 1); // XP_S5 = $parThis_0
+
+    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 7; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $parThis_0 = $rung_top
+    expansionBoards[0].value.bits.bit5 = ((ArrayBitSystem[0] >> 8) & 1); // XP_S6 = $parThis_0
+
+    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 7; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $parThis_0 = $rung_top
+    expansionBoards[0].value.bits.bit6 = ((ArrayBitSystem[0] >> 8) & 1); // XP_S7 = $parThis_0
+
+    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 7; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $parThis_0 = $rung_top
+    expansionBoards[0].value.bits.bit7 = ((ArrayBitSystem[0] >> 8) & 1); // XP_S8 = $parThis_0
+
+    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 7; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 8; else ArrayBitSystem[0] &= ~(1UL << 8); // $parThis_0 = $rung_top
+    GPIO_OUTPUT_PORT1 = ((ArrayBitSystem[0] >> 8) & 1); // x2 = $parThis_0
+
+    if (((ArrayBitSystem[0] >> 8) & 1)) {  // $parThis_0
+        ArrayBitSystem[0] |= 1UL << 7; // $parOut_0 = 1
+    }
+    if(((ArrayBitSystem[0] >> 7) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0
     /* terminando paralelo [ */
     /* terminando serie [ */
 }

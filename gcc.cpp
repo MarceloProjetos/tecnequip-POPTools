@@ -5,6 +5,7 @@
 
 static vector<IntOp>::size_type IntCodeLen;
 static vector<IntOp> vectorIntCode;
+static map<unsigned int, unsigned int> mapExpansionIO;
 
 #define SEENVAR_LISTS 4
 
@@ -109,6 +110,9 @@ static char *MapSym(char *str)
 		if(IoMap_IsModBUS(detailsIO)) {
 			sprintf(ret, "MODBUS_REGISTER[%d]", IoMap_GetIndex(detailsIO));
 			return ret;
+		} else if(detailsIO.pin >= offset) {
+			sprintf(ret, "expansionBoards[%d].value.bits.bit%d", mapExpansionIO[detailsIO.pin / offset], (detailsIO.pin % offset) - 1);
+			return ret;
 		} else {
 			sprintf(ret, "GPIO_OUTPUT_PORT%d", detailsIO.pin);
 			return ret;
@@ -121,7 +125,7 @@ static char *MapSym(char *str)
 			sprintf(ret, "MODBUS_REGISTER[%d]", IoMap_GetIndex(detailsIO));
 			return ret;
 		} else if(detailsIO.pin >= offset) {
-			sprintf(ret, "expansionBoards[%d].value.bits.bit%d", (detailsIO.pin / offset) - 1, detailsIO.pin % offset);
+			sprintf(ret, "expansionBoards[%d].value.bits.bit%d", mapExpansionIO[detailsIO.pin / offset], (detailsIO.pin % offset) - 1);
 			return ret;
 		} else {
 			sprintf(ret, "GPIO_INPUT_PORT%d", detailsIO.pin);
@@ -1172,7 +1176,7 @@ DWORD InvokeGCC(char* dest)
 
 DWORD GenerateCFile(char *filename)
 {
-	unsigned int i, ad_mask;
+	unsigned int i, ad_mask, boardIndex;
 
 	vectorIntCode = ladder->getVectorIntCode();
 	IntCodeLen = vectorIntCode.size();
@@ -1207,6 +1211,7 @@ DWORD GenerateCFile(char *filename)
 	HasQEI = 0;
 	HasSSI = 0;
 
+	mapExpansionIO.clear();
 	for(i = 0; i < SEENVAR_LISTS; i++) {
 	    SeenVariablesCount[i] = 0;
 	}
@@ -1255,12 +1260,6 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "int								SNTP_DAILY_SAVE = %d;\n", settingsSntp.dailysave);
 
 	fprintf(f, "\n");
-	fprintf(f, "// Variaveis PLC\n");
-
-	// now generate declarations for all variables
-    GenerateDeclarations(f);
-
-	fprintf(f, "\n");
 
 	// then generate the expansion boards list
 	char *boardName;
@@ -1268,7 +1267,7 @@ DWORD GenerateCFile(char *filename)
 
 	fprintf(f, "struct strExpansionBoard expansionBoards[] = {\n");
 
-	for(i=0; i < boards.size(); i++) {
+	for(i=0, boardIndex=0; i < boards.size(); i++) {
 		switch(boards[i].type) {
 			case eExpansionBoard_DigitalInput : boardName = "eBoardType_Input" ; break;
 			case eExpansionBoard_DigitalOutput: boardName = "eBoardType_Output"; break;
@@ -1277,11 +1276,18 @@ DWORD GenerateCFile(char *filename)
 		}
 
 		if(boardName != NULL) {
-			fprintf(f, "    { %s, %d, { { 0 } }, %d, %d },\n", boardName, boards[i].address, 0 /* Canal !?? */, boards[i].useIRQ);
+			mapExpansionIO[boards[i].id] = boardIndex++;
+			fprintf(f, "    { %s, %d, { { 0 } }, %d, %d },\n", boardName, (boards[i].address >> 1) & 0x7F, 0 /* Canal !?? */, boards[i].useIRQ);
 		}
 	}
 
 	fprintf(f, "    { eBoardType_None, 0, { { 0 } }, 0, 0 }\n};\n");
+
+	fprintf(f, "\n");
+
+	// now generate declarations for all variables
+	fprintf(f, "// Variaveis PLC\n");
+    GenerateDeclarations(f);
 
 	fprintf(f, "\n");
 
