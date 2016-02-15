@@ -11534,6 +11534,9 @@ bool LadderDiagram::PasteRung(LadderClipboard clipboard, bool isAfter)
 	// Operacao finalizada, a tela ja pode ser desbloqueada
 	context.isDrawBlocked = false;
 
+	// Quando a tela esta bloqueada, a lista nao eh atualizada. Agora verifica se precisa redesenhar
+	IO->updateGUI(false);
+
 	return ret;
 }
 
@@ -11758,6 +11761,9 @@ bool LadderDiagram::PasteElement(LadderClipboard clipboard)
 
 	// Operacao finalizada, a tela ja pode ser desbloqueada
 	context.isDrawBlocked = false;
+
+	// Quando a tela esta bloqueada, a lista nao eh atualizada. Agora verifica se precisa redesenhar
+	IO->updateGUI(false);
 
 	return ret;
 }
