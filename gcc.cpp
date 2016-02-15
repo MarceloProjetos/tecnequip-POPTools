@@ -763,7 +763,10 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 					GenVarCode(buf2, MapSym(vectorIntCode[i].name2), NULL, GENVARCODE_MODE_READ);
 					GenVarCode(buf , MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ);
 					fprintf(f, "XP_lcd_MoveCursor(%s,%s); ", buf, buf2);
-					fprintf(f, "XP_lcd_WriteText(\"%s\");\n", vectorIntCode[i].name4);
+
+					GenVarCode(buf , MapSym(vectorIntCode[i].name3), NULL, GENVARCODE_MODE_READ);
+					fprintf(f, "XP_lcd_WriteText(\"%s\", &%s);\n", vectorIntCode[i].name4, buf);
+
 					break;
 				case eCommandLCD_BackLight:
 					fprintf(f, "XP_lcd_setBL(%s);\n", GenVarCode(buf, MapSym(vectorIntCode[i].name3), NULL, GENVARCODE_MODE_READ));

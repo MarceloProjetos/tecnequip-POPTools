@@ -50,6 +50,11 @@ void ModBUS_SetAppName(char *appname)
 	AppName = appname;
 }
 
+char * ModBUS_GetAppName(void)
+{
+	return AppName;
+}
+
 /*** ModBUS Handlers ***/
 
 unsigned int Modbus_ReadCoils(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply)

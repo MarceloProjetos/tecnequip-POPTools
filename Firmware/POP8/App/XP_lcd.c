@@ -1,4 +1,5 @@
 #include "XP_lcd.h"
+#include "format_str.h"
 
 volatile unsigned int I_LCDReady = 0;
 
@@ -152,15 +153,18 @@ unsigned int XP_lcd_WriteData(unsigned char data)
 	return ret;
 }
 
-unsigned int XP_lcd_WriteText(char *data)
+unsigned int XP_lcd_WriteText(char *format, volatile int *val)
 {
+	char msg[128];
 	unsigned int i = 0, ret;
+
+	Format_String_Generate(msg, format, val);
 
 	I_LCDReady = 0;
 
 	do {
-		ret = XP_lcd_WriteData((unsigned char)data[i]);
-	} while(ret && data[++i]);
+		ret = XP_lcd_WriteData((unsigned char)msg[i]);
+	} while(ret && msg[++i]);
 
 	I_LCDReady = 1;
 

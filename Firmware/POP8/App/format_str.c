@@ -1,17 +1,62 @@
 #include <string.h>
 #include <stdio.h>
 #include "rs485.h"
+#include "modbus.h"
+#include "net.h"
+
+extern struct ip_addr IP_ADDRESS;
+extern unsigned char  mac_addr[6];
 
 extern volatile unsigned char WAITING_FOR_FMTSTR;
 extern unsigned char rs485_rx_buffer[SERIAL_BUFFER_SIZE];
 extern unsigned int rs485_rx_index;
+
+char *Format_String_Generate(char *msg, char *format, volatile int * val)
+{
+	char *start, data[128], type = 'd';
+
+	// Identifica o tipo de dado a ser enviado
+	start = strchr(format, '%');
+	if(start != NULL) {
+		type = *(start + 1);
+
+		switch(type) {
+		case 0: return msg; // Depois de % nunca deve ser fim de string!
+		case 'p':
+			strcpy(data, ModBUS_GetAppName());
+			break;
+		case 'i':
+			sprintf(data, "%d.%d.%d.%d", ip4_addr1(&IP_ADDRESS), ip4_addr2(&IP_ADDRESS), ip4_addr3(&IP_ADDRESS), ip4_addr4(&IP_ADDRESS));
+			break;
+		case 'm':
+			sprintf(data, "%x:%x:%x:%x:%x:%x", mac_addr[5], mac_addr[4], mac_addr[3], mac_addr[2], mac_addr[1], mac_addr[0]);
+			break;
+		default: {
+				char new_format[3] = { '%', 0, 0 };
+				new_format[1] = type;
+				sprintf(data, new_format, *val);
+				break;
+			}
+		}
+
+		// Atualiza o tipo conforme a informacao que sera enviada
+		strncpy(msg, format, start - format);
+		strcpy (msg + (start - format), data);
+		strcpy (msg + (start - format + strlen(data)), start + 2);
+	} else {
+		// Se nao encontrou %, nao precisa interpretar o formato...
+		strcpy(msg, format);
+	}
+
+	return msg;
+}
 
 int Format_String_Write(char *format, volatile int * val)
 {
 	int sz = 0;
 	char msg[128];
 
-	sprintf((void*)msg, format, *val);
+	Format_String_Generate(msg, format, val);
 
 	//I_SerialReady = 1;
 
