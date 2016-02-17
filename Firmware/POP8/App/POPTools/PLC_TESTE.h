@@ -96,7 +96,7 @@ void PLC_Run(void)
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
         if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $oneShot_2
             if (I_LCDReady) {  // $LCDReady
-                XP_lcd_MoveCursor(ArrayIntUser[0],ArrayIntUser[1]); XP_lcd_WriteText("MAC: %m", &ArrayIntUser[2]);
+                XP_lcd_MoveCursor(ArrayIntUser[0],ArrayIntUser[1]); XP_lcd_WriteText("M: %m", &ArrayIntUser[2]);
                 ArrayBitSystem[0] |= 1UL << 4; // $oneShot_2 = 1
             }
         }
@@ -133,9 +133,7 @@ void PLC_Run(void)
         ArrayBitSystem[0] &= ~(1UL << 6); // $oneShot_4 = 0
     }
 
-    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        ArrayBitUser[0] |= 1UL << 0; // init = 1
-    }
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 0; else ArrayBitUser[0] &= ~(1UL << 0); // init = $rung_top
 
     /* terminando serie [ */
 }
@@ -161,7 +159,7 @@ void PLC_Init(void)
 	IP4_ADDR(&IP_GATEWAY, 192,168,0,1);
 	IP4_ADDR(&IP_DNS, 192,168,0,1);
 
-    XP_lcd_Init(0);
+    XP_lcd_Init(0x27, 0);
 
     memset((void*)ArrayBitUser, 0, sizeof(ArrayBitUser));
     memset((void*)ArrayBitSystem, 0, sizeof(ArrayBitSystem));

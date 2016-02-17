@@ -29,7 +29,7 @@ char *Format_String_Generate(char *msg, char *format, volatile int * val)
 			sprintf(data, "%d.%d.%d.%d", ip4_addr1(&IP_ADDRESS), ip4_addr2(&IP_ADDRESS), ip4_addr3(&IP_ADDRESS), ip4_addr4(&IP_ADDRESS));
 			break;
 		case 'm':
-			sprintf(data, "%x:%x:%x:%x:%x:%x", mac_addr[5], mac_addr[4], mac_addr[3], mac_addr[2], mac_addr[1], mac_addr[0]);
+			sprintf(data, "%02x:%02x:%02x:%02x:%02x:%02x", mac_addr[5], mac_addr[4], mac_addr[3], mac_addr[2], mac_addr[1], mac_addr[0]);
 			break;
 		default: {
 				char new_format[3] = { '%', 0, 0 };

@@ -1379,7 +1379,7 @@ void mapIO::LoadPinList(unsigned long id)
 		}
 
 		if(itBoard != boardList.end()) {
-			unsigned int i, qtdIO = diagram->getBoardQtyIO(itBoard->type, detailsIO.type);
+			unsigned int i, qtdIO = diagram->getBoardQtyIO(itBoard->type, itBoard->version, detailsIO.type);
 			unsigned int pinStart = itBoard->id * pinOffset;
 			unsigned int pin;
 
@@ -1689,7 +1689,7 @@ void mapIO::ShowIoMapDialog(int item)
 
 	SendMessage(BoardCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)"POP-7"));
 	for(itBoard = boardList.begin(); itBoard != boardList.end(); itBoard++) {
-		unsigned int qtyIO = diagram->getBoardQtyIO(itBoard->type, detailsIO.type);
+		unsigned int qtyIO = diagram->getBoardQtyIO(itBoard->type, itBoard->version, detailsIO.type);
 		if(qtyIO > 0) {
 			i++;
 			SendMessage(BoardCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)itBoard->name.c_str()));

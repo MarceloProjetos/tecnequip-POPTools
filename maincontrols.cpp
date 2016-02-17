@@ -313,6 +313,9 @@ void SetMenusEnabled(LadderContext *context)
 	EnableInterfaceItem(MNU_READ_FMTD_STR, t);
 	EnableInterfaceItem(MNU_WRITE_FMTD_STR, t);
 	EnableInterfaceItem(MNU_INSERT_PARALLEL, t);
+
+	t = (context->Diagram->getSettingsGeneral().model == eModelPLC_POP8);
+	EnableInterfaceItem(MNU_MCU_EXPANSION, t);
 }
 
 //-----------------------------------------------------------------------------

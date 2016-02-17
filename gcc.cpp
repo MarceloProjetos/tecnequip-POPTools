@@ -1376,7 +1376,7 @@ DWORD GenerateCFile(char *filename)
 	for(i=0; i < boards.size(); i++) {
 		switch(boards[i].type) {
 		case eExpansionBoard_LCD:
-			fprintf(f, "\n    XP_lcd_Init(%d);\n", boards[i].version);
+			fprintf(f, "\n    XP_lcd_Init(%d, %d);\n", boards[i].address, boards[i].version);
 			break;
 		}
 	}
