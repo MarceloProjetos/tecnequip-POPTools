@@ -47,7 +47,6 @@ void Hardware_Init(void)
 	SPIFI_Init();
 
 	RS232_Init();
-	RS485_Init();
 }
 
 // Task list

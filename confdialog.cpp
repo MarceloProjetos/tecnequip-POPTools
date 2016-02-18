@@ -11,6 +11,7 @@ static HWND GroupInfoDetails;
 static HWND GroupCommNetwork;
 static HWND GroupCommTimeZone;
 static HWND GroupCommSerial;
+static HWND GroupCommCAN;
 static HWND GroupInterfaceAD;
 static HWND GroupInterfaceDA;
 static HWND GroupInterfaceEncInc;
@@ -28,6 +29,7 @@ static HWND InfoCompileDateLabel;
 static HWND InfoProgramDateLabel;
 static HWND ModBUSIDTextbox;
 static HWND BaudRateCombobox;
+static HWND CANBaudRateCombobox;
 static HWND ParityCombobox;
 static HWND SNTPEnableCheckbox;
 static HWND SNTPCombobox;
@@ -84,6 +86,9 @@ const LPCTSTR ComboboxGMTItens[] = { "(GMT-12) Linha de Data Internacional Oeste
 const LPCTSTR ComboboxBaudRateItens[] = { /*"2400", "4800", "7200",*/ "9600", "14400", "19200"/*, "28800", 
 						"38400", "57600", "115200"*/ };
 
+const LPCTSTR ComboboxCANBaudRateItens[] = { "10", "50", "100", "125", "500", "1000" };
+
+
 // http://www.ntp.br/
 // http://pt.wikipedia.org/wiki/Network_Time_Protocol
 // http://tf.nist.gov/tf-cgi/servers.cgi
@@ -123,11 +128,12 @@ const char *EncoderConvModes[] = { "Sem conversão", "Metros", "Milímetros", "Déc
 #define CONFTVI_ID_MODBUS           12
 #define CONFTVI_ID_MODBUS_MASTER    13
 #define CONFTVI_ID_MODBUS_SLAVE     14
+#define CONFTVI_ID_COMM_CAN			15
 
 void OnSelChanged(int ID)
 {
 	int i;
-	HWND group, groups[] = { GroupInfoProject, GroupInfoDetails, GroupCommNetwork, GroupCommTimeZone, GroupCommSerial, GroupInterfaceAD,
+	HWND group, groups[] = { GroupInfoProject, GroupInfoDetails, GroupCommNetwork, GroupCommTimeZone, GroupCommSerial, GroupCommCAN, GroupInterfaceAD,
 							GroupInterfaceDA, GroupInterfaceEncInc, GroupInterfaceEncAbs, GroupModBUSMaster, GroupModBUSSlave };
 
 	switch(ID) {
@@ -151,6 +157,10 @@ void OnSelChanged(int ID)
 
 		case CONFTVI_ID_COMM_SERIAL:
 			group = GroupCommSerial;
+			break;
+
+		case CONFTVI_ID_COMM_CAN:
+			group = GroupCommCAN;
 			break;
 
 		case CONFTVI_ID_INTERFACE:
@@ -444,6 +454,7 @@ struct {
 		{ "Rede"               , 2, CONFTVI_ID_COMM_NETWORK     },
 		{ "Fuso Horário"       , 2, CONFTVI_ID_COMM_FUSE        },
 		{ "Serial"             , 2, CONFTVI_ID_COMM_SERIAL      },
+		{ "CAN"                , 2, CONFTVI_ID_COMM_CAN         },
 	{ "Interfaces"             , 1, CONFTVI_ID_INTERFACE        },
 		{ "Entrada Analógica"  , 2, CONFTVI_ID_INTERFACE_AD     },
 		{ "Saída Analógica"    , 2, CONFTVI_ID_INTERFACE_DA     },
@@ -732,6 +743,34 @@ static void MakeControls(void)
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
         155, 97, 140, 100, GroupCommSerial, NULL, Instance, NULL);
     NiceFont(ParityCombobox);
+
+	// Group - CAN Communication
+    GroupCommCAN = CreateWindowEx(0, WC_STATIC, "",
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+        215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
+    NiceFont(GroupCommCAN);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Ajuste aqui a configuração da interface CAN"),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
+        5, 5, 195, 54, GroupCommCAN, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+	textLabel = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
+        SS_BITMAP | SS_BLACKRECT | SS_GRAYFRAME | SS_LEFT | SS_LEFTNOWORDWRAP | SS_RIGHT | SS_WHITERECT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        205, 0, 64, 64, GroupCommCAN, NULL, Instance, NULL);
+
+	HBITMAP hBmp4 = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(IDB_RS485_CONFIG),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
+	SendMessage(textLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp4);
+
+	textLabel = CreateWindowEx(0, WC_STATIC, _("Baud Rate(kbps):"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        5, 67, 140, 21, GroupCommCAN, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+	CANBaudRateCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        155, 67, 140, 100, GroupCommCAN, NULL, Instance, NULL);
+    NiceFont(CANBaudRateCombobox);
 
 	// Group - Analog Input
     GroupInterfaceAD = CreateWindowEx(0, WC_STATIC, "",
@@ -1051,6 +1090,10 @@ bool ShowConfDialog(eConfSection confSection)
 			SendMessage(BaudRateCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxBaudRateItens[i]));
 		}
 
+		for (i = 0; i < sizeof(ComboboxCANBaudRateItens) / sizeof(ComboboxCANBaudRateItens[0]); i++) {
+			SendMessage(CANBaudRateCombobox, CB_ADDSTRING, 0, (LPARAM)((LPCTSTR)ComboboxCANBaudRateItens[i]));
+		}
+
 		for (i = 0; i < sizeof(ComboboxSNTPItens) / sizeof(ComboboxSNTPItens[0]); i++)
 			SendMessage(SNTPCombobox, CB_INSERTSTRING, i, (LPARAM)((LPCTSTR)ComboboxSNTPItens[i]));
 
@@ -1093,6 +1136,7 @@ bool ShowConfDialog(eConfSection confSection)
 
 	LadderSettingsGeneral            settingsGeneral = ladder->getSettingsGeneral           ();
 	LadderSettingsUART               settingsUart    = ladder->getSettingsUART              ();
+	LadderSettingsCAN                settingsCAN     = ladder->getSettingsCAN               ();
 	LadderSettingsNetwork            settingsNetwork = ladder->getSettingsNetwork           ();
 	LadderSettingsSNTP               settingsSntp    = ladder->getSettingsSNTP              ();
 	LadderSettingsEncoderIncremental settingsEncInc  = ladder->getSettingsEncoderIncremental();
@@ -1167,6 +1211,13 @@ bool ShowConfDialog(eConfSection confSection)
 			SendMessage(BaudRateCombobox, CB_SETCURSEL, i, 0);
 	}
 
+	sprintf(buf, "%d", settingsCAN.baudRate);
+	for (i = 0; i < sizeof(ComboboxCANBaudRateItens) / sizeof(ComboboxCANBaudRateItens[0]); i++)
+	{
+		if (_stricmp(ComboboxCANBaudRateItens[i], buf) == 0)
+			SendMessage(CANBaudRateCombobox, CB_SETCURSEL, i, 0);
+	}
+
 	sprintf(buf, "%d",settingsMbSlave.ModBUSID);
 	SendMessage(ModBUSIDTextbox, WM_SETTEXT, 0, (LPARAM)buf);
 
@@ -1199,6 +1250,7 @@ bool ShowConfDialog(eConfSection confSection)
 
 	//SendMessage(BaudRateCombobox, CB_SETCURSEL, 0, 0);
 	SendMessage(BaudRateCombobox, CB_SETDROPPEDWIDTH, 100, 0);
+	SendMessage(CANBaudRateCombobox, CB_SETDROPPEDWIDTH, 100, 0);
 
 	sprintf(buf, "%d", settingsEncSSI.perimeter);
 	SendMessage(SSIPerimeterTextbox, WM_SETTEXT, 0, (LPARAM)buf);
@@ -1266,6 +1318,12 @@ bool ShowConfDialog(eConfSection confSection)
 		settingsUart.UART = SendMessage(ParityCombobox, CB_GETCURSEL, 0, 0);
 
 		ladder->setSettingsUART(settingsUart);
+
+        SendMessage(CANBaudRateCombobox, WM_GETTEXT, (WPARAM)sizeof(buf),
+            (LPARAM)(buf));
+        settingsCAN.baudRate = atoi(buf);
+
+		ladder->setSettingsCAN(settingsCAN);
 
         SendMessage(ModBUSIDTextbox, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)(buf));
 		settingsMbSlave.ModBUSID = min(max(0, atoi(buf)), 127);

@@ -12013,7 +12013,7 @@ bool LadderDiagram::InsertParallel(LadderElem *elem)
 // yy.0 = 0 for old binfmt. 1 for v2 and others.
 // yy.1 - yy.15: reserved for future use.
 // zz   = format version
-static const unsigned long int LADDER_BINFMT_MAGIC      = 0x0f5a0102;
+static const unsigned long int LADDER_BINFMT_MAGIC      = 0x0f5a0103;
 static const unsigned long int LADDER_BINFMT_MAGIC_MASK = 0xffff0000;
 #define LADDER_BINFMT_GET_VERSION(m)  (m & 0x00ff)
 #define LADDER_BINFMT_GET_FLAGS(m)   ((m & 0xff00) >> 8)
@@ -12089,6 +12089,8 @@ bool LadderDiagram::Save(string filename, bool isBackup)
 
 		fwrite_int   (f, LadderSettings.Uart.UART          ) &&
 		fwrite_int   (f, LadderSettings.Uart.baudRate      ) &&
+
+		fwrite_int   (f, LadderSettings.CAN.baudRate      ) &&
 
 		fwrite_ulong (f, LadderSettings.Network.ip         ) &&
 		fwrite_ulong (f, LadderSettings.Network.mask       ) &&
@@ -12321,6 +12323,10 @@ bool LadderDiagram::Load(string filename)
 
 					fread_int   (f, &LadderSettings.Uart.UART          ) &&
 					fread_int   (f, &LadderSettings.Uart.baudRate      ) &&
+
+					(fileVersion > 2 ?
+						fread_int   (f, &LadderSettings.CAN.baudRate   ) : true
+					) &&
 
 					fread_ulong (f, &LadderSettings.Network.ip         ) &&
 					fread_ulong (f, &LadderSettings.Network.mask       ) &&
@@ -12575,6 +12581,12 @@ void LadderDiagram::setSettingsUART(LadderSettingsUART setUart)
 {
 	RegisterSettingsChanged();
 	LadderSettings.Uart = setUart;
+}
+
+void LadderDiagram::setSettingsCAN(LadderSettingsCAN setCAN)
+{
+	RegisterSettingsChanged();
+	LadderSettings.CAN = setCAN;
 }
 
 void LadderDiagram::setSettingsNetwork(LadderSettingsNetwork setNetwork)
