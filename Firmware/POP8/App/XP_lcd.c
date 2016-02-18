@@ -157,10 +157,11 @@ unsigned int XP_lcd_WriteData(unsigned char data)
 
 unsigned int XP_lcd_WriteText(char *format, volatile int *val)
 {
-	char msg[128];
+	const int size = 128;
+	char msg[size];
 	unsigned int i = 0, ret;
 
-	Format_String_Generate(msg, format, val);
+	Format_String_Generate(msg, size, format, val);
 
 	I_LCDReady = 0;
 
