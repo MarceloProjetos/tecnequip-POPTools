@@ -3,11 +3,11 @@
 unsigned int XP_lcd_Clear     (void);
 unsigned int XP_lcd_MoveCursor(unsigned int lin, unsigned int col);
 void         XP_lcd_setBL     (unsigned int enable);
-unsigned int XP_lcd_Init      (unsigned int model);
+unsigned int XP_lcd_Init      (unsigned int address, unsigned int model);
 unsigned int XP_lcd_Write     (unsigned char cmd, unsigned char data);
 unsigned int XP_lcd_WriteData (unsigned char data);
 unsigned int XP_lcd_WriteInstr(unsigned char instr);
-unsigned int XP_lcd_WriteText (         char *data);
+unsigned int XP_lcd_WriteText (char *format, volatile int *val);
 
 #define XP_LCD_TYPE_GENERIC 0
 #define XP_LCD_TYPE_SC2004A 1

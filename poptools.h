@@ -786,7 +786,7 @@ bool DeleteSelectedFromProgram(void);
 bool DeleteSelectedRung(void);
 bool InsertRung(bool afterCursor);
 bool PushRung(bool up);
-bool NewProgram(eModelPLC model = eModelPLC_POP7);
+bool NewProgram(eModelPLC model = eModelPLC_POP8);
 void SwitchProgram(LadderDiagram *newladder);
 bool CloseProgram(LadderDiagram *diagram, bool isPOPToolsExiting = false);
 bool CloseAllPrograms(bool isPOPToolsExiting = false);

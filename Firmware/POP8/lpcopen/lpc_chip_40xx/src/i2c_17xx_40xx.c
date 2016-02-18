@@ -353,6 +353,7 @@ void Chip_I2C_EventHandler(I2C_ID_T id, I2C_EVENT_T event)
 /* Chip polling event handler */
 void Chip_I2C_EventHandlerPolling(I2C_ID_T id, I2C_EVENT_T event)
 {
+	int retry = 500;
 	struct i2c_interface *iic = &i2c[id];
 	volatile I2C_STATUS_T *stat;
 
@@ -366,6 +367,8 @@ void Chip_I2C_EventHandlerPolling(I2C_ID_T id, I2C_EVENT_T event)
 	while (*stat == I2C_STATUS_BUSY) {
 		if (Chip_I2C_IsStateChanged(id)) {
 			Chip_I2C_MasterStateHandler(id);
+		} else if(retry-- == 0) {
+			LPC_I2Cx(id)->CONSET = I2C_CON_STO;
 		}
 	}
 }

@@ -51,6 +51,7 @@ eType getTimerTypeIO(int which)
 LadderExpansion::LadderExpansion(LadderDiagram *pDiagram)
 {
 	vector<unsigned int> addresses;
+	map<unsigned int, vector<unsigned int> > versionAddresses;
 
 	currentId = 1; // Inicia em 1 para que id = 0 indique placa invalida
 
@@ -68,9 +69,23 @@ LadderExpansion::LadderExpansion(LadderDiagram *pDiagram)
 	addresses.push_back(0x4b);
 	addresses.push_back(0x4d);
 	addresses.push_back(0x4f);
-	boardAddresses[eExpansionBoard_DigitalInput] = addresses;
-
+	versionAddresses[0] = addresses; // Ere I2C-IN830M1
 	addresses.clear();
+
+	addresses.push_back(0x71);
+	addresses.push_back(0x73);
+	addresses.push_back(0x75);
+	addresses.push_back(0x77);
+	addresses.push_back(0x79);
+	addresses.push_back(0x7b);
+	addresses.push_back(0x7d);
+	addresses.push_back(0x7f);
+	versionAddresses[1] = addresses; // Ere I2C-IN830MA1
+	addresses.clear();
+
+	boardAddresses[eExpansionBoard_DigitalInput] = versionAddresses;
+
+	versionAddresses.clear();
 
 	// Mapa de endereco da placa de Saidas Digitais
 	addresses.push_back(0x40);
@@ -81,33 +96,49 @@ LadderExpansion::LadderExpansion(LadderDiagram *pDiagram)
 	addresses.push_back(0x4a);
 	addresses.push_back(0x4c);
 	addresses.push_back(0x4e);
-	boardAddresses[eExpansionBoard_DigitalOutput] = addresses;
-
+	versionAddresses[0] = addresses; // Ere I2C-RL8xxx
 	addresses.clear();
+
+	addresses.push_back(0x70);
+	addresses.push_back(0x72);
+	addresses.push_back(0x74);
+	addresses.push_back(0x76);
+	addresses.push_back(0x78);
+	addresses.push_back(0x7a);
+	addresses.push_back(0x7c);
+	addresses.push_back(0x7e);
+	versionAddresses[1] = addresses; // Ere I2C-RL8xxxA
+	addresses.clear();
+
+	boardAddresses[eExpansionBoard_DigitalOutput] = versionAddresses;
+
+	versionAddresses.clear();
 
 	// Mapa de endereco da placa de Entradas Analogicas
-	addresses.push_back(0x41);
-	addresses.push_back(0x43);
-	addresses.push_back(0x45);
-	addresses.push_back(0x47);
-	addresses.push_back(0x49);
-	addresses.push_back(0x4b);
-	addresses.push_back(0x4d);
-	addresses.push_back(0x4f);
-	boardAddresses[eExpansionBoard_AnalogInput] = addresses;
+	addresses.push_back(0xd1);
+	addresses.push_back(0xd3);
+	addresses.push_back(0xd5);
+	addresses.push_back(0xd7);
+	addresses.push_back(0xd9);
+	addresses.push_back(0xdb);
+	addresses.push_back(0xdd);
+	addresses.push_back(0xdf);
+	versionAddresses[0] = addresses; // Ere I2C-AI418x
+	boardAddresses[eExpansionBoard_AnalogInput] = versionAddresses;
+
+	addresses.clear();
+	versionAddresses.clear();
+
+	// Mapa de endereco do LCD
+	addresses.push_back(0x27);
+	versionAddresses[0] = addresses; // Funduino
 
 	addresses.clear();
 
-	// Mapa de endereco do LCD
-	addresses.push_back(0x40);
-	addresses.push_back(0x42);
-	addresses.push_back(0x44);
-	addresses.push_back(0x46);
-	addresses.push_back(0x48);
-	addresses.push_back(0x4a);
-	addresses.push_back(0x4c);
-	addresses.push_back(0x4e);
-	boardAddresses[eExpansionBoard_LCD] = addresses;
+	addresses.push_back(0x27);
+	versionAddresses[1] = addresses; // Sunlike
+
+	boardAddresses[eExpansionBoard_LCD] = versionAddresses;
 }
 
 bool LadderExpansion::checkIfBoardExists(unsigned int id, string name, eExpansionBoard type, unsigned long address)
@@ -293,10 +324,10 @@ string LadderExpansion::getBoardName(eExpansionBoard type)
 	string name = "???";
 
 	switch(type) {
-		case eExpansionBoard_DigitalInput : name = "DI" ; break;
-		case eExpansionBoard_DigitalOutput: name = "DO" ; break;
-		case eExpansionBoard_AnalogInput  : name = "AI" ; break;
-		case eExpansionBoard_LCD          : name = "LCD"; break;
+		case eExpansionBoard_DigitalInput : name = _("DI" ); break;
+		case eExpansionBoard_DigitalOutput: name = _("DO" ); break;
+		case eExpansionBoard_AnalogInput  : name = _("AI" ); break;
+		case eExpansionBoard_LCD          : name = _("LCD"); break;
 	}
 
 	return name;
@@ -317,19 +348,29 @@ tExpansionBoardItem LadderExpansion::getById(unsigned long id)
 	return item; // Se placa nao encontrada, retorna valores iniciais
 }
 
-unsigned int LadderExpansion::getQuantityIO(eExpansionBoard typeBoard, eType typeIO)
+unsigned int LadderExpansion::getQuantityIO(eExpansionBoard typeBoard, unsigned int version, eType typeIO)
 {
 	switch(typeBoard) {
 	case eExpansionBoard_DigitalInput:
-		if(typeIO == eType_DigInput) return 16; // Possui 16 entradas digitais
+		if(typeIO == eType_DigInput) {
+			switch(version) {
+			default:
+				return 8; // Possui 8 entradas digitais
+			}
+		}
 		break;
 
 	case eExpansionBoard_DigitalOutput:
-		if(typeIO == eType_DigOutput) return 8; // Possui 8 saidas digitais
+		if(typeIO == eType_DigOutput) {
+			switch(version) {
+			default:
+				return 8; // Possui 8 saidas digitais
+			}
+		}
 		break;
 
 	case eExpansionBoard_AnalogInput:
-		if(typeIO == eType_ReadADC) return 2; // Possui 2 entradas analogicas
+		if(typeIO == eType_ReadADC) return 4; // Possui 4 entradas analogicas
 		break;
 	}
 
@@ -363,29 +404,31 @@ vector<string> LadderExpansion::getVersions(eExpansionBoard typeBoard)
 
 	switch(typeBoard) {
 	case eExpansionBoard_DigitalInput:
-		boardVersions.push_back("16 Input");
+		boardVersions.push_back(_("Ere I2C-IN830M1"));
+		boardVersions.push_back(_("Ere I2C-IN830MA1"));
 		break;
 
 	case eExpansionBoard_DigitalOutput:
-		boardVersions.push_back("16 Output");
+		boardVersions.push_back(_("Ere I2C-RL8xxx"));
+		boardVersions.push_back(_("Ere I2C-RL8xxxA"));
 		break;
 
 	case eExpansionBoard_AnalogInput:
-		boardVersions.push_back("2 Analog Input");
+		boardVersions.push_back(_("Ere I2C-AI418x"));
 		break;
 
 	case eExpansionBoard_LCD:
-		boardVersions.push_back("Funduino");
-		boardVersions.push_back("Sunlike");
+		boardVersions.push_back(_("Funduino"));
+		boardVersions.push_back(_("Sunlike"));
 		break;
 	}
 
 	return boardVersions;
 }
 
-vector<unsigned int> LadderExpansion::getAddresses(eExpansionBoard type)
+vector<unsigned int> LadderExpansion::getAddresses(eExpansionBoard type, unsigned int version)
 {
-	return boardAddresses[type];
+	return boardAddresses[type][version];
 }
 
 bool LadderExpansion::Save(FILE *f)
@@ -10738,7 +10781,7 @@ void LadderDiagram::Init(eModelPLC model)
 
 LadderDiagram::LadderDiagram(void)
 {
-	InitObject(eModelPLC_POP7);
+	InitObject(eModelPLC_POP8);
 }
 
 LadderDiagram::LadderDiagram(eModelPLC model)
@@ -11534,6 +11577,9 @@ bool LadderDiagram::PasteRung(LadderClipboard clipboard, bool isAfter)
 	// Operacao finalizada, a tela ja pode ser desbloqueada
 	context.isDrawBlocked = false;
 
+	// Quando a tela esta bloqueada, a lista nao eh atualizada. Agora verifica se precisa redesenhar
+	IO->updateGUI(false);
+
 	return ret;
 }
 
@@ -11758,6 +11804,9 @@ bool LadderDiagram::PasteElement(LadderClipboard clipboard)
 
 	// Operacao finalizada, a tela ja pode ser desbloqueada
 	context.isDrawBlocked = false;
+
+	// Quando a tela esta bloqueada, a lista nao eh atualizada. Agora verifica se precisa redesenhar
+	IO->updateGUI(false);
 
 	return ret;
 }
@@ -12942,9 +12991,9 @@ tExpansionBoardItem LadderDiagram::getBoardById(unsigned long id)
 	return expansionBoards->getById(id);
 }
 
-unsigned int LadderDiagram::getBoardQtyIO(eExpansionBoard typeBoard, eType typeIO)
+unsigned int LadderDiagram::getBoardQtyIO(eExpansionBoard typeBoard, unsigned int version, eType typeIO)
 {
-	return expansionBoards->getQuantityIO(typeBoard, typeIO);
+	return expansionBoards->getQuantityIO(typeBoard, version, typeIO);
 }
 
 string LadderDiagram::getBoardDescription(eExpansionBoard typeBoard)
@@ -12957,9 +13006,9 @@ vector<string> LadderDiagram::getBoardVersions(eExpansionBoard typeBoard)
 	return expansionBoards->getVersions(typeBoard);
 }
 
-vector<unsigned int> LadderDiagram::getAddresses(eExpansionBoard type)
+vector<unsigned int> LadderDiagram::getAddresses(eExpansionBoard type, unsigned int version)
 {
-	return expansionBoards->getAddresses(type);
+	return expansionBoards->getAddresses(type, version);
 }
 
 bool LadderDiagram::boardAdd(tExpansionBoardItem board)

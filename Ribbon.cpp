@@ -962,6 +962,7 @@ void EnableInterfaceItem(int item, BOOL enabled)
 			RIBBON_UPDATE_CMD_STATE(cmdInstrLCD               , MNU_INSERT_LCD             );
 
 			RIBBON_UPDATE_CMD_STATE(cmdConfig                 , MNU_MCU_SETTINGS           );
+			RIBBON_UPDATE_CMD_STATE(cmdExpansion              , MNU_MCU_EXPANSION          );
 			RIBBON_UPDATE_CMD_STATE(cmdSettings               , MNU_MCU_PREFERENCES        );
 
 			RIBBON_UPDATE_CMD_STATE(cmdCompile                , MNU_COMPILE                );

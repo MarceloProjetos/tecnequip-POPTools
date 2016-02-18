@@ -413,7 +413,7 @@ private:
 	bool checkIfBoardExists(unsigned int id, string name, eExpansionBoard type, unsigned long address);
 
 	/// Mapa com enderecos permitidos para cada tipo de placa
-	map<eExpansionBoard, vector<unsigned int> > boardAddresses;
+	map<eExpansionBoard, map<unsigned int, vector<unsigned int> > > boardAddresses;
 
 	/// Enumeracao com os tipos de eventos de Undo/Redo suportados pelo diagrama
 	enum UndoRedoActionsEnum {
@@ -505,15 +505,19 @@ public:
 	tExpansionBoardItem getById(unsigned long id);
 
 	/** Funcao que retorna o numero de I/Os de uma placa, conforme tipo especificado
+	 *  @param[in] typeBoard Modelo da placa
+	 *  @param[in] version   Versao da placa
+	 *  @param[in] typeIO    Tipo de I/O solicitado
 	 *  @return Quantidade de I/Os do tipo especificado para a placa fornecida.
 	 */
-	unsigned int getQuantityIO(eExpansionBoard typeBoard, eType typeIO);
+	unsigned int getQuantityIO(eExpansionBoard typeBoard, unsigned int version, eType typeIO);
 
-	/** Funcao que retorna o mapa de enderecos permitidos para cada tipo de placa de expansao
-	 *  @param[in] type Tipo da placa que se deseja obter o mapa de enderecos permitidos
+	/** Funcao que retorna o mapa de enderecos permitidos para cada tipo/versao de placa de expansao
+	 *  @param[in] type    Tipo da placa que se deseja obter o mapa de enderecos permitidos
+	 *  @param[in] version Versao da placa que se deseja obter o mapa de enderecos permitidos
 	 *  @return         Vetor com a lista de enderecos permitidos
 	 */
-	vector<unsigned int> getAddresses(eExpansionBoard type);
+	vector<unsigned int> getAddresses(eExpansionBoard type, unsigned int version);
 
 	/** Funcao que retorna a descricao da placa de expansao
 	 *  @param[in] type Tipo da placa que se deseja obter a descricao
@@ -4023,16 +4027,18 @@ public:
 	vector<string> getBoardVersions(eExpansionBoard typeBoard);
 
 	/** Funcao que retorna uma placa de expansao adicionada ao projeto pelo seu Id
-	 *  @param[in] id ID para a placa de expansao desejada
-	 *  @return       Placa de expansao com id passado como parametro
+	 *  @param[in] id      ID para a placa de expansao desejada
+	 *  @param[in] version Versao da placa de expansao desejada
+	 *  @return            Placa de expansao com id passado como parametro
 	 */
-	unsigned int getBoardQtyIO(eExpansionBoard typeBoard, eType typeIO);
+	unsigned int getBoardQtyIO(eExpansionBoard typeBoard, unsigned int version, eType typeIO);
 
 	/** Funcao que retorna o mapa de enderecos permitidos para cada tipo de placa de expansao
-	 *  @param[in] type Tipo da placa que se deseja obter o mapa de enderecos permitidos
-	 *  @return         Vetor com a lista de enderecos permitidos
+	 *  @param[in] type    Tipo da placa que se deseja obter o mapa de enderecos permitidos
+	 *  @param[in] version Versao da placa de expansao desejada
+	 *  @return            Vetor com a lista de enderecos permitidos
 	 */
-	vector<unsigned int> getAddresses(eExpansionBoard type);
+	vector<unsigned int> getAddresses(eExpansionBoard type, unsigned int version);
 
 	/** Funcao que adiciona uma placa de expansao ao projeto
 	 *  @param[in] board Dados da placa a inserir

@@ -193,12 +193,12 @@ static void MakeControls(void)
     NiceFont(CancelButton);
 }
 
-void LoadAddressCombobox(eExpansionBoard type, unsigned int address = 0)
+void LoadAddressCombobox(eExpansionBoard type, unsigned int version, unsigned int address = 0)
 {
 	ComboBox_ResetContent(BoardAddressComboBox);
 
 	unsigned int i;
-	vector<unsigned int> addresses = ladder->getAddresses(type);
+	vector<unsigned int> addresses = ladder->getAddresses(type, version);
 
 	for(i = 0; i < addresses.size(); i++) {
 		char buf[10];
@@ -213,11 +213,14 @@ void LoadAddressCombobox(eExpansionBoard type, unsigned int address = 0)
 void UpdateControls(HWND lv, unsigned int id)
 {
 	char buf[1024];
-	unsigned int    version = 0;
-	eExpansionBoard type    = eExpansionBoard_End;
+	unsigned int    version      = 0;
+	bool            loadVersions = true;
+	eExpansionBoard type         = eExpansionBoard_End;
 
 	// Se nao houve selecao, utilizamos a selecao anterior
 	if(lv == NULL) {
+		loadVersions = false;
+
 		if(currentItem < 0) {
 			id = 0;
 			lv = BoardModelsListView;
@@ -235,7 +238,7 @@ void UpdateControls(HWND lv, unsigned int id)
 		version     = item.version;
 
 		Edit_SetText(BoardNameTextBox   , item.name.c_str());
-		LoadAddressCombobox(type, item.address);
+		LoadAddressCombobox(type, version, item.address);
 		Static_SetText(BoardInfoLabel, ladder->getBoardDescription(item.type).c_str());
 		Button_SetCheck(BoardUseInterruptCheckbox, item.useIRQ ? TRUE : FALSE);
 	} else {
@@ -247,12 +250,14 @@ void UpdateControls(HWND lv, unsigned int id)
 		int index = ListView_GetNextItem(lv, -1, LVNI_SELECTED);
 		if(index >= 0) {
 			type = static_cast<eExpansionBoard>(index);
+			version = ComboBox_GetCurSel(BoardVersionComboBox);
+			if((int)version < 0) version = 0;
 			strcpy(buf, ladder->getBoardDescription(type).c_str());
 			Static_SetText(BoardInfoLabel, buf);
-			LoadAddressCombobox(type);
+			LoadAddressCombobox(type, version);
 		} else {
 			// Nada selecionado, envia placa invalida para limpar a lista
-			LoadAddressCombobox(eExpansionBoard_End);
+			LoadAddressCombobox(eExpansionBoard_End, 0);
 		}
 	}
 
@@ -268,16 +273,18 @@ void UpdateControls(HWND lv, unsigned int id)
 	HBITMAP hBmp = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(res),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
 	SendMessage(BoardImageLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp);
 
-	// Carrega lista de versoes de placas.
-	unsigned int i;
-	vector<string> versions = ladder->getBoardVersions(type);
+	// Carrega lista de versoes de placas. Somente se selecionou uma placa na lista de placas a adicionar!
+	if(loadVersions) {
+		unsigned int i;
+		vector<string> versions = ladder->getBoardVersions(type);
 
-	ComboBox_ResetContent(BoardVersionComboBox);
+		ComboBox_ResetContent(BoardVersionComboBox);
 
-	for(i = 0; i < versions.size(); i++) {
-		ComboBox_AddString(BoardVersionComboBox, versions[i].c_str());
-		if(i == version) {
-			ComboBox_SetCurSel(BoardVersionComboBox, i);
+		for(i = 0; i < versions.size(); i++) {
+			ComboBox_AddString(BoardVersionComboBox, versions[i].c_str());
+			if(i == version) {
+				ComboBox_SetCurSel(BoardVersionComboBox, i);
+			}
 		}
 	}
 }
@@ -436,6 +443,8 @@ static LRESULT CALLBACK ExpansionDialogProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					DialogDone   = TRUE;
 					DialogCancel = TRUE;
 				}
+            } else if(h == BoardVersionComboBox && HIWORD(wParam) == CBN_SELCHANGE) {
+				UpdateControls(NULL, 0);
 			}
             break;
 			}

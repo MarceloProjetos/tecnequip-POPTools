@@ -776,8 +776,11 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				case eCommandLCD_Write:
 					GenVarCode(buf2, MapSym(vectorIntCode[i].name2), NULL, GENVARCODE_MODE_READ);
 					GenVarCode(buf , MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ);
-					fprintf(f, "XP_lcd_MoveCursor(%s,%s); ", buf, buf2);
-					fprintf(f, "XP_lcd_WriteText(\"%s\");\n", vectorIntCode[i].name4);
+					fprintf(f, "XP_lcd_MoveCursor(%s,%s); ", buf2, buf);
+
+					GenVarCode(buf , MapSym(vectorIntCode[i].name3), NULL, GENVARCODE_MODE_READ);
+					fprintf(f, "XP_lcd_WriteText(\"%s\", &%s);\n", vectorIntCode[i].name4, buf);
+
 					break;
 				case eCommandLCD_BackLight:
 					fprintf(f, "XP_lcd_setBL(%s);\n", GenVarCode(buf, MapSym(vectorIntCode[i].name3), NULL, GENVARCODE_MODE_READ));
@@ -1401,7 +1404,7 @@ DWORD GenerateCFile(char *filename)
 	for(i=0; i < boards.size(); i++) {
 		switch(boards[i].type) {
 		case eExpansionBoard_LCD:
-			fprintf(f, "\n    XP_lcd_Init(%d);\n", boards[i].version);
+			fprintf(f, "\n    XP_lcd_Init(%d, %d);\n", boards[i].address, boards[i].version);
 			break;
 		}
 	}

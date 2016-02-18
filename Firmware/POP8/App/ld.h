@@ -277,6 +277,7 @@ extern struct strMBTCP_Tansfer MBTCP_Transfer;
 
 extern void         ModBUS_SetID(unsigned int id);
 extern void         ModBUS_SetAppName(char *appname);
+extern char       * ModBUS_GetAppName(void);
 extern unsigned int Modbus_Request(struct MODBUS_Device *dev, unsigned char * buffer, unsigned int sz);
 extern void Modbus_Send(unsigned char id,
                   unsigned long ip,
@@ -447,8 +448,8 @@ struct strExpansionBoard {
 unsigned int XP_lcd_Clear     (void);
 unsigned int XP_lcd_MoveCursor(unsigned int lin, unsigned int col);
 void         XP_lcd_setBL     (unsigned int enable);
-unsigned int XP_lcd_Init      (unsigned int model);
-unsigned int XP_lcd_WriteText (         char *data);
+unsigned int XP_lcd_Init      (unsigned int address, unsigned int model);
+unsigned int XP_lcd_WriteText (char *format, volatile int *val);
 
 /***************************************************************************/
 /* PLC                                                                     */

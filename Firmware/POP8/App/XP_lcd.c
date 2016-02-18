@@ -1,9 +1,11 @@
 #include "XP_lcd.h"
+#include "format_str.h"
 
 volatile unsigned int I_LCDReady = 0;
 
-static unsigned char maskBL    = XP_LCD_CTRL_BLIGHT;
-static unsigned int  lcd_model = XP_LCD_TYPE_GENERIC;
+static unsigned char maskBL      = XP_LCD_CTRL_BLIGHT;
+static unsigned int  lcd_model   = XP_LCD_TYPE_GENERIC;
+static unsigned int  lcd_address = 0;
 
 static struct {
 	unsigned int initCount;
@@ -11,15 +13,16 @@ static struct {
 	unsigned int delayCursorReturn;
 	unsigned int delayWrite;
 } XP_lcd_config[] = {
-		{ 3,  11500, 5000,    0 }, // Generico
+		{ 3,  11500,   5000,     0 }, // Generico
 		{ 2, 111500, 115000, 11500 }, // Sunlike SC2004A
 };
 
-unsigned int XP_lcd_Init(unsigned int model)
+unsigned int XP_lcd_Init(unsigned int address, unsigned int model)
 {
 	unsigned int ret, i;
 
-	lcd_model = model; // Primeiro configura o modelo assim as funcoes utilizam a configuracao correta
+	lcd_address = address; // Configura o endereco do LCD
+	lcd_model = model;     // Primeiro configura o modelo assim as funcoes utilizam a configuracao correta
 
 	// Envia sequencia de inicializacao
 	// Devem ser enviadas 3 mensagens com os pinos D4 e D5 ligados, D6 e D7 desligados
@@ -111,7 +114,7 @@ unsigned int XP_lcd_Write(unsigned char cmd, unsigned char data)
 	unsigned char val = cmd | ((data&0xF) << 4) | maskBL;
 
 	// Configura o endereco do LCD
-	XP_SetAddress(0x27);
+	XP_SetAddress(lcd_address);
 
 	// Configura pinos
 	for(i = 0; i < XP_lcd_config[lcd_model].delayWrite; i++);
@@ -152,15 +155,19 @@ unsigned int XP_lcd_WriteData(unsigned char data)
 	return ret;
 }
 
-unsigned int XP_lcd_WriteText(char *data)
+unsigned int XP_lcd_WriteText(char *format, volatile int *val)
 {
+	const int size = 128;
+	char msg[size];
 	unsigned int i = 0, ret;
+
+	Format_String_Generate(msg, size, format, val);
 
 	I_LCDReady = 0;
 
 	do {
-		ret = XP_lcd_WriteData((unsigned char)data[i]);
-	} while(ret && data[++i]);
+		ret = XP_lcd_WriteData((unsigned char)msg[i]);
+	} while(ret && msg[++i]);
 
 	I_LCDReady = 1;
 
