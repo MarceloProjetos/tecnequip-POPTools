@@ -16,8 +16,8 @@
 <attrib name="registered" value="true"/>
 <attrib name="path" value="/Lpc407x/cmsisboot/startup/startup_Cortex_M4.c"/>
 <attrib name="org.eclipse.cdt.debug.core.sourceHandle" value="C:\Projetos\GIT\tecnequip-POPTools\Firmware\POP8\cmsisboot\startup\startup_Cortex_M4.c"/>
-<attrib name="org.eclipse.debug.core.enabled" value="true"/>
 <attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
+<attrib name="org.eclipse.debug.core.enabled" value="true"/>
 </marker>
 </breakpoint>
 <breakpoint enabled="true" persistant="true" registered="true">
@@ -36,8 +36,8 @@
 <attrib name="registered" value="true"/>
 <attrib name="path" value="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
 <attrib name="org.eclipse.cdt.debug.core.sourceHandle" value="C:\Projetos\GIT\tecnequip-POPTools\Firmware\POP8\lpcopen\lpc_chip_40xx\src\i2c_17xx_40xx.c"/>
-<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 <attrib name="org.eclipse.debug.core.enabled" value="true"/>
+<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 </marker>
 </breakpoint>
 <breakpoint enabled="true" persistant="true" registered="true">
@@ -56,8 +56,8 @@
 <attrib name="registered" value="true"/>
 <attrib name="path" value="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
 <attrib name="org.eclipse.cdt.debug.core.sourceHandle" value="C:\Projetos\GIT\tecnequip-POPTools\Firmware\POP8\lpcopen\lpc_chip_40xx\src\i2c_17xx_40xx.c"/>
-<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 <attrib name="org.eclipse.debug.core.enabled" value="true"/>
+<attrib name="org.eclipse.cdt.debug.core.ignoreCount" value="0"/>
 </marker>
 </breakpoint>
 </breakpoints>
