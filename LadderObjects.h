@@ -40,6 +40,11 @@ typedef struct {
 	int				UART;     ///< Variável contendo configuracao da RS-485: paridade, stop bits, etc.
 } LadderSettingsUART;
 
+/// Configuracoes da Interface CAN do CLP
+typedef struct {
+	int				baudRate; ///< Velocidade em kbps da interface CAN
+} LadderSettingsCAN;
+
 /// Configuracoes de rede do CLP
 typedef struct {
 	unsigned long	ip;   ///< IP do CLP
@@ -3441,6 +3446,7 @@ private:
 	typedef struct {
 		LadderSettingsGeneral            General;
 		LadderSettingsUART               Uart;
+		LadderSettingsCAN                CAN;
 		LadderSettingsNetwork            Network;
 		LadderSettingsSNTP               Sntp;
 		LadderSettingsEncoderIncremental EncInc;
@@ -3831,6 +3837,10 @@ public:
 	 *  @return Estrutura com as configuracoes de serial do diagrama
 	 */
 	LadderSettingsUART               getSettingsUART              (void) { return LadderSettings.Uart   ; }
+	/** Funcao que retorna as configuracoes de serial do diagrama
+	 *  @return Estrutura com as configuracoes de serial do diagrama
+	 */
+	LadderSettingsCAN                getSettingsCAN               (void) { return LadderSettings.CAN   ; }
 	/** Funcao que retorna as configuracoes de rede do diagrama
 	 *  @return Estrutura com as configuracoes de rede do diagrama
 	 */
@@ -3876,6 +3886,10 @@ public:
 	 *  @param[in] setUart Estrutura com as novas configuracoes de serial do diagrama
 	 */
 	void                             setSettingsUART              (LadderSettingsUART               setUart   );
+	/** Funcao que atualiza as configuracoes de serial do diagrama
+	 *  @param[in] setUart Estrutura com as novas configuracoes de serial do diagrama
+	 */
+	void                             setSettingsCAN               (LadderSettingsCAN               setCAN     );
 	/** Funcao que atualiza as configuracoes de rede do diagrama
 	 *  @param[in] setNetwork Estrutura com as novas configuracoes de rede do diagrama
 	 */

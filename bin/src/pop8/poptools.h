@@ -98,11 +98,76 @@ extern unsigned int GPIO_Input(void);
 /* RS485                                                                   */
 /***************************************************************************/
 #ifndef __RS485_H__
+extern void RS485_Init();
 extern void RS485_Config(int baudrate, int bits, int parity, int stopbit);
 extern void RS485_Handler (void);
 extern unsigned int RS485_Write(unsigned char * buffer, unsigned int size);
 extern unsigned int RS485_Read(unsigned char * buffer, unsigned int size);
 extern unsigned int RS485_ReadChar(unsigned char * buffer);
+#endif
+
+/***************************************************************************/
+/* CAN                                                                     */
+/***************************************************************************/
+#ifndef __CAN_H__
+#define     __I     volatile
+#define     __O     volatile
+#define     __IO    volatile
+#define CAN_MSG_MAX_DATA_LEN       (8)
+
+typedef struct							/*!< CAN Transmit structure                  */
+{
+	__IO uint32_t TFI;					/*!< CAN Transmit Frame Information register*/
+	__IO uint32_t TID;					/*!< CAN Transfer Identifier register*/
+	__IO uint32_t TD[2];				/*!<CAN Transmit Data register*/
+} LPC_CAN_TX_T;
+
+typedef struct				/*!< CAN Receive Frame structure                  */
+{
+	__IO uint32_t RFS;		/*!< Characteristic of the received frame. It includes the following characteristics:
+							   CAN_RFS_BP: indicate that the current message is received in Bypass mode.
+							 *							CAN_RFS_RTR: indicate the value of Remote Transmission Request bit in the current message.
+							 *							CAN_RFS_FF: indicate that the identifier in the current message is 11-bit or 29-bit identifier.
+							   Use CAN_RFS_ID_INDEX(RFS value) to get the ID Index of the matched entry in the Lookup Table RAM.
+							   Use CAN_RFS_DLC(RFS value) to get the Data Length Code field of the current received message.
+							 */
+	__IO uint32_t RID;		/*!<Identifier in the received message. Use RFS field to determine if it is 11-bit or 29-bit identifier.*/
+	__IO uint32_t RD[2];	/*!< Data bytes of the received message. Use DLC value in RFS fied to determine the number of data bytes.*/
+} IP_CAN_001_RX_T;
+
+typedef struct							/*!< CANn structure               */
+{
+	__IO uint32_t MOD;					/*!< CAN Mode Register */
+	__O  uint32_t CMR;					/*!< CAN Command Register */
+	__IO uint32_t GSR;					/*!< CAN Global Status Register */
+	__I  uint32_t ICR;					/*!< CAN Interrupt and Capture Register */
+	__IO uint32_t IER;					/*!< CAN Interrupt Enable Register*/
+	__IO uint32_t BTR;					/*!< CAN Bus Timing Register*/
+	__IO uint32_t EWL;					/*!< CAN Error Warning Limit Register*/
+	__I  uint32_t SR;					/*!< CAN Status Register*/
+	__IO IP_CAN_001_RX_T RX;			/*!< CAN Receive Registers*/
+	__IO LPC_CAN_TX_T TX[3];		/*!< CAN Transmit Registers*/
+} LPC_CAN_T;
+
+
+typedef struct						/*!< Message structure */
+{
+	uint32_t ID;					/*!< Message Identifier. If 30th-bit is set, this is 29-bit ID, othewise 11-bit ID */
+	uint32_t Type;					/*!< Message Type. which can include: - CAN_REMOTE_MSG type*/
+	uint32_t DLC;					/*!< Message Data Length: 0~8 */
+	uint8_t  Data[CAN_MSG_MAX_DATA_LEN];/*!< Message Data */
+} CAN_MSG_T;
+
+extern LPC_CAN_T LPC_CAN;
+extern CAN_MSG_T SendMsgBuf;
+extern CAN_MSG_T RcvMsgBuf;
+
+extern void CAN_Init();
+extern void CAN_Config(int baudrate);
+extern void CAN_Handler (void);
+extern unsigned int CAN_Write(CAN_MSG_T);
+extern unsigned int CAN_Read(CAN_MSG_T);
+extern unsigned int CAN_ReadChar(unsigned char * buffer);
 #endif
 
 /***************************************************************************/

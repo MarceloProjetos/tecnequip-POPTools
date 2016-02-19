@@ -310,6 +310,7 @@ void Chip_Clock_SetCLKOUTSource(CHIP_SYSCTL_CLKOUTSRC_T src,
 
 	temp = LPC_SYSCTL->CLKOUTCFG & ~0x1FF;
 	temp |= ((uint32_t) src) | ((div - 1) << 4);
+	temp |= 1 << 8; // enable CLKOUT PIN
 	LPC_SYSCTL->CLKOUTCFG = temp;
 }
 

@@ -27,6 +27,7 @@ int HasADC = 0;
 int HasDAC = 0;
 int HasQEI = 0;
 int HasSSI = 0;
+boolean HasCAN = false;
 
 // Output log
 char OutputLog[MAX_PATH + MAX_NAME_LEN + 1];
@@ -275,6 +276,11 @@ static void GenerateDeclarations(FILE *f)
 
             case INT_READ_MODBUS:
             case INT_WRITE_MODBUS:
+                intVar1 = vectorIntCode[i].name1;
+                break;
+
+            case INT_READ_CAN:
+            case INT_WRITE_CAN:
                 intVar1 = vectorIntCode[i].name1;
                 break;
 
@@ -741,7 +747,15 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				if(vectorIntCode[i].literal) MODBUS_TCP_MASTER = 1; else MODBUS_RS485_MASTER = 1;
 				fprintf(f, "Modbus_Send(%d, %uUL, MODBUS_FC_WRITE_MULTIPLE_REGISTERS, %d, %d, &%s);\n", atoi(vectorIntCode[i].name2), vectorIntCode[i].literal, atoi(vectorIntCode[i].name3), vectorIntCode[i].bit + 1, GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
-            case INT_SET_PWM:
+            case INT_READ_CAN:
+				HasCAN = true;
+				fprintf(f, "CAN_Read(RcvMsgBuf);\n");
+				break;
+            case INT_WRITE_CAN:
+				HasCAN = true;
+				fprintf(f, "CAN_Write(SendMsgBuf);\n");
+				break;
+			case INT_SET_PWM:
 				fprintf(f, "PWM_Set(%s, %s);\n", IsNumber(vectorIntCode[i].name1) ? vectorIntCode[i].name1 : GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ), vectorIntCode[i].name2);
 				HasPWM = 1;
 				break;
@@ -1195,6 +1209,7 @@ DWORD GenerateCFile(char *filename)
     }
 
 	LadderSettingsUART               settingsUart    = ladder->getSettingsUART              ();
+	LadderSettingsCAN                settingsCAN     = ladder->getSettingsCAN               ();
 	LadderSettingsNetwork            settingsNetwork = ladder->getSettingsNetwork           ();
 	LadderSettingsSNTP               settingsSntp    = ladder->getSettingsSNTP              ();
 	LadderSettingsEncoderIncremental settingsEncInc  = ladder->getSettingsEncoderIncremental();
@@ -1264,29 +1279,41 @@ DWORD GenerateCFile(char *filename)
 
 	fprintf(f, "\n");
 
+	if (HasCAN) {
+		fprintf(f, "extern LPC_CAN_T LPC_CAN;\n");
+		fprintf(f, "extern CAN_MSG_T SendMsgBuf;\n");
+		fprintf(f, "extern CAN_MSG_T RcvMsgBuf;\n");
+
+		fprintf(f, "\n");
+	}
+
+	eModelPLC plcModel = ladder->getSettingsGeneral().model;
+
 	// then generate the expansion boards list
 	char *boardName;
 	vector<tExpansionBoardItem> boards = ladder->getBoardList();
 
-	fprintf(f, "struct strExpansionBoard expansionBoards[] = {\n");
+	if(plcModel != eModelPLC_POP7) {
+		fprintf(f, "struct strExpansionBoard expansionBoards[] = {\n");
 
-	for(i=0, boardIndex=0; i < boards.size(); i++) {
-		switch(boards[i].type) {
-			case eExpansionBoard_DigitalInput : boardName = "eBoardType_Input" ; break;
-			case eExpansionBoard_DigitalOutput: boardName = "eBoardType_Output"; break;
-			case eExpansionBoard_AnalogInput  : boardName = "eBoardType_AD"    ; break;
-			default: boardName = NULL;
+		for(i=0, boardIndex=0; i < boards.size(); i++) {
+			switch(boards[i].type) {
+				case eExpansionBoard_DigitalInput : boardName = "eBoardType_Input" ; break;
+				case eExpansionBoard_DigitalOutput: boardName = "eBoardType_Output"; break;
+				case eExpansionBoard_AnalogInput  : boardName = "eBoardType_AD"    ; break;
+				default: boardName = NULL;
+			}
+
+			if(boardName != NULL) {
+				mapExpansionIO[boards[i].id] = boardIndex++;
+				fprintf(f, "    { %s, %d, { { 0 } }, %d, %d },\n", boardName, (boards[i].address >> 1) & 0x7F, 0 /* Canal !?? */, boards[i].useIRQ);
+			}
 		}
 
-		if(boardName != NULL) {
-			mapExpansionIO[boards[i].id] = boardIndex++;
-			fprintf(f, "    { %s, %d, { { 0 } }, %d, %d },\n", boardName, (boards[i].address >> 1) & 0x7F, 0 /* Canal !?? */, boards[i].useIRQ);
-		}
+		fprintf(f, "    { eBoardType_None, 0, { { 0 } }, 0, 0 }\n};\n");
+
+		fprintf(f, "\n");
 	}
-
-	fprintf(f, "    { eBoardType_None, 0, { { 0 } }, 0, 0 }\n};\n");
-
-	fprintf(f, "\n");
 
 	// now generate declarations for all variables
 	fprintf(f, "// Variaveis PLC\n");
@@ -1319,13 +1346,19 @@ DWORD GenerateCFile(char *filename)
 	fprintf(f, "// Funcao que inicializa o controlador, executado apenas ao ligar o equipamento\n");
 	fprintf(f, "void PLC_Init(void)\n");
 	fprintf(f, "{\n");
-	fprintf(f, "	MODBUS_RS485_MASTER = %d;\n", MODBUS_RS485_MASTER);
 	fprintf(f, "	MODBUS_TCP_MASTER = %d;\n", MODBUS_TCP_MASTER);
 	fprintf(f, "	ModBUS_SetID(%d);\n", settingsMbSlave.ModBUSID);
 	fprintf(f, "	ModBUS_SetAppName(\"%s\");\n", settingsInfo.Name.c_str());
 	fprintf(f, "\n");
-	fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", settingsUart.baudRate, SerialConfig[settingsUart.UART].bByteSize,
-		SerialConfig[settingsUart.UART].bParity, SerialConfig[settingsUart.UART].bStopBits == ONESTOPBIT ? 1 : 2);
+	if (HasCAN) {
+		fprintf(f, "	CAN_Init();\n");
+		fprintf(f, "	CAN_Config(%d);\n", settingsCAN.baudRate);
+	} else {
+		fprintf(f, "	MODBUS_RS485_MASTER = %d;\n", MODBUS_RS485_MASTER);
+		fprintf(f, "	RS485_Init();\n");
+		fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", settingsUart.baudRate, SerialConfig[settingsUart.UART].bByteSize,
+			SerialConfig[settingsUart.UART].bParity, SerialConfig[settingsUart.UART].bStopBits == ONESTOPBIT ? 1 : 2);
+	}
 	fprintf(f, "\n");
 	fprintf(f, "	IP4_ADDR(&IP_ADDRESS, %d,%d,%d,%d);\n", FIRST_IPADDRESS(settingsNetwork.ip), SECOND_IPADDRESS(settingsNetwork.ip),
 		THIRD_IPADDRESS(settingsNetwork.ip), FOURTH_IPADDRESS(settingsNetwork.ip));
