@@ -6,6 +6,7 @@
 #define _LD_H_
 
 #include <string.h>
+#include <stdlib.h>
 
 /******************************************************************************
 * Encoder SSI
@@ -57,6 +58,7 @@ typedef struct {
     unsigned int Yday;    /* Day of year value - [1,365] */
 } RTC_Time;
 RTC_Time RTC_GetTime( void );
+RTC_Time RTC_GetTime( void );
 
 #define RTC_MODE_DATE_CONTINUOUS      0
 #define RTC_MODE_DATE_INTERMITTENT    1
@@ -72,19 +74,100 @@ int RTC_OutputState(struct tm start, struct tm end, struct tm now, int mode, int
 #endif
 
 /***************************************************************************/
+/* LWIP 1.4.0                                                              */
+/***************************************************************************/
+#ifndef __LWIP_IP_ADDR_H__
+struct ip_addr {
+  unsigned int addr;
+};
+
+#define IP4_ADDR(ipaddr, a,b,c,d) \
+        (ipaddr)->addr = ((unsigned int)((d) & 0xff) << 24) | \
+                         ((unsigned int)((c) & 0xff) << 16) | \
+                         ((unsigned int)((b) & 0xff) << 8)  | \
+                          (unsigned int)((a) & 0xff)
+#endif
+
+/***************************************************************************/
 /* GPIO                                                                    */
 /***************************************************************************/
-extern unsigned int GPIO_Output(void);
+extern unsigned int GPIO_Output(unsigned int OUTPUT);
 extern unsigned int GPIO_Input(void);
 
 /***************************************************************************/
 /* RS485                                                                   */
 /***************************************************************************/
 #ifndef __RS485_H__
+extern void RS485_Init();
 extern void RS485_Config(int baudrate, int bits, int parity, int stopbit);
 extern void RS485_Handler (void);
 extern unsigned int RS485_Write(unsigned char * buffer, unsigned int size);
 extern unsigned int RS485_Read(unsigned char * buffer, unsigned int size);
+extern unsigned int RS485_ReadChar(unsigned char * buffer);
+#endif
+
+/***************************************************************************/
+/* CAN                                                                     */
+/***************************************************************************/
+#ifndef __CAN_H__
+#define     __I     volatile
+#define     __O     volatile
+#define     __IO    volatile
+#define CAN_MSG_MAX_DATA_LEN       (8)
+
+typedef struct							/*!< CAN Transmit structure                  */
+{
+	__IO uint32_t TFI;					/*!< CAN Transmit Frame Information register*/
+	__IO uint32_t TID;					/*!< CAN Transfer Identifier register*/
+	__IO uint32_t TD[2];				/*!<CAN Transmit Data register*/
+} LPC_CAN_TX_T;
+
+typedef struct				/*!< CAN Receive Frame structure                  */
+{
+	__IO uint32_t RFS;		/*!< Characteristic of the received frame. It includes the following characteristics:
+							   CAN_RFS_BP: indicate that the current message is received in Bypass mode.
+							 *							CAN_RFS_RTR: indicate the value of Remote Transmission Request bit in the current message.
+							 *							CAN_RFS_FF: indicate that the identifier in the current message is 11-bit or 29-bit identifier.
+							   Use CAN_RFS_ID_INDEX(RFS value) to get the ID Index of the matched entry in the Lookup Table RAM.
+							   Use CAN_RFS_DLC(RFS value) to get the Data Length Code field of the current received message.
+							 */
+	__IO uint32_t RID;		/*!<Identifier in the received message. Use RFS field to determine if it is 11-bit or 29-bit identifier.*/
+	__IO uint32_t RD[2];	/*!< Data bytes of the received message. Use DLC value in RFS fied to determine the number of data bytes.*/
+} IP_CAN_001_RX_T;
+
+typedef struct							/*!< CANn structure               */
+{
+	__IO uint32_t MOD;					/*!< CAN Mode Register */
+	__O  uint32_t CMR;					/*!< CAN Command Register */
+	__IO uint32_t GSR;					/*!< CAN Global Status Register */
+	__I  uint32_t ICR;					/*!< CAN Interrupt and Capture Register */
+	__IO uint32_t IER;					/*!< CAN Interrupt Enable Register*/
+	__IO uint32_t BTR;					/*!< CAN Bus Timing Register*/
+	__IO uint32_t EWL;					/*!< CAN Error Warning Limit Register*/
+	__I  uint32_t SR;					/*!< CAN Status Register*/
+	__IO IP_CAN_001_RX_T RX;			/*!< CAN Receive Registers*/
+	__IO LPC_CAN_TX_T TX[3];		/*!< CAN Transmit Registers*/
+} LPC_CAN_T;
+
+
+typedef struct						/*!< Message structure */
+{
+	uint32_t ID;					/*!< Message Identifier. If 30th-bit is set, this is 29-bit ID, othewise 11-bit ID */
+	uint32_t Type;					/*!< Message Type. which can include: - CAN_REMOTE_MSG type*/
+	uint32_t DLC;					/*!< Message Data Length: 0~8 */
+	uint8_t  Data[CAN_MSG_MAX_DATA_LEN];/*!< Message Data */
+} CAN_MSG_T;
+
+extern LPC_CAN_T LPC_CAN;
+extern CAN_MSG_T SendMsgBuf;
+extern CAN_MSG_T RcvMsgBuf;
+
+extern void CAN_Init();
+extern void CAN_Config(int baudrate);
+extern void CAN_Handler (void);
+extern unsigned int CAN_Write(CAN_MSG_T);
+extern unsigned int CAN_Read(CAN_MSG_T);
+extern unsigned int CAN_ReadChar(unsigned char * buffer);
 #endif
 
 /***************************************************************************/
@@ -100,7 +183,8 @@ extern void RS232_Console(void);
 /* Modbus  RTU                                                             */
 /***************************************************************************/
 #ifndef __MODBUS_TCP_H__
-void ModBUS_SetID(unsigned int id);
+void         ModBUS_SetID(unsigned int id);
+void         ModBUS_SetAppName(char *appname);
 
 void Modbus_TCP_Send(unsigned char id,
                   int fc,
@@ -255,7 +339,6 @@ struct MODBUS_Reply {
 struct MODBUS_Device {
   struct {
     unsigned char  Id;
-    unsigned long int Ip;
     char  *VendorName;
     char  *ProductCode;
     char  *MajorMinorRevision;
@@ -269,16 +352,16 @@ struct MODBUS_Device {
   MODBUS_HANDLER_TX_PTR(TX); // Ponteiro para funcao que faz a transmissao do pacote
 };
 
-#define MBTCP_STATUS_READY 0
-#define MBTCP_STATUS_BUSY  1
-#define MBTCP_STATUS_DONE  2
-
-extern struct strMBTCP_Tansfer MBTCP_Transfer;
-
-extern void         ModBUS_SetID(unsigned int id);
-extern void         ModBUS_SetAppName(char *appname);
-extern char       * ModBUS_GetAppName(void);
-extern unsigned int Modbus_Request(struct MODBUS_Device *dev, unsigned char * buffer, unsigned int sz);
+extern unsigned int Modbus_ReadCoils(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+extern unsigned int Modbus_ReadDiscreteInputs(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+extern unsigned int Modbus_ReadHoldingRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+extern unsigned int Modbus_ReadInputRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+extern unsigned int Modbus_WriteSingleCoil(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+extern unsigned int Modbus_WriteSingleRegister(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+extern unsigned int Modbus_WriteMultipleCoils(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+extern unsigned int Modbus_WriteMultipleRegisters(struct MODBUS_Device *dev, union MODBUS_FCD_Data *data, struct MODBUS_Reply *reply);
+extern unsigned int Modbus_Tx(unsigned char *data, unsigned int size);
+extern unsigned int Modbus_Request(unsigned char * buffer, unsigned int sz);
 extern void Modbus_Send(unsigned char id,
                   unsigned long ip,
                   int fc,
@@ -304,6 +387,27 @@ extern int Yaskawa_Write(char * id, char *format, volatile int * val);
 #endif
 
 /***************************************************************************/
+/* SNTP                                                                    */
+/***************************************************************************/
+#ifndef __SNTP_H__
+extern void SNTP_Init(void);
+#endif
+
+/***************************************************************************/
+/* QEI                                                                     */
+/***************************************************************************/
+#ifndef __QEI_H__
+extern void QEI_Init(void);
+#endif
+
+/***************************************************************************/
+/* ADC                                                                     */
+/***************************************************************************/
+#ifndef __ADC_H__
+extern void ADC_Init(void);
+#endif
+
+/***************************************************************************/
 /* FORMAT STRING                                                           */
 /***************************************************************************/
 extern int Format_String_Write(char *format, volatile int * val);
@@ -325,7 +429,7 @@ unsigned char  CoTimeDelay(unsigned char hour,unsigned char minute,unsigned char
 /* DAC                                                                     */
 /***************************************************************************/
 #ifndef __DAC_H
-void			DAC_Init(void);
+void			DAC_Init (void);
 unsigned int	DAC_Read (void);
 void			DAC_Abort(int mode);
 void			DAC_Write(unsigned int val);
@@ -387,8 +491,19 @@ void PWM_Init(void);
 int srint(int *sr);
 
 /***************************************************************************/
-/* EXPANSION PORT                                                          */
+/* PLC                                                                     */
 /***************************************************************************/
+void PLC_Run(void);
+void PLC_Cycle(void *pdata);
+void PLC_Init(void);
+
+#endif
+
+/***************************************************************************/
+/* Expansion Port                                                          */
+/***************************************************************************/
+#ifndef _XP_H__
+
 enum eBoardType {
 	eBoardType_None,
 	eBoardType_Input,
@@ -441,21 +556,29 @@ struct strExpansionBoard {
 	unsigned char   useInterrupt;
 };
 
+void         XP_Init (void);
+int          XP_Busy (void);
+void         XP_SetAddress(unsigned int address);
+unsigned int XP_Write(unsigned int data);
+unsigned int XP_Read (void);
+
+#endif
+
 /***************************************************************************/
-/* EXPANSION BOARD - LCD                                                   */
+/* LCD                                                                     */
 /***************************************************************************/
+#ifndef _XP_LCD_H__
 
 unsigned int XP_lcd_Clear     (void);
 unsigned int XP_lcd_MoveCursor(unsigned int lin, unsigned int col);
 void         XP_lcd_setBL     (unsigned int enable);
 unsigned int XP_lcd_Init      (unsigned int address, unsigned int model);
+unsigned int XP_lcd_Write     (unsigned char cmd, unsigned char data);
+unsigned int XP_lcd_WriteData (unsigned char data);
+unsigned int XP_lcd_WriteInstr(unsigned char instr);
 unsigned int XP_lcd_WriteText (char *format, volatile int *val);
 
-/***************************************************************************/
-/* PLC                                                                     */
-/***************************************************************************/
-void PLC_Run(void);
-void PLC_Cycle(void *pdata);
-void PLC_Init(void);
+#define XP_LCD_TYPE_GENERIC 0
+#define XP_LCD_TYPE_SC2004A 1
 
 #endif

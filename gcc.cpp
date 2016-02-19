@@ -1287,29 +1287,33 @@ DWORD GenerateCFile(char *filename)
 		fprintf(f, "\n");
 	}
 
+	eModelPLC plcModel = ladder->getSettingsGeneral().model;
+
 	// then generate the expansion boards list
 	char *boardName;
 	vector<tExpansionBoardItem> boards = ladder->getBoardList();
 
-	fprintf(f, "struct strExpansionBoard expansionBoards[] = {\n");
+	if(plcModel != eModelPLC_POP7) {
+		fprintf(f, "struct strExpansionBoard expansionBoards[] = {\n");
 
-	for(i=0, boardIndex=0; i < boards.size(); i++) {
-		switch(boards[i].type) {
-			case eExpansionBoard_DigitalInput : boardName = "eBoardType_Input" ; break;
-			case eExpansionBoard_DigitalOutput: boardName = "eBoardType_Output"; break;
-			case eExpansionBoard_AnalogInput  : boardName = "eBoardType_AD"    ; break;
-			default: boardName = NULL;
+		for(i=0, boardIndex=0; i < boards.size(); i++) {
+			switch(boards[i].type) {
+				case eExpansionBoard_DigitalInput : boardName = "eBoardType_Input" ; break;
+				case eExpansionBoard_DigitalOutput: boardName = "eBoardType_Output"; break;
+				case eExpansionBoard_AnalogInput  : boardName = "eBoardType_AD"    ; break;
+				default: boardName = NULL;
+			}
+
+			if(boardName != NULL) {
+				mapExpansionIO[boards[i].id] = boardIndex++;
+				fprintf(f, "    { %s, %d, { { 0 } }, %d, %d },\n", boardName, (boards[i].address >> 1) & 0x7F, 0 /* Canal !?? */, boards[i].useIRQ);
+			}
 		}
 
-		if(boardName != NULL) {
-			mapExpansionIO[boards[i].id] = boardIndex++;
-			fprintf(f, "    { %s, %d, { { 0 } }, %d, %d },\n", boardName, (boards[i].address >> 1) & 0x7F, 0 /* Canal !?? */, boards[i].useIRQ);
-		}
+		fprintf(f, "    { eBoardType_None, 0, { { 0 } }, 0, 0 }\n};\n");
+
+		fprintf(f, "\n");
 	}
-
-	fprintf(f, "    { eBoardType_None, 0, { { 0 } }, 0, 0 }\n};\n");
-
-	fprintf(f, "\n");
 
 	// now generate declarations for all variables
 	fprintf(f, "// Variaveis PLC\n");
@@ -1351,6 +1355,7 @@ DWORD GenerateCFile(char *filename)
 		fprintf(f, "	CAN_Config(%d);\n", settingsCAN.baudRate);
 	} else {
 		fprintf(f, "	MODBUS_RS485_MASTER = %d;\n", MODBUS_RS485_MASTER);
+		fprintf(f, "	RS485_Init();\n");
 		fprintf(f, "	RS485_Config(%d, %d, %d, %d);\n", settingsUart.baudRate, SerialConfig[settingsUart.UART].bByteSize,
 			SerialConfig[settingsUart.UART].bParity, SerialConfig[settingsUart.UART].bStopBits == ONESTOPBIT ? 1 : 2);
 	}

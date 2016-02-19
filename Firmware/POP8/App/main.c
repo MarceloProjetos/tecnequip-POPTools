@@ -6,6 +6,7 @@
 #include "rtc.h"
 #include "rs232.h"
 #include "rs485.h"
+#include "can.h"
 #include "ssp.h"
 #include "gpio.h"
 #include "eeprom.h"
@@ -107,6 +108,7 @@ void PLC_Cycle(void *pdata)
 
 		do{
 			RS232_Console(cycle);
+			CAN_Handler(cycle);
 			RS485_Handler(cycle);
 
 			if(MBTCP_Transfer.status == MBTCP_STATUS_DONE) {

@@ -3,6 +3,8 @@
 ******************************************************************************/
 #include "chip.h"
 #include "can.h"
+#include "uss.h"
+#include "modbus.h"
 
 #define MAX_RETRIES 1
 
@@ -76,16 +78,26 @@ CANAF_LUT_T AFSections = {
 /*****************************************************************************
  * Public types/enumerations/variables
  ****************************************************************************/
-static char WelcomeMenu[] = "\n\rHello NXP Semiconductors \r\n"
-							"CAN DEMO : Use CAN to transmit and receive Message from CAN Analyzer\r\n"
-							"CAN bit rate : 500kBit/s\r\n";
+extern volatile unsigned int I_SerialReady;
+extern volatile unsigned int I_SerialTimeout;
+extern volatile unsigned int I_SerialAborted;
+extern volatile unsigned int I_USSReady;
+extern volatile unsigned int I_ModbusReady;
 
-volatile unsigned int can_timeout = 0;
-volatile unsigned int can_reset_timeout = 0;
+extern volatile unsigned char WAITING_FOR_USS;	//
+extern volatile unsigned char WAITING_FOR_YASKAWA;	//
+extern volatile unsigned char WAITING_FOR_FMTSTR;	//
 
-unsigned int can_rx_index = 0;
-unsigned int can_tx_index = 0;
-unsigned int can_tx_count = 0;
+extern volatile unsigned int rs485_timeout;
+extern volatile unsigned int rs485_reset_timeout;
+
+extern unsigned char rs485_rx_buffer[SERIAL_BUFFER_SIZE];
+
+extern unsigned int rs485_rx_index;
+extern unsigned int rs485_tx_index;
+extern unsigned int rs485_tx_count;
+
+extern struct MODBUS_Device modbus_rs485;
 
 CAN_MSG_T SendMsgBuf;
 CAN_MSG_T RcvMsgBuf;
@@ -326,7 +338,7 @@ void CAN_Init()
 	Chip_GPIO_SetDir(LPC_GPIO, 1, 25, 1); // Define pino como Saida
 	Chip_GPIO_SetPinState(LPC_GPIO, 1, 25, 1); // Configura nivel alto para selecionar CAN
 
-	if (pCAN == LPC_CAN1) {
+	if (LPC_CAN == LPC_CAN1) {
 		Chip_IOCON_PinMuxSet(LPC_IOCON, 0, 0, (IOCON_FUNC1 | IOCON_MODE_INACT /*| IOCON_MODE_PULLUP | IOCON_HYS_EN*/));
 		Chip_IOCON_PinMuxSet(LPC_IOCON, 0, 1, (IOCON_FUNC1 | IOCON_MODE_INACT /*| IOCON_MODE_PULLUP | IOCON_HYS_EN*/));
 	}
@@ -357,27 +369,9 @@ void CAN_Init()
 
 }
 
-
-/* Returns clock for the peripheral block */
-STATIC CHIP_SYSCTL_CLOCK_T Chip_CAN_GetClockIndex(LPC_CAN_T *pCAN)
-{
-	CHIP_SYSCTL_CLOCK_T clkCAN;
-
-	if (pCAN == LPC_CAN1) {
-		clkCAN = SYSCTL_CLOCK_CAN1;
-	}
-	else {
-		clkCAN = SYSCTL_CLOCK_CAN2;
-	}
-
-	return clkCAN;
-}
-
 unsigned int CAN_Write(CAN_MSG_T SendMsgBuf)
 {
 	CAN_BUFFER_ID_T TxBuf;
-
-	int CANEnabled = Chip_Clock_IsPeripheralClockEnabled(Chip_CAN_GetClockIndex(LPC_CAN));
 
 	int timeout = 0;
 
@@ -481,7 +475,7 @@ unsigned int CAN_Read(CAN_MSG_T RcvMsgBuf)
 		}
 
 #endif /*FULL_CAN_AF_USED*/
-	return 0;
+	return RcvMsgBuf.DLC;
 
 }
 
@@ -544,52 +538,61 @@ void CAN_Config(int CANbitRate)
 void CAN_Handler(unsigned int cycle)
 {
 	unsigned int sz;
-	//static unsigned int retries = 0;
+	static unsigned int retries = 0;
+
+	if (!Chip_GPIO_GetPinState(LPC_GPIO, 1, 25)) {
+		return; // RS-485 selected
+	}
 
 	sz = CAN_Read(RcvMsgBuf);
-	can_rx_index += sz;
 
-	if(can_rx_index) {
+	// usa mesmo buffer e estrutura de controle de fluxo ja existente da comunicacao serial
+	for(int i = 0; i < sz; i++) {
+		rs485_rx_buffer[rs485_rx_index] = RcvMsgBuf.Data[i];
+		rs485_rx_index++;
+	}
+
+	if(rs485_rx_index) {
 		if(sz) {
-			can_timeout  = cycle + 3;
-		} else if(cycle >= can_timeout) {
+			rs485_timeout  = cycle + 3;
+		} else if(cycle >= rs485_timeout) {
 			// Se aguardando por uma string formatada, nenhum protocolo deve interpretar strings
 			// pois podem ser recebidos comandos invalidos que gerem erros ou mesmo o buffer ser descartado
 			// antes de o objeto de string formatada conseguir interpretar os dados.
-			/*if (WAITING_FOR_FMTSTR == 0) { // formatted string
+			if (WAITING_FOR_FMTSTR == 0) { // formatted string
 				if (WAITING_FOR_USS == 1){ // uss
-					USS_Ready(can_rx_buffer, can_rx_index);
-					can_rx_index = 0;
+					USS_Ready(rs485_rx_buffer, rs485_rx_index);
+					rs485_rx_index = 0;
 					WAITING_FOR_USS = 0;
 				} else if (WAITING_FOR_YASKAWA == 0) { // modbus
-					Modbus_Request(&modbus_can, can_rx_buffer, can_rx_index);
-					can_rx_index = 0;
+					Modbus_Request(&modbus_rs485, rs485_rx_buffer, rs485_rx_index);
+					rs485_rx_index = 0;
 				}
-			}*/
+			}
 		}
 	}
 
-  /*if(I_SerialReady) {
+  if(I_SerialReady) {
     retries = 0;
     I_SerialTimeout = 0;
     I_SerialAborted = 0;
-    can_reset_timeout = cycle + 50;
+    rs485_reset_timeout = cycle + 50;
   } else {
-    if(cycle >= can_reset_timeout && !I_SerialTimeout && retries < MAX_RETRIES) {
+    if(cycle >= rs485_reset_timeout && !I_SerialTimeout && retries < MAX_RETRIES) {
       retries++;
       I_SerialTimeout = 1;
-	  can_reset_timeout = cycle + 50;
-    } else if (cycle >= can_reset_timeout && retries >= MAX_RETRIES && !I_SerialAborted) {
+	  rs485_reset_timeout = cycle + 50;
+    } else if (cycle >= rs485_reset_timeout && retries >= MAX_RETRIES && !I_SerialAborted) {
     	I_SerialAborted = 1;
-    } else if (cycle >= (can_reset_timeout + 250)) {
+    } else if (cycle >= (rs485_reset_timeout + 250)) {
       retries = 0;
       I_SerialReady = 1;
       I_SerialTimeout = 0;
       I_SerialAborted = 0;
 	  WAITING_FOR_USS = 0;
-	  WAITING_FOR_YASKAWA = 0;
+	  //WAITING_FOR_YASKAWA = 0;
     }
-  }*/
+  }
 
 }
 

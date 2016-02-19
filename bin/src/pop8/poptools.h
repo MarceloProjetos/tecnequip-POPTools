@@ -98,6 +98,7 @@ extern unsigned int GPIO_Input(void);
 /* RS485                                                                   */
 /***************************************************************************/
 #ifndef __RS485_H__
+extern void RS485_Init();
 extern void RS485_Config(int baudrate, int bits, int parity, int stopbit);
 extern void RS485_Handler (void);
 extern unsigned int RS485_Write(unsigned char * buffer, unsigned int size);
@@ -161,6 +162,7 @@ extern LPC_CAN_T LPC_CAN;
 extern CAN_MSG_T SendMsgBuf;
 extern CAN_MSG_T RcvMsgBuf;
 
+extern void CAN_Init();
 extern void CAN_Config(int baudrate);
 extern void CAN_Handler (void);
 extern unsigned int CAN_Write(CAN_MSG_T);
