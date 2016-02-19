@@ -1,7 +1,9 @@
 #include "XP_lcd.h"
 #include "format_str.h"
 
-volatile unsigned int I_LCDReady = 0;
+volatile unsigned int I_LCDReady     = 0;
+static   unsigned int posCursor      = 0;
+static   unsigned int charsToDiscard = 0;
 
 static unsigned char maskBL      = XP_LCD_CTRL_BLIGHT;
 static unsigned int  lcd_model   = XP_LCD_TYPE_GENERIC;
@@ -65,14 +67,26 @@ unsigned int XP_lcd_Clear(void)
 	return ret;
 }
 
-unsigned int XP_lcd_MoveCursor(unsigned int lin, unsigned int col)
+unsigned int XP_lcd_MoveCursor(int lin, int col)
 {
 	volatile unsigned int count;
-	unsigned int i, ret;
+	unsigned int i, ret = 1;
 
 	I_LCDReady = 0;
 
-	ret = XP_lcd_WriteInstr(XP_LCD_INSTR_CURSOR_RETURN);
+	// Limpa o numero de caracteres a descartar ja que estamos reposicionando o cursor
+	charsToDiscard = 0;
+
+	// Coordenadas podem ser negativas quando o usuario deseja exibir um texto a partir de determinado trecho, como no caso de deslocamento de texto na tela
+	// Porem, no calculo de posicao do cursor, devemos desconsiderar a parte negativa, calculando a partir de zero
+	if(lin < 0) {
+		lin = 0;
+	}
+
+	if(col < 0) {
+		charsToDiscard = (unsigned int)(-col); // Indica o numero de caracteres a descartar ao exibir o proximo texto
+		col = 0;
+	}
 
 	// Calcula o deslocamento necessario para chegar na coordenada desejada
 	if(lin == 1) {
@@ -83,10 +97,16 @@ unsigned int XP_lcd_MoveCursor(unsigned int lin, unsigned int col)
 
 	i = (lin * 20) + col;
 
-	for(count = 0; count < XP_lcd_config[lcd_model].delayCursorReturn; count++);
+	if(i < posCursor) {
+		ret = XP_lcd_WriteInstr(XP_LCD_INSTR_CURSOR_RETURN);
+		for(count = 0; count < XP_lcd_config[lcd_model].delayCursorReturn; count++);
+		posCursor = 0;
+	}
 
+	i -= posCursor;
 	while(ret && i--) {
 		ret = XP_lcd_WriteInstr(XP_LCD_INSTR_CURSOR_SHIFT);
+		posCursor++;
 	}
 
 	I_LCDReady = 1;
@@ -165,9 +185,19 @@ unsigned int XP_lcd_WriteText(char *format, volatile int *val)
 
 	I_LCDReady = 0;
 
-	do {
-		ret = XP_lcd_WriteData((unsigned char)msg[i]);
-	} while(ret && msg[++i]);
+	// Descarta os caracteres solicitados
+	while(charsToDiscard > 0 && msg[i]) {
+		i++;
+		charsToDiscard--;
+	}
+
+	// Se restaram itens, exibe o texto
+	if(msg[i]) {
+		do {
+			ret = XP_lcd_WriteData((unsigned char)msg[i]);
+			posCursor++;
+		} while(ret && msg[++i] && (posCursor % 20)); // Se o cursor for multiplo de 20, estourou a linha
+	}
 
 	I_LCDReady = 1;
 

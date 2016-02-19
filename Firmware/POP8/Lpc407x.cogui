@@ -19,13 +19,15 @@
 <part id="6"/>
 <part id="7"/>
 <part id="8"/>
+<part id="9"/>
+<part id="10"/>
 </presentation>
 </folder>
 </info>
 </editorArea>
 <editor id="org.eclipse.cdt.ui.editor.CEditor" name="PLC_TESTE.h" partName="PLC_TESTE.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/POPTools/PLC_TESTE.h" title="PLC_TESTE.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/POPTools/PLC_TESTE.h" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/POPTools/PLC_TESTE.h"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1407" selectionTopPixel="0"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1861" selectionTopPixel="360"/>
 </editor>
 <editor id="org.eclipse.cdt.ui.editor.CEditor" name="format_str.c" partName="format_str.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/format_str.c" title="format_str.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/format_str.c" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/format_str.c"/>
@@ -45,7 +47,7 @@
 </editor>
 <editor id="org.eclipse.cdt.ui.editor.CEditor" name="ld.h" partName="ld.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/ld.h" title="ld.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/ld.h" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/ld.h"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="0" selectionTopPixel="0"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="16746" selectionTopPixel="6319"/>
 </editor>
 <editor id="org.eclipse.cdt.ui.editor.CEditor" name="expansionPort.c" partName="expansionPort.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/expansionPort.c" title="expansionPort.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/expansionPort.c" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/expansionPort.c"/>
@@ -53,11 +55,19 @@
 </editor>
 <editor id="org.eclipse.cdt.ui.editor.CEditor" name="poptools.h" partName="poptools.h" title="poptools.h" tooltip="C:\Projetos\GIT\tecnequip-POPTools\bin\src\pop8\poptools.h" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" uri="file:/C:/Projetos/GIT/tecnequip-POPTools/bin/src/pop8/poptools.h"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="19873" selectionTopPixel="7227"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="19386" selectionTopPixel="7150"/>
 </editor>
-<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" title="main.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" workbook="DefaultEditorWorkbook">
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" title="main.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/main.c" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/main.c"/>
 <editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2916" selectionTopPixel="1710"/>
+</editor>
+<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="XP_lcd.c" partName="XP_lcd.c" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_lcd.c" title="XP_lcd.c" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_lcd.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/XP_lcd.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="4831" selectionTopPixel="2479"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="XP_lcd.h" partName="XP_lcd.h" path="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_lcd.h" title="XP_lcd.h" tooltip="C:/Projetos/GIT/tecnequip-POPTools/Firmware/POP8/App/XP_lcd.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/Lpc407x/App/XP_lcd.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="60" selectionOffset="69" selectionTopPixel="0"/>
 </editor>
 </editors>
 <views>
@@ -70,13 +80,13 @@
 <viewState/>
 </view>
 <view id="org.coocox.builder.ui.views.ProjectView" partName="Project">
-<viewState CommonNavigator.LINKING_ENABLED="0" horizontalPosition="0" org.eclipse.ui.navigator.resources.workingSets.showTopLevelWorkingSets="0" verticalPosition="17">
+<viewState CommonNavigator.LINKING_ENABLED="0" horizontalPosition="0" org.eclipse.ui.navigator.resources.workingSets.showTopLevelWorkingSets="0" verticalPosition="33">
 <expanded>
 <element path="/Lpc407x"/>
 <element path="/Lpc407x/App"/>
 </expanded>
 <selection>
-<element path="/Lpc407x/App/ld.h"/>
+<element path="/Lpc407x/App/XP_lcd.c"/>
 </selection>
 </viewState>
 </view>
@@ -254,7 +264,7 @@
 <page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@ac7212" ratio="0.6988131" ratioLeft="471" ratioRight="203" relationship="4" relative="org.eclipse.ui.internal.ViewStack@1243f31">&#x0A;<folder activePageID="org.eclipse.ui.console.ConsoleView" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@ac7212" ratio="0.6988131" ratioLeft="471" ratioRight="203" relationship="4" relative="org.eclipse.ui.internal.ViewStack@1243f31">&#x0A;<folder activePageID="org.eclipse.debug.ui.DebugView" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
 <page content="org.eclipse.debug.ui.DebugView" label="Debug"/>
 <page content="org.eclipse.debug.ui.BreakpointView" label="LabelNotFound"/>
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
@@ -292,52 +302,16 @@
 <navigationHistory>
 <editors>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/POPTools/PLC_TESTE.h"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/main.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/main.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/format_str.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/main.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/Lpc407x/App/XP_lcd.c"/>
 </editors>
 <item historyLabel="PLC_TESTE.h" index="0">
-<position/>
-</item>
-<item historyLabel="main.c" index="1">
-<position/>
+<position info="not_deleted" x="37869" y="0"/>
 </item>
 <item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="253" y="0"/>
+<position info="not_deleted" x="241" y="17"/>
 </item>
-<item historyLabel="main.c" index="1">
-<position info="not_deleted" x="2933" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="1644" y="0"/>
-</item>
-<item historyLabel="main.c" index="2">
-<position info="not_deleted" x="2933" y="0"/>
-</item>
-<item historyLabel="format_str.c" index="3">
-<position info="not_deleted" x="2761" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="253" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position/>
-</item>
-<item historyLabel="main.c" index="4">
-<position info="not_deleted" x="2916" y="0"/>
-</item>
-<item historyLabel="PLC_TESTE.h" index="0">
-<position info="not_deleted" x="1407" y="0"/>
-</item>
-<item active="true" historyLabel="main.c" index="4">
-<position info="not_deleted" x="2933" y="0"/>
+<item active="true" historyLabel="XP_lcd.c" index="1">
+<position info="not_deleted" x="331" y="0"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
@@ -346,50 +320,50 @@
 <actionBarAdvisor/>
 </window>
 <mruList>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="rtc.h" tooltip="Lpc407x/App/rtc.h">
-<persistable path="/Lpc407x/App/rtc.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="XP_lcd.h" tooltip="Lpc407x/App/XP_lcd.h">
+<persistable path="/Lpc407x/App/XP_lcd.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="rtc.c" tooltip="Lpc407x/App/rtc.c">
-<persistable path="/Lpc407x/App/rtc.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="hook.c" tooltip="Lpc407x/CoOS/kernel/hook.c">
+<persistable path="/Lpc407x/CoOS/kernel/hook.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="intreg.c" tooltip="Lpc407x/App/intreg.c">
-<persistable path="/Lpc407x/App/intreg.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="enet_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/enet_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/enet_17xx_40xx.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="modbus.c" tooltip="Lpc407x/App/modbus.c">
-<persistable path="/Lpc407x/App/modbus.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="i2c_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
 </file>
-<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="poptools.h" tooltip="C:\Projetos\GIT\tecnequip-POPTools\bin\src\pop8\poptools.h">
-<persistable uri="file:/C:/Projetos/GIT/tecnequip-POPTools/bin/src/pop8/poptools.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="XP_lcd.h" tooltip="Lpc407x/App/XP_lcd.h">
+<persistable path="/Lpc407x/App/XP_lcd.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="OsConfig.h" tooltip="Lpc407x/CoOS/OsConfig.h">
-<persistable path="/Lpc407x/CoOS/OsConfig.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="hook.c" tooltip="Lpc407x/CoOS/kernel/hook.c">
+<persistable path="/Lpc407x/CoOS/kernel/hook.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="CoOS.h" tooltip="Lpc407x/CoOS/kernel/CoOS.h">
-<persistable path="/Lpc407x/CoOS/kernel/CoOS.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="enet_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/enet_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/enet_17xx_40xx.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="arch.c" tooltip="Lpc407x/CoOS/portable/arch.c">
-<persistable path="/Lpc407x/CoOS/portable/arch.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="i2c_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="gpio.c" tooltip="Lpc407x/App/gpio.c">
-<persistable path="/Lpc407x/App/gpio.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="XP_lcd.h" tooltip="Lpc407x/App/XP_lcd.h">
+<persistable path="/Lpc407x/App/XP_lcd.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="dac.c" tooltip="Lpc407x/App/dac.c">
-<persistable path="/Lpc407x/App/dac.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="hook.c" tooltip="Lpc407x/CoOS/kernel/hook.c">
+<persistable path="/Lpc407x/CoOS/kernel/hook.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="Lpc407x/App/main.c">
-<persistable path="/Lpc407x/App/main.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="enet_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/enet_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/enet_17xx_40xx.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="rtc.h" tooltip="Lpc407x/App/rtc.h">
-<persistable path="/Lpc407x/App/rtc.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="i2c_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="rtc.c" tooltip="Lpc407x/App/rtc.c">
-<persistable path="/Lpc407x/App/rtc.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="XP_lcd.h" tooltip="Lpc407x/App/XP_lcd.h">
+<persistable path="/Lpc407x/App/XP_lcd.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="intreg.c" tooltip="Lpc407x/App/intreg.c">
-<persistable path="/Lpc407x/App/intreg.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="hook.c" tooltip="Lpc407x/CoOS/kernel/hook.c">
+<persistable path="/Lpc407x/CoOS/kernel/hook.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="CoOS.h" tooltip="Lpc407x/CoOS/kernel/CoOS.h">
-<persistable path="/Lpc407x/CoOS/kernel/CoOS.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="i2c_17xx_40xx.c" tooltip="Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c">
+<persistable path="/Lpc407x/LPCOpen/lpc_chip_407x/src/i2c_17xx_40xx.c"/>
 </file>
 </mruList>
 </workbench>

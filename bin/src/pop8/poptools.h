@@ -505,7 +505,7 @@ unsigned int XP_Read (void);
 #ifndef _XP_LCD_H__
 
 unsigned int XP_lcd_Clear     (void);
-unsigned int XP_lcd_MoveCursor(unsigned int lin, unsigned int col);
+unsigned int XP_lcd_MoveCursor(         int lin, int col);
 void         XP_lcd_setBL     (unsigned int enable);
 unsigned int XP_lcd_Init      (unsigned int address, unsigned int model);
 unsigned int XP_lcd_Write     (unsigned char cmd, unsigned char data);
