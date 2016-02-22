@@ -1845,6 +1845,7 @@ PCWSTR getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader header)
 			SET_LANGUAGE_STRINGS(eExampleGalleryHeader_ModBUS      , L"ModBUS"         , L"ModBUS"         , L"ModBUS");
 			SET_LANGUAGE_STRINGS(eExampleGalleryHeader_RS485_Text  , L"RS-485 - Texto" , L"RS-485 - Text"  , L"I/O");
 			SET_LANGUAGE_STRINGS(eExampleGalleryHeader_RS485_Others, L"RS-485 - Outros", L"RS-485 - Others", L"I/O");
+			SET_LANGUAGE_STRINGS(eExampleGalleryHeader_Expansion   , L"Expansão"       , L"Expansion"      , L"Expansion");
 			SET_LANGUAGE_STRINGS(eExampleGalleryHeader_Applications, L"Aplicações"     , L"Applications"   , L"I/O");
 	}
 
@@ -2089,6 +2090,8 @@ PCWSTR getRibbonLocalizedLabel(UINT nCmdID)
 
 		SET_LANGUAGE_STRINGS(cmdExampleReadModBUS        , L"Ler Registrador ModBUS"           , L"Read ModBUS Register"          , L"Leer Registrador ModBUS"            );
 		SET_LANGUAGE_STRINGS(cmdExampleWriteModBUS       , L"Escrever Registrador ModBUS"      , L"Write ModBUS Register"         , L"Escribir Registrador ModBUS"        );
+
+		SET_LANGUAGE_STRINGS(cmdExampleLCD               , L"LCD"                              , L"LCD"                           , L"LCD"                                );
 
 		SET_LANGUAGE_STRINGS(cmdExampleAdcLed            , L"Barra de Leds - A/D"              , L"Leds Bar - A/D"                , L"Barra de Leds - A/D"                );
 		SET_LANGUAGE_STRINGS(cmdExampleSemaphore         , L"Semáforo"                         , L"Semaphore"                     , L"Semaforo"                           );

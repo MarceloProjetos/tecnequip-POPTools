@@ -249,8 +249,8 @@
     <File name="App/gpio.c" path="App/gpio.c" type="1"/>
     <File name="lwip/src/include/ipv4/lwip/ip_addr.h" path="lwip/src/include/ipv4/lwip/ip_addr.h" type="1"/>
     <File name="spifi/inc/spifilib_dev.h" path="spifi/inc/spifilib_dev.h" type="1"/>
-    <File name="cmsisboot/startup" path="" type="2"/>
     <File name="lwip/src/core/snmp/asn1_enc.c" path="lwip/src/core/snmp/asn1_enc.c" type="1"/>
+    <File name="cmsisboot/startup" path="" type="2"/>
     <File name="LPCOpen/lpc_chip_407x/inc/sdmmc_17xx_40xx.h" path="lpcopen/lpc_chip_40xx/inc/sdmmc_17xx_40xx.h" type="1"/>
     <File name="App/math.c" path="App/math.c" type="1"/>
     <File name="App/XP_io.c" path="App/XP_io.c" type="1"/>
@@ -309,9 +309,9 @@
     <File name="lwip/port/CoOS/arch/sys_arch.c" path="lwip/port/CoOS/arch/sys_arch.c" type="1"/>
     <File name="App/POPTools/PLC_SCADA.h" path="App/POPTools/PLC_SCADA.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/src/iap.c" path="lpcopen/lpc_chip_40xx/src/iap.c" type="1"/>
-    <File name="App/modbus_tcp.h" path="App/modbus_tcp.h" type="1"/>
     <File name="lwip/src/core/ipv4/ip_addr.c" path="lwip/src/core/ipv4/ip_addr.c" type="1"/>
     <File name="App/net.c" path="App/net.c" type="1"/>
+    <File name="App/modbus_tcp.h" path="App/modbus_tcp.h" type="1"/>
     <File name="lwip/src/netif/ppp/auth.c" path="lwip/src/netif/ppp/auth.c" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/inc/usbd/usbd_hw.h" path="lpcopen/lpc_chip_40xx/inc/usbd/usbd_hw.h" type="1"/>
     <File name="CoOS/kernel/serviceReq.c" path="CoOS/kernel/serviceReq.c" type="1"/>
@@ -329,9 +329,9 @@
     <File name="LPCOpen/lpc_chip_407x/inc/romapi_17xx_40xx.h" path="lpcopen/lpc_chip_40xx/inc/romapi_17xx_40xx.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/inc/stopwatch.h" path="lpcopen/lpc_chip_40xx/inc/stopwatch.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/inc/can_17xx_40xx.h" path="lpcopen/lpc_chip_40xx/inc/can_17xx_40xx.h" type="1"/>
-    <File name="LPCOpen/lpc_chip_407x/inc/usbd/usbd_cdcuser.h" path="lpcopen/lpc_chip_40xx/inc/usbd/usbd_cdcuser.h" type="1"/>
     <File name="App/POPTools/PLC_DAC.h" path="App/POPTools/PLC_DAC.h" type="1"/>
     <File name="App/modbus.h" path="App/modbus.h" type="1"/>
+    <File name="LPCOpen/lpc_chip_407x/inc/usbd/usbd_cdcuser.h" path="lpcopen/lpc_chip_40xx/inc/usbd/usbd_cdcuser.h" type="1"/>
     <File name="lwip/src/netif/ppp/vj.c" path="lwip/src/netif/ppp/vj.c" type="1"/>
     <File name="lwip/src/include/lwip/def.h" path="lwip/src/include/lwip/def.h" type="1"/>
     <File name="lwip/src/netif/slipif.c" path="lwip/src/netif/slipif.c" type="1"/>
@@ -349,10 +349,10 @@
     <File name="lwip" path="" type="2"/>
     <File name="LPCOpen/lpc_chip_407x/inc/usbd/usbd_msc.h" path="lpcopen/lpc_chip_40xx/inc/usbd/usbd_msc.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/inc/chip.h" path="lpcopen/lpc_chip_40xx/inc/chip.h" type="1"/>
-    <File name="lwip/src/include/lwip/netbuf.h" path="lwip/src/include/lwip/netbuf.h" type="1"/>
-    <File name="LPCOpen/lpc_chip_407x/inc/error.h" path="lpcopen/lpc_chip_40xx/inc/error.h" type="1"/>
     <File name="lwip/src/api/netifapi.c" path="lwip/src/api/netifapi.c" type="1"/>
+    <File name="LPCOpen/lpc_chip_407x/inc/error.h" path="lpcopen/lpc_chip_40xx/inc/error.h" type="1"/>
     <File name="App/modbus.c" path="App/modbus.c" type="1"/>
+    <File name="lwip/src/include/lwip/netbuf.h" path="lwip/src/include/lwip/netbuf.h" type="1"/>
     <File name="lwip/port/CoOS/arch/sys_arch.h" path="lwip/port/CoOS/arch/sys_arch.h" type="1"/>
     <File name="LPCOpen/lpc_chip_407x/inc/core_cm4_simd.h" path="lpcopen/lpc_chip_40xx/inc/core_cm4_simd.h" type="1"/>
     <File name="App/expansionPort.h" path="App/expansionPort.h" type="1"/>

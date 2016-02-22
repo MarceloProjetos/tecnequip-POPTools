@@ -384,6 +384,7 @@ struct strSerialConfig {
 #define MNU_EXAMPLE_RTC			0x157
 #define MNU_EXAMPLE_MULTISET_DA  0x158
 #define MNU_EXAMPLE_PID          0x15f
+#define MNU_EXAMPLE_LCD          0x160
 
 #define MNU_EXAMPLE_ADC_LED    0x200
 #define MNU_EXAMPLE_SEMAPHORE  0x201
@@ -944,6 +945,7 @@ enum eExampleGalleryHeader {
 	eExampleGalleryHeader_ModBUS,
 	eExampleGalleryHeader_RS485_Text,
 	eExampleGalleryHeader_RS485_Others,
+	eExampleGalleryHeader_Expansion,
 	eExampleGalleryHeader_Applications,
 };
 

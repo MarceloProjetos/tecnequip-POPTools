@@ -12139,7 +12139,7 @@ bool LadderDiagram::Save(string filename, bool isBackup)
 		fwrite_int   (f, LadderSettings.Uart.UART          ) &&
 		fwrite_int   (f, LadderSettings.Uart.baudRate      ) &&
 
-		fwrite_int   (f, LadderSettings.CAN.baudRate      ) &&
+		fwrite_int   (f, LadderSettings.CAN.baudRate       ) &&
 
 		fwrite_ulong (f, LadderSettings.Network.ip         ) &&
 		fwrite_ulong (f, LadderSettings.Network.mask       ) &&
@@ -12373,7 +12373,7 @@ bool LadderDiagram::Load(string filename)
 					fread_int   (f, &LadderSettings.Uart.UART          ) &&
 					fread_int   (f, &LadderSettings.Uart.baudRate      ) &&
 
-					(fileVersion > 2 ?
+					(fileVersion > 2 ? // A partir da versao 3 do arquivo existem as configuracoes do CAN
 						fread_int   (f, &LadderSettings.CAN.baudRate   ) : true
 					) &&
 

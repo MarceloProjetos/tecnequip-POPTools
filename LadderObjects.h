@@ -3442,7 +3442,7 @@ private:
 	 */
 	bool ExecuteAction(bool isUndo, bool isDiscard, UndoRedoAction Action);
 
-	/// Estrutura que agraga todas as configuracoes do Diagrama Ladder
+	/// Estrutura que agrega todas as configuracoes do Diagrama Ladder
 	typedef struct {
 		LadderSettingsGeneral            General;
 		LadderSettingsUART               Uart;

@@ -581,6 +581,8 @@ public:
 			EXEC_OPCODE(cmdExampleReadModBUS        , MNU_EXAMPLE_READ_MODBUS     );
 			EXEC_OPCODE(cmdExampleWriteModBUS       , MNU_EXAMPLE_WRITE_MODBUS    );
 
+			EXEC_OPCODE(cmdExampleLCD               , MNU_EXAMPLE_LCD             );
+
 			EXEC_OPCODE(cmdExampleAdcLed            , MNU_EXAMPLE_ADC_LED         );
 			EXEC_OPCODE(cmdExampleSemaphore         , MNU_EXAMPLE_SEMAPHORE       );
 			EXEC_OPCODE(cmdExampleTester            , MNU_EXAMPLE_TESTER          );
@@ -688,6 +690,8 @@ public:
 					{ cmdExampleReadFormatString, cmdExampleWriteFormatString, cmdExampleReadChar, cmdExampleWriteChar, 0 } },
 				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_RS485_Others),
 					{ cmdExampleReadNS600, cmdExampleWriteNS600, cmdExampleReadUSS, cmdExampleWriteUSS, 0 } },
+				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_Expansion),
+					{ cmdExampleLCD, 0 } },
 				{ getRibbonLocalizedExampleGalleryHeader(eExampleGalleryHeader_Applications),
 					{ cmdExampleAdcLed, cmdExampleSemaphore, cmdExampleTester, 0 } },
 				{ NULL, NULL }

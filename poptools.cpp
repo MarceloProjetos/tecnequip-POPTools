@@ -1577,6 +1577,9 @@ cmp:
 		case MNU_EXAMPLE_RTC:
             OpenDialog("examples\\rtc.ld");
             break;
+		case MNU_EXAMPLE_LCD:
+            OpenDialog("examples\\lcd.ld");
+            break;
 		case MNU_EXAMPLE_ADC_LED:
             OpenDialog("examples\\adc_led.ld");
             break;
