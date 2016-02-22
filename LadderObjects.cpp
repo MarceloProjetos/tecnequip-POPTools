@@ -324,10 +324,10 @@ string LadderExpansion::getBoardName(eExpansionBoard type)
 	string name = "???";
 
 	switch(type) {
-		case eExpansionBoard_DigitalInput : name = _("DI" ); break;
-		case eExpansionBoard_DigitalOutput: name = _("DO" ); break;
-		case eExpansionBoard_AnalogInput  : name = _("AI" ); break;
-		case eExpansionBoard_LCD          : name = _("LCD"); break;
+		case eExpansionBoard_DigitalInput : name = _("Entradas Digitais" ); break;
+		case eExpansionBoard_DigitalOutput: name = _("Saídas\nDigitais" ); break;
+		case eExpansionBoard_AnalogInput  : name = _("Entradas Analógicas" ); break;
+		case eExpansionBoard_LCD          : name = _("Display LCD"); break;
 	}
 
 	return name;

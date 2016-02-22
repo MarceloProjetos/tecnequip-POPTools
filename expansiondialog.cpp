@@ -204,7 +204,7 @@ void LoadAddressCombobox(eExpansionBoard type, unsigned int version, unsigned in
 		char buf[10];
 		sprintf(buf, "0x%X", addresses[i]);
 		ComboBox_AddString(BoardAddressComboBox, buf);
-		if(addresses[i] == address || (!address && !i)) {
+		if(addresses[i] == address || !i) {
 			ComboBox_SetCurSel(BoardAddressComboBox, i);
 		}
 	}
@@ -235,7 +235,10 @@ void UpdateControls(HWND lv, unsigned int id)
 
 		currentItem = item.id;
 		type        = item.type;
-		version     = item.version;
+
+		// Se deve carregar versoes, indica que a placa foi selecionada. Carregar a versao cadastrada!
+		// Se nao deve carregar indica que a versao ja foi carregada entao foi escolhida uma nova versao!
+		version     = (loadVersions ? item.version : ComboBox_GetCurSel(BoardVersionComboBox));
 
 		Edit_SetText(BoardNameTextBox   , item.name.c_str());
 		LoadAddressCombobox(type, version, item.address);
