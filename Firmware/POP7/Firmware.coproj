@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Project version="2G - 1.7.5" name="Firmware">
+<Project version="2G - 2.0.3" name="Firmware">
   <Target name="Firmware" isCurrent="1">
-    <Device manufacturerId="7" manufacturerName="NXP" chipId="165" chipName="LPC1768" boardId="" boardName=""/>
+    <Device manufacturerId="7" manufacturerName="NXP" chipId="480" chipName="LPC1768" boardId="" boardName="" boardUrl="" coreId="" coreName=""/>
     <BuildOption>
       <Compile>
         <Option name="OptimizationLevel" value="0"/>
         <Option name="UseFPU" value="0"/>
         <Option name="UserEditCompiler" value=""/>
+        <Option name="DEBUG" value="0"/>
+        <Option name="WARNING" value="1"/>
         <Includepaths>
           <Includepath path="."/>
         </Includepaths>
@@ -28,11 +30,11 @@
           <Memory name="IROM2" type="ReadOnly" size="" startValue=""/>
           <Memory name="IRAM2" type="ReadWrite" size="0x00008000" startValue="0x2007C000"/>
         </MemoryAreas>
-        <LocateLinkFile path="c:/coocox/coide/configuration/programdata/firmware/link.ld" type="0"/>
+        <LocateLinkFile path="../../../../../users/windows7 base/appdata/roaming/coocox/coide/configuration/programdata/firmware/link.ld" type="0"/>
       </Link>
       <Output>
-        <Option name="OutputFileType" value="1"/>
-        <Option name="Path" value="F:/SVN/POPTools/Firmware/"/>
+        <Option name="OutputFileType" value="0"/>
+        <Option name="Path" value="./"/>
         <Option name="Name" value="Firmware"/>
         <Option name="HEX" value="1"/>
         <Option name="BIN" value="1"/>
@@ -47,7 +49,7 @@
       <Option name="org.coocox.codebugger.gdbjtag.core.debugMode" value="SWD"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.clockDiv" value="1M"/>
       <Option name="org.coocox.codebugger.gdbjtag.corerunToMain" value="1"/>
-      <Option name="org.coocox.codebugger.gdbjtag.core.jlinkgdbserver" value="C:\Program Files (x86)\SEGGER\JLink_V494j\JLinkGDBServerCL.exe"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.jlinkgdbserver" value="C:\Program Files\SEGGER\JLink_V494j\JLinkGDBServerCL.exe"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.userDefineGDBScript" value=""/>
       <Option name="org.coocox.codebugger.gdbjtag.core.targetEndianess" value="0"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.jlinkResetMode" value="Type 0: Normal"/>
@@ -59,7 +61,7 @@
       <Option name="org.coocox.codebugger.gdbjtag.core.autoDownload" value="1"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.verify" value="1"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.downloadFuction" value="Erase Effected"/>
-      <Option name="org.coocox.codebugger.gdbjtag.core.defaultAlgorithm" value="C:/CooCox/CoIDE/flash/LPC17xx_512.elf"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.defaultAlgorithm" value="C:\Users\windows7 base\AppData\Roaming\CooCox\CoIDE\config\flash\CooCox-Flash\CoIDE_LPC17xx_512K\LPC17xx_512.elf"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.jflashtool" value=""/>
       <Option name="org.coocox.codebugger.gdbjtag.coredebugInRam" value="0"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.jflashscript" value=""/>
@@ -67,16 +69,17 @@
     <ExcludeFile/>
   </Target>
   <Components path="./">
-    <Component id="30" name="C Library" path="" type="2"/>
-    <Component id="50" name="CMSIS core" path="" type="2"/>
-    <Component id="51" name="CooCox OS" path="" type="2"/>
-    <Component id="253" name="CMSIS_boot" path="" type="2"/>
-    <Component id="254" name="Common_Header" path="" type="2"/>
-    <Component id="255" name="CLKPWR" path="" type="2"/>
-    <Component id="256" name="NVIC" path="" type="2"/>
-    <Component id="257" name="GPIO" path="" type="2"/>
-    <Component id="275" name="UART" path="" type="2"/>
+    <Component id="30" name="C Library" path="" type="BasicComponet"/>
+    <Component id="50" name="CMSIS core" path="" type="BasicComponet"/>
+    <Component id="51" name="CooCox OS" path="" type="BasicComponet"/>
+    <Component id="253" name="CMSIS_boot" path="" type="BasicComponet"/>
+    <Component id="254" name="Common_Header" path="" type="BasicComponet"/>
+    <Component id="255" name="CLKPWR" path="" type="BasicComponet"/>
+    <Component id="256" name="NVIC" path="" type="BasicComponet"/>
+    <Component id="257" name="GPIO" path="" type="BasicComponet"/>
+    <Component id="275" name="UART" path="" type="BasicComponet"/>
   </Components>
+  <LocalComponents/>
   <Files>
     <File name="lwip/src/netif/ppp/pap.h" path="lwip/src/netif/ppp/pap.h" type="1"/>
     <File name="App/ssp.c" path="App/ssp.c" type="1"/>
@@ -117,9 +120,9 @@
     <File name="lwip/port/CoOS/arch/perf.h" path="lwip/port/CoOS/arch/perf.h" type="1"/>
     <File name="App/main.c" path="App/main.c" type="1"/>
     <File name="lwip/src/netif/ppp/auth.h" path="lwip/src/netif/ppp/auth.h" type="1"/>
-    <File name="lwip/src/core/snmp/asn1_dec.c" path="lwip/src/core/snmp/asn1_dec.c" type="1"/>
     <File name="App/pwm.h" path="App/pwm.h" type="1"/>
     <File name="App/ld.h" path="App/ld.h" type="1"/>
+    <File name="lwip/src/core/snmp/asn1_dec.c" path="lwip/src/core/snmp/asn1_dec.c" type="1"/>
     <File name="App/rs485.c" path="App/rs485.c" type="1"/>
     <File name="lwip/src/core/snmp/mib_structs.c" path="lwip/src/core/snmp/mib_structs.c" type="1"/>
     <File name="lwip/src/core/snmp/msg_in.c" path="lwip/src/core/snmp/msg_in.c" type="1"/>
@@ -138,10 +141,10 @@
     <File name="App/POPTools/PLC_SCADA.h" path="App/POPTools/PLC_SCADA.h" type="1"/>
     <File name="lwip/src/include/netif/slipif.h" path="lwip/src/include/netif/slipif.h" type="1"/>
     <File name="CoOS/kernel/kernelHeap.c" path="CoOS/kernel/kernelHeap.c" type="1"/>
-    <File name="App/modbus_tcp.h" path="App/modbus_tcp.h" type="1"/>
-    <File name="App/net.c" path="App/net.c" type="1"/>
     <File name="lwip/src/core/pbuf.c" path="lwip/src/core/pbuf.c" type="1"/>
+    <File name="App/net.c" path="App/net.c" type="1"/>
     <File name="lwip/src/core/ipv4/ip_addr.c" path="lwip/src/core/ipv4/ip_addr.c" type="1"/>
+    <File name="App/modbus_tcp.h" path="App/modbus_tcp.h" type="1"/>
     <File name="lwip/src/netif/ppp/auth.c" path="lwip/src/netif/ppp/auth.c" type="1"/>
     <File name="lwip/src/core/ipv4/ip_frag.c" path="lwip/src/core/ipv4/ip_frag.c" type="1"/>
     <File name="App/POPTools/PLC_RS485.h" path="App/POPTools/PLC_RS485.h" type="1"/>
@@ -196,9 +199,9 @@
     <File name="CoOS/portable/arch.c" path="CoOS/portable/arch.c" type="1"/>
     <File name="lpc17xx_lib/include/lpc17xx_uart.h" path="lpc17xx_lib/include/lpc17xx_uart.h" type="1"/>
     <File name="lwip/src/api/netdb.c" path="lwip/src/api/netdb.c" type="1"/>
-    <File name="lpc17xx_lib/source/lpc17xx_clkpwr.c" path="lpc17xx_lib/source/lpc17xx_clkpwr.c" type="1"/>
     <File name="CoOS/kernel/event.c" path="CoOS/kernel/event.c" type="1"/>
     <File name="App/POPTools/PLC_LED_BLINK.h" path="App/POPTools/PLC_LED_BLINK.h" type="1"/>
+    <File name="lpc17xx_lib/source/lpc17xx_clkpwr.c" path="lpc17xx_lib/source/lpc17xx_clkpwr.c" type="1"/>
     <File name="lwip/src/core/dns.c" path="lwip/src/core/dns.c" type="1"/>
     <File name="lwip/src/core/dhcp.c" path="lwip/src/core/dhcp.c" type="1"/>
     <File name="lpc17xx_lib/include/lpc17xx_gpio.h" path="lpc17xx_lib/include/lpc17xx_gpio.h" type="1"/>
@@ -268,10 +271,10 @@
     <File name="lwip/src/core/snmp" path="" type="2"/>
     <File name="CoOS/kernel/OsQueue.h" path="CoOS/kernel/OsQueue.h" type="1"/>
     <File name="lwip/src/include/netif/etharp.h" path="lwip/src/include/netif/etharp.h" type="1"/>
-    <File name="lpc17xx_lib/include/lpc17xx_nvic.h" path="lpc17xx_lib/include/lpc17xx_nvic.h" type="1"/>
     <File name="CoOS/kernel/mutex.c" path="CoOS/kernel/mutex.c" type="1"/>
-    <File name="App" path="" type="2"/>
     <File name="lpc17xx_lib/include/lpc17xx_libcfg_default.h" path="lpc17xx_lib/include/lpc17xx_libcfg_default.h" type="1"/>
+    <File name="lpc17xx_lib/include/lpc17xx_nvic.h" path="lpc17xx_lib/include/lpc17xx_nvic.h" type="1"/>
+    <File name="App" path="" type="2"/>
     <File name="App/qei.c" path="App/qei.c" type="1"/>
     <File name="lwip/src/netif/ppp/chpms.c" path="lwip/src/netif/ppp/chpms.c" type="1"/>
     <File name="App/sntp.h" path="App/sntp.h" type="1"/>
@@ -288,9 +291,9 @@
     <File name="cmsis_boot/LPC17xx.h" path="cmsis_boot/LPC17xx.h" type="1"/>
     <File name="App/encoder.c" path="App/encoder.c" type="1"/>
     <File name="App/POPTools/PLC_USS.h" path="App/POPTools/PLC_USS.h" type="1"/>
-    <File name="cmsis" path="" type="2"/>
     <File name="App/sntp.c" path="App/sntp.c" type="1"/>
     <File name="App/POPTools/PLC_DAC_RAMPA_VALIDACAO.h" path="App/POPTools/PLC_DAC_RAMPA_VALIDACAO.h" type="1"/>
+    <File name="cmsis" path="" type="2"/>
     <File name="App/qei.h" path="App/qei.h" type="1"/>
     <File name="App/uss.h" path="App/uss.h" type="1"/>
     <File name="lwip/src/core/snmp/msg_out.c" path="lwip/src/core/snmp/msg_out.c" type="1"/>
@@ -331,9 +334,9 @@
     <File name="lwip/src/netif/ppp/pppdebug.h" path="lwip/src/netif/ppp/pppdebug.h" type="1"/>
     <File name="lwip/src/core/tcp.c" path="lwip/src/core/tcp.c" type="1"/>
     <File name="App/POPTools/PLC_CONTACT.h" path="App/POPTools/PLC_CONTACT.h" type="1"/>
-    <File name="App/POPTools/PLC_ERR_LED.h" path="App/POPTools/PLC_ERR_LED.h" type="1"/>
     <File name="lwip/src/netif/ppp/ppp.c" path="lwip/src/netif/ppp/ppp.c" type="1"/>
     <File name="App/math.c" path="App/math.c" type="1"/>
+    <File name="App/POPTools/PLC_ERR_LED.h" path="App/POPTools/PLC_ERR_LED.h" type="1"/>
     <File name="lwip/port/CoOS/ethernetif/LPC17xx/EMAC.h" path="lwip/port/CoOS/ethernetif/LPC17xx/EMAC.h" type="1"/>
     <File name="lwip/src/netif/ppp/randm.h" path="lwip/src/netif/ppp/randm.h" type="1"/>
     <File name="cmsis/core_cm3.h" path="cmsis/core_cm3.h" type="1"/>
@@ -367,4 +370,5 @@
     <File name="App/yaskawa.c" path="App/yaskawa.c" type="1"/>
     <File name="lwip/src/include/lwip/stats.h" path="lwip/src/include/lwip/stats.h" type="1"/>
   </Files>
+  <Bookmarks/>
 </Project>

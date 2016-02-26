@@ -21,6 +21,11 @@ IDI_BOARD_DO			ICON		            "imgs/expansion_DO.ico"
 IDI_BOARD_AI			ICON		            "imgs/expansion_AI.ico"
 IDI_BOARD_LCD			ICON		            "imgs/expansion_LCD.ico"
 
+IDI_BOARD_BIG_DI		ICON		            "imgs/expansion_Big_DI.ico"
+IDI_BOARD_BIG_DO		ICON		            "imgs/expansion_Big_DO.ico"
+IDI_BOARD_BIG_AI		ICON		            "imgs/expansion_Big_AI.ico"
+IDI_BOARD_BIG_LCD		ICON		            "imgs/expansion_Big_LCD.ico"
+
 IDB_BOARD_DI			BITMAP		            "imgs/expansion_DI.bmp"
 IDB_BOARD_DO			BITMAP		            "imgs/expansion_DO.bmp"
 IDB_BOARD_AI			BITMAP		            "imgs/expansion_AI.bmp"

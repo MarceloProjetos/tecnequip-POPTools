@@ -8,6 +8,11 @@
 #define IDI_BOARD_AI					4003
 #define IDI_BOARD_LCD					4004
 
+#define IDI_BOARD_BIG_DI				4101
+#define IDI_BOARD_BIG_DO				4102
+#define IDI_BOARD_BIG_AI				4103
+#define IDI_BOARD_BIG_LCD				4104
+
 #define IDB_BOARD_DI					4011
 #define IDB_BOARD_DO					4012
 #define IDB_BOARD_AI					4013

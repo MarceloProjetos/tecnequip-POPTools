@@ -219,7 +219,16 @@ struct tm * AdjustDate(struct tm timeinfo, int mode)
 // Tempo em segundos no dia
 static int GetHourOffset(struct tm timeinfo)
 {
-	time_t now = mktime(&timeinfo);
+	time_t now;
+
+	// Primeiro configura o dia para uma data conhecida. O que nos importa aqui eh o tempo em segundos desde o inicio do dia
+	timeinfo.tm_mon  =  0;
+	timeinfo.tm_yday =  0;
+	timeinfo.tm_year = 70;
+	timeinfo.tm_mday =  1;
+	timeinfo.tm_wday =  4;
+
+	now = mktime(&timeinfo);
 
 	timeinfo.tm_hour = timeinfo.tm_min = timeinfo.tm_sec = 0;
 

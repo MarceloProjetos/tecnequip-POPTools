@@ -180,13 +180,13 @@
     <ClCompile Include="ResourceFontFileStream.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="expansiondialog.cpp">
-      <Filter>Source Files\Diagrama Ladder</Filter>
-    </ClCompile>
     <ClCompile Include="modbus_rtu.c">
       <Filter>Source Files\Firmware</Filter>
     </ClCompile>
     <ClCompile Include="candialog.cpp">
+      <Filter>Source Files\Diálogos</Filter>
+    </ClCompile>
+    <ClCompile Include="expansiondialog.cpp">
       <Filter>Source Files\Diálogos</Filter>
     </ClCompile>
   </ItemGroup>

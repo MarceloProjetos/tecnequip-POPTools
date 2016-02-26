@@ -6,6 +6,7 @@ static HWND AddedBoardsListView;
 static HWND BoardModelsListView;
 static HWND AddBoardButton;
 static HWND DelBoardButton;
+static HWND MoreInfoButton;
 static HWND BoardUseInterruptCheckbox;
 static HWND BoardUpdateButton;
 static HWND BoardCancelButton;
@@ -139,18 +140,13 @@ static void MakeControls(void)
 
     BoardCancelButton = CreateWindowEx(0, WC_BUTTON, _("Desfazer"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
-        250, 315, 75, 23, ExpansionDialog, NULL, Instance, NULL); 
+        250, 317, 75, 23, ExpansionDialog, NULL, Instance, NULL); 
     NiceFont(BoardCancelButton);
 
-	BoardUseInterruptCheckbox = CreateWindowEx(0, WC_BUTTON, _("Usar Interrupção?"),
-        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
-        342, 290, 183, 21, ExpansionDialog, NULL, Instance, NULL);
-    NiceFont(BoardUseInterruptCheckbox);
-
-	BoardVersionComboBox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
-        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        425, 317, 140, 121, ExpansionDialog, NULL, Instance, NULL);
-    NiceFont(BoardVersionComboBox);
+    MoreInfoButton = CreateWindowEx(0, WC_BUTTON, _("Saiba Mais"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        250, 398, 75, 23, ExpansionDialog, NULL, Instance, NULL); 
+    NiceFont(MoreInfoButton);
 
 	grouper = CreateWindowEx(0, WC_BUTTON, _("Detalhes"),
         WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
@@ -169,20 +165,30 @@ static void MakeControls(void)
 
     BoardVersionLabel = CreateWindowEx(0, WC_STATIC, _("Versão:"),
 		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        335, 47, 50, 21, grouper, NULL, Instance, NULL);
+        8, 101, 50, 21, grouper, NULL, Instance, NULL);
     NiceFont(BoardVersionLabel);
+
+	BoardUseInterruptCheckbox = CreateWindowEx(0, WC_BUTTON, _("Usar Interrupção?"),
+        WS_CHILD | BS_AUTOCHECKBOX | WS_TABSTOP | WS_VISIBLE,
+        8, 74, 183, 21, grouper, NULL, Instance, NULL);
+    NiceFont(BoardUseInterruptCheckbox);
+
+	BoardVersionComboBox = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        70, 371, 175, 121, ExpansionDialog, NULL, Instance, NULL);
+    NiceFont(BoardVersionComboBox);
 
 	// Imagem da placa de expansao
 	BoardImageLabel = CreateWindowEx(WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR, WC_STATIC, "",
-        SS_BITMAP | SS_BLACKRECT | SS_GRAYFRAME | SS_LEFT | SS_LEFTNOWORDWRAP | SS_RIGHT | SS_WHITERECT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
-        8, 85, 64, 64, grouper, NULL, Instance, NULL);
+		SS_ICON | SS_REALSIZEIMAGE | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+        401, 25, 128, 128, grouper, NULL, Instance, NULL);
 
     BoardInfoLabel = CreateWindowEx(0, WC_STATIC, "",
 		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-        80, 70, 483, 93, grouper, NULL, Instance, NULL);
+        8, 128, 230, 30, grouper, NULL, Instance, NULL);
     NiceFont(BoardInfoLabel);
 
-	OkButton = CreateWindowEx(0, WC_BUTTON, _("OK"),
+	OkButton = CreateWindowEx(0, WC_BUTTON, _("Voltar"),
         WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE | BS_DEFPUSHBUTTON,
         430, 445, 70, 23, ExpansionDialog, NULL, Instance, NULL); 
     NiceFont(OkButton);
@@ -253,8 +259,7 @@ void UpdateControls(HWND lv, unsigned int id)
 		int index = ListView_GetNextItem(lv, -1, LVNI_SELECTED);
 		if(index >= 0) {
 			type = static_cast<eExpansionBoard>(index);
-			version = ComboBox_GetCurSel(BoardVersionComboBox);
-			if((int)version < 0) version = 0;
+			version = loadVersions ? 0 : ComboBox_GetCurSel(BoardVersionComboBox);
 			strcpy(buf, ladder->getBoardDescription(type).c_str());
 			Static_SetText(BoardInfoLabel, buf);
 			LoadAddressCombobox(type, version);
@@ -267,14 +272,16 @@ void UpdateControls(HWND lv, unsigned int id)
 	unsigned int res = 0;
 	switch(type) {
 		default:
-		case eExpansionBoard_DigitalInput : res = IDB_BOARD_DI ; break;
-		case eExpansionBoard_DigitalOutput: res = IDB_BOARD_DO ; break;
-		case eExpansionBoard_AnalogInput  : res = IDB_BOARD_AI ; break;
-		case eExpansionBoard_LCD          : res = IDB_BOARD_LCD; break;
+		case eExpansionBoard_DigitalInput : res = IDI_BOARD_BIG_DI ; break;
+		case eExpansionBoard_DigitalOutput: res = IDI_BOARD_BIG_DO ; break;
+		case eExpansionBoard_AnalogInput  : res = IDI_BOARD_BIG_AI ; break;
+		case eExpansionBoard_LCD          : res = IDI_BOARD_BIG_LCD; break;
 	}
 
-	HBITMAP hBmp = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(res),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
-	SendMessage(BoardImageLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp);
+//	HICON hBmp = (HICON) LoadIcon(Instance,MAKEINTRESOURCE(res));
+//	SendMessage(BoardImageLabel,STM_SETICON,(WPARAM) hBmp, 0);
+	HANDLE hBmp = LoadImage(Instance, MAKEINTRESOURCE(res), IMAGE_ICON, 128, 128, 0);
+	SendMessage(BoardImageLabel,STM_SETICON,(WPARAM) hBmp, 0);
 
 	// Carrega lista de versoes de placas. Somente se selecionou uma placa na lista de placas a adicionar!
 	if(loadVersions) {
@@ -445,6 +452,10 @@ static LRESULT CALLBACK ExpansionDialogProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				if(h ==   CancelButton) {
 					DialogDone   = TRUE;
 					DialogCancel = TRUE;
+				}
+				if(h == MoreInfoButton) {
+					string moreInfo = ladder->getBoardMoreInfo(eExpansionBoard_DigitalInput);
+					ShellExecute(NULL, "open", moreInfo.c_str(), NULL, NULL, SW_SHOWNORMAL);
 				}
             } else if(h == BoardVersionComboBox && HIWORD(wParam) == CBN_SELCHANGE) {
 				UpdateControls(NULL, 0);

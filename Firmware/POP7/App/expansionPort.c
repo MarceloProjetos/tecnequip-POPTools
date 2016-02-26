@@ -1,4 +1,5 @@
 #include "expansionPort.h"
+#include <stdlib.h>
 
 #define XP_CMD_WRITE 0X00UL
 #define XP_CMD_READ  0x80UL
@@ -52,7 +53,7 @@ unsigned int XP_Read(void)
 	ret = I2C_Engine();
 
 	if(ret) {
-		ret = atoi(&I2CMasterBuffer[3]);
+		ret = atoi((char *)(&I2CMasterBuffer[3]));
 	} else {
 		ret = 0;
 	}
