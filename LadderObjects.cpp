@@ -6228,7 +6228,7 @@ LadderElemCAN::LadderElemCAN(LadderDiagram *diagram, int which) : LadderElem(fal
 	infoIO_Name.pin           = pair<unsigned long, int>(0, 0);
 	infoIO_Name.name          = _("novo");
 	infoIO_Name.isBit         = false;
-	infoIO_Name.type          = (getWhich() == ELEM_READ_CAN) ? eType_ReadCAN : eType_WriteCAN;
+	infoIO_Name.type          = eType_General;
 	infoIO_Name.access        = (getWhich() == ELEM_READ_CAN) ? eRequestAccessType_Write : eRequestAccessType_Read;
 	infoIO_Name.isUniqueRead  = false;
 	infoIO_Name.isUniqueWrite = false;
@@ -6391,7 +6391,7 @@ LadderElem *LadderElemCAN::Clone(LadderDiagram *diagram)
 
 bool LadderElemCAN::acceptIO(unsigned long id, eType type)
 {
-	if(id == prop.idName.first && type != eType_ReadCAN && type != eType_WriteCAN && type != eType_Reserved) {
+	if(id == prop.idName.first && !Diagram->IsGenericTypeIO(type)) {
 		return false;
 	}
 
@@ -6408,7 +6408,7 @@ void LadderElemCAN::updateIO(LadderDiagram *owner, bool isDiscard)
 eType LadderElemCAN::getAllowedTypeIO(unsigned long id)
 {
 	if(prop.idName.first == id) {
-		return (getWhich() == ELEM_READ_CAN) ? eType_ReadCAN : eType_WriteCAN;
+		return eType_General;
 	}
 
 	return eType_Pending;
@@ -6418,7 +6418,7 @@ int LadderElemCAN::SearchAndReplace(unsigned long idSearch, string sNewText, boo
 {
 	if(prop.idName.first == idSearch) {
 		if(isReplace) {
-			eType type = (getWhich() == ELEM_READ_CAN) ? eType_ReadCAN : eType_WriteCAN;
+			eType type = eType_General;
 			pair<unsigned long, int> pin = prop.idName;
 			if(Diagram->getIO(this, pin, sNewText, type, infoIO_Name)) {
 				LadderElemCANProp *data = (LadderElemCANProp *)getProperties();
@@ -6441,7 +6441,7 @@ bool LadderElemCAN::internalUpdateNameTypeIO(unsigned int index, string name, eT
 {
 	pair<unsigned long, int> pin = prop.idName;
 
-	type = (getWhich() == ELEM_WRITE_CAN) ? eType_WriteCAN : eType_ReadCAN;
+	type = eType_General;
 
 	if(Diagram->IsValidNameAndType(pin.first, name.c_str(), type, _("Variável"), VALIDATE_IS_VAR, 0, 0)) {
 		if(Diagram->getIO(this, pin, name, type, infoIO_Name)) {
@@ -10738,6 +10738,8 @@ void LadderDiagram::Init(eModelPLC model)
 	LadderSettings.Uart.UART           = 0; // Modo da UART: 8 bits de dados, sem paridade, 1 bit de parada
 	LadderSettings.Uart.baudRate       = 9600; // Velocidade da UART: 9600 bps
 
+	LadderSettings.CAN.baudRate        = 125; // CAN Baudrate
+
 	LadderSettings.Network.ip          = MAKEIPADDRESS(192, 168, 0, 254); // IP da POP-7: 192.168.0.254
 	LadderSettings.Network.mask        = MAKEIPADDRESS(255, 255, 255, 0); // Mascara de rede: 255.255.255.0
 	LadderSettings.Network.gw          = MAKEIPADDRESS(192, 168, 0,   1); // IP do Gateway: 192.168.0.1
@@ -12211,6 +12213,26 @@ bool LadderDiagram::Save(string filename, bool isBackup)
 				}
 			}
 
+			// Se OK, agora gravamos a lista de nodes do CAN.
+			if(ret == true) {
+				if(fwrite_uint(f, vectorCANNodeList.size())) {
+					vector<LadderCANNodeList *>::iterator it;
+
+					for(it = vectorCANNodeList.begin(); it != vectorCANNodeList.end(); it++) {
+						fwrite_int   (f, (*it)->NodeID);
+						fwrite_uint  (f, (*it)->NodeCount);
+						fwrite_string(f, (*it)->node.name);
+						fwrite_int   (f, (*it)->node.id);
+					}
+
+					if(it != vectorCANNodeList.end()) {
+						ret = false; // erro durante a gravacao da lista
+					}
+				} else {
+					ret = false;
+				}
+			}
+
 			// Gravacao do diagrama ladder
 			if(ret == true) {
 				vector<LadderRung *>::iterator it;
@@ -12465,6 +12487,37 @@ bool LadderDiagram::Load(string filename)
 
 										*pnl = nl;
 										vectorMbNodeList.push_back(pnl);
+									}
+								}
+
+								if(i != list_size) {
+									ret = false; // erro durante a gravacao da lista
+								}
+							} else {
+								ret = false;
+							}
+						}
+
+						// Se OK, agora carregamos a lista de nodes do CAN.
+						if(ret == true) {
+							unsigned int i, list_size;
+							LadderCANNodeList nl;
+
+							if(fread_uint(f, &list_size)) {
+
+								for(i = 0; i < list_size; i++) {
+									if(
+										!fread_int   (f, &nl.NodeID) ||
+										!fread_uint  (f, &nl.NodeCount) ||
+										!fread_string(f, &nl.node.name) ||
+										!fread_int   (f, &nl.node.id) 
+										) {
+											break;
+									} else {
+										LadderCANNodeList *pnl = new LadderCANNodeList;
+
+										*pnl = nl;
+										vectorCANNodeList.push_back(pnl);
 									}
 								}
 
@@ -12976,6 +13029,283 @@ void LadderDiagram::mbDelRef(int NodeID)
 
 		// Remove a referencia
 		vectorMbNodeList[index]->NodeCount--;
+	}
+}
+
+/*** Funcoes relacionadas com lista de nos do CAN ***/
+
+// Clears a node to its default values
+void LadderDiagram::canClearNode(LadderCANNode *node)
+{
+	if(node == nullptr) return;
+
+	node->id    = 0;
+	node->name  = "";
+}
+
+// Create a new node in the list
+int LadderDiagram::canCreateNode(string NodeName)
+{
+	if(NodeName.size() == 0) return -1;
+
+	LadderCANNode node;
+	canClearNode(&node);
+	node.name = NodeName;
+
+	return canCreateNode(node);
+}
+
+// Create a new node in the list
+int LadderDiagram::canCreateNode(LadderCANNode node)
+{
+	if(node.name.size() == 0) return -1;
+
+	int elem = -1, NodeID = canGetNodeIDByName(node.name);
+
+	if(NodeID >= 0) {
+		elem = canUpdateNode(NodeID, node);
+	} else {
+		LadderCANNodeList *nl = new LadderCANNodeList;
+		elem = vectorCANNodeList.size();
+
+		nl->NodeID    = elem ? vectorCANNodeList[elem - 1]->NodeID + 1 : 0;
+		nl->NodeCount = 0;
+		nl->node      = node;
+
+		// Registro da acao para desfazer / refazer
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->CANNodeCreate.nl = nl;
+
+		action.action        = eMbNodeCreate;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = context;
+		action.data          = data;
+		action.io            = nullptr;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+		action.boards        = nullptr;
+
+		RegisterAction(action);
+
+		vectorCANNodeList.push_back(nl);
+
+		// Indica que houve alteracao no programa
+		ProgramChanged();
+	}
+
+	return elem;
+}
+
+// Update data of node in the list
+int LadderDiagram::canUpdateNode(int NodeID, LadderCANNode node)
+{
+	if(node.name.size() == 0) return -1;
+
+	int elem = canGetIndexByNodeID(NodeID);
+
+	if(elem >= 0) {
+		unsigned int index = elem;
+		if(index < vectorCANNodeList.size()) {
+			// Registro da acao para desfazer / refazer
+			UndoRedoAction action;
+			UndoRedoData *data = new UndoRedoData;
+
+			  data->CANNodeUpdate.index = index;
+			  data->CANNodeUpdate.node  = new LadderCANNode;
+			*(data->CANNodeUpdate.node) = vectorCANNodeList[index]->node;
+
+			action.action        = eCANNodeUpdate;
+			action.contextAfter  = getEmptyContext();
+			action.contextBefore = context;
+			action.data          = data;
+			action.io            = nullptr;
+			action.elem          = nullptr;
+			action.subckt        = nullptr;
+			action.boards        = nullptr;
+
+			RegisterAction(action);
+
+			// Atualiza o no
+			vectorCANNodeList[index]->node = node;
+
+			// Indica que houve alteracao no programa
+			ProgramChanged();
+		} else {
+			elem = -1;
+		}
+	} else {
+		elem = canCreateNode(node);
+	}
+
+	return elem;
+}
+
+// Delete a node from the list
+void LadderDiagram::canDeleteNode(int NodeID)
+{
+	unsigned int index = canGetIndexByNodeID(NodeID);
+	if(index >= 0 && index < vectorCANNodeList.size()) {
+		// Registro da acao para desfazer / refazer
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->CANNodeDelete.index = index;
+		data->CANNodeDelete.nl    = vectorCANNodeList[index];
+
+		action.action        = eCANNodeDelete;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = context;
+		action.data          = data;
+		action.io            = nullptr;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+		action.boards        = nullptr;
+
+		RegisterAction(action);
+
+		// Remove o no
+		vectorCANNodeList.erase(vectorCANNodeList.begin() + index);
+
+		// Indica que houve alteracao no programa
+		ProgramChanged();
+	}
+}
+
+// Get MbNodeList by Index (Position in the list)
+LadderCANNode LadderDiagram::canGetNodeByIndex(int elem)
+{
+	if(elem >= 0) {
+		unsigned int index = elem;
+		if(index < vectorCANNodeList.size()) {
+			return vectorCANNodeList[index]->node;
+		}
+	}
+
+	// Se chegou aqui, index invalido! Cria um no vazio
+	LadderCANNode node;
+	canClearNode(&node);
+
+	return node;
+}
+
+// Get MbNode by NodeID
+LadderCANNode LadderDiagram::canGetNodeByNodeID(int NodeID)
+{
+	return canGetNodeByIndex(canGetIndexByNodeID(NodeID));
+}
+
+// Get NodeID by Index (Position in the list)
+int LadderDiagram::canGetNodeIDByIndex(int elem)
+{
+	if(elem >= 0) {
+		unsigned int index = elem;
+		if(index < vectorCANNodeList.size()) {
+			return vectorCANNodeList[index]->NodeID;
+		}
+	}
+
+	return -1;
+}
+
+// Get NodeID by node name
+int LadderDiagram::canGetNodeIDByName(string Name)
+{
+	unsigned int index;
+
+	for(index = 0; index < vectorCANNodeList.size(); index++) {
+		if(vectorCANNodeList[index]->node.name == Name) {
+			return vectorCANNodeList[index]->NodeID;
+		}
+	}
+
+	return -1;
+}
+
+// Get Index (Position in the list) by NodeID
+int LadderDiagram::canGetIndexByNodeID(int NodeID)
+{
+	unsigned int index;
+
+	for(index = 0; index < vectorCANNodeList.size(); index++) {
+		if(vectorCANNodeList[index]->NodeID == NodeID) {
+			return index;
+		}
+	}
+
+	return -1;
+}
+
+// Get Node Count by NodeID
+unsigned int LadderDiagram::canGetNodeCount(int NodeID)
+{
+	unsigned int index;
+
+	for(index = 0; index < vectorCANNodeList.size(); index++) {
+		if(vectorCANNodeList[index]->NodeID == NodeID) {
+			return vectorCANNodeList[index]->NodeCount;
+		}
+	}
+
+	return 0;
+}
+
+// Increment Reference Count for given NodeID
+void LadderDiagram::canAddRef(int NodeID)
+{
+	int index = canGetIndexByNodeID(NodeID);
+
+	if(index >= 0) {
+		// Registro da acao para desfazer / refazer
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->CANNodeRef.index    = index;
+		data->CANNodeRef.isAddRef = true;
+
+		action.action        = eCANNodeRef;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = context;
+		action.data          = data;
+		action.io            = nullptr;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+		action.boards        = nullptr;
+
+		RegisterAction(action);
+
+		// Adiciona a referencia
+		vectorCANNodeList[index]->NodeCount++;
+	}
+}
+
+// Decrement Reference Count for given NodeID
+void LadderDiagram::canDelRef(int NodeID)
+{
+	int index = canGetIndexByNodeID(NodeID);
+
+	if(index >= 0 && vectorCANNodeList[index]->NodeCount > 0) {
+		// Registro da acao para desfazer / refazer
+		UndoRedoAction action;
+		UndoRedoData *data = new UndoRedoData;
+
+		data->CANNodeRef.index    = index;
+		data->CANNodeRef.isAddRef = false;
+
+		action.action        = eCANNodeRef;
+		action.contextAfter  = getEmptyContext();
+		action.contextBefore = context;
+		action.data          = data;
+		action.io            = nullptr;
+		action.elem          = nullptr;
+		action.subckt        = nullptr;
+		action.boards        = nullptr;
+
+		RegisterAction(action);
+
+		// Remove a referencia
+		vectorCANNodeList[index]->NodeCount--;
 	}
 }
 

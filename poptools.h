@@ -842,7 +842,7 @@ bool ShowVarDialog(const char *title, const char *varname, string *name, POINT s
 bool ShowRTCDialog(int *mode, unsigned char *wday, struct tm *start, struct tm *end, POINT ElemStart, POINT ElemSize, POINT GridSize);
 bool ShowVarBitDialog(const char *title, const char *varname, string *name, int * bit, POINT ElemStart, POINT ElemSize, POINT GridSize, vector<eType> types);
 bool ShowModbusDialog(int mode_write, string *name, int *id, int *address, POINT ElemStart, POINT ElemSize, POINT GridSize);
-bool ShowCANDialog(int mode_write, string *name, int *id, int *address, POINT ElemStart, POINT ElemSize, POINT GridSize);
+bool ShowCANDialog(int mode_write, string *name, int *id, POINT ElemStart, POINT ElemSize, POINT GridSize);
 void ShowSimulationVarSetDialog(const char *name, char *val);
 bool ShowLookUpTableDialog(LadderElemLUTProp *t, POINT ElemStart, POINT ElemSize, POINT GridSize);
 bool ShowPiecewiseLinearDialog(LadderElemPiecewiseProp *t, POINT ElemStart, POINT ElemSize, POINT GridSize);
@@ -856,6 +856,7 @@ extern const char *EncoderConvModes[];
 bool ShowExpansionDialog(void);
 // modbusdialog.cpp
 void PopulateModBUSMasterCombobox(HWND h, bool has_new);
+void PopulateCANMasterCombobox(HWND h, bool has_new);
 // helpdialog.cpp
 void ShowHelpDialog(BOOL about);
 void OpenCHM(void);

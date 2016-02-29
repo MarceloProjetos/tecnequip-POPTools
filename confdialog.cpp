@@ -50,6 +50,12 @@ static HWND mask;
 static HWND gw;
 static HWND dns;
 
+static HWND CANOk;
+static HWND CANDelete;
+static HWND CANName;
+static HWND CANId;
+static HWND CANNode;
+
 static HWND IncConvModeCombobox;
 static HWND PerimeterTextbox;
 static HWND PulsesTextbox;
@@ -287,6 +293,111 @@ void LoadMBMasterControls(int elem)
 	}
 }
 
+void LoadCANMasterControls(int elem)
+{
+	if(elem > 0) {
+		char buf[10];
+		LadderCANNode node = ladder->canGetNodeByIndex(elem-1);
+
+		if(node.name.size() > 0) {
+			sprintf(buf, "%d", node.id);
+
+			SendMessage(CANName , WM_SETTEXT    , 0, (LPARAM)node.name.c_str());
+			SendMessage(CANId   , WM_SETTEXT    , 0, (LPARAM)buf);
+		}
+
+		Button_SetText(MBok, _("Alterar"));
+		EnableWindow(CANDelete, TRUE);
+	} else {
+		LadderSettingsNetwork network = ladder->getSettingsNetwork();
+		SendMessage(CANName , WM_SETTEXT    , 0, (LPARAM)"");
+		SendMessage(CANId   , WM_SETTEXT    , 0, (LPARAM)"1");
+
+		Button_SetText(MBok, _("Adicionar"));
+		EnableWindow(CANDelete, FALSE);
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Window proc for the ModBUS Master Grouper. This Ok/Cancel stuff is common to a lot
+// of places, and there are no other callbacks from the children.
+//-----------------------------------------------------------------------------
+static LRESULT CALLBACK ConfDialogProc_CANGrouper(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) {
+		case WM_COMMAND: {
+            HWND h = (HWND)lParam;
+            if(h == CANOk && wParam == BN_CLICKED) {
+				char buf[MAX_NAME_LEN];
+				const char *msg;
+				int i = ComboBox_GetCurSel(CANNode), pos = 1;
+
+				// Check if name already in the list
+				SendMessage(CANName, WM_GETTEXT, (WPARAM)17, (LPARAM)buf);
+				LadderCANNode new_node = ladder->canGetNodeByNodeID(ladder->canGetNodeIDByName(buf));
+
+				bool nameOK = false;
+				if(i == ladder->canGetIndexByNodeID(ladder->canGetNodeIDByName(buf)) + 1) {
+					nameOK = true;
+				}
+
+				if(new_node.name.size() > 0 && !nameOK) {
+					ShowTaskDialog(_("Já existe um elemento com esse nome!"), NULL, TD_ERROR_ICON, TDCBF_OK_BUTTON);
+				} else { // Name not found,  we can insert / update element.
+					if(!i) { // New element
+						i = ladder->canCreateNode(buf); // Create the new node
+
+						if(i < 0) {
+							msg = _("Erro ao criar elemento!");
+						} else {
+							msg = _("Elemento adicionado com sucesso!");
+
+							new_node = ladder->canGetNodeByIndex(i);
+						}
+					} else { // Updating existent element
+						msg = _("Elemento alterado com sucesso!");
+
+						new_node = ladder->canGetNodeByIndex(i-1);
+					}
+
+					if(new_node.name.size() > 0) {
+						int NodeID = ladder->canGetNodeIDByName(new_node.name);
+						new_node.name = buf;
+
+						SendMessage(CANId, WM_GETTEXT, (WPARAM)sizeof(buf), (LPARAM)buf);
+						new_node.id = min(max(0, atoi(buf)), 127);
+
+						ladder->canUpdateNode(NodeID, new_node);
+
+						PopulateCANMasterCombobox(CANNode, true);
+						LoadCANMasterControls(0);
+					}
+
+					ShowTaskDialog(msg, NULL, (new_node.name.size() == 0) ? TD_INFORMATION_ICON : TD_ERROR_ICON, TDCBF_OK_BUTTON);
+				}
+            } else if(h == CANDelete && wParam == BN_CLICKED) {
+				int i = ComboBox_GetCurSel(CANNode) - 1;
+				int NodeID = ladder->canGetNodeIDByIndex(i);
+
+				if(ladder->canGetNodeCount(NodeID) > 0) {
+					ShowTaskDialog(_("Este elemento está em uso!"), _("Primeiro remova sua referência de todas as instruções que o utilizam."),
+						TD_ERROR_ICON, TDCBF_OK_BUTTON);
+				} else if(ShowTaskDialog(_("Tem certeza que deseja excluir o item selecionado?"), NULL,
+					TD_WARNING_ICON, TDCBF_YES_BUTTON | TDCBF_NO_BUTTON) == IDYES) {
+						ladder->canDeleteNode(NodeID);
+						PopulateCANMasterCombobox(CANNode, true);
+						LoadCANMasterControls(0);
+				}
+            } else if(h == CANNode && HIWORD(wParam) == CBN_SELCHANGE) {
+				LoadCANMasterControls(ComboBox_GetCurSel(CANNode));
+			}
+            break;
+			}
+	}
+
+	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
 //-----------------------------------------------------------------------------
 // Window proc for the ModBUS Master Grouper. This Ok/Cancel stuff is common to a lot
 // of places, and there are no other callbacks from the children.
@@ -455,14 +566,15 @@ struct {
 		{ "Fuso Horário"       , 2, CONFTVI_ID_COMM_FUSE        },
 		{ "Serial"             , 2, CONFTVI_ID_COMM_SERIAL      },
 		{ "CAN"                , 2, CONFTVI_ID_COMM_CAN         },
+		{ "Modbus"             , 2, CONFTVI_ID_MODBUS           },
+		    { "Mestre"             , 3, CONFTVI_ID_MODBUS_MASTER    },
+		    { "Escravo"            , 3, CONFTVI_ID_MODBUS_SLAVE     },
 	{ "Interfaces"             , 1, CONFTVI_ID_INTERFACE        },
 		{ "Entrada Analógica"  , 2, CONFTVI_ID_INTERFACE_AD     },
 		{ "Saída Analógica"    , 2, CONFTVI_ID_INTERFACE_DA     },
 		{ "Encoder Incremental", 2, CONFTVI_ID_INTERFACE_ENCINC },
 		{ "Encoder Absoluto"   , 2, CONFTVI_ID_INTERFACE_ENCABS },
-	{ "ModBUS"                 , 1, CONFTVI_ID_MODBUS           },
-		{ "Mestre"             , 2, CONFTVI_ID_MODBUS_MASTER    },
-		{ "Escravo"            , 2, CONFTVI_ID_MODBUS_SLAVE     },
+	
 };
 
 BOOL InitTreeViewItems(HWND hwndTV)
@@ -750,7 +862,7 @@ static void MakeControls(void)
         215, 7, 295, 198, ConfDialog, NULL, Instance, NULL);
     NiceFont(GroupCommCAN);
 
-    textLabel = CreateWindowEx(0, WC_STATIC, _("Ajuste aqui a configuração da interface CAN"),
+    /*textLabel = CreateWindowEx(0, WC_STATIC, _("Ajuste aqui a configuração da interface CAN"),
 		WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_CENTER,
         5, 5, 195, 54, GroupCommCAN, NULL, Instance, NULL);
     NiceFont(textLabel);
@@ -760,17 +872,64 @@ static void MakeControls(void)
         205, 0, 64, 64, GroupCommCAN, NULL, Instance, NULL);
 
 	HBITMAP hBmp4 = (HBITMAP) LoadImage(Instance,MAKEINTRESOURCE(IDB_RS485_CONFIG),IMAGE_BITMAP,0,0, LR_DEFAULTSIZE);
-	SendMessage(textLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp4);
+	SendMessage(textLabel,STM_SETIMAGE,(WPARAM) IMAGE_BITMAP,(LPARAM) hBmp4);*/
 
 	textLabel = CreateWindowEx(0, WC_STATIC, _("Baud Rate(kbps):"),
         WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
-        5, 67, 140, 21, GroupCommCAN, NULL, Instance, NULL);
+        5, 5, 110, 21, GroupCommCAN, NULL, Instance, NULL);
     NiceFont(textLabel);
 
 	CANBaudRateCombobox = CreateWindowEx(0, WC_COMBOBOX, NULL,
         WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
-        155, 67, 140, 100, GroupCommCAN, NULL, Instance, NULL);
+        145, 5, 140, 100, GroupCommCAN, NULL, Instance, NULL);
     NiceFont(CANBaudRateCombobox);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Dispositivo:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        25, 65, 110, 21, GroupCommCAN, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+	CANNode = CreateWindowEx(0, WC_COMBOBOX, NULL,
+        WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_VSCROLL | CBS_DROPDOWNLIST,
+        145, 65, 140, 100, GroupCommCAN, NULL, Instance, NULL);
+    NiceFont(CANNode);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("Nome:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        25, 95, 110, 21, GroupCommCAN, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    CANName = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        145, 95, 140, 21, GroupCommCAN, NULL, Instance, NULL);
+    NiceFont(CANName);
+
+    textLabel = CreateWindowEx(0, WC_STATIC, _("ID do Dispositivo:"),
+        WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | SS_RIGHT,
+        25, 125, 110, 21, GroupCommCAN, NULL, Instance, NULL);
+    NiceFont(textLabel);
+
+    CANId = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, "",
+        WS_CHILD | ES_AUTOHSCROLL | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        145, 125, 140, 21, GroupCommCAN, NULL, Instance, NULL);
+    NiceFont(CANId);
+
+    CANOk = CreateWindowEx(0, WC_BUTTON, _("Adicionar"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        137, 165, 69, 23, GroupCommCAN, NULL, Instance, NULL); 
+    NiceFont(CANOk);
+
+    CANDelete = CreateWindowEx(0, WC_BUTTON, _("Excluir"),
+        WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_VISIBLE,
+        216, 165, 69, 23, GroupCommCAN, NULL, Instance, NULL); 
+    NiceFont(CANDelete);
+
+    HWND grouper1 = CreateWindowEx(0, WC_BUTTON, _("Dados do dispositivo CAN selecionado:"),
+        WS_CHILD | BS_GROUPBOX | WS_VISIBLE,
+        10, 35, 285, 160, GroupCommCAN, NULL, Instance, NULL);
+    NiceFont(grouper1);
+
+	SetWindowLongPtr(GroupCommCAN, GWLP_WNDPROC, (LONG_PTR)ConfDialogProc_CANGrouper);
 
 	// Group - Analog Input
     GroupInterfaceAD = CreateWindowEx(0, WC_STATIC, "",
@@ -1200,6 +1359,9 @@ bool ShowConfDialog(eConfSection confSection)
 
 	PopulateModBUSMasterCombobox(MBelem, true);
 	LoadMBMasterControls(0);
+
+	PopulateCANMasterCombobox(CANNode, true);
+	LoadCANMasterControls(0);
 
 	SendMessage(ParityCombobox, CB_SETCURSEL, settingsUart.UART, 0);
 	SendMessage(ParityCombobox, CB_SETDROPPEDWIDTH, 100, 0);

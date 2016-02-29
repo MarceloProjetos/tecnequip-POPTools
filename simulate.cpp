@@ -1217,6 +1217,18 @@ math:
 				AppendToModbusSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
                 break;
 
+            case INT_READ_CAN:
+            case INT_WRITE_CAN:
+				if(a->literal == 0) { // CAN
+					SetSingleBit("$SerialReady", false);
+					SimulateModbus485Countdown = 2;
+				} else { // Ethernet
+					SetSingleBit("$TcpReady", false);
+					SimulateModbusEthCountdown = 2;
+				}
+				AppendToModbusSimulationTextControl(atoi(a->name2), atoi(a->name3), a->name1);
+                break;
+
             case INT_UART_SEND:
                 if(SingleBitOn(a->name2) && (SimulateUartTxCountdown == 0)) 
 				{

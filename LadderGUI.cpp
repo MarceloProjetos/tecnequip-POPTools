@@ -6220,20 +6220,14 @@ bool LadderElemCAN::ShowDialog(LadderContext context)
 
 	bool changed = false;
 
-	if(ShowCANDialog(getWhich() == ELEM_WRITE_CAN ? 1 : 0, &NewName, &NewElem, &NewAddress, start, size, GridSize)) {
-		eType type;
-		if(getWhich() == ELEM_READ_CAN) {
-			type = eType_ReadCAN;
-		} else {
-			type = eType_WriteCAN;
-		}
+	if(ShowCANDialog(getWhich() == ELEM_WRITE_CAN ? 1 : 0, &NewName, &NewElem, start, size, GridSize)) {
+		eType type = eType_General;
 
 		Diagram->CheckpointBegin(_("Alterar CAN"));
 		if(updateNameTypeIO(0, NewName, type)) {
 			LadderElemCANProp *data = (LadderElemCANProp *)getProperties();
 
 			data->elem         = NewElem;
-			data->address      = NewAddress;
 
 			setProperties(context, data);
 

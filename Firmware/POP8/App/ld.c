@@ -45,14 +45,12 @@ struct strExpansionBoard expansionBoards[] = {
 };
 
 // Variaveis PLC
-volatile unsigned char GPIO_OUTPUT_PORT2 = 0;
-volatile unsigned char GPIO_OUTPUT_PORT1 = 0;
 volatile int ArrayBitUser_Count = 1;
 volatile int ArrayBitUser[1];
 volatile int ArrayBitSystem_Count = 1;
 volatile int ArrayBitSystem[1];
-volatile int ArrayIntUser_Count = 5;
-volatile int ArrayIntUser[5];
+volatile int ArrayIntUser_Count = 3;
+volatile int ArrayIntUser[3];
 
 // Funcao que executa um ciclo de processamento da logica criada pelo usuario
 void PLC_Run(void)
@@ -65,102 +63,56 @@ void PLC_Run(void)
     if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
 
     /* iniciando serie [ */
+    if (((ArrayBitUser[0] >> 0) & 1)) {  // s
+        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    }
+
     if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
-        if (ArrayIntUser[0] < 299) {
+        if (ArrayIntUser[0] < 49) {
             ArrayIntUser[0]++;
             ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
         }
     } else {
-        ArrayIntUser[0] = 0; // seq7
+        ArrayIntUser[0] = 0; // seq0
     }
 
-    if (((ArrayBitUser[0] >> 0) & 1)) {  // PiscaOK
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+    if (!((ArrayBitSystem[0] >> 2) & 1)) {  // $seq1_antiglitch
+        ArrayIntUser[1] = 49; // seq1
     }
-
-    if (GPIO_OUTPUT_PORT2) {  // EsperaPisca
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    /* iniciando paralelo [ */
-    ArrayBitSystem[0] &= ~(1UL << 2); // $parOut_0 = 0
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0 = $rung_top
-    /* iniciando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0
-        if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $oneShot_0
-            if (I_SerialReady) {  // $SerialReady
-                CAN_Write(SendMsgBuf);
-                ArrayBitSystem[0] |= 1UL << 4; // $oneShot_0 = 1
-            }
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0 = 0
-            ArrayBitSystem[0] &= ~(1UL << 5); // $oneShot_1 = 0
+    ArrayBitSystem[0] |= 1UL << 2; // $seq1_antiglitch = 1
+    if (!((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (ArrayIntUser[1] < 49) {
+            ArrayIntUser[1]++;
+            ArrayBitSystem[0] |= 1UL << 1; // $rung_top = 1
         }
-        if (!((ArrayBitSystem[0] >> 5) & 1)) {  // $oneShot_1
-            ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0 = 0
+    } else {
+        ArrayIntUser[1] = 0; // seq1
+    }
+
+    if (((ArrayBitSystem[0] >> 1) & 1)) {  // $rung_top
+        if (!((ArrayBitSystem[0] >> 3) & 1)) {  // $oneShot_0
             if (I_SerialReady) {  // $SerialReady
-                ArrayBitSystem[0] |= 1UL << 5; // $oneShot_1 = 1
+                CAN_Write(0, sizeof(ArrayIntUser[2]), &ArrayIntUser[2]);
+                ArrayBitSystem[0] |= 1UL << 3; // $oneShot_0 = 1
+            }
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            ArrayBitSystem[0] &= ~(1UL << 4); // $oneShot_1 = 0
+        }
+        if (!((ArrayBitSystem[0] >> 4) & 1)) {  // $oneShot_1
+            ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
+            if (I_SerialReady) {  // $SerialReady
+                ArrayBitSystem[0] |= 1UL << 4; // $oneShot_1 = 1
             } else if (I_SerialTimeout) {  // $SerialTimeout
                 I_SerialTimeout = 0; // $SerialTimeout = 0
-                CAN_Write(SendMsgBuf);
+                CAN_Write(0, sizeof(ArrayIntUser[2]), &ArrayIntUser[2]);
             }
         }
     } else {
-        ArrayBitSystem[0] &= ~(1UL << 4); // $oneShot_0 = 0
-        ArrayBitSystem[0] &= ~(1UL << 5); // $oneShot_1 = 0
+        ArrayBitSystem[0] &= ~(1UL << 3); // $oneShot_0 = 0
+        ArrayBitSystem[0] &= ~(1UL << 4); // $oneShot_1 = 0
     }
 
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitUser[0] |= 1UL << 0; else ArrayBitUser[0] &= ~(1UL << 0); // PiscaOK = $parThis_0
-
-    /* terminando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0 = 1
-    }
-    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitSystem[0] |= 1UL << 3; else ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0 = $rung_top
-    /* iniciando serie [ */
-    if (!I_SerialAborted) {  // $SerialAborted
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0 = 0
-    }
-
-    if(((ArrayBitSystem[0] >> 3) & 1)) ArrayBitSystem[0] |= 1UL << 6; else ArrayBitSystem[0] &= ~(1UL << 6); // $scratch = $parThis_0
-    if (((ArrayBitSystem[0] >> 7) & 1)) {  // $oneShot_2
-        ArrayBitSystem[0] &= ~(1UL << 3); // $parThis_0 = 0
-    }
-    if(((ArrayBitSystem[0] >> 6) & 1)) ArrayBitSystem[0] |= 1UL << 7; else ArrayBitSystem[0] &= ~(1UL << 7); // $oneShot_2 = $scratch
-
-    if (!((ArrayBitSystem[0] >> 8) & 1)) {  // $seq0_antiglitch
-        ArrayIntUser[2] = 299; // seq0
-    }
-    ArrayBitSystem[0] |= 1UL << 8; // $seq0_antiglitch = 1
-    if (!((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0
-        if (ArrayIntUser[2] < 299) {
-            ArrayIntUser[2]++;
-            ArrayBitSystem[0] |= 1UL << 3; // $parThis_0 = 1
-        }
-    } else {
-        ArrayIntUser[2] = 0; // seq0
-    }
-
-    GPIO_OUTPUT_PORT2 = ((ArrayBitSystem[0] >> 3) & 1); // EsperaPisca = $parThis_0
-
-    /* terminando serie [ */
-    if (((ArrayBitSystem[0] >> 3) & 1)) {  // $parThis_0
-        ArrayBitSystem[0] |= 1UL << 2; // $parOut_0 = 1
-    }
-    if(((ArrayBitSystem[0] >> 2) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $parOut_0
-    /* terminando paralelo [ */
-    /* terminando serie [ */
-
-    /* iniciando linha 2 */
-    if(((ArrayBitSystem[0] >> 0) & 1)) ArrayBitSystem[0] |= 1UL << 1; else ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = $mcr
-
-    /* iniciando serie [ */
-    ArrayIntUser[3] = 0; // $scratch2_int
-    if (ArrayIntUser[4] > ArrayIntUser[3]) { // PiscaMB > $scratch2_int
-    } else {
-        ArrayBitSystem[0] &= ~(1UL << 1); // $rung_top = 0
-    }
-
-    GPIO_OUTPUT_PORT1 = ((ArrayBitSystem[0] >> 1) & 1); // Pisca = $rung_top
+    if(((ArrayBitSystem[0] >> 1) & 1)) ArrayBitUser[0] |= 1UL << 0; else ArrayBitUser[0] &= ~(1UL << 0); // s = $rung_top
 
     /* terminando serie [ */
 }
@@ -181,10 +133,10 @@ void PLC_Init(void)
 	CAN_Init();
 	CAN_Config(125);
 
-	IP4_ADDR(&IP_ADDRESS, 192,168,1,222);
+	IP4_ADDR(&IP_ADDRESS, 192,168,0,254);
 	IP4_ADDR(&IP_NETMASK, 255,255,255,0);
-	IP4_ADDR(&IP_GATEWAY, 192,168,1,1);
-	IP4_ADDR(&IP_DNS, 192,168,1,1);
+	IP4_ADDR(&IP_GATEWAY, 192,168,0,1);
+	IP4_ADDR(&IP_DNS, 192,168,0,1);
 
     memset((void*)ArrayBitUser, 0, sizeof(ArrayBitUser));
     memset((void*)ArrayBitSystem, 0, sizeof(ArrayBitSystem));

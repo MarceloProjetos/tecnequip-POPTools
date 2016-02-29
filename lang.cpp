@@ -1994,8 +1994,8 @@ PCWSTR getRibbonLocalizedLabel(UINT nCmdID)
 		SET_LANGUAGE_STRINGS(cmdInstrReadModBUS          , L"Ler Registrador ModBUS"           , L"Read ModBUS Register"          , L"Leer Registrador ModBUS"            );
 		SET_LANGUAGE_STRINGS(cmdInstrWriteModBUS         , L"Escrever Registrador ModBUS"      , L"Write ModBUS Register"         , L"Escribir Registrador ModBUS"        );
 
-		SET_LANGUAGE_STRINGS(cmdInstrReadCAN			, L"Ler Registrador CAN"			   , L"Read CAN Register"			  , L"Leer Registrador CAN"            );
-		SET_LANGUAGE_STRINGS(cmdInstrWriteCAN			, L"Escrever Registrador CAN"		   , L"Write CAN Register"			  , L"Escribir Registrador CAN"        );
+		SET_LANGUAGE_STRINGS(cmdInstrReadCAN			, L"Ler da rede CAN"			   , L"Read from CAN bus"			  , L"Leer de CAN"            );
+		SET_LANGUAGE_STRINGS(cmdInstrWriteCAN			, L"Escrever na rede CAN"		   , L"Write to CAN bus"			  , L"Escribir no CAN"        );
 
 		SET_LANGUAGE_STRINGS(cmdInstrLCD                 , L"LCD"                              , L"LCD"                           , L"LCD"                                );
 
@@ -2181,8 +2181,8 @@ PCWSTR getRibbonLocalizedTooltipTitle(UINT nCmdID)
 		SET_LANGUAGE_STRINGS(cmdInstrReadModBUS          , L"Ler Registrador ModBUS (Shift + X)"           , L"Read ModBUS Register (Shift + X)"          , L"Leer Registrador ModBUS (Shift + X)"            );
 		SET_LANGUAGE_STRINGS(cmdInstrWriteModBUS         , L"Escrever Registrador ModBUS (X)"              , L"Write ModBUS Register (X)"                 , L"Escribir Registrador ModBUS (X)"                );
 
-		SET_LANGUAGE_STRINGS(cmdInstrReadCAN             , L"Ler Registrador CAN (Shift + X)"              , L"Read CAN Register (Shift + X)"             , L"Leer Registrador CAN (Shift + X)"               );
-		SET_LANGUAGE_STRINGS(cmdInstrWriteCAN            , L"Escrever Registrador CAN (X)"                 , L"Write CAN Register (X)"                    , L"Escribir Registrador CAN (X)"                   );
+		SET_LANGUAGE_STRINGS(cmdInstrReadCAN             , L"Ler da rede CAN (Shift + X)"              , L"Read from CAN bus (Shift + X)"             , L"Leer de CAN (Shift + X)"               );
+		SET_LANGUAGE_STRINGS(cmdInstrWriteCAN            , L"Escrever na rede CAN (X)"                 , L"Write to CAN bus (X)"                    , L"Escribir no CAN (X)"                   );
 
 		SET_LANGUAGE_STRINGS(cmdInstrLCD                 , L"LCD"                                          , L"LCD"                                       , L"LCD"                                            );
 
@@ -2630,13 +2630,13 @@ PCWSTR getRibbonLocalizedTooltipDescription(UINT nCmdID)
 				L"Inserir escribir registrador modbus en la posicion del curso");
 
 			SET_LANGUAGE_STRINGS(cmdInstrReadCAN          ,
-				L"Inserir ler registrador CAN na posição do cursor.",
-				L"Insert read CAN register read on cursor's position",
-				L"Inserir leer registrador CAN en la posicion del cursor");
+				L"Inserir ler da rede CAN na posição do cursor.",
+				L"Insert read from CAN bus read on cursor's position",
+				L"Inserir leer de CAN en la posicion del cursor");
 			SET_LANGUAGE_STRINGS(cmdInstrWriteCAN         ,
-				L"Inserir escrever registrador CAN na posição do cursor.",
-				L"Insert write CAN register read on cursor's position",
-				L"Inserir escribir registrador CAN en la posicion del curso");
+				L"Inserir escrever na rede CAN na posição do cursor.",
+				L"Insert write to CAN bus read on cursor's position",
+				L"Inserir escribir no CAN en la posicion del curso");
 
 			SET_LANGUAGE_STRINGS(cmdInstrLCD                 ,
 				L"Inserir Comando do LCD na posição do cursor.",

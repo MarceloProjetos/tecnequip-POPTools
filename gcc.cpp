@@ -749,22 +749,22 @@ static void GenerateAnsiC(FILE *f, unsigned int &ad_mask)
 				break;
             case INT_READ_CAN:
 				HasCAN = true;
-				fprintf(f, "CAN_Read(RcvMsgBuf);\n");
+				fprintf(f, "CAN_Read(%d, sizeof(%s), &%s);\n", atoi(vectorIntCode[i].name2), GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ), GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
             case INT_WRITE_CAN:
 				HasCAN = true;
-				fprintf(f, "CAN_Write(SendMsgBuf);\n");
+				fprintf(f, "CAN_Write(%d, sizeof(%s), &%s);\n", atoi(vectorIntCode[i].name2), GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ), GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				break;
 			case INT_SET_PWM:
 				fprintf(f, "PWM_Set(%s, %s);\n", IsNumber(vectorIntCode[i].name1) ? vectorIntCode[i].name1 : GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ), vectorIntCode[i].name2);
 				HasPWM = 1;
 				break;
             case INT_UART_RECV:
-				sprintf(buf2, "RS485_ReadChar((unsigned char *)&%s)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				sprintf(buf2, "RS485_ReadChar((uint8_t *)&%s)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
 				break;
             case INT_UART_SEND:
-				sprintf(buf2, "RS485_Write((unsigned char *)&%s, 1)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
+				sprintf(buf2, "RS485_Write((uint8_t *)&%s, 1)", GenVarCode(buf, MapSym(vectorIntCode[i].name1), NULL, GENVARCODE_MODE_READ));
 				fprintf(f, "%s\n", GenVarCode(buf, MapSym(vectorIntCode[i].name2), buf2, GENVARCODE_MODE_WRITE));
                 break;
 

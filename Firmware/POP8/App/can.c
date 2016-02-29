@@ -160,7 +160,7 @@ static void PrintCANMsg(CAN_MSG_T *pMsg)
 }
 
 /* Reply remote message received */
-static void ReplyRemoteMessage(CAN_MSG_T *pRcvMsg)
+/*static void ReplyRemoteMessage(CAN_MSG_T *pRcvMsg)
 {
 	CAN_MSG_T SendMsgBuf;
 	CAN_BUFFER_ID_T   TxBuf;
@@ -174,10 +174,10 @@ static void ReplyRemoteMessage(CAN_MSG_T *pRcvMsg)
 	Chip_CAN_Send(LPC_CAN, TxBuf, &SendMsgBuf);
 	DEBUGOUT("Message Replied!!!\r\n");
 	PrintCANMsg(&SendMsgBuf);
-}
+}*/
 
 /* Reply message received */
-static void ReplyNormalMessage(CAN_MSG_T *pRcvMsg)
+/*static void ReplyNormalMessage(CAN_MSG_T *pRcvMsg)
 {
 	CAN_MSG_T SendMsgBuf = *pRcvMsg;
 	CAN_BUFFER_ID_T   TxBuf;
@@ -186,7 +186,7 @@ static void ReplyNormalMessage(CAN_MSG_T *pRcvMsg)
 	Chip_CAN_Send(LPC_CAN, TxBuf, &SendMsgBuf);
 	DEBUGOUT("Message Replied!!!\r\n");
 	PrintCANMsg(&SendMsgBuf);
-}
+}*/
 
 #if AF_LUT_USED
 /* Print entries in AF LUT */
@@ -369,67 +369,53 @@ void CAN_Init()
 
 }
 
-unsigned int CAN_Write(CAN_MSG_T SendMsgBuf)
+unsigned int CAN_Write(
+		unsigned int id,
+		unsigned short int length,
+        volatile uint8_t * value)
 {
 	CAN_BUFFER_ID_T TxBuf;
+	CAN_MSG_T SendMsgBuf;
 
+	memset(&SendMsgBuf, 0, sizeof(SendMsgBuf));
+
+	int i = 0;
 	int timeout = 0;
 
-	SendMsgBuf.ID = CAN_TX_MSG_STD_ID;
-	SendMsgBuf.DLC = 4;
+	SendMsgBuf.ID = id;
 	SendMsgBuf.Type = 0;
-	SendMsgBuf.Data[0] = 'A';
-	SendMsgBuf.Data[1] = 'B';
-	SendMsgBuf.Data[2] = 'C';
-	SendMsgBuf.Data[3] = 'D';
 
-	TxBuf = Chip_CAN_GetFreeTxBuf(LPC_CAN);
+	for (;i < length; i++) {
 
-	Chip_CAN_Send(LPC_CAN, TxBuf, &SendMsgBuf);
+		SendMsgBuf.Data[i % 8] = *((uint8_t *)(value) + i);
 
-	timeout = 1000;
-	while ((Chip_CAN_GetStatus(LPC_CAN) & CAN_SR_TCS(TxBuf)) == 0 && --timeout) {}
+		if ((!(i % 8) && i) ||
+			(i == length - 1) ) {
 
-	DEBUGOUT("Message Sent!!!\r\n");
-	PrintCANMsg(&SendMsgBuf);
+			SendMsgBuf.DLC = (i % 8) + 1;
+			TxBuf = Chip_CAN_GetFreeTxBuf(LPC_CAN);
 
-	SendMsgBuf.ID = CAN_TX_MSG_REMOTE_STD_ID;
-	SendMsgBuf.Type = CAN_REMOTE_MSG;
-	SendMsgBuf.DLC = 8;
-	TxBuf = Chip_CAN_GetFreeTxBuf(LPC_CAN);
-	Chip_CAN_Send(LPC_CAN, TxBuf, &SendMsgBuf);
+			Chip_CAN_Send(LPC_CAN, TxBuf, &SendMsgBuf);
 
-	timeout = 1000;
-	while ((Chip_CAN_GetStatus(LPC_CAN) & CAN_SR_TCS(TxBuf)) == 0 && --timeout) {}
+			timeout = 1000;
+			while ((Chip_CAN_GetStatus(LPC_CAN) & CAN_SR_TCS(TxBuf)) == 0 && --timeout) {}
 
-	DEBUGOUT("Message Sent!!!\r\n");
-	PrintCANMsg(&SendMsgBuf);
+			DEBUGOUT("Message Sent!!!\r\n");
+			PrintCANMsg(&SendMsgBuf);
 
-	SendMsgBuf.ID = CAN_EXTEND_ID_USAGE | CAN_TX_MSG_EXT_ID;
-	SendMsgBuf.Type = 0;
-	SendMsgBuf.Data[0] = 'E';
-	SendMsgBuf.Data[1] = 'F';
-	SendMsgBuf.Data[2] = 'G';
-	SendMsgBuf.Data[3] = 'H';
-	SendMsgBuf.Data[4] = 'I';
-	SendMsgBuf.Data[5] = 'J';
-	SendMsgBuf.Data[6] = 'K';
-	SendMsgBuf.Data[7] = 'L';
-	TxBuf = Chip_CAN_GetFreeTxBuf(LPC_CAN);
-	Chip_CAN_Send(LPC_CAN, TxBuf, &SendMsgBuf);
+		}
+	}
 
-	timeout = 1000;
-	while ((Chip_CAN_GetStatus(LPC_CAN) & CAN_SR_TCS(TxBuf)) == 0 && --timeout) {}
-
-	DEBUGOUT("Message Sent!!!\r\n");
-	PrintCANMsg(&SendMsgBuf);
-
-	return 1;
-
+	return i;
 }
 
-unsigned int CAN_Read(CAN_MSG_T RcvMsgBuf)
+unsigned int CAN_Read(unsigned int id, unsigned short int length, volatile uint8_t * value)
 {
+	int i = 0;
+	CAN_MSG_T RcvMsgBuf;
+
+	memset(&RcvMsgBuf, 0, sizeof(RcvMsgBuf));
+
 #if FULL_CAN_AF_USED
 	uint16_t i = 0, FullCANEntryNum = 0;
 #endif
@@ -442,14 +428,12 @@ unsigned int CAN_Read(CAN_MSG_T RcvMsgBuf)
 	/* New Message came */
 	if (IntStatus & CAN_ICR_RI) {
 		Chip_CAN_Receive(LPC_CAN, &RcvMsgBuf);
+
 		DEBUGOUT("Message Received!!!\r\n");
 		PrintCANMsg(&RcvMsgBuf);
 
-		if (RcvMsgBuf.Type & CAN_REMOTE_MSG) {
-			ReplyRemoteMessage(&RcvMsgBuf);
-		}
-		else {
-			ReplyNormalMessage(&RcvMsgBuf);
+		for (;i < RcvMsgBuf.DLC; i++) {
+			*((uint8_t *)(value + i)) = RcvMsgBuf.Data[i];
 		}
 
 	}
@@ -461,43 +445,45 @@ unsigned int CAN_Read(CAN_MSG_T RcvMsgBuf)
 	for (i = 0; i < FullCANEntryNum; i++)
 		if (Chip_CAN_GetFullCANIntStatus(LPC_CANAF, i)) {
 			uint8_t SCC;
+
 			Chip_CAN_FullCANReceive(LPC_CANAF, LPC_CANAF_RAM, i, &RcvMsgBuf, &SCC);
+
 			if (SCC == CAN_CTRL_NO) {
 				DEBUGOUT("FullCAN Message Received!!!\r\n");
 				PrintCANMsg(&RcvMsgBuf);
-				if (RcvMsgBuf.Type & CAN_REMOTE_MSG) {
-					ReplyRemoteMessage(&RcvMsgBuf);
+
+				for (;i < RcvMsgBuf.DLC; i++) {
+					*((uint8_t *)(value + i)) = RcvMsgBuf.Data[i];
 				}
-				else {
-					ReplyNormalMessage(&RcvMsgBuf);
-				}
+
 			}
 		}
 
 #endif /*FULL_CAN_AF_USED*/
+
 	return RcvMsgBuf.DLC;
 
 }
 
-unsigned int CAN_WriteChar(unsigned char e)
+/*unsigned int CAN_WriteChar(unsigned char e)
 {
 	Chip_GPIO_SetPinState(LPC_GPIO, 0, 0, e); // Configura nivel baixo
 	Chip_GPIO_SetPinState(LPC_GPIO, 0, 1, e); // Configura nivel baixo
 
 	return 0;
-}
+}*/
 
-unsigned int CAN_ReadChar(unsigned char * buffer)
+/*unsigned int CAN_ReadChar(unsigned char * buffer)
 {
-	/*if(can_rx_index > 0) {
+	if(can_rx_index > 0) {
 		can_rx_index--;
 		*buffer = can_rx_buffer[0];
 		memcpy(can_rx_buffer, can_rx_buffer + 1, can_rx_index);
 		return 1;
-	}*/
+	}
 
 	return 0;
-}
+}*/
 
 void CAN_Config(int CANbitRate)
 {
@@ -544,7 +530,7 @@ void CAN_Handler(unsigned int cycle)
 		return; // RS-485 selected
 	}
 
-	sz = CAN_Read(RcvMsgBuf);
+	sz = CAN_Read(RcvMsgBuf.ID, 8, RcvMsgBuf.Data);
 
 	// usa mesmo buffer e estrutura de controle de fluxo ja existente da comunicacao serial
 	for(int i = 0; i < sz; i++) {

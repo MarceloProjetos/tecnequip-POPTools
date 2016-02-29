@@ -138,8 +138,6 @@ enum eType  {
 	eType_WriteUSS,      ///< Escrita USS. I/O associado a um elemento de escrita atraves de protocolo USS (Siemens)
 	eType_ReadModbus,    ///< Leitura ModBUS. I/O associado a um elemento de leitura atraves de protocolo ModBUS
 	eType_WriteModbus,   ///< Escrita ModBUS. I/O associado a um elemento de escrita atraves de protocolo ModBUS
-	eType_ReadCAN,       ///< Leitura CAN. I/O associado a um elemento de leitura atraves de protocolo CAN
-	eType_WriteCAN,      ///< Escrita CAN. I/O associado a um elemento de escrita atraves de protocolo CAN
 	eType_PWM,           ///< PWM. Tipo de I/Os que sao associados a uma saida digital do CLP e cuja saida opera como PWM
 	eType_RxUART,        ///< Leitura UART. I/O associado a um elemento de leitura de string da interface serial (RS-485)
 	eType_TxUART,        ///< Escrita UART. I/O associado a um elemento de escrita de string da interface serial (RS-485)
@@ -349,6 +347,12 @@ typedef struct {
 	unsigned long ip;    ///< IP do node, utilizado quando comunicando por Ethernet
 	eMbTypeNode   iface; ///< Interface utilizada pelo node
 } LadderMbNode;
+
+/// Estrutura que representa um no do CAN
+typedef struct {
+	string        name;  ///< Nome do node do ModBUS
+	int           id;    ///< ID do node, utilizado quando comunicando por RS-485
+} LadderCANNode;
 
 /// Estrutura que define uma linha do ladder.
 /// Basicamente um LadderCircuit com algumas informacoes adicionais
@@ -3471,6 +3475,16 @@ private:
 	/// Vetor que armazena a lista de nodes cadastrados do ModBUS
 	vector<LadderMbNodeList *> vectorMbNodeList;
 
+	/// Estrutura que armazena dados de um item da fila de nodes do CAN
+	typedef struct {
+		int          NodeID;    ///< ID do node
+		unsigned int NodeCount; ///< Contagem do node, ou seja, numero de locais em que ele eh utilizado
+		LadderCANNode node;      ///< Dados do node em si
+	} LadderCANNodeList;
+
+	/// Vetor que armazena a lista de nodes cadastrados do CAN
+	vector<LadderCANNodeList *> vectorCANNodeList;
+
 	/// Enumeracao com os tipos de eventos de Undo/Redo suportados pelo diagrama
 	enum UndoRedoActionsEnum {
 		eCheckpoint = 0,  ///< Marcador de Checkpoint
@@ -3481,7 +3495,11 @@ private:
 		eMbNodeCreate,    ///< Acao de criar node do ModBUS
 		eMbNodeUpdate,    ///< Acao de atualizar node do ModBUS
 		eMbNodeDelete,    ///< Acao de remocao de node do ModBUS
-		eMbNodeRef        ///< Acao de referenciar node do ModBUS
+		eMbNodeRef,        ///< Acao de referenciar node do ModBUS
+		eCANNodeCreate,    ///< Acao de criar node do CAN
+		eCANNodeUpdate,    ///< Acao de atualizar node do CAN
+		eCANNodeDelete,    ///< Acao de remocao de node do CAN
+		eCANNodeRef        ///< Acao de referenciar node do CAN
 	};
 
 	/// Estrutura de dados para acoes de Desfazer / Refazer
@@ -3524,6 +3542,26 @@ private:
 			unsigned int index;    ///< ID do node que foi referenciado
 			bool         isAddRef; ///< Flag que indica se a operacao foi de adicionar (true) ou remover (false) referencia a um node do ModBUS
 		} MbNodeRef;
+
+		/// Estrutura com dados para registro de acao desfazer/refazer criacao de node do CAN
+		struct {
+			LadderCANNodeList *nl; ///< Ponteiro para o item da lista de nodes que foi adicionado
+		} CANNodeCreate;
+		/// Estrutura com dados para registro de acao desfazer/refazer atualizacao de node do CAN
+		struct {
+			unsigned int      index; ///< ID do node que foi alterado
+			LadderCANNode     *node;  ///< Ponteiro para a estrutura que contem informacoes do node alterado
+		} CANNodeUpdate;
+		/// Estrutura com dados para registro de acao desfazer/refazer remocao de node do CAN
+		struct {
+			unsigned int      index; ///< ID do node que foi removido
+			LadderCANNodeList *nl;    ///< Ponteiro para o item da lista de nodes que foi removido
+		} CANNodeDelete;
+		/// Estrutura com dados para registro de acao desfazer/refazer referencia a node do CAN
+		struct {
+			unsigned int index;    ///< ID do node que foi referenciado
+			bool         isAddRef; ///< Flag que indica se a operacao foi de adicionar (true) ou remover (false) referencia a um node do CAN
+		} CANNodeRef;
 	};
 
 	// Variavel que contem o contexto do diagrama, ou seja, sua situacao atual como o que eh permitido fazer, elemento atualmente selecionado, etc
@@ -4000,6 +4038,74 @@ public:
 	 *  @param[in] NodeID ID do node do ModBUS
 	 */
 	void         mbDelRef          (int NodeID );
+
+	/*** Funcoes para manipular/acessar lista de nodes do CAN ***/
+
+	/** Funcao que carrega os valores padrao a um node do CAN
+	 *  @param[in] node Ponteiro para o node do CAN
+	 */
+	void         canClearNode       (LadderCANNode *node);
+	/** Funcao que cria um node do CAN com os valores padrao a partir do nome do node. Se ja existir um node
+	 *  com o nome solicitado, este node ja existente sera atualizado.
+	 *  @param[in] NodeName Nome do node do CAN a ser criado
+	 *  @return             ID do node criado/atualizado ou -1 em caso de erro
+	 */
+	int          canCreateNode      (string NodeName);
+	/** Funcao que cria um node do CAN a partir da estrutura node. Se ja existir um node com o nome solicitado,
+	 *  este node ja existente sera atualizado.
+	 *  @param[in] node Estrutura com as informacoes do node do CAN a ser criado
+	 *  @return         ID do node criado/atualizado ou -1 em caso de erro
+	 */
+	int          canCreateNode      (LadderCANNode node);
+	/** Funcao que atualiza um node do CAN com os dados da estrutura de node passada como parametro. Se nao existir
+	 *  um node com o ID passado como parametro, ele sera criado
+	 *  @param[in] NodeID ID do node do CAN a ser atualizado
+	 *  @param[in] node   Estrutura com as informacoes do node do CAN a ser atualizado
+	 *  @return           ID do node atualizado/criado ou -1 em caso de erro
+	 */
+	int          canUpdateNode      (int NodeID, LadderCANNode node);
+	/** Funcao que exclui um node do CAN a partir de seu ID
+	 *  @param[in] NodeID Nome do node do CAN a ser criado
+	 */
+	void         canDeleteNode      (int NodeID );
+	/** Funcao que retorna a estrutura de dados de um node do CAN a partir de seu indice na lista
+	 *  @param[in] elem Indice do node na lista de nodes do CAN
+	 *  @return         Estrutura com as informacoes do node do CAN. Se node inexistente, retorna um node com os dados padrao
+	 */
+	LadderCANNode canGetNodeByIndex  (int elem   );
+	/** Funcao que retorna a estrutura de dados de um node do CAN a partir de seu ID
+	 *  @param[in] NodeID ID do node do CAN
+	 *  @return           Estrutura com as informacoes do node do CAN. Se node inexistente, retorna um node com os dados padrao
+	 */
+	LadderCANNode canGetNodeByNodeID (int NodeID );
+	/** Funcao que retorna o ID de um node do CAN a partir de seu nome
+	 *  @param[in] name Nome do node do CAN
+	 *  @return         ID do node do CAN ou -1 se node inexistente
+	 */
+	int          canGetNodeIDByName (string name);
+	/** Funcao que retorna o ID de um node do CAN a partir de seu indice na lista
+	 *  @param[in] elem Indice do node na lista de nodes do CAN
+	 *  @return         ID do node do CAN ou -1 se node inexistente
+	 */
+	int          canGetNodeIDByIndex(int elem   );
+	/** Funcao que retorna o indice de um node na lista de nodes do CAN a partir de seu ID
+	 *  @param[in] NodeID ID do node do CAN
+	 *  @return           Indice do node na lista de nodes do CAN ou -1 se node inexistente
+	 */
+	int          canGetIndexByNodeID(int NodeID );
+	/** Funcao que retorna a contagem (numero de referencias) de um node do CAN
+	 *  @param[in] NodeID ID do node do CAN
+	 *  @return           Contagem do node do CAN
+	 */
+	unsigned int canGetNodeCount    (int NodeID );
+	/** Funcao que adiciona referencia a um node do CAN
+	 *  @param[in] NodeID ID do node do CAN
+	 */
+	void         canAddRef          (int NodeID );
+	/** Funcao que remove referencia de um node do CAN
+	 *  @param[in] NodeID ID do node do CAN
+	 */
+	void         canDelRef          (int NodeID );
 
 	/*** Funcoes relacionadas com Placas de Expansao ***/
 
