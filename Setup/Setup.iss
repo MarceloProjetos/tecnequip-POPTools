@@ -71,11 +71,16 @@ Source: "..\bin\src\POP8\*.a"; DestDir: "{app}\src\POP8"; Permissions: users-mod
 Source: "..\bin\src\POP8\*.ld"; DestDir: "{app}\src\POP8"; Permissions: users-modify; Flags: ignoreversion
 Source: "..\bin\src\POP8\*.o"; DestDir: "{app}\src\POP8"; Permissions: users-modify; Flags: ignoreversion
 Source: "..\bin\src\POP8\compile"; DestDir: "{app}\src\POP8"; Permissions: users-modify; Flags: ignoreversion
-Source: "..\bin\gcc\*.h"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\gcc\*.a"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\gcc\*.o"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\gcc\*.dll"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\bin\gcc\*.exe"; DestDir: "{app}\gcc"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\POP7\*.h"; DestDir: "{app}\gcc\POP7"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\POP7\*.a"; DestDir: "{app}\gcc\POP7"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\POP7\*.o"; DestDir: "{app}\gcc\POP7"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\POP7\*.dll"; DestDir: "{app}\gcc\POP7"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\POP7\*.exe"; DestDir: "{app}\gcc\POP7"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\POP8\*.h"; DestDir: "{app}\gcc\POP8"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\POP8\*.a"; DestDir: "{app}\gcc\POP8"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\POP8\*.o"; DestDir: "{app}\gcc\POP8"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\POP8\*.dll"; DestDir: "{app}\gcc\POP8"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\gcc\POP8\*.exe"; DestDir: "{app}\gcc\POP8"; Permissions: users-modify; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\examples\*"; DestDir: "{app}\examples"; Permissions: users-readexec; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Setup\CP210x_VCP_Win_XP_S2K3_Vista_7.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

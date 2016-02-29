@@ -1130,7 +1130,9 @@ DWORD InvokeGCC(char* dest)
 
 	strcat(szArgs, " /C \"\""); 
 	strcat(szArgs, szAppDirectory); // C:\Users\ADMINI~1\DOCUME~1\VISUAL~3\Projects\POPTools\bin
-	strcat(szArgs, "\\gcc\\bin\\cs-make.exe\" -f compile -C \""); 
+	strcat(szArgs, "\\gcc\\"); 
+	strcat(szArgs, (plcModel == eModelPLC_POP7) ? "pop7" : "pop8"); 
+	strcat(szArgs, "\\bin\\cs-make.exe\" -f compile -C \""); 
 	strcat(szArgs, ConvertToUNIXPath(szAppDirectory));
 	strcat(szArgs, ConvertToUNIXPath(szMakefile));
 	strcat(szArgs, " HEX_FILE=\""); 
@@ -1144,7 +1146,7 @@ DWORD InvokeGCC(char* dest)
 	strcat(szArgs, "\" ");
 	strcat(szArgs, " TOOLS_PATH=\"");
 	strcat(szArgs, ConvertToUNIXPath(szAppDirectory));
-	strcat(szArgs, "/src/gcc\" clean release "); 
+	strcat(szArgs, "\" clean release "); 
 
 	//output the application being run from the command window to the log file.
 
