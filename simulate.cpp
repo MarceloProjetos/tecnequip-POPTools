@@ -70,6 +70,7 @@ static int QueuedUSSCharacter = -1;
 
 static int SimulateUartTxCountdown = 0;
 
+static int SimulateLCDCountdown = 0;
 static int SimulateUSSTxCountdown = 0;
 static int SimulateUSSRxCountdown = 0;
 static int SimulateModbus485Countdown = 0;
@@ -115,6 +116,7 @@ static void AppendToFormattedStringSimulationTextControl(char * text, char *stri
 static void AppendToUSSSimulationTextControl(unsigned char id, unsigned int param, unsigned int index, char *name, unsigned int val);
 static void AppendToModbusSimulationTextControl(unsigned char id, unsigned int address, char *name);
 static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned int address, char *name);
+static void AppendToLCDSimulationTextControl(enum eCommandLCD eCmd, int l, int c, int val, char *str);
 
 static void SimulateIntCode(void);
 
@@ -394,7 +396,16 @@ struct tm * AdjustDate(struct tm timeinfo, int mode)
 // Tempo em segundos no dia
 static time_t GetHourOffset(struct tm timeinfo)
 {
-	time_t now = mktime(&timeinfo);
+	time_t now;
+
+	// Primeiro configura o dia para uma data conhecida. O que nos importa aqui eh o tempo em segundos desde o inicio do dia
+	timeinfo.tm_mon  =  0;
+	timeinfo.tm_yday =  0;
+	timeinfo.tm_year = 70;
+	timeinfo.tm_mday =  1;
+	timeinfo.tm_wday =  4;
+
+	now = mktime(&timeinfo);
 
 	timeinfo.tm_hour = timeinfo.tm_min = timeinfo.tm_sec = 0;
 
@@ -492,6 +503,96 @@ int RTC_OutputState(struct tm start, struct tm end, struct tm now, int mode, int
 }
 
 /*** End of functions related to RTC Simulation ***/
+
+/*** Functions related to Formatted Strings ***/
+
+char *Format_String_Generate(char *msg, unsigned int size, char *format, volatile int * val)
+{
+	struct tm *Time;
+	unsigned int offset = 0, first = 1, size_data;
+	char *start_msg = msg, data[128], type = 'd';
+
+	// Identifica o tipo de dado a ser enviado
+	while(*format != 0 && offset < size) {
+		if(*format == '%') {
+			type = *(++format);
+
+			switch(type) {
+			case 0:
+				*msg = 0;
+				return start_msg; // Se terminou a string, apenas finalizamos a string atual e retornamos
+			case '%':
+				data[0] = '%';
+				data[1] = 0;
+				size_data = 1;
+				break;
+			case 'p': {
+				LadderSettingsInformation settings = ladder->getSettingsInformation();
+				strcpy(data, settings.Name.c_str());
+				size_data = strlen(data);
+				break;
+			}
+			case 'i': {
+				LadderSettingsNetwork settings = ladder->getSettingsNetwork();
+				size_data = sprintf(data, "%d.%d.%d.%d", FIRST_IPADDRESS(settings.ip), SECOND_IPADDRESS(settings.ip), THIRD_IPADDRESS(settings.ip), FOURTH_IPADDRESS(settings.ip));
+				break;
+			}
+			case 'm':
+				size_data = sprintf(data, "%02x:%02x:%02x:%02x:%02x:%02x", 0, 0, 0, 0, 0, 0); // Sem MAC Address para exibir na simulação
+				break;
+			case 'h': {
+					if(first) {
+						first = 0;
+						time_t now = time(NULL);
+						Time = localtime(&now);
+					}
+					switch(*(++format)) {
+						case 'd': size_data = sprintf(data, "%02d", Time->tm_mday       ); break;
+						case 'm': size_data = sprintf(data, "%02d", Time->tm_mon + 1    ); break;
+						case 'y':
+						case 'a': size_data = sprintf(data,   "%d", Time->tm_year + 1900); break;
+						case 'h': size_data = sprintf(data, "%02d", Time->tm_hour       ); break;
+						case 'M': size_data = sprintf(data, "%02d", Time->tm_min        ); break;
+						case 's': size_data = sprintf(data, "%02d", Time->tm_sec        ); break;
+						default : size_data = data[0] = 0;
+					}
+					break;
+				}
+			default: {
+					char new_format[3] = { '%', 0, 0 };
+					new_format[1] = type;
+					size_data = sprintf(data, new_format, *val);
+					break;
+				}
+			}
+
+			// Nesse momento o formato foi tratado e o vetor data[] contem o texto formatado. Apenas copia este texto para o vetor msg[]
+			if(size_data > (size - offset)) {
+				size_data = (size - offset);
+			} else if(size_data < 0) {
+				size_data = 0;
+			}
+			strncpy(msg, data, size_data);
+			offset += size_data;
+			msg    += size_data;
+
+			// Finalmente, avanca a posicao da string de formato
+			format++;
+		} else {
+			// Sem formato. apenas copia o caracter atual e avancas as posicoes das strings
+			*msg = *format;
+			offset++;
+			msg   ++;
+			format++;
+		}
+	}
+
+	*msg = 0;
+
+	return start_msg;
+}
+
+/*** End of functions related to Formatted Strings ***/
 
 void csvSaveIO(FILE *f, vector<tLogRefIO>::iterator io, int val)
 {
@@ -1303,6 +1404,10 @@ math:
 				}
 				break;
 
+			case INT_LCD:
+				AppendToLCDSimulationTextControl((enum eCommandLCD)a->literal, GetSimulationVariable(a->name2), GetSimulationVariable(a->name1), GetSimulationVariable(a->name3), a->name4);
+				break;
+
 			case INT_END_IF:
             case INT_ELSE_IF:
             case INT_ELSE:
@@ -1384,6 +1489,13 @@ void SimulateOneCycle(BOOL forceRefresh)
 		} else {
 			offset = (float)(SimulateMultisetDA.StartValue - SimulateMultisetDA.FinalValue) / SimulateMultisetDA.StartCount;
 			SetDAShadow(SimulateMultisetDA.FinalValue + (int)(offset*SimulateMultisetDA.Count));
+		}
+	}
+
+	if (SimulateLCDCountdown > 0) {
+		SimulateLCDCountdown--;
+		if (!SimulateLCDCountdown) {
+			SetSingleBit("$LCDReady", true);
 		}
 	}
 
@@ -1481,6 +1593,7 @@ void ClearSimulationData(void)
 	SetSingleBit("$USSReady", true);
 	SetSingleBit("$SerialReady", true);
 	SetSingleBit("$TcpReady", true);
+	SetSingleBit("$LCDReady", true);
 
 // A checagem deve ser realizada na classe de mapa de I/O
 // Deve ser criado codigo que permita reservar o I/O conforme descrito a seguir:
@@ -1812,6 +1925,23 @@ static void AppendToModbusEthSimulationTextControl(unsigned char id, unsigned in
     char append[125];
 
     sprintf(append, _("MODBUS_ETH: id=%d, address=%d, name=%s\r\n"), id, address, name);
+
+	AppendToUartSimulationTextControl(append);
+}
+
+static void AppendToLCDSimulationTextControl(enum eCommandLCD eCmd, int l, int c, int val, char *str)
+{
+    char append[125], buf[128];
+
+	switch(eCmd) {
+	case eCommandLCD_Clear    : strcpy (append, _("LCD: Limpar Tela\r\n"                )                                    ); break;
+	case eCommandLCD_Erase    : sprintf(append, _("LCD(%d, %2d): Limpar %d posições\r\n"), l, c, val                         ); break;
+	case eCommandLCD_BackLight: sprintf(append, _("LCD: Backlight %s\r\n"               ), val ? _("ligado") : _("desligado")); break;
+	case eCommandLCD_Write    :
+		Format_String_Generate(buf, 128, str, &val);
+		sprintf(append, _("LCD(%d, %2d): Escrito '%s'\r\n"), l, c, buf);
+		break;
+	}
 
 	AppendToUartSimulationTextControl(append);
 }

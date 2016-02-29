@@ -600,7 +600,7 @@ void ToggleSimulationMode(void)
 
         // Recheck InSimulationMode, because there could have been a compile
         // error, which would have kicked us out of simulation mode.
-        if(ladder->UartFunctionUsed() && ladder->getContext().inSimulationMode) {
+        if(ladder->getContext().inSimulationMode) {
             ShowUartSimulationWindow();
         }
 
@@ -623,9 +623,7 @@ void ToggleSimulationMode(void)
 
 		col.pszText = (char *)_("Nro Porta E/S");
 
-		if(ladder->UartFunctionUsed()) {
-            DestroyUartSimulationWindow();
-        }
+        DestroyUartSimulationWindow();
 
 		SimulationServer_Stop();
     }

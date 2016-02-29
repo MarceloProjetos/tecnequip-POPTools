@@ -96,7 +96,8 @@ LadderExpansion::LadderExpansion(LadderDiagram *pDiagram)
 	addresses.push_back(0x4a);
 	addresses.push_back(0x4c);
 	addresses.push_back(0x4e);
-	versionAddresses[0] = addresses; // Ere I2C-RL8xxx
+	versionAddresses[0] = addresses; // Ere I2C-RL8xxS
+	versionAddresses[2] = addresses; // Ere I2C-RL8xxM
 	addresses.clear();
 
 	addresses.push_back(0x70);
@@ -107,7 +108,8 @@ LadderExpansion::LadderExpansion(LadderDiagram *pDiagram)
 	addresses.push_back(0x7a);
 	addresses.push_back(0x7c);
 	addresses.push_back(0x7e);
-	versionAddresses[1] = addresses; // Ere I2C-RL8xxxA
+	versionAddresses[1] = addresses; // Ere I2C-RL8xxxSA
+	versionAddresses[3] = addresses; // Ere I2C-RL8xxxMA
 	addresses.clear();
 
 	boardAddresses[eExpansionBoard_DigitalOutput] = versionAddresses;
@@ -398,6 +400,27 @@ string LadderExpansion::getDescription(eExpansionBoard type)
 	return description;
 }
 
+string LadderExpansion::getMoreInfo(eExpansionBoard type)
+{
+	string moreInfo = "http://www.tecnequip.com.br";
+	switch(type) {
+	case eExpansionBoard_DigitalInput: moreInfo =
+		"https://www.ereshop.com/shop/index.php?main_page=product_info&products_id=818";
+		break;
+	case eExpansionBoard_DigitalOutput: moreInfo =
+		"https://www.ereshop.com/shop/index.php?main_page=product_info&products_id=767";
+		break;
+	case eExpansionBoard_AnalogInput: moreInfo =
+		"https://www.ereshop.com/shop/index.php?main_page=product_info&products_id=822";
+		break;
+	case eExpansionBoard_LCD: moreInfo =
+		"https://www.ereshop.com/shop/index.php?main_page=product_info&products_id=822";
+		break;
+	}
+
+	return moreInfo;
+}
+
 vector<string> LadderExpansion::getVersions(eExpansionBoard typeBoard)
 {
 	vector<string> boardVersions;
@@ -409,8 +432,10 @@ vector<string> LadderExpansion::getVersions(eExpansionBoard typeBoard)
 		break;
 
 	case eExpansionBoard_DigitalOutput:
-		boardVersions.push_back(_("Ere I2C-RL8xxx"));
-		boardVersions.push_back(_("Ere I2C-RL8xxxA"));
+		boardVersions.push_back(_("Ere I2C-RL8xxS"));
+		boardVersions.push_back(_("Ere I2C-RL8xxSA"));
+		boardVersions.push_back(_("Ere I2C-RL8xxM"));
+		boardVersions.push_back(_("Ere I2C-RL8xxMA"));
 		break;
 
 	case eExpansionBoard_AnalogInput:
@@ -13329,6 +13354,11 @@ unsigned int LadderDiagram::getBoardQtyIO(eExpansionBoard typeBoard, unsigned in
 string LadderDiagram::getBoardDescription(eExpansionBoard typeBoard)
 {
 	return expansionBoards->getDescription(typeBoard);
+}
+
+string LadderDiagram::getBoardMoreInfo(eExpansionBoard typeBoard)
+{
+	return expansionBoards->getMoreInfo(typeBoard);
 }
 
 vector<string> LadderDiagram::getBoardVersions(eExpansionBoard typeBoard)

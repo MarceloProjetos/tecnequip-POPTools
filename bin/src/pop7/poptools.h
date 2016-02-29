@@ -58,7 +58,6 @@ typedef struct {
     unsigned int Yday;    /* Day of year value - [1,365] */
 } RTC_Time;
 RTC_Time RTC_GetTime( void );
-RTC_Time RTC_GetTime( void );
 
 #define RTC_MODE_DATE_CONTINUOUS      0
 #define RTC_MODE_DATE_INTERMITTENT    1

@@ -529,6 +529,12 @@ public:
 	 */
 	string getDescription(eExpansionBoard type);
 
+	/** Funcao que retorna um link para a pagina na internet com informacoes da placa
+	 *  @param[in] type Tipo da placa que se deseja obter a descricao
+	 *  @return         String contendo a descricao da placa
+	 */
+	string LadderExpansion::getMoreInfo(eExpansionBoard type);
+
 	/** Funcao que retorna strings com os nomes das versoes das placas
 	 *  @param[in] typeBoard Tipo da placa que se deseja obter a lista de versoes
 	 *  @return              Vetor de strings contendo as versoes da placa especificada
@@ -4125,6 +4131,12 @@ public:
 	 *  @return              String contendo a descricao da placa
 	 */
 	string getBoardDescription(eExpansionBoard typeBoard);
+
+	/** Funcao que retorna link para pagina na internet com mais informacoes da placa de expansao
+	 *  @param[in] typeBoard Tipo da placa que se deseja obter o link
+	 *  @return              String contendo o link
+	 */
+	string getBoardMoreInfo(eExpansionBoard typeBoard);
 
 	/** Funcao que retorna strings com os nomes das versoes das placas
 	 *  @param[in] typeBoard Tipo da placa que se deseja obter a lista de versoes

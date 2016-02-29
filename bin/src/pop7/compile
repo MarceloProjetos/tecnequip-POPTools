@@ -34,7 +34,7 @@ GCC_VERSION = 4.5.2
 # Diretorios de trabalho
 #------------------------------------------------------------------------------
 
-GCC_DIR = $(TOOLS_PATH)/../../gcc
+GCC_DIR = $(TOOLS_PATH)/gcc/pop7
 GCC_INC = $(GCC_DIR)/arm-none-eabi/include
 
 HOME_DIR=.
