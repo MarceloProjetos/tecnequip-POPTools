@@ -273,13 +273,11 @@ void UpdateControls(HWND lv, unsigned int id)
 	switch(type) {
 		default:
 		case eExpansionBoard_DigitalInput : res = IDI_BOARD_BIG_DI ; break;
-		case eExpansionBoard_DigitalOutput: res = IDI_BOARD_BIG_DO ; break;
+		case eExpansionBoard_DigitalOutput: res = ((version < 2) ? IDI_BOARD_BIG_DO_RL8xxS : IDI_BOARD_BIG_DO_RL8xxM); break;
 		case eExpansionBoard_AnalogInput  : res = IDI_BOARD_BIG_AI ; break;
 		case eExpansionBoard_LCD          : res = IDI_BOARD_BIG_LCD; break;
 	}
 
-//	HICON hBmp = (HICON) LoadIcon(Instance,MAKEINTRESOURCE(res));
-//	SendMessage(BoardImageLabel,STM_SETICON,(WPARAM) hBmp, 0);
 	HANDLE hBmp = LoadImage(Instance, MAKEINTRESOURCE(res), IMAGE_ICON, 128, 128, 0);
 	SendMessage(BoardImageLabel,STM_SETICON,(WPARAM) hBmp, 0);
 

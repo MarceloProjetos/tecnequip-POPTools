@@ -9,7 +9,8 @@
 #define IDI_BOARD_LCD					4004
 
 #define IDI_BOARD_BIG_DI				4101
-#define IDI_BOARD_BIG_DO				4102
+#define IDI_BOARD_BIG_DO_RL8xxS			4102
+#define IDI_BOARD_BIG_DO_RL8xxM			4105
 #define IDI_BOARD_BIG_AI				4103
 #define IDI_BOARD_BIG_LCD				4104
 
