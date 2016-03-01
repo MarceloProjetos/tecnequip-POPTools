@@ -166,7 +166,7 @@ extern void CAN_Init();
 extern void CAN_Config(int baudrate);
 extern void CAN_Handler (void);
 extern unsigned int CAN_Write(unsigned char id, unsigned short int length, volatile int * value);
-extern unsigned int CAN_Read(CAN_MSG_T);
+extern unsigned int CAN_Read(unsigned char id, unsigned short int length, volatile int * value);
 extern unsigned int CAN_ReadChar(unsigned char * buffer);
 #endif
 

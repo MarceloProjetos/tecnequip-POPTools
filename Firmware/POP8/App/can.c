@@ -421,12 +421,14 @@ unsigned int CAN_Read(unsigned int id, unsigned short int length, volatile uint8
 #endif
 	uint32_t IntStatus;
 
-	IntStatus = Chip_CAN_GetIntStatus(LPC_CAN);
+	//IntStatus = Chip_CAN_GetIntStatus(LPC_CAN);
+	IntStatus = Chip_CAN_GetStatus(LPC_CAN);
 
 	PrintCANErrorInfo(IntStatus);
 
 	/* New Message came */
-	if (IntStatus & CAN_ICR_RI) {
+	//if (IntStatus & CAN_ICR_RI) {
+	if (IntStatus & CAN_SR_RBS(0)) {
 		Chip_CAN_Receive(LPC_CAN, &RcvMsgBuf);
 
 		DEBUGOUT("Message Received!!!\r\n");
@@ -523,62 +525,15 @@ void CAN_Config(int CANbitRate)
 
 void CAN_Handler(unsigned int cycle)
 {
-	unsigned int sz;
+	//unsigned int sz;
 	static unsigned int retries = 0;
 
 	if (!Chip_GPIO_GetPinState(LPC_GPIO, 1, 25)) {
 		return; // RS-485 selected
 	}
 
-	sz = CAN_Read(RcvMsgBuf.ID, 8, RcvMsgBuf.Data);
-
-	// usa mesmo buffer e estrutura de controle de fluxo ja existente da comunicacao serial
-	for(int i = 0; i < sz; i++) {
-		rs485_rx_buffer[rs485_rx_index] = RcvMsgBuf.Data[i];
-		rs485_rx_index++;
-	}
-
-	if(rs485_rx_index) {
-		if(sz) {
-			rs485_timeout  = cycle + 3;
-		} else if(cycle >= rs485_timeout) {
-			// Se aguardando por uma string formatada, nenhum protocolo deve interpretar strings
-			// pois podem ser recebidos comandos invalidos que gerem erros ou mesmo o buffer ser descartado
-			// antes de o objeto de string formatada conseguir interpretar os dados.
-			if (WAITING_FOR_FMTSTR == 0) { // formatted string
-				if (WAITING_FOR_USS == 1){ // uss
-					USS_Ready(rs485_rx_buffer, rs485_rx_index);
-					rs485_rx_index = 0;
-					WAITING_FOR_USS = 0;
-				} else if (WAITING_FOR_YASKAWA == 0) { // modbus
-					Modbus_Request(&modbus_rs485, rs485_rx_buffer, rs485_rx_index);
-					rs485_rx_index = 0;
-				}
-			}
-		}
-	}
-
-  if(I_SerialReady) {
-    retries = 0;
-    I_SerialTimeout = 0;
-    I_SerialAborted = 0;
-    rs485_reset_timeout = cycle + 50;
-  } else {
-    if(cycle >= rs485_reset_timeout && !I_SerialTimeout && retries < MAX_RETRIES) {
-      retries++;
-      I_SerialTimeout = 1;
-	  rs485_reset_timeout = cycle + 50;
-    } else if (cycle >= rs485_reset_timeout && retries >= MAX_RETRIES && !I_SerialAborted) {
-    	I_SerialAborted = 1;
-    } else if (cycle >= (rs485_reset_timeout + 250)) {
-      retries = 0;
-      I_SerialReady = 1;
-      I_SerialTimeout = 0;
-      I_SerialAborted = 0;
-	  WAITING_FOR_USS = 0;
-	  //WAITING_FOR_YASKAWA = 0;
-    }
-  }
+	//TODO armazenar os dados recebidos em um buffer para tratamento no ciclo do ladder
+	//sz = CAN_Read(RcvMsgBuf.ID, 8, (int *)&RcvMsgBuf.Data);
 
 }
 
