@@ -10879,6 +10879,11 @@ void LadderDiagram::FreeDiagram(void)
 		delete vectorMbNodeList[i];
 	}
 	vectorMbNodeList.clear();
+
+	for(i = 0; i < vectorCANNodeList.size(); i++) {
+		delete vectorCANNodeList[i];
+	}
+	vectorCANNodeList.clear();
 }
 
 void LadderDiagram::Activate(bool isActive)
@@ -12523,8 +12528,8 @@ bool LadderDiagram::Load(string filename)
 							}
 						}
 
-						// Se OK, agora carregamos a lista de nodes do CAN.
-						if(ret == true) {
+						// Se OK, agora carregamos a lista de nodes do CAN. Apenas para versao 3 em diante do arquivo
+						if(ret == true && fileVersion > 2) {
 							unsigned int i, list_size;
 							LadderCANNodeList nl;
 
