@@ -1,7 +1,6 @@
 #include "poptools.h"
 
 static HWND SetBitDialog;
-
 static HWND NameTextbox;
 static HWND AddressTextbox;
 static HWND ElemTextbox;
